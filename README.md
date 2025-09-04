@@ -33,14 +33,14 @@ A modern, feature-rich control panel for Pterodactyl servers with advanced user 
 - **Shop Management**: Resource and plan sales
 - **Coupon System**: Discount codes and promotions
 
-## 🚀 Quick Start
+## 🚀 Setup & Deployment
 
 ### Prerequisites
 - Node.js 18+ 
 - MongoDB 5+
 - Pterodactyl Panel 1.x
 
-### Installation
+### Method A — Local (Node.js)
 
 1. **Clone the repository**
 ```bash
@@ -57,7 +57,7 @@ cp ../env.example .env
 npm start
 ```
 
-3. **Frontend Setup**
+3. **Frontend Setup (Dev)**
 ```bash
 cd frontend
 npm install
@@ -65,6 +65,66 @@ cp ../env.example .env.local
 # Edit .env.local with your API URL
 npm run dev
 ```
+
+4. **Frontend + Backend (Production, Local)**
+```bash
+# Backend (already started above)
+# Or run in production environment:
+cd backend
+NODE_ENV=production npm start
+
+# Frontend
+cd ../frontend
+npm run build
+npm start
+```
+
+### Method B — Docker (Single Command Deployment)
+```bash
+# Linux/macOS
+chmod +x docker-scripts.sh
+./docker-scripts.sh start
+
+# Windows
+docker-scripts.bat start
+
+# Or manually
+docker-compose up -d --build
+```
+
+#### Docker Features:
+- **Single Command Setup**: Complete PteroDash deployment in one command
+- **Auto-Configuration**: MongoDB initialization with default admin user
+- **Health Checks**: Automatic service health monitoring
+- **Nginx Reverse Proxy**: Production-ready load balancing and SSL termination
+- **Volume Persistence**: Data survives container restarts
+- **Development Mode**: Hot reload for development with `docker-compose.override.yml`
+
+#### Docker Commands:
+```bash
+# Start PteroDash
+./docker-scripts.sh start
+
+# View logs
+./docker-scripts.sh logs
+
+# Check status
+./docker-scripts.sh status
+
+# Stop PteroDash
+./docker-scripts.sh stop
+
+# Update services
+./docker-scripts.sh update
+
+# Clean everything
+./docker-scripts.sh clean
+```
+
+#### Default Access:
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:4000
+- **Admin Login**: admin@example.com / admin123
 
 ## ⚙️ Configuration
 
@@ -116,84 +176,7 @@ pterodash/
 └── README.md
 ```
 
-
-
-## 🎯 Key Features Explained
-
-### Plan-Based Access Control
-Users can only access certain eggs and locations based on their active plans. This creates a tiered system where premium users get access to better resources.
-
-### Premium Badge System
-Users with active plans automatically receive a golden "PREMIUM" badge in the sidebar, providing visual recognition of their status.
-
-### Integrated Payment Processing
-Full PayPal integration with webhook support, automatic plan activation, and resource allocation upon successful payment.
-
-### Real-time Server Monitoring
-Live updates of server status, resource usage, and performance metrics directly from the Pterodactyl panel.
-
-## 🚀 Deployment
-
-### Production Build
-```bash
-# Backend
-cd backend
-npm start
-
-# Frontend
-cd frontend
-npm run build
-npm start
-```
-
-### Docker (Single Command Deployment)
-```bash
-# Linux/macOS
-chmod +x docker-scripts.sh
-./docker-scripts.sh start
-
-# Windows
-docker-scripts.bat start
-
-# Or manually
-docker-compose up -d --build
-```
-
-#### Docker Features:
-- **Single Command Setup**: Complete PteroDash deployment in one command
-- **Auto-Configuration**: MongoDB initialization with default admin user
-- **Health Checks**: Automatic service health monitoring
-- **Nginx Reverse Proxy**: Production-ready load balancing and SSL termination
-- **Volume Persistence**: Data survives container restarts
-- **Development Mode**: Hot reload for development with `docker-compose.override.yml`
-
-#### Docker Commands:
-```bash
-# Start PteroDash
-./docker-scripts.sh start
-
-# View logs
-./docker-scripts.sh logs
-
-# Check status
-./docker-scripts.sh status
-
-# Stop PteroDash
-./docker-scripts.sh stop
-
-# Update services
-./docker-scripts.sh update
-
-# Clean everything
-./docker-scripts.sh clean
-```
-
-#### Default Access:
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:4000
-- **Admin Login**: admin@example.com / admin123
-
-### Environment Setup
+### Environment Setup (Production)
 1. Set `NODE_ENV=production`
 2. Configure production MongoDB URI
 3. Set up SSL certificates
