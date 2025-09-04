@@ -100,7 +100,6 @@ docker-compose up -d --build
 - **Volume Persistence**: Data survives container restarts
 - **Development Mode**: Hot reload for development with `docker-compose.override.yml`
 
-> Note: Docker no longer creates a default admin automatically. Use the admin promotion script below.
 
 #### Docker Commands:
 ```bash
