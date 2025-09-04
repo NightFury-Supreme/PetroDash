@@ -54,8 +54,15 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok' });
 });
 
-// Public branding endpoint for client-side dashboard branding (read-only)
-app.use('/api/branding', require('./routes/branding'));
+// Public settings endpoint for client-side branding (read-only)
+app.get('/api/settings', async (req, res) => {
+    try {
+        const Settings = require('./models/Settings');
+        const s = await Settings.findOne({}).lean();
+        if (!s) return res.json({});
+        return res.json({ siteName: s.siteName, siteIconUrl: s.siteIconUrl });
+    } catch (e) { return res.json({}); }
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);

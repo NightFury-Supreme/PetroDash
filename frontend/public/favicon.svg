@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="32" height="32" viewBox="0 0 300 300"
+     role="img" aria-labelledby="title desc">
+  <title id="title">PteroDash Feather Logo</title>
+  <desc id="desc">A modern minimal feather logo with smooth curves and gradient fill.</desc>
+
+  <defs>
+    <linearGradient id="featherGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff6b6b"/>
+      <stop offset="50%" stop-color="#feca57"/>
+      <stop offset="100%" stop-color="#48dbfb"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Feather silhouette only -->
+  <path d="M150 280
+           C 90 230, 60 180, 70 110
+           C 80 60, 130 30, 180 40
+           C 220 50, 240 90, 220 140
+           C 210 170, 190 200, 150 280 Z"
+        fill="url(#featherGradient)" stroke="#222" stroke-width="2" stroke-linejoin="round"/>
+</svg>

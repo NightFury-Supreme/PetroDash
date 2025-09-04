@@ -70,7 +70,6 @@ jspm_packages/
 
 # Gatsby files
 .cache/
-public
 
 # Storybook build outputs
 .out
@@ -122,3 +121,4 @@ docker-compose.override.yml
 
 # Local development
 .local/
+

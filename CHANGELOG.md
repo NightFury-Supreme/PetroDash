@@ -65,3 +65,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Contributing
 
 To add entries to this changelog, please follow the existing format and add your changes under the appropriate section and version.
+
