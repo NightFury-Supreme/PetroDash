@@ -2,7 +2,7 @@
 
 A modern, feature-rich control panel for Pterodactyl servers with advanced user management, plan-based access control, and integrated payment systems.
 
-![PteroDash Logo](frontend/public/logo.svg)
+![PteroDash Logo](images/logo.svg)
 
 ## ✨ Features
 
@@ -12,6 +12,8 @@ A modern, feature-rich control panel for Pterodactyl servers with advanced user 
 - **Plan System**: Subscription-based access control with lifetime plans
 - **Resource Management**: CPU, RAM, Disk, and allocation limits
 - **Payment Integration**: PayPal payment processing with webhooks
+
+![Dashboard Screenshot](images/dashboard.png)
 
 ### 🎨 **User Experience**
 - **Modern UI**: Beautiful, responsive design with Tailwind CSS
@@ -100,6 +102,7 @@ docker-compose up -d --build
 - **Volume Persistence**: Data survives container restarts
 - **Development Mode**: Hot reload for development with `docker-compose.override.yml`
 
+> Note: Docker no longer creates a default admin automatically. Use the admin promotion script below.
 
 #### Docker Commands:
 ```bash

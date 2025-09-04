@@ -68,6 +68,9 @@ app.get('/api/settings', async (req, res) => {
     } catch (e) { return res.json({}); }
 });
 
+// New branding route
+app.use('/api/branding', require('./routes/branding'));
+
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/servers', serverRoutes);
