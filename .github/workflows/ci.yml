@@ -109,14 +109,11 @@ jobs:
           echo "No lint script found, skipping linting"
         fi
     
-    - name: Lint frontend (resilient)
-      env:
-        NEXT_TELEMETRY_DISABLED: 1
-        ESLINT_USE_FLAT_CONFIG: false
+    - name: Lint frontend (if available)
       run: |
         cd frontend
         if npm run | grep -q "lint"; then
-          npm run lint || echo "Skipping lint due to ESLint patch issue"
+          npm run lint
         else
           echo "No lint script found, skipping linting"
         fi

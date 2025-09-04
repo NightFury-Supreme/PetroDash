@@ -33,8 +33,6 @@ db.auditlogs.createIndex({ "action": 1 });
 db.coupons.createIndex({ "code": 1 }, { unique: true });
 db.webhookevents.createIndex({ "eventId": 1 }, { unique: true });
 
-// No default admin is created here. Use the create-admin script to add/promote an admin.
-
 // Create default settings
 db.settings.insertOne({
   siteName: "PteroDash",

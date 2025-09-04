@@ -32,13 +32,13 @@ services:
     container_name: pterodash-backend
     restart: unless-stopped
     environment:
-      NODE_ENV: ${NODE_ENV:-production}
-      PORT: ${PORT:-4000}
-      MONGODB_URI: ${MONGODB_URI:-mongodb://admin:password123@mongodb:27017/pterodash?authSource=admin}
-      JWT_SECRET: ${JWT_SECRET:-change-me}
-      PTERO_BASE_URL: ${PTERO_BASE_URL:-http://pterodactyl.local}
-      PTERO_APP_API_KEY: ${PTERO_APP_API_KEY:-changeme}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      NODE_ENV: production
+      PORT: 4000
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/pterodash?authSource=admin
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      PTERO_BASE_URL: http://your-pterodactyl-panel:8080
+      PTERO_APP_API_KEY: your-pterodactyl-api-key
+      FRONTEND_URL: http://localhost:3000
     ports:
       - "4000:4000"
     depends_on:
@@ -61,8 +61,8 @@ services:
     container_name: pterodash-frontend
     restart: unless-stopped
     environment:
-      NODE_ENV: ${NODE_ENV:-production}
-      NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-http://localhost:4000}
+      NODE_ENV: production
+      NEXT_PUBLIC_API_BASE: http://localhost:4000
     ports:
       - "3000:3000"
     depends_on:

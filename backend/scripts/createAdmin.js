@@ -1,78 +1,59 @@
 #!/usr/bin/env node
 /*
-  Create or promote an admin user.
-  Usage examples:
-    ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD="StrongPass123" node scripts/createAdmin.js
-    ADMIN_USERNAME=admin ADMIN_PASSWORD="StrongPass123" node scripts/createAdmin.js
-*/
+  Promote an existing user to admin (by email or username).
+  Will NOT create users. Optionally updates password if ADMIN_PASSWORD is provided.
 
-const mongoose = require('mongoose');
+  Usage examples:
+  ADMIN_EMAIL=admin@example.com npm run create-admin
+  ADMIN_USERNAME=admin npm run create-admin
+  ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD="StrongPass123" npm run create-admin
+*/
 const bcrypt = require('bcryptjs');
-require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
+const dotenv = require('dotenv');
+const { connectToDatabase } = require('../src/lib/mongo');
+const User = require('../src/models/User');
+
+dotenv.config({ path: process.env.ENV_PATH || '.env' });
 
 async function main() {
-  const { MONGODB_URI, ADMIN_EMAIL, ADMIN_USERNAME, ADMIN_PASSWORD } = process.env;
-  if (!MONGODB_URI) {
-    console.error('MONGODB_URI is required');
-    process.exit(1);
-  }
-  if (!ADMIN_EMAIL && !ADMIN_USERNAME) {
+  const email = process.env.ADMIN_EMAIL;
+  const username = process.env.ADMIN_USERNAME;
+  const password = process.env.ADMIN_PASSWORD;
+
+  if (!email && !username) {
     console.error('Provide ADMIN_EMAIL or ADMIN_USERNAME');
     process.exit(1);
   }
 
-  await mongoose.connect(MONGODB_URI);
+  await connectToDatabase();
 
-  // Lazy-require User model
-  const User = require('../src/models/User');
-
-  const query = ADMIN_EMAIL ? { email: ADMIN_EMAIL } : { username: ADMIN_USERNAME };
-  let user = await User.findOne(query);
+  const query = email ? { email } : { username };
+  const user = await User.findOne(query);
 
   if (!user) {
-    // Create new user
-    const email = ADMIN_EMAIL || `${ADMIN_USERNAME}@example.com`;
-    const username = ADMIN_USERNAME || (ADMIN_EMAIL ? ADMIN_EMAIL.split('@')[0] : 'admin');
-    const hash = ADMIN_PASSWORD ? await bcrypt.hash(ADMIN_PASSWORD, 10) : await bcrypt.hash('admin123', 10);
-    user = new User({
-      email,
-      username,
-      firstName: 'Admin',
-      lastName: 'User',
-      password: hash,
-      role: 'admin',
-      coins: 0,
-      resources: {
-        cpuPercent: 0,
-        memoryMb: 0,
-        diskMb: 0,
-        swapMb: -1,
-        blockIoProportion: 0,
-        cpuPinning: '',
-        additionalAllocations: 0,
-        databases: 0,
-        backups: 0,
-        serverSlots: 0,
-      },
-      serverCount: 0,
-    });
-    await user.save();
-    console.log(`Created admin user: ${username} <${email}>`);
-  } else {
-    // Promote and optionally set password
-    user.role = 'admin';
-    if (ADMIN_PASSWORD) {
-      user.password = await bcrypt.hash(ADMIN_PASSWORD, 10);
-    }
-    await user.save();
-    console.log(`Updated user '${user.username}': role=admin${ADMIN_PASSWORD ? ', password updated' : ''}`);
+    console.error('User not found. Provide an existing user email or username.');
+    process.exit(1);
   }
 
-  await mongoose.disconnect();
+  let changed = false;
+  if (user.role !== 'admin') {
+    user.role = 'admin';
+    changed = true;
+  }
+  if (password) {
+    user.passwordHash = await bcrypt.hash(password, 10);
+    changed = true;
+  }
+
+  if (changed) {
+    await user.save();
+  }
+
+  console.log(`User promoted to admin: ${user.username} (${user.email})${password ? ' and password updated' : ''}`);
   process.exit(0);
 }
 
-main().catch((e) => {
-  console.error(e);
+main().catch((err) => {
+  console.error('Failed to promote admin:', err?.message || err);
   process.exit(1);
 });
