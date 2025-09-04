@@ -1,8 +1,8 @@
-# 🪶 PteroDash - Premium Control Panel
+# PteroDash - Premium Control Panel
 
 A modern, feature-rich control panel for Pterodactyl servers with advanced user management, plan-based access control, and integrated payment systems.
 
-![PteroDash Logo](frontend-v2/public/logo.svg)
+![PteroDash Logo](frontend/public/logo.svg)
 
 ## ✨ Features
 
@@ -52,7 +52,7 @@ cd pterodash
 ```bash
 cd backend
 npm install
-cp ../backend-env.example .env
+cp /backend/env.example .env
 # Edit .env with your configuration
 npm start
 ```
@@ -61,15 +61,9 @@ npm start
 ```bash
 cd frontend-v2
 npm install
-cp ../frontend-env.example .env.local
+cp /frontend/env.example .env.local
 # Edit .env.local with your API URL
 npm run dev
-```
-
-4. **Database Setup**
-```bash
-# MongoDB will be automatically configured on first run
-# Default admin account: admin@example.com / admin123
 ```
 
 ## ⚙️ Configuration
@@ -144,11 +138,10 @@ Live updates of server status, resource usage, and performance metrics directly 
 ```bash
 # Backend
 cd backend
-npm run build
 npm start
 
 # Frontend
-cd frontend-v2
+cd frontend
 npm run build
 npm start
 ```
@@ -189,10 +182,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Documentation**: [Wiki](https://github.com/yourusername/pterodash/wiki)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/pterodash/issues)
-- **Discord**: [Join our community](https://discord.gg/your-invite)
-- **Email**: support@yourdomain.com
+- **Documentation**: [Wiki](/NightFury-Supreme/PetroDash/wiki)
+- **Issues**: [GitHub Issues](/NightFury-Supreme/PetroDash/issues)
+- **Email**: support@auto-manager.tk
 
 ## 🔄 Changelog
 
