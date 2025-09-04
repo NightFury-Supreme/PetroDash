@@ -1,5 +1,10 @@
 function validateEnv() {
   const get = (key) => process.env[key];
+  
+  // Skip validation in test environment
+  if (process.env.NODE_ENV === 'test') {
+    return;
+  }
 
   // Required group 1: authentication and core keys
   const authAndCore = ['JWT_SECRET', 'PTERO_APP_API_KEY'];

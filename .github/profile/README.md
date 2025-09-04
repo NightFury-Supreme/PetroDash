@@ -22,18 +22,18 @@ A modern, feature-rich control panel that extends Pterodactyl with advanced user
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/pterodash.git
+git clone https://github.com/NightFury-Supreme/PetroDash.git
 cd pterodash
 
 # Backend setup
 cd backend && npm install
-cp .env.example .env
+cp env.example .env
 # Edit .env with your configuration
 npm start
 
 # Frontend setup (in another terminal)
 cd frontend-v2 && npm install
-cp .env.local.example .env.local
+cp env.example .env.local
 npm run dev
 ```
 
@@ -49,10 +49,10 @@ npm run dev
 
 ## 📚 Documentation
 
-- [📖 Full Documentation](https://github.com/yourusername/pterodash/wiki)
-- [🚀 Quick Start Guide](https://github.com/yourusername/pterodash#quick-start)
-- [🔌 API Reference](https://github.com/yourusername/pterodash#api-endpoints)
-- [🤝 Contributing Guide](https://github.com/yourusername/pterodash/blob/main/CONTRIBUTING.md)
+- [📖 Full Documentation](https://github.com/NightFury-Supreme/PetroDash/wiki)
+- [🚀 Quick Start Guide](https://github.com/NightFury-Supreme/PetroDash#quick-start)
+- [🔌 API Reference](https://github.com/NightFury-Supreme/PetroDash#api-endpoints)
+- [🤝 Contributing Guide](https://github.com/NightFury-Supreme/PetroDash/blob/main/CONTRIBUTING.md)
 
 ## 🌟 What Makes PteroDash Special?
 
@@ -65,7 +65,7 @@ npm run dev
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guidelines](https://github.com/yourusername/pterodash/blob/main/CONTRIBUTING.md) for details.
+We welcome contributions! Please see our [Contributing Guidelines](https://github.com/NightFury-Supreme/PetroDash/blob/main/CONTRIBUTING.md) for details.
 
 ### Areas for Contribution
 - 🐛 Bug fixes
@@ -76,8 +76,8 @@ We welcome contributions! Please see our [Contributing Guidelines](https://githu
 
 ## 📞 Support & Community
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/pterodash/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/pterodash/discussions)
+- **Issues**: [GitHub Issues](https://github.com/NightFury-Supreme/PetroDash/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/NightFury-Supreme/PetroDash/discussions)
 - **Discord**: [Join our community](https://discord.gg/your-invite)
 - **Email**: support@yourdomain.com
 
@@ -90,7 +90,7 @@ We welcome contributions! Please see our [Contributing Guidelines](https://githu
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/yourusername/pterodash/blob/main/LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/NightFury-Supreme/PetroDash/blob/main/LICENSE) file for details.
 
 ---
 

@@ -44,7 +44,7 @@ A modern, feature-rich control panel for Pterodactyl servers with advanced user 
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/pterodash.git
+git clone https://github.com/NightFury-Supreme/PetroDash.git
 cd pterodash
 ```
 
@@ -52,16 +52,16 @@ cd pterodash
 ```bash
 cd backend
 npm install
-cp /backend/env.example .env
+cp ../env.example .env
 # Edit .env with your configuration
 npm start
 ```
 
 3. **Frontend Setup**
 ```bash
-cd frontend-v2
+cd frontend
 npm install
-cp /frontend/env.example .env.local
+cp ../env.example .env.local
 # Edit .env.local with your API URL
 npm run dev
 ```
@@ -106,7 +106,7 @@ pterodash/
 │   │   ├── services/       # Pterodactyl, PayPal integration
 │   │   └── lib/           # Utilities and helpers
 │   └── package.json
-├── frontend-v2/            # Next.js 15 frontend
+├── frontend/               # Next.js 15 frontend
 │   ├── src/
 │   │   ├── app/           # App router pages
 │   │   ├── components/    # React components
@@ -146,10 +146,52 @@ npm run build
 npm start
 ```
 
-### Docker (Coming Soon)
+### Docker (Single Command Deployment)
 ```bash
-docker-compose up -d
+# Linux/macOS
+chmod +x docker-scripts.sh
+./docker-scripts.sh start
+
+# Windows
+docker-scripts.bat start
+
+# Or manually
+docker-compose up -d --build
 ```
+
+#### Docker Features:
+- **Single Command Setup**: Complete PteroDash deployment in one command
+- **Auto-Configuration**: MongoDB initialization with default admin user
+- **Health Checks**: Automatic service health monitoring
+- **Nginx Reverse Proxy**: Production-ready load balancing and SSL termination
+- **Volume Persistence**: Data survives container restarts
+- **Development Mode**: Hot reload for development with `docker-compose.override.yml`
+
+#### Docker Commands:
+```bash
+# Start PteroDash
+./docker-scripts.sh start
+
+# View logs
+./docker-scripts.sh logs
+
+# Check status
+./docker-scripts.sh status
+
+# Stop PteroDash
+./docker-scripts.sh stop
+
+# Update services
+./docker-scripts.sh update
+
+# Clean everything
+./docker-scripts.sh clean
+```
+
+#### Default Access:
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:4000
+- **Admin Login**: admin@example.com / admin123
 
 ### Environment Setup
 1. Set `NODE_ENV=production`
@@ -182,8 +224,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Documentation**: [Wiki](/NightFury-Supreme/PetroDash/wiki)
-- **Issues**: [GitHub Issues](/NightFury-Supreme/PetroDash/issues)
+- **Documentation**: [Wiki](https://github.com/NightFury-Supreme/PetroDash/wiki)
+- **Issues**: [GitHub Issues](https://github.com/NightFury-Supreme/PetroDash/issues)
 - **Email**: support@auto-manager.tk
 
 ## 🔄 Changelog

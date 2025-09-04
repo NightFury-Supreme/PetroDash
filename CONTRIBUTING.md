@@ -12,13 +12,13 @@ Thank you for your interest in contributing to PteroDash! This document provides
 
 ### Development Setup
 1. Fork the repository
-2. Clone your fork: `git clone https://github.com/yourusername/pterodash.git`
+2. Clone your fork: `git clone https://github.com/NightFury-Supreme/PetroDash.git`
 3. Install dependencies:
    ```bash
    cd backend && npm install
    cd ../frontend-v2 && npm install
    ```
-4. Set up environment variables (see `.env.example` files)
+4. Set up environment variables (see `env.example` files)
 5. Start development servers:
    ```bash
    # Backend

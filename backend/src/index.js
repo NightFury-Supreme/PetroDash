@@ -54,6 +54,10 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok' });
 });
 
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok' });
+});
+
 // Public settings endpoint for client-side branding (read-only)
 app.get('/api/settings', async (req, res) => {
     try {
