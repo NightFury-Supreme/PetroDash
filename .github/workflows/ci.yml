@@ -84,39 +84,7 @@ jobs:
       env:
         NEXT_PUBLIC_API_BASE: http://localhost:4000
 
-  lint:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-    
-    - name: Install dependencies
-      run: |
-        cd backend && npm ci
-        cd ../frontend && npm ci
-    
-    - name: Lint backend (if available)
-      run: |
-        cd backend
-        if npm run | grep -q "lint"; then
-          npm run lint
-        else
-          echo "No lint script found, skipping linting"
-        fi
-    
-    - name: Lint frontend (if available)
-      run: |
-        cd frontend
-        if npm run | grep -q "lint"; then
-          npm run lint
-        else
-          echo "No lint script found, skipping linting"
-        fi
+  # lint job removed per request
 
   security:
     runs-on: ubuntu-latest
