@@ -33,31 +33,7 @@ db.auditlogs.createIndex({ "action": 1 });
 db.coupons.createIndex({ "code": 1 }, { unique: true });
 db.webhookevents.createIndex({ "eventId": 1 }, { unique: true });
 
-// Create default admin user (password: admin123)
-db.users.insertOne({
-  email: "admin@example.com",
-  username: "admin",
-  firstName: "Admin",
-  lastName: "User",
-  password: "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // admin123
-  role: "admin",
-  coins: 0,
-  resources: {
-    cpuPercent: 0,
-    memoryMb: 0,
-    diskMb: 0,
-    swapMb: -1,
-    blockIoProportion: 0,
-    cpuPinning: "",
-    additionalAllocations: 0,
-    databases: 0,
-    backups: 0,
-    serverSlots: 0
-  },
-  serverCount: 0,
-  createdAt: new Date(),
-  updatedAt: new Date()
-});
+// No default admin is created here. Use the create-admin script to add/promote an admin.
 
 // Create default settings
 db.settings.insertOne({

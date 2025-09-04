@@ -124,7 +124,7 @@ docker-compose up -d --build
 #### Default Access:
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:4000
-- **Admin Login**: admin@example.com / admin123
+- **Admin Login**: configurable; see Admin user management below
 
 ## ⚙️ Configuration
 
@@ -153,6 +153,21 @@ FRONTEND_URL=https://your-dashboard-domain.com
 ```env
 NEXT_PUBLIC_API_BASE=https://your-api-domain.com
 ```
+
+### Custom Domains / URLs (Production)
+
+Set these values to use your own domains instead of localhost:
+
+- **Backend** (`backend/.env` or Docker `.env`)
+  - `FRONTEND_URL=https://dashboard.yourdomain.com`
+  - `PTERO_BASE_URL=https://panel.yourdomain.com`
+
+- **Frontend** (`frontend/.env.local`)
+  - `NEXT_PUBLIC_API_BASE=https://api.yourdomain.com`
+
+- **Docker** (`.env` at project root; used by docker-compose)
+  - `NEXT_PUBLIC_API_BASE=https://api.yourdomain.com`
+  - `FRONTEND_URL=https://dashboard.yourdomain.com`
 
 ## 🏗️ Project Structure
 
@@ -220,3 +235,23 @@ See [CHANGELOG.md](CHANGELOG.md) for a detailed history of changes.
 **Made with ❤️ by the PteroDash Team**
 
 *Star this repository if you find it helpful!*
+
+---
+
+## Admin user management
+
+Create or promote an admin by email or username:
+
+```bash
+cd backend
+# Option 1: Non-interactive (CI/CD safe)
+ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD="StrongPass123" npm run create-admin
+
+# Option 2: Identify by username instead
+ADMIN_USERNAME=admin ADMIN_PASSWORD="StrongPass123" npm run create-admin
+```
+
+Notes:
+- If the user does not exist, it will be created and promoted to admin.
+- If `ADMIN_PASSWORD` is provided, the password will be set/updated.
+- The Docker Mongo init no longer creates a default admin by itself.
