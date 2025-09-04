@@ -128,21 +128,25 @@ docker-compose up -d --build
 #### Default Access:
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:4000
-- **Admin Login**: admin@example.com / admin123
 
 ## 🔐 Admin user management
 
-Promote an existing user to admin (no user creation). Run from `backend/`:
+Promote an existing user to admin. Script location: `backend/scripts/createAdmin.js`. Run from `backend/`:
 
 ```bash
-# By email
+# By email (using npm script)
 ADMIN_EMAIL=user@example.com npm run create-admin
 
-# By username
+# By username (using npm script)
 ADMIN_USERNAME=username npm run create-admin
 
 # Optional: update password at the same time
 ADMIN_EMAIL=user@example.com ADMIN_PASSWORD="NewStrongPass" npm run create-admin
+
+# Direct invocation (equivalent)
+node scripts/createAdmin.js
+# With variables (Windows PowerShell example)
+$env:ADMIN_EMAIL="user@example.com"; $env:ADMIN_PASSWORD="NewStrongPass"; node scripts/createAdmin.js
 ```
 
 Notes:
