@@ -94,11 +94,13 @@ docker-compose up -d --build
 
 #### Docker Features:
 - **Single Command Setup**: Complete PteroDash deployment in one command
-- **Auto-Configuration**: MongoDB initialization with default admin user
+- **Auto-Configuration**: MongoDB initialization with default settings
 - **Health Checks**: Automatic service health monitoring
 - **Nginx Reverse Proxy**: Production-ready load balancing and SSL termination
 - **Volume Persistence**: Data survives container restarts
 - **Development Mode**: Hot reload for development with `docker-compose.override.yml`
+
+> Note: Docker no longer creates a default admin automatically. Use the admin promotion script below.
 
 #### Docker Commands:
 ```bash
@@ -125,6 +127,25 @@ docker-compose up -d --build
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:4000
 - **Admin Login**: admin@example.com / admin123
+
+## 🔐 Admin user management
+
+Promote an existing user to admin (no user creation). Run from `backend/`:
+
+```bash
+# By email
+ADMIN_EMAIL=user@example.com npm run create-admin
+
+# By username
+ADMIN_USERNAME=username npm run create-admin
+
+# Optional: update password at the same time
+ADMIN_EMAIL=user@example.com ADMIN_PASSWORD="NewStrongPass" npm run create-admin
+```
+
+Notes:
+- If the user is not found, the script exits with an error (no creation).
+- Password is only updated when `ADMIN_PASSWORD` is provided.
 
 ## ⚙️ Configuration
 
