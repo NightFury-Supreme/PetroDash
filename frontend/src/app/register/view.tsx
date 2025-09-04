@@ -1,17 +1,25 @@
 "use client";
 import { useState } from 'react';
 import { z } from 'zod';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import AuthField from '@/components/auth/AuthField';
 import AuthSubmit from '@/components/auth/AuthSubmit';
 
+const strongPassword = z
+  .string()
+  .min(8, 'Password must be at least 8 characters')
+  .regex(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).+$/, 'Password must include upper, lower, and a number');
+
 const schema = z.object({
   email: z.string().email('Enter a valid email'),
-  username: z.string().min(3, 'Username must be at least 3 characters').max(30, 'Username must be at most 30 characters'),
+  username: z
+    .string()
+    .min(3, 'Username must be at least 3 characters')
+    .max(30, 'Username must be at most 30 characters'),
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: strongPassword,
 });
 
 type RegisterForm = z.infer<typeof schema>;
@@ -22,6 +30,7 @@ type FieldErrors = Partial<Record<keyof RegisterForm, string>>;
 
 export default function RegisterClient() {
   const router = useRouter();
+  const search = useSearchParams();
   const [form, setForm] = useState<RegisterForm>({ email: '', username: '', firstName: '', lastName: '', password: '' });
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState<string | null>(null);
@@ -43,13 +52,23 @@ export default function RegisterClient() {
     }
     setLoading(true);
     try {
+      const ref = search?.get('ref') || undefined;
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(parsed.data),
+        body: JSON.stringify({ ...parsed.data, ...(ref ? { ref } : {}) }),
       });
-      const data = (await res.json()) as ApiError & { token?: string };
-      if (!res.ok) throw new Error(data?.error || 'Registration failed');
+      const data = (await res.json()) as ApiError & { token?: string; details?: { fieldErrors?: Record<string, string[]> } };
+      if (!res.ok) {
+        // Try to surface server-side field errors
+        const serverFieldErrors = data?.details?.fieldErrors || {};
+        const errs: FieldErrors = {};
+        Object.entries(serverFieldErrors).forEach(([k, v]) => {
+          if (Array.isArray(v) && v.length > 0) errs[k as keyof RegisterForm] = v[0] as string;
+        });
+        if (Object.keys(errs).length > 0) setFieldErrors(errs);
+        throw new Error(data?.error || 'Registration failed');
+      }
       if (!data?.token) throw new Error('Invalid response');
       localStorage.setItem('auth_token', data.token);
       router.push('/dashboard');

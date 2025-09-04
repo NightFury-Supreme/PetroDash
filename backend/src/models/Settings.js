@@ -4,6 +4,11 @@ const SettingsSchema = new mongoose.Schema(
   {
     siteName: { type: String, default: 'PteroDash' },
     siteIconUrl: { type: String, default: '' },
+    referrals: {
+      referrerCoins: { type: Number, default: 50 },
+      referredCoins: { type: Number, default: 25 },
+      customCodeMinInvites: { type: Number, default: 10 },
+    },
     payments: {
       paypal: {
         enabled: { type: Boolean, default: false },

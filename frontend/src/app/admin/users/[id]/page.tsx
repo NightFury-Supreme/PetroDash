@@ -23,13 +23,14 @@ export default function AdminUserDetailPage() {
   const [role, setRole] = useState<'user'|'admin'>('user');
   const [resources, setResources] = useState<any>({});
   const [coins, setCoins] = useState<number>(0);
+  const [referralCode, setReferralCode] = useState<string>('');
 
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
     if (!token) return;
     fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${id}`, { headers: { Authorization: `Bearer ${token}` } })
       .then(async (r) => { const d = await r.json(); if (!r.ok) throw new Error(d?.error || 'Failed'); return d; })
-      .then((d) => { setData(d); setRole(d?.user?.role || 'user'); setResources(d?.user?.resources || {}); setCoins(Number(d?.user?.coins || 0)); setPlans(d?.plans || []); })
+      .then((d) => { setData(d); setRole(d?.user?.role || 'user'); setResources(d?.user?.resources || {}); setCoins(Number(d?.user?.coins || 0)); setPlans(d?.plans || []); setReferralCode(d?.referral?.code || ''); })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
     // Load list of available plans
@@ -46,7 +47,7 @@ export default function AdminUserDetailPage() {
       const token = localStorage.getItem('auth_token');
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${id}`, {
         method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ role, resources, coins })
+        body: JSON.stringify({ role, resources, coins, referralCode })
       });
       const d = await r.json(); if (!r.ok) throw new Error(d?.error || 'Failed');
     } catch (e: any) { setError(e.message); } finally { setSaving(false); }
@@ -240,6 +241,55 @@ export default function AdminUserDetailPage() {
                     <input type="number" className="w-full px-3 py-2 rounded-md border border-[var(--border)] bg-[#181818] text-white" value={Number(resources?.[k] || 0)} onChange={(e) => setResources({ ...resources, [k]: Number(e.target.value) })} />
                   </div>
                 ))}
+              </div>
+
+              <div className="rounded-2xl p-6 space-y-4" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+                <div className="text-lg font-bold">Referral</div>
+                <div>
+                  <label className="block text-sm text-[#AAAAAA] mb-1">Referral Code</label>
+                  <input className="w-full px-3 py-2 rounded-md border border-[var(--border)] bg-[#181818] text-white" value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="ABC123" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <div className="text-xs text-[#AAAAAA]">Referred Users</div>
+                    <div className="text-xl font-extrabold">{Number(data?.referral?.referredCount || 0)}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-[#AAAAAA]">Coins Earned</div>
+                    <div className="text-xl font-extrabold">{Number(data?.referral?.coinsEarned || 0)}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-[#AAAAAA]">Current Code</div>
+                    <div className="text-xl font-extrabold">{data?.referral?.code || '-'}</div>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm font-semibold mb-2">Referred Users List</div>
+                  <div className="max-h-64 overflow-auto rounded-md border border-[var(--border)]">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-[#151515] text-[#AAAAAA]">
+                          <th className="text-left p-2">Username</th>
+                          <th className="text-left p-2">Email</th>
+                          <th className="text-left p-2">Joined</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(data?.referral?.referredUsers || []).length === 0 ? (
+                          <tr><td className="p-3 text-center text-[#777]" colSpan={3}>No referred users</td></tr>
+                        ) : (
+                          (data?.referral?.referredUsers || []).map((u: any) => (
+                            <tr key={u._id} className="border-t border-[var(--border)]">
+                              <td className="p-2">{u.username}</td>
+                              <td className="p-2">{u.email}</td>
+                              <td className="p-2">{new Date(u.createdAt).toLocaleString()}</td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
 
               <div className="rounded-2xl p-6" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>

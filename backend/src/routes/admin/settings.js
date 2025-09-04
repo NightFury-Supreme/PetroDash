@@ -49,6 +49,11 @@ router.get('/', requireAdmin, async (req, res) => {
 const settingsPayloadSchema = z.object({
   siteName: z.string().min(1, 'Site name must be at least 1 character').max(100, 'Site name must be less than 100 characters').optional(),
   siteIconUrl: z.string().url('Invalid icon URL format').max(500, 'Icon URL must be less than 500 characters').optional(),
+  referrals: z.object({
+    referrerCoins: z.coerce.number().int().min(0).max(1000000).optional(),
+    referredCoins: z.coerce.number().int().min(0).max(1000000).optional(),
+    customCodeMinInvites: z.coerce.number().int().min(0).max(1000000).optional(),
+  }).optional(),
   payments: z.object({
     paypal: z.object({
       enabled: z.coerce.boolean().optional(),

@@ -10,6 +10,13 @@ const UserSchema = new mongoose.Schema(
         pterodactylUserId: { type: Number },
         role: { type: String, enum: ['user', 'admin'], default: 'user' },
         coins: { type: Number, default: 0 },
+        // Referrals
+        referralCode: { type: String, unique: true, sparse: true },
+        referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        referralStats: {
+            referredCount: { type: Number, default: 0 },
+            coinsEarned: { type: Number, default: 0 },
+        },
         resources: {
             diskMb: { type: Number, default: 5120 },
             memoryMb: { type: Number, default: 2048 },

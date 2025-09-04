@@ -83,6 +83,7 @@ app.post('/api/paypal/webhook', paypalWebhook);
 app.use('/api/plans', require('./routes/plans'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/user/plans', require('./routes/userPlans'));
+app.use('/api/referrals', require('./routes/referrals'));
 
 const port = process.env.PORT || 4000;
 

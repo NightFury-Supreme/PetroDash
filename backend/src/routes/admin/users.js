@@ -69,9 +69,24 @@ router.get('/:id', requireAdmin, async (req, res) => {
       .populate('planId', 'name pricePerMonth pricePerYear')
       .lean();
 
-    console.log('Plans found:', plans.length);
+    // Referral data
+    const referredUsers = await User.find({ referredBy: user._id }, { passwordHash: 0 })
+      .select('username email createdAt')
+      .lean();
+    const referralStats = user.referralStats || { referredCount: 0, coinsEarned: 0 };
 
-        return res.json({ user, servers, usage, plans });
+    return res.json({ 
+      user, 
+      servers, 
+      usage, 
+      plans,
+      referral: {
+        code: user.referralCode || null,
+        referredCount: Number(referralStats.referredCount || 0),
+        coinsEarned: Number(referralStats.coinsEarned || 0),
+        referredUsers
+      }
+    });
   } catch (e) {
     console.error('Error loading user:', e);
     return res.status(500).json({ error: 'Failed to load user', details: e.message });
@@ -96,6 +111,7 @@ const updateSchema = z.object({
   username: z.string().min(3).max(32).optional(),
   firstName: z.string().min(1).max(64).optional(),
   lastName: z.string().min(1).max(64).optional(),
+  referralCode: z.string().trim().min(3).max(20).regex(/^[A-Za-z0-9_-]+$/).optional(),
 });
 
 router.patch('/:id', requireAdmin, async (req, res) => {
@@ -104,7 +120,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
   const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ error: 'User not found' });
 
-  const { role, resources, coins, email, username, firstName, lastName } = parsed.data;
+  const { role, resources, coins, email, username, firstName, lastName, referralCode } = parsed.data;
   if (role) user.role = role;
   if (typeof coins === 'number') user.coins = coins;
   // Direct resource editing: update user.resources directly
@@ -113,9 +129,17 @@ router.patch('/:id', requireAdmin, async (req, res) => {
   if (username) user.username = username;
   if (firstName) user.firstName = firstName;
   if (lastName) user.lastName = lastName;
+  if (typeof referralCode === 'string' && referralCode.trim()) {
+    const desired = referralCode.trim().toUpperCase();
+    const exists = await User.findOne({ referralCode: desired }).lean();
+    if (exists && String(exists._id) !== String(user._id)) {
+      return res.status(409).json({ error: 'Referral code already in use' });
+    }
+    user.referralCode = desired;
+  }
   await user.save();
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, 'admin.user.update', 'user', user._id.toString(), { role, resources, coins, email, username, firstName, lastName });
+  writeAudit(req, 'admin.user.update', 'user', user._id.toString(), { role, resources, coins, email, username, firstName, lastName, referralCode });
   return res.json({ user });
 });
 

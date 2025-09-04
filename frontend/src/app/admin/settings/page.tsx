@@ -9,6 +9,7 @@ import { useModal } from '@/components/Modal';
 interface Settings {
   siteName: string;
   siteIconUrl: string;
+  referrals?: { referrerCoins?: number; referredCoins?: number };
   payments: {
     paypal: {
       enabled: boolean;

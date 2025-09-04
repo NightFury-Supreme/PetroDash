@@ -24,6 +24,7 @@ interface Settings {
     databases: number;
     coins: number;
   };
+  referrals?: { referrerCoins?: number; referredCoins?: number; customCodeMinInvites?: number };
 }
 
 interface AdminSettingsContentProps {
@@ -106,7 +107,7 @@ export function AdminSettingsContent({
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-2">
             <label className="block text-sm font-medium text-white">Site Name</label>
             <input
@@ -128,6 +129,58 @@ export function AdminSettingsContent({
               value={formData.siteIconUrl || ''}
               onChange={(e) => updateFormData('siteIconUrl', e.target.value)}
               disabled={loading}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Referral Settings */}
+      <div className="bg-[#181818] border border-[#303030] rounded-xl p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 bg-[#202020] rounded-xl flex items-center justify-center">
+            <i className="fas fa-user-plus text-white text-lg"></i>
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-white">Referral Settings</h3>
+            <p className="text-[#AAAAAA] text-sm">Configure coin rewards for invites</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-white">Coins to Referrer</label>
+            <input
+              type="number"
+              className="w-full h-12 bg-[#202020] border border-[#303030] rounded-lg px-4 text-white placeholder-[#AAAAAA] focus:border-[#404040] focus:outline-none transition-colors"
+              placeholder="50"
+              value={Number(formData.referrals?.referrerCoins ?? 0)}
+              onChange={(e) => updateFormData('referrals.referrerCoins', Number(e.target.value))}
+              disabled={loading}
+              min={0}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-white">Coins to Referred User</label>
+            <input
+              type="number"
+              className="w-full h-12 bg-[#202020] border border-[#303030] rounded-lg px-4 text-white placeholder-[#AAAAAA] focus:border-[#404040] focus:outline-none transition-colors"
+              placeholder="25"
+              value={Number(formData.referrals?.referredCoins ?? 0)}
+              onChange={(e) => updateFormData('referrals.referredCoins', Number(e.target.value))}
+              disabled={loading}
+              min={0}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-white">Min Invites for Custom Code</label>
+            <input
+              type="number"
+              className="w-full h-12 bg-[#202020] border border-[#303030] rounded-lg px-4 text-white placeholder-[#AAAAAA] focus:border-[#404040] focus:outline-none transition-colors"
+              placeholder="10"
+              value={Number(formData.referrals?.customCodeMinInvites ?? 10)}
+              onChange={(e) => updateFormData('referrals.customCodeMinInvites', Number(e.target.value))}
+              disabled={loading}
+              min={0}
             />
           </div>
         </div>
