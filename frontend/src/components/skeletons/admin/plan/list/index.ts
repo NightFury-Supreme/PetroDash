@@ -1,0 +1,1 @@
+export { PlansListSkeleton } from './PlansListSkeleton';
