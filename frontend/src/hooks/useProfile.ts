@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 
 export function useProfile() {
-  const [form, setForm] = useState({ username: '', firstName: '', lastName: '', email: '', coins: 0, joinedAt: '' });
+  const [form, setForm] = useState({ username: '', firstName: '', lastName: '', email: '', coins: 0, joinedAt: '', loginMethod: 'email', oauthProviders: {} });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +22,9 @@ export function useProfile() {
         lastName: d.lastName || '',
         email: d.email || '',
         coins: typeof d.coins === 'number' ? d.coins : (typeof d.balance === 'number' ? d.balance : 0),
-        joinedAt: d.createdAt || d.joinedAt || ''
+        joinedAt: d.createdAt || d.joinedAt || '',
+        loginMethod: d.loginMethod || 'email',
+        oauthProviders: d.oauthProviders || {}
       });
     } catch (e: any) {
       setError(e.message);

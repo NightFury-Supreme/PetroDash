@@ -24,13 +24,24 @@ export default function AdminUserDetailPage() {
   const [resources, setResources] = useState<any>({});
   const [coins, setCoins] = useState<number>(0);
   const [referralCode, setReferralCode] = useState<string>('');
+  const [loginMethod, setLoginMethod] = useState<string>('email');
+  const [oauthProviders, setOauthProviders] = useState<any>({});
 
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
     if (!token) return;
     fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${id}`, { headers: { Authorization: `Bearer ${token}` } })
       .then(async (r) => { const d = await r.json(); if (!r.ok) throw new Error(d?.error || 'Failed'); return d; })
-      .then((d) => { setData(d); setRole(d?.user?.role || 'user'); setResources(d?.user?.resources || {}); setCoins(Number(d?.user?.coins || 0)); setPlans(d?.plans || []); setReferralCode(d?.referral?.code || ''); })
+      .then((d) => { 
+        setData(d); 
+        setRole(d?.user?.role || 'user'); 
+        setResources(d?.user?.resources || {}); 
+        setCoins(Number(d?.user?.coins || 0)); 
+        setPlans(d?.plans || []); 
+        setReferralCode(d?.referral?.code || ''); 
+        setLoginMethod(d?.loginMethod || 'email');
+        setOauthProviders(d?.oauthProviders || {});
+      })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
     // Load list of available plans
@@ -126,6 +137,8 @@ export default function AdminUserDetailPage() {
                 onSave={save}
                 onDelete={deleteUser}
                 setUser={(u: any) => setData({ ...data, user: u })}
+                loginMethod={loginMethod}
+                oauthProviders={oauthProviders}
               />
 
               {/* Usage Badges */}

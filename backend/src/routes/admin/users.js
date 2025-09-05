@@ -75,11 +75,18 @@ router.get('/:id', requireAdmin, async (req, res) => {
       .lean();
     const referralStats = user.referralStats || { referredCount: 0, coinsEarned: 0 };
 
+    // Determine login method
+    const loginMethod = user.passwordHash ? 'email' : 
+                       user.oauthProviders?.discord?.id ? 'discord' : 
+                       user.oauthProviders?.google?.id ? 'google' : 'email';
+
     return res.json({ 
       user, 
       servers, 
       usage, 
       plans,
+      loginMethod: loginMethod,
+      oauthProviders: user.oauthProviders || {},
       referral: {
         code: user.referralCode || null,
         referredCount: Number(referralStats.referredCount || 0),

@@ -6,7 +6,24 @@ const UserSchema = new mongoose.Schema(
         username: { type: String, required: true, unique: true },
         firstName: { type: String, required: true },
         lastName: { type: String, required: true },
-        passwordHash: { type: String, required: true },
+        passwordHash: { type: String }, // Made optional for OAuth users
+        // OAuth providers
+        oauthProviders: {
+            discord: {
+                id: { type: String },
+                username: { type: String },
+                discriminator: { type: String },
+                avatar: { type: String },
+                accessToken: { type: String }, // For Discord server joining
+            },
+            google: {
+                id: { type: String },
+                name: { type: String },
+                email: { type: String },
+                picture: { type: String },
+                accessToken: { type: String }, // For future Google API calls
+            },
+        },
         pterodactylUserId: { type: Number },
         role: { type: String, enum: ['user', 'admin'], default: 'user' },
         coins: { type: Number, default: 0 },

@@ -8,30 +8,85 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Premium badge system for users with active plans
-- Custom branding endpoint (`/api/branding`)
-- Beautiful gradient feather logo design
-- Plan-based access control for eggs and locations
-- PayPal payment integration with webhooks
-- Comprehensive audit logging system
-- Rate limiting and security middleware
-- Real-time server monitoring
-- Advanced user management features
+- Future features and improvements will be listed here
 
-### Changed
-- Updated API endpoint from `/api/settings` to `/api/branding`
-- Improved badge styling consistency
-- Enhanced sidebar with premium user recognition
-- Optimized plan checking and user status updates
+## [1.0.2] - 2025-09-05
+
+### Added
+- **Discord OAuth Integration**: Complete Discord authentication system
+  - Discord login with automatic server joining capability
+  - Admin-configurable Discord auto-join settings (bot token, guild ID)
+  - Discord user data storage (ID, username, avatar, access token)
+  - Discord server membership management via bot API
+- **Google OAuth Integration**: Complete Google authentication system
+  - Google login with profile data retrieval
+  - Google user data storage (ID, name, email, picture, access token)
+  - Seamless Google account linking for existing users
+- **Enhanced Authentication System**: Flexible login method management
+  - Admin toggle for email login/registration
+  - Admin toggle for Discord OAuth
+  - Admin toggle for Google OAuth
+  - Unified OAuth provider data management
+- **Payment System Improvements**: Enhanced PayPal integration
+  - Fixed payment capture order errors
+  - Improved payment completion logging
+  - Enhanced audit logging for purchase events
+- **UI/UX Improvements**: Minor interface enhancements
+  - Updated admin settings interface for OAuth configuration
+  - Improved authentication page styling
+  - Enhanced user profile display for OAuth users
+  - Better error handling and user feedback
 
 ### Fixed
-- Audit log validation errors
-- Server edit form validation issues
-- Plan purchase billing cycle validation
-- Resource allocation calculation errors
-- Pterodactyl panel integration issues
+- **Payment Processing**: Resolved PayPal capture order issues
+- **Audit Logging**: Fixed purchase completion logging
+- **TypeScript Interfaces**: Resolved interface mismatches in admin settings
+- **OAuth Data Storage**: Enhanced provider data consistency
 
-## [1.0.0] - 2024-01-XX
+## [1.0.1] - 2025-09-05
+
+### Added
+- **Referral System**: Complete referral program with custom codes and rewards
+  - Referral link generation and tracking (`/referals` page)
+  - Custom referral code editing (after 10+ referrals)
+  - Admin-configurable coin rewards for referrers and new users
+  - Clean referral URLs (`/join/{code}` redirects to `/register?ref={code}`)
+- **Badge System**: Visual indicators for users with active plans
+- **Custom Branding**: Dynamic dashboard name and logo via `/api/branding` endpoint
+- **Plan-based Access Control**: Eggs and locations restricted by user plans
+- **PayPal Payment Integration**: Complete payment processing with webhooks
+- **Comprehensive Audit Logging**: Action tracking across all admin operations
+- **Rate Limiting & Security**: Protection against abuse and malicious requests
+- **Advanced User Management**: Detailed user analytics and referral tracking
+- **Docker Support**: Single-command deployment with Docker Compose
+- **Admin User Management Script**: Promote existing users to admin role
+- **Modern Scrollbar Styling**: Custom scrollbar design for better UX
+- **Collapsible Sidebar Sections**: Organized navigation with Shop subsection
+- **Enhanced Auth Pages**: Modern login/register with server-side branding
+
+### Changed
+- **API Endpoint Migration**: `/api/settings` → `/api/branding` for better semantics
+- **Badge Styling**: Flat colors (red for admin, gold for premium, green for user)
+- **Sidebar Navigation**: Scrollable with collapsible Shop section (closed by default)
+- **Referral UI**: Modern design matching `/panel` theme with pencil icon editing
+- **Auth Page Layout**: Server-side branding fetch with consistent loading states
+- **Modal System**: Enhanced for custom content and better sizing
+- **User Registration**: Integrated referral tracking and coin rewards
+- **Admin Settings**: Added referral configuration options
+
+### Fixed
+- **Audit Log Validation**: Corrected function signature usage across all routes
+- **Server Edit Form**: Resolved validation and TypeScript errors
+- **Plan Purchase Flow**: Fixed billing cycle validation for lifetime plans
+- **Resource Allocation**: Corrected field mapping (`limits` → `resources`)
+- **Pterodactyl Integration**: Improved error handling and API calls
+- **Hydration Mismatches**: Fixed server/client rendering inconsistencies
+- **TypeScript Errors**: Resolved type safety issues across frontend
+- **ESLint Configuration**: Fixed CI/CD pipeline linting issues
+- **Referral Code Editing**: Fixed modal interaction and API calls
+- **404 Errors**: Added proper route handling for `/join/{code}` URLs
+
+## [1.0.0] - 2025-09-04
 
 ### Added
 - Initial release of PteroDash
@@ -59,8 +114,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **1.0.1** - Referral system, premium badges, Docker support, and major UI improvements
 - **1.0.0** - Initial release with core functionality
-- **Unreleased** - Current development version with premium features
 
 ## Contributing
 

@@ -245,10 +245,21 @@ router.post('/capture-order', requireAuth, createRateLimiter(10, 60 * 1000), asy
       payment.providerCaptureId = data?.purchase_units?.[0]?.payments?.captures?.[0]?.id || undefined;
       await payment.save();
 
-      await writeAudit(req, 'PAYMENT_CAPTURED', 'PAYPAL', orderId, {
-        plan: plan.name,
-        amount: plan.price,
-        interval: plan.interval,
+      // Get payment metadata for logging
+      const paymentMeta = payment.meta || {};
+
+
+      await writeAudit(req, 'payment.purchase.completed', 'payment', payment._id.toString(), {
+        provider: 'paypal',
+        planId: plan._id.toString(),
+        planName: plan.name,
+        amount: payment.amount,
+        currency: payment.currency,
+        billingCycle: paymentMeta.billingCycle,
+        isLifetime: paymentMeta.isLifetime,
+        orderId: orderId,
+        userId: userId,
+        purchaseDate: new Date().toISOString(),
         responsePreview: JSON.stringify({ status: data?.status })
       });
 
@@ -279,7 +290,6 @@ router.post('/capture-order', requireAuth, createRateLimiter(10, 60 * 1000), asy
 
       // Ensure a UserPlan record exists/extends for this user and plan
       const UserPlan = require('../models/UserPlan');
-      const paymentMeta = payment.meta || {};
       const billingCycle = paymentMeta.billingCycle || 'monthly';
       const isLifetime = paymentMeta.isLifetime || false;
       

@@ -9,6 +9,24 @@ const SettingsSchema = new mongoose.Schema(
       referredCoins: { type: Number, default: 25 },
       customCodeMinInvites: { type: Number, default: 10 },
     },
+    auth: {
+      emailLogin: { type: Boolean, default: true },
+      discord: {
+        enabled: { type: Boolean, default: false },
+        autoJoin: { type: Boolean, default: false },
+        clientId: { type: String, default: '' },
+        clientSecret: { type: String, default: '' },
+        redirectUri: { type: String, default: '' },
+        botToken: { type: String, default: '' },
+        guildId: { type: String, default: '' },
+      },
+      google: {
+        enabled: { type: Boolean, default: false },
+        clientId: { type: String, default: '' },
+        clientSecret: { type: String, default: '' },
+        redirectUri: { type: String, default: '' },
+      },
+    },
     payments: {
       paypal: {
         enabled: { type: Boolean, default: false },

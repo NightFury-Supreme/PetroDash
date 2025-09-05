@@ -4,6 +4,7 @@ const { requireAdmin } = require('../../middleware/auth');
 const Settings = require('../../models/Settings');
 const DefaultResources = require('../../models/DefaultResources');
 const { createRateLimiter } = require('../../middleware/rateLimit');
+const { reconfigureStrategies } = require('../auth/oauth');
 
 const router = express.Router();
 
@@ -54,6 +55,24 @@ const settingsPayloadSchema = z.object({
     referredCoins: z.coerce.number().int().min(0).max(1000000).optional(),
     customCodeMinInvites: z.coerce.number().int().min(0).max(1000000).optional(),
   }).optional(),
+  auth: z.object({
+    emailLogin: z.coerce.boolean().optional(),
+    discord: z.object({
+      enabled: z.coerce.boolean().optional(),
+      autoJoin: z.coerce.boolean().optional(),
+      clientId: z.string().max(200, 'Discord Client ID must be less than 200 characters').optional(),
+      clientSecret: z.string().max(200, 'Discord Client Secret must be less than 200 characters').optional(),
+      redirectUri: z.string().max(500, 'Discord redirect URI must be less than 500 characters').optional().or(z.literal('')),
+      botToken: z.string().max(200, 'Discord Bot Token must be less than 200 characters').optional(),
+      guildId: z.string().max(50, 'Discord Guild ID must be less than 50 characters').optional(),
+    }).optional(),
+    google: z.object({
+      enabled: z.coerce.boolean().optional(),
+      clientId: z.string().max(200, 'Google Client ID must be less than 200 characters').optional(),
+      clientSecret: z.string().max(200, 'Google Client Secret must be less than 200 characters').optional(),
+      redirectUri: z.string().max(500, 'Google redirect URI must be less than 500 characters').optional().or(z.literal('')),
+    }).optional(),
+  }).optional(),
   payments: z.object({
     paypal: z.object({
       enabled: z.coerce.boolean().optional(),
@@ -103,6 +122,21 @@ router.patch('/', requireAdmin, async (req, res) => {
       delete update.payments;
     }
 
+    // Deep-merge auth settings to avoid clobbering other fields
+    if (update.auth) {
+      settings.auth = settings.auth || {};
+      if (update.auth.emailLogin !== undefined) {
+        settings.auth.emailLogin = update.auth.emailLogin;
+      }
+      if (update.auth.discord) {
+        settings.auth.discord = { ...(settings.auth.discord || {}), ...update.auth.discord };
+      }
+      if (update.auth.google) {
+        settings.auth.google = { ...(settings.auth.google || {}), ...update.auth.google };
+      }
+      delete update.auth;
+    }
+
     // Apply updates
     Object.assign(settings, update);
     
@@ -132,6 +166,16 @@ router.patch('/', requireAdmin, async (req, res) => {
 
     // Save settings
     await settings.save();
+
+    // Reconfigure OAuth strategies if auth settings were updated
+    if (update.auth) {
+      try {
+        await reconfigureStrategies();
+      } catch (error) {
+        console.error('Failed to reconfigure OAuth strategies after settings update:', error);
+        // Don't fail the entire request if OAuth reconfiguration fails
+      }
+    }
 
     // If defaults provided, mirror into DefaultResources for auth/register
     if (parsed.data?.defaults) {

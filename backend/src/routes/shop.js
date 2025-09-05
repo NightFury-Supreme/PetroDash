@@ -44,7 +44,21 @@ router.post('/purchase', requireAuth, async (req, res) => {
   user.resources[keyToField] = Number(user.resources[keyToField] || 0) + increment;
   await user.save();
   const { writeAudit } = require('../middleware/audit');
-  writeAudit(req, 'shop.purchase', 'shop', item._id.toString(), { itemKey, quantity, totalPrice });
+  await writeAudit(req, 'shop.purchase.completed', 'shop', item._id.toString(), {
+    itemKey,
+    quantity,
+    totalPrice,
+    itemName: item.name,
+    amountPerUnit: item.amountPerUnit,
+    pricePerUnit: item.pricePerUnit,
+    userId: user._id.toString(),
+    username: user.username,
+    purchaseDate: new Date().toISOString(),
+    coinsBefore: user.coins + totalPrice,
+    coinsAfter: user.coins,
+    resourcesBefore: { ...user.resources },
+    resourcesAfter: { ...user.resources, [keyToField]: user.resources[keyToField] }
+  });
 
   return res.json({ ok: true, coins: user.coins, resources: user.resources });
 });

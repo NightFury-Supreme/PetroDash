@@ -217,7 +217,22 @@ export default function Sidebar() {
                     <button 
                       className="w-full bg-[#303030] hover:bg-[#404040] text-white px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105 text-sm font-medium" 
                       aria-label="Sign out" 
-                      onClick={() => { localStorage.removeItem('auth_token'); router.push('/login'); }}
+                      onClick={async () => { 
+                        try {
+                          const token = localStorage.getItem('auth_token');
+                          if (token) {
+                            await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/logout`, {
+                              method: 'POST',
+                              headers: { 'Authorization': `Bearer ${token}` }
+                            });
+                          }
+                        } catch (error) {
+                          console.error('Logout error:', error);
+                        } finally {
+                          localStorage.removeItem('auth_token');
+                          router.push('/login');
+                        }
+                      }}
                     >
                       <i className="fas fa-sign-out-alt mr-2"></i>Sign Out
                     </button>

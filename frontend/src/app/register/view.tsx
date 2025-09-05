@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import AuthField from '@/components/auth/AuthField';
 import AuthSubmit from '@/components/auth/AuthSubmit';
+import { OAuthButtons } from '@/components/auth/OAuthButtons';
+import { useAuthSettings } from '@/hooks/useAuthSettings';
 
 const strongPassword = z
   .string()
@@ -31,6 +33,7 @@ type FieldErrors = Partial<Record<keyof RegisterForm, string>>;
 export default function RegisterClient() {
   const router = useRouter();
   const search = useSearchParams();
+  const { settings, loading: settingsLoading } = useAuthSettings();
   const [form, setForm] = useState<RegisterForm>({ email: '', username: '', firstName: '', lastName: '', password: '' });
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState<string | null>(null);
@@ -79,18 +82,61 @@ export default function RegisterClient() {
     }
   };
 
+  if (settingsLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="h-12 bg-[#202020] rounded animate-pulse"></div>
+        <div className="h-12 bg-[#202020] rounded animate-pulse"></div>
+        <div className="h-12 bg-[#202020] rounded animate-pulse"></div>
+        <div className="h-12 bg-[#202020] rounded animate-pulse"></div>
+        <div className="h-10 bg-[#202020] rounded animate-pulse"></div>
+      </div>
+    );
+  }
+
+  const showEmailRegister = settings?.emailLogin ?? true;
+  const showOAuth = (settings?.discord?.enabled || settings?.google?.enabled) ?? false;
+
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <AuthField label="Email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} placeholder="john@example.com" error={fieldErrors.email} />
-      <AuthField label="Username" value={form.username} onChange={(v) => setForm({ ...form, username: v })} placeholder="john" error={fieldErrors.username} />
-      <div className="grid grid-cols-2 gap-3">
-        <AuthField label="First name" value={form.firstName} onChange={(v) => setForm({ ...form, firstName: v })} placeholder="John" error={fieldErrors.firstName} />
-        <AuthField label="Last name" value={form.lastName} onChange={(v) => setForm({ ...form, lastName: v })} placeholder="Doe" error={fieldErrors.lastName} />
-      </div>
-      <AuthField label="Password" type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} placeholder="••••••••" error={fieldErrors.password} />
-      {error && <div className="text-sm" style={{ color: '#ff6b6b' }}>{error}</div>}
-      <AuthSubmit disabled={loading}>{loading ? 'Loading…' : 'Create account'}</AuthSubmit>
-      <div className="text-sm text-muted">Already have an account? <Link href="/login" className="underline">Sign in</Link></div>
+      {showEmailRegister && (
+        <>
+          <AuthField label="Email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} placeholder="john@example.com" error={fieldErrors.email} />
+          <AuthField label="Username" value={form.username} onChange={(v) => setForm({ ...form, username: v })} placeholder="john" error={fieldErrors.username} />
+          <div className="grid grid-cols-2 gap-3">
+            <AuthField label="First name" value={form.firstName} onChange={(v) => setForm({ ...form, firstName: v })} placeholder="John" error={fieldErrors.firstName} />
+            <AuthField label="Last name" value={form.lastName} onChange={(v) => setForm({ ...form, lastName: v })} placeholder="Doe" error={fieldErrors.lastName} />
+          </div>
+          <AuthField label="Password" type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} placeholder="••••••••" error={fieldErrors.password} />
+          {error && <div className="text-sm" style={{ color: '#ff6b6b' }}>{error}</div>}
+          <AuthSubmit disabled={loading}>{loading ? 'Loading…' : 'Create account'}</AuthSubmit>
+        </>
+      )}
+      
+      {showOAuth && (
+        <>
+          {showEmailRegister && <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-[#303030]"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 text-[#AAAAAA]">Or continue with</span>
+            </div>
+          </div>}
+          <OAuthButtons onError={setError} />
+        </>
+      )}
+      
+      {!showEmailRegister && !showOAuth && (
+        <div className="text-center text-[#AAAAAA]">
+          <p>No registration methods are currently available.</p>
+          <p className="text-sm">Please contact an administrator.</p>
+        </div>
+      )}
+      
+      {showEmailRegister && (
+        <div className="text-sm text-muted">Already have an account? <Link href="/login" className="underline">Sign in</Link></div>
+      )}
     </form>
   );
 }

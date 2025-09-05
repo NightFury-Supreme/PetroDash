@@ -14,6 +14,24 @@ interface Settings {
       webhookId: string;
     };
   };
+  auth: {
+    emailLogin: boolean;
+    discord: {
+      enabled: boolean;
+      autoJoin: boolean;
+      clientId: string;
+      clientSecret: string;
+      redirectUri?: string;
+      botToken: string;
+      guildId: string;
+    };
+    google: {
+      enabled: boolean;
+      clientId: string;
+      clientSecret: string;
+      redirectUri?: string;
+    };
+  };
   defaults: {
     cpuPercent: number;
     memoryMb: number;
@@ -47,7 +65,16 @@ export function AdminSettingsContent({
   const handleSave = async () => {
     setSaving(true);
     try {
-      await onSave(formData);
+      // Clean up empty redirect URIs before saving
+      const cleanedData = { ...formData };
+      if (cleanedData.auth?.discord?.redirectUri === '') {
+        delete cleanedData.auth.discord.redirectUri;
+      }
+      if (cleanedData.auth?.google?.redirectUri === '') {
+        delete cleanedData.auth.google.redirectUri;
+      }
+      
+      await onSave(cleanedData);
       await modal.success({
         title: "Settings Saved",
         body: "Your settings have been successfully updated."
@@ -186,6 +213,225 @@ export function AdminSettingsContent({
         </div>
       </div>
 
+      {/* Authentication Settings */}
+      <div className="bg-[#181818] border border-[#303030] rounded-xl p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 bg-[#202020] rounded-xl flex items-center justify-center">
+            <i className="fas fa-sign-in-alt text-white text-lg"></i>
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-white">Authentication</h3>
+            <p className="text-[#AAAAAA] text-sm">Configure login methods and OAuth options</p>
+          </div>
+        </div>
+
+        {/* Email Login Toggle */}
+        <div className="space-y-4 mb-6">
+          <div className="flex items-center gap-3">
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={formData.auth?.emailLogin || false}
+                onChange={(e) => updateFormData('auth.emailLogin', e.target.checked)}
+                disabled={loading}
+              />
+              <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
+            </label>
+            <div className="flex items-center gap-2">
+              <i className="fas fa-envelope text-white text-lg"></i>
+              <span className="text-white font-medium">Enable Email Login</span>
+            </div>
+          </div>
+          <p className="text-[#AAAAAA] text-sm">Allow users to register and login with email and password</p>
+        </div>
+
+        {/* Discord OAuth */}
+        <div className="space-y-4 mb-6">
+          <div className="flex items-center gap-3">
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={formData.auth?.discord?.enabled || false}
+                onChange={(e) => updateFormData('auth.discord.enabled', e.target.checked)}
+                disabled={loading}
+              />
+              <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
+            </label>
+            <div className="flex items-center gap-2">
+              <i className="fab fa-discord text-white text-lg"></i>
+              <span className="text-white font-medium">Enable Discord Login</span>
+            </div>
+          </div>
+
+          {formData.auth?.discord?.enabled && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-white">Discord Client ID</label>
+                  <input
+                    type="text"
+                    className="w-full h-12 bg-[#202020] border border-[#303030] rounded-lg px-4 text-white placeholder-[#AAAAAA] focus:border-[#404040] focus:outline-none transition-colors"
+                    placeholder="Enter Discord Client ID"
+                    value={formData.auth?.discord?.clientId || ''}
+                    onChange={(e) => updateFormData('auth.discord.clientId', e.target.value)}
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-white">Discord Client Secret</label>
+                  <input
+                    type="password"
+                    className="w-full h-12 bg-[#202020] border border-[#303030] rounded-lg px-4 text-white placeholder-[#AAAAAA] focus:border-[#404040] focus:outline-none transition-colors"
+                    placeholder="Enter Discord Client Secret"
+                    value={formData.auth?.discord?.clientSecret || ''}
+                    onChange={(e) => updateFormData('auth.discord.clientSecret', e.target.value)}
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+              
+              {/* Discord Auto-Join Toggle */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={formData.auth?.discord?.autoJoin || false}
+                      onChange={(e) => updateFormData('auth.discord.autoJoin', e.target.checked)}
+                      disabled={loading}
+                    />
+                    <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-robot text-white text-lg"></i>
+                    <span className="text-white font-medium">Enable Auto-Join Discord Server</span>
+                  </div>
+                </div>
+                <p className="text-[#AAAAAA] text-sm">Automatically add users to your Discord server when they login with Discord</p>
+              </div>
+
+              {/* Bot Token and Guild ID - Only show if auto-join is enabled */}
+              {formData.auth?.discord?.autoJoin && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-white">Discord Bot Token</label>
+                    <input
+                      type="password"
+                      className="w-full h-12 bg-[#202020] border border-[#303030] rounded-lg px-4 text-white placeholder-[#AAAAAA] focus:border-[#404040] focus:outline-none transition-colors"
+                      placeholder="Bot token for auto-joining server"
+                      value={formData.auth?.discord?.botToken || ''}
+                      onChange={(e) => updateFormData('auth.discord.botToken', e.target.value)}
+                      disabled={loading}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-white">Discord Server ID (Guild ID)</label>
+                    <input
+                      type="text"
+                      className="w-full h-12 bg-[#202020] border border-[#303030] rounded-lg px-4 text-white placeholder-[#AAAAAA] focus:border-[#404040] focus:outline-none transition-colors"
+                      placeholder="123456789012345678"
+                      value={formData.auth?.discord?.guildId || ''}
+                      onChange={(e) => updateFormData('auth.discord.guildId', e.target.value)}
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+              )}
+              
+              <div className="bg-[#202020] border border-[#303030] rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <i className="fab fa-discord text-white mt-1"></i>
+                  <div className="text-sm text-[#AAAAAA]">
+                    <p className="font-medium text-white mb-2">Discord Setup Instructions:</p>
+                    <ol className="space-y-1 list-decimal list-inside">
+                      <li>Go to <a href="https://discord.com/developers/applications" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white hover:underline">discord.com/developers/applications</a></li>
+                      <li>Create a new application or select existing one</li>
+                      <li>Go to OAuth2 → General</li>
+                      <li>Add this redirect URI: <code className="bg-[#181818] px-2 py-1 rounded text-gray-300">{process.env.NEXT_PUBLIC_API_BASE}/api/oauth/discord/callback</code></li>
+                      <li>Copy Client ID and Client Secret to the fields above</li>
+                      <li><strong>For Auto-Join:</strong> Go to Bot → Create Bot → Copy Bot Token</li>
+                      <li><strong>For Auto-Join:</strong> Enable "SERVER MEMBERS INTENT" in Bot settings</li>
+                      <li><strong>For Auto-Join:</strong> Invite bot to your server with "Manage Server" permission</li>
+                      <li><strong>For Auto-Join:</strong> Get your server ID (right-click server → Copy Server ID)</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Google OAuth */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={formData.auth?.google?.enabled || false}
+                onChange={(e) => updateFormData('auth.google.enabled', e.target.checked)}
+                disabled={loading}
+              />
+              <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
+            </label>
+            <div className="flex items-center gap-2">
+              <i className="fab fa-google text-white text-lg"></i>
+              <span className="text-white font-medium">Enable Google Login</span>
+            </div>
+          </div>
+
+          {formData.auth?.google?.enabled && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-white">Google Client ID</label>
+                  <input
+                    type="text"
+                    className="w-full h-12 bg-[#202020] border border-[#303030] rounded-lg px-4 text-white placeholder-[#AAAAAA] focus:border-[#404040] focus:outline-none transition-colors"
+                    placeholder="Enter Google Client ID"
+                    value={formData.auth?.google?.clientId || ''}
+                    onChange={(e) => updateFormData('auth.google.clientId', e.target.value)}
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-white">Google Client Secret</label>
+                  <input
+                    type="password"
+                    className="w-full h-12 bg-[#202020] border border-[#303030] rounded-lg px-4 text-white placeholder-[#AAAAAA] focus:border-[#404040] focus:outline-none transition-colors"
+                    placeholder="Enter Google Client Secret"
+                    value={formData.auth?.google?.clientSecret || ''}
+                    onChange={(e) => updateFormData('auth.google.clientSecret', e.target.value)}
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+              
+              <div className="bg-[#202020] border border-[#303030] rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <i className="fab fa-google text-white mt-1"></i>
+                  <div className="text-sm text-[#AAAAAA]">
+                    <p className="font-medium text-white mb-2">Google Setup Instructions:</p>
+                    <ol className="space-y-1 list-decimal list-inside">
+                      <li>Go to <a href="https://console.developers.google.com" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white hover:underline">Google Cloud Console</a></li>
+                      <li>Create a new project or select existing one</li>
+                      <li>Enable Google+ API and Google OAuth2 API</li>
+                      <li>Go to Credentials → Create OAuth 2.0 Client ID</li>
+                      <li>Add this redirect URI: <code className="bg-[#181818] px-2 py-1 rounded text-gray-300">{process.env.NEXT_PUBLIC_API_BASE}/api/oauth/google/callback</code></li>
+                      <li>Copy Client ID and Client Secret to the fields above</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+      </div>
+
       {/* Default Resources */}
       <div className="bg-[#181818] border border-[#303030] rounded-xl p-6">
         <div className="flex items-center gap-3 mb-6">
@@ -230,7 +476,7 @@ export function AdminSettingsContent({
       <div className="bg-[#181818] border border-[#303030] rounded-xl p-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 bg-[#202020] rounded-xl flex items-center justify-center">
-            <i className="fab fa-paypal text-blue-500 text-lg"></i>
+            <i className="fab fa-paypal text-white text-lg"></i>
           </div>
           <div>
             <h3 className="text-xl font-bold text-white">PayPal Configuration</h3>
@@ -249,9 +495,9 @@ export function AdminSettingsContent({
                 onChange={(e) => updateFormData('payments.paypal.enabled', e.target.checked)}
                 disabled={loading}
               />
-              <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+              <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
             </label>
-            <span className="text-white font-medium">Enable PayPal Payments</span>
+            <span className="text-white font-medium">Enable PayPal Payments for all</span>
           </div>
 
           {formData.payments?.paypal?.enabled && (

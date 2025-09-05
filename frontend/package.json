@@ -1,7 +1,7 @@
 {
-  "name": "frontend-v2",
-  "version": "0.1.0",
-  "private": true,
+  "name": "pterodash-frontend",
+  "version": "1.0.2",
+  "private": false,
   "scripts": {
     "dev": "next dev",
     "build": "next build",

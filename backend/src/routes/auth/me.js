@@ -13,6 +13,11 @@ router.get('/me', requireAuth, async (req, res) => {
     // Get user's server count
     const serverCount = await Server.countDocuments({ owner: user._id });
     
+    // Determine login method
+    const loginMethod = user.passwordHash ? 'email' : 
+                       user.oauthProviders?.discord?.id ? 'discord' : 
+                       user.oauthProviders?.google?.id ? 'google' : 'email';
+    
     return res.json({ 
       id: user._id, 
       email: user.email, 
@@ -24,6 +29,8 @@ router.get('/me', requireAuth, async (req, res) => {
       pterodactylUserId: user.pterodactylUserId || null, 
       resources: user.resources,
       serverCount: Number(serverCount || 0),
+      loginMethod: loginMethod,
+      oauthProviders: user.oauthProviders || {}
     });
   } catch (e) { 
     console.error('Auth me failed:', e);

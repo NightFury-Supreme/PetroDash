@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AuthField from '@/components/auth/AuthField';
 import AuthSubmit from '@/components/auth/AuthSubmit';
+import { OAuthButtons } from '@/components/auth/OAuthButtons';
+import { useAuthSettings } from '@/hooks/useAuthSettings';
 
 const schema = z.object({
   emailOrUsername: z.string().min(1, 'Email or username is required'),
@@ -19,6 +21,7 @@ type FieldErrors = Partial<Record<keyof LoginForm, string>>;
 
 export default function LoginClient() {
   const router = useRouter();
+  const { settings, loading: settingsLoading } = useAuthSettings();
   const [form, setForm] = useState<LoginForm>({ emailOrUsername: '', password: '' });
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState<string | null>(null);
@@ -57,26 +60,67 @@ export default function LoginClient() {
     }
   };
 
+  if (settingsLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="h-12 bg-[#202020] rounded animate-pulse"></div>
+        <div className="h-12 bg-[#202020] rounded animate-pulse"></div>
+        <div className="h-10 bg-[#202020] rounded animate-pulse"></div>
+      </div>
+    );
+  }
+
+  const showEmailLogin = settings?.emailLogin ?? true;
+  const showOAuth = (settings?.discord?.enabled || settings?.google?.enabled) ?? false;
+
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <AuthField
-        label="Email or Username"
-        value={form.emailOrUsername}
-        onChange={(v) => setForm({ ...form, emailOrUsername: v })}
-        placeholder="john@example.com or john"
-        error={fieldErrors.emailOrUsername}
-      />
-      <AuthField
-        label="Password"
-        type="password"
-        value={form.password}
-        onChange={(v) => setForm({ ...form, password: v })}
-        placeholder="••••••••"
-        error={fieldErrors.password}
-      />
-      {error && <div className="text-sm" style={{ color: '#ff6b6b' }}>{error}</div>}
-      <AuthSubmit disabled={loading}>{loading ? 'Loading…' : 'Login'}</AuthSubmit>
-      <div className="text-sm text-muted">Don’t have an account? <Link href="/register" className="underline">Create one</Link></div>
+      {showEmailLogin && (
+        <>
+          <AuthField
+            label="Email or Username"
+            value={form.emailOrUsername}
+            onChange={(v) => setForm({ ...form, emailOrUsername: v })}
+            placeholder="john@example.com or john"
+            error={fieldErrors.emailOrUsername}
+          />
+          <AuthField
+            label="Password"
+            type="password"
+            value={form.password}
+            onChange={(v) => setForm({ ...form, password: v })}
+            placeholder="••••••••"
+            error={fieldErrors.password}
+          />
+          {error && <div className="text-sm" style={{ color: '#ff6b6b' }}>{error}</div>}
+          <AuthSubmit disabled={loading}>{loading ? 'Loading…' : 'Login'}</AuthSubmit>
+        </>
+      )}
+      
+      {showOAuth && (
+        <>
+          {showEmailLogin && <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-[#303030]"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 text-[#AAAAAA]">Or continue with</span>
+            </div>
+          </div>}
+          <OAuthButtons onError={setError} />
+        </>
+      )}
+      
+      {!showEmailLogin && !showOAuth && (
+        <div className="text-center text-[#AAAAAA]">
+          <p>No login methods are currently available.</p>
+          <p className="text-sm">Please contact an administrator.</p>
+        </div>
+      )}
+      
+      {showEmailLogin && (
+        <div className="text-sm text-muted">Don't have an account? <Link href="/register" className="underline">Create one</Link></div>
+      )}
     </form>
   );
 }

@@ -9,7 +9,25 @@ import { useModal } from '@/components/Modal';
 interface Settings {
   siteName: string;
   siteIconUrl: string;
-  referrals?: { referrerCoins?: number; referredCoins?: number };
+  referrals?: { referrerCoins?: number; referredCoins?: number; customCodeMinInvites?: number };
+  auth: {
+    emailLogin: boolean;
+    discord: {
+      enabled: boolean;
+      autoJoin: boolean;
+      clientId: string;
+      clientSecret: string;
+      redirectUri?: string;
+      botToken: string;
+      guildId: string;
+    };
+    google: {
+      enabled: boolean;
+      clientId: string;
+      clientSecret: string;
+      redirectUri?: string;
+    };
+  };
   payments: {
     paypal: {
       enabled: boolean;

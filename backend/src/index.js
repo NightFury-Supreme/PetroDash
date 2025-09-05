@@ -2,8 +2,10 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
+const session = require('express-session');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
+const passport = require('passport');
 
 dotenv.config();
 
@@ -18,6 +20,7 @@ const panelRoutes = require('./routes/panel');
 const shopRoutes = require('./routes/shop');
 const paypalRoutes = require('./routes/paypal');
 const paypalWebhook = require('./routes/paypalWebhook');
+const { router: oauthRoutes } = require('./routes/auth/oauth');
 
 const app = express();
 // Respect Cloudflare/Proxy headers so req.ip and rate-limit source are correct
@@ -35,6 +38,21 @@ app.use(express.json({ limit: '1mb' }));
 app.use(compression());
 app.use(sanitize);
 app.use(auditAuto());
+
+// Session configuration for OAuth
+app.use(session({
+    secret: process.env.JWT_SECRET || 'fallback-secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 const allowedOrigin = process.env.FRONTEND_URL || '*';
 app.use(
@@ -84,6 +102,7 @@ app.use('/api/plans', require('./routes/plans'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/user/plans', require('./routes/userPlans'));
 app.use('/api/referrals', require('./routes/referrals'));
+app.use('/api/oauth', oauthRoutes);
 
 const port = process.env.PORT || 4000;
 
