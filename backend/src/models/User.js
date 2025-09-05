@@ -43,6 +43,12 @@ const UserSchema = new mongoose.Schema(
             allocations: { type: Number, default: 1 },
             serverSlots: { type: Number, default: 1 },
         },
+        ban: {
+            isBanned: { type: Boolean, default: false },
+            reason: { type: String, default: '' },
+            until: { type: Date, default: null }, // null => lifetime
+            by: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+        },
     },
     { timestamps: true }
 );

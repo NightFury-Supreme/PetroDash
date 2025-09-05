@@ -10,6 +10,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Future features and improvements will be listed here
 
+## [1.0.3] - 2025-01-15
+
+### Added
+- **User Banning System**: Comprehensive user management and moderation tools
+  - Admin ability to ban users with custom reasons and duration (temporary or permanent)
+  - Automatic server unsuspension when users are unbanned
+  - Full-screen ban notice page (`/banned`) with clean URL structure
+  - Self-healing ban state detection (automatic redirect when unbanned)
+  - Ban status display in admin users list with visual indicators
+- **Global Authentication Guard**: Enhanced security and user experience
+  - Automatic redirect to `/login` for unauthenticated users on protected pages
+  - Immediate redirect to `/banned` page for banned users
+  - Client-side authentication state management with `AuthGuard` component
+  - Session storage for ban details to avoid URL pollution
+  - Public route handling for login, register, OAuth callbacks, and ban pages
+- **Enhanced Admin User Management**: Improved user oversight and control
+  - Ban/unban buttons with loading states and visual feedback
+  - Modal-based ban interface with reason and duration inputs
+  - Real-time ban status updates in user lists
+  - Comprehensive audit logging for all ban/unban actions
+
+### Fixed
+- **Authentication**: Improved reliability and user experience
+  - Fixed authentication guard to work consistently across all pages
+  - Fixed session storage handling for ban details
+  - Corrected loading states and error handling
+
+### Security
+- **API Protection**: Enhanced security for banned users
+  - All API endpoints now properly check ban status
+  - Banned users cannot perform any actions via API
+  - Proper 403 Forbidden responses with ban details
+  - Server suspension prevents access to game panel resources
+
 ## [1.0.2] - 2025-09-05
 
 ### Added
@@ -114,6 +148,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **1.0.3** - User banning system, global authentication guard, and enhanced admin user management
+- **1.0.2** - Discord and Google OAuth integration with enhanced authentication system
 - **1.0.1** - Referral system, premium badges, Docker support, and major UI improvements
 - **1.0.0** - Initial release with core functionality
 

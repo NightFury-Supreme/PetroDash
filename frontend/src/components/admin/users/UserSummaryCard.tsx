@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-export default function UserSummaryCard({ user, role, coins, serversCount, onSave, onDelete, saving, deleting, setUser, loginMethod, oauthProviders }: any) {
+export default function UserSummaryCard({ user, role, coins, serversCount, onSave, onDelete, saving, deleting, banning, unbanning, setUser, loginMethod, oauthProviders, onBanToggle, onBanClick }: any) {
   return (
     <div className="rounded-2xl p-6 flex items-center justify-between" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
       <div className="flex items-center gap-4">
@@ -50,8 +50,43 @@ export default function UserSummaryCard({ user, role, coins, serversCount, onSav
         </div>
       </div>
       <div className="hidden sm:flex items-center gap-2">
-        <button onClick={onSave} disabled={saving} className="px-4 py-2 rounded-md bg-white text-black border border-[var(--border)]">{saving ? 'Saving…' : 'Save'}</button>
-        <button onClick={onDelete} disabled={deleting} className="px-4 py-2 rounded-md bg-[#ef4444] text-white">{deleting ? 'Deleting…' : 'Delete'}</button>
+        {user?.ban?.isBanned ? (
+          <button onClick={onBanToggle} disabled={unbanning} className="px-4 py-2 rounded-md bg-green-600 text-white border border-[var(--border)] hover:bg-green-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            {unbanning ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                Unbanning...
+              </>
+            ) : (
+              <>
+                <i className="fas fa-unlock text-sm"></i>
+                Unban
+              </>
+            )}
+          </button>
+        ) : (
+          <button onClick={onBanClick} disabled={banning} className="px-4 py-2 rounded-md bg-red-600 text-white border border-[var(--border)] hover:bg-red-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            {banning ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                Banning...
+              </>
+            ) : (
+              <>
+                <i className="fas fa-ban text-sm"></i>
+                Ban
+              </>
+            )}
+          </button>
+        )}
+        <button onClick={onSave} disabled={saving} className="px-4 py-2 rounded-md bg-white text-black border border-[var(--border)] hover:bg-gray-100 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+          <i className="fas fa-save text-sm"></i>
+          {saving ? 'Saving…' : 'Save'}
+        </button>
+        <button onClick={onDelete} disabled={deleting} className="px-4 py-2 rounded-md bg-[#ef4444] text-white hover:bg-red-600 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+          <i className="fas fa-trash text-sm"></i>
+          {deleting ? 'Deleting…' : 'Delete'}
+        </button>
       </div>
     </div>
   );

@@ -9,6 +9,12 @@ router.get('/me', requireAuth, async (req, res) => {
   try {
     const user = await User.findById(req.user.sub).lean();
     if (!user) return res.status(404).json({ error: 'Not found' });
+    // If banned, short-circuit with 403 for guard to redirect
+    const ban = user.ban || {};
+    const activeBan = Boolean(ban.isBanned) && (!ban.until || new Date(ban.until) > new Date());
+    if (activeBan) {
+      return res.status(403).json({ error: 'Account banned', reason: ban.reason || '', until: ban.until || null });
+    }
     
     // Get user's server count
     const serverCount = await Server.countDocuments({ owner: user._id });

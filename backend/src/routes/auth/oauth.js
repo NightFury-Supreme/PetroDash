@@ -158,9 +158,6 @@ const configurePassport = async () => {
   }
 };
 
-// Initialize passport configuration
-configurePassport();
-
 // Function to reconfigure strategies (called when settings are updated)
 const reconfigureStrategies = async () => {
   try {

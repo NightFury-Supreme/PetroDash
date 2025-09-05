@@ -87,6 +87,7 @@ router.get('/:id', requireAdmin, async (req, res) => {
       plans,
       loginMethod: loginMethod,
       oauthProviders: user.oauthProviders || {},
+      ban: user.ban || { isBanned: false, reason: '', until: null },
       referral: {
         code: user.referralCode || null,
         referredCount: Number(referralStats.referredCount || 0),
@@ -119,6 +120,7 @@ const updateSchema = z.object({
   firstName: z.string().min(1).max(64).optional(),
   lastName: z.string().min(1).max(64).optional(),
   referralCode: z.string().trim().min(3).max(20).regex(/^[A-Za-z0-9_-]+$/).optional(),
+  ban: z.object({ isBanned: z.boolean(), reason: z.string().trim().optional(), until: z.union([z.string().datetime().nullable(), z.null()]).optional() }).partial().optional(),
 });
 
 router.patch('/:id', requireAdmin, async (req, res) => {
@@ -127,7 +129,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
   const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ error: 'User not found' });
 
-  const { role, resources, coins, email, username, firstName, lastName, referralCode } = parsed.data;
+  const { role, resources, coins, email, username, firstName, lastName, referralCode, ban } = parsed.data;
   if (role) user.role = role;
   if (typeof coins === 'number') user.coins = coins;
   // Direct resource editing: update user.resources directly
@@ -144,10 +146,75 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     }
     user.referralCode = desired;
   }
+  if (ban && typeof ban === 'object') {
+    if (!user.ban) user.ban = {};
+    const untilDate = ban.until === null ? null : (ban.until ? new Date(ban.until) : user.ban.until || null);
+    user.ban.isBanned = typeof ban.isBanned === 'boolean' ? ban.isBanned : Boolean(user.ban.isBanned);
+    if (typeof ban.reason === 'string') user.ban.reason = ban.reason;
+    user.ban.until = untilDate;
+    user.ban.by = req.user?.sub || req.user?.userId || user.ban.by || null;
+  }
   await user.save();
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, 'admin.user.update', 'user', user._id.toString(), { role, resources, coins, email, username, firstName, lastName, referralCode });
+  writeAudit(req, 'admin.user.update', 'user', user._id.toString(), { role, resources, coins, email, username, firstName, lastName, referralCode, ban });
   return res.json({ user });
+});
+
+// POST /api/admin/users/:id/ban - ban/unban user with timer or lifetime
+router.post('/:id/ban', requireAdmin, async (req, res) => {
+  const schema = z.object({
+    isBanned: z.boolean(),
+    reason: z.string().trim().optional(),
+    // durationMinutes >= 1 sets temporary ban, null means lifetime, 0/undefined clears ban when isBanned=false
+    durationMinutes: z.coerce.number().int().min(1).optional().nullable(),
+  });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
+  const { isBanned, reason, durationMinutes } = parsed.data;
+  const user = await User.findById(req.params.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  if (!user.ban) user.ban = {};
+  user.ban.isBanned = Boolean(isBanned);
+  user.ban.reason = reason || '';
+  if (isBanned) {
+    if (durationMinutes == null) {
+      // lifetime ban
+      user.ban.until = null;
+    } else {
+      const until = new Date();
+      until.setMinutes(until.getMinutes() + Number(durationMinutes || 0));
+      user.ban.until = until;
+    }
+    user.ban.by = req.user?.sub || req.user?.userId || null;
+    try {
+      // Suspend all user's servers in panel
+      const servers = await Server.find({ owner: user._id, panelServerId: { $exists: true, $ne: null } }).lean();
+      const { suspendServer } = require('../../services/pterodactyl');
+      for (const s of servers) {
+        if (!s.panelServerId) continue;
+        try { await suspendServer(s.panelServerId); } catch (_) {}
+      }
+    } catch (_) {}
+  } else {
+    // unban
+    user.ban.isBanned = false;
+    user.ban.until = null;
+    user.ban.by = req.user?.sub || req.user?.userId || null;
+    try {
+      // Unsuspend all user's servers in panel
+      const servers = await Server.find({ owner: user._id, panelServerId: { $exists: true, $ne: null } }).lean();
+      const { unsuspendServer } = require('../../services/pterodactyl');
+      for (const s of servers) {
+        if (!s.panelServerId) continue;
+        try { await unsuspendServer(s.panelServerId); } catch (_) {}
+      }
+    } catch (_) {}
+  }
+  await user.save();
+  const { writeAudit } = require('../../middleware/audit');
+  writeAudit(req, isBanned ? 'admin.user.ban' : 'admin.user.unban', 'user', user._id.toString(), { reason: user.ban.reason, until: user.ban.until });
+  return res.json({ ok: true, ban: user.ban });
 });
 
 // DELETE /api/admin/users/:id - delete user and all servers

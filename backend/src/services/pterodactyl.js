@@ -99,6 +99,16 @@ async function deleteServer(serverId) {
     return true;
 }
 
+async function suspendServer(serverId) {
+    await withRetry(() => api.post(`/servers/${serverId}/suspend`));
+    return true;
+}
+
+async function unsuspendServer(serverId) {
+    await withRetry(() => api.post(`/servers/${serverId}/unsuspend`));
+    return true;
+}
+
 async function getPanelUser(userId) {
     const { data } = await withRetry(() => api.get(`/users/${userId}`));
     return data?.attributes;
@@ -138,6 +148,6 @@ async function checkUserExists(email, username) {
     }
 }
 
-module.exports = { createPanelUser, getUserByExternalId, getUserWithServers, getEggDetails, getServer, updateServerDetails, updateServerBuild, deleteServer, getPanelUser, resetPanelUserPassword, updatePanelUser, deletePanelUser, checkUserExists };
+module.exports = { createPanelUser, getUserByExternalId, getUserWithServers, getEggDetails, getServer, updateServerDetails, updateServerBuild, deleteServer, getPanelUser, resetPanelUserPassword, updatePanelUser, deletePanelUser, checkUserExists, suspendServer, unsuspendServer };
 
 

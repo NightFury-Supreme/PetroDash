@@ -1,6 +1,6 @@
 {
   "name": "pterodash-backend",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": false,
   "main": "src/index.js",
   "scripts": {

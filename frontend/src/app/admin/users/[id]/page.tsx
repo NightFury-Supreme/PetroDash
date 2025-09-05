@@ -26,6 +26,11 @@ export default function AdminUserDetailPage() {
   const [referralCode, setReferralCode] = useState<string>('');
   const [loginMethod, setLoginMethod] = useState<string>('email');
   const [oauthProviders, setOauthProviders] = useState<any>({});
+  const [ban, setBan] = useState<any>({ isBanned: false, reason: '', until: null });
+  const [showBanModal, setShowBanModal] = useState(false);
+  const [banForm, setBanForm] = useState({ reason: '', durationMinutes: undefined as number | undefined });
+  const [banning, setBanning] = useState(false);
+  const [unbanning, setUnbanning] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
@@ -41,6 +46,7 @@ export default function AdminUserDetailPage() {
         setReferralCode(d?.referral?.code || ''); 
         setLoginMethod(d?.loginMethod || 'email');
         setOauthProviders(d?.oauthProviders || {});
+        setBan(d?.ban || { isBanned: false, reason: '', until: null });
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
@@ -134,24 +140,46 @@ export default function AdminUserDetailPage() {
                 serversCount={data.servers.length}
                 saving={saving}
                 deleting={deleting}
+                banning={banning}
+                unbanning={unbanning}
                 onSave={save}
                 onDelete={deleteUser}
                 setUser={(u: any) => setData({ ...data, user: u })}
                 loginMethod={loginMethod}
                 oauthProviders={oauthProviders}
+                onBanToggle={async () => {
+                  const confirmed = await modal.confirm({
+                    title: 'Unban User',
+                    body: `Are you sure you want to unban user "${data?.user?.username || 'Unknown'}"?`,
+                    confirmText: 'Unban',
+                    cancelText: 'Cancel'
+                  });
+                  if (!confirmed) return;
+                  
+                  setUnbanning(true);
+                  try {
+                    const token = localStorage.getItem('auth_token');
+                    const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${id}/ban`, { 
+                      method: 'POST', 
+                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                      body: JSON.stringify({ isBanned: false })
+                    });
+                    const d = await r.json();
+                    if (!r.ok) { 
+                      await modal.error({ title: 'Failed', body: d?.error || 'Failed to unban user' }); 
+                      return; 
+                    }
+                    setBan(d.ban); 
+                    setData({ ...data, user: { ...data.user, ban: d.ban } });
+                    await modal.success({ title: 'User Unbanned', body: 'User has been unbanned successfully' });
+                  } finally {
+                    setUnbanning(false);
+                  }
+                }}
+                onBanClick={() => setShowBanModal(true)}
               />
 
-              {/* Usage Badges */}
-              <div className="rounded-2xl p-6" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <div><div className="text-xs text-[#AAAAAA]">Disk</div><div className="text-xl font-extrabold">{usage.diskMb} MB</div></div>
-                  <div><div className="text-xs text-[#AAAAAA]">Memory</div><div className="text-xl font-extrabold">{usage.memoryMb} MB</div></div>
-                  <div><div className="text-xs text-[#AAAAAA]">CPU</div><div className="text-xl font-extrabold">{usage.cpuPercent}%</div></div>
-                  <div><div className="text-xs text-[#AAAAAA]">Backups</div><div className="text-xl font-extrabold">{usage.backups}</div></div>
-                  <div><div className="text-xs text-[#AAAAAA]">Databases</div><div className="text-xl font-extrabold">{usage.databases}</div></div>
-                  <div><div className="text-xs text-[#AAAAAA]">Allocations</div><div className="text-xl font-extrabold">{usage.allocations}</div></div>
-                </div>
-              </div>
+
 
               {/* Servers */}
               <div className="rounded-2xl p-6" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
@@ -409,6 +437,91 @@ export default function AdminUserDetailPage() {
                     setPlans((prev) => [...prev, d.plan]); setNewPlanId('');
                   }}>Add</button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Ban Modal */}
+        {showBanModal && (
+          <div className="modal-overlay" role="dialog" aria-modal="true">
+            <div className="modal-panel">
+              <div className="modal-header">
+                <span className="icon-badge" style={{ transform: 'scale(.9)' }}>
+                  <i className="fas fa-ban text-red-400"></i>
+                </span>
+                <h3 className="font-semibold text-sm">Ban User</h3>
+              </div>
+              <div className="modal-body text-sm text-gray-300">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm text-[#AAAAAA] mb-2">Reason</label>
+                    <input
+                      type="text"
+                      value={banForm.reason}
+                      onChange={(e) => setBanForm({ ...banForm, reason: e.target.value })}
+                      placeholder="Enter ban reason..."
+                      className="w-full px-3 py-2 rounded-md border border-[var(--border)] bg-[#181818] text-white"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm text-[#AAAAAA] mb-2">Duration (minutes)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={banForm.durationMinutes || ''}
+                      onChange={(e) => setBanForm({ ...banForm, durationMinutes: e.target.value ? Number(e.target.value) : undefined })}
+                      placeholder="Leave empty for lifetime ban"
+                      className="w-full px-3 py-2 rounded-md border border-[var(--border)] bg-[#181818] text-white"
+                    />
+                    <p className="text-xs text-[#888] mt-1">Leave empty for permanent ban</p>
+                  </div>
+                </div>
+              </div>
+              <div className="modal-actions">
+                <button
+                  className="btn-ghost"
+                  onClick={() => {
+                    setShowBanModal(false);
+                    setBanForm({ reason: '', durationMinutes: undefined });
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn-danger"
+                  disabled={banning}
+                  onClick={async () => {
+                    setBanning(true);
+                    try {
+                      const token = localStorage.getItem('auth_token');
+                      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${id}/ban`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                        body: JSON.stringify({
+                          isBanned: true,
+                          reason: banForm.reason,
+                          durationMinutes: banForm.durationMinutes
+                        })
+                      });
+                      const d = await r.json();
+                      if (!r.ok) {
+                        await modal.error({ title: 'Failed', body: d?.error || 'Failed to ban user' });
+                        return;
+                      }
+                      setBan(d.ban);
+                      setData({ ...data, user: { ...data.user, ban: d.ban } });
+                      setShowBanModal(false);
+                      setBanForm({ reason: '', durationMinutes: undefined });
+                      await modal.success({ title: 'User Banned', body: 'User has been banned successfully' });
+                    } finally {
+                      setBanning(false);
+                    }
+                  }}
+                >
+                  {banning ? 'Banning...' : 'Ban User'}
+                </button>
               </div>
             </div>
           </div>
