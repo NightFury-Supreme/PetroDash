@@ -246,6 +246,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
+- **Discord**: https://discord.gg/vQzbuQD7Xp
 - **Documentation**: [Wiki](https://github.com/NightFury-Supreme/PetroDash/wiki)
 - **Issues**: [GitHub Issues](https://github.com/NightFury-Supreme/PetroDash/issues)
 - **Email**: support@auto-manager.tk
