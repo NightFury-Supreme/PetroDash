@@ -29,12 +29,12 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: backend/package-lock.json
+        cache-dependency-path: backend/package.json
     
     - name: Install backend dependencies
       run: |
         cd backend
-        npm ci
+        npm install
       env:
         MONGODB_URI: mongodb://localhost:27017/test
         JWT_SECRET: test-secret
@@ -70,12 +70,12 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: frontend/package-lock.json
+        cache-dependency-path: frontend/package.json
     
     - name: Install frontend dependencies
       run: |
         cd frontend
-        npm ci
+        npm install
     
     - name: Build frontend
       run: |
@@ -99,8 +99,8 @@ jobs:
     
     - name: Install dependencies
       run: |
-        cd backend && npm ci
-        cd ../frontend && npm ci
+        cd backend && npm install
+        cd ../frontend && npm install
     
     - name: Run security audit
       run: |
