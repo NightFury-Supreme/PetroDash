@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useModal } from '@/components/Modal';
 
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const modal = useModal();
@@ -74,5 +74,23 @@ export default function AuthCallbackPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0b0b0f] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-[#202020] rounded-xl flex items-center justify-center mx-auto mb-4">
+            <i className="fas fa-spinner fa-spin text-white text-2xl"></i>
+          </div>
+          <h2 className="text-xl font-bold text-white mb-2">Loading...</h2>
+          <p className="text-[#AAAAAA]">Please wait...</p>
+        </div>
+      </div>
+    }>
+      <AuthCallbackContent />
+    </Suspense>
   );
 }
