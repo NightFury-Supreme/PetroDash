@@ -48,6 +48,25 @@ interface Settings {
     databases: number;
     coins: number;
   };
+  adsense?: {
+    enabled: boolean;
+    publisherId: string;
+    adSlots: {
+      header: string;
+      sidebar: string;
+      footer: string;
+      content: string;
+      mobile: string;
+    };
+    adTypes: {
+      display: boolean;
+      text: boolean;
+      link: boolean;
+      inFeed: boolean;
+      inArticle: boolean;
+      matchedContent: boolean;
+    };
+  };
 }
 
 export default function AdminSettingsPage() {

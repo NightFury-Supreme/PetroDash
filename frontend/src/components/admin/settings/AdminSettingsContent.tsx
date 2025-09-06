@@ -43,6 +43,25 @@ interface Settings {
     coins: number;
   };
   referrals?: { referrerCoins?: number; referredCoins?: number; customCodeMinInvites?: number };
+  adsense?: {
+    enabled: boolean;
+    publisherId: string;
+    adSlots: {
+      header: string;
+      sidebar: string;
+      footer: string;
+      content: string;
+      mobile: string;
+    };
+    adTypes: {
+      display: boolean;
+      text: boolean;
+      link: boolean;
+      inFeed: boolean;
+      inArticle: boolean;
+      matchedContent: boolean;
+    };
+  };
 }
 
 interface AdminSettingsContentProps {
@@ -469,6 +488,131 @@ export function AdminSettingsContent({
               />
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* AdSense Settings */}
+      <div className="bg-[#181818] border border-[#303030] rounded-xl p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 bg-[#202020] rounded-xl flex items-center justify-center">
+            <i className="fab fa-google text-white text-lg"></i>
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-white">Google AdSense</h3>
+            <p className="text-[#AAAAAA] text-sm">Configure advertising settings and ad placements</p>
+          </div>
+        </div>
+        
+        <div className="space-y-6">
+          {/* Enable/Disable Toggle */}
+          <div className="flex items-center gap-3">
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={formData.adsense?.enabled || false}
+                onChange={(e) => updateFormData('adsense.enabled', e.target.checked)}
+                disabled={loading}
+              />
+              <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
+            </label>
+            <span className="text-white font-medium">Enable Google AdSense</span>
+          </div>
+
+          {formData.adsense?.enabled && (
+            <div className="space-y-6">
+              {/* Publisher ID */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-white">Publisher ID</label>
+                <input
+                  type="text"
+                  className="w-full h-12 bg-[#202020] border border-[#303030] rounded-lg px-4 text-white placeholder-[#AAAAAA] focus:border-[#404040] focus:outline-none transition-colors"
+                  placeholder="ca-pub-1234567890123456"
+                  value={formData.adsense?.publisherId || ''}
+                  onChange={(e) => updateFormData('adsense.publisherId', e.target.value)}
+                  disabled={loading}
+                />
+                <p className="text-xs text-[#AAAAAA]">
+                  Your Google AdSense Publisher ID (starts with ca-pub-)
+                </p>
+              </div>
+
+              {/* Ad Slots */}
+              <div className="space-y-4">
+                <h4 className="text-lg font-medium text-white">Ad Slots</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {([
+                    ['header', 'Header Ad Slot'],
+                    ['sidebar', 'Sidebar Ad Slot'],
+                    ['footer', 'Footer Ad Slot'],
+                    ['content', 'Content Ad Slot'],
+                    ['mobile', 'Mobile Ad Slot']
+                  ] as const).map(([key, label]) => (
+                    <div key={key} className="space-y-2">
+                      <label className="block text-sm font-medium text-white">{label}</label>
+                      <input
+                        type="text"
+                        className="w-full h-12 bg-[#202020] border border-[#303030] rounded-lg px-4 text-white placeholder-[#AAAAAA] focus:border-[#404040] focus:outline-none transition-colors"
+                        placeholder={`${key} ad slot ID`}
+                        value={formData.adsense?.adSlots?.[key] || ''}
+                        onChange={(e) => updateFormData(`adsense.adSlots.${key}`, e.target.value)}
+                        disabled={loading}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Ad Types */}
+              <div className="space-y-4">
+                <h4 className="text-lg font-medium text-white">Ad Types</h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {([
+                    ['display', 'Display Ads'],
+                    ['text', 'Text Ads'],
+                    ['link', 'Link Ads'],
+                    ['inFeed', 'In-Feed Ads'],
+                    ['inArticle', 'In-Article Ads'],
+                    ['matchedContent', 'Matched Content']
+                  ] as const).map(([key, label]) => (
+                    <div key={key} className="flex items-center gap-3">
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="sr-only peer"
+                          checked={formData.adsense?.adTypes?.[key] || false}
+                          onChange={(e) => updateFormData(`adsense.adTypes.${key}`, e.target.checked)}
+                          disabled={loading}
+                        />
+                        <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
+                      </label>
+                      <span className="text-white text-sm">{label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              
+              <div className="bg-[#202020] border border-[#303030] rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <i className="fab fa-google text-white mt-1"></i>
+                  <div className="text-sm text-[#AAAAAA]">
+                    <p className="font-medium text-white mb-2">AdSense Setup Instructions:</p>
+                    <ol className="space-y-1 list-decimal list-inside">
+                      <li>Go to <a href="https://www.google.com/adsense/" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white hover:underline">Google AdSense</a></li>
+                      <li>Sign up or sign in to your AdSense account</li>
+                      <li>Add your website and get approved</li>
+                      <li>Go to Ads → By ad unit → Display ads</li>
+                      <li>Create ad units for different positions (header, sidebar, footer, content, mobile)</li>
+                      <li>Copy the ad unit codes and paste them in the fields above</li>
+                      <li>Your Publisher ID can be found in the AdSense dashboard</li>
+                      <li><strong>Note:</strong> Ads will automatically appear on all pages when enabled</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

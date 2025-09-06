@@ -89,6 +89,9 @@ app.get('/api/settings', async (req, res) => {
 // New branding route
 app.use('/api/branding', require('./routes/branding'));
 
+// Public ads route
+app.use('/api/ads', require('./routes/ads'));
+
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/servers', serverRoutes);

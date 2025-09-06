@@ -1,6 +1,6 @@
 # PteroDash - Premium Control Panel
 
-A modern, feature-rich control panel for Pterodactyl servers with advanced user management, plan-based access control, and integrated payment systems.
+A modern, feature-rich control panel for Pterodactyl servers with advanced user management, plan-based access control, integrated payment systems, and comprehensive advertising monetization.
 
 ![PteroDash Logo](images/logo.svg)
 
@@ -8,27 +8,54 @@ A modern, feature-rich control panel for Pterodactyl servers with advanced user 
 
 ### 🚀 **Core Functionality**
 - **Server Management**: Create, edit, and manage Pterodactyl servers
-- **User Management**: Advanced user roles and permissions
+- **User Management**: Advanced user roles and permissions with banning system
 - **Plan System**: Subscription-based access control with lifetime plans
 - **Resource Management**: CPU, RAM, Disk, and allocation limits
 - **Payment Integration**: PayPal payment processing with webhooks
+- **Advertising System**: Google AdSense integration with ad blocker detection
 
 ![Dashboard Screenshot](images/dashboard.png)
+
+### 💰 **Monetization & Advertising**
+- **Google AdSense Integration**: Complete advertising system with admin configuration
+  - Publisher ID and Ad Slot management
+  - Multiple ad types (Display, Text, Link, In-Feed, In-Article, Matched Content)
+  - Global ad placement (Header, Sidebar, Footer, Content, Mobile)
+  - Real-time ad blocker detection and prevention
+  - Unbypassable ad blocker modal with security measures
+  - Lazy loading support for optimal performance
+  - Responsive design for desktop and mobile devices
+
+### 🛡️ **Advanced Security & Moderation**
+- **User Banning System**: Comprehensive user management and moderation tools
+  - Admin ability to ban users with custom reasons and duration
+  - Temporary or permanent ban options
+  - Automatic server unsuspension when users are unbanned
+  - Full-screen ban notice page with clean URL structure
+  - Self-healing ban state detection
+- **Ad Blocker Detection**: Advanced anti-ad-blocker system
+  - Real-time script loading detection (catches ERR_BLOCKED_BY_CLIENT errors)
+  - Multiple detection methods for comprehensive coverage
+  - Secure modal that prevents bypassing (disables dev tools, right-click, keyboard shortcuts)
+  - No persistent tracking or cookies for privacy compliance
+  - Automatic modal dismissal after successful ad load
 
 ### 🎨 **User Experience**
 - **Modern UI**: Beautiful, responsive design with Tailwind CSS
 - **Real-time Updates**: Live server status and resource monitoring
 - **Custom Branding**: Configurable dashboard name and logo
 - **Client-side Navigation**: Smooth, fast page transitions
+- **Clean Ad Display**: Direct ad rendering without placeholder content
 
 ### 🔒 **Security & Performance**
 - **JWT Authentication**: Secure user authentication
 - **OAuth Integration**: Discord and Google login support
-- **Email Login**: email authentication
+- **Email Login**: Email authentication
 - **Rate Limiting**: Protection against abuse
 - **Audit Logging**: Comprehensive action tracking
 - **Input Validation**: Zod schema validation
 - **CORS Protection**: Secure cross-origin requests
+- **Global Authentication Guard**: Enhanced security with automatic redirects
 
 ### 🛠 **Admin Features**
 - **Egg Management**: Plan-based egg access control
@@ -36,6 +63,8 @@ A modern, feature-rich control panel for Pterodactyl servers with advanced user 
 - **User Analytics**: Detailed user statistics and monitoring
 - **Shop Management**: Resource and plan sales
 - **Coupon System**: Discount codes and promotions
+- **AdSense Configuration**: Complete advertising settings management
+- **User Banning**: Advanced moderation tools with visual indicators
 
 ## 🚀 Setup & Deployment
 
@@ -176,22 +205,11 @@ PTERO_APP_API_KEY=your-pterodactyl-api-key
 
 # Frontend URL (for CORS)
 FRONTEND_URL=https://your-dashboard-domain.com
-
-# Discord OAuth (Optional)
-DISCORD_CLIENT_ID=your-discord-client-id
-DISCORD_CLIENT_SECRET=your-discord-client-secret
-DISCORD_BOT_TOKEN=your-discord-bot-token
-DISCORD_GUILD_ID=your-discord-server-id
-
-# Google OAuth (Optional)
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
 ```
 
 #### Frontend (.env.local)
 ```env
 NEXT_PUBLIC_API_BASE=https://your-api-domain.com
-```
 
 ## 🏗️ Project Structure
 
@@ -199,9 +217,9 @@ NEXT_PUBLIC_API_BASE=https://your-api-domain.com
 pterodash/
 ├── backend/                 # Express.js API server
 │   ├── src/
-│   │   ├── models/         # Mongoose models
-│   │   ├── routes/         # API endpoints
-│   │   ├── middleware/     # Auth, validation, etc.
+│   │   ├── models/         # Mongoose models (Settings, Users, etc.)
+│   │   ├── routes/         # API endpoints (ads, admin, auth, etc.)
+│   │   ├── middleware/     # Auth, validation, rate limiting
 │   │   ├── services/       # Pterodactyl, PayPal integration
 │   │   └── lib/           # Utilities and helpers
 │   └── package.json
@@ -209,7 +227,9 @@ pterodash/
 │   ├── src/
 │   │   ├── app/           # App router pages
 │   │   ├── components/    # React components
+│   │   │   └── admin/      # Admin components
 │   │   ├── hooks/         # Custom React hooks
+│   │   ├── styles/        # CSS files (adblocker-modal.css)
 │   │   └── types/         # TypeScript definitions
 │   └── package.json
 └── README.md

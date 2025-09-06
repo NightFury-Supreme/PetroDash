@@ -10,6 +10,7 @@ import { ItemCard } from '@/components/shop/ItemCard';
 import { PlanCard } from '@/components/shop/PlanCard';
 import { PlanPurchaseButton } from '@/components/shop/PlanPurchaseButton';
 import { CouponModal } from '@/components/shop/CouponModal';
+import { ContentAd, SidebarAd, MobileAd } from '@/components/AdSense';
 
 export default function ShopPage() {
   const router = useRouter();
@@ -194,45 +195,64 @@ export default function ShopPage() {
         </div>
 
         {activeTab === 'items' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {items.map((it) => (
-            <ItemCard
-              key={it._id || it.key}
-              item={it}
-              quantity={quantities[it.key] || 1}
-              onChangeQuantity={(next) => setQuantities((q) => ({ ...q, [it.key]: next }))}
-              onBuy={() => buy(it.key, quantities[it.key] || 1)}
-              isBuying={buying === it.key}
-              iconFor={iconFor}
-              clampQuantity={clampQuantity}
-            />
-          ))}
-        </div>
+          <div className="flex flex-col xl:flex-row gap-6">
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {items.map((it) => (
+                <ItemCard
+                  key={it._id || it.key}
+                  item={it}
+                  quantity={quantities[it.key] || 1}
+                  onChangeQuantity={(next) => setQuantities((q) => ({ ...q, [it.key]: next }))}
+                  onBuy={() => buy(it.key, quantities[it.key] || 1)}
+                  isBuying={buying === it.key}
+                  iconFor={iconFor}
+                  clampQuantity={clampQuantity}
+                />
+              ))}
+            </div>
+            <div className="xl:w-80 xl:flex-shrink-0">
+              <div className="sticky top-6">
+                <SidebarAd />
+              </div>
+            </div>
+          </div>
         )}
 
+        {/* Mobile Ad for smaller screens */}
+        <div className="xl:hidden">
+          <MobileAd />
+        </div>
+
         {activeTab === 'plans' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {plans.map((plan) => (
-              <PlanCard key={plan._id} plan={plan}>
-                <PlanPurchaseButton 
-                  plan={plan} 
-                  onPurchase={() => {
-                    setSelectedPlan(plan);
-                    setShowCouponModal(true);
-                  }}
-                  onSuccess={async () => {
-                    const token = localStorage.getItem('auth_token');
-                    if (token) {
-                      try {
-                        const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
-                        const d = await r.json();
-                        if (r.ok) setCoins(Number(d?.coins ?? 0));
-                      } catch {}
-                    }
-                  }} 
-                />
-              </PlanCard>
-            ))}
+          <div className="flex flex-col xl:flex-row gap-6">
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {plans.map((plan) => (
+                <PlanCard key={plan._id} plan={plan}>
+                  <PlanPurchaseButton 
+                    plan={plan} 
+                    onPurchase={() => {
+                      setSelectedPlan(plan);
+                      setShowCouponModal(true);
+                    }}
+                    onSuccess={async () => {
+                      const token = localStorage.getItem('auth_token');
+                      if (token) {
+                        try {
+                          const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+                          const d = await r.json();
+                          if (r.ok) setCoins(Number(d?.coins ?? 0));
+                        } catch {}
+                      }
+                    }} 
+                  />
+                </PlanCard>
+              ))}
+            </div>
+            <div className="xl:w-80 xl:flex-shrink-0">
+              <div className="sticky top-6">
+                <SidebarAd />
+              </div>
+            </div>
           </div>
         )}
 

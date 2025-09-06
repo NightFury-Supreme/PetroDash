@@ -10,6 +10,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Future features and improvements will be listed here
 
+## [1.0.4] - 2025-01-15
+
+### Added
+- **Google AdSense Integration**: Complete advertising system with admin configuration
+  - Admin panel for AdSense settings management (Publisher ID, Ad Slots, Ad Types)
+  - Global ad placement system with layout integration
+  - Pre-configured ad components (HeaderAd, SidebarAd, FooterAd, ContentAd, MobileAd)
+  - Real-time ad blocker detection with multiple detection methods
+  - Unbypassable ad blocker modal with security measures
+  - Lazy loading support for improved performance
+  - Responsive ad display for desktop and mobile devices
+- **Ad Blocker Detection & Prevention**: Advanced anti-ad-blocker system
+  - Real-time script loading detection (catches ERR_BLOCKED_BY_CLIENT errors)
+  - Multiple detection methods for comprehensive coverage
+  - Secure modal that prevents bypassing (disables dev tools, right-click, keyboard shortcuts)
+  - No persistent tracking or cookies for privacy compliance
+  - Automatic modal dismissal after successful ad load
+- **API Endpoints**: Clean and efficient ad management
+  - `GET /api/ads` - Public endpoint for AdSense settings
+  - Rate limiting (100 requests per 15 minutes)
+  - Proper error handling and fallback responses
+- **Admin Settings Enhancement**: Streamlined AdSense configuration
+  - Publisher ID validation with proper format checking
+  - Ad slot ID validation (allows letters, numbers, spaces, hyphens, underscores)
+  - Ad types configuration (Display, Text, Link, In-Feed, In-Article, Matched Content)
+  - Real-time settings validation and error feedback
+
 ## [1.0.3] - 2025-01-15
 
 ### Added

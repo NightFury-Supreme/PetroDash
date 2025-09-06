@@ -5,6 +5,7 @@ import Shell from "@/components/Shell";
 import { FullPageSkeleton } from "@/components/Skeleton";
 import { DashboardContent } from "../../components/dashboard/DashboardContent";
 import { useDashboard } from "../../hooks/useDashboard";
+import { ContentAd } from "@/components/AdSense";
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
@@ -54,6 +55,7 @@ export default function DashboardPage() {
     <Shell>
       <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen">
         <DashboardContent />
+        <ContentAd />
       </div>
     </Shell>
   );

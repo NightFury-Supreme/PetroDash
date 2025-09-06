@@ -1,0 +1,55 @@
+/* Ad Blocker Modal Security Styles */
+.adblocker-modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 9999 !important;
+  background: rgba(0, 0, 0, 0.9) !important;
+  pointer-events: auto !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+.adblocker-modal-overlay * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Prevent text selection */
+.adblocker-modal-overlay::selection {
+  background: transparent !important;
+}
+
+.adblocker-modal-overlay::-moz-selection {
+  background: transparent !important;
+}
+
+/* Prevent drag and drop */
+.adblocker-modal-overlay * {
+  -webkit-user-drag: none !important;
+  -khtml-user-drag: none !important;
+  -moz-user-drag: none !important;
+  -o-user-drag: none !important;
+}
+
+/* Hide scrollbars */
+.adblocker-modal-overlay {
+  overflow: hidden !important;
+}
+
+/* Prevent zoom */
+.adblocker-modal-overlay {
+  zoom: 1 !important;
+  -webkit-text-size-adjust: 100% !important;
+  -ms-text-size-adjust: 100% !important;
+}

@@ -64,6 +64,25 @@ const SettingsSchema = new mongoose.Schema(
       databases: { type: Number, default: 0 },
       coins: { type: Number, default: 0 },
     },
+    adsense: {
+      enabled: { type: Boolean, default: false },
+      publisherId: { type: String, default: '' },
+      adSlots: {
+        header: { type: String, default: '' },
+        sidebar: { type: String, default: '' },
+        footer: { type: String, default: '' },
+        content: { type: String, default: '' },
+        mobile: { type: String, default: '' },
+      },
+      adTypes: {
+        display: { type: Boolean, default: true },
+        text: { type: Boolean, default: true },
+        link: { type: Boolean, default: true },
+        inFeed: { type: Boolean, default: false },
+        inArticle: { type: Boolean, default: false },
+        matchedContent: { type: Boolean, default: false },
+      },
+    },
   },
   { timestamps: true }
 );

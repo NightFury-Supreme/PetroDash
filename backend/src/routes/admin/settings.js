@@ -95,6 +95,43 @@ const settingsPayloadSchema = z.object({
     databases: z.coerce.number().int('Databases must be a whole number').min(0, 'Databases cannot be negative').max(1000, 'Databases cannot exceed 1000').optional(),
     coins: z.coerce.number().int('Coins must be a whole number').min(0, 'Coins cannot be negative').max(1000000, 'Coins cannot exceed 1 million').optional(),
   }).optional(),
+  adsense: z.object({
+    enabled: z.coerce.boolean().optional(),
+    publisherId: z.string()
+      .max(50, 'Publisher ID must be less than 50 characters')
+      .regex(/^ca-pub-\d{10,16}$/, 'Invalid publisher ID format. Must be ca-pub- followed by 10-16 digits')
+      .optional(),
+    adSlots: z.object({
+      header: z.string()
+        .max(100, 'Header ad slot must be less than 100 characters')
+        .regex(/^[a-zA-Z0-9_\s-]*$/, 'Ad slot ID can only contain letters, numbers, spaces, hyphens, and underscores')
+        .optional(),
+      sidebar: z.string()
+        .max(100, 'Sidebar ad slot must be less than 100 characters')
+        .regex(/^[a-zA-Z0-9_\s-]*$/, 'Ad slot ID can only contain letters, numbers, spaces, hyphens, and underscores')
+        .optional(),
+      footer: z.string()
+        .max(100, 'Footer ad slot must be less than 100 characters')
+        .regex(/^[a-zA-Z0-9_\s-]*$/, 'Ad slot ID can only contain letters, numbers, spaces, hyphens, and underscores')
+        .optional(),
+      content: z.string()
+        .max(100, 'Content ad slot must be less than 100 characters')
+        .regex(/^[a-zA-Z0-9_\s-]*$/, 'Ad slot ID can only contain letters, numbers, spaces, hyphens, and underscores')
+        .optional(),
+      mobile: z.string()
+        .max(100, 'Mobile ad slot must be less than 100 characters')
+        .regex(/^[a-zA-Z0-9_\s-]*$/, 'Ad slot ID can only contain letters, numbers, spaces, hyphens, and underscores')
+        .optional(),
+    }).optional(),
+    adTypes: z.object({
+      display: z.coerce.boolean().optional(),
+      text: z.coerce.boolean().optional(),
+      link: z.coerce.boolean().optional(),
+      inFeed: z.coerce.boolean().optional(),
+      inArticle: z.coerce.boolean().optional(),
+      matchedContent: z.coerce.boolean().optional(),
+    }).optional(),
+  }).optional(),
 });
 
 // PATCH /api/admin/settings
@@ -135,6 +172,24 @@ router.patch('/', requireAdmin, async (req, res) => {
         settings.auth.google = { ...(settings.auth.google || {}), ...update.auth.google };
       }
       delete update.auth;
+    }
+
+    // Deep-merge adsense settings to avoid clobbering other fields
+    if (update.adsense) {
+      settings.adsense = settings.adsense || {};
+      if (update.adsense.enabled !== undefined) {
+        settings.adsense.enabled = update.adsense.enabled;
+      }
+      if (update.adsense.publisherId !== undefined) {
+        settings.adsense.publisherId = update.adsense.publisherId;
+      }
+      if (update.adsense.adSlots) {
+        settings.adsense.adSlots = { ...(settings.adsense.adSlots || {}), ...update.adsense.adSlots };
+      }
+      if (update.adsense.adTypes) {
+        settings.adsense.adTypes = { ...(settings.adsense.adTypes || {}), ...update.adsense.adTypes };
+      }
+      delete update.adsense;
     }
 
     // Apply updates
