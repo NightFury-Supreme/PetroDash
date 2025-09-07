@@ -12,8 +12,69 @@ on:
         type: string
 
 jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      
+    steps:
+    - name: Get version from tag
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.version.outputs.version }}
+        release_name: Release ${{ steps.version.outputs.version }}
+        body: |
+          ## Auto Manager ${{ steps.version.outputs.version }}
+          
+          ### Packages Available:
+          - **backend-${{ steps.version.outputs.version }}.tar.gz** - Backend only
+          - **frontend-${{ steps.version.outputs.version }}.tar.gz** - Frontend only  
+          - **full-${{ steps.version.outputs.version }}.tar.gz** - Complete application
+          
+          ### Installation:
+          
+          **Backend Package:**
+          ```bash
+          tar -xzf backend-${{ steps.version.outputs.version }}.tar.gz
+          cd backend
+          npm ci --production
+          npm start
+          ```
+          
+          **Frontend Package:**
+          ```bash
+          tar -xzf frontend-${{ steps.version.outputs.version }}.tar.gz
+          cd frontend
+          npm ci --production
+          npm start
+          ```
+          
+          **Full Package:**
+          ```bash
+          tar -xzf full-${{ steps.version.outputs.version }}.tar.gz
+          ./install.sh ${{ steps.version.outputs.version }}
+          ```
+          
+          ### Update System:
+          The update system will automatically use the backend package for version checking and updates.
+        draft: false
+        prerelease: false
+
   build-packages:
     runs-on: ubuntu-latest
+    needs: create-release
     
     steps:
     - name: Checkout code
@@ -135,7 +196,7 @@ EOF
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
         asset_path: ./packages/backend-${{ steps.version.outputs.version }}.tar.gz
         asset_name: backend-${{ steps.version.outputs.version }}.tar.gz
         asset_content_type: application/gzip
@@ -145,7 +206,7 @@ EOF
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
         asset_path: ./packages/frontend-${{ steps.version.outputs.version }}.tar.gz
         asset_name: frontend-${{ steps.version.outputs.version }}.tar.gz
         asset_content_type: application/gzip
@@ -155,68 +216,7 @@ EOF
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
         asset_path: ./packages/full-${{ steps.version.outputs.version }}.tar.gz
         asset_name: full-${{ steps.version.outputs.version }}.tar.gz
         asset_content_type: application/gzip
-
-  create-release:
-    runs-on: ubuntu-latest
-    needs: build-packages
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
-      
-    steps:
-    - name: Get version from tag
-      id: version
-      run: |
-        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-        else
-          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-        fi
-        
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.version.outputs.version }}
-        release_name: Release ${{ steps.version.outputs.version }}
-        body: |
-          ## Auto Manager ${{ steps.version.outputs.version }}
-          
-          ### Packages Available:
-          - **backend-${{ steps.version.outputs.version }}.tar.gz** - Backend only
-          - **frontend-${{ steps.version.outputs.version }}.tar.gz** - Frontend only  
-          - **full-${{ steps.version.outputs.version }}.tar.gz** - Complete application
-          
-          ### Installation:
-          
-          **Backend Package:**
-          ```bash
-          tar -xzf backend-${{ steps.version.outputs.version }}.tar.gz
-          cd backend
-          npm ci --production
-          npm start
-          ```
-          
-          **Frontend Package:**
-          ```bash
-          tar -xzf frontend-${{ steps.version.outputs.version }}.tar.gz
-          cd frontend
-          npm ci --production
-          npm start
-          ```
-          
-          **Full Package:**
-          ```bash
-          tar -xzf full-${{ steps.version.outputs.version }}.tar.gz
-          ./install.sh ${{ steps.version.outputs.version }}
-          ```
-          
-          ### Update System:
-          The update system will automatically use the backend package for version checking and updates.
-        draft: false
-        prerelease: false

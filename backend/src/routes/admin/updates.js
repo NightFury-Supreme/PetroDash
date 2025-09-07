@@ -15,7 +15,7 @@ const updatesRateLimiter = createRateLimiter(10, 15 * 60 * 1000); // 10 requests
 router.use(updatesRateLimiter);
 
 // GitHub repository configuration
-const GITHUB_REPO = 'your-username/your-repo-name'; // Update this to your actual repository
+const GITHUB_REPO = 'NightFury-Supreme/PetroDash';
 const GITHUB_API_BASE = 'https://api.github.com';
 
 // GET /api/admin/updates/check - Check for available updates
