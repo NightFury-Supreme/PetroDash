@@ -131,7 +131,7 @@ jobs:
         echo '#!/bin/bash' > full-package/install.sh
         echo 'set -e' >> full-package/install.sh
         echo '' >> full-package/install.sh
-        echo 'echo "Installing Auto Manager $1..."' >> full-package/install.sh
+        echo 'echo "Installing PteroDash $1..."' >> full-package/install.sh
         echo '' >> full-package/install.sh
         echo '# Install backend dependencies' >> full-package/install.sh
         echo 'echo "Installing backend dependencies..."' >> full-package/install.sh
@@ -167,7 +167,7 @@ jobs:
         tag_name: ${{ steps.version.outputs.version }}
         name: Release ${{ steps.version.outputs.version }}
         body: |
-          ## Auto Manager ${{ steps.version.outputs.version }}
+          ## PteroDash ${{ steps.version.outputs.version }}
           
           ### Packages Available:
           - **backend-${{ steps.version.outputs.version }}.tar.gz** - Backend only
@@ -200,6 +200,52 @@ jobs:
           
           ### Update System:
           The update system will automatically use the backend package for version checking and updates.
+          
+          ### Changelog:
+          
+          #### Added
+          - **Automated Release System**: Complete GitHub Actions workflow for package distribution
+            - GitHub Actions workflow (`.github/workflows/release.yml`) for automated releases
+            - Creates 3 distinct packages: backend, frontend, and full application
+            - Automatic version detection from Git tags with manual workflow dispatch support
+            - Package-specific builds with proper dependency management
+            - Installation scripts for full package deployment
+          - **Package-Based Update System**: Enhanced update mechanism using backend packages
+            - Backend update system now downloads and uses specific backend packages
+            - Improved update process with package asset detection and validation
+            - Enhanced backup system with backend-specific backups
+            - Cleaner installation using `npm ci --production` for faster, reliable updates
+            - Package information display in admin UI (package name, size, download progress)
+          - **Release Management**: Comprehensive release and deployment system
+            - Backend package (`backend-vX.X.X.tar.gz`) for backend-only updates
+            - Frontend package (`frontend-vX.X.X.tar.gz`) for frontend-only deployment
+            - Full package (`full-vX.X.X.tar.gz`) with installation script for complete setup
+            - Version information embedded in each package for tracking
+            - Release notes and package metadata in GitHub releases
+          
+          #### Enhanced
+          - **Update System UI**: Improved admin interface for update management
+            - Package information display showing package name and size
+            - Better progress tracking with detailed status updates
+            - Enhanced error handling with more descriptive error messages
+            - Improved visual feedback during update process
+          - **Backend Update Process**: More robust and reliable update mechanism
+            - Package-specific download and extraction process
+            - Better error handling for missing packages or failed downloads
+            - Improved backup creation and restoration capabilities
+            - Enhanced dependency installation with production-only packages
+          
+          #### Technical Improvements
+          - **GitHub Integration**: Seamless integration with GitHub releases
+            - Automatic package upload to GitHub releases
+            - Asset detection and validation for backend packages
+            - Proper error handling for missing or invalid packages
+            - Rate limiting and authentication for update endpoints
+          - **Package Structure**: Optimized package organization
+            - Clean separation of backend, frontend, and full packages
+            - Proper dependency management in each package
+            - Version tracking and metadata in package files
+            - Installation scripts for automated deployment
         draft: false
         prerelease: false
         generate_release_notes: true
