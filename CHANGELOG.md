@@ -10,7 +10,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Future features and improvements will be listed here
 
-## [1.0.4] - 2025-01-15
+## [1.0.5] - 07-09-2025
+
+### Added
+- **Automated Release System**: Complete GitHub Actions workflow for package distribution
+  - GitHub Actions workflow (`.github/workflows/release.yml`) for automated releases
+  - Creates 3 distinct packages: backend, frontend, and full application
+  - Automatic version detection from Git tags with manual workflow dispatch support
+  - Package-specific builds with proper dependency management
+  - Installation scripts for full package deployment
+- **Package-Based Update System**: Enhanced update mechanism using backend packages
+  - Backend update system now downloads and uses specific backend packages
+  - Improved update process with package asset detection and validation
+  - Enhanced backup system with backend-specific backups
+  - Cleaner installation using `npm ci --production` for faster, reliable updates
+  - Package information display in admin UI (package name, size, download progress)
+- **Release Management**: Comprehensive release and deployment system
+  - Backend package (`backend-vX.X.X.tar.gz`) for backend-only updates
+  - Frontend package (`frontend-vX.X.X.tar.gz`) for frontend-only deployment
+  - Full package (`full-vX.X.X.tar.gz`) with installation script for complete setup
+  - Version information embedded in each package for tracking
+  - Release notes and package metadata in GitHub releases
+
+### Enhanced
+- **Update System UI**: Improved admin interface for update management
+  - Package information display showing package name and size
+  - Better progress tracking with detailed status updates
+  - Enhanced error handling with more descriptive error messages
+  - Improved visual feedback during update process
+- **Backend Update Process**: More robust and reliable update mechanism
+  - Package-specific download and extraction process
+  - Better error handling for missing packages or failed downloads
+  - Improved backup creation and restoration capabilities
+  - Enhanced dependency installation with production-only packages
+
+### Technical Improvements
+- **GitHub Integration**: Seamless integration with GitHub releases
+  - Automatic package upload to GitHub releases
+  - Asset detection and validation for backend packages
+  - Proper error handling for missing or invalid packages
+  - Rate limiting and authentication for update endpoints
+- **Package Structure**: Optimized package organization
+  - Clean separation of backend, frontend, and full packages
+  - Proper dependency management in each package
+  - Version tracking and metadata in package files
+  - Installation scripts for automated deployment
+
+## [1.0.4] - 06-09-2025
 
 ### Added
 - **Google AdSense Integration**: Complete advertising system with admin configuration
@@ -37,7 +83,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Ad types configuration (Display, Text, Link, In-Feed, In-Article, Matched Content)
   - Real-time settings validation and error feedback
 
-## [1.0.3] - 2025-01-15
+## [1.0.3] - 05-09-2025
 
 ### Added
 - **User Banning System**: Comprehensive user management and moderation tools
@@ -71,7 +117,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Proper 403 Forbidden responses with ban details
   - Server suspension prevents access to game panel resources
 
-## [1.0.2] - 2025-09-05
+## [1.0.2] - 05-09-2025
 
 ### Added
 - **Discord OAuth Integration**: Complete Discord authentication system
@@ -104,7 +150,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **TypeScript Interfaces**: Resolved interface mismatches in admin settings
 - **OAuth Data Storage**: Enhanced provider data consistency
 
-## [1.0.1] - 2025-09-05
+## [1.0.1] - 04-09-2025
 
 ### Added
 - **Referral System**: Complete referral program with custom codes and rewards
@@ -147,7 +193,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Referral Code Editing**: Fixed modal interaction and API calls
 - **404 Errors**: Added proper route handling for `/join/{code}` URLs
 
-## [1.0.0] - 2025-09-04
+## [1.0.0] - 04-09-2025
 
 ### Added
 - Initial release of PteroDash
@@ -175,6 +221,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **1.0.5** - Automated release system with package-based updates and GitHub Actions workflow
+- **1.0.4** - Google AdSense integration with ad blocker detection and prevention system
 - **1.0.3** - User banning system, global authentication guard, and enhanced admin user management
 - **1.0.2** - Discord and Google OAuth integration with enhanced authentication system
 - **1.0.1** - Referral system, premium badges, Docker support, and major UI improvements

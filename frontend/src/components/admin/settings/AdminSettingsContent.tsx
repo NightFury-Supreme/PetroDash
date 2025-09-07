@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useModal } from '@/components/Modal';
+import { UpdateSystem } from '../updates';
 
 interface Settings {
   siteName: string;
@@ -749,6 +750,9 @@ export function AdminSettingsContent({
           </div>
         </div>
       </div>
+
+      {/* System Updates */}
+      <UpdateSystem />
 
       {/* Action Buttons */}
       <div className="flex items-center gap-3">

@@ -18,6 +18,7 @@ A modern, feature-rich control panel for Pterodactyl servers with advanced user 
 * **Admin Tools** – User banning, egg and location management, analytics, and shop control
 * **Security** – JWT auth, OAuth, rate limiting, audit logs, and validation
 * **UI/UX** – Modern Tailwind CSS dashboard with smooth client-side navigation
+* **System Updates**: One-click updates with GitHub integration
 
 ![Dashboard Screenshot](images/dashboard.png)
 

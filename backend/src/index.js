@@ -94,6 +94,7 @@ app.use('/api/ads', require('./routes/ads'));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin/updates', require('./routes/admin/updates'));
 app.use('/api/servers', serverRoutes);
 app.use('/api/eggs', publicEggRoutes);
 app.use('/api/locations', publicLocationRoutes);

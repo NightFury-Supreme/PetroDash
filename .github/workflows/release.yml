@@ -1,0 +1,222 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v1.0.4)'
+        required: true
+        type: string
+
+jobs:
+  build-packages:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Get version from tag
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Install dependencies
+      run: |
+        cd backend && npm ci
+        cd ../frontend && npm ci
+        
+    - name: Build frontend
+      run: |
+        cd frontend
+        npm run build
+        
+    - name: Build backend
+      run: |
+        cd backend
+        npm run build || echo "No build script found, using source files"
+        
+    - name: Create backend package
+      run: |
+        mkdir -p packages
+        cd packages
+        
+        # Create backend package
+        mkdir -p backend-package
+        cp -r ../backend/src backend-package/
+        cp ../backend/package.json backend-package/
+        cp ../backend/package-lock.json backend-package/ 2>/dev/null || echo "No package-lock.json found"
+        
+        # Add version info
+        echo '{"version": "${{ steps.version.outputs.version }}", "buildDate": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'", "packageType": "backend"}' > backend-package/version.json
+        
+        # Create tar.gz
+        tar -czf backend-${{ steps.version.outputs.version }}.tar.gz -C backend-package .
+        
+    - name: Create frontend package
+      run: |
+        cd packages
+        
+        # Create frontend package
+        mkdir -p frontend-package
+        cp -r ../frontend/.next frontend-package/
+        cp -r ../frontend/public frontend-package/ 2>/dev/null || echo "No public directory found"
+        cp ../frontend/package.json frontend-package/
+        cp ../frontend/package-lock.json frontend-package/ 2>/dev/null || echo "No package-lock.json found"
+        cp ../frontend/next.config.js frontend-package/ 2>/dev/null || echo "No next.config.js found"
+        
+        # Add version info
+        echo '{"version": "${{ steps.version.outputs.version }}", "buildDate": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'", "packageType": "frontend"}' > frontend-package/version.json
+        
+        # Create tar.gz
+        tar -czf frontend-${{ steps.version.outputs.version }}.tar.gz -C frontend-package .
+        
+    - name: Create full package
+      run: |
+        cd packages
+        
+        # Create full package
+        mkdir -p full-package
+        cp -r ../backend/src full-package/backend/
+        cp ../backend/package.json full-package/backend/
+        cp ../backend/package-lock.json full-package/backend/ 2>/dev/null || echo "No package-lock.json found"
+        
+        cp -r ../frontend/.next full-package/frontend/
+        cp -r ../frontend/public full-package/frontend/ 2>/dev/null || echo "No public directory found"
+        cp ../frontend/package.json full-package/frontend/
+        cp ../frontend/package-lock.json full-package/frontend/ 2>/dev/null || echo "No package-lock.json found"
+        cp ../frontend/next.config.js full-package/frontend/ 2>/dev/null || echo "No next.config.js found"
+        
+        # Add installation scripts
+        cat > full-package/install.sh << 'EOF'
+#!/bin/bash
+set -e
+
+echo "Installing Auto Manager $1..."
+
+# Install backend dependencies
+echo "Installing backend dependencies..."
+cd backend
+npm ci --production
+
+# Install frontend dependencies
+echo "Installing frontend dependencies..."
+cd ../frontend
+npm ci --production
+
+echo "Installation complete!"
+echo "To start the application:"
+echo "  Backend: cd backend && npm start"
+echo "  Frontend: cd frontend && npm start"
+EOF
+        chmod +x full-package/install.sh
+        
+        # Add version info
+        echo '{"version": "${{ steps.version.outputs.version }}", "buildDate": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'", "packageType": "full"}' > full-package/version.json
+        
+        # Create tar.gz
+        tar -czf full-${{ steps.version.outputs.version }}.tar.gz -C full-package .
+        
+    - name: Upload packages to release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./packages/backend-${{ steps.version.outputs.version }}.tar.gz
+        asset_name: backend-${{ steps.version.outputs.version }}.tar.gz
+        asset_content_type: application/gzip
+        
+    - name: Upload frontend package
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./packages/frontend-${{ steps.version.outputs.version }}.tar.gz
+        asset_name: frontend-${{ steps.version.outputs.version }}.tar.gz
+        asset_content_type: application/gzip
+        
+    - name: Upload full package
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./packages/full-${{ steps.version.outputs.version }}.tar.gz
+        asset_name: full-${{ steps.version.outputs.version }}.tar.gz
+        asset_content_type: application/gzip
+
+  create-release:
+    runs-on: ubuntu-latest
+    needs: build-packages
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      
+    steps:
+    - name: Get version from tag
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.version.outputs.version }}
+        release_name: Release ${{ steps.version.outputs.version }}
+        body: |
+          ## Auto Manager ${{ steps.version.outputs.version }}
+          
+          ### Packages Available:
+          - **backend-${{ steps.version.outputs.version }}.tar.gz** - Backend only
+          - **frontend-${{ steps.version.outputs.version }}.tar.gz** - Frontend only  
+          - **full-${{ steps.version.outputs.version }}.tar.gz** - Complete application
+          
+          ### Installation:
+          
+          **Backend Package:**
+          ```bash
+          tar -xzf backend-${{ steps.version.outputs.version }}.tar.gz
+          cd backend
+          npm ci --production
+          npm start
+          ```
+          
+          **Frontend Package:**
+          ```bash
+          tar -xzf frontend-${{ steps.version.outputs.version }}.tar.gz
+          cd frontend
+          npm ci --production
+          npm start
+          ```
+          
+          **Full Package:**
+          ```bash
+          tar -xzf full-${{ steps.version.outputs.version }}.tar.gz
+          ./install.sh ${{ steps.version.outputs.version }}
+          ```
+          
+          ### Update System:
+          The update system will automatically use the backend package for version checking and updates.
+        draft: false
+        prerelease: false
