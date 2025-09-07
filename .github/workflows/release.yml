@@ -25,11 +25,19 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
+    - name: Verify project structure
+      run: |
+        echo "Project structure:"
+        ls -la
+        echo "Backend files:"
+        ls -la backend/
+        echo "Frontend files:"
+        ls -la frontend/
+      
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        cache: 'npm'
         
     - name: Get version from tag
       id: version
@@ -42,8 +50,21 @@ jobs:
         
     - name: Install dependencies
       run: |
-        cd backend && npm ci
-        cd ../frontend && npm ci
+        echo "Installing backend dependencies..."
+        cd backend
+        if [ -f package-lock.json ]; then
+          npm ci
+        else
+          npm install
+        fi
+        
+        echo "Installing frontend dependencies..."
+        cd ../frontend
+        if [ -f package-lock.json ]; then
+          npm ci
+        else
+          npm install
+        fi
         
     - name: Build frontend
       run: |
