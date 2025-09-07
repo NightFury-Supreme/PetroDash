@@ -4,67 +4,22 @@ A modern, feature-rich control panel for Pterodactyl servers with advanced user 
 
 ![PteroDash Logo](images/logo.svg)
 
-## ✨ Features
+# 🌟 All Features
 
-### 🚀 **Core Functionality**
-- **Server Management**: Create, edit, and manage Pterodactyl servers
-- **User Management**: Advanced user roles and permissions with banning system
-- **Plan System**: Subscription-based access control with lifetime plans
-- **Resource Management**: CPU, RAM, Disk, and allocation limits
-- **Payment Integration**: PayPal payment processing with webhooks
-- **Advertising System**: Google AdSense integration with ad blocker detection
+* **Resource Management** – Create servers, manage CPU, RAM, Disk, and allocations
+* **Servers** – Create, view, and edit servers with ease
+* **User System** – Authentication, password reset, OAuth login, and permissions
+* **Coupons** – Discount codes for plans and promotions
+* **Store** – Buy resources and plans using coins
+* **Dashboard** – View resources, plans, and live server status
+* **Plans** – Lifetime plan support
+* **Payment Integration** – PayPal with automatic webhook handling
+* **Advertising System** – Google AdSense integration with ad blocker detection
+* **Admin Tools** – User banning, egg and location management, analytics, and shop control
+* **Security** – JWT auth, OAuth, rate limiting, audit logs, and validation
+* **UI/UX** – Modern Tailwind CSS dashboard with smooth client-side navigation
 
 ![Dashboard Screenshot](images/dashboard.png)
-
-### 💰 **Monetization & Advertising**
-- **Google AdSense Integration**: Complete advertising system with admin configuration
-  - Publisher ID and Ad Slot management
-  - Multiple ad types (Display, Text, Link, In-Feed, In-Article, Matched Content)
-  - Global ad placement (Header, Sidebar, Footer, Content, Mobile)
-  - Real-time ad blocker detection and prevention
-  - Unbypassable ad blocker modal with security measures
-  - Lazy loading support for optimal performance
-  - Responsive design for desktop and mobile devices
-
-### 🛡️ **Advanced Security & Moderation**
-- **User Banning System**: Comprehensive user management and moderation tools
-  - Admin ability to ban users with custom reasons and duration
-  - Temporary or permanent ban options
-  - Automatic server unsuspension when users are unbanned
-  - Full-screen ban notice page with clean URL structure
-  - Self-healing ban state detection
-- **Ad Blocker Detection**: Advanced anti-ad-blocker system
-  - Real-time script loading detection (catches ERR_BLOCKED_BY_CLIENT errors)
-  - Multiple detection methods for comprehensive coverage
-  - Secure modal that prevents bypassing (disables dev tools, right-click, keyboard shortcuts)
-  - No persistent tracking or cookies for privacy compliance
-  - Automatic modal dismissal after successful ad load
-
-### 🎨 **User Experience**
-- **Modern UI**: Beautiful, responsive design with Tailwind CSS
-- **Real-time Updates**: Live server status and resource monitoring
-- **Custom Branding**: Configurable dashboard name and logo
-- **Client-side Navigation**: Smooth, fast page transitions
-- **Clean Ad Display**: Direct ad rendering without placeholder content
-
-### 🔒 **Security & Performance**
-- **JWT Authentication**: Secure user authentication
-- **OAuth Integration**: Discord and Google login support
-- **Email Login**: Email authentication
-- **Rate Limiting**: Protection against abuse
-- **Audit Logging**: Comprehensive action tracking
-- **Input Validation**: Zod schema validation
-- **CORS Protection**: Secure cross-origin requests
-- **Global Authentication Guard**: Enhanced security with automatic redirects
-
-### 🛠 **Admin Features**
-- **Egg Management**: Plan-based egg access control
-- **Location Management**: Geographic server distribution
-- **User Analytics**: Detailed user statistics and monitoring
-- **Shop Management**: Resource and plan sales
-- **Coupon System**: Discount codes and promotions
-- **AdSense Configuration**: Complete advertising settings management
-- **User Banning**: Advanced moderation tools with visual indicators
 
 ## 🚀 Setup & Deployment
 
