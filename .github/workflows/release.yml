@@ -169,38 +169,6 @@ jobs:
         body: |
           ## PteroDash ${{ steps.version.outputs.version }}
           
-          ### Packages Available:
-          - **backend-${{ steps.version.outputs.version }}.tar.gz** - Backend only
-          - **frontend-${{ steps.version.outputs.version }}.tar.gz** - Frontend only  
-          - **full-${{ steps.version.outputs.version }}.tar.gz** - Complete application
-          
-          ### Installation:
-          
-          **Backend Package:**
-          ```bash
-          tar -xzf backend-${{ steps.version.outputs.version }}.tar.gz
-          cd backend
-          npm ci --production
-          npm start
-          ```
-          
-          **Frontend Package:**
-          ```bash
-          tar -xzf frontend-${{ steps.version.outputs.version }}.tar.gz
-          cd frontend
-          npm ci --production
-          npm start
-          ```
-          
-          **Full Package:**
-          ```bash
-          tar -xzf full-${{ steps.version.outputs.version }}.tar.gz
-          ./install.sh ${{ steps.version.outputs.version }}
-          ```
-          
-          ### Update System:
-          The update system will automatically use the backend package for version checking and updates.
-          
           ### Changelog:
           
           #### Added
