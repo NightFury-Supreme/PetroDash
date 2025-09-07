@@ -200,43 +200,72 @@ async function performUpdate(release) {
     const backupDir = path.join(projectRoot, `backup-${Date.now()}`);
     await execAsync(`cp -r . ${backupDir}`, { cwd: projectRoot });
 
-    // Find backend package asset
+    // Find both backend and frontend package assets
     const backendAsset = release.assets.find(asset => 
       asset.name.includes('backend-') && asset.name.endsWith('.tar.gz')
+    );
+    const frontendAsset = release.assets.find(asset => 
+      asset.name.includes('frontend-') && asset.name.endsWith('.tar.gz')
     );
 
     if (!backendAsset) {
       throw new Error('Backend package not found in release');
+    }
+    if (!frontendAsset) {
+      throw new Error('Frontend package not found in release');
     }
 
     // Download backend package
     await fs.writeFile(statusFile, JSON.stringify({
       status: 'downloading',
       message: 'Downloading backend package...',
+      progress: 20,
+      timestamp: new Date().toISOString()
+    }));
+
+    const backendUpdatePackage = path.join(projectRoot, 'backend-update.tar.gz');
+    await execAsync(`curl -L -o ${backendUpdatePackage} ${backendAsset.browser_download_url}`);
+
+    // Download frontend package
+    await fs.writeFile(statusFile, JSON.stringify({
+      status: 'downloading',
+      message: 'Downloading frontend package...',
       progress: 30,
       timestamp: new Date().toISOString()
     }));
 
-    const updatePackage = path.join(projectRoot, 'backend-update.tar.gz');
-    await execAsync(`curl -L -o ${updatePackage} ${backendAsset.browser_download_url}`);
+    const frontendUpdatePackage = path.join(projectRoot, 'frontend-update.tar.gz');
+    await execAsync(`curl -L -o ${frontendUpdatePackage} ${frontendAsset.browser_download_url}`);
 
     // Extract backend package
     await fs.writeFile(statusFile, JSON.stringify({
       status: 'extracting',
       message: 'Extracting backend package...',
+      progress: 40,
+      timestamp: new Date().toISOString()
+    }));
+
+    const backendTempDir = path.join(projectRoot, 'temp-backend-update');
+    await fs.mkdir(backendTempDir, { recursive: true });
+    await execAsync(`tar -xzf ${backendUpdatePackage} -C ${backendTempDir}`);
+
+    // Extract frontend package
+    await fs.writeFile(statusFile, JSON.stringify({
+      status: 'extracting',
+      message: 'Extracting frontend package...',
       progress: 50,
       timestamp: new Date().toISOString()
     }));
 
-    const tempDir = path.join(projectRoot, 'temp-backend-update');
-    await fs.mkdir(tempDir, { recursive: true });
-    await execAsync(`tar -xzf ${updatePackage} -C ${tempDir}`);
+    const frontendTempDir = path.join(projectRoot, 'temp-frontend-update');
+    await fs.mkdir(frontendTempDir, { recursive: true });
+    await execAsync(`tar -xzf ${frontendUpdatePackage} -C ${frontendTempDir}`);
 
     // Apply backend update
     await fs.writeFile(statusFile, JSON.stringify({
       status: 'applying',
       message: 'Applying backend update...',
-      progress: 70,
+      progress: 60,
       timestamp: new Date().toISOString()
     }));
 
@@ -245,20 +274,55 @@ async function performUpdate(release) {
     await execAsync(`cp -r backend ${backendBackupDir}`);
 
     // Replace backend files (excluding node_modules and .env)
-    await execAsync(`rsync -av --exclude='node_modules' --exclude='.env' --exclude='*.log' ${tempDir}/ backend/`);
+    await execAsync(`rsync -av --exclude='node_modules' --exclude='.env' --exclude='*.log' ${backendTempDir}/ backend/`);
+
+    // Apply frontend update
+    await fs.writeFile(statusFile, JSON.stringify({
+      status: 'applying',
+      message: 'Applying frontend update...',
+      progress: 70,
+      timestamp: new Date().toISOString()
+    }));
+
+    // Backup current frontend
+    const frontendBackupDir = path.join(projectRoot, `frontend-backup-${Date.now()}`);
+    await execAsync(`cp -r frontend ${frontendBackupDir}`);
+
+    // Replace frontend files (excluding node_modules and .next)
+    await execAsync(`rsync -av --exclude='node_modules' --exclude='.next' --exclude='*.log' ${frontendTempDir}/ frontend/`);
 
     // Install backend dependencies
     await fs.writeFile(statusFile, JSON.stringify({
       status: 'installing_deps',
       message: 'Installing backend dependencies...',
-      progress: 85,
+      progress: 80,
       timestamp: new Date().toISOString()
     }));
 
     await execAsync('npm ci --production', { cwd: path.join(projectRoot, 'backend') });
 
+    // Install frontend dependencies
+    await fs.writeFile(statusFile, JSON.stringify({
+      status: 'installing_deps',
+      message: 'Installing frontend dependencies...',
+      progress: 90,
+      timestamp: new Date().toISOString()
+    }));
+
+    await execAsync('npm ci --production', { cwd: path.join(projectRoot, 'frontend') });
+
+    // Build frontend
+    await fs.writeFile(statusFile, JSON.stringify({
+      status: 'building',
+      message: 'Building frontend...',
+      progress: 95,
+      timestamp: new Date().toISOString()
+    }));
+
+    await execAsync('npm run build', { cwd: path.join(projectRoot, 'frontend') });
+
     // Cleanup
-    await execAsync(`rm -rf ${tempDir} ${updatePackage}`);
+    await execAsync(`rm -rf ${backendTempDir} ${frontendTempDir} ${backendUpdatePackage} ${frontendUpdatePackage}`);
 
     // Update complete
     await fs.writeFile(statusFile, JSON.stringify({

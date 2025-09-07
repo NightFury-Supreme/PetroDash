@@ -19,12 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Automatic version detection from Git tags with manual workflow dispatch support
   - Package-specific builds with proper dependency management
   - Installation scripts for full package deployment
-- **Package-Based Update System**: Enhanced update mechanism using backend packages
-  - Backend update system now downloads and uses specific backend packages
-  - Improved update process with package asset detection and validation
-  - Enhanced backup system with backend-specific backups
+- **Dual-Package Update System**: Enhanced update mechanism using both backend and frontend packages
+  - Update system now downloads and applies both backend and frontend packages simultaneously
+  - Improved update process with package asset detection and validation for both components
+  - Enhanced backup system with separate backups for backend and frontend
   - Cleaner installation using `npm ci --production` for faster, reliable updates
   - Package information display in admin UI (package name, size, download progress)
+  - Automatic frontend build process after frontend package installation
 - **Release Management**: Comprehensive release and deployment system
   - Backend package (`backend-vX.X.X.tar.gz`) for backend-only updates
   - Frontend package (`frontend-vX.X.X.tar.gz`) for frontend-only deployment
