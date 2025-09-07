@@ -162,27 +162,25 @@ jobs:
         cp ../frontend/next.config.js full-package/frontend/ 2>/dev/null || echo "No next.config.js found"
         
         # Add installation scripts
-        cat > full-package/install.sh << 'EOF'
-#!/bin/bash
-set -e
-
-echo "Installing Auto Manager $1..."
-
-# Install backend dependencies
-echo "Installing backend dependencies..."
-cd backend
-npm ci --production
-
-# Install frontend dependencies
-echo "Installing frontend dependencies..."
-cd ../frontend
-npm ci --production
-
-echo "Installation complete!"
-echo "To start the application:"
-echo "  Backend: cd backend && npm start"
-echo "  Frontend: cd frontend && npm start"
-EOF
+        echo '#!/bin/bash' > full-package/install.sh
+        echo 'set -e' >> full-package/install.sh
+        echo '' >> full-package/install.sh
+        echo 'echo "Installing Auto Manager $1..."' >> full-package/install.sh
+        echo '' >> full-package/install.sh
+        echo '# Install backend dependencies' >> full-package/install.sh
+        echo 'echo "Installing backend dependencies..."' >> full-package/install.sh
+        echo 'cd backend' >> full-package/install.sh
+        echo 'npm ci --production' >> full-package/install.sh
+        echo '' >> full-package/install.sh
+        echo '# Install frontend dependencies' >> full-package/install.sh
+        echo 'echo "Installing frontend dependencies..."' >> full-package/install.sh
+        echo 'cd ../frontend' >> full-package/install.sh
+        echo 'npm ci --production' >> full-package/install.sh
+        echo '' >> full-package/install.sh
+        echo 'echo "Installation complete!"' >> full-package/install.sh
+        echo 'echo "To start the application:"' >> full-package/install.sh
+        echo 'echo "  Backend: cd backend && npm start"' >> full-package/install.sh
+        echo 'echo "  Frontend: cd frontend && npm start"' >> full-package/install.sh
         chmod +x full-package/install.sh
         
         # Add version info
