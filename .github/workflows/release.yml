@@ -163,6 +163,8 @@ jobs:
         cp -r ../backend/src full-package/backend/
         cp -r ../backend/scripts full-package/backend/ 2>/dev/null || echo "No scripts directory found"
         cp ../backend/package.json full-package/backend/
+        cp ../backend/env.example full-package/backend/ 2>/dev/null || echo "No env.example found"
+        cp ../backend/Dockerfile full-package/backend/ 2>/dev/null || echo "No Dockerfile found"
         
         mkdir -p full-package/frontend
         cp -r ../frontend/src full-package/frontend/
@@ -190,12 +192,12 @@ jobs:
         echo '# Install backend dependencies' >> full-package/install.sh
         echo 'echo "Installing backend dependencies..."' >> full-package/install.sh
         echo 'cd backend' >> full-package/install.sh
-        echo 'npm ci --production' >> full-package/install.sh
+        echo 'if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi' >> full-package/install.sh
         echo '' >> full-package/install.sh
         echo '# Install frontend dependencies' >> full-package/install.sh
         echo 'echo "Installing frontend dependencies..."' >> full-package/install.sh
         echo 'cd ../frontend' >> full-package/install.sh
-        echo 'npm ci --production' >> full-package/install.sh
+        echo 'if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi' >> full-package/install.sh
         echo '' >> full-package/install.sh
         echo '# Build frontend' >> full-package/install.sh
         echo 'echo "Building frontend..."' >> full-package/install.sh
