@@ -6,20 +6,11 @@ import { AdminLedgerSkeleton } from "@/components/skeletons/admin/ledger";
 import { AdminLedgerHeader, AdminLedgerContent } from "@/components/admin/ledger";
 import { useModal } from "@/components/Modal";
 
-interface Payment {
-  _id: string;
-  provider: string;
-  providerOrderId: string;
-  userId: string;
-  planId: string;
-  amount: number;
-  currency: string;
-  status: string;
-  createdAt: string;
-}
+// Use a flexible item shape to match API without strict coupling
+type LedgerItem = Record<string, any>;
 
 export default function AdminLedgerPage() {
-  const [items, setItems] = useState<Payment[]>([]);
+  const [items, setItems] = useState<LedgerItem[]>([]);
   const [status, setStatus] = useState<string>("");
   const [provider, setProvider] = useState<string>("");
   const [userId, setUserId] = useState<string>("");
@@ -54,8 +45,8 @@ export default function AdminLedgerPage() {
         throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`);
       }
       
-      const data = await response.json() as Array<{ _id: string; userId: string; username: string; planId: string; planName: string; amount: number; status: string; createdAt: string; updatedAt: string }>;
-      setItems(data || []);
+      const data = await response.json();
+      setItems(Array.isArray(data) ? data : []);
     } catch (e: unknown) { 
       setError(e instanceof Error ? e.message : 'Failed to load payments'); 
     } finally {

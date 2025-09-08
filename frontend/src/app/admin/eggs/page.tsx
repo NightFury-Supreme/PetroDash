@@ -17,9 +17,13 @@ export default function EggsListPage() {
     fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/eggs`, {
       headers: { Authorization: `Bearer ${token}` },
     }).then(async (r) => {
-      const d = await r.json() as { error?: string; [key: string]: unknown };
-      if (!r.ok) throw new Error(d?.error || 'Failed');
-      setEggs(d as Array<{ _id: string; name: string; description: string; pterodactylEggId: string; pterodactylNestId: string; recommended: boolean; allowedPlans: string[] }>);
+      const d = await r.json();
+      if (!r.ok) throw new Error((d && d.error) || 'Failed');
+      if (Array.isArray(d)) {
+        setEggs(d as Array<{ _id: string; name: string; description: string; pterodactylEggId: string; pterodactylNestId: string; recommended: boolean; allowedPlans: string[] }>);
+      } else {
+        setEggs([]);
+      }
     }).catch(() => {}).finally(() => setLoading(false));
   }, [router]);
 

@@ -19,6 +19,7 @@ A modern, feature-rich control panel for Pterodactyl servers with advanced user 
 * **Security** – JWT auth, OAuth, rate limiting, audit logs, and validation
 * **UI/UX** – Modern Tailwind CSS dashboard with smooth client-side navigation
 * **System Updates**: One-click updates with GitHub integration
+* **Gift Coupons** – Share coins and rewards with redeemable codes
 
 ![Dashboard Screenshot](images/dashboard.png)
 

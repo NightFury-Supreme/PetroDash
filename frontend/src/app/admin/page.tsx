@@ -26,7 +26,15 @@ export default function AdminPage() {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
-  const [stats, setStats] = useState<{ totalUsers: number; totalServers: number; totalPlans: number; totalRevenue: number } | null>(null);
+  type AdminStats = {
+    users: { total: number; today?: number };
+    servers: { total: number; byEgg: Array<{ eggId: string; name?: string; count: number }>; byLocation: Array<{ locationId: string; name?: string; count: number; serverLimit?: number }> };
+    eggs: { total: number };
+    locations: { total: number };
+    plans: { total: number };
+    purchases: { total: number; today?: number; usersWithPurchases?: number };
+  };
+  const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -45,9 +53,9 @@ export default function AdminPage() {
       try {
         setLoading(true);
         const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/stats`, { headers: { Authorization: `Bearer ${token}` } });
-        const d = await r.json() as { error?: string; totalUsers: number; totalServers: number; totalPlans: number; totalRevenue: number };
+        const d = await r.json() as any;
         if (!r.ok) throw new Error(d?.error || 'Failed to load stats');
-        setStats(d);
+        setStats(d as AdminStats);
       } catch (_) {
         setStats(null);
       } finally { setLoading(false); }

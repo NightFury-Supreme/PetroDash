@@ -10,6 +10,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Future features and improvements will be listed here
 
+## [1.0.6] - 08-09-2025
+
+### Added
+- **Gift Coupons System (User + Admin)**
+  - User page `/gift`
+  - Tabs for Active/Inactive user-created codes with empty states and counts
+  - Create coin-sharing codes via modal; list your codes with status and redemptions
+  - Admin pages `/admin/gift`, `/admin/gift/new`, `/admin/gift/edit/[id]` mirroring Coupons UI
+  - Gift editor supports coins, granular resources, plan grants, validity, limits, enable toggle
+  - Shows redeemed users in edit view (links to profiles)
+
+### Security
+- Enforced read-only for user-generated codes across admin API (no edit/delete)
+- Rate limits on gift creation and redemption; per user+IP window limits
+- Unique code generation with collision checks; input validation and sane caps
+- Transactional redemption (Mongo sessions) to prevent race-condition double spends
+
 ## [1.0.5] - 07-09-2025
 
 ### Added

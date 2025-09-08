@@ -10,7 +10,7 @@ import { ItemCard } from '@/components/shop/ItemCard';
 import { PlanCard } from '@/components/shop/PlanCard';
 import { PlanPurchaseButton } from '@/components/shop/PlanPurchaseButton';
 import { CouponModal } from '@/components/shop/CouponModal';
-import { ContentAd, SidebarAd, MobileAd } from '@/components/AdSense';
+import { ContentAd, SidebarAd, MobileAd } from '@/components/ads/AdSense';
 
 export default function ShopPage() {
   const router = useRouter();

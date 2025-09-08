@@ -5,18 +5,18 @@ import { AdminLedgerFiltersSkeleton, AdminLedgerTableSkeleton } from '@/componen
 
 interface Payment {
   _id: string;
-  provider: string;
-  providerOrderId: string;
+  provider?: string;
+  providerOrderId?: string;
   userId: string;
   planId: string;
   amount: number;
-  currency: string;
+  currency?: string;
   status: string;
   createdAt: string;
 }
 
 interface AdminLedgerContentProps {
-  items: Payment[];
+  items: any[];
   status: string;
   provider: string;
   userId: string;

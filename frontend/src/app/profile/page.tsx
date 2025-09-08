@@ -107,9 +107,9 @@ export default function ProfilePage() {
                     )}
                     {form.loginMethod === 'discord' ? 'Discord' : form.loginMethod === 'google' ? 'Google' : 'Email'}
                   </span>
-                  {form.loginMethod === 'discord' && form.oauthProviders?.discord?.id && (
+                  {form.loginMethod === 'discord' && (form as any)?.oauthProviders?.discord?.id && (
                     <span className="px-2 py-1 rounded-md border border-[var(--border)] bg-white/5">
-                      <i className="fas fa-id-badge mr-1"></i>ID: {form.oauthProviders.discord.id}
+                      <i className="fas fa-id-badge mr-1"></i>ID: {(form as any).oauthProviders.discord.id}
                     </span>
                   )}
                   {form.joinedAt && (

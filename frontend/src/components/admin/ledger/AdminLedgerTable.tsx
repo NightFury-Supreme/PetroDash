@@ -2,18 +2,18 @@ import { useState } from 'react';
 
 interface Payment {
   _id: string;
-  provider: string;
-  providerOrderId: string;
+  provider?: string;
+  providerOrderId?: string;
   userId: string;
   planId: string;
   amount: number;
-  currency: string;
+  currency?: string;
   status: string;
   createdAt: string;
 }
 
 interface AdminLedgerTableProps {
-  items: Payment[];
+  items: any[];
   onRefund: (id: string) => void;
   onVoid: (id: string) => void;
   refunding: string | null;

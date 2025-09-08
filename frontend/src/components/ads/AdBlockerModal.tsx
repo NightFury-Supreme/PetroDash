@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import '../styles/adblocker-modal.css';
+import '../../styles/adblocker-modal.css';
 
 interface AdBlockerModalProps {
   isOpen: boolean;

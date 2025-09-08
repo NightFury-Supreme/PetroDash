@@ -65,6 +65,7 @@ export default function AdminShopPage() {
           onStartEditing={handleStartEditing}
           onCloseModal={handleCloseModal}
           onSaveItem={handleSaveItem}
+          onToggleEnabled={handleToggleEnabled}
         />
       </div>
     </Shell>
