@@ -108,12 +108,16 @@ jobs:
         cd packages
         
         # Create backend package
-        mkdir -p backend-package
-        cp -r ../backend/src backend-package/
-        cp ../backend/package.json backend-package/
-        cp ../backend/package-lock.json backend-package/ 2>/dev/null || echo "No package-lock.json found"
-        cp ../backend/env.example backend-package/ 2>/dev/null || echo "No env.example found"
-        cp ../backend/Dockerfile backend-package/ 2>/dev/null || echo "No Dockerfile found"
+        mkdir -p backend-package/backend
+        cp -r ../backend/src backend-package/backend/
+        cp -r ../backend/scripts backend-package/backend/ 2>/dev/null || echo "No scripts directory found"
+        cp ../backend/package.json backend-package/backend/
+        cp ../backend/env.example backend-package/backend/ 2>/dev/null || echo "No env.example found"
+        cp ../backend/Dockerfile backend-package/backend/ 2>/dev/null || echo "No Dockerfile found"
+        # Ensure no lock files or build artifacts
+        find backend-package -name "package-lock.json" -type f -delete || true
+        find backend-package -name "node_modules" -type d -prune -exec rm -rf {} + || true
+        find backend-package -name "dist" -type d -prune -exec rm -rf {} + || true
         
         # Add version info
         echo '{"version": "${{ steps.version.outputs.version }}", "buildDate": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'", "packageType": "backend"}' > backend-package/version.json
@@ -126,18 +130,22 @@ jobs:
         cd packages
         
         # Create frontend package
-        mkdir -p frontend-package
-        cp -r ../frontend/src frontend-package/
-        cp -r ../frontend/public frontend-package/ 2>/dev/null || echo "No public directory found"
-        cp ../frontend/package.json frontend-package/
-        cp ../frontend/package-lock.json frontend-package/ 2>/dev/null || echo "No package-lock.json found"
-        cp ../frontend/next.config.ts frontend-package/ 2>/dev/null || echo "No next.config.ts found"
-        cp ../frontend/tsconfig.json frontend-package/ 2>/dev/null || echo "No tsconfig.json found"
-        cp ../frontend/env.example frontend-package/ 2>/dev/null || echo "No env.example found"
-        cp ../frontend/eslint.config.mjs frontend-package/ 2>/dev/null || echo "No eslint.config.mjs found"
-        cp ../frontend/postcss.config.mjs frontend-package/ 2>/dev/null || echo "No postcss.config.mjs found"
-        cp ../frontend/next-env.d.ts frontend-package/ 2>/dev/null || echo "No next-env.d.ts found"
-        cp ../frontend/Dockerfile frontend-package/ 2>/dev/null || echo "No Dockerfile found"
+        mkdir -p frontend-package/frontend
+        cp -r ../frontend/src frontend-package/frontend/
+        cp -r ../frontend/public frontend-package/frontend/ 2>/dev/null || echo "No public directory found"
+        cp ../frontend/package.json frontend-package/frontend/
+        cp ../frontend/next.config.ts frontend-package/frontend/ 2>/dev/null || echo "No next.config.ts found"
+        cp ../frontend/tsconfig.json frontend-package/frontend/ 2>/dev/null || echo "No tsconfig.json found"
+        cp ../frontend/env.example frontend-package/frontend/ 2>/dev/null || echo "No env.example found"
+        cp ../frontend/eslint.config.mjs frontend-package/frontend/ 2>/dev/null || echo "No eslint.config.mjs found"
+        cp ../frontend/postcss.config.mjs frontend-package/frontend/ 2>/dev/null || echo "No postcss.config.mjs found"
+        cp ../frontend/next-env.d.ts frontend-package/frontend/ 2>/dev/null || echo "No next-env.d.ts found"
+        cp ../frontend/Dockerfile frontend-package/frontend/ 2>/dev/null || echo "No Dockerfile found"
+        # Ensure no lock files or build artifacts
+        find frontend-package -name "package-lock.json" -type f -delete || true
+        find frontend-package -name ".next" -type d -prune -exec rm -rf {} + || true
+        find frontend-package -name "node_modules" -type d -prune -exec rm -rf {} + || true
+        find frontend-package -name "dist" -type d -prune -exec rm -rf {} + || true
         
         # Add version info
         echo '{"version": "${{ steps.version.outputs.version }}", "buildDate": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'", "packageType": "frontend"}' > frontend-package/version.json
@@ -151,14 +159,15 @@ jobs:
         
         # Create full package
         mkdir -p full-package
+        mkdir -p full-package/backend
         cp -r ../backend/src full-package/backend/
+        cp -r ../backend/scripts full-package/backend/ 2>/dev/null || echo "No scripts directory found"
         cp ../backend/package.json full-package/backend/
-        cp ../backend/package-lock.json full-package/backend/ 2>/dev/null || echo "No package-lock.json found"
         
+        mkdir -p full-package/frontend
         cp -r ../frontend/src full-package/frontend/
         cp -r ../frontend/public full-package/frontend/ 2>/dev/null || echo "No public directory found"
         cp ../frontend/package.json full-package/frontend/
-        cp ../frontend/package-lock.json full-package/frontend/ 2>/dev/null || echo "No package-lock.json found"
         cp ../frontend/next.config.ts full-package/frontend/ 2>/dev/null || echo "No next.config.ts found"
         cp ../frontend/tsconfig.json full-package/frontend/ 2>/dev/null || echo "No tsconfig.json found"
         cp ../frontend/env.example full-package/frontend/ 2>/dev/null || echo "No env.example found"
@@ -166,6 +175,11 @@ jobs:
         cp ../frontend/postcss.config.mjs full-package/frontend/ 2>/dev/null || echo "No postcss.config.mjs found"
         cp ../frontend/next-env.d.ts full-package/frontend/ 2>/dev/null || echo "No next-env.d.ts found"
         cp ../frontend/Dockerfile full-package/frontend/ 2>/dev/null || echo "No Dockerfile found"
+        # Clean unwanted files
+        find full-package -name "package-lock.json" -type f -delete || true
+        find full-package -name ".next" -type d -prune -exec rm -rf {} + || true
+        find full-package -name "node_modules" -type d -prune -exec rm -rf {} + || true
+        find full-package -name "dist" -type d -prune -exec rm -rf {} + || true
         
         # Add installation scripts
         echo '#!/bin/bash' > full-package/install.sh
