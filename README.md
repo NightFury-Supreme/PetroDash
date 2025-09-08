@@ -167,6 +167,7 @@ FRONTEND_URL=https://your-dashboard-domain.com
 #### Frontend (.env.local)
 ```env
 NEXT_PUBLIC_API_BASE=https://your-api-domain.com
+```
 
 ## 🏗️ Project Structure
 
