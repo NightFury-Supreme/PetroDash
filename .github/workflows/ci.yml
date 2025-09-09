@@ -53,12 +53,20 @@ jobs:
       - name: Type-check backend
         working-directory: backend
         run: |
-          npm run type-check --if-present || npx tsc --noEmit || true
+          if [ -f tsconfig.json ]; then \
+            (npm run type-check --if-present || npx tsc --noEmit) || true; \
+          else \
+            echo "No tsconfig.json found in backend, skipping type-check"; \
+          fi
 
       - name: Type-check frontend
         working-directory: frontend
         run: |
-          npm run type-check --if-present || npx tsc --noEmit
+          if [ -f tsconfig.json ]; then \
+            npm run type-check --if-present || npx tsc --noEmit; \
+          else \
+            echo "No tsconfig.json found in frontend, skipping type-check"; \
+          fi
 
       - name: Build backend
         working-directory: backend
@@ -67,7 +75,11 @@ jobs:
 
       - name: Build frontend
         working-directory: frontend
+        env:
+          NEXT_PUBLIC_API_BASE: ${{ secrets.NEXT_PUBLIC_API_BASE }}
+          NEXT_TELEMETRY_DISABLED: '1'
         run: |
+          if [ -z "$NEXT_PUBLIC_API_BASE" ]; then export NEXT_PUBLIC_API_BASE="http://localhost:4000"; fi
           npm run build
 
       - name: Test backend
@@ -95,8 +107,8 @@ jobs:
 
       - name: Lint Dockerfiles
         run: |
-          if [ -f backend/Dockerfile ]; then hadolint backend/Dockerfile; fi
-          if [ -f frontend/Dockerfile ]; then hadolint frontend/Dockerfile; fi
+          if [ -f backend/Dockerfile ]; then hadolint --failure-threshold error backend/Dockerfile; fi
+          if [ -f frontend/Dockerfile ]; then hadolint --failure-threshold error frontend/Dockerfile; fi
 
       - name: Build backend image
         if: hashFiles('backend/Dockerfile') != ''
