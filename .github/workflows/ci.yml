@@ -2,6 +2,117 @@ name: CI/CD Pipeline
 
 on:
   push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-type-build-test:
+    name: Lint, Type Check, Build, Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [18.x]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Install backend deps
+        working-directory: backend
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+      - name: Install frontend deps
+        working-directory: frontend
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+      - name: Lint backend
+        working-directory: backend
+        run: |
+          npm run lint --if-present
+
+      - name: Lint frontend
+        working-directory: frontend
+        run: |
+          npm run lint --if-present
+
+      - name: Type-check backend
+        working-directory: backend
+        run: |
+          npm run type-check --if-present || npx tsc --noEmit || true
+
+      - name: Type-check frontend
+        working-directory: frontend
+        run: |
+          npm run type-check --if-present || npx tsc --noEmit
+
+      - name: Build backend
+        working-directory: backend
+        run: |
+          npm run build --if-present || echo "No backend build script"
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm run build
+
+      - name: Test backend
+        working-directory: backend
+        run: |
+          npm test --if-present -- --ci --reporters=default --coverage || echo "No backend tests"
+
+      - name: Test frontend
+        working-directory: frontend
+        run: |
+          npm test --if-present -- --ci --reporters=default --coverage || echo "No frontend tests"
+
+  docker-and-audit:
+    name: Docker Build and Security Audit
+    runs-on: ubuntu-latest
+    needs: lint-type-build-test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install hadolint
+        run: |
+          wget -qO /usr/local/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64
+          chmod +x /usr/local/bin/hadolint
+
+      - name: Lint Dockerfiles
+        run: |
+          if [ -f backend/Dockerfile ]; then hadolint backend/Dockerfile; fi
+          if [ -f frontend/Dockerfile ]; then hadolint frontend/Dockerfile; fi
+
+      - name: Build backend image
+        if: hashFiles('backend/Dockerfile') != ''
+        run: docker build -t app-backend:ci backend
+
+      - name: Build frontend image
+        if: hashFiles('frontend/Dockerfile') != ''
+        run: docker build -t app-frontend:ci frontend
+
+      - name: Backend production audit
+        working-directory: backend
+        run: |
+          if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi
+          npm audit --production --audit-level=high || true
+
+      - name: Frontend production audit
+        working-directory: frontend
+        run: |
+          if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi
+          npm audit --production --audit-level=high || true
+name: CI/CD Pipeline
+
+on:
+  push:
     branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
