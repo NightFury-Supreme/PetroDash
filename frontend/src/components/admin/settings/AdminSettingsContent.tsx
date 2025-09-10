@@ -126,11 +126,18 @@ export function AdminSettingsContent({
 
   const updateFormData = (path: string, value: unknown) => {
     const keys = path.split('.');
+    
+    // Prevent prototype pollution by checking for dangerous keys
+    if (keys.some(key => key === '__proto__' || key === 'constructor' || key === 'prototype')) {
+      console.error('Prototype pollution attempt blocked');
+      return;
+    }
+    
     const newData = { ...formData };
     let current: Record<string, unknown> = newData;
     
     for (let i = 0; i < keys.length - 1; i++) {
-      if (!current[keys[i]]) {
+      if (!current[keys[i]] || typeof current[keys[i]] !== 'object' || Array.isArray(current[keys[i]])) {
         current[keys[i]] = {};
       }
       current = current[keys[i]] as Record<string, unknown>;

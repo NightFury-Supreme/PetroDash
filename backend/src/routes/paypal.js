@@ -100,6 +100,12 @@ router.post('/create-order', requireAuth, createRateLimiter(10, 60 * 1000), asyn
     }
     const { planId, billingCycle = 'monthly', couponCode } = req.body || {};
     if (!planId) return res.status(400).json({ error: 'planId is required' });
+    
+    // Validate ObjectId format to prevent NoSQL injection
+    if (!/^[0-9a-fA-F]{24}$/.test(planId)) {
+      return res.status(400).json({ error: 'Invalid plan ID format' });
+    }
+    
     const plan = await Plan.findById(planId).lean();
     if (!plan) return res.status(404).json({ error: 'Plan not found' });
 
@@ -191,9 +197,22 @@ router.post('/capture-order', requireAuth, createRateLimiter(10, 60 * 1000), asy
     }
     const { orderId } = req.body || {};
     if (!orderId) return res.status(400).json({ error: 'orderId is required' });
+    
+    // Validate orderId to prevent SSRF attacks
+    // PayPal order IDs are typically alphanumeric with hyphens and underscores
+    const sanitizedOrderId = String(orderId).trim();
+    if (!/^[A-Z0-9_-]+$/i.test(sanitizedOrderId)) {
+      return res.status(400).json({ error: 'Invalid order ID format' });
+    }
+    
+    // Additional length validation (PayPal order IDs are typically 17-20 characters)
+    if (sanitizedOrderId.length < 10 || sanitizedOrderId.length > 50) {
+      return res.status(400).json({ error: 'Invalid order ID length' });
+    }
+    
     const { token, baseUrl } = await getAccessToken();
 
-    const r = await axios.post(`${baseUrl}/v2/checkout/orders/${orderId}/capture`, {}, {
+    const r = await axios.post(`${baseUrl}/v2/checkout/orders/${encodeURIComponent(sanitizedOrderId)}/capture`, {}, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = r.data;

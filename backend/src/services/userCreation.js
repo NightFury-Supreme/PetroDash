@@ -138,7 +138,8 @@ class UserCreationService {
   static async createPterodactylUser(user, password) {
     try {
       // Generate temporary password if not provided (for OAuth users)
-      const panelPassword = password || Math.random().toString(36).slice(-12) + 'A1!';
+      const crypto = require('crypto');
+      const panelPassword = password || crypto.randomBytes(8).toString('hex') + 'A1!';
       
       const panelUser = await createPanelUser({
         email: user.email,

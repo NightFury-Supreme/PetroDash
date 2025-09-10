@@ -1,12 +1,13 @@
 const express = require('express');
 const { requireAuth } = require('../../middleware/auth');
+const { createRateLimiter } = require('../../middleware/rateLimit');
 const Server = require('../../models/Server');
 const { getServer: getPanelServer } = require('../../services/pterodactyl');
 
 const router = express.Router();
 
     // GET /api/servers/:id
-    router.get('/', requireAuth, async (req, res) => {
+    router.get('/', requireAuth, createRateLimiter(60, 60 * 1000), async (req, res) => {
       try {
         const server = await Server.findOne({ _id: req.params.id, owner: req.user.sub }).lean();
     if (!server) return res.status(404).json({ error: 'Server not found' });

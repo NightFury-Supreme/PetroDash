@@ -123,6 +123,12 @@ router.put('/:id', requireAdmin, validateObjectId('id'), async (req, res) => {
     // Deep merge to preserve nested objects and ensure changes are tracked
     const deepMerge = (target, source) => {
       for (const key of Object.keys(source)) {
+        // Prevent prototype pollution by checking for dangerous keys
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+          console.error('Prototype pollution attempt blocked');
+          continue;
+        }
+        
         if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
           if (!target[key] || typeof target[key] !== 'object') target[key] = {};
           deepMerge(target[key], source[key]);

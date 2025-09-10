@@ -12,12 +12,18 @@ router.get('/', requireAdmin, async (req, res) => {
     const { q, status, priority, deleted } = req.query;
     const query = {};
     if (deleted === '1' || deleted === 'true') query.deletedByUser = true;
-    if (status && ['open','pending','resolved','closed'].includes(status)) query.status = status;
-    if (priority && ['low','medium','high'].includes(priority)) query.priority = priority;
+    if (status && ['open','pending','resolved','closed'].includes(status)) {
+      query.status = { $eq: status };
+    }
+    if (priority && ['low','medium','high'].includes(priority)) {
+      query.priority = { $eq: priority };
+    }
     if (q && typeof q === 'string' && q.trim()) {
+      // Escape special regex characters to prevent NoSQL injection
+      const escapedQuery = q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       query.$or = [
-        { title: { $regex: q.trim(), $options: 'i' } },
-        { tags: { $elemMatch: { $regex: q.trim(), $options: 'i' } } }
+        { title: { $regex: escapedQuery, $options: 'i' } },
+        { tags: { $elemMatch: { $regex: escapedQuery, $options: 'i' } } }
       ];
     }
     const items = await Ticket.find(query)
@@ -33,6 +39,10 @@ router.get('/', requireAdmin, async (req, res) => {
 // Admin: get ticket detail with populated user and authors
 router.get('/:id', requireAdmin, async (req, res) => {
   try {
+    // Validate ObjectId format to prevent NoSQL injection
+    if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ticket ID format' });
+    }
     const t = await Ticket.findById(req.params.id)
       .populate('user', 'username email')
       .populate('messages.author', 'username email');
@@ -49,6 +59,10 @@ router.post('/:id/messages', requireAdmin, async (req, res) => {
     const { body, internal } = req.body || {};
     if (!body || typeof body !== 'string' || !body.trim()) {
       return res.status(400).json({ error: 'Message body required' });
+    }
+    // Validate ObjectId format to prevent NoSQL injection
+    if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ticket ID format' });
     }
     const t = await Ticket.findById(req.params.id);
     if (!t) return res.status(404).json({ error: 'Not found' });
@@ -67,6 +81,10 @@ router.post('/:id/messages', requireAdmin, async (req, res) => {
 router.patch('/:id', requireAdmin, async (req, res) => {
   try {
     const { status, assignee, priority, tags, deletedByUser } = req.body || {};
+    // Validate ObjectId format to prevent NoSQL injection
+    if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ticket ID format' });
+    }
     const t = await Ticket.findById(req.params.id);
     if (!t) return res.status(404).json({ error: 'Not found' });
     if (status && ['open','pending','resolved','closed'].includes(status)) t.status = status;
@@ -89,6 +107,10 @@ router.post('/:id/notes', requireAdmin, async (req, res) => {
     const { body } = req.body || {};
     if (!body || typeof body !== 'string' || body.trim().length < 1) {
       return res.status(400).json({ error: 'Note required' });
+    }
+    // Validate ObjectId format to prevent NoSQL injection
+    if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ticket ID format' });
     }
     const t = await Ticket.findById(req.params.id);
     if (!t) return res.status(404).json({ error: 'Not found' });

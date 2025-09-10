@@ -39,7 +39,13 @@ router.post('/', express.json({ type: '*/*' }), async (req, res) => {
     if (eventType.startsWith('BILLING.SUBSCRIPTION.')) {
       const paypalSubId = resource?.id || resource?.subscription_id;
       if (!paypalSubId) return res.json({ ok: true });
-      const sub = await Subscription.findOne({ paypalSubscriptionId: paypalSubId });
+      
+      // Validate paypalSubId to prevent NoSQL injection
+      if (typeof paypalSubId !== 'string' || paypalSubId.length < 10 || paypalSubId.length > 100) {
+        return res.json({ ok: true });
+      }
+      
+      const sub = await Subscription.findOne({ paypalSubscriptionId: { $eq: paypalSubId } });
       if (!sub && eventType !== 'BILLING.SUBSCRIPTION.CREATED') return res.json({ ok: true });
       if (!sub && eventType === 'BILLING.SUBSCRIPTION.CREATED') {
         // Create skeletal subscription; details will be filled by confirm or next event

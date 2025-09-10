@@ -1,6 +1,7 @@
 const express = require('express');
 const { z } = require('zod');
 const { requireAuth } = require('../../middleware/auth');
+const { createRateLimiter } = require('../../middleware/rateLimit');
 const User = require('../../models/User');
 const Server = require('../../models/Server');
 const { getServer: getPanelServer, updateServerBuild, updateServerDetails } = require('../../services/pterodactyl');
@@ -49,7 +50,7 @@ const updateSchema = z.object({
 });
 
 // PATCH /api/servers/:id
-router.patch('/', requireAuth, async (req, res) => {
+router.patch('/', requireAuth, createRateLimiter(10, 60 * 1000), async (req, res) => {
   try {
     const startTime = Date.now();
     const userId = req.user.sub;

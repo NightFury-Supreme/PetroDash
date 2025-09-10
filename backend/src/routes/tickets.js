@@ -64,7 +64,9 @@ router.get('/mine', requireAuth, async (req, res) => {
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
     const { status } = req.query;
     const query = { user: userId, deletedByUser: { $ne: true } };
-    if (status && ['open','pending','resolved','closed'].includes(status)) query.status = status;
+    if (status && ['open','pending','resolved','closed'].includes(status)) {
+      query.status = { $eq: status };
+    }
     const tickets = await Ticket.find(query).sort({ updatedAt: -1 }).lean();
     res.json(tickets);
   } catch (err) {
@@ -93,6 +95,10 @@ router.get('/:id', requireAuth, async (req, res) => {
   try {
     const userId = (req.user && (req.user.sub || req.user.userId || req.user._id || req.user.id)) || null;
     const isAdmin = !!(req.user && (req.user.role === 'admin' || req.user.isAdmin));
+    // Validate ObjectId format to prevent NoSQL injection
+    if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ticket ID format' });
+    }
     const t = await Ticket.findById(req.params.id)
       .populate('user', 'username email')
       .populate('messages.author', 'username email')
@@ -123,6 +129,10 @@ router.post('/:id/messages', requireAuth, async (req, res) => {
     if (!body || typeof body !== 'string' || body.trim().length < 1) {
       return res.status(400).json({ error: 'Message required' });
     }
+    // Validate ObjectId format to prevent NoSQL injection
+    if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ticket ID format' });
+    }
     const t = await Ticket.findById(req.params.id).populate('messages.author', 'username email');
     if (!t) return res.status(404).json({ error: 'Not found' });
     // Only owner can post on this public endpoint
@@ -145,6 +155,10 @@ router.post('/:id/messages', requireAuth, async (req, res) => {
 router.patch('/:id', requireAdmin, async (req, res) => {
   try {
     const { status, assignee, priority, tags } = req.body || {};
+    // Validate ObjectId format to prevent NoSQL injection
+    if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ticket ID format' });
+    }
     const t = await Ticket.findById(req.params.id);
     if (!t) return res.status(404).json({ error: 'Not found' });
     if (status && ['open','pending','resolved','closed'].includes(status)) t.status = status;
@@ -164,12 +178,18 @@ router.get('/', requireAdmin, async (req, res) => {
   try {
     const { q, status, priority } = req.query;
     const query = {};
-    if (status && ['open','pending','resolved','closed'].includes(status)) query.status = status;
-    if (priority && ['low','medium','high'].includes(priority)) query.priority = priority;
+    if (status && ['open','pending','resolved','closed'].includes(status)) {
+      query.status = { $eq: status };
+    }
+    if (priority && ['low','medium','high'].includes(priority)) {
+      query.priority = { $eq: priority };
+    }
     if (q && typeof q === 'string' && q.trim()) {
+      // Escape special regex characters to prevent NoSQL injection
+      const escapedQuery = q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       query.$or = [
-        { title: { $regex: q.trim(), $options: 'i' } },
-        { tags: { $elemMatch: { $regex: q.trim(), $options: 'i' } } }
+        { title: { $regex: escapedQuery, $options: 'i' } },
+        { tags: { $elemMatch: { $regex: escapedQuery, $options: 'i' } } }
       ];
     }
     const items = await Ticket.find(query).sort({ updatedAt: -1 }).populate('user', 'username email').lean();
@@ -184,6 +204,10 @@ router.post('/:id/status', requireAuth, async (req, res) => {
   try {
     const userId = (req.user && (req.user.sub || req.user.userId || req.user._id || req.user.id)) || null;
     const { action } = req.body || {};
+    // Validate ObjectId format to prevent NoSQL injection
+    if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid ticket ID format' });
+    }
     const t = await Ticket.findById(req.params.id);
     if (!t) return res.status(404).json({ error: 'Not found' });
     if (String(t.user) !== String(userId)) return res.status(403).json({ error: 'Forbidden' });

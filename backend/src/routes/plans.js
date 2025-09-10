@@ -94,6 +94,11 @@ router.post('/purchase', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Invalid billing cycle' });
     }
     
+    // Validate ObjectId format to prevent NoSQL injection
+    if (!/^[0-9a-fA-F]{24}$/.test(planId)) {
+      return res.status(400).json({ error: 'Invalid plan ID format' });
+    }
+    
     // Get plan
     const plan = await Plan.findById(planId);
     if (!plan) {
@@ -114,7 +119,7 @@ router.post('/purchase', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Plan is unavailable' });
     }
     if (plan.stock > 0) {
-      const purchasedCount = await UserPlan.countDocuments({ planId, status: 'active' });
+      const purchasedCount = await UserPlan.countDocuments({ planId: { $eq: planId }, status: { $eq: 'active' } });
       if (purchasedCount >= plan.stock) {
         return res.status(400).json({ error: 'Plan is out of stock' });
       }
@@ -123,9 +128,9 @@ router.post('/purchase', requireAuth, async (req, res) => {
     // Check customer limit
     if (plan.limitPerCustomer > 0) {
       const userPurchases = await UserPlan.countDocuments({ 
-        userId: req.user.sub, 
-        planId, 
-        status: 'active' 
+        userId: { $eq: req.user.sub }, 
+        planId: { $eq: planId }, 
+        status: { $eq: 'active' } 
       });
       if (userPurchases >= plan.limitPerCustomer) {
         return res.status(400).json({ error: 'You have reached the purchase limit for this plan' });

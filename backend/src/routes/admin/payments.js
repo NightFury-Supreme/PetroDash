@@ -18,9 +18,15 @@ async function getAccessToken() {
 router.get('/ledger', requireAdmin, async (req, res) => {
   const { status, provider, userId } = req.query;
   const q = {};
-  if (status) q.status = status;
-  if (provider) q.provider = provider;
-  if (userId) q.userId = userId;
+  if (status && ['pending', 'completed', 'failed', 'refunded'].includes(status)) {
+    q.status = { $eq: status };
+  }
+  if (provider && ['paypal', 'stripe', 'coinbase'].includes(provider)) {
+    q.provider = { $eq: provider };
+  }
+  if (userId && /^[0-9a-fA-F]{24}$/.test(userId)) {
+    q.userId = { $eq: userId };
+  }
   const list = await Payment.find(q).sort({ createdAt: -1 }).limit(500).lean();
   res.json(list);
 });

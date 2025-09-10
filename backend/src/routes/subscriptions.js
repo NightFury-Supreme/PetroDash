@@ -1,6 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const { requireAuth } = require('../middleware/auth');
+const { createRateLimiter } = require('../middleware/rateLimit');
 const Plan = require('../models/Plan');
 const Settings = require('../models/Settings');
 const Subscription = require('../models/Subscription');
@@ -17,16 +18,22 @@ async function getAccessToken() {
 }
 
 // GET /api/subscriptions - list my subscriptions
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', requireAuth, createRateLimiter(30, 60 * 1000), async (req, res) => {
   const list = await Subscription.find({ userId: req.user.sub }).populate('planId', 'name interval price').lean();
   res.json(list);
 });
 
 // POST /api/subscriptions - create a subscription for a plan
-router.post('/', requireAuth, async (req, res) => {
+router.post('/', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) => {
   try {
     const { planId, couponCode } = req.body || {};
     if (!planId) return res.status(400).json({ error: 'planId is required' });
+    
+    // Validate ObjectId format to prevent NoSQL injection
+    if (!/^[0-9a-fA-F]{24}$/.test(planId)) {
+      return res.status(400).json({ error: 'Invalid plan ID format' });
+    }
+    
     const plan = await Plan.findById(planId).lean();
     if (!plan || !plan.paypalPlanId) return res.status(400).json({ error: 'Plan not configured for subscriptions' });
     const { token, baseUrl } = await getAccessToken();
@@ -56,21 +63,40 @@ router.post('/', requireAuth, async (req, res) => {
 });
 
 // POST /api/subscriptions/confirm - confirm approved subscription by id from return URL
-router.post('/confirm', requireAuth, async (req, res) => {
+router.post('/confirm', requireAuth, createRateLimiter(10, 60 * 1000), async (req, res) => {
   try {
     const { subscriptionId, couponCode } = req.body || {};
     if (!subscriptionId) return res.status(400).json({ error: 'subscriptionId required' });
+    
+    // Validate subscriptionId to prevent SSRF attacks
+    // PayPal subscription IDs are typically alphanumeric with hyphens and underscores
+    const sanitizedSubscriptionId = String(subscriptionId).trim();
+    if (!/^[A-Z0-9_-]+$/i.test(sanitizedSubscriptionId)) {
+      return res.status(400).json({ error: 'Invalid subscription ID format' });
+    }
+    
+    // Additional length validation (PayPal subscription IDs are typically 20-50 characters)
+    if (sanitizedSubscriptionId.length < 10 || sanitizedSubscriptionId.length > 100) {
+      return res.status(400).json({ error: 'Invalid subscription ID length' });
+    }
+    
     const { token, baseUrl } = await getAccessToken();
-    const r = await axios.get(`${baseUrl}/v1/billing/subscriptions/${subscriptionId}`, { headers: { Authorization: `Bearer ${token}` } });
+    const r = await axios.get(`${baseUrl}/v1/billing/subscriptions/${encodeURIComponent(sanitizedSubscriptionId)}`, { headers: { Authorization: `Bearer ${token}` } });
     const data = r.data || {};
     const status = String(data.status || '').toLowerCase();
     const start = new Date(data.start_time || Date.now());
     const next = new Date(data.billing_info?.next_billing_time || Date.now());
     const paypalPlanId = data.plan_id || data.plan_id || data.plan_id; // PayPal field is plan_id
-    const plan = await Plan.findOne({ paypalPlanId }).lean();
+    
+    // Validate paypalPlanId to prevent NoSQL injection
+    if (!paypalPlanId || typeof paypalPlanId !== 'string') {
+      return res.status(400).json({ error: 'Invalid PayPal plan ID' });
+    }
+    
+    const plan = await Plan.findOne({ paypalPlanId: { $eq: paypalPlanId } }).lean();
     if (!plan) return res.status(404).json({ error: 'Linked plan not found' });
     await Subscription.updateOne(
-      { paypalSubscriptionId: subscriptionId },
+      { paypalSubscriptionId: sanitizedSubscriptionId },
       { $set: { userId: req.user.sub, planId: plan._id, status, currentPeriodStart: start, currentPeriodEnd: next, cancelAtPeriodEnd: false, couponCode } },
       { upsert: true }
     );
@@ -79,7 +105,12 @@ router.post('/confirm', requireAuth, async (req, res) => {
 });
 
 // POST /api/subscriptions/:id/pause
-router.post('/:id/pause', requireAuth, async (req, res) => {
+router.post('/:id/pause', requireAuth, createRateLimiter(10, 60 * 1000), async (req, res) => {
+  // Validate ObjectId format to prevent NoSQL injection
+  if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
+    return res.status(400).json({ error: 'Invalid subscription ID format' });
+  }
+  
   const sub = await Subscription.findOne({ _id: req.params.id, userId: req.user.sub });
   if (!sub) return res.status(404).json({ error: 'Not found' });
   sub.status = 'paused';
@@ -88,7 +119,12 @@ router.post('/:id/pause', requireAuth, async (req, res) => {
 });
 
 // POST /api/subscriptions/:id/resume
-router.post('/:id/resume', requireAuth, async (req, res) => {
+router.post('/:id/resume', requireAuth, createRateLimiter(10, 60 * 1000), async (req, res) => {
+  // Validate ObjectId format to prevent NoSQL injection
+  if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
+    return res.status(400).json({ error: 'Invalid subscription ID format' });
+  }
+  
   const sub = await Subscription.findOne({ _id: req.params.id, userId: req.user.sub });
   if (!sub) return res.status(404).json({ error: 'Not found' });
   sub.status = 'active';
@@ -97,9 +133,18 @@ router.post('/:id/resume', requireAuth, async (req, res) => {
 });
 
 // POST /api/subscriptions/:id/upgrade - change plan (proration TBD)
-router.post('/:id/upgrade', requireAuth, async (req, res) => {
+router.post('/:id/upgrade', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) => {
   const { newPlanId } = req.body || {};
   if (!newPlanId) return res.status(400).json({ error: 'newPlanId required' });
+  
+  // Validate ObjectId format to prevent NoSQL injection
+  if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
+    return res.status(400).json({ error: 'Invalid subscription ID format' });
+  }
+  if (!/^[0-9a-fA-F]{24}$/.test(newPlanId)) {
+    return res.status(400).json({ error: 'Invalid plan ID format' });
+  }
+  
   const sub = await Subscription.findOne({ _id: req.params.id, userId: req.user.sub });
   if (!sub) return res.status(404).json({ error: 'Not found' });
   // For MVP: store desired change; webhook will reconcile on next renewal
@@ -109,8 +154,13 @@ router.post('/:id/upgrade', requireAuth, async (req, res) => {
 });
 
 // POST /api/subscriptions/:id/cancel - cancel at period end
-router.post('/:id/cancel', requireAuth, async (req, res) => {
+router.post('/:id/cancel', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) => {
   try {
+    // Validate ObjectId format to prevent NoSQL injection
+    if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid subscription ID format' });
+    }
+    
     const sub = await Subscription.findOne({ _id: req.params.id, userId: req.user.sub });
     if (!sub) return res.status(404).json({ error: 'Not found' });
     sub.cancelAtPeriodEnd = true;
