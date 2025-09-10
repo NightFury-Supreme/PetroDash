@@ -83,6 +83,11 @@ const SettingsSchema = new mongoose.Schema(
         matchedContent: { type: Boolean, default: false },
       },
     },
+    // Ticket system configuration
+    ticketCategories: {
+      type: [String],
+      default: ['general', 'billing', 'technical', 'abuse', 'account', 'server', 'payment', 'other'],
+    },
   },
   { timestamps: true }
 );

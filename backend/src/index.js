@@ -101,6 +101,7 @@ app.use('/api/locations', publicLocationRoutes);
 app.use('/api/panel', panelRoutes);
 app.use('/api/shop', shopRoutes);
 app.use('/api/gifts', require('./routes/gifts'));
+app.use('/api/tickets', require('./routes/tickets'));
 app.use('/api/paypal', paypalRoutes);
 app.post('/api/paypal/webhook', paypalWebhook);
 app.use('/api/plans', require('./routes/plans'));

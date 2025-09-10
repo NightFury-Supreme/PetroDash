@@ -10,6 +10,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Future features and improvements will be listed here
 
+## [1.0.7] - 10-09-2025
+
+### Added
+- **Complete Ticketing System**: Full-featured support ticket management for users and admins
+  - User ticket pages (`/tickets`, `/tickets/[id]`)
+  - Admin ticket management (`/admin/tickets`, `/admin/tickets/[id]`) with comprehensive controls
+  - Auto-priority assignment based on user's active plans (high/low)
+  - Category system with admin-configurable categories and usage tracking
+  - Soft-delete functionality with separate "Deleted" tabs for both user and admin views
+  - Internal notes system for admin-only messages
+  - Export JSON functionality for ticket data
+  - Real-time status updates and message threading
+
+### Fixed
+- **Docker Installation Issues**: Resolved multiple Docker build and deployment problems
+  - Fixed `npm ci` EUSAGE errors by implementing conditional package-lock.json handling
+  - Resolved missing dev dependencies in frontend Docker builds
+  - Added proper `npm cache clean --force` to prevent build cache issues
+  - Fixed multi-stage Docker builds with correct dependency management
+  - Improved Docker Compose configuration for development and production
+  - Enhanced Docker scripts for cross-platform compatibility (Windows/Linux)
+- **CI/CD Pipeline Improvements**: Enhanced GitHub Actions workflows
+  - Fixed ESLint "all files ignored" errors with proper glob patterns
+  - Resolved Hadolint failures by setting appropriate failure thresholds
+  - Improved Docker build context and artifact handling
+  - Enhanced security scanning with CodeQL analysis
+- **Frontend TypeScript Issues**: Resolved multiple type safety problems
+  - Fixed Next.js 15 PageProps type constraints
+  - Resolved interface mismatches in admin components
+  - Corrected prop type definitions across ticket components
+  - Enhanced type safety for API responses and form data
+
 ## [1.0.6] - 08-09-2025
 
 ### Added
@@ -239,6 +271,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **1.0.7** - Complete ticketing system with modular components, Docker installation fixes
+- **1.0.6** - Gift coupons system with user and admin management, security enhancements
 - **1.0.5** - Automated release system with package-based updates and GitHub Actions workflow
 - **1.0.4** - Google AdSense integration with ad blocker detection and prevention system
 - **1.0.3** - User banning system, global authentication guard, and enhanced admin user management

@@ -9,6 +9,7 @@ A modern, feature-rich control panel for Pterodactyl servers with advanced user 
 * **Resource Management** – Create servers, manage CPU, RAM, Disk, and allocations
 * **Servers** – Create, view, and edit servers with ease
 * **User System** – Authentication, password reset, OAuth login, and permissions
+* **Support Tickets** – Complete ticketing system with categories, priority assignment, and admin management
 * **Coupons** – Discount codes for plans and promotions
 * **Store** – Buy resources and plans using coins
 * **Dashboard** – View resources, plans, and live server status

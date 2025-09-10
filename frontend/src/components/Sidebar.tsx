@@ -12,6 +12,7 @@ const baseLinks: NavLink[] = [
   { href: "/panel", label: "Panel", icon: "fa-solid fa-id-card" },
   { href: "/shop", label: "Shop", icon: "fa-solid fa-store" },
   { href: "/gift", label: "Gift", icon: "fa-solid fa-gift" },
+  { href: "/tickets", label: "Tickets", icon: "fa-solid fa-ticket" },
   { href: "/referals", label: "Referrals", icon: "fa-solid fa-user-plus" },
   { href: "/profile", label: "Profile", icon: "fa-solid fa-user-cog" },
 ];
@@ -23,6 +24,7 @@ const adminOtherLinks: NavLink[] = [
   { href: "/admin/eggs", label: "Eggs", icon: "fa-solid fa-egg" },
   { href: "/admin/locations", label: "Locations", icon: "fa-solid fa-location-dot" },
   { href: "/admin/gift", label: "Gifts", icon: "fa-solid fa-gift" },
+  { href: "/admin/tickets", label: "Tickets", icon: "fa-solid fa-ticket" },
   { href: "/admin/logs", label: "Logs", icon: "fa-solid fa-list" },
   { href: "/admin/settings", label: "Settings", icon: "fa-solid fa-sliders-h" },
 ];
