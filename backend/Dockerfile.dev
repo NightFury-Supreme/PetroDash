@@ -1,20 +1,20 @@
-# Use Node.js 18 Alpine for smaller image size
+# Development Dockerfile for Backend
 FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Install dependencies for development
 COPY package*.json ./
 
-# Install dependencies (lock-aware)
+# Install all dependencies (including dev dependencies)
 RUN if [ -f package-lock.json ]; then \
       echo "Using package-lock.json for installation" && \
-      npm ci --omit=dev; \
+      npm ci; \
     else \
       echo "No package-lock.json found, using npm install" && \
-      npm install --omit=dev; \
-    fi && npm cache clean --force
+      npm install; \
+    fi
 
 # Copy source code
 COPY . .
@@ -30,9 +30,5 @@ USER nodejs
 # Expose port
 EXPOSE 4000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:4000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
-
-# Start the application
-CMD ["npm", "start"]
+# Start the application in development mode
+CMD ["npm", "run", "dev"]

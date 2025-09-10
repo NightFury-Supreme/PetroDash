@@ -52,9 +52,9 @@ setup_env() {
     fi
 }
 
-# Build and start all services
+# Build and start all services (production)
 start() {
-    print_header "Starting PteroDash"
+    print_header "Starting PteroDash (Production)"
     check_docker
     setup_env
     
@@ -80,10 +80,39 @@ start() {
     echo -e "${YELLOW}To stop:${NC} docker-compose down"
 }
 
+# Start development environment
+dev() {
+    print_header "Starting PteroDash (Development)"
+    check_docker
+    
+    print_status "Building and starting development services..."
+    docker-compose -f docker-compose.dev.yml up -d --build
+    
+    print_status "Waiting for services to be ready..."
+    sleep 10
+    
+    print_status "Checking service health..."
+    docker-compose -f docker-compose.dev.yml ps
+    
+    print_header "PteroDash Development is now running!"
+    echo -e "${GREEN}Frontend:${NC} http://localhost:3000 (with hot reload)"
+    echo -e "${GREEN}Backend API:${NC} http://localhost:4000 (with hot reload)"
+    echo -e "${GREEN}MongoDB:${NC} localhost:27017"
+    echo ""
+    echo -e "${YELLOW}Development Features:${NC}"
+    echo -e "• Hot reload enabled for both frontend and backend"
+    echo -e "• Source code is mounted as volumes"
+    echo -e "• All dependencies installed (including dev dependencies)"
+    echo ""
+    echo -e "${YELLOW}To view logs:${NC} docker-compose -f docker-compose.dev.yml logs -f"
+    echo -e "${YELLOW}To stop:${NC} docker-compose -f docker-compose.dev.yml down"
+}
+
 # Stop all services
 stop() {
     print_header "Stopping PteroDash"
     docker-compose down
+    docker-compose -f docker-compose.dev.yml down
     print_status "All services stopped."
 }
 
@@ -138,7 +167,8 @@ help() {
     echo "Usage: $0 [COMMAND]"
     echo ""
     echo "Commands:"
-    echo "  start     Start all services"
+    echo "  start     Start all services (production)"
+    echo "  dev       Start development environment with hot reload"
     echo "  stop      Stop all services"
     echo "  restart   Restart all services"
     echo "  logs      View logs from all services"
@@ -148,15 +178,23 @@ help() {
     echo "  help      Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $0 start    # Start PteroDash"
+    echo "  $0 start    # Start PteroDash (production)"
+    echo "  $0 dev      # Start PteroDash (development with hot reload)"
     echo "  $0 logs     # View logs"
     echo "  $0 stop     # Stop PteroDash"
+    echo ""
+    echo "Development vs Production:"
+    echo "  • Production: Optimized builds, no source mounting"
+    echo "  • Development: Hot reload, source code mounted, dev dependencies"
 }
 
 # Main script logic
 case "$1" in
     start)
         start
+        ;;
+    dev)
+        dev
         ;;
     stop)
         stop
