@@ -59,25 +59,38 @@ start() {
     setup_env
     
     print_status "Building and starting all services..."
-    docker-compose up -d --build
-    
-    print_status "Waiting for services to be ready..."
-    sleep 10
-    
-    print_status "Checking service health..."
-    docker-compose ps
-    
-    print_header "PteroDash is now running!"
-    echo -e "${GREEN}Frontend:${NC} http://localhost:3000"
-    echo -e "${GREEN}Backend API:${NC} http://localhost:4000"
-    echo -e "${GREEN}MongoDB:${NC} localhost:27017"
-    echo ""
-    echo -e "${YELLOW}Default Admin Credentials:${NC}"
-    echo -e "Email: ${BLUE}admin@example.com${NC}"
-    echo -e "Password: ${BLUE}admin123${NC}"
-    echo ""
-    echo -e "${YELLOW}To view logs:${NC} docker-compose logs -f"
-    echo -e "${YELLOW}To stop:${NC} docker-compose down"
+    if docker-compose up -d --build; then
+        print_status "Build completed successfully!"
+        
+        print_status "Waiting for services to be ready..."
+        sleep 10
+        
+        print_status "Checking service health..."
+        docker-compose ps
+        
+        # Check if all services are running
+        if docker-compose ps | grep -q "Exit"; then
+            print_error "Some services failed to start. Check logs with: docker-compose logs"
+            docker-compose ps
+            exit 1
+        fi
+        
+        print_header "PteroDash is now running!"
+        echo -e "${GREEN}Frontend:${NC} http://localhost:3000"
+        echo -e "${GREEN}Backend API:${NC} http://localhost:4000"
+        echo -e "${GREEN}MongoDB:${NC} localhost:27017"
+        echo ""
+        echo -e "${YELLOW}Default Admin Credentials:${NC}"
+        echo -e "Email: ${BLUE}admin@example.com${NC}"
+        echo -e "Password: ${BLUE}admin123${NC}"
+        echo ""
+        echo -e "${YELLOW}To view logs:${NC} docker-compose logs -f"
+        echo -e "${YELLOW}To stop:${NC} docker-compose down"
+    else
+        print_error "Build failed! Check the logs above for details."
+        print_status "To view detailed logs: docker-compose logs"
+        exit 1
+    fi
 }
 
 # Start development environment
@@ -86,26 +99,39 @@ dev() {
     check_docker
     
     print_status "Building and starting development services..."
-    docker-compose -f docker-compose.dev.yml up -d --build
-    
-    print_status "Waiting for services to be ready..."
-    sleep 10
-    
-    print_status "Checking service health..."
-    docker-compose -f docker-compose.dev.yml ps
-    
-    print_header "PteroDash Development is now running!"
-    echo -e "${GREEN}Frontend:${NC} http://localhost:3000 (with hot reload)"
-    echo -e "${GREEN}Backend API:${NC} http://localhost:4000 (with hot reload)"
-    echo -e "${GREEN}MongoDB:${NC} localhost:27017"
-    echo ""
-    echo -e "${YELLOW}Development Features:${NC}"
-    echo -e "• Hot reload enabled for both frontend and backend"
-    echo -e "• Source code is mounted as volumes"
-    echo -e "• All dependencies installed (including dev dependencies)"
-    echo ""
-    echo -e "${YELLOW}To view logs:${NC} docker-compose -f docker-compose.dev.yml logs -f"
-    echo -e "${YELLOW}To stop:${NC} docker-compose -f docker-compose.dev.yml down"
+    if docker-compose -f docker-compose.dev.yml up -d --build; then
+        print_status "Build completed successfully!"
+        
+        print_status "Waiting for services to be ready..."
+        sleep 10
+        
+        print_status "Checking service health..."
+        docker-compose -f docker-compose.dev.yml ps
+        
+        # Check if all services are running
+        if docker-compose -f docker-compose.dev.yml ps | grep -q "Exit"; then
+            print_error "Some services failed to start. Check logs with: docker-compose -f docker-compose.dev.yml logs"
+            docker-compose -f docker-compose.dev.yml ps
+            exit 1
+        fi
+        
+        print_header "PteroDash Development is now running!"
+        echo -e "${GREEN}Frontend:${NC} http://localhost:3000 (with hot reload)"
+        echo -e "${GREEN}Backend API:${NC} http://localhost:4000 (with hot reload)"
+        echo -e "${GREEN}MongoDB:${NC} localhost:27017"
+        echo ""
+        echo -e "${YELLOW}Development Features:${NC}"
+        echo -e "• Hot reload enabled for both frontend and backend"
+        echo -e "• Source code is mounted as volumes"
+        echo -e "• All dependencies installed (including dev dependencies)"
+        echo ""
+        echo -e "${YELLOW}To view logs:${NC} docker-compose -f docker-compose.dev.yml logs -f"
+        echo -e "${YELLOW}To stop:${NC} docker-compose -f docker-compose.dev.yml down"
+    else
+        print_error "Build failed! Check the logs above for details."
+        print_status "To view detailed logs: docker-compose -f docker-compose.dev.yml logs"
+        exit 1
+    fi
 }
 
 # Stop all services

@@ -10,10 +10,10 @@ COPY package*.json ./
 # Install dependencies (lock-aware)
 RUN if [ -f package-lock.json ]; then \
       echo "Using package-lock.json for installation" && \
-      npm ci --omit=dev; \
+      npm ci; \
     else \
       echo "No package-lock.json found, using npm install" && \
-      npm install --omit=dev; \
+      npm install; \
     fi && npm cache clean --force
 
 # Copy source code

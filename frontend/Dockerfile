@@ -8,13 +8,13 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies (handle both cases)
+# Install ALL dependencies (including dev dependencies for build)
 RUN if [ -f package-lock.json ]; then \
       echo "Using package-lock.json for installation" && \
-      npm ci --only=production; \
+      npm ci; \
     else \
       echo "No package-lock.json found, using npm install" && \
-      npm install --only=production; \
+      npm install; \
     fi
 
 # Rebuild the source code only when needed
