@@ -10,6 +10,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Future features and improvements will be listed here
 
+## [1.0.8] - 19-09-2025
+
+### Added
+- **Code-Based Email Verification**:  
+  - Secure 8-digit verification codes  
+  - Progressive UI (code input shown only after sending)
+
+- **Forgot Password System**:  
+  - Secure 8-digit code generation for password resets  
+  - Email-based reset flow with code validation  
+  - Strong password requirements (12+ characters)  
+  - Rate limiting and protection against repeated reset attempts  
+
+- **Email System**:  
+  Added support for various email notifications, including:  
+  - Account creation with verification  
+  - Account deleted (user-initiated and admin-initiated)  
+  - Account banned  
+  - Login alerts  
+  - Server created / deleted  
+  - Plan purchased  
+  - Ticket created / reply notifications  
+
+### Enhanced
+- **Security System**:  
+  - Cryptographically secure code generation  
+  - Constant-time string comparison to prevent timing attacks  
+  - Strong password validation with multiple criteria  
+  - User enumeration prevention across all authentication endpoints  
+  - Improved rate limiting with IPv6 support  
+  - Added security headers (CSP, HSTS, X-Frame-Options)  
+  - CSRF protection and input sanitization  
+  - Centralized security utilities in `utils/security.js`  
+
+- **Rate Limiting**:  
+  - Unified into a single middleware  
+  - Higher thresholds to reduce 429 errors  
+  - IPv6-compatible key generation  
+  - Pre-configured rate limiters for specific endpoints  
+
+### Fixed
+- **Duplicate Code Elimination**:  
+  - Consolidated PayPal API calls into utility functions  
+  - Unified server limit validation logic  
+  - Centralized Zod validation error handling  
+  - Merged duplicate rate limiting implementations  
+
+- **Syntax Errors**:  
+  - Fixed duplicate identifier declarations  
+  - Resolved function conflicts  
+  - Corrected import/export issues  
+  - Fixed regex expression errors  
+
+- **Validation Errors**:  
+  - Improved IPv6 handling in rate limiting  
+  - Strengthened password validation  
+  - Enhanced email format validation  
+  - Standardized error messages  
+
+### Security
+- **Authentication Security**:  
+  - Secure code generation with collision detection  
+  - Account lockout after failed verification attempts  
+  - Token invalidation upon successful operations  
+  - Rate limiting applied to all authentication endpoints  
+  - Strict input sanitization and validation  
+
+- **API Security**:  
+  - Standardized error responses to prevent information leakage  
+  - Enhanced CORS configuration  
+  - Security headers implemented  
+  - CSRF token validation  
+  - Request sanitization middleware  
+
 ## [1.0.7] - 10-09-2025
 
 ### Added
@@ -271,6 +345,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **1.0.8** - Code-based email system, forgot password system, verfication system, comprehensive security audit, component refactoring
 - **1.0.7** - Complete ticketing system with modular components, Docker installation fixes
 - **1.0.6** - Gift coupons system with user and admin management, security enhancements
 - **1.0.5** - Automated release system with package-based updates and GitHub Actions workflow

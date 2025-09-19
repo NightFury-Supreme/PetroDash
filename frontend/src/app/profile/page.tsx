@@ -84,6 +84,18 @@ export default function ProfilePage() {
                   <h2 className="text-xl font-bold">{`${form.firstName || ''} ${form.lastName || ''}`.trim() || form.username || 'User'}</h2>
                 </div>
                 <div className="text-sm text-[#AAAAAA]">{form.email || 'No email set'}</div>
+                {form.loginMethod === 'email' && (
+                  <div className="mt-1 flex items-center gap-2 text-xs">
+                    <span className={`px-2 py-1 rounded-md border flex items-center gap-1 ${
+                      form.emailVerified 
+                        ? 'border-green-500/30 bg-green-500/10 text-green-400' 
+                        : 'border-red-500/30 bg-red-500/10 text-red-400'
+                    }`}>
+                      <i className={`fas ${form.emailVerified ? 'fa-check-circle' : 'fa-exclamation-circle'}`}></i>
+                      {form.emailVerified ? 'Email Verified' : 'Email Not Verified'}
+                    </span>
+                  </div>
+                )}
                 <div className="mt-2 flex items-center gap-2 text-xs">
                   {form.coins !== undefined && (
                     <span className="px-2 py-1 rounded-md border border-[var(--border)] bg-white/5">
@@ -187,6 +199,41 @@ export default function ProfilePage() {
                         <i className="fas fa-pen"></i>
                       </button>
                     </div>
+                    {form.loginMethod === 'email' && !form.emailVerified && (
+                      <div className="mt-2">
+                        <button
+                          onClick={async () => {
+                            try {
+                              const token = localStorage.getItem('auth_token');
+                              if (!token) return;
+                              const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/verify/resend`, {
+                                method: 'POST',
+                                headers: { 
+                                  'Content-Type': 'application/json',
+                                  Authorization: `Bearer ${token}` 
+                                },
+                                body: JSON.stringify({ email: form.email }) // Fix: Include email in request body
+                              });
+                              if (res.ok) {
+                                alert('Verification email sent! Please check your inbox.');
+                              } else {
+                                const data = await res.json();
+                                const errorMessage = data.details 
+                                  ? `${data.error}: ${data.details}` 
+                                  : data.error || 'Failed to send verification email';
+                                alert(errorMessage);
+                              }
+                            } catch (error) {
+                              alert('Failed to send verification email');
+                            }
+                          }}
+                          className="text-xs px-3 py-1 rounded-md border border-blue-500/30 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors"
+                        >
+                          <i className="fas fa-paper-plane mr-1"></i>
+                          Resend Verification Email
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center justify-between gap-4">

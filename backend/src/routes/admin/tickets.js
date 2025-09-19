@@ -71,6 +71,21 @@ router.post('/:id/messages', requireAdmin, async (req, res) => {
     t.messages.push({ body: body.trim(), author: adminId, internal: !!internal });
     t.updatedAt = new Date();
     await t.save();
+    // Notify ticket owner on public reply (non-blocking)
+    try {
+      if (!internal) {
+        const User = require('../../models/User');
+        const owner = await User.findById(t.user).lean();
+        if (owner?.email) {
+          const { sendMailTemplate } = require('../../lib/mail');
+          await sendMailTemplate({
+            to: owner.email,
+            templateKey: 'ticketReply',
+            data: { title: t.title, snippet: String(body).slice(0, 200) }
+          });
+        }
+      }
+    } catch (_) {}
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to add message' });

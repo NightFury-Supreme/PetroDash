@@ -3,7 +3,7 @@ import Shell from '@/components/Shell';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import ServerCard from '@/components/ServerCard';
-import AdminUserDetailSkeleton from '@/components/skeletons/admin/AdminUserDetailSkeleton';
+import AdminUserDetailSkeleton from '@/components/skeletons/admin/user/AdminUserDetailSkeleton';
 import UserSummaryCard from '@/components/admin/users/UserSummaryCard';
 import { useModal } from '@/components/Modal';
 

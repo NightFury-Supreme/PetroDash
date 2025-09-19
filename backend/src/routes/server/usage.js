@@ -2,6 +2,7 @@ const express = require('express');
 const { requireAuth } = require('../../middleware/auth');
 const Server = require('../../models/Server');
 const { getServer: getPanelServer } = require('../../services/pterodactyl');
+const { hasServerLimitsChanged } = require('../../utils/security');
 
 const router = express.Router();
 
@@ -27,7 +28,7 @@ router.get('/', requireAuth, async (req, res) => {
             databases: Number(panelFeatures.databases) ?? s.limits?.databases,
             allocations: Number(panelFeatures.allocations) ?? s.limits?.allocations,
           };
-          const hasChange = ['diskMb','memoryMb','cpuPercent','backups','databases','allocations'].some(k => Number(s.limits?.[k] || 0) !== Number(updatedLimits[k] || 0));
+          const hasChange = hasServerLimitsChanged(s.limits, updatedLimits);
           if (hasChange) await Server.updateOne({ _id: s._id }, { $set: { limits: updatedLimits } });
           return { ...s, limits: updatedLimits };
         } catch (_) {

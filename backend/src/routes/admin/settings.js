@@ -156,6 +156,9 @@ router.patch('/', requireAdmin, async (req, res) => {
     if (update.payments && update.payments.paypal) {
       settings.payments = settings.payments || {};
       settings.payments.paypal = { ...(settings.payments.paypal || {}), ...update.payments.paypal };
+      delete update.payments.paypal;
+    }
+    if (update.payments && Object.keys(update.payments).length === 0) {
       delete update.payments;
     }
 
@@ -192,7 +195,8 @@ router.patch('/', requireAdmin, async (req, res) => {
       delete update.adsense;
     }
 
-    // Apply updates
+
+    // Apply remaining shallow updates
     Object.assign(settings, update);
     
     // Validate business logic
@@ -262,6 +266,7 @@ router.patch('/', requireAdmin, async (req, res) => {
     });
   }
 });
+
 
 module.exports = router;
 

@@ -8,34 +8,14 @@ const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Simple in-memory rate limiting per user/IP
-const RATE_WINDOW_MS = 60 * 1000; // 1 minute
-const CREATE_LIMIT = 5; // 5 create attempts/minute
-const REDEEM_LIMIT = 10; // 10 redeem attempts/minute
-const createBuckets = new Map(); // key -> { count, resetAt }
-const redeemBuckets = new Map();
-
-function takeToken(bucketMap, key, limit) {
-  const now = Date.now();
-  const b = bucketMap.get(key) || { count: 0, resetAt: now + RATE_WINDOW_MS };
-  if (now > b.resetAt) {
-    b.count = 0;
-    b.resetAt = now + RATE_WINDOW_MS;
-  }
-  b.count += 1;
-  bucketMap.set(key, b);
-  return b.count <= limit;
-}
+// Per-route rate limits removed; handled by global /api limiter
 
 // POST /api/gifts/create - user creates a coin gift code
 router.post('/create', requireAuth, async (req, res) => {
   try {
     const userId = (req.user && (req.user.sub || req.user.userId || req.user._id || req.user.id)) || null;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-    const rateKey = `create:${userId}:${req.ip}`;
-    if (!takeToken(createBuckets, rateKey, CREATE_LIMIT)) {
-      return res.status(429).json({ error: 'Too many requests, slow down' });
-    }
+    // additional per-route throttling removed
     const { coins, maxRedemptions = 1, expiresInDays = 30, description } = req.body || {};
     const coinsNum = Math.floor(Number(coins || 0));
     if (!coinsNum || coinsNum <= 0) return res.status(400).json({ error: 'Coins must be > 0' });
@@ -111,10 +91,7 @@ router.post('/redeem', requireAuth, async (req, res) => {
 
     const authUserId = (req.user && (req.user.sub || req.user.userId || req.user._id || req.user.id)) || null;
     if (!authUserId) return res.status(401).json({ error: 'Unauthorized' });
-    const rateKey = `redeem:${authUserId}:${req.ip}`;
-    if (!takeToken(redeemBuckets, rateKey, REDEEM_LIMIT)) {
-      return res.status(429).json({ error: 'Too many requests, slow down' });
-    }
+    // additional per-route throttling removed
 
     const session = await mongoose.startSession().catch(() => null);
     if (!session) {

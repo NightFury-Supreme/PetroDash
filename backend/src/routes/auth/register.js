@@ -51,6 +51,26 @@ router.post('/register', async (req, res) => {
     const token = UserCreationService.generateJwt(user);
     const userResponse = UserCreationService.formatUserResponse(user);
 
+    // After creation, send verification email if email login
+    try {
+      const crypto = require('crypto');
+      const VerificationToken = require('../../models/VerificationToken');
+      const Settings = require('../../models/Settings');
+      const { sendMailTemplate } = require('../../lib/mail');
+      const raw = crypto.randomBytes(32).toString('hex');
+      const tokenHash = crypto.createHash('sha256').update(raw).digest('hex');
+      const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
+      await VerificationToken.deleteMany({ userId: user._id, purpose: 'email_verification', usedAt: null });
+      await VerificationToken.create({ userId: user._id, tokenHash, purpose: 'email_verification', expiresAt });
+      const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify?token=${encodeURIComponent(raw)}`;
+      const s = await Settings.findOne({}).lean();
+      await sendMailTemplate({
+        to: user.email,
+        templateKey: 'accountCreateWithVerification',
+        data: { username: user.username, verificationLink: verifyUrl, siteName: s?.siteName || 'PteroDash' },
+      });
+    } catch (_) {}
+
     // Log successful registration
     await writeAudit(req, 'auth.register.success', 'auth', user._id.toString(), {
       registrationMethod: 'email',
@@ -68,7 +88,7 @@ router.post('/register', async (req, res) => {
 
     return res.status(201).json({ token, user: userResponse });
   } catch (error) {
-    console.error('Registration error:', error);
+    // Error logged silently for production
     
     // Log registration failure
     await writeAudit(req, 'auth.register.failed', 'auth', user?._id?.toString() || null, {

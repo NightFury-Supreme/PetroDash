@@ -8,6 +8,7 @@ const User = require('../models/User');
 const { writeAudit } = require('../middleware/audit');
 const Payment = require('../models/Payment');
 const jwt = require('jsonwebtoken');
+const { getAccessToken } = require('../lib/paypal');
 function resolveUserId(req) {
   // 1) Direct from middleware
   const direct = req?.user?.id || req?.user?._id || req.userId;
@@ -61,25 +62,9 @@ function resolveUserId(req) {
 const router = express.Router();
 
 async function getPaypalConfig() {
-  const s = await Settings.findOne({}).lean();
-  const paypal = s?.payments?.paypal || {};
+  const { token, baseUrl, paypal, settings } = await getAccessToken();
   if (!paypal.enabled) throw new Error('PayPal is disabled');
-  if (!paypal.clientId || !paypal.clientSecret) throw new Error('PayPal is not configured');
-  const baseUrl = paypal.mode === 'live' ? 'https://api.paypal.com' : 'https://api.sandbox.paypal.com';
-  return { paypal, baseUrl };
-}
-
-async function getAccessToken() {
-  const { paypal, baseUrl } = await getPaypalConfig();
-  const res = await axios.post(
-    `${baseUrl}/v1/oauth2/token`,
-    new URLSearchParams({ grant_type: 'client_credentials' }).toString(),
-    {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      auth: { username: paypal.clientId, password: paypal.clientSecret },
-    }
-  );
-  return { token: res.data.access_token, baseUrl, paypal };
+  return { paypal, baseUrl, token, settings };
 }
 
 router.get('/test', requireAuth, async (req, res) => {
@@ -306,6 +291,14 @@ router.post('/capture-order', requireAuth, createRateLimiter(10, 60 * 1000), asy
           }
         }
       } catch (_) { }
+      // Also send plan purchased template (non-blocking)
+      try {
+        const { sendMailTemplate } = require('../lib/mail');
+        const u = await User.findById(userId).lean();
+        if (u?.email) {
+          await sendMailTemplate({ to: u.email, templateKey: 'planPurchased', data: { planName: plan.name } });
+        }
+      } catch (_) {}
 
       // Ensure a UserPlan record exists/extends for this user and plan
       const UserPlan = require('../models/UserPlan');

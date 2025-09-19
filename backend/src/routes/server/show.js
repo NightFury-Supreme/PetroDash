@@ -3,6 +3,7 @@ const { requireAuth } = require('../../middleware/auth');
 const { createRateLimiter } = require('../../middleware/rateLimit');
 const Server = require('../../models/Server');
 const { getServer: getPanelServer } = require('../../services/pterodactyl');
+const { hasServerLimitsChanged } = require('../../utils/security');
 
 const router = express.Router();
 
@@ -28,7 +29,7 @@ const router = express.Router();
           allocations: Number(panelFeatures.allocations) ?? server.limits.allocations,
         };
         // Only write if there is a change
-        const hasChange = ['diskMb','memoryMb','cpuPercent','backups','databases','allocations'].some(k => Number(server.limits?.[k] || 0) !== Number(updatedLimits[k] || 0));
+        const hasChange = hasServerLimitsChanged(server.limits, updatedLimits);
         if (hasChange) {
           await Server.updateOne({ _id: server._id }, { $set: { limits: updatedLimits } });
           Object.assign(server.limits, updatedLimits);

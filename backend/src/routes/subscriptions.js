@@ -6,16 +6,10 @@ const Plan = require('../models/Plan');
 const Settings = require('../models/Settings');
 const Subscription = require('../models/Subscription');
 const Coupon = require('../models/Coupon');
+const { getAccessToken } = require('../lib/paypal');
 
 const router = express.Router();
 
-async function getAccessToken() {
-  const s = await Settings.findOne({}).lean();
-  const paypal = s?.payments?.paypal || {};
-  const baseUrl = paypal.mode === 'live' ? 'https://api.paypal.com' : 'https://api.sandbox.paypal.com';
-  const res = await axios.post(`${baseUrl}/v1/oauth2/token`, new URLSearchParams({ grant_type: 'client_credentials' }).toString(), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, auth: { username: paypal.clientId, password: paypal.clientSecret } });
-  return { token: res.data.access_token, baseUrl, paypal };
-}
 
 // GET /api/subscriptions - list my subscriptions
 router.get('/', requireAuth, createRateLimiter(30, 60 * 1000), async (req, res) => {

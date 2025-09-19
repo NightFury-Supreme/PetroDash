@@ -14,6 +14,7 @@ router.use('/coupons', require('./coupons'));
 router.use('/gifts', require('./gifts'));
 router.use('/logs', require('./logs'));
 router.use('/settings', require('./settings'));
+router.use('/email', require('./email'));
 router.use('/payments', require('./payments'));
 
 module.exports = router;

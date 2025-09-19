@@ -1,16 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Shell from "@/components/Shell";
 import { FullPageSkeleton } from "@/components/Skeleton";
 import { DashboardContent } from "../../components/dashboard/DashboardContent";
 import { useDashboard } from "../../hooks/useDashboard";
 import { ContentAd } from "@/components/ads/AdSense";
+import { useModal } from "@/components/Modal";
 
-export default function DashboardPage() {
+function DashboardContentWrapper() {
   const [mounted, setMounted] = useState(false);
   const [minLoadingTime, setMinLoadingTime] = useState(true);
   const { loading, error, loadDashboardData } = useDashboard();
+  const searchParams = useSearchParams();
+  const modal = useModal();
 
   // Initialize
   useEffect(() => {
@@ -21,6 +25,24 @@ export default function DashboardPage() {
     
     return () => clearTimeout(timer);
   }, []); // Remove loadDashboardData from dependency - it's handled in the hook
+
+  // Handle email verification success
+  useEffect(() => {
+    const verified = searchParams.get('verified');
+    
+    if (verified === '1') {
+      // Clear the URL parameter immediately
+      const url = new URL(window.location.href);
+      url.searchParams.delete('verified');
+      window.history.replaceState({}, '', url.toString());
+      
+      // Show success modal
+      modal.success({
+        title: 'Email Verified!',
+        body: 'Your email address has been successfully verified. You now have full access to all features.'
+      });
+    }
+  }, [searchParams, modal]);
 
   // Show full page skeleton while loading to prevent layout shift
   if (!mounted || loading || minLoadingTime) {
@@ -58,6 +80,14 @@ export default function DashboardPage() {
         <ContentAd />
       </div>
     </Shell>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<FullPageSkeleton />}>
+      <DashboardContentWrapper />
+    </Suspense>
   );
 }
 

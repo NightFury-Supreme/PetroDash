@@ -3,12 +3,10 @@ const mongoose = require('mongoose');
 const Ticket = require('../models/Ticket');
 const Settings = require('../models/Settings');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
-const { createRateLimiter } = require('../middleware/rateLimit');
 
 const router = express.Router();
 
-// Rate limits
-router.use(createRateLimiter(200, 15 * 60 * 1000));
+// Rate limiting handled globally in /api
 
 // Create ticket
 router.post('/', requireAuth, async (req, res) => {
@@ -51,6 +49,15 @@ router.post('/', requireAuth, async (req, res) => {
       priority: effectivePriority,
       messages: [{ author: userId, body: message.trim() }]
     });
+    // Notify user of ticket creation (non-blocking)
+    try {
+      const User = require('../models/User');
+      const u = await User.findById(userId).lean();
+      if (u?.email) {
+        const { sendMailTemplate } = require('../lib/mail');
+        await sendMailTemplate({ to: u.email, templateKey: 'ticketCreated', data: { title: title.trim() } });
+      }
+    } catch (_) {}
     res.status(201).json(ticket);
   } catch (err) {
     res.status(500).json({ error: 'Failed to create ticket' });

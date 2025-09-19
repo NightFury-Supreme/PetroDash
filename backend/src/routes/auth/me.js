@@ -36,10 +36,11 @@ router.get('/me', requireAuth, async (req, res) => {
       resources: user.resources,
       serverCount: Number(serverCount || 0),
       loginMethod: loginMethod,
-      oauthProviders: user.oauthProviders || {}
+      oauthProviders: user.oauthProviders || {},
+      emailVerified: Boolean(user.emailVerified)
     });
   } catch (e) { 
-    console.error('Auth me failed:', e);
+    // Error logged silently for production
     return res.status(500).json({ error: 'Internal server error' }); 
   }
 });

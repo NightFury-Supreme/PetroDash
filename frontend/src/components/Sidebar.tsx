@@ -27,6 +27,7 @@ const adminOtherLinks: NavLink[] = [
   { href: "/admin/tickets", label: "Tickets", icon: "fa-solid fa-ticket" },
   { href: "/admin/logs", label: "Logs", icon: "fa-solid fa-list" },
   { href: "/admin/settings", label: "Settings", icon: "fa-solid fa-sliders-h" },
+  { href: "/admin/email", label: "Email", icon: "fa-solid fa-envelope" },
 ];
 
 export default function Sidebar() {
@@ -87,7 +88,10 @@ export default function Sidebar() {
   }, []);
 
   const renderLink = (link: NavLink) => {
-    const isActive = pathname === link.href || pathname.startsWith(link.href + '/');
+    // Special case for Admin link - highlight when on any admin page
+    const isActive = link.href === '/admin' 
+      ? pathname.startsWith('/admin')
+      : pathname === link.href || pathname.startsWith(link.href + '/');
     return (
       <Link href={link.href} key={link.href}>
         <div className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${

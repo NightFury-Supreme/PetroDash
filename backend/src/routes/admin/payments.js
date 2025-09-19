@@ -3,16 +3,10 @@ const axios = require('axios');
 const { requireAdmin } = require('../../middleware/auth');
 const Payment = require('../../models/Payment');
 const Settings = require('../../models/Settings');
+const { getAccessToken } = require('../../lib/paypal');
 
 const router = express.Router();
 
-async function getAccessToken() {
-  const s = await Settings.findOne({}).lean();
-  const paypal = s?.payments?.paypal || {};
-  const baseUrl = paypal.mode === 'live' ? 'https://api.paypal.com' : 'https://api.sandbox.paypal.com';
-  const res = await axios.post(`${baseUrl}/v1/oauth2/token`, new URLSearchParams({ grant_type: 'client_credentials' }).toString(), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, auth: { username: paypal.clientId, password: paypal.clientSecret } });
-  return { token: res.data.access_token, baseUrl };
-}
 
 // GET /api/admin/ledger - list payments with filters
 router.get('/ledger', requireAdmin, async (req, res) => {

@@ -6,6 +6,8 @@ const session = require('express-session');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const passport = require('passport');
+const { createRateLimiter } = require('./middleware/rateLimit');
+const { securityHeaders, sanitizeInput, securityLogging } = require('./middleware/security');
 
 dotenv.config();
 
@@ -27,7 +29,6 @@ const app = express();
 app.set('trust proxy', 1);
 const { ensureShopPresets } = require('./lib/shopPresets');
 const { sanitize } = require('./middleware/sanitize');
-const { createRateLimiter } = require('./middleware/rateLimit');
 const { auditAuto } = require('./middleware/auditAuto');
 
 app.use(helmet({
@@ -36,6 +37,9 @@ app.use(helmet({
 }));
 app.use(express.json({ limit: '1mb' }));
 app.use(compression());
+app.use(securityHeaders());
+app.use(sanitizeInput);
+app.use(securityLogging);
 app.use(sanitize);
 app.use(auditAuto());
 
@@ -64,9 +68,11 @@ app.use(
     })
 );
 
-// Baseline rate limits
-app.use('/api/auth', createRateLimiter(60, 15 * 60 * 1000));
-app.use('/api', createRateLimiter(1000, 15 * 60 * 1000));
+// Single global API rate limit
+// Configure via env: API_RATE_MAX (default 3000), API_RATE_WINDOW_MS (default 15 min)
+const API_RATE_MAX = Number(process.env.API_RATE_MAX || 3000);
+const API_RATE_WINDOW_MS = Number(process.env.API_RATE_WINDOW_MS || (15 * 60 * 1000));
+app.use('/api', createRateLimiter(API_RATE_MAX, API_RATE_WINDOW_MS));
 
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok' });

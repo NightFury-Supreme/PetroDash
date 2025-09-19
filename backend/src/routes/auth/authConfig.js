@@ -24,7 +24,7 @@ router.get('/', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Failed to fetch auth configuration:', error);
+    // Auth config error logged silently
     return res.status(500).json({
       error: 'Failed to fetch auth configuration'
     });

@@ -1,7 +1,6 @@
 const express = require('express');
 const { z } = require('zod');
 const { requireAuth } = require('../middleware/auth');
-const { createRateLimiter } = require('../middleware/rateLimit');
 const User = require('../models/User');
 
 const router = express.Router();
@@ -11,8 +10,7 @@ function generateCode() {
   return (Math.random().toString(36).slice(2, 6) + Date.now().toString(36).slice(-4)).toUpperCase();
 }
 
-// Per-route rate limits
-router.use(createRateLimiter(60, 15 * 60 * 1000)); // 60 req / 15 min for all referral routes
+// Rate limiting handled globally in /api
 
 // GET /api/referrals/me - ensure code and return stats
 router.get('/me', requireAuth, async (req, res) => {

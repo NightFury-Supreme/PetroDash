@@ -52,7 +52,7 @@ router.delete('/profile', requireAuth, async (req, res) => {
         deletedServers++;
       } catch (error) {
         serverErrors.push({ serverId: server._id, serverName: server.name, error: error.message });
-        console.error(`Failed to delete server ${server._id}:`, error.message);
+        // Server deletion error logged silently
       }
     }
     
@@ -63,7 +63,7 @@ router.delete('/profile', requireAuth, async (req, res) => {
         await deletePanelUser(user.pterodactylUserId);
       } catch (error) {
         pterodactylError = error.message;
-        console.error(`Failed to delete Pterodactyl user ${user.pterodactylUserId}:`, error.message);
+        // Pterodactyl user deletion error logged silently
       }
     }
     
@@ -82,7 +82,7 @@ router.delete('/profile', requireAuth, async (req, res) => {
         : 'Account and all associated data deleted successfully.'
     });
   } catch (error) {
-    console.error('Account deletion error:', error);
+    // Account deletion error logged silently
     return res.status(500).json({ error: 'Failed to delete account', details: error.message });
   }
 });

@@ -92,6 +92,9 @@ export default function LoginClient() {
             placeholder="••••••••"
             error={fieldErrors.password}
           />
+          <div className="text-right text-sm">
+            <Link href="/forgot" className="underline">Forgot password?</Link>
+          </div>
           {error && <div className="text-sm" style={{ color: '#ff6b6b' }}>{error}</div>}
           <AuthSubmit disabled={loading}>{loading ? 'Loading…' : 'Login'}</AuthSubmit>
         </>

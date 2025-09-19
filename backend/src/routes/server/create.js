@@ -180,6 +180,15 @@ router.post('/', requireAuth, async (req, res) => {
       status: 'active',
     });
     writeAudit(req, 'server.create', 'server', created._id.toString(), { panelServerId: panelServer?.id });
+    // Notify user via email (non-blocking)
+    try {
+      const { sendMailTemplate } = require('../../lib/mail');
+      await sendMailTemplate({
+        to: user.email,
+        templateKey: 'serverCreated',
+        data: { serverName: name }
+      });
+    } catch (_) {}
     return res.status(201).json({ server: created, panel: panelServer });
   } catch (e) {
     console.error('Panel create server failed:', e?.response?.data || e.message);

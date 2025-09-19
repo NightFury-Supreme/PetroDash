@@ -29,7 +29,7 @@ async function writeAudit(reqOrActorId, action, resourceTypeOrDetails, resourceI
     
     // Ensure actorId is a valid ObjectId or null
     if (actorId && typeof actorId === 'string' && !/^[0-9a-fA-F]{24}$/.test(actorId)) {
-      console.warn('Invalid actorId format:', actorId);
+      // Invalid actorId format - logged silently
       actorId = null;
     }
     
@@ -45,7 +45,7 @@ async function writeAudit(reqOrActorId, action, resourceTypeOrDetails, resourceI
       success: true
     });
   } catch (error) {
-    console.error('Failed to write audit log:', error?.message || error);
+    // Audit log error logged silently for production
   }
 }
 

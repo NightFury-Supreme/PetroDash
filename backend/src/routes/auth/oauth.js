@@ -10,6 +10,7 @@ const GoogleService = require('../../services/google');
 const { writeAudit } = require('../../middleware/audit');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
+const { sendMailTemplate } = require('../../lib/mail');
 
 // Configure Passport strategies
 const configurePassport = async () => {
@@ -81,7 +82,7 @@ const configurePassport = async () => {
 
         return done(null, user);
       } catch (error) {
-        console.error('Discord OAuth strategy error:', error);
+        // OAuth strategy error logged silently
         return done(error, null);
       }
     }));
@@ -151,7 +152,7 @@ const configurePassport = async () => {
 
         return done(null, user);
       } catch (error) {
-        console.error('Google OAuth strategy error:', error);
+        // OAuth strategy error logged silently
         return done(error, null);
       }
     }));
@@ -163,7 +164,7 @@ const reconfigureStrategies = async () => {
   try {
     await configurePassport();
   } catch (error) {
-    console.error('Failed to reconfigure OAuth strategies:', error);
+    // OAuth reconfiguration error logged silently
   }
 };
 
@@ -216,6 +217,14 @@ router.get('/discord/callback', async (req, res, next) => {
     
     const token = UserCreationService.generateJwt(req.user);
     
+    // If user email not yet verified, mark as verified=true (OAuth providers supply verified emails)
+    try {
+      if (!req.user.emailVerified) {
+        req.user.emailVerified = true;
+        await req.user.save();
+      }
+    } catch {}
+    
     // Check if Discord server auto-join is configured and enabled
     const settings = await Settings.findOne();
     const autoJoinEnabled = settings?.auth?.discord?.autoJoin;
@@ -235,7 +244,7 @@ router.get('/discord/callback', async (req, res, next) => {
           guildId
         );
       } catch (error) {
-        console.error('Failed to add user to Discord server:', error);
+        // Discord server join error logged silently
       }
     }
     
@@ -256,6 +265,28 @@ router.get('/discord/callback', async (req, res, next) => {
       durationMs: Date.now() - startTime
     });
     
+    // Send login alert email (best-effort)
+    try {
+      if (req.user?.email) {
+        await sendMailTemplate({
+          to: req.user.email,
+          templateKey: 'loginAlert',
+          data: {
+            username: req.user.username,
+            ip: req.ip,
+            userAgent: req.get('User-Agent') || 'Unknown',
+            time: new Date().toLocaleString(),
+            serverName: process.env.SERVER_NAME || 'Dashboard',
+            title: 'New login to your account',
+            snippet: 'You signed in with Discord OAuth',
+            reason: 'OAuth login (Discord)'
+          }
+        });
+      }
+    } catch (e) {
+      // Email error logged silently for production
+    }
+    
     // Redirect to callback with join result
     const callbackUrl = new URL(`${process.env.FRONTEND_URL}/auth/callback`);
     callbackUrl.searchParams.set('token', token);
@@ -269,7 +300,7 @@ router.get('/discord/callback', async (req, res, next) => {
     
     res.redirect(callbackUrl.toString());
   } catch (error) {
-    console.error('Discord OAuth error:', error);
+    // OAuth error logged silently for production
     await writeAudit(req, 'auth.oauth.discord.error', 'auth', req.user?._id?.toString() || null, {
       provider: 'discord',
       reason: 'server_error',
@@ -316,6 +347,14 @@ router.get('/google/callback', async (req, res, next) => {
     
     const token = UserCreationService.generateJwt(req.user);
     
+    // If user email not yet verified, mark as verified=true (OAuth providers supply verified emails)
+    try {
+      if (!req.user.emailVerified) {
+        req.user.emailVerified = true;
+        await req.user.save();
+      }
+    } catch {}
+    
     // Log successful Google OAuth
     await writeAudit(req, 'auth.oauth.google.success', 'auth', req.user._id.toString(), {
       provider: 'google',
@@ -330,9 +369,31 @@ router.get('/google/callback', async (req, res, next) => {
       durationMs: Date.now() - startTime
     });
     
+    // Send login alert email (best-effort)
+    try {
+      if (req.user?.email) {
+        await sendMailTemplate({
+          to: req.user.email,
+          templateKey: 'loginAlert',
+          data: {
+            username: req.user.username,
+            ip: req.ip,
+            userAgent: req.get('User-Agent') || 'Unknown',
+            time: new Date().toLocaleString(),
+            serverName: process.env.SERVER_NAME || 'Dashboard',
+            title: 'New login to your account',
+            snippet: 'You signed in with Google OAuth',
+            reason: 'OAuth login (Google)'
+          }
+        });
+      }
+    } catch (e) {
+      // Email error logged silently for production
+    }
+    
     res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
   } catch (error) {
-    console.error('Google OAuth error:', error);
+    // OAuth error logged silently for production
     await writeAudit(req, 'auth.oauth.google.error', 'auth', req.user?._id?.toString() || null, {
       provider: 'google',
       reason: 'server_error',
@@ -364,7 +425,7 @@ router.get('/status', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('OAuth status error:', error);
+    // OAuth status error logged silently
     res.status(500).json({ error: 'Failed to get OAuth status' });
   }
 });
@@ -375,7 +436,7 @@ router.post('/reconfigure', async (req, res) => {
     await reconfigureStrategies();
     res.json({ success: true, message: 'OAuth strategies reconfigured' });
   } catch (error) {
-    console.error('Failed to reconfigure OAuth strategies:', error);
+    // OAuth reconfiguration error logged silently
     res.status(500).json({ error: 'Failed to reconfigure OAuth strategies' });
   }
 });
@@ -415,7 +476,7 @@ router.post('/create-pterodactyl-user', async (req, res) => {
       pterodactylUserId: user.pterodactylUserId 
     });
   } catch (error) {
-    console.error('Failed to create Pterodactyl user:', error);
+    // Pterodactyl user creation error logged silently
     res.status(500).json({ error: 'Failed to create Pterodactyl user' });
   }
 });

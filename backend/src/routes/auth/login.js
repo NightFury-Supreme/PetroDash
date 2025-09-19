@@ -70,6 +70,20 @@ router.post('/login', async (req, res) => {
       userAgent: req.get('User-Agent'),
       durationMs: Date.now() - startTime
     });
+    // Send login alert email (non-blocking)
+    try {
+      const { sendMailTemplate } = require('../../lib/mail');
+      await sendMailTemplate({
+        to: user.email,
+        templateKey: 'loginAlert',
+        data: {
+          ip: req.ip,
+          userAgent: req.get('User-Agent') || '',
+          time: new Date().toISOString(),
+          username: user.username,
+        }
+      });
+    } catch (_) {}
     
     return res.json({ 
       token, 
@@ -86,7 +100,7 @@ router.post('/login', async (req, res) => {
       } 
     });
   } catch (e) {
-    console.error('Login error:', e);
+    // Error logged silently for production
     await writeAudit(req, 'auth.login.error', 'auth', user?._id?.toString() || null, {
       reason: 'server_error',
       error: e.message,
@@ -114,7 +128,7 @@ router.post('/logout', async (req, res) => {
         user = await User.findById(decoded.sub);
       } catch (error) {
         // Invalid token, but we still want to log the logout attempt
-        console.log('Invalid token during logout:', error.message);
+        // Invalid token during logout - logged silently
       }
     }
     
@@ -131,7 +145,7 @@ router.post('/logout', async (req, res) => {
     
     return res.json({ message: 'Logged out successfully' });
   } catch (error) {
-    console.error('Logout error:', error);
+    // Error logged silently for production
     await writeAudit(req, 'auth.logout.error', 'auth', null, {
       reason: 'server_error',
       error: error.message,

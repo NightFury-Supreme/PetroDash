@@ -2,7 +2,7 @@
 import Shell from '@/components/Shell';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import AdminUsersSkeleton from '@/components/skeletons/admin/AdminUsersSkeleton';
+import AdminUsersSkeleton from '@/components/skeletons/admin/user/AdminUsersSkeleton';
 import UsersHeader from '@/components/admin/users/UsersHeader';
 import UsersTable from '@/components/admin/users/UsersTable';
 

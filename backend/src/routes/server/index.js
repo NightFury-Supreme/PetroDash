@@ -3,6 +3,7 @@ const { z } = require('zod');
 const { requireAuth } = require('../../middleware/auth');
 const Server = require('../../models/Server');
 const { getServer: getPanelServer } = require('../../services/pterodactyl');
+const { hasServerLimitsChanged } = require('../../utils/security');
 
 const router = express.Router();
 const { validateObjectId } = require('../../middleware/validateObjectId');
@@ -38,7 +39,7 @@ router.get('/:id', requireAuth, validateObjectId('id'), async (req, res) => {
           allocations: Number(panelFeatures.allocations) ?? server.limits.allocations,
         };
         // Only write if there is a change
-        const hasChange = ['diskMb','memoryMb','cpuPercent','backups','databases','allocations'].some(k => Number(server.limits?.[k] || 0) !== Number(updatedLimits[k] || 0));
+        const hasChange = hasServerLimitsChanged(server.limits, updatedLimits);
         if (hasChange) {
           await Server.updateOne({ _id: server._id }, { $set: { limits: updatedLimits } });
           Object.assign(server.limits, updatedLimits);
@@ -345,6 +346,19 @@ router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10,
 
   try {
     await Server.deleteOne({ _id: server._id });
+    // Email notification for server deletion (non-blocking)
+    try {
+      const User = require('../../models/User');
+      const user = await User.findById(req.user.sub).lean();
+      if (user?.email) {
+        const { sendMailTemplate } = require('../../lib/mail');
+        await sendMailTemplate({
+          to: user.email,
+          templateKey: 'serverDeleted',
+          data: { serverName: server.name }
+        });
+      }
+    } catch (_) {}
     return res.json({ ok: true });
   } catch (error) {
     console.error('Delete server error:', error);
@@ -353,5 +367,6 @@ router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10,
 });
 
 module.exports = router;
+
 
 

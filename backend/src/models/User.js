@@ -27,6 +27,7 @@ const UserSchema = new mongoose.Schema(
         pterodactylUserId: { type: Number },
         role: { type: String, enum: ['user', 'admin'], default: 'user' },
         coins: { type: Number, default: 0 },
+        emailVerified: { type: Boolean, default: false },
         // Referrals
         referralCode: { type: String, unique: true, sparse: true },
         referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

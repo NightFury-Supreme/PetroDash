@@ -155,6 +155,18 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     user.ban.by = req.user?.sub || req.user?.userId || user.ban.by || null;
   }
   await user.save();
+  // Notify user on ban/unban (non-blocking)
+  try {
+    const { sendMailTemplate } = require('../../lib/mail');
+    const templateKey = user.ban?.isBanned ? 'accountBanned' : 'loginAlert';
+    if (user.email && templateKey === 'accountBanned') {
+      await sendMailTemplate({
+        to: user.email,
+        templateKey,
+        data: { reason: user.ban?.reason || '', until: user.ban?.until ? new Date(user.ban.until).toISOString() : 'lifetime' }
+      });
+    }
+  } catch (_) {}
   const { writeAudit } = require('../../middleware/audit');
   writeAudit(req, 'admin.user.update', 'user', user._id.toString(), { role, resources, coins, email, username, firstName, lastName, referralCode, ban });
   return res.json({ user });
