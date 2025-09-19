@@ -9,6 +9,9 @@ A modern, feature-rich control panel for Pterodactyl servers with advanced user 
 * **Resource Management** – Create servers, manage CPU, RAM, Disk, and allocations
 * **Servers** – Create, view, and edit servers with ease
 * **User System** – Authentication, password reset, OAuth login, and permissions
+* **Email Verification** – Secure email verification system
+* **Password Reset** – forgot password functionality with email codes
+* **Email Notifications** – Comprehensive email system for account events, security alerts, and notifications
 * **Support Tickets** – Complete ticketing system with categories, priority assignment, and admin management
 * **Coupons** – Discount codes for plans and promotions
 * **Store** – Buy resources and plans using coins
@@ -17,13 +20,12 @@ A modern, feature-rich control panel for Pterodactyl servers with advanced user 
 * **Payment Integration** – PayPal with automatic webhook handling
 * **Advertising System** – Google AdSense integration with ad blocker detection
 * **Admin Tools** – User banning, egg and location management, analytics, and shop control
-* **Security** – JWT auth, OAuth, rate limiting, audit logs, and validation
+* **Security** – JWT auth, OAuth, rate limiting, audit logs, validation, and enhanced security measures
 * **UI/UX** – Modern Tailwind CSS dashboard with smooth client-side navigation
 * **System Updates**: One-click updates with GitHub integration
 * **Gift Coupons** – Share coins and rewards with redeemable codes
 
 ![Dashboard Screenshot](images/dashboard.png)
-
 ## 🚀 Setup & Deployment
 
 Quick links:
