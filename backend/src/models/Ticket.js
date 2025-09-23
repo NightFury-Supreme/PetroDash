@@ -1,11 +1,14 @@
 const mongoose = require('mongoose');
 
-const TicketMessageSchema = new mongoose.Schema({
-  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  body: { type: String, required: true, trim: true, maxlength: 5000 },
-  internal: { type: Boolean, default: false }, // admin-only note
-  createdAt: { type: Date, default: Date.now }
-}, { _id: false });
+const TicketMessageSchema = new mongoose.Schema(
+  {
+    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    body: { type: String, required: true, trim: true, maxlength: 5000 },
+    internal: { type: Boolean, default: false }, // admin-only note
+    createdAt: { type: Date, default: Date.now }
+  },
+  { _id: false }
+);
 
 const TicketSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -30,5 +33,3 @@ TicketSchema.pre('save', function(next) {
 });
 
 module.exports = mongoose.model('Ticket', TicketSchema);
-
-

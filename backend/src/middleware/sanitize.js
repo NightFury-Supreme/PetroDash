@@ -24,5 +24,3 @@ function sanitize(req, _res, next) {
 }
 
 module.exports = { sanitize };
-
-

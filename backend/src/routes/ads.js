@@ -9,10 +9,10 @@ const adsRateLimiter = createRateLimiter(100, 15 * 60 * 1000); // 100 requests p
 router.use(adsRateLimiter);
 
 // GET /api/ads - Public endpoint for AdSense settings
-router.get('/', async (req, res) => {
+router.get('/', async(req, res) => {
   try {
     const settings = await Settings.findOne({});
-    
+
     if (!settings || !settings.adsense) {
       return res.json({
         enabled: false,
@@ -39,7 +39,7 @@ router.get('/', async (req, res) => {
     return res.json(settings.adsense);
   } catch (error) {
     console.error('Failed to fetch AdSense settings:', error);
-    
+
     return res.status(500).json({
       error: 'Failed to fetch AdSense settings',
       message: 'An internal server error occurred'

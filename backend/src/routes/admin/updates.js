@@ -33,8 +33,8 @@ router.get('/check', requireAdmin, async (req, res) => {
     const latestVersion = latestRelease.tag_name.replace('v', '');
 
     // Find full package asset
-    const fullAsset = latestRelease.assets.find(asset => 
-      asset.name.includes('full-') && asset.name.endsWith('.tar.gz')
+    const fullAsset = latestRelease.assets.find(
+      asset => asset.name.includes('full-') && asset.name.endsWith('.tar.gz')
     );
 
     if (!fullAsset) {
@@ -59,7 +59,6 @@ router.get('/check', requireAdmin, async (req, res) => {
       fullPackageSize: fullAsset.size,
       fullPackageName: fullAsset.name
     });
-
   } catch (error) {
     console.error('Error checking for updates:', error);
     res.status(500).json({
@@ -69,20 +68,19 @@ router.get('/check', requireAdmin, async (req, res) => {
   }
 });
 
-
 // Helper function to compare version strings
 function compareVersions(version1, version2) {
   const v1parts = version1.split('.').map(Number);
   const v2parts = version2.split('.').map(Number);
-  
+
   for (let i = 0; i < Math.max(v1parts.length, v2parts.length); i++) {
     const v1part = v1parts[i] || 0;
     const v2part = v2parts[i] || 0;
-    
+
     if (v1part > v2part) return 1;
     if (v1part < v2part) return -1;
   }
-  
+
   return 0;
 }
 

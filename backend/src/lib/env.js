@@ -1,6 +1,6 @@
 function validateEnv() {
-  const get = (key) => process.env[key];
-  
+  const get = key => process.env[key];
+
   // Skip validation in test environment
   if (process.env.NODE_ENV === 'test') {
     return;
@@ -8,7 +8,7 @@ function validateEnv() {
 
   // Required group 1: authentication and core keys
   const authAndCore = ['JWT_SECRET', 'PTERO_APP_API_KEY'];
-  const missingAuthAndCore = authAndCore.filter((k) => !get(k) || String(get(k)).trim() === '');
+  const missingAuthAndCore = authAndCore.filter(k => !get(k) || String(get(k)).trim() === '');
   if (missingAuthAndCore.length > 0) {
     throw new Error(`Missing required auth/core env vars: ${missingAuthAndCore.join(', ')}`);
   }
@@ -21,7 +21,7 @@ function validateEnv() {
 
   // Required group 3: server/runtime
   const runtime = ['PORT', 'FRONTEND_URL', 'PTERO_BASE_URL'];
-  const missingRuntime = runtime.filter((k) => !get(k) || String(get(k)).trim() === '');
+  const missingRuntime = runtime.filter(k => !get(k) || String(get(k)).trim() === '');
   if (missingRuntime.length > 0) {
     throw new Error(`Missing required runtime env vars: ${missingRuntime.join(', ')}`);
   }
@@ -52,4 +52,3 @@ function validatePositiveInteger(name, value) {
 }
 
 module.exports = { validateEnv };
-

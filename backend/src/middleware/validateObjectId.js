@@ -11,6 +11,3 @@ function validateObjectId(paramName = 'id') {
 }
 
 module.exports = { validateObjectId };
-
-
-

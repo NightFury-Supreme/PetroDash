@@ -24,12 +24,12 @@ const updateSchema = z.object({
   pricePerUnit: z.coerce.number().min(0).max(100000).optional(),
   description: z.string().max(500).optional(),
   enabled: z.coerce.boolean().optional(),
-  maxPerPurchase: z.coerce.number().int().min(1).max(10000).optional(),
+  maxPerPurchase: z.coerce.number().int().min(1).max(10000).optional()
 });
 
 // Creation of custom items disabled: presets only
 router.post('/', requireAdmin, async (req, res) => {
-  return res.status(405).json({ 
+  return res.status(405).json({
     error: 'Presets only. Creation disabled.',
     message: 'Shop items are managed as system presets and cannot be created manually.'
   });
@@ -61,18 +61,17 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     const parsed = updateSchema.safeParse(req.body);
     if (!parsed.success) {
       console.error('Validation failed:', parsed.error.flatten());
-      return res.status(400).json({ 
-        error: 'Validation failed', 
-        details: parsed.error.flatten() 
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: parsed.error.flatten()
       });
     }
 
     // Apply updates
-    const updatedItem = await ShopItem.findByIdAndUpdate(
-      req.params.id, 
-      parsed.data, 
-      { new: true, runValidators: true }
-    );
+    const updatedItem = await ShopItem.findByIdAndUpdate(req.params.id, parsed.data, {
+      new: true,
+      runValidators: true
+    });
 
     // Temporarily disable audit logging to fix the immediate issue
     // await writeAudit(req.user._id || req.user.sub, 'shop_item_updated', {
@@ -98,12 +97,10 @@ router.patch('/:id', requireAdmin, async (req, res) => {
 // Delete
 // Deletion disabled: presets only
 router.delete('/:id', requireAdmin, async (req, res) => {
-  return res.status(405).json({ 
+  return res.status(405).json({
     error: 'Presets only. Deletion disabled.',
     message: 'Shop items are managed as system presets and cannot be deleted manually.'
   });
 });
 
 module.exports = router;
-
-

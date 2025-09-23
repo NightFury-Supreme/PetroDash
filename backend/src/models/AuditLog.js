@@ -17,7 +17,7 @@ const AuditLogSchema = new mongoose.Schema(
     statusCode: { type: Number },
     success: { type: Boolean },
     durationMs: { type: Number },
-    responsePreview: { type: String },
+    responsePreview: { type: String }
   },
   { timestamps: true }
 );
@@ -27,5 +27,3 @@ AuditLogSchema.index({ action: 1, createdAt: -1 });
 AuditLogSchema.index({ actorId: 1, createdAt: -1 });
 
 module.exports = mongoose.model('AuditLog', AuditLogSchema);
-
-

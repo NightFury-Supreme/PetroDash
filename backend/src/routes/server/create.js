@@ -21,13 +21,14 @@ const createSchema = z.object({
     cpuPercent: z.coerce.number().int().min(10),
     backups: z.coerce.number().int().min(0).default(0),
     databases: z.coerce.number().int().min(0).default(0),
-    allocations: z.coerce.number().int().min(1),
-  }),
+    allocations: z.coerce.number().int().min(1)
+  })
 });
 
 router.post('/', requireAuth, async (req, res) => {
   const parsed = createSchema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
+  if (!parsed.success)
+    return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
   const user = await User.findById(req.user.sub);
   if (!user) return res.status(404).json({ error: 'User not found' });
 
@@ -48,11 +49,23 @@ router.post('/', requireAuth, async (req, res) => {
 
     if (Array.isArray(egg.allowedPlans) && egg.allowedPlans.length > 0) {
       const ok = egg.allowedPlans.some(ap => planTokens.has(String(ap)));
-      if (!ok) return res.status(403).json({ error: 'Your plan does not allow this egg', violations: { eggId: 'Not allowed for your plan' } });
+      if (!ok)
+        return res
+          .status(403)
+          .json({
+            error: 'Your plan does not allow this egg',
+            violations: { eggId: 'Not allowed for your plan' }
+          });
     }
     if (Array.isArray(location.allowedPlans) && location.allowedPlans.length > 0) {
       const ok = location.allowedPlans.some(ap => planTokens.has(String(ap)));
-      if (!ok) return res.status(403).json({ error: 'Your plan does not allow this location', violations: { locationId: 'Not allowed for your plan' } });
+      if (!ok)
+        return res
+          .status(403)
+          .json({
+            error: 'Your plan does not allow this location',
+            violations: { locationId: 'Not allowed for your plan' }
+          });
     }
   } catch (_) {}
 
@@ -61,8 +74,8 @@ router.post('/', requireAuth, async (req, res) => {
     const serverCount = await Server.countDocuments({ locationId: location._id });
     const limit = Number(location.serverLimit || 0);
     if (limit > 0 && serverCount >= limit) {
-      return res.status(400).json({ 
-        error: 'Selected location is full', 
+      return res.status(400).json({
+        error: 'Selected location is full',
         violations: { locationId: 'Selected location has reached its server limit' },
         location: { serverCount, serverLimit: limit, locationId: location._id }
       });
@@ -82,7 +95,8 @@ router.post('/', requireAuth, async (req, res) => {
       userLimits.cpuPercent = Number(userLimits.cpuPercent || 0) + Number(r.cpuPercent || 0);
       userLimits.backups = Number(userLimits.backups || 0) + Number(r.backups || 0);
       userLimits.databases = Number(userLimits.databases || 0) + Number(r.databases || 0);
-      userLimits.allocations = Number(userLimits.allocations || 0) + Number(r.additionalAllocations || 0);
+      userLimits.allocations =
+        Number(userLimits.allocations || 0) + Number(r.additionalAllocations || 0);
       userLimits.serverSlots = Number(userLimits.serverSlots || 0) + Number(r.serverLimit || 0);
     }
   } catch (_) {}
@@ -108,19 +122,32 @@ router.post('/', requireAuth, async (req, res) => {
     backups: Math.max(0, Number(userLimits.backups || 0) - used.backups),
     databases: Math.max(0, Number(userLimits.databases || 0) - used.databases),
     allocations: Math.max(0, Number(userLimits.allocations || 0) - used.allocations),
-    serverSlots: Number(userLimits.serverSlots || 0) - existing.length,
+    serverSlots: Number(userLimits.serverSlots || 0) - existing.length
   };
 
   const violations = {};
   if (remaining.serverSlots <= 0) violations.serverSlots = 'No server slots remaining';
-  if (limits.diskMb > remaining.diskMb) violations.diskMb = `Exceeds remaining disk (${remaining.diskMb} MB)`;
-  if (limits.memoryMb > remaining.memoryMb) violations.memoryMb = `Exceeds remaining memory (${remaining.memoryMb} MB)`;
-  if (limits.cpuPercent > remaining.cpuPercent) violations.cpuPercent = `Exceeds remaining CPU (${remaining.cpuPercent}%)`;
-  if (limits.backups > remaining.backups) violations.backups = `Exceeds remaining backups (${remaining.backups})`;
-  if (limits.databases > remaining.databases) violations.databases = `Exceeds remaining databases (${remaining.databases})`;
-  if (limits.allocations > remaining.allocations) violations.allocations = `Exceeds remaining allocations (${remaining.allocations})`;
+  if (limits.diskMb > remaining.diskMb)
+    violations.diskMb = `Exceeds remaining disk (${remaining.diskMb} MB)`;
+  if (limits.memoryMb > remaining.memoryMb)
+    violations.memoryMb = `Exceeds remaining memory (${remaining.memoryMb} MB)`;
+  if (limits.cpuPercent > remaining.cpuPercent)
+    violations.cpuPercent = `Exceeds remaining CPU (${remaining.cpuPercent}%)`;
+  if (limits.backups > remaining.backups)
+    violations.backups = `Exceeds remaining backups (${remaining.backups})`;
+  if (limits.databases > remaining.databases)
+    violations.databases = `Exceeds remaining databases (${remaining.databases})`;
+  if (limits.allocations > remaining.allocations)
+    violations.allocations = `Exceeds remaining allocations (${remaining.allocations})`;
   if (Object.keys(violations).length > 0) {
-    return res.status(400).json({ error: 'Requested resources exceed your limits', violations, remaining, limits: userLimits });
+    return res
+      .status(400)
+      .json({
+        error: 'Requested resources exceed your limits',
+        violations,
+        remaining,
+        limits: userLimits
+      });
   }
 
   let startup = '';
@@ -143,20 +170,20 @@ router.post('/', requireAuth, async (req, res) => {
       swap: 0,
       disk: limits.diskMb,
       io: 500,
-      cpu: limits.cpuPercent,
+      cpu: limits.cpuPercent
     },
     feature_limits: {
       databases: limits.databases,
       allocations: limits.allocations,
-      backups: limits.backups,
+      backups: limits.backups
     },
     allocation: { default: 0 },
     deploy: {
       locations: [location.platform?.platformLocationId || location._id.toString()],
       dedicated_ip: false,
-      port_range: [],
+      port_range: []
     },
-    start_on_completion: true,
+    start_on_completion: true
   };
 
   try {
@@ -165,9 +192,9 @@ router.post('/', requireAuth, async (req, res) => {
       headers: {
         Authorization: `Bearer ${process.env.PTERO_APP_API_KEY}`,
         Accept: 'Application/vnd.pterodactyl.v1+json',
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      timeout: 30000,
+      timeout: 30000
     });
     const panelServer = resp.data?.attributes;
     const created = await Server.create({
@@ -177,9 +204,11 @@ router.post('/', requireAuth, async (req, res) => {
       eggId: egg._id,
       locationId: location._id,
       limits,
-      status: 'active',
+      status: 'active'
     });
-    writeAudit(req, 'server.create', 'server', created._id.toString(), { panelServerId: panelServer?.id });
+    writeAudit(req, 'server.create', 'server', created._id.toString(), {
+      panelServerId: panelServer?.id
+    });
     // Notify user via email (non-blocking)
     try {
       const { sendMailTemplate } = require('../../lib/mail');
@@ -192,10 +221,10 @@ router.post('/', requireAuth, async (req, res) => {
     return res.status(201).json({ server: created, panel: panelServer });
   } catch (e) {
     console.error('Panel create server failed:', e?.response?.data || e.message);
-    return res.status(502).json({ error: 'Panel server creation failed', details: e?.response?.data || e.message });
+    return res
+      .status(502)
+      .json({ error: 'Panel server creation failed', details: e?.response?.data || e.message });
   }
 });
 
 module.exports = router;
-
-

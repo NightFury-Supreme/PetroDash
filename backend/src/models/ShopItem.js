@@ -9,11 +9,9 @@ const ShopItemSchema = new mongoose.Schema(
     pricePerUnit: { type: Number, required: true }, // coins per quantity
     description: { type: String, default: '' },
     enabled: { type: Boolean, default: true },
-    maxPerPurchase: { type: Number, default: 1000 },
+    maxPerPurchase: { type: Number, default: 1000 }
   },
   { timestamps: true }
 );
 
 module.exports = mongoose.model('ShopItem', ShopItemSchema);
-
-

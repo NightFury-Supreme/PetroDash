@@ -7,10 +7,10 @@ const { hasServerLimitsChanged } = require('../../utils/security');
 
 const router = express.Router();
 
-    // GET /api/servers/:id
-    router.get('/', requireAuth, createRateLimiter(60, 60 * 1000), async (req, res) => {
-      try {
-        const server = await Server.findOne({ _id: req.params.id, owner: req.user.sub }).lean();
+// GET /api/servers/:id
+router.get('/', requireAuth, createRateLimiter(60, 60 * 1000), async (req, res) => {
+  try {
+    const server = await Server.findOne({ _id: req.params.id, owner: req.user.sub }).lean();
     if (!server) return res.status(404).json({ error: 'Server not found' });
 
     // Try syncing from panel if available; ignore errors to keep endpoint responsive
@@ -26,7 +26,7 @@ const router = express.Router();
           cpuPercent: Number(panelBuild.cpu) ?? server.limits.cpuPercent,
           backups: Number(panelFeatures.backups) ?? server.limits.backups,
           databases: Number(panelFeatures.databases) ?? server.limits.databases,
-          allocations: Number(panelFeatures.allocations) ?? server.limits.allocations,
+          allocations: Number(panelFeatures.allocations) ?? server.limits.allocations
         };
         // Only write if there is a change
         const hasChange = hasServerLimitsChanged(server.limits, updatedLimits);
@@ -44,5 +44,3 @@ const router = express.Router();
 });
 
 module.exports = router;
-
-

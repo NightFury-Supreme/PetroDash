@@ -9,11 +9,11 @@ const Settings = require('../models/Settings');
 const router = express.Router();
 
 // GET /api/payments - list my completed payments (most recent first)
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', requireAuth, async(req, res) => {
   try {
     const paginate = String(req.query.paginate || '').toLowerCase() === 'true';
-    let page = Math.max(1, parseInt(String(req.query.page || '1')) || 1);
-    let pageSize = Math.max(1, Math.min(100, parseInt(String(req.query.pageSize || '20')) || 20));
+    const page = Math.max(1, parseInt(String(req.query.page || '1')) || 1);
+    const pageSize = Math.max(1, Math.min(100, parseInt(String(req.query.pageSize || '20')) || 20));
     const baseQuery = { userId: req.user.sub, status: 'COMPLETED' };
     let q = Payment.find(baseQuery).sort({ createdAt: -1 }).lean();
     if (paginate) q = q.skip((page - 1) * pageSize).limit(pageSize);
@@ -34,7 +34,7 @@ router.get('/', requireAuth, async (req, res) => {
       amount: p.amount,
       currency: p.currency,
       status: p.status,
-      createdAt: p.createdAt,
+      createdAt: p.createdAt
     }));
     if (paginate) {
       return res.json({ data: out, meta: { total, page, pageSize } });
@@ -46,9 +46,13 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 // GET /api/payments/:id/invoice - PDF invoice download (only for COMPLETED)
-router.get('/:id/invoice', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) => {
+router.get('/:id/invoice', requireAuth, createRateLimiter(5, 60 * 1000), async(req, res) => {
   try {
-    const p = await Payment.findOne({ _id: req.params.id, userId: req.user.sub, status: 'COMPLETED' }).lean();
+    const p = await Payment.findOne({
+      _id: req.params.id,
+      userId: req.user.sub,
+      status: 'COMPLETED'
+    }).lean();
     if (!p) return res.status(404).json({ error: 'Invoice not found' });
     const plan = await Plan.findById(p.planId).lean();
     res.setHeader('Content-Type', 'application/pdf');
@@ -62,7 +66,7 @@ router.get('/:id/invoice', requireAuth, createRateLimiter(5, 60 * 1000), async (
     const brand = settings?.payments?.paypal?.businessName || settings?.siteName || 'PteroDash';
     const address = settings?.payments?.paypal?.businessAddress || '';
     const logoUrl = settings?.siteIconUrl;
-    
+
     // Add logo if available
     if (logoUrl) {
       try {
@@ -78,7 +82,7 @@ router.get('/:id/invoice', requireAuth, createRateLimiter(5, 60 * 1000), async (
     } else {
       doc.fontSize(20).text(brand, { align: 'left' });
     }
-    
+
     doc
       .moveDown(0.5)
       .fontSize(12)
@@ -94,11 +98,11 @@ router.get('/:id/invoice', requireAuth, createRateLimiter(5, 60 * 1000), async (
     const invoiceId = `${prefix}${String(p._id).slice(-8).toUpperCase()}`;
     const metaLeft = [
       `Invoice ID: ${invoiceId}`,
-      `Date: ${new Date(p.createdAt).toLocaleString()}`,
+      `Date: ${new Date(p.createdAt).toLocaleString()}`
     ];
     const metaRight = [
       `Provider: ${String(p.provider || '').toUpperCase()}`,
-      `Order ID: ${p.providerOrderId}`,
+      `Order ID: ${p.providerOrderId}`
     ];
     if (p.providerCaptureId) metaRight.push(`Capture ID: ${p.providerCaptureId}`);
     doc.fontSize(10);
@@ -110,36 +114,55 @@ router.get('/:id/invoice', requireAuth, createRateLimiter(5, 60 * 1000), async (
 
     // Line items
     const yStart = 200;
-    doc.fontSize(12).text('Plan', 50, yStart).text('Interval', 300, yStart).text('Amount', 470, yStart, { align: 'right' });
-    doc.moveTo(50, yStart + 18).lineTo(545, yStart + 18).strokeColor('#eee').stroke().strokeColor('#000');
+    doc
+      .fontSize(12)
+      .text('Plan', 50, yStart)
+      .text('Interval', 300, yStart)
+      .text('Amount', 470, yStart, { align: 'right' });
+    doc
+      .moveTo(50, yStart + 18)
+      .lineTo(545, yStart + 18)
+      .strokeColor('#eee')
+      .stroke()
+      .strokeColor('#000');
 
     const lineY = yStart + 30;
-    doc.fontSize(11)
+    doc
+      .fontSize(11)
       .text(plan?.name || String(p.planId), 50, lineY)
       .text(plan?.interval || '-', 300, lineY)
       .text(`${p.amount.toFixed(2)} ${p.currency || 'USD'}`, 470, lineY, { align: 'right' });
 
     // Tax lines
     const taxRate = Number(settings?.payments?.paypal?.taxRatePercent || 0);
-    let subtotal = Number(p.amount || 0);
-    let tax = taxRate > 0 ? subtotal * (taxRate / 100) : 0;
+    const subtotal = Number(p.amount || 0);
+    const tax = taxRate > 0 ? subtotal * (taxRate / 100) : 0;
     const currency = p.currency || 'USD';
-    const formatter = new Intl.NumberFormat(settings?.payments?.paypal?.currencyLocale || 'en-US', { style: 'currency', currency });
+    const formatter = new Intl.NumberFormat(settings?.payments?.paypal?.currencyLocale || 'en-US', {
+      style: 'currency',
+      currency
+    });
     const ySub = lineY + 40;
-    doc.fontSize(12)
+    doc
+      .fontSize(12)
       .text('Subtotal', 380, ySub)
       .text(formatter.format(subtotal), 470, ySub, { align: 'right' });
     if (tax > 0) {
-      doc.text(settings?.payments?.paypal?.taxLabel || 'Tax', 380, ySub + 16)
-         .text(formatter.format(subtotal + tax), 470, ySub + 16, { align: 'right' });
+      doc
+        .text(settings?.payments?.paypal?.taxLabel || 'Tax', 380, ySub + 16)
+        .text(formatter.format(subtotal + tax), 470, ySub + 16, { align: 'right' });
     }
-    doc.font('Helvetica-Bold')
+    doc
+      .font('Helvetica-Bold')
       .text('Total', 380, ySub + (tax > 0 ? 32 : 16))
       .text(formatter.format(subtotal + tax), 470, ySub + (tax > 0 ? 32 : 16), { align: 'right' })
       .font('Helvetica');
 
     // Footer
-    doc.fontSize(10).fillColor('#666').text('Thank you for your purchase.', 50, 720, { align: 'center', width: 495 });
+    doc
+      .fontSize(10)
+      .fillColor('#666')
+      .text('Thank you for your purchase.', 50, 720, { align: 'center', width: 495 });
 
     doc.end();
   } catch (e) {
@@ -148,5 +171,3 @@ router.get('/:id/invoice', requireAuth, createRateLimiter(5, 60 * 1000), async (
 });
 
 module.exports = router;
-
-

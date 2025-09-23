@@ -34,21 +34,19 @@ jobs:
 
       - name: Lint backend
         working-directory: backend
-        run: |
-          if [ -f eslint.config.mjs ] || [ -f .eslintrc.js ] || [ -f .eslintrc.cjs ] || [ -f .eslintrc.json ]; then \
-            npx eslint "src/**/*.{js,jsx,ts,tsx}" --no-error-on-unmatched-pattern; \
-          else \
-            echo "No ESLint config found in backend, skipping lint"; \
-          fi
+        run: npm run lint
+
+      - name: Format check backend
+        working-directory: backend
+        run: npm run format:check
 
       - name: Lint frontend
         working-directory: frontend
-        run: |
-          if [ -f eslint.config.mjs ] || [ -f .eslintrc.js ] || [ -f .eslintrc.cjs ] || [ -f .eslintrc.json ]; then \
-            npx eslint "src/**/*.{js,jsx,ts,tsx}" "app/**/*.{js,jsx,ts,tsx}" --no-error-on-unmatched-pattern; \
-          else \
-            echo "No ESLint config found in frontend, skipping lint"; \
-          fi
+        run: npm run lint
+
+      - name: Format check frontend
+        working-directory: frontend
+        run: npm run format:check
 
       - name: Type-check backend
         working-directory: backend

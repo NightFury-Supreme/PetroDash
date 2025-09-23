@@ -8,15 +8,15 @@ function securityHeaders() {
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        imgSrc: ["'self'", "data:", "https:"],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+        imgSrc: ["'self'", 'data:', 'https:'],
         scriptSrc: ["'self'"],
         connectSrc: ["'self'"],
         frameSrc: ["'none'"],
         objectSrc: ["'none'"],
-        upgradeInsecureRequests: [],
-      },
+        upgradeInsecureRequests: []
+      }
     },
     crossOriginEmbedderPolicy: false,
     hsts: {
@@ -26,7 +26,7 @@ function securityHeaders() {
     },
     noSniff: true,
     xssFilter: true,
-    referrerPolicy: { policy: "strict-origin-when-cross-origin" }
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
   });
 }
 
@@ -38,19 +38,19 @@ function csrfProtection(req, res, next) {
   if (req.path.startsWith('/api/')) {
     return next();
   }
-  
+
   // For non-API routes, implement CSRF protection
   if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') {
     return next();
   }
-  
+
   const token = req.headers['x-csrf-token'] || req.body._csrf;
   const sessionToken = req.session?.csrfToken;
-  
+
   if (!token || !sessionToken || token !== sessionToken) {
     return res.status(403).json({ error: 'Invalid CSRF token' });
   }
-  
+
   next();
 }
 
@@ -61,7 +61,7 @@ function sensitiveOperationLimit() {
   return (req, res, next) => {
     const ip = req.ip || req.connection.remoteAddress;
     const key = `sensitive:${ip}`;
-    
+
     // This would typically use Redis
     // For now, just pass through
     next();
@@ -73,7 +73,7 @@ function sensitiveOperationLimit() {
  */
 function sanitizeInput(req, res, next) {
   // Remove potentially dangerous characters from string inputs
-  const sanitizeString = (str) => {
+  const sanitizeString = str => {
     if (typeof str !== 'string') return str;
     return str
       .replace(/[<>]/g, '') // Remove < and >
@@ -81,7 +81,7 @@ function sanitizeInput(req, res, next) {
       .replace(/on\w+\s*=/gi, '') // Remove event handlers
       .trim();
   };
-  
+
   // Sanitize body
   if (req.body && typeof req.body === 'object') {
     for (const key in req.body) {
@@ -90,7 +90,7 @@ function sanitizeInput(req, res, next) {
       }
     }
   }
-  
+
   // Sanitize query parameters
   if (req.query && typeof req.query === 'object') {
     for (const key in req.query) {
@@ -99,7 +99,7 @@ function sanitizeInput(req, res, next) {
       }
     }
   }
-  
+
   next();
 }
 
@@ -108,7 +108,7 @@ function sanitizeInput(req, res, next) {
  */
 function securityLogging(req, res, next) {
   const startTime = Date.now();
-  
+
   res.on('finish', () => {
     const duration = Date.now() - startTime;
     const logData = {
@@ -122,10 +122,10 @@ function securityLogging(req, res, next) {
       referer: req.get('Referer'),
       userId: req.user?.sub || null
     };
-    
+
     // Logging disabled for production
   });
-  
+
   next();
 }
 
@@ -145,15 +145,15 @@ function securityHeaders() {
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        imgSrc: ["'self'", "data:", "https:"],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+        imgSrc: ["'self'", 'data:', 'https:'],
         scriptSrc: ["'self'"],
         connectSrc: ["'self'"],
         frameSrc: ["'none'"],
         objectSrc: ["'none'"],
-        upgradeInsecureRequests: [],
-      },
+        upgradeInsecureRequests: []
+      }
     },
     crossOriginEmbedderPolicy: false,
     hsts: {
@@ -163,7 +163,7 @@ function securityHeaders() {
     },
     noSniff: true,
     xssFilter: true,
-    referrerPolicy: { policy: "strict-origin-when-cross-origin" }
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
   });
 }
 
@@ -175,19 +175,19 @@ function csrfProtection(req, res, next) {
   if (req.path.startsWith('/api/')) {
     return next();
   }
-  
+
   // For non-API routes, implement CSRF protection
   if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') {
     return next();
   }
-  
+
   const token = req.headers['x-csrf-token'] || req.body._csrf;
   const sessionToken = req.session?.csrfToken;
-  
+
   if (!token || !sessionToken || token !== sessionToken) {
     return res.status(403).json({ error: 'Invalid CSRF token' });
   }
-  
+
   next();
 }
 
@@ -198,7 +198,7 @@ function sensitiveOperationLimit() {
   return (req, res, next) => {
     const ip = req.ip || req.connection.remoteAddress;
     const key = `sensitive:${ip}`;
-    
+
     // This would typically use Redis
     // For now, just pass through
     next();
@@ -210,7 +210,7 @@ function sensitiveOperationLimit() {
  */
 function sanitizeInput(req, res, next) {
   // Remove potentially dangerous characters from string inputs
-  const sanitizeString = (str) => {
+  const sanitizeString = str => {
     if (typeof str !== 'string') return str;
     return str
       .replace(/[<>]/g, '') // Remove < and >
@@ -218,7 +218,7 @@ function sanitizeInput(req, res, next) {
       .replace(/on\w+\s*=/gi, '') // Remove event handlers
       .trim();
   };
-  
+
   // Sanitize body
   if (req.body && typeof req.body === 'object') {
     for (const key in req.body) {
@@ -227,7 +227,7 @@ function sanitizeInput(req, res, next) {
       }
     }
   }
-  
+
   // Sanitize query parameters
   if (req.query && typeof req.query === 'object') {
     for (const key in req.query) {
@@ -236,7 +236,7 @@ function sanitizeInput(req, res, next) {
       }
     }
   }
-  
+
   next();
 }
 
@@ -245,7 +245,7 @@ function sanitizeInput(req, res, next) {
  */
 function securityLogging(req, res, next) {
   const startTime = Date.now();
-  
+
   res.on('finish', () => {
     const duration = Date.now() - startTime;
     const logData = {
@@ -259,10 +259,10 @@ function securityLogging(req, res, next) {
       referer: req.get('Referer'),
       userId: req.user?.sub || null
     };
-    
+
     // Logging disabled for production
   });
-  
+
   next();
 }
 

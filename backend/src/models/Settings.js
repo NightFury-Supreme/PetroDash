@@ -7,7 +7,7 @@ const SettingsSchema = new mongoose.Schema(
     referrals: {
       referrerCoins: { type: Number, default: 50 },
       referredCoins: { type: Number, default: 25 },
-      customCodeMinInvites: { type: Number, default: 10 },
+      customCodeMinInvites: { type: Number, default: 10 }
     },
     auth: {
       emailLogin: { type: Boolean, default: true },
@@ -18,14 +18,14 @@ const SettingsSchema = new mongoose.Schema(
         clientSecret: { type: String, default: '' },
         redirectUri: { type: String, default: '' },
         botToken: { type: String, default: '' },
-        guildId: { type: String, default: '' },
+        guildId: { type: String, default: '' }
       },
       google: {
         enabled: { type: Boolean, default: false },
         clientId: { type: String, default: '' },
         clientSecret: { type: String, default: '' },
-        redirectUri: { type: String, default: '' },
-      },
+        redirectUri: { type: String, default: '' }
+      }
     },
     payments: {
       paypal: {
@@ -43,7 +43,7 @@ const SettingsSchema = new mongoose.Schema(
         invoicePrefix: { type: String, default: 'INV-' },
         taxRatePercent: { type: Number, default: 0 },
         taxLabel: { type: String, default: 'Tax' },
-        currencyLocale: { type: String, default: 'en-US' },
+        currencyLocale: { type: String, default: 'en-US' }
       },
       smtp: {
         host: { type: String, default: '' },
@@ -51,7 +51,7 @@ const SettingsSchema = new mongoose.Schema(
         secure: { type: Boolean, default: false },
         user: { type: String, default: '' },
         pass: { type: String, default: '' },
-        fromEmail: { type: String, default: '' },
+        fromEmail: { type: String, default: '' }
       }
     },
     defaults: {
@@ -62,7 +62,7 @@ const SettingsSchema = new mongoose.Schema(
       backups: { type: Number, default: 0 },
       allocations: { type: Number, default: 0 },
       databases: { type: Number, default: 0 },
-      coins: { type: Number, default: 0 },
+      coins: { type: Number, default: 0 }
     },
     adsense: {
       enabled: { type: Boolean, default: false },
@@ -72,7 +72,7 @@ const SettingsSchema = new mongoose.Schema(
         sidebar: { type: String, default: '' },
         footer: { type: String, default: '' },
         content: { type: String, default: '' },
-        mobile: { type: String, default: '' },
+        mobile: { type: String, default: '' }
       },
       adTypes: {
         display: { type: Boolean, default: true },
@@ -80,18 +80,16 @@ const SettingsSchema = new mongoose.Schema(
         link: { type: Boolean, default: true },
         inFeed: { type: Boolean, default: false },
         inArticle: { type: Boolean, default: false },
-        matchedContent: { type: Boolean, default: false },
-      },
+        matchedContent: { type: Boolean, default: false }
+      }
     },
     // Ticket system configuration
     ticketCategories: {
       type: [String],
-      default: ['general', 'billing', 'technical', 'abuse', 'account', 'server', 'payment', 'other'],
-    },
+      default: ['general', 'billing', 'technical', 'abuse', 'account', 'server', 'payment', 'other']
+    }
   },
   { timestamps: true }
 );
 
 module.exports = mongoose.model('Settings', SettingsSchema);
-
-

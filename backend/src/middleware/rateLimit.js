@@ -21,13 +21,13 @@ function createSecureRateLimiter(max, windowMs, options = {}) {
     max,
     standardHeaders: true,
     legacyHeaders: false,
-    message: { 
+    message: {
       error: 'Too many requests, please try again later.',
       retryAfter: Math.ceil(windowMs / 1000)
     },
     skipSuccessfulRequests: true,
     skipFailedRequests: false,
-    keyGenerator: (req) => {
+    keyGenerator: req => {
       const ip = ipKeyGenerator(req);
       const userAgent = req.get('User-Agent') || 'unknown';
       return `${ip}:${userAgent}`;
@@ -52,7 +52,7 @@ const loginRateLimit = createSecureRateLimiter(10, 15 * 60 * 1000); // 10 attemp
 const registrationRateLimit = createSecureRateLimiter(3, 60 * 60 * 1000); // 3 attempts per hour
 const resendRateLimit = createSecureRateLimiter(3, 60 * 60 * 1000); // 3 attempts per hour
 
-module.exports = { 
+module.exports = {
   createRateLimiter,
   createSecureRateLimiter,
   verificationRateLimit,

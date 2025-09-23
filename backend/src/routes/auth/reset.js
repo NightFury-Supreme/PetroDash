@@ -17,15 +17,16 @@ const resetSchema = z.object({
 router.post('/reset', verificationRateLimit, async (req, res) => {
   try {
     const parsed = resetSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
+    if (!parsed.success)
+      return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
     const { email, code, newPassword } = parsed.data;
 
     // Validate password strength
     const passwordValidation = validatePasswordStrength(newPassword);
     if (!passwordValidation.isValid) {
-      return res.status(400).json({ 
-        error: 'Password does not meet security requirements', 
-        details: passwordValidation.errors 
+      return res.status(400).json({
+        error: 'Password does not meet security requirements',
+        details: passwordValidation.errors
       });
     }
 
@@ -37,27 +38,32 @@ router.post('/reset', verificationRateLimit, async (req, res) => {
     }
 
     const codeHash = hashString(code);
-    const vt = await VerificationToken.findOne({ tokenHash: codeHash, purpose: 'password_reset', usedAt: null });
+    const vt = await VerificationToken.findOne({
+      tokenHash: codeHash,
+      purpose: 'password_reset',
+      usedAt: null
+    });
     if (!vt) return res.status(400).json({ error: 'Invalid or expired code' });
-    
+
     // Check if token is locked due to too many attempts
     if (vt.lockedUntil && vt.lockedUntil > new Date()) {
-      return res.status(429).json({ 
+      return res.status(429).json({
         error: 'Too many failed attempts. Please request a new code.',
         retryAfter: Math.ceil((vt.lockedUntil - new Date()) / 1000)
       });
     }
-    
-    if (vt.expiresAt && vt.expiresAt < new Date()) return res.status(400).json({ error: 'Code has expired' });
+
+    if (vt.expiresAt && vt.expiresAt < new Date())
+      return res.status(400).json({ error: 'Code has expired' });
 
     // Increment attempt counter
     vt.attempts += 1;
-    
+
     // Check if max attempts exceeded
     if (vt.attempts >= vt.maxAttempts) {
       vt.lockedUntil = new Date(Date.now() + 15 * 60 * 1000); // Lock for 15 minutes
       await vt.save();
-      return res.status(429).json({ 
+      return res.status(429).json({
         error: 'Too many failed attempts. Please request a new code.',
         retryAfter: 900
       });
@@ -76,9 +82,9 @@ router.post('/reset', verificationRateLimit, async (req, res) => {
     await vt.save();
 
     // Invalidate all other password reset tokens for this user
-    await VerificationToken.deleteMany({ 
-      userId: user._id, 
-      purpose: 'password_reset', 
+    await VerificationToken.deleteMany({
+      userId: user._id,
+      purpose: 'password_reset',
       usedAt: null,
       _id: { $ne: vt._id }
     });

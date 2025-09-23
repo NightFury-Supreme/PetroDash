@@ -13,7 +13,7 @@ router.get('/', requireAuth, async (req, res) => {
 
     // Opportunistic sync with panel
     const synced = await Promise.all(
-      servers.map(async (s) => {
+      servers.map(async s => {
         try {
           if (!s.panelServerId) return s;
           const panelResponse = await getPanelServer(s.panelServerId);
@@ -26,10 +26,11 @@ router.get('/', requireAuth, async (req, res) => {
             cpuPercent: Number(panelBuild.cpu) ?? s.limits?.cpuPercent,
             backups: Number(panelFeatures.backups) ?? s.limits?.backups,
             databases: Number(panelFeatures.databases) ?? s.limits?.databases,
-            allocations: Number(panelFeatures.allocations) ?? s.limits?.allocations,
+            allocations: Number(panelFeatures.allocations) ?? s.limits?.allocations
           };
           const hasChange = hasServerLimitsChanged(s.limits, updatedLimits);
-          if (hasChange) await Server.updateOne({ _id: s._id }, { $set: { limits: updatedLimits } });
+          if (hasChange)
+            await Server.updateOne({ _id: s._id }, { $set: { limits: updatedLimits } });
           return { ...s, limits: updatedLimits };
         } catch (_) {
           return s; // ignore panel errors
@@ -50,7 +51,7 @@ router.get('/', requireAuth, async (req, res) => {
       },
       { diskMb: 0, memoryMb: 0, cpuPercent: 0, backups: 0, databases: 0, allocations: 0 }
     );
-    
+
     // Add servers count and ensure all fields are numbers
     const response = {
       diskMb: Number(usage.diskMb || 0),
@@ -61,7 +62,7 @@ router.get('/', requireAuth, async (req, res) => {
       allocations: Number(usage.allocations || 0),
       servers: Number(servers.length || 0)
     };
-    
+
     return res.json(response);
   } catch (e) {
     console.error('Usage aggregation failed:', e.message);
@@ -70,6 +71,3 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 module.exports = router;
-
-
-

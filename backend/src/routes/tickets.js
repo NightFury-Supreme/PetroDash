@@ -9,9 +9,10 @@ const router = express.Router();
 // Rate limiting handled globally in /api
 
 // Create ticket
-router.post('/', requireAuth, async (req, res) => {
+router.post('/', requireAuth, async(req, res) => {
   try {
-    const userId = (req.user && (req.user.sub || req.user.userId || req.user._id || req.user.id)) || null;
+    const userId =
+      (req.user && (req.user.sub || req.user.userId || req.user._id || req.user.id)) || null;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
     const { title, message, category } = req.body || {};
     if (!title || typeof title !== 'string' || title.trim().length < 3) {
@@ -21,25 +22,39 @@ router.post('/', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Message must be at least 3 characters' });
     }
     // Resolve allowed categories from settings
-    let allowedCategories = ['general', 'billing', 'technical', 'abuse', 'account', 'server', 'payment', 'other'];
+    let allowedCategories = [
+      'general',
+      'billing',
+      'technical',
+      'abuse',
+      'account',
+      'server',
+      'payment',
+      'other'
+    ];
     try {
       const s = await Settings.findOne({}).lean();
       if (s && Array.isArray(s.ticketCategories) && s.ticketCategories.length > 0) {
-        allowedCategories = s.ticketCategories.map((c) => String(c)).filter(Boolean);
+        allowedCategories = s.ticketCategories.map(c => String(c)).filter(Boolean);
       }
     } catch (_) {}
 
     // Auto priority based on active plans
     let effectivePriority = 'low';
     try {
-      const activePlans = await mongoose.model('UserPlan').find({ userId, status: 'active' }).limit(1).lean();
+      const activePlans = await mongoose
+        .model('UserPlan')
+        .find({ userId, status: 'active' })
+        .limit(1)
+        .lean();
       if (activePlans && activePlans.length > 0) effectivePriority = 'high';
     } catch (_) {}
 
-    const selectedCategory = typeof category === 'string' ? category.trim().slice(0, 100) : 'general';
+    const selectedCategory =
+      typeof category === 'string' ? category.trim().slice(0, 100) : 'general';
     const allowedLower = allowedCategories.map(c => String(c).toLowerCase());
     const idx = allowedLower.indexOf(String(selectedCategory).toLowerCase());
-    const finalCategory = idx >= 0 ? allowedCategories[idx] : (allowedCategories[0] || 'general');
+    const finalCategory = idx >= 0 ? allowedCategories[idx] : allowedCategories[0] || 'general';
 
     const ticket = await Ticket.create({
       user: new mongoose.Types.ObjectId(String(userId)),
@@ -55,7 +70,11 @@ router.post('/', requireAuth, async (req, res) => {
       const u = await User.findById(userId).lean();
       if (u?.email) {
         const { sendMailTemplate } = require('../lib/mail');
-        await sendMailTemplate({ to: u.email, templateKey: 'ticketCreated', data: { title: title.trim() } });
+        await sendMailTemplate({
+          to: u.email,
+          templateKey: 'ticketCreated',
+          data: { title: title.trim() }
+        });
       }
     } catch (_) {}
     res.status(201).json(ticket);
@@ -65,13 +84,14 @@ router.post('/', requireAuth, async (req, res) => {
 });
 
 // List my tickets
-router.get('/mine', requireAuth, async (req, res) => {
+router.get('/mine', requireAuth, async(req, res) => {
   try {
-    const userId = (req.user && (req.user.sub || req.user.userId || req.user._id || req.user.id)) || null;
+    const userId =
+      (req.user && (req.user.sub || req.user.userId || req.user._id || req.user.id)) || null;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
     const { status } = req.query;
     const query = { user: userId, deletedByUser: { $ne: true } };
-    if (status && ['open','pending','resolved','closed'].includes(status)) {
+    if (status && ['open', 'pending', 'resolved', 'closed'].includes(status)) {
       query.status = { $eq: status };
     }
     const tickets = await Ticket.find(query).sort({ updatedAt: -1 }).lean();
@@ -82,13 +102,22 @@ router.get('/mine', requireAuth, async (req, res) => {
 });
 
 // Public: list available categories (for UI selects)
-router.get('/categories', requireAuth, async (req, res) => {
+router.get('/categories', requireAuth, async(req, res) => {
   try {
-    let categories = ['general', 'billing', 'technical', 'abuse', 'account', 'server', 'payment', 'other'];
+    let categories = [
+      'general',
+      'billing',
+      'technical',
+      'abuse',
+      'account',
+      'server',
+      'payment',
+      'other'
+    ];
     try {
       const s = await Settings.findOne({}).lean();
       if (s && Array.isArray(s.ticketCategories) && s.ticketCategories.length > 0) {
-        categories = s.ticketCategories.map((c) => String(c)).filter(Boolean);
+        categories = s.ticketCategories.map(c => String(c)).filter(Boolean);
       }
     } catch (_) {}
     res.json({ categories });
@@ -98,9 +127,10 @@ router.get('/categories', requireAuth, async (req, res) => {
 });
 
 // Get ticket by id (owner or admin)
-router.get('/:id', requireAuth, async (req, res) => {
+router.get('/:id', requireAuth, async(req, res) => {
   try {
-    const userId = (req.user && (req.user.sub || req.user.userId || req.user._id || req.user.id)) || null;
+    const userId =
+      (req.user && (req.user.sub || req.user.userId || req.user._id || req.user.id)) || null;
     const isAdmin = !!(req.user && (req.user.role === 'admin' || req.user.isAdmin));
     // Validate ObjectId format to prevent NoSQL injection
     if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
@@ -119,7 +149,7 @@ router.get('/:id', requireAuth, async (req, res) => {
     }
     // Hide internal messages from non-admins
     if (!isAdmin && Array.isArray(t.messages)) {
-      t.messages = t.messages.filter((m) => !m.internal);
+      t.messages = t.messages.filter(m => !m.internal);
     }
     res.json(t);
   } catch (err) {
@@ -128,9 +158,10 @@ router.get('/:id', requireAuth, async (req, res) => {
 });
 
 // Add message (owner or admin)
-router.post('/:id/messages', requireAuth, async (req, res) => {
+router.post('/:id/messages', requireAuth, async(req, res) => {
   try {
-    const userId = (req.user && (req.user.sub || req.user.userId || req.user._id || req.user.id)) || null;
+    const userId =
+      (req.user && (req.user.sub || req.user.userId || req.user._id || req.user.id)) || null;
     const isAdmin = !!(req.user && (req.user.role === 'admin' || req.user.isAdmin));
     const { body, internal } = req.body || {};
     if (!body || typeof body !== 'string' || body.trim().length < 1) {
@@ -159,7 +190,7 @@ router.post('/:id/messages', requireAuth, async (req, res) => {
 });
 
 // Update status (admin)
-router.patch('/:id', requireAdmin, async (req, res) => {
+router.patch('/:id', requireAdmin, async(req, res) => {
   try {
     const { status, assignee, priority, tags } = req.body || {};
     // Validate ObjectId format to prevent NoSQL injection
@@ -168,8 +199,8 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     }
     const t = await Ticket.findById(req.params.id);
     if (!t) return res.status(404).json({ error: 'Not found' });
-    if (status && ['open','pending','resolved','closed'].includes(status)) t.status = status;
-    if (priority && ['low','medium','high'].includes(priority)) t.priority = priority;
+    if (status && ['open', 'pending', 'resolved', 'closed'].includes(status)) t.status = status;
+    if (priority && ['low', 'medium', 'high'].includes(priority)) t.priority = priority;
     if (assignee) t.assignee = new mongoose.Types.ObjectId(String(assignee));
     if (Array.isArray(tags)) t.tags = tags.slice(0, 20);
     t.updatedAt = new Date();
@@ -181,14 +212,14 @@ router.patch('/:id', requireAdmin, async (req, res) => {
 });
 
 // Admin list
-router.get('/', requireAdmin, async (req, res) => {
+router.get('/', requireAdmin, async(req, res) => {
   try {
     const { q, status, priority } = req.query;
     const query = {};
-    if (status && ['open','pending','resolved','closed'].includes(status)) {
+    if (status && ['open', 'pending', 'resolved', 'closed'].includes(status)) {
       query.status = { $eq: status };
     }
-    if (priority && ['low','medium','high'].includes(priority)) {
+    if (priority && ['low', 'medium', 'high'].includes(priority)) {
       query.priority = { $eq: priority };
     }
     if (q && typeof q === 'string' && q.trim()) {
@@ -199,7 +230,10 @@ router.get('/', requireAdmin, async (req, res) => {
         { tags: { $elemMatch: { $regex: escapedQuery, $options: 'i' } } }
       ];
     }
-    const items = await Ticket.find(query).sort({ updatedAt: -1 }).populate('user', 'username email').lean();
+    const items = await Ticket.find(query)
+      .sort({ updatedAt: -1 })
+      .populate('user', 'username email')
+      .lean();
     res.json(items);
   } catch (err) {
     res.status(500).json({ error: 'Failed to list tickets' });
@@ -207,9 +241,10 @@ router.get('/', requireAdmin, async (req, res) => {
 });
 
 // User: update own ticket status or soft delete
-router.post('/:id/status', requireAuth, async (req, res) => {
+router.post('/:id/status', requireAuth, async(req, res) => {
   try {
-    const userId = (req.user && (req.user.sub || req.user.userId || req.user._id || req.user.id)) || null;
+    const userId =
+      (req.user && (req.user.sub || req.user.userId || req.user._id || req.user.id)) || null;
     const { action } = req.body || {};
     // Validate ObjectId format to prevent NoSQL injection
     if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
@@ -231,5 +266,3 @@ router.post('/:id/status', requireAuth, async (req, res) => {
 });
 
 module.exports = router;
-
-

@@ -11,5 +11,3 @@ router.use('/', require('./forgot'));
 router.use('/', require('./reset'));
 
 module.exports = router;
-
-

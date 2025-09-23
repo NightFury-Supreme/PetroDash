@@ -30,15 +30,15 @@ router.get('/', requireAdmin, async (req, res) => {
   try {
     const settings = await getOrCreate();
     const out = settings.toObject();
-    
+
     // Hide deprecated and sensitive fields
     delete out.themePrimary;
     delete out.__v;
-    
+
     return res.json(out);
   } catch (error) {
     console.error('Failed to fetch settings:', error);
-    
+
     return res.status(500).json({
       error: 'Failed to fetch settings',
       message: 'An internal server error occurred'
@@ -48,90 +48,212 @@ router.get('/', requireAdmin, async (req, res) => {
 
 // Validation schema for settings payload
 const settingsPayloadSchema = z.object({
-  siteName: z.string().min(1, 'Site name must be at least 1 character').max(100, 'Site name must be less than 100 characters').optional(),
-  siteIconUrl: z.string().url('Invalid icon URL format').max(500, 'Icon URL must be less than 500 characters').optional(),
-  referrals: z.object({
-    referrerCoins: z.coerce.number().int().min(0).max(1000000).optional(),
-    referredCoins: z.coerce.number().int().min(0).max(1000000).optional(),
-    customCodeMinInvites: z.coerce.number().int().min(0).max(1000000).optional(),
-  }).optional(),
-  auth: z.object({
-    emailLogin: z.coerce.boolean().optional(),
-    discord: z.object({
+  siteName: z
+    .string()
+    .min(1, 'Site name must be at least 1 character')
+    .max(100, 'Site name must be less than 100 characters')
+    .optional(),
+  siteIconUrl: z
+    .string()
+    .url('Invalid icon URL format')
+    .max(500, 'Icon URL must be less than 500 characters')
+    .optional(),
+  referrals: z
+    .object({
+      referrerCoins: z.coerce.number().int().min(0).max(1000000).optional(),
+      referredCoins: z.coerce.number().int().min(0).max(1000000).optional(),
+      customCodeMinInvites: z.coerce.number().int().min(0).max(1000000).optional()
+    })
+    .optional(),
+  auth: z
+    .object({
+      emailLogin: z.coerce.boolean().optional(),
+      discord: z
+        .object({
+          enabled: z.coerce.boolean().optional(),
+          autoJoin: z.coerce.boolean().optional(),
+          clientId: z
+            .string()
+            .max(200, 'Discord Client ID must be less than 200 characters')
+            .optional(),
+          clientSecret: z
+            .string()
+            .max(200, 'Discord Client Secret must be less than 200 characters')
+            .optional(),
+          redirectUri: z
+            .string()
+            .max(500, 'Discord redirect URI must be less than 500 characters')
+            .optional()
+            .or(z.literal('')),
+          botToken: z
+            .string()
+            .max(200, 'Discord Bot Token must be less than 200 characters')
+            .optional(),
+          guildId: z.string().max(50, 'Discord Guild ID must be less than 50 characters').optional()
+        })
+        .optional(),
+      google: z
+        .object({
+          enabled: z.coerce.boolean().optional(),
+          clientId: z
+            .string()
+            .max(200, 'Google Client ID must be less than 200 characters')
+            .optional(),
+          clientSecret: z
+            .string()
+            .max(200, 'Google Client Secret must be less than 200 characters')
+            .optional(),
+          redirectUri: z
+            .string()
+            .max(500, 'Google redirect URI must be less than 500 characters')
+            .optional()
+            .or(z.literal(''))
+        })
+        .optional()
+    })
+    .optional(),
+  payments: z
+    .object({
+      paypal: z
+        .object({
+          enabled: z.coerce.boolean().optional(),
+          mode: z.enum(['sandbox', 'live'], 'Invalid PayPal mode').optional(),
+          clientId: z.string().max(200, 'Client ID must be less than 200 characters').optional(),
+          clientSecret: z
+            .string()
+            .max(200, 'Client secret must be less than 200 characters')
+            .optional(),
+          currency: z
+            .string()
+            .min(3, 'Currency must be at least 3 characters')
+            .max(3, 'Currency must be exactly 3 characters')
+            .optional(),
+          webhookId: z.string().max(100, 'Webhook ID must be less than 100 characters').optional(),
+          returnUrl: z.string().url('Invalid return URL format').optional(),
+          cancelUrl: z.string().url('Invalid cancel URL format').optional()
+        })
+        .optional()
+    })
+    .optional(),
+  defaults: z
+    .object({
+      cpuPercent: z.coerce
+        .number()
+        .int('CPU percent must be a whole number')
+        .min(0, 'CPU percent cannot be negative')
+        .max(100, 'CPU percent cannot exceed 100%')
+        .optional(),
+      memoryMb: z.coerce
+        .number()
+        .int('Memory must be a whole number')
+        .min(0, 'Memory cannot be negative')
+        .max(1000000, 'Memory cannot exceed 1TB')
+        .optional(),
+      diskMb: z.coerce
+        .number()
+        .int('Disk must be a whole number')
+        .min(0, 'Disk cannot be negative')
+        .max(10000000, 'Disk cannot exceed 10TB')
+        .optional(),
+      serverSlots: z.coerce
+        .number()
+        .int('Server slots must be a whole number')
+        .min(0, 'Server slots cannot be negative')
+        .max(1000, 'Server slots cannot exceed 1000')
+        .optional(),
+      backups: z.coerce
+        .number()
+        .int('Backups must be a whole number')
+        .min(0, 'Backups cannot be negative')
+        .max(1000, 'Backups cannot exceed 1000')
+        .optional(),
+      allocations: z.coerce
+        .number()
+        .int('Allocations must be a whole number')
+        .min(0, 'Allocations cannot be negative')
+        .max(10000, 'Allocations cannot exceed 10000')
+        .optional(),
+      databases: z.coerce
+        .number()
+        .int('Databases must be a whole number')
+        .min(0, 'Databases cannot be negative')
+        .max(1000, 'Databases cannot exceed 1000')
+        .optional(),
+      coins: z.coerce
+        .number()
+        .int('Coins must be a whole number')
+        .min(0, 'Coins cannot be negative')
+        .max(1000000, 'Coins cannot exceed 1 million')
+        .optional()
+    })
+    .optional(),
+  adsense: z
+    .object({
       enabled: z.coerce.boolean().optional(),
-      autoJoin: z.coerce.boolean().optional(),
-      clientId: z.string().max(200, 'Discord Client ID must be less than 200 characters').optional(),
-      clientSecret: z.string().max(200, 'Discord Client Secret must be less than 200 characters').optional(),
-      redirectUri: z.string().max(500, 'Discord redirect URI must be less than 500 characters').optional().or(z.literal('')),
-      botToken: z.string().max(200, 'Discord Bot Token must be less than 200 characters').optional(),
-      guildId: z.string().max(50, 'Discord Guild ID must be less than 50 characters').optional(),
-    }).optional(),
-    google: z.object({
-      enabled: z.coerce.boolean().optional(),
-      clientId: z.string().max(200, 'Google Client ID must be less than 200 characters').optional(),
-      clientSecret: z.string().max(200, 'Google Client Secret must be less than 200 characters').optional(),
-      redirectUri: z.string().max(500, 'Google redirect URI must be less than 500 characters').optional().or(z.literal('')),
-    }).optional(),
-  }).optional(),
-  payments: z.object({
-    paypal: z.object({
-      enabled: z.coerce.boolean().optional(),
-      mode: z.enum(['sandbox', 'live'], 'Invalid PayPal mode').optional(),
-      clientId: z.string().max(200, 'Client ID must be less than 200 characters').optional(),
-      clientSecret: z.string().max(200, 'Client secret must be less than 200 characters').optional(),
-      currency: z.string().min(3, 'Currency must be at least 3 characters').max(3, 'Currency must be exactly 3 characters').optional(),
-      webhookId: z.string().max(100, 'Webhook ID must be less than 100 characters').optional(),
-      returnUrl: z.string().url('Invalid return URL format').optional(),
-      cancelUrl: z.string().url('Invalid cancel URL format').optional(),
-    }).optional(),
-  }).optional(),
-  defaults: z.object({
-    cpuPercent: z.coerce.number().int('CPU percent must be a whole number').min(0, 'CPU percent cannot be negative').max(100, 'CPU percent cannot exceed 100%').optional(),
-    memoryMb: z.coerce.number().int('Memory must be a whole number').min(0, 'Memory cannot be negative').max(1000000, 'Memory cannot exceed 1TB').optional(),
-    diskMb: z.coerce.number().int('Disk must be a whole number').min(0, 'Disk cannot be negative').max(10000000, 'Disk cannot exceed 10TB').optional(),
-    serverSlots: z.coerce.number().int('Server slots must be a whole number').min(0, 'Server slots cannot be negative').max(1000, 'Server slots cannot exceed 1000').optional(),
-    backups: z.coerce.number().int('Backups must be a whole number').min(0, 'Backups cannot be negative').max(1000, 'Backups cannot exceed 1000').optional(),
-    allocations: z.coerce.number().int('Allocations must be a whole number').min(0, 'Allocations cannot be negative').max(10000, 'Allocations cannot exceed 10000').optional(),
-    databases: z.coerce.number().int('Databases must be a whole number').min(0, 'Databases cannot be negative').max(1000, 'Databases cannot exceed 1000').optional(),
-    coins: z.coerce.number().int('Coins must be a whole number').min(0, 'Coins cannot be negative').max(1000000, 'Coins cannot exceed 1 million').optional(),
-  }).optional(),
-  adsense: z.object({
-    enabled: z.coerce.boolean().optional(),
-    publisherId: z.string()
-      .max(50, 'Publisher ID must be less than 50 characters')
-      .regex(/^ca-pub-\d{10,16}$/, 'Invalid publisher ID format. Must be ca-pub- followed by 10-16 digits')
-      .optional(),
-    adSlots: z.object({
-      header: z.string()
-        .max(100, 'Header ad slot must be less than 100 characters')
-        .regex(/^[a-zA-Z0-9_\s-]*$/, 'Ad slot ID can only contain letters, numbers, spaces, hyphens, and underscores')
+      publisherId: z
+        .string()
+        .max(50, 'Publisher ID must be less than 50 characters')
+        .regex(
+          /^ca-pub-\d{10,16}$/,
+          'Invalid publisher ID format. Must be ca-pub- followed by 10-16 digits'
+        )
         .optional(),
-      sidebar: z.string()
-        .max(100, 'Sidebar ad slot must be less than 100 characters')
-        .regex(/^[a-zA-Z0-9_\s-]*$/, 'Ad slot ID can only contain letters, numbers, spaces, hyphens, and underscores')
+      adSlots: z
+        .object({
+          header: z
+            .string()
+            .max(100, 'Header ad slot must be less than 100 characters')
+            .regex(
+              /^[a-zA-Z0-9_\s-]*$/,
+              'Ad slot ID can only contain letters, numbers, spaces, hyphens, and underscores'
+            )
+            .optional(),
+          sidebar: z
+            .string()
+            .max(100, 'Sidebar ad slot must be less than 100 characters')
+            .regex(
+              /^[a-zA-Z0-9_\s-]*$/,
+              'Ad slot ID can only contain letters, numbers, spaces, hyphens, and underscores'
+            )
+            .optional(),
+          footer: z
+            .string()
+            .max(100, 'Footer ad slot must be less than 100 characters')
+            .regex(
+              /^[a-zA-Z0-9_\s-]*$/,
+              'Ad slot ID can only contain letters, numbers, spaces, hyphens, and underscores'
+            )
+            .optional(),
+          content: z
+            .string()
+            .max(100, 'Content ad slot must be less than 100 characters')
+            .regex(
+              /^[a-zA-Z0-9_\s-]*$/,
+              'Ad slot ID can only contain letters, numbers, spaces, hyphens, and underscores'
+            )
+            .optional(),
+          mobile: z
+            .string()
+            .max(100, 'Mobile ad slot must be less than 100 characters')
+            .regex(
+              /^[a-zA-Z0-9_\s-]*$/,
+              'Ad slot ID can only contain letters, numbers, spaces, hyphens, and underscores'
+            )
+            .optional()
+        })
         .optional(),
-      footer: z.string()
-        .max(100, 'Footer ad slot must be less than 100 characters')
-        .regex(/^[a-zA-Z0-9_\s-]*$/, 'Ad slot ID can only contain letters, numbers, spaces, hyphens, and underscores')
-        .optional(),
-      content: z.string()
-        .max(100, 'Content ad slot must be less than 100 characters')
-        .regex(/^[a-zA-Z0-9_\s-]*$/, 'Ad slot ID can only contain letters, numbers, spaces, hyphens, and underscores')
-        .optional(),
-      mobile: z.string()
-        .max(100, 'Mobile ad slot must be less than 100 characters')
-        .regex(/^[a-zA-Z0-9_\s-]*$/, 'Ad slot ID can only contain letters, numbers, spaces, hyphens, and underscores')
-        .optional(),
-    }).optional(),
-    adTypes: z.object({
-      display: z.coerce.boolean().optional(),
-      text: z.coerce.boolean().optional(),
-      link: z.coerce.boolean().optional(),
-      inFeed: z.coerce.boolean().optional(),
-      inArticle: z.coerce.boolean().optional(),
-      matchedContent: z.coerce.boolean().optional(),
-    }).optional(),
-  }).optional(),
+      adTypes: z
+        .object({
+          display: z.coerce.boolean().optional(),
+          text: z.coerce.boolean().optional(),
+          link: z.coerce.boolean().optional(),
+          inFeed: z.coerce.boolean().optional(),
+          inArticle: z.coerce.boolean().optional(),
+          matchedContent: z.coerce.boolean().optional()
+        })
+        .optional()
+    })
+    .optional()
 });
 
 // PATCH /api/admin/settings
@@ -187,18 +309,23 @@ router.patch('/', requireAdmin, async (req, res) => {
         settings.adsense.publisherId = update.adsense.publisherId;
       }
       if (update.adsense.adSlots) {
-        settings.adsense.adSlots = { ...(settings.adsense.adSlots || {}), ...update.adsense.adSlots };
+        settings.adsense.adSlots = {
+          ...(settings.adsense.adSlots || {}),
+          ...update.adsense.adSlots
+        };
       }
       if (update.adsense.adTypes) {
-        settings.adsense.adTypes = { ...(settings.adsense.adTypes || {}), ...update.adsense.adTypes };
+        settings.adsense.adTypes = {
+          ...(settings.adsense.adTypes || {}),
+          ...update.adsense.adTypes
+        };
       }
       delete update.adsense;
     }
 
-
     // Apply remaining shallow updates
     Object.assign(settings, update);
-    
+
     // Validate business logic
     if (update.defaults) {
       if (update.defaults.cpuPercent && update.defaults.cpuPercent > 100) {
@@ -207,14 +334,14 @@ router.patch('/', requireAdmin, async (req, res) => {
           message: 'CPU percentage cannot exceed 100%'
         });
       }
-      
+
       if (update.defaults.memoryMb && update.defaults.memoryMb < 128) {
         return res.status(400).json({
           error: 'Invalid memory allocation',
           message: 'Memory must be at least 128MB'
         });
       }
-      
+
       if (update.defaults.diskMb && update.defaults.diskMb < 512) {
         return res.status(400).json({
           error: 'Invalid disk allocation',
@@ -254,12 +381,11 @@ router.patch('/', requireAdmin, async (req, res) => {
     // Return updated settings (excluding sensitive fields)
     const response = settings.toObject();
     delete response.__v;
-    
-    return res.json(response);
 
+    return res.json(response);
   } catch (error) {
     console.error('Failed to update settings:', error);
-    
+
     return res.status(500).json({
       error: 'Failed to update settings',
       message: 'An internal server error occurred'
@@ -267,7 +393,4 @@ router.patch('/', requireAdmin, async (req, res) => {
   }
 });
 
-
 module.exports = router;
-
-

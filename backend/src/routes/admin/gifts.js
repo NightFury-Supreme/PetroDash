@@ -8,7 +8,8 @@ const router = express.Router();
 // GET /api/admin/gifts
 router.get('/', requireAdmin, async (req, res) => {
   try {
-    const gifts = await Gift.find({}).sort({ createdAt: -1 })
+    const gifts = await Gift.find({})
+      .sort({ createdAt: -1 })
       .populate('createdBy', 'username email')
       .populate('redemptions.user', 'username email')
       .lean();
@@ -57,19 +58,24 @@ router.post('/', requireAdmin, async (req, res) => {
         coins: Math.min(1_000_000, Math.max(0, parseInt(rewards.coins || 0))),
         resources: {
           diskMb: Math.min(1_000_000_000, Math.max(0, parseInt(rewards.resources?.diskMb || 0))),
-          memoryMb: Math.min(1_000_000_000, Math.max(0, parseInt(rewards.resources?.memoryMb || 0))),
+          memoryMb: Math.min(
+            1_000_000_000,
+            Math.max(0, parseInt(rewards.resources?.memoryMb || 0))
+          ),
           cpuPercent: Math.min(1000, Math.max(0, parseInt(rewards.resources?.cpuPercent || 0))),
           backups: Math.min(10_000, Math.max(0, parseInt(rewards.resources?.backups || 0))),
           databases: Math.min(10_000, Math.max(0, parseInt(rewards.resources?.databases || 0))),
           allocations: Math.min(10_000, Math.max(0, parseInt(rewards.resources?.allocations || 0))),
-          serverSlots: Math.min(10_000, Math.max(0, parseInt(rewards.resources?.serverSlots || 0))),
+          serverSlots: Math.min(10_000, Math.max(0, parseInt(rewards.resources?.serverSlots || 0)))
         },
-        planIds: Array.isArray(rewards.planIds) ? rewards.planIds : [],
+        planIds: Array.isArray(rewards.planIds) ? rewards.planIds : []
       },
-      maxRedemptions: maxRedemptions ? Math.max(0, Math.min(1_000_000, parseInt(maxRedemptions))) : 0,
+      maxRedemptions: maxRedemptions
+        ? Math.max(0, Math.min(1_000_000, parseInt(maxRedemptions)))
+        : 0,
       validFrom: validFrom ? new Date(validFrom) : undefined,
       validUntil: validUntil ? new Date(validUntil) : undefined,
-      enabled: enabled !== undefined ? !!enabled : true,
+      enabled: enabled !== undefined ? !!enabled : true
     });
 
     await gift.save();
@@ -102,17 +108,21 @@ router.patch('/:id', requireAdmin, async (req, res) => {
         coins: Math.min(1_000_000, Math.max(0, parseInt(rewards.coins || 0))),
         resources: {
           diskMb: Math.min(1_000_000_000, Math.max(0, parseInt(rewards.resources?.diskMb || 0))),
-          memoryMb: Math.min(1_000_000_000, Math.max(0, parseInt(rewards.resources?.memoryMb || 0))),
+          memoryMb: Math.min(
+            1_000_000_000,
+            Math.max(0, parseInt(rewards.resources?.memoryMb || 0))
+          ),
           cpuPercent: Math.min(1000, Math.max(0, parseInt(rewards.resources?.cpuPercent || 0))),
           backups: Math.min(10_000, Math.max(0, parseInt(rewards.resources?.backups || 0))),
           databases: Math.min(10_000, Math.max(0, parseInt(rewards.resources?.databases || 0))),
           allocations: Math.min(10_000, Math.max(0, parseInt(rewards.resources?.allocations || 0))),
-          serverSlots: Math.min(10_000, Math.max(0, parseInt(rewards.resources?.serverSlots || 0))),
+          serverSlots: Math.min(10_000, Math.max(0, parseInt(rewards.resources?.serverSlots || 0)))
         },
-        planIds: Array.isArray(rewards.planIds) ? rewards.planIds : [],
+        planIds: Array.isArray(rewards.planIds) ? rewards.planIds : []
       };
     }
-    if (maxRedemptions !== undefined) gift.maxRedemptions = Math.max(0, Math.min(1_000_000, parseInt(maxRedemptions) || 0));
+    if (maxRedemptions !== undefined)
+      gift.maxRedemptions = Math.max(0, Math.min(1_000_000, parseInt(maxRedemptions) || 0));
     if (validFrom !== undefined) gift.validFrom = validFrom ? new Date(validFrom) : undefined;
     if (validUntil !== undefined) gift.validUntil = validUntil ? new Date(validUntil) : undefined;
     if (enabled !== undefined) gift.enabled = !!enabled;
@@ -134,7 +144,8 @@ router.delete('/:id', requireAdmin, async (req, res) => {
     if (gift.source === 'user') {
       return res.status(403).json({ error: 'User-generated codes cannot be deleted' });
     }
-    if (gift.redeemedCount > 0) return res.status(400).json({ error: 'Cannot delete a redeemed gift' });
+    if (gift.redeemedCount > 0)
+      return res.status(400).json({ error: 'Cannot delete a redeemed gift' });
     await Gift.findByIdAndDelete(req.params.id);
     writeAudit(req, 'admin.gifts.delete', 'gift', req.params.id, { code: gift.code });
     res.json({ message: 'Gift deleted' });
@@ -145,5 +156,3 @@ router.delete('/:id', requireAdmin, async (req, res) => {
 });
 
 module.exports = router;
-
-

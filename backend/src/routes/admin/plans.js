@@ -26,7 +26,9 @@ const createSchema = z.object({
     nonRenewable: z.boolean().default(false),
     lifetime: z.boolean().default(false)
   }),
-  availableBillingCycles: z.array(z.enum(['monthly', 'quarterly', 'semi-annual', 'annual'])).default(['monthly']),
+  availableBillingCycles: z
+    .array(z.enum(['monthly', 'quarterly', 'semi-annual', 'annual']))
+    .default(['monthly']),
   productContent: z.object({
     recurrentResources: z.object({
       cpuPercent: z.number().min(0, 'CPU must be 0 or greater'),
@@ -78,7 +80,7 @@ router.get('/:id', requireAdmin, validateObjectId('id'), async (req, res) => {
 router.post('/', requireAdmin, async (req, res) => {
   try {
     const validatedData = createSchema.parse(req.body);
-    
+
     // Convert date strings to Date objects if provided
     if (validatedData.availableAt) {
       validatedData.availableAt = new Date(validatedData.availableAt);
@@ -86,12 +88,14 @@ router.post('/', requireAdmin, async (req, res) => {
     if (validatedData.availableUntil) {
       validatedData.availableUntil = new Date(validatedData.availableUntil);
     }
-    
+
     const plan = new Plan(validatedData);
     await plan.save();
-    
-    await writeAudit(req, 'admin.plan.create', 'plan', plan._id.toString(), { planName: plan.name });
-    
+
+    await writeAudit(req, 'admin.plan.create', 'plan', plan._id.toString(), {
+      planName: plan.name
+    });
+
     res.status(201).json(plan);
   } catch (error) {
     if (error.name === 'ZodError') {
@@ -109,9 +113,9 @@ router.put('/:id', requireAdmin, validateObjectId('id'), async (req, res) => {
     if (!plan) {
       return res.status(404).json({ error: 'Plan not found' });
     }
-    
+
     const validatedData = updateSchema.parse(req.body);
-    
+
     // Convert date strings to Date objects if provided
     if (validatedData.availableAt) {
       validatedData.availableAt = new Date(validatedData.availableAt);
@@ -119,7 +123,7 @@ router.put('/:id', requireAdmin, validateObjectId('id'), async (req, res) => {
     if (validatedData.availableUntil) {
       validatedData.availableUntil = new Date(validatedData.availableUntil);
     }
-    
+
     // Deep merge to preserve nested objects and ensure changes are tracked
     const deepMerge = (target, source) => {
       for (const key of Object.keys(source)) {
@@ -128,7 +132,7 @@ router.put('/:id', requireAdmin, validateObjectId('id'), async (req, res) => {
           console.error('Prototype pollution attempt blocked');
           continue;
         }
-        
+
         if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
           if (!target[key] || typeof target[key] !== 'object') target[key] = {};
           deepMerge(target[key], source[key]);
@@ -144,9 +148,11 @@ router.put('/:id', requireAdmin, validateObjectId('id'), async (req, res) => {
     if (validatedData.billingOptions) plan.markModified('billingOptions');
     if (validatedData.availableBillingCycles) plan.markModified('availableBillingCycles');
     await plan.save();
-    
-    await writeAudit(req, 'admin.plan.update', 'plan', plan._id.toString(), { planName: plan.name });
-    
+
+    await writeAudit(req, 'admin.plan.update', 'plan', plan._id.toString(), {
+      planName: plan.name
+    });
+
     res.json(plan);
   } catch (error) {
     if (error.name === 'ZodError') {
@@ -164,24 +170,24 @@ router.patch('/:id', requireAdmin, validateObjectId('id'), async (req, res) => {
     if (!plan) {
       return res.status(404).json({ error: 'Plan not found' });
     }
-    
+
     // Allow specific fields for PATCH updates
     const allowedFields = ['enabled', 'visibility', 'popular', 'sortOrder'];
     const updateData = {};
-    
+
     for (const field of allowedFields) {
       if (req.body.hasOwnProperty(field)) {
         updateData[field] = req.body[field];
       }
     }
-    
+
     if (Object.keys(updateData).length === 0) {
       return res.status(400).json({ error: 'No valid fields to update' });
     }
-    
+
     Object.assign(plan, updateData);
     await plan.save();
-    
+
     await writeAudit(req, {
       action: 'UPDATE',
       resourceType: 'PLAN',
@@ -189,7 +195,7 @@ router.patch('/:id', requireAdmin, validateObjectId('id'), async (req, res) => {
       success: true,
       meta: { planName: plan.name, updatedFields: Object.keys(updateData) }
     });
-    
+
     res.json(plan);
   } catch (error) {
     console.error('Error updating plan:', error);
@@ -204,27 +210,27 @@ router.delete('/:id', requireAdmin, validateObjectId('id'), async (req, res) => 
     if (!plan) {
       return res.status(404).json({ error: 'Plan not found' });
     }
-    
+
     // Check if any users are currently using this plan
     const UserPlan = require('../../models/UserPlan');
-    const activeUsers = await UserPlan.countDocuments({ 
-      planId: req.params.id, 
-      status: 'active' 
+    const activeUsers = await UserPlan.countDocuments({
+      planId: req.params.id,
+      status: 'active'
     });
-    
+
     if (activeUsers > 0) {
-      return res.status(400).json({ 
-        error: 'Cannot delete plan', 
+      return res.status(400).json({
+        error: 'Cannot delete plan',
         reason: 'Plan is currently being used by users',
         activeUsers,
         suggestion: 'Make the plan unlisted instead of deleting it'
       });
     }
-    
+
     await Plan.findByIdAndDelete(req.params.id);
-    
+
     await writeAudit(req, 'admin.plan.delete', 'plan', req.params.id, { planName: plan.name });
-    
+
     res.json({ message: 'Plan deleted successfully' });
   } catch (error) {
     console.error('Error deleting plan:', error);
@@ -233,4 +239,3 @@ router.delete('/:id', requireAdmin, validateObjectId('id'), async (req, res) => 
 });
 
 module.exports = router;
-

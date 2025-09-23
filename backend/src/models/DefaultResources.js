@@ -9,11 +9,9 @@ const DefaultResourcesSchema = new mongoose.Schema(
     backups: { type: Number, default: 0 },
     allocations: { type: Number, default: 0 },
     databases: { type: Number, default: 0 },
-    coins: { type: Number, default: 0 },
+    coins: { type: Number, default: 0 }
   },
   { timestamps: true }
 );
 
 module.exports = mongoose.model('DefaultResources', DefaultResourcesSchema);
-
-

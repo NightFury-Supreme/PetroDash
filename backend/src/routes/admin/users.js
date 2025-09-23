@@ -5,7 +5,13 @@ const User = require('../../models/User');
 const Server = require('../../models/Server');
 const UserPlan = require('../../models/UserPlan');
 const Plan = require('../../models/Plan');
-const { deleteServer: deletePanelServer, updateServerBuild, getServer: getPanelServer, updateServerDetails, deletePanelUser } = require('../../services/pterodactyl');
+const {
+  deleteServer: deletePanelServer,
+  updateServerBuild,
+  getServer: getPanelServer,
+  updateServerDetails,
+  deletePanelUser
+} = require('../../services/pterodactyl');
 
 const router = express.Router();
 
@@ -16,7 +22,10 @@ router.get('/', requireAdmin, async (req, res) => {
     let filter = {};
     if (typeof search === 'string' && search.trim()) {
       const s = search.trim();
-      const or = [{ email: { $regex: s, $options: 'i' } }, { username: { $regex: s, $options: 'i' } }];
+      const or = [
+        { email: { $regex: s, $options: 'i' } },
+        { username: { $regex: s, $options: 'i' } }
+      ];
       // If valid ObjectId, include _id exact match
       try {
         const { Types } = require('mongoose');
@@ -28,11 +37,9 @@ router.get('/', requireAdmin, async (req, res) => {
     }
     const users = await User.find(filter, { passwordHash: 0 }).lean();
     // count servers per user
-    const servers = await Server.aggregate([
-      { $group: { _id: '$owner', count: { $sum: 1 } } },
-    ]);
-    const idToCount = Object.fromEntries(servers.map((s) => [String(s._id), s.count]));
-    const list = users.map((u) => ({ ...u, serverCount: idToCount[String(u._id)] || 0 }));
+    const servers = await Server.aggregate([{ $group: { _id: '$owner', count: { $sum: 1 } } }]);
+    const idToCount = Object.fromEntries(servers.map(s => [String(s._id), s.count]));
+    const list = users.map(u => ({ ...u, serverCount: idToCount[String(u._id)] || 0 }));
     return res.json(list);
   } catch (e) {
     return res.status(500).json({ error: 'Failed to list users' });
@@ -42,7 +49,6 @@ router.get('/', requireAdmin, async (req, res) => {
 // GET /api/admin/users/:id - user details with servers and usage
 router.get('/:id', requireAdmin, async (req, res) => {
   try {
-    
     const user = await User.findById(req.params.id, { passwordHash: 0 }).lean();
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -53,16 +59,19 @@ router.get('/:id', requireAdmin, async (req, res) => {
       .populate('locationId', 'name')
       .lean();
 
-    const usage = servers.reduce((acc, s) => {
-      const l = s.limits || {};
-      acc.diskMb += Number(l.diskMb) || 0;
-      acc.memoryMb += Number(l.memoryMb) || 0;
-      acc.cpuPercent += Number(l.cpuPercent) || 0;
-      acc.backups += Number(l.backups) || 0;
-      acc.databases += Number(l.databases) || 0;
-      acc.allocations += Number(l.allocations) || 0;
-      return acc;
-    }, { diskMb: 0, memoryMb: 0, cpuPercent: 0, backups: 0, databases: 0, allocations: 0 });
+    const usage = servers.reduce(
+      (acc, s) => {
+        const l = s.limits || {};
+        acc.diskMb += Number(l.diskMb) || 0;
+        acc.memoryMb += Number(l.memoryMb) || 0;
+        acc.cpuPercent += Number(l.cpuPercent) || 0;
+        acc.backups += Number(l.backups) || 0;
+        acc.databases += Number(l.databases) || 0;
+        acc.allocations += Number(l.allocations) || 0;
+        return acc;
+      },
+      { diskMb: 0, memoryMb: 0, cpuPercent: 0, backups: 0, databases: 0, allocations: 0 }
+    );
 
     // Active plans
     const plans = await UserPlan.find({ userId: user._id, status: 'active' })
@@ -76,14 +85,18 @@ router.get('/:id', requireAdmin, async (req, res) => {
     const referralStats = user.referralStats || { referredCount: 0, coinsEarned: 0 };
 
     // Determine login method
-    const loginMethod = user.passwordHash ? 'email' : 
-                       user.oauthProviders?.discord?.id ? 'discord' : 
-                       user.oauthProviders?.google?.id ? 'google' : 'email';
+    const loginMethod = user.passwordHash
+      ? 'email'
+      : user.oauthProviders?.discord?.id
+        ? 'discord'
+        : user.oauthProviders?.google?.id
+          ? 'google'
+          : 'email';
 
-    return res.json({ 
-      user, 
-      servers, 
-      usage, 
+    return res.json({
+      user,
+      servers,
+      usage,
       plans,
       loginMethod: loginMethod,
       oauthProviders: user.oauthProviders || {},
@@ -102,34 +115,51 @@ router.get('/:id', requireAdmin, async (req, res) => {
 });
 
 // PATCH /api/admin/users/:id - update role/resources
-const resourcesSchema = z.object({
-  diskMb: z.coerce.number().int().min(0).optional(),
-  memoryMb: z.coerce.number().int().min(0).optional(),
-  cpuPercent: z.coerce.number().int().min(0).optional(),
-  backups: z.coerce.number().int().min(0).optional(),
-  databases: z.coerce.number().int().min(0).optional(),
-  allocations: z.coerce.number().int().min(0).optional(),
-  serverSlots: z.coerce.number().int().min(0).optional(),
-}).partial();
+const resourcesSchema = z
+  .object({
+    diskMb: z.coerce.number().int().min(0).optional(),
+    memoryMb: z.coerce.number().int().min(0).optional(),
+    cpuPercent: z.coerce.number().int().min(0).optional(),
+    backups: z.coerce.number().int().min(0).optional(),
+    databases: z.coerce.number().int().min(0).optional(),
+    allocations: z.coerce.number().int().min(0).optional(),
+    serverSlots: z.coerce.number().int().min(0).optional()
+  })
+  .partial();
 const updateSchema = z.object({
-  role: z.enum(['user','admin']).optional(),
+  role: z.enum(['user', 'admin']).optional(),
   coins: z.coerce.number().int().min(0).optional(),
   resources: resourcesSchema.optional(),
   email: z.string().email().optional(),
   username: z.string().min(3).max(32).optional(),
   firstName: z.string().min(1).max(64).optional(),
   lastName: z.string().min(1).max(64).optional(),
-  referralCode: z.string().trim().min(3).max(20).regex(/^[A-Za-z0-9_-]+$/).optional(),
-  ban: z.object({ isBanned: z.boolean(), reason: z.string().trim().optional(), until: z.union([z.string().datetime().nullable(), z.null()]).optional() }).partial().optional(),
+  referralCode: z
+    .string()
+    .trim()
+    .min(3)
+    .max(20)
+    .regex(/^[A-Za-z0-9_-]+$/)
+    .optional(),
+  ban: z
+    .object({
+      isBanned: z.boolean(),
+      reason: z.string().trim().optional(),
+      until: z.union([z.string().datetime().nullable(), z.null()]).optional()
+    })
+    .partial()
+    .optional()
 });
 
 router.patch('/:id', requireAdmin, async (req, res) => {
   const parsed = updateSchema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
+  if (!parsed.success)
+    return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
   const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ error: 'User not found' });
 
-  const { role, resources, coins, email, username, firstName, lastName, referralCode, ban } = parsed.data;
+  const { role, resources, coins, email, username, firstName, lastName, referralCode, ban } =
+    parsed.data;
   if (role) user.role = role;
   if (typeof coins === 'number') user.coins = coins;
   // Direct resource editing: update user.resources directly
@@ -148,8 +178,10 @@ router.patch('/:id', requireAdmin, async (req, res) => {
   }
   if (ban && typeof ban === 'object') {
     if (!user.ban) user.ban = {};
-    const untilDate = ban.until === null ? null : (ban.until ? new Date(ban.until) : user.ban.until || null);
-    user.ban.isBanned = typeof ban.isBanned === 'boolean' ? ban.isBanned : Boolean(user.ban.isBanned);
+    const untilDate =
+      ban.until === null ? null : ban.until ? new Date(ban.until) : user.ban.until || null;
+    user.ban.isBanned =
+      typeof ban.isBanned === 'boolean' ? ban.isBanned : Boolean(user.ban.isBanned);
     if (typeof ban.reason === 'string') user.ban.reason = ban.reason;
     user.ban.until = untilDate;
     user.ban.by = req.user?.sub || req.user?.userId || user.ban.by || null;
@@ -163,12 +195,25 @@ router.patch('/:id', requireAdmin, async (req, res) => {
       await sendMailTemplate({
         to: user.email,
         templateKey,
-        data: { reason: user.ban?.reason || '', until: user.ban?.until ? new Date(user.ban.until).toISOString() : 'lifetime' }
+        data: {
+          reason: user.ban?.reason || '',
+          until: user.ban?.until ? new Date(user.ban.until).toISOString() : 'lifetime'
+        }
       });
     }
   } catch (_) {}
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, 'admin.user.update', 'user', user._id.toString(), { role, resources, coins, email, username, firstName, lastName, referralCode, ban });
+  writeAudit(req, 'admin.user.update', 'user', user._id.toString(), {
+    role,
+    resources,
+    coins,
+    email,
+    username,
+    firstName,
+    lastName,
+    referralCode,
+    ban
+  });
   return res.json({ user });
 });
 
@@ -178,10 +223,11 @@ router.post('/:id/ban', requireAdmin, async (req, res) => {
     isBanned: z.boolean(),
     reason: z.string().trim().optional(),
     // durationMinutes >= 1 sets temporary ban, null means lifetime, 0/undefined clears ban when isBanned=false
-    durationMinutes: z.coerce.number().int().min(1).optional().nullable(),
+    durationMinutes: z.coerce.number().int().min(1).optional().nullable()
   });
   const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
+  if (!parsed.success)
+    return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
   const { isBanned, reason, durationMinutes } = parsed.data;
   const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ error: 'User not found' });
@@ -201,11 +247,16 @@ router.post('/:id/ban', requireAdmin, async (req, res) => {
     user.ban.by = req.user?.sub || req.user?.userId || null;
     try {
       // Suspend all user's servers in panel
-      const servers = await Server.find({ owner: user._id, panelServerId: { $exists: true, $ne: null } }).lean();
+      const servers = await Server.find({
+        owner: user._id,
+        panelServerId: { $exists: true, $ne: null }
+      }).lean();
       const { suspendServer } = require('../../services/pterodactyl');
       for (const s of servers) {
         if (!s.panelServerId) continue;
-        try { await suspendServer(s.panelServerId); } catch (_) {}
+        try {
+          await suspendServer(s.panelServerId);
+        } catch (_) {}
       }
     } catch (_) {}
   } else {
@@ -215,17 +266,25 @@ router.post('/:id/ban', requireAdmin, async (req, res) => {
     user.ban.by = req.user?.sub || req.user?.userId || null;
     try {
       // Unsuspend all user's servers in panel
-      const servers = await Server.find({ owner: user._id, panelServerId: { $exists: true, $ne: null } }).lean();
+      const servers = await Server.find({
+        owner: user._id,
+        panelServerId: { $exists: true, $ne: null }
+      }).lean();
       const { unsuspendServer } = require('../../services/pterodactyl');
       for (const s of servers) {
         if (!s.panelServerId) continue;
-        try { await unsuspendServer(s.panelServerId); } catch (_) {}
+        try {
+          await unsuspendServer(s.panelServerId);
+        } catch (_) {}
       }
     } catch (_) {}
   }
   await user.save();
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, isBanned ? 'admin.user.ban' : 'admin.user.unban', 'user', user._id.toString(), { reason: user.ban.reason, until: user.ban.until });
+  writeAudit(req, isBanned ? 'admin.user.ban' : 'admin.user.unban', 'user', user._id.toString(), {
+    reason: user.ban.reason,
+    until: user.ban.until
+  });
   return res.json({ ok: true, ban: user.ban });
 });
 
@@ -234,11 +293,11 @@ router.delete('/:id', requireAdmin, async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
-    
+
     const servers = await Server.find({ owner: user._id });
     let deletedServers = 0;
     let serverErrors = [];
-    
+
     // Step 1: Delete all servers
     for (const server of servers) {
       try {
@@ -250,7 +309,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
         console.error(`Failed to delete server ${server._id}:`, error.message);
       }
     }
-    
+
     // Step 2: Delete Pterodactyl user account
     let pterodactylError = null;
     if (user.pterodactylUserId) {
@@ -258,30 +317,34 @@ router.delete('/:id', requireAdmin, async (req, res) => {
         await deletePanelUser(user.pterodactylUserId);
       } catch (error) {
         pterodactylError = error.message;
-        console.error(`Failed to delete Pterodactyl user ${user.pterodactylUserId}:`, error.message);
+        console.error(
+          `Failed to delete Pterodactyl user ${user.pterodactylUserId}:`,
+          error.message
+        );
       }
     }
-    
+
     // Step 3: Delete dashboard user
     await User.deleteOne({ _id: user._id });
-    
+
     const { writeAudit } = require('../../middleware/audit');
-    writeAudit(req, 'admin.user.delete', 'user', user._id.toString(), { 
-      serversDeleted: deletedServers, 
+    writeAudit(req, 'admin.user.delete', 'user', user._id.toString(), {
+      serversDeleted: deletedServers,
       serverErrors: serverErrors.length,
-      pterodactylError: !!pterodactylError 
+      pterodactylError: !!pterodactylError
     });
-    
+
     // Return success with any errors that occurred
-    return res.json({ 
-      ok: true, 
+    return res.json({
+      ok: true,
       serversDeleted: deletedServers,
       totalServers: servers.length,
       serverErrors,
       pterodactylError,
-      message: serverErrors.length > 0 || pterodactylError 
-        ? 'User deleted but some cleanup operations failed. Check server logs for details.'
-        : 'User and all associated data deleted successfully.'
+      message:
+        serverErrors.length > 0 || pterodactylError
+          ? 'User deleted but some cleanup operations failed. Check server logs for details.'
+          : 'User and all associated data deleted successfully.'
     });
   } catch (error) {
     console.error('User deletion error:', error);
@@ -293,12 +356,18 @@ router.delete('/:id', requireAdmin, async (req, res) => {
 router.delete('/:id/servers/:serverId', requireAdmin, async (req, res) => {
   const server = await Server.findOne({ _id: req.params.serverId, owner: req.params.id });
   if (!server) return res.status(404).json({ error: 'Server not found' });
-  try { await deletePanelServer(server.panelServerId); } catch (e) {
-    return res.status(502).json({ error: 'Panel delete failed', details: e?.response?.data || e.message });
+  try {
+    await deletePanelServer(server.panelServerId);
+  } catch (e) {
+    return res
+      .status(502)
+      .json({ error: 'Panel delete failed', details: e?.response?.data || e.message });
   }
   await Server.deleteOne({ _id: server._id });
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, 'admin.user.server.delete', 'server', server._id.toString(), { owner: req.params.id });
+  writeAudit(req, 'admin.user.server.delete', 'server', server._id.toString(), {
+    owner: req.params.id
+  });
   return res.json({ ok: true });
 });
 
@@ -324,10 +393,18 @@ router.get('/:id/servers/:serverId', requireAdmin, async (req, res) => {
         cpuPercent: Number(panelBuild.cpu) ?? server.limits?.cpuPercent,
         backups: Number(panelFeatures.backups) ?? server.limits?.backups,
         databases: Number(panelFeatures.databases) ?? server.limits?.databases,
-        allocations: Number(panelFeatures.allocations) ?? server.limits?.allocations,
+        allocations: Number(panelFeatures.allocations) ?? server.limits?.allocations
       };
-      const hasChange = ['diskMb','memoryMb','cpuPercent','backups','databases','allocations'].some(k => Number(server.limits?.[k] || 0) !== Number(updatedLimits[k] || 0));
-      if (hasChange) await Server.updateOne({ _id: server._id }, { $set: { limits: updatedLimits } });
+      const hasChange = [
+        'diskMb',
+        'memoryMb',
+        'cpuPercent',
+        'backups',
+        'databases',
+        'allocations'
+      ].some(k => Number(server.limits?.[k] || 0) !== Number(updatedLimits[k] || 0));
+      if (hasChange)
+        await Server.updateOne({ _id: server._id }, { $set: { limits: updatedLimits } });
       return res.json({ ...server, limits: updatedLimits, clientUrl });
     } catch (_) {
       return res.json({ ...server, clientUrl });
@@ -340,19 +417,22 @@ router.get('/:id/servers/:serverId', requireAdmin, async (req, res) => {
 // PATCH /api/admin/users/:id/servers/:serverId - update server limits/name
 const serverUpdateSchema = z.object({
   name: z.string().min(1).optional(),
-  limits: z.object({
-    diskMb: z.coerce.number().int().min(100).optional(),
-    memoryMb: z.coerce.number().int().min(128).optional(),
-    cpuPercent: z.coerce.number().int().min(10).optional(),
-    backups: z.coerce.number().int().min(0).optional(),
-    databases: z.coerce.number().int().min(0).optional(),
-    allocations: z.coerce.number().int().min(1).optional(),
-  }).optional(),
+  limits: z
+    .object({
+      diskMb: z.coerce.number().int().min(100).optional(),
+      memoryMb: z.coerce.number().int().min(128).optional(),
+      cpuPercent: z.coerce.number().int().min(10).optional(),
+      backups: z.coerce.number().int().min(0).optional(),
+      databases: z.coerce.number().int().min(0).optional(),
+      allocations: z.coerce.number().int().min(1).optional()
+    })
+    .optional()
 });
 
 router.patch('/:id/servers/:serverId', requireAdmin, async (req, res) => {
   const parsed = serverUpdateSchema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
+  if (!parsed.success)
+    return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
   const server = await Server.findOne({ _id: req.params.serverId, owner: req.params.id });
   if (!server) return res.status(404).json({ error: 'Server not found' });
   const user = await User.findById(req.params.id);
@@ -363,16 +443,19 @@ router.patch('/:id/servers/:serverId', requireAdmin, async (req, res) => {
     const { computeEffectiveLimits } = require('../../lib/limits');
     const userLimits = await computeEffectiveLimits(user._id);
     const others = await Server.find({ owner: user._id, _id: { $ne: server._id } }).lean();
-    const used = others.reduce((acc, s) => {
-      const l = s.limits || {};
-      acc.diskMb += Number(l.diskMb) || 0;
-      acc.memoryMb += Number(l.memoryMb) || 0;
-      acc.cpuPercent += Number(l.cpuPercent) || 0;
-      acc.backups += Number(l.backups) || 0;
-      acc.databases += Number(l.databases) || 0;
-      acc.allocations += Number(l.allocations) || 0;
-      return acc;
-    }, { diskMb: 0, memoryMb: 0, cpuPercent: 0, backups: 0, databases: 0, allocations: 0 });
+    const used = others.reduce(
+      (acc, s) => {
+        const l = s.limits || {};
+        acc.diskMb += Number(l.diskMb) || 0;
+        acc.memoryMb += Number(l.memoryMb) || 0;
+        acc.cpuPercent += Number(l.cpuPercent) || 0;
+        acc.backups += Number(l.backups) || 0;
+        acc.databases += Number(l.databases) || 0;
+        acc.allocations += Number(l.allocations) || 0;
+        return acc;
+      },
+      { diskMb: 0, memoryMb: 0, cpuPercent: 0, backups: 0, databases: 0, allocations: 0 }
+    );
 
     const remaining = {
       diskMb: Math.max(0, Number(userLimits.diskMb || 0) - used.diskMb),
@@ -380,22 +463,37 @@ router.patch('/:id/servers/:serverId', requireAdmin, async (req, res) => {
       cpuPercent: Math.max(0, Number(userLimits.cpuPercent || 0) - used.cpuPercent),
       backups: Math.max(0, Number(userLimits.backups || 0) - used.backups),
       databases: Math.max(0, Number(userLimits.databases || 0) - used.databases),
-      allocations: Math.max(0, Number(userLimits.allocations || 0) - used.allocations),
+      allocations: Math.max(0, Number(userLimits.allocations || 0) - used.allocations)
     };
 
     const newLimits = { ...server.limits, ...desired.limits };
     const violations = {};
-    if (newLimits.diskMb > remaining.diskMb) violations.diskMb = `Exceeds remaining disk (${remaining.diskMb} MB)`;
-    if (newLimits.memoryMb > remaining.memoryMb) violations.memoryMb = `Exceeds remaining memory (${remaining.memoryMb} MB)`;
-    if (newLimits.cpuPercent > remaining.cpuPercent) violations.cpuPercent = `Exceeds remaining CPU (${remaining.cpuPercent}%)`;
-    if (newLimits.backups > remaining.backups) violations.backups = `Exceeds remaining backups (${remaining.backups})`;
-    if (newLimits.databases > remaining.databases) violations.databases = `Exceeds remaining databases (${remaining.databases})`;
-    if (newLimits.allocations > remaining.allocations) violations.allocations = `Exceeds remaining allocations (${remaining.allocations})`;
-    if (Object.keys(violations).length > 0) return res.status(400).json({ error: 'Requested resources exceed limits', violations, remaining, limits: userLimits });
+    if (newLimits.diskMb > remaining.diskMb)
+      violations.diskMb = `Exceeds remaining disk (${remaining.diskMb} MB)`;
+    if (newLimits.memoryMb > remaining.memoryMb)
+      violations.memoryMb = `Exceeds remaining memory (${remaining.memoryMb} MB)`;
+    if (newLimits.cpuPercent > remaining.cpuPercent)
+      violations.cpuPercent = `Exceeds remaining CPU (${remaining.cpuPercent}%)`;
+    if (newLimits.backups > remaining.backups)
+      violations.backups = `Exceeds remaining backups (${remaining.backups})`;
+    if (newLimits.databases > remaining.databases)
+      violations.databases = `Exceeds remaining databases (${remaining.databases})`;
+    if (newLimits.allocations > remaining.allocations)
+      violations.allocations = `Exceeds remaining allocations (${remaining.allocations})`;
+    if (Object.keys(violations).length > 0)
+      return res
+        .status(400)
+        .json({
+          error: 'Requested resources exceed limits',
+          violations,
+          remaining,
+          limits: userLimits
+        });
 
     try {
       const panel = await getPanelServer(server.panelServerId);
-      const currentAllocationId = panel?.allocation || panel?.relationships?.allocation?.attributes?.id || 0;
+      const currentAllocationId =
+        panel?.allocation || panel?.relationships?.allocation?.attributes?.id || 0;
       await updateServerBuild(server.panelServerId, {
         allocation: currentAllocationId,
         memory: newLimits.memoryMb,
@@ -405,26 +503,37 @@ router.patch('/:id/servers/:serverId', requireAdmin, async (req, res) => {
         cpu: newLimits.cpuPercent,
         databases: newLimits.databases,
         allocations: newLimits.allocations,
-        backups: newLimits.backups,
+        backups: newLimits.backups
       });
       server.limits = newLimits;
     } catch (e) {
-      return res.status(502).json({ error: 'Panel update failed', details: e?.response?.data || e.message });
+      return res
+        .status(502)
+        .json({ error: 'Panel update failed', details: e?.response?.data || e.message });
     }
   }
 
   if (typeof desired.name === 'string' && desired.name.trim()) {
     try {
-      await updateServerDetails(server.panelServerId, { name: desired.name.trim(), user: user.pterodactylUserId, external_id: user._id.toString() });
+      await updateServerDetails(server.panelServerId, {
+        name: desired.name.trim(),
+        user: user.pterodactylUserId,
+        external_id: user._id.toString()
+      });
       server.name = desired.name.trim();
     } catch (e) {
-      return res.status(502).json({ error: 'Panel rename failed', details: e?.response?.data || e.message });
+      return res
+        .status(502)
+        .json({ error: 'Panel rename failed', details: e?.response?.data || e.message });
     }
   }
 
   await server.save();
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, 'admin.user.server.update', 'server', server._id.toString(), { owner: req.params.id, changed: desired });
+  writeAudit(req, 'admin.user.server.update', 'server', server._id.toString(), {
+    owner: req.params.id,
+    changed: desired
+  });
   return res.json({ server });
 });
 
@@ -434,7 +543,8 @@ module.exports = router;
 router.post('/:id/plans', requireAdmin, async (req, res) => {
   const schema = z.object({ planId: z.string().min(1), months: z.coerce.number().int() });
   const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
+  if (!parsed.success)
+    return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
   const { planId, months } = parsed.data;
   const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ error: 'User not found' });
@@ -443,7 +553,7 @@ router.post('/:id/plans', requireAdmin, async (req, res) => {
 
   const now = new Date();
   let expiresAt = null;
-  
+
   // Handle lifetime plans
   if (plan.billingOptions?.lifetime) {
     expiresAt = null; // Lifetime plans don't expire
@@ -451,13 +561,13 @@ router.post('/:id/plans', requireAdmin, async (req, res) => {
     expiresAt = new Date(now);
     expiresAt.setMonth(expiresAt.getMonth() + Math.max(0, months));
   }
-  
+
   // Create a new UserPlan instance (allows multiple instances of the same plan)
-  const sub = await UserPlan.create({ 
-    userId: user._id, 
-    planId: plan._id, 
+  const sub = await UserPlan.create({
+    userId: user._id,
+    planId: plan._id,
     purchaseDate: now,
-    expiresAt, 
+    expiresAt,
     status: 'active',
     billingCycle: plan.billingOptions?.lifetime ? 'lifetime' : 'monthly',
     amount: plan.billingOptions?.lifetime ? plan.pricePerMonth : plan.pricePerMonth * months,
@@ -468,62 +578,83 @@ router.post('/:id/plans', requireAdmin, async (req, res) => {
 
   // Apply one-time benefits immediately
   const productContent = plan.productContent || {};
-  
+
   // Add coins
   user.coins = Number(user.coins || 0) + Number(productContent.coins || 0);
-  
+
   // Add all resources to user resources
   if (!user.resources) user.resources = {};
-  
+
   // Add recurrent resources (monthly benefits)
   const recurrentResources = productContent.recurrentResources || {};
-  user.resources.diskMb = Number(user.resources.diskMb || 0) + Number(recurrentResources.diskMb || 0);
-  user.resources.memoryMb = Number(user.resources.memoryMb || 0) + Number(recurrentResources.memoryMb || 0);
-  user.resources.cpuPercent = Number(user.resources.cpuPercent || 0) + Number(recurrentResources.cpuPercent || 0);
-  
+  user.resources.diskMb =
+    Number(user.resources.diskMb || 0) + Number(recurrentResources.diskMb || 0);
+  user.resources.memoryMb =
+    Number(user.resources.memoryMb || 0) + Number(recurrentResources.memoryMb || 0);
+  user.resources.cpuPercent =
+    Number(user.resources.cpuPercent || 0) + Number(recurrentResources.cpuPercent || 0);
+
   // Add additional resources (one-time benefits)
-  user.resources.backups = Number(user.resources.backups || 0) + Number(productContent.backups || 0);
-  user.resources.databases = Number(user.resources.databases || 0) + Number(productContent.databases || 0);
-  user.resources.allocations = Number(user.resources.allocations || 0) + Number(productContent.additionalAllocations || 0);
-  user.resources.serverSlots = Number(user.resources.serverSlots || 0) + Number(productContent.serverLimit || 0);
-  
+  user.resources.backups =
+    Number(user.resources.backups || 0) + Number(productContent.backups || 0);
+  user.resources.databases =
+    Number(user.resources.databases || 0) + Number(productContent.databases || 0);
+  user.resources.allocations =
+    Number(user.resources.allocations || 0) + Number(productContent.additionalAllocations || 0);
+  user.resources.serverSlots =
+    Number(user.resources.serverSlots || 0) + Number(productContent.serverLimit || 0);
+
   await user.save();
 
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, 'admin.user.plan.add', 'user_plan', sub._id.toString(), { plan: plan.name, months });
+  writeAudit(req, 'admin.user.plan.add', 'user_plan', sub._id.toString(), {
+    plan: plan.name,
+    months
+  });
   return res.json({ plan: sub });
 });
 
 // DELETE /api/admin/users/:id/plans/:planId - cancel/remove user's plan
 router.delete('/:id/plans/:planId', requireAdmin, async (req, res) => {
   // Find all active UserPlan instances for this plan
-  const subs = await UserPlan.find({ userId: req.params.id, planId: req.params.planId, status: 'active' });
+  const subs = await UserPlan.find({
+    userId: req.params.id,
+    planId: req.params.planId,
+    status: 'active'
+  });
   if (subs.length === 0) return res.status(404).json({ error: 'Active plan not found' });
-  
+
   // Cancel all instances
   for (const sub of subs) {
     sub.status = 'cancelled';
     await sub.save();
   }
-  
+
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, 'admin.user.plan.cancel', 'user_plan', req.params.planId, { userId: req.params.id, planId: req.params.planId, instancesCancelled: subs.length });
+  writeAudit(req, 'admin.user.plan.cancel', 'user_plan', req.params.planId, {
+    userId: req.params.id,
+    planId: req.params.planId,
+    instancesCancelled: subs.length
+  });
   return res.json({ ok: true, instancesCancelled: subs.length });
 });
 
 // DELETE /api/admin/users/:id/plans/instance/:instanceId - cancel/remove specific plan instance
 router.delete('/:id/plans/instance/:instanceId', requireAdmin, async (req, res) => {
-  const sub = await UserPlan.findOne({ _id: req.params.instanceId, userId: req.params.id, status: 'active' });
+  const sub = await UserPlan.findOne({
+    _id: req.params.instanceId,
+    userId: req.params.id,
+    status: 'active'
+  });
   if (!sub) return res.status(404).json({ error: 'Active plan instance not found' });
-  
+
   sub.status = 'cancelled';
   await sub.save();
-  
+
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, 'admin.user.plan.instance.cancel', 'user_plan', sub._id.toString(), { userId: req.params.id, planId: sub.planId });
+  writeAudit(req, 'admin.user.plan.instance.cancel', 'user_plan', sub._id.toString(), {
+    userId: req.params.id,
+    planId: sub.planId
+  });
   return res.json({ ok: true });
 });
-
-
-
-

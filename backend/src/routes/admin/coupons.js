@@ -31,16 +31,8 @@ router.get('/:id', requireAdmin, async (req, res) => {
 // POST /api/admin/coupons - create new coupon
 router.post('/', requireAdmin, async (req, res) => {
   try {
-    const {
-      code,
-      type,
-      value,
-      validFrom,
-      validUntil,
-      maxRedemptions,
-      appliesToPlanIds,
-      enabled
-    } = req.body;
+    const { code, type, value, validFrom, validUntil, maxRedemptions, appliesToPlanIds, enabled } =
+      req.body;
 
     // Validate required fields
     if (!code || !type || value === undefined) {
@@ -95,16 +87,8 @@ router.post('/', requireAdmin, async (req, res) => {
 // PATCH /api/admin/coupons/:id - update coupon
 router.patch('/:id', requireAdmin, async (req, res) => {
   try {
-    const {
-      code,
-      type,
-      value,
-      validFrom,
-      validUntil,
-      maxRedemptions,
-      appliesToPlanIds,
-      enabled
-    } = req.body;
+    const { code, type, value, validFrom, validUntil, maxRedemptions, appliesToPlanIds, enabled } =
+      req.body;
 
     const coupon = await Coupon.findById(req.params.id);
     if (!coupon) {
@@ -140,7 +124,8 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     if (value !== undefined) coupon.value = value;
     if (validFrom !== undefined) coupon.validFrom = validFrom ? new Date(validFrom) : undefined;
     if (validUntil !== undefined) coupon.validUntil = validUntil ? new Date(validUntil) : undefined;
-    if (maxRedemptions !== undefined) coupon.maxRedemptions = maxRedemptions ? parseInt(maxRedemptions) : undefined;
+    if (maxRedemptions !== undefined)
+      coupon.maxRedemptions = maxRedemptions ? parseInt(maxRedemptions) : undefined;
     if (appliesToPlanIds !== undefined) coupon.appliesToPlanIds = appliesToPlanIds;
     if (enabled !== undefined) coupon.enabled = enabled;
 
@@ -182,4 +167,3 @@ router.delete('/:id', requireAdmin, async (req, res) => {
 });
 
 module.exports = router;
-

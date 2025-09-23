@@ -1,0 +1,49 @@
+{
+  "env": {
+    "node": true,
+    "es2021": true
+  },
+  "extends": [
+    "eslint:recommended"
+  ],
+  "plugins": [
+    "security"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-console": "off",
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "no-undef": "error",
+    "semi": ["error", "always"],
+    "quotes": ["error", "single", { "avoidEscape": true }],
+    "indent": ["error", 2],
+    "comma-dangle": ["error", "never"],
+    "no-trailing-spaces": "error",
+    "eol-last": "error",
+    "object-curly-spacing": ["error", "always"],
+    "array-bracket-spacing": ["error", "never"],
+    "space-before-function-paren": ["error", "never"],
+    "keyword-spacing": "error",
+    "space-infix-ops": "error",
+    "no-multiple-empty-lines": ["error", { "max": 2 }],
+    "prefer-const": "error",
+    "no-var": "error",
+    "arrow-spacing": "error",
+    "no-duplicate-imports": "error",
+    "security/detect-unsafe-regex": "error",
+    "security/detect-buffer-noassert": "error",
+    "security/detect-child-process": "warn",
+    "security/detect-disable-mustache-escape": "error",
+    "security/detect-eval-with-expression": "error",
+    "security/detect-no-csrf-before-method-override": "error",
+    "security/detect-non-literal-fs-filename": "warn",
+    "security/detect-non-literal-regexp": "warn",
+    "security/detect-non-literal-require": "warn",
+    "security/detect-object-injection": "warn",
+    "security/detect-possible-timing-attacks": "warn",
+    "security/detect-pseudoRandomBytes": "error"
+  }
+}

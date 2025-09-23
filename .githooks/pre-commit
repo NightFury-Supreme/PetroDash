@@ -1,0 +1,64 @@
+#!/bin/sh
+# Pre-commit hook to run linting and formatting
+
+echo "Running pre-commit checks..."
+
+# Check if we're in a git repository
+if ! git rev-parse --git-dir > /dev/null 2>&1; then
+  echo "Not in a git repository"
+  exit 1
+fi
+
+# Get list of staged files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(js|jsx|ts|tsx)$')
+
+if [ -z "$STAGED_FILES" ]; then
+  echo "No JavaScript/TypeScript files staged for commit"
+  exit 0
+fi
+
+echo "Checking staged files..."
+
+# Function to run checks in a directory
+run_checks() {
+  local dir=$1
+  local name=$2
+  
+  if [ -d "$dir" ]; then
+    echo "Running checks for $name..."
+    cd "$dir"
+    
+    # Check if package.json exists
+    if [ -f "package.json" ]; then
+      # Run linting
+      if npm run lint:fix > /dev/null 2>&1; then
+        echo "✅ $name linting passed"
+      else
+        echo "❌ $name linting failed"
+        cd ..
+        exit 1
+      fi
+      
+      # Run formatting
+      if npm run format > /dev/null 2>&1; then
+        echo "✅ $name formatting applied"
+      else
+        echo "⚠️  $name formatting skipped (no format script)"
+      fi
+    fi
+    
+    cd ..
+  fi
+}
+
+# Run checks for backend
+run_checks "backend" "Backend"
+
+# Run checks for frontend  
+run_checks "frontend" "Frontend"
+
+# Re-add any files that were formatted
+git add $STAGED_FILES
+
+echo "✅ Pre-commit checks completed successfully"
+exit 0

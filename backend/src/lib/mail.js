@@ -4,17 +4,17 @@ const Email = require('../models/Email');
 async function getTransport() {
   const emailSettings = await Email.getOrCreate();
   const smtp = emailSettings.smtp || {};
-  
+
   // Check if SMTP is properly configured
   if (!smtp.host || !smtp.user || !smtp.pass) {
     throw new Error('SMTP not configured. Please configure SMTP settings in admin panel.');
   }
-  
+
   return nodemailer.createTransport({
     host: smtp.host,
     port: Number(smtp.port || 587),
     secure: !!smtp.secure,
-    auth: { user: smtp.user, pass: smtp.pass },
+    auth: { user: smtp.user, pass: smtp.pass }
   });
 }
 
@@ -43,7 +43,10 @@ function renderTemplateFromEmail(emailSettings, templateKey, data) {
   const subjectTpl = tpl.subject || '';
   const htmlTpl = tpl.html || '';
   const textTpl = tpl.text || '';
-  const interpolate = (str) => String(str || '').replace(/{{\s*(\w+)\s*}}/g, (_, k) => (data && data[k] != null ? String(data[k]) : ''));
+  const interpolate = str =>
+    String(str || '').replace(/{{\s*(\w+)\s*}}/g, (_, k) =>
+      data && data[k] != null ? String(data[k]) : ''
+    );
   const subject = interpolate(subjectTpl);
   const htmlBody = interpolate(htmlTpl);
   const text = interpolate(textTpl);
@@ -53,7 +56,7 @@ function renderTemplateFromEmail(emailSettings, templateKey, data) {
 async function sendMail({ to, subject, text, html, attachments }) {
   const emailSettings = await Email.getOrCreate();
   const from = emailSettings.smtp?.fromEmail || 'no-reply@example.com';
-  
+
   // Fetch branding from branding API
   let brand = { name: '', logoUrl: '', brandColor: '#0ea5e9', footerText: '' };
   try {
@@ -68,7 +71,7 @@ async function sendMail({ to, subject, text, html, attachments }) {
   } catch (e) {
     console.error('Failed to fetch branding:', e);
   }
-  
+
   const transport = await getTransport();
   const finalHtml = html ? wrapHtmlWithBrand({ htmlBody: html, brand }) : undefined;
   return transport.sendMail({ from, to, subject, text, html: finalHtml, attachments });
@@ -76,9 +79,10 @@ async function sendMail({ to, subject, text, html, attachments }) {
 
 async function sendMailTemplate({ to, templateKey, data, attachments }) {
   const emailSettings = await Email.getOrCreate();
-  
+
   // Fetch branding from Settings model
-  let siteName = '', siteIconUrl = '';
+  let siteName = '',
+    siteIconUrl = '';
   try {
     const Settings = require('../models/Settings');
     const settings = await Settings.findOne({}).lean();
@@ -87,15 +91,19 @@ async function sendMailTemplate({ to, templateKey, data, attachments }) {
   } catch (e) {
     console.error('Failed to fetch branding:', e);
   }
-  
+
   const brandColor = '#0ea5e9';
   const footerText = '';
-  const enriched = { siteName, siteIconUrl, logoUrl: siteIconUrl, brandColor, footerText, ...(data || {}) };
+  const enriched = {
+    siteName,
+    siteIconUrl,
+    logoUrl: siteIconUrl,
+    brandColor,
+    footerText,
+    ...(data || {})
+  };
   const { subject, htmlBody, text } = renderTemplateFromEmail(emailSettings, templateKey, enriched);
   return sendMail({ to, subject, text, html: htmlBody, attachments });
 }
 
 module.exports = { sendMail, sendMailTemplate };
-
-
-

@@ -24,19 +24,27 @@ function auditAuto() {
     const path = req.originalUrl || req.url || '';
     const method = req.method;
     const bodySnapshot = maskSensitive(req.body);
-    let chunks = [];
+    const chunks = [];
     const origJson = res.json.bind(res);
-    res.json = function (data) {
-      try { chunks.push(JSON.stringify(data)); } catch (_) {}
+    res.json = function(data) {
+      try {
+        chunks.push(JSON.stringify(data));
+      } catch (_) {}
       return origJson(data);
     };
 
-    res.on('finish', async () => {
+    res.on('finish', async() => {
       try {
         const status = res.statusCode;
         // Log only if request reached the server and was not a 5xx
-        const resourceType = (path.split('?')[0] || '').replace(/^\/api\/?/, '').split('/').slice(0, 2).join('.') || 'api';
-        const resourceId = req.params?.id || req.params?.serverId || req.params?.userId || undefined;
+        const resourceType =
+          (path.split('?')[0] || '')
+            .replace(/^\/api\/?/, '')
+            .split('/')
+            .slice(0, 2)
+            .join('.') || 'api';
+        const resourceId =
+          req.params?.id || req.params?.serverId || req.params?.userId || undefined;
         const responsePreview = (chunks.join('').slice(0, 500) || '').toString();
         await writeAudit(req, `api.${method.toLowerCase()}`, resourceType, resourceId, {
           path,
@@ -46,7 +54,7 @@ function auditAuto() {
           body: bodySnapshot,
           method,
           responsePreview,
-          category: 'auto',
+          category: 'auto'
         });
       } catch (_) {}
     });
@@ -55,5 +63,3 @@ function auditAuto() {
 }
 
 module.exports = { auditAuto };
-
-

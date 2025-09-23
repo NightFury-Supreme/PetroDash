@@ -13,15 +13,15 @@ class GoogleService {
     try {
       const response = await axios.get('https://www.googleapis.com/oauth2/v2/userinfo', {
         headers: {
-          'Authorization': `Bearer ${accessToken}`
+          Authorization: `Bearer ${accessToken}`
         }
       });
-      
+
       return { success: true, profile: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error?.message || 'Failed to fetch Google profile' 
+      return {
+        success: false,
+        error: error.response?.data?.error?.message || 'Failed to fetch Google profile'
       };
     }
   }
@@ -35,15 +35,15 @@ class GoogleService {
     try {
       const response = await axios.get('https://www.googleapis.com/oauth2/v1/userinfo', {
         headers: {
-          'Authorization': `Bearer ${accessToken}`
+          Authorization: `Bearer ${accessToken}`
         }
       });
-      
+
       return { success: true, account: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error?.message || 'Failed to fetch Google account info' 
+      return {
+        success: false,
+        error: error.response?.data?.error?.message || 'Failed to fetch Google account info'
       };
     }
   }
@@ -55,13 +55,15 @@ class GoogleService {
    */
   static async verifyToken(accessToken) {
     try {
-      const response = await axios.get(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}`);
-      
+      const response = await axios.get(
+        `https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}`
+      );
+
       return { success: true, tokenInfo: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Invalid or expired token' 
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Invalid or expired token'
       };
     }
   }
@@ -73,17 +75,20 @@ class GoogleService {
    */
   static async getDriveInfo(accessToken) {
     try {
-      const response = await axios.get('https://www.googleapis.com/drive/v3/about?fields=user,storageQuota', {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`
+      const response = await axios.get(
+        'https://www.googleapis.com/drive/v3/about?fields=user,storageQuota',
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
         }
-      });
-      
+      );
+
       return { success: true, driveInfo: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error?.message || 'Failed to fetch Google Drive info' 
+      return {
+        success: false,
+        error: error.response?.data?.error?.message || 'Failed to fetch Google Drive info'
       };
     }
   }
@@ -97,15 +102,15 @@ class GoogleService {
     try {
       const response = await axios.get('https://gmail.googleapis.com/gmail/v1/users/me/profile', {
         headers: {
-          'Authorization': `Bearer ${accessToken}`
+          Authorization: `Bearer ${accessToken}`
         }
       });
-      
+
       return { success: true, gmailProfile: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error?.message || 'Failed to fetch Gmail profile' 
+      return {
+        success: false,
+        error: error.response?.data?.error?.message || 'Failed to fetch Gmail profile'
       };
     }
   }
@@ -118,12 +123,12 @@ class GoogleService {
   static async revokeToken(accessToken) {
     try {
       await axios.post(`https://oauth2.googleapis.com/revoke?token=${accessToken}`);
-      
+
       return { success: true, message: 'Token revoked successfully' };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Failed to revoke token' 
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Failed to revoke token'
       };
     }
   }

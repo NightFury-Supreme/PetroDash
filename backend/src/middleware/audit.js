@@ -1,13 +1,19 @@
 const AuditLog = require('../models/AuditLog');
 
-async function writeAudit(reqOrActorId, action, resourceTypeOrDetails, resourceIdOrDetails, detailsOrUndefined) {
+async function writeAudit(
+  reqOrActorId,
+  action,
+  resourceTypeOrDetails,
+  resourceIdOrDetails,
+  detailsOrUndefined
+) {
   try {
     let actorId, actorRole, actorUsername, resourceType, resourceId, meta;
-    
+
     // Handle both function signatures:
     // 1. writeAudit(actorId, action, details)
     // 2. writeAudit(req, action, resourceType, resourceId, details)
-    
+
     if (reqOrActorId && typeof reqOrActorId === 'object' && reqOrActorId.headers) {
       // Case 2: writeAudit(req, action, resourceType, resourceId, details)
       const req = reqOrActorId;
@@ -26,13 +32,13 @@ async function writeAudit(reqOrActorId, action, resourceTypeOrDetails, resourceI
       resourceId = resourceTypeOrDetails?.itemId || null;
       meta = resourceTypeOrDetails || {};
     }
-    
+
     // Ensure actorId is a valid ObjectId or null
     if (actorId && typeof actorId === 'string' && !/^[0-9a-fA-F]{24}$/.test(actorId)) {
       // Invalid actorId format - logged silently
       actorId = null;
     }
-    
+
     await AuditLog.create({
       actorId,
       actorRole,
@@ -53,7 +59,7 @@ function sanitizeMeta(meta) {
   try {
     if (!meta || typeof meta !== 'object') return meta;
     const clone = JSON.parse(JSON.stringify(meta));
-    const sensitiveKeys = ['authorization','auth','token','password','secret','clientSecret'];
+    const sensitiveKeys = ['authorization', 'auth', 'token', 'password', 'secret', 'clientSecret'];
     for (const k of Object.keys(clone)) {
       if (sensitiveKeys.includes(k.toLowerCase())) clone[k] = '[redacted]';
     }
@@ -64,5 +70,3 @@ function sanitizeMeta(meta) {
 }
 
 module.exports = { writeAudit };
-
-

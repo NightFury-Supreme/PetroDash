@@ -5,13 +5,13 @@ const UserPlan = require('../models/UserPlan');
 const router = express.Router();
 
 // GET /api/user/plans - list active subscriptions of the authenticated user
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', requireAuth, async(req, res) => {
   try {
     const listRaw = await UserPlan.find({ userId: req.user.sub, status: 'active' })
       .populate('planId', 'name')
       .sort({ endsAt: 1 })
       .lean();
-    const list = listRaw.map((p) => {
+    const list = listRaw.map(p => {
       const { isRenewable, ...rest } = p;
       return rest;
     });
@@ -22,6 +22,3 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 module.exports = router;
-
-
-

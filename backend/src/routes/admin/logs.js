@@ -25,9 +25,9 @@ router.get('/', requireAdmin, async (req, res) => {
     // Validate and sanitize query parameters
     const parsed = logsQuerySchema.safeParse(req.query);
     if (!parsed.success) {
-      return res.status(400).json({ 
-        error: 'Invalid query parameters', 
-        details: parsed.error.flatten() 
+      return res.status(400).json({
+        error: 'Invalid query parameters',
+        details: parsed.error.flatten()
       });
     }
 
@@ -35,12 +35,12 @@ router.get('/', requireAdmin, async (req, res) => {
 
     // Build safe query object
     const query = {};
-    
+
     if (action && typeof action === 'string') {
       // Sanitize action to prevent injection
       query.action = { $regex: action.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
     }
-    
+
     if (actorId && typeof actorId === 'string') {
       // Validate MongoDB ObjectId format
       if (!/^[0-9a-fA-F]{24}$/.test(actorId)) {
@@ -48,10 +48,13 @@ router.get('/', requireAdmin, async (req, res) => {
       }
       query.actorId = actorId;
     }
-    
+
     if (resourceType && typeof resourceType === 'string') {
       // Sanitize resourceType to prevent injection
-      query.resourceType = { $regex: resourceType.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
+      query.resourceType = {
+        $regex: resourceType.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+        $options: 'i'
+      };
     }
 
     // Calculate pagination
@@ -60,12 +63,7 @@ router.get('/', requireAdmin, async (req, res) => {
 
     // Execute queries with proper error handling
     const [list, total] = await Promise.all([
-      AuditLog.find(query)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean()
-        .exec(),
+      AuditLog.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).lean().exec(),
       AuditLog.countDocuments(query).exec()
     ]);
 
@@ -83,12 +81,11 @@ router.get('/', requireAdmin, async (req, res) => {
       hasNext,
       hasPrev
     });
-
   } catch (error) {
     console.error('Failed to fetch audit logs:', error);
-    
+
     // Don't expose internal error details
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: 'Failed to fetch audit logs',
       message: 'An internal server error occurred'
     });
@@ -96,5 +93,3 @@ router.get('/', requireAdmin, async (req, res) => {
 });
 
 module.exports = router;
-
-

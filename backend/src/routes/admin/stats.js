@@ -48,7 +48,15 @@ router.get('/', requireAdmin, async (req, res) => {
       { $group: { _id: '$locationId', count: { $sum: 1 } } },
       { $lookup: { from: 'locations', localField: '_id', foreignField: '_id', as: 'location' } },
       { $unwind: { path: '$location', preserveNullAndEmptyArrays: true } },
-      { $project: { _id: 0, locationId: '$_id', name: '$location.name', serverLimit: '$location.serverLimit', count: 1 } }
+      {
+        $project: {
+          _id: 0,
+          locationId: '$_id',
+          name: '$location.name',
+          serverLimit: '$location.serverLimit',
+          count: 1
+        }
+      }
     ]);
 
     return res.json({
@@ -65,5 +73,3 @@ router.get('/', requireAdmin, async (req, res) => {
 });
 
 module.exports = router;
-
-

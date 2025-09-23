@@ -18,6 +18,3 @@ router.use('/email', require('./email'));
 router.use('/payments', require('./payments'));
 
 module.exports = router;
-
-
-

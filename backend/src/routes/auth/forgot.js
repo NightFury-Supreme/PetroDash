@@ -13,7 +13,8 @@ const forgotSchema = z.object({ email: z.string().email() });
 router.post('/forgot', passwordResetRateLimit, async (req, res) => {
   try {
     const parsed = forgotSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
+    if (!parsed.success)
+      return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
     const { email } = parsed.data;
 
     const user = await User.findOne({ email });
@@ -25,11 +26,15 @@ router.post('/forgot', passwordResetRateLimit, async (req, res) => {
     const codeHash = hashString(resetCode);
     const expiresAt = new Date(Date.now() + 1000 * 60 * 15); // 15 minutes
 
-    await VerificationToken.deleteMany({ userId: user._id, purpose: 'password_reset', usedAt: null });
-    await VerificationToken.create({ 
-      userId: user._id, 
-      tokenHash: codeHash, 
-      purpose: 'password_reset', 
+    await VerificationToken.deleteMany({
+      userId: user._id,
+      purpose: 'password_reset',
+      usedAt: null
+    });
+    await VerificationToken.create({
+      userId: user._id,
+      tokenHash: codeHash,
+      purpose: 'password_reset',
       expiresAt,
       attempts: 0,
       maxAttempts: 5
@@ -40,10 +45,11 @@ router.post('/forgot', passwordResetRateLimit, async (req, res) => {
       await sendMailTemplate({
         to: user.email,
         templateKey: 'passwordReset',
-        data: { 
-          username: user.username, 
+        data: {
+          username: user.username,
           verificationCode: resetCode,
-          siteName: (await require('../../models/Settings').findOne({}).lean())?.siteName || 'PteroDash'
+          siteName:
+            (await require('../../models/Settings').findOne({}).lean())?.siteName || 'PteroDash'
         }
       });
     } catch (e) {
@@ -59,5 +65,3 @@ router.post('/forgot', passwordResetRateLimit, async (req, res) => {
 });
 
 module.exports = router;
-
-

@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\"",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "lucide-react": "^0.540.0",
@@ -16,6 +20,7 @@
     "zod": "^4.0.17"
   },
   "devDependencies": {
+    "@eslint/compat": "^1.4.0",
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
@@ -23,6 +28,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.4.7",
+    "prettier": "^3.0.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

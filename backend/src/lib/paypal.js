@@ -5,11 +5,15 @@ async function getAccessToken() {
   const s = await Settings.findOne({}).lean();
   const paypal = s?.payments?.paypal || {};
   if (!paypal.clientId || !paypal.clientSecret) throw new Error('PayPal not configured');
-  const baseUrl = paypal.mode === 'live' ? 'https://api.paypal.com' : 'https://api.sandbox.paypal.com';
+  const baseUrl =
+    paypal.mode === 'live' ? 'https://api.paypal.com' : 'https://api.sandbox.paypal.com';
   const res = await axios.post(
     `${baseUrl}/v1/oauth2/token`,
     new URLSearchParams({ grant_type: 'client_credentials' }).toString(),
-    { headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, auth: { username: paypal.clientId, password: paypal.clientSecret } }
+    {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      auth: { username: paypal.clientId, password: paypal.clientSecret }
+    }
   );
   return { token: res.data.access_token, baseUrl, paypal, settings: s };
 }
@@ -33,7 +37,7 @@ async function verifyWebhookSignature(headers, eventBody) {
       transmission_sig: transmissionSig,
       transmission_time: transmissionTime,
       webhook_id: webhookId,
-      webhook_event: eventBody,
+      webhook_event: eventBody
     },
     { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
   );
@@ -41,6 +45,3 @@ async function verifyWebhookSignature(headers, eventBody) {
 }
 
 module.exports = { getAccessToken, verifyWebhookSignature };
-
-
-

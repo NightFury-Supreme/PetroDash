@@ -7,28 +7,38 @@ const User = require('../models/User');
 const router = express.Router();
 
 // Public list for authenticated users
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', requireAuth, async(req, res) => {
   const items = await ShopItem.find({ enabled: true }).lean();
   return res.json(items);
 });
 
 const purchaseSchema = z.object({
   itemKey: z.string().min(1),
-  quantity: z.coerce.number().int().min(1),
+  quantity: z.coerce.number().int().min(1)
 });
 
-router.post('/purchase', requireAuth, async (req, res) => {
+router.post('/purchase', requireAuth, async(req, res) => {
   const parsed = purchaseSchema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
+  if (!parsed.success)
+    return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
   const { itemKey, quantity } = parsed.data;
 
   // Whitelist known keys to prevent arbitrary field updates
-  const allowedKeys = new Set(['diskMb','memoryMb','cpuPercent','backups','databases','allocations','serverSlots']);
+  const allowedKeys = new Set([
+    'diskMb',
+    'memoryMb',
+    'cpuPercent',
+    'backups',
+    'databases',
+    'allocations',
+    'serverSlots'
+  ]);
   if (!allowedKeys.has(itemKey)) return res.status(400).json({ error: 'Invalid item key' });
 
   const item = await ShopItem.findOne({ key: itemKey, enabled: true }).lean();
   if (!item) return res.status(404).json({ error: 'Item not found' });
-  if (quantity > Number(item.maxPerPurchase || 0)) return res.status(400).json({ error: `Max ${item.maxPerPurchase} per purchase` });
+  if (quantity > Number(item.maxPerPurchase || 0))
+    return res.status(400).json({ error: `Max ${item.maxPerPurchase} per purchase` });
 
   const user = await User.findById(req.user.sub);
   if (!user) return res.status(404).json({ error: 'User not found' });
@@ -64,5 +74,3 @@ router.post('/purchase', requireAuth, async (req, res) => {
 });
 
 module.exports = router;
-
-

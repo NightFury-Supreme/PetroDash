@@ -96,11 +96,73 @@ pterodash/
 We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
 
 ### Development Setup
+
+#### Quick Setup (Recommended)
+```bash
+# Clone the repository
+git clone https://github.com/NightFury-Supreme/PetroDash.git
+cd PetroDash
+
+# Run the setup script
+./setup-dev.sh
+```
+
+#### Manual Setup
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+2. Clone your fork: `git clone https://github.com/yourusername/PetroDash.git`
+3. Install dependencies:
+   ```bash
+   # Backend
+   cd backend && npm install
+   
+   # Frontend
+   cd ../frontend && npm install
+   ```
+4. Configure git hooks: `git config core.hooksPath .githooks`
+5. Copy environment files and configure:
+   ```bash
+   cp backend/env.example backend/.env
+   cp frontend/env.example frontend/.env.local
+   ```
+6. Set up your MongoDB database
+7. Start development servers:
+   ```bash
+   # Backend (in backend directory)
+   npm run dev
+   
+   # Frontend (in frontend directory) 
+   npm run dev
+   ```
+
+### Development Commands
+
+#### Backend
+- `npm run dev` - Start development server with hot reload
+- `npm run lint` - Run ESLint
+- `npm run lint:fix` - Fix ESLint issues automatically
+- `npm run format` - Format code with Prettier
+- `npm run format:check` - Check code formatting
+- `npm test` - Run tests
+
+#### Frontend
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run lint` - Run ESLint
+- `npm run lint:fix` - Fix ESLint issues automatically  
+- `npm run format` - Format code with Prettier
+- `npm run format:check` - Check code formatting
+- `npm run type-check` - Run TypeScript type checking
+
+### Code Quality
+
+This project uses:
+- **ESLint** for code linting with security rules
+- **Prettier** for consistent code formatting
+- **Pre-commit hooks** for automated quality checks
+- **TypeScript** for type safety (frontend)
+- **Security scanning** in CI/CD pipeline
+
+Make sure to run `npm run lint` and `npm run format` before committing changes.
 
 ## 📝 License
 

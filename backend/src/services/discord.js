@@ -23,35 +23,35 @@ class DiscordService {
         },
         {
           headers: {
-            'Authorization': `Bot ${botToken}`,
+            Authorization: `Bot ${botToken}`,
             'Content-Type': 'application/json'
           }
         }
       );
-      
+
       return { success: true, data: response.data };
     } catch (error) {
       // Handle specific Discord API errors
       if (error.response) {
         const { status, data } = error.response;
-        
+
         // User already in server
         if (status === 204) {
           return { success: true, message: 'User already in server' };
         }
-        
+
         // Invalid access token or other API errors
-        return { 
-          success: false, 
+        return {
+          success: false,
           error: data.message || 'Discord API error',
           code: data.code,
-          status 
+          status
         };
       }
-      
-      return { 
-        success: false, 
-        error: 'Network error connecting to Discord API' 
+
+      return {
+        success: false,
+        error: 'Network error connecting to Discord API'
       };
     }
   }
@@ -65,15 +65,15 @@ class DiscordService {
     try {
       const response = await axios.get('https://discord.com/api/users/@me/guilds', {
         headers: {
-          'Authorization': `Bearer ${accessToken}`
+          Authorization: `Bearer ${accessToken}`
         }
       });
-      
+
       return { success: true, guilds: response.data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Failed to fetch user guilds' 
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Failed to fetch user guilds'
       };
     }
   }
@@ -89,7 +89,7 @@ class DiscordService {
     try {
       const result = await this.getUserGuilds(accessToken);
       if (!result.success) return false;
-      
+
       return result.guilds.some(guild => guild.id === guildId);
     } catch (error) {
       return false;

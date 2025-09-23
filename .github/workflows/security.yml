@@ -1,0 +1,90 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run weekly security scans
+    - cron: '0 2 * * 1'
+
+jobs:
+  dependency-scan:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+      - name: Audit backend dependencies
+        working-directory: backend
+        run: |
+          npm audit --audit-level=high || echo "Backend audit completed with warnings"
+
+      - name: Audit frontend dependencies
+        working-directory: frontend
+        run: |
+          npm audit --audit-level=high || echo "Frontend audit completed with warnings"
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  eslint-security:
+    name: ESLint Security Rules
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+          npm install --save-dev eslint-plugin-security
+
+      - name: Run ESLint security scan on backend
+        working-directory: backend
+        run: |
+          npx eslint src/**/*.js --ext .js --config .eslintrc.json --format unix || echo "ESLint security scan completed"
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+      - name: Run ESLint security scan on frontend
+        working-directory: frontend
+        run: |
+          npx eslint src/**/*.{js,jsx,ts,tsx} --format unix || echo "ESLint security scan completed"

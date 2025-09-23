@@ -60,8 +60,8 @@ class UserCreationService {
         backups: Number(defaults?.backups ?? 0),
         databases: Number(defaults?.databases ?? 0),
         allocations: Number(defaults?.allocations ?? 0),
-        serverSlots: Number(defaults?.serverSlots ?? 1),
-      },
+        serverSlots: Number(defaults?.serverSlots ?? 1)
+      }
     });
 
     // Handle referral attribution and rewards
@@ -82,7 +82,7 @@ class UserCreationService {
    */
   static async linkOAuthProvider(user, oauthData) {
     const { provider, data } = oauthData;
-    
+
     // Update OAuth providers
     user.oauthProviders = user.oauthProviders || {};
     user.oauthProviders[provider] = data;
@@ -108,8 +108,12 @@ class UserCreationService {
 
       // Load settings for coin rewards
       const settings = await Settings.findOne({}).lean();
-      const referrerCoins = Number(settings?.referrals?.referrerCoins ?? Number(process.env.REFERRAL_REWARD_COINS || 50));
-      const referredCoins = Number(settings?.referrals?.referredCoins ?? Number(process.env.REFERRAL_REFERRED_COINS || 25));
+      const referrerCoins = Number(
+        settings?.referrals?.referrerCoins ?? Number(process.env.REFERRAL_REWARD_COINS || 50)
+      );
+      const referredCoins = Number(
+        settings?.referrals?.referredCoins ?? Number(process.env.REFERRAL_REFERRED_COINS || 25)
+      );
 
       // Set referral relationship
       user.referredBy = referrer._id;
@@ -118,7 +122,8 @@ class UserCreationService {
       // Update referrer stats and coins
       referrer.referralStats = referrer.referralStats || { referredCount: 0, coinsEarned: 0 };
       referrer.referralStats.referredCount = Number(referrer.referralStats.referredCount || 0) + 1;
-      referrer.referralStats.coinsEarned = Number(referrer.referralStats.coinsEarned || 0) + referrerCoins;
+      referrer.referralStats.coinsEarned =
+        Number(referrer.referralStats.coinsEarned || 0) + referrerCoins;
       referrer.coins = Number(referrer.coins || 0) + referrerCoins;
       await referrer.save();
 
@@ -140,7 +145,7 @@ class UserCreationService {
       // Generate temporary password if not provided (for OAuth users)
       const crypto = require('crypto');
       const panelPassword = password || crypto.randomBytes(8).toString('hex') + 'A1!';
-      
+
       const panelUser = await createPanelUser({
         email: user.email,
         username: user.username,
@@ -148,7 +153,7 @@ class UserCreationService {
         lastName: user.lastName,
         password: panelPassword
       });
-      
+
       if (panelUser?.id) {
         user.pterodactylUserId = panelUser.id;
         await user.save();

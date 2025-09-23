@@ -49,11 +49,13 @@ async function main() {
     await user.save();
   }
 
-  console.log(`User promoted to admin: ${user.username} (${user.email})${password ? ' and password updated' : ''}`);
+  console.log(
+    `User promoted to admin: ${user.username} (${user.email})${password ? ' and password updated' : ''}`
+  );
   process.exit(0);
 }
 
-main().catch((err) => {
+main().catch(err => {
   console.error('Failed to promote admin:', err?.message || err);
   process.exit(1);
 });
