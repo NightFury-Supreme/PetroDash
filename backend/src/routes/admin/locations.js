@@ -7,7 +7,7 @@ const router = express.Router();
 
 const schema = z.object({
     name: z.string().min(1),
-    flagUrl: z.string().optional().or(z.literal('')),
+    flag: z.string().optional().or(z.literal('')), // Changed from flagUrl to flag
     latencyUrl: z.string().optional().or(z.literal('')),
     serverLimit: z.coerce.number().int().nonnegative().default(0),
     platform: z

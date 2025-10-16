@@ -4,7 +4,7 @@ import { UpdateSystem } from '../updates';
 
 interface Settings {
   siteName: string;
-  siteIconUrl: string;
+  siteIcon: string; // Changed from siteIconUrl to siteIcon
   payments: {
     paypal: {
       enabled: boolean;
@@ -127,24 +127,32 @@ export function AdminSettingsContent({
   const updateFormData = (path: string, value: unknown) => {
     const keys = path.split('.');
     
-    // Prevent prototype pollution by checking for dangerous keys
-    if (keys.some(key => key === '__proto__' || key === 'constructor' || key === 'prototype')) {
-      console.error('Prototype pollution attempt blocked');
-      return;
-    }
-    
-    const newData = { ...formData };
+      // Prevent prototype pollution by checking for dangerous keys
+      if (keys.some(key => key === '__proto__' || key === 'constructor' || key === 'prototype')) {
+        return;
+      }    // Create a safe object without prototype
+    const newData = Object.create(null);
+    Object.assign(newData, formData);
     let current: Record<string, unknown> = newData;
     
     for (let i = 0; i < keys.length - 1; i++) {
-      if (!current[keys[i]] || typeof current[keys[i]] !== 'object' || Array.isArray(current[keys[i]])) {
-        current[keys[i]] = {};
+      const key = keys[i];
+              // Additional check for each key in the path
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+          return;
+        }
+      if (!current[key] || typeof current[key] !== 'object' || Array.isArray(current[key])) {
+        current[key] = Object.create(null);
       }
-      current = current[keys[i]] as Record<string, unknown>;
+      current = current[key] as Record<string, unknown>;
     }
     
-    current[keys[keys.length - 1]] = value;
-    setFormData(newData);
+    const finalKey = keys[keys.length - 1];
+      // Final check before assignment
+      if (finalKey !== '__proto__' && finalKey !== 'constructor' && finalKey !== 'prototype') {
+        current[finalKey] = value;
+        setFormData(newData);
+      }
   };
 
   return (
@@ -175,15 +183,109 @@ export function AdminSettingsContent({
           </div>
           
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-white">Icon URL</label>
-            <input
-              type="url"
-              className="w-full h-12 bg-[#202020] border border-[#303030] rounded-lg px-4 text-white placeholder-[#AAAAAA] focus:border-[#404040] focus:outline-none transition-colors"
-              placeholder="https://example.com/icon.png"
-              value={formData.siteIconUrl || ''}
-              onChange={(e) => updateFormData('siteIconUrl', e.target.value)}
-              disabled={loading}
-            />
+            <label className="block text-sm font-medium text-white">Site Icon</label>
+            <div className="flex items-center gap-3">
+              {formData.siteIcon && (
+                <div className="relative w-12 h-12 bg-[#202020] border border-[#303030] rounded-lg overflow-hidden flex-shrink-0">
+                  <img 
+                    src={`${process.env.NEXT_PUBLIC_API_BASE}${formData.siteIcon}`} 
+                    alt="Site icon" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              <label className="flex-1">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    
+                    const token = localStorage.getItem('auth_token');
+                    const oldIcon = formData.siteIcon; // Store old icon path
+                    
+                    const fd = new FormData();
+                    fd.append('icon', file);
+                    
+                    try {
+                      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/upload/icon`, {
+                        method: 'POST',
+                        headers: { Authorization: `Bearer ${token}` },
+                        body: fd
+                      });
+                      
+                      if (!res.ok) throw new Error('Upload failed');
+                      
+                      const data = await res.json();
+                      updateFormData('siteIcon', data.filePath);
+                      
+                      // Delete old icon file if it exists
+                      if (oldIcon) {
+                        fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/upload/icon`, {
+                          method: 'DELETE',
+                          headers: { 
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${token}` 
+                          },
+                          body: JSON.stringify({ filePath: oldIcon })
+                        }).catch(err => console.error('Failed to delete old icon:', err));
+                      }
+                    } catch (err) {
+                      console.error('Upload error:', err);
+                      await modal.error({
+                        title: "Upload Failed",
+                        body: "Failed to upload icon. Please try again."
+                      });
+                    }
+                  }}
+                  disabled={loading}
+                />
+                <div className="w-full h-12 bg-[#202020] border border-[#303030] rounded-lg px-4 text-white cursor-pointer hover:border-[#404040] transition-colors flex items-center justify-between">
+                  <span className="text-[#AAAAAA]">{formData.siteIcon ? 'Change icon' : 'Upload icon'}</span>
+                  <i className="fas fa-upload text-[#AAAAAA]"></i>
+                </div>
+              </label>
+              {formData.siteIcon && (
+                <button
+                  onClick={async () => {
+                    const confirmed = await modal.confirm({
+                      title: "Remove Icon",
+                      body: "Are you sure you want to remove the site icon?"
+                    });
+                    if (confirmed) {
+                      const token = localStorage.getItem('auth_token');
+                      const iconToDelete = formData.siteIcon;
+                      
+                      // Remove from form first
+                      updateFormData('siteIcon', '');
+                      
+                      // Delete file from server
+                      if (iconToDelete) {
+                        try {
+                          await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/upload/icon`, {
+                            method: 'DELETE',
+                            headers: { 
+                              'Content-Type': 'application/json',
+                              Authorization: `Bearer ${token}` 
+                            },
+                            body: JSON.stringify({ filePath: iconToDelete })
+                          });
+                        } catch (err) {
+                          console.error('Failed to delete icon:', err);
+                        }
+                      }
+                    }
+                  }}
+                  className="h-12 px-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 hover:bg-red-500/20 transition-colors"
+                  disabled={loading}
+                >
+                  <i className="fas fa-trash"></i>
+                </button>
+              )}
+            </div>
+            <p className="text-xs text-[#AAAAAA] mt-1">Upload an image (max 5MB, PNG/JPG/GIF/WEBP/SVG)</p>
           </div>
         </div>
       </div>

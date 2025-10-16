@@ -22,8 +22,99 @@ export default function EggForm({ form, setForm, env, setEnv, onSubmit, submitti
           </label>
         </div>
         <label className="space-y-2 block">
-          <span className="text-sm">Egg icon URL</span>
-          <input className="input" value={form.iconUrl} onChange={(e) => setForm({ ...form, iconUrl: e.target.value })} placeholder="https://..." />
+          <span className="text-sm">Egg icon</span>
+          <div className="flex items-center gap-3">
+            {form.icon && (
+              <div className="relative w-12 h-12 bg-[#202020] border border-[#303030] rounded-lg overflow-hidden flex-shrink-0">
+                <img 
+                  src={`${process.env.NEXT_PUBLIC_API_BASE}${form.icon}`} 
+                  alt="Egg icon" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+            <label className="flex-1">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  
+                  const token = localStorage.getItem('auth_token');
+                  const oldIcon = form.icon; // Store old icon path
+                  
+                  const fd = new FormData();
+                  fd.append('icon', file);
+                  
+                  try {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/upload/icon`, {
+                      method: 'POST',
+                      headers: { Authorization: `Bearer ${token}` },
+                      body: fd
+                    });
+                    
+                    if (!res.ok) throw new Error('Upload failed');
+                    
+                    const data = await res.json();
+                    setForm({ ...form, icon: data.filePath });
+                    
+                    // Delete old icon file if it exists
+                    if (oldIcon) {
+                      fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/upload/icon`, {
+                        method: 'DELETE',
+                        headers: { 
+                          'Content-Type': 'application/json',
+                          Authorization: `Bearer ${token}` 
+                        },
+                        body: JSON.stringify({ filePath: oldIcon })
+                      }).catch(err => console.error('Failed to delete old icon:', err));
+                    }
+                  } catch (err) {
+                    console.error('Upload error:', err);
+                    alert('Failed to upload icon. Please try again.');
+                  }
+                }}
+              />
+              <div className="input cursor-pointer flex items-center justify-between">
+                <span className="text-[#AAAAAA]">{form.icon ? 'Change icon' : 'Upload icon'}</span>
+                <i className="fas fa-upload text-[#AAAAAA]"></i>
+              </div>
+            </label>
+            {form.icon && (
+              <button
+                type="button"
+                onClick={async () => {
+                  const token = localStorage.getItem('auth_token');
+                  const iconToDelete = form.icon;
+                  
+                  // Remove from form first
+                  setForm({ ...form, icon: '' });
+                  
+                  // Delete file from server
+                  if (iconToDelete) {
+                    try {
+                      await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/upload/icon`, {
+                        method: 'DELETE',
+                        headers: { 
+                          'Content-Type': 'application/json',
+                          Authorization: `Bearer ${token}` 
+                        },
+                        body: JSON.stringify({ filePath: iconToDelete })
+                      });
+                    } catch (err) {
+                      console.error('Failed to delete icon:', err);
+                    }
+                  }
+                }}
+                className="px-3 py-2 rounded-md bg-red-500/10 border border-red-500/30 text-red-400"
+              >
+                <i className="fas fa-trash"></i>
+              </button>
+            )}
+          </div>
+          <div className="text-xs text-[#AAAAAA]">Upload an image (max 5MB, PNG/JPG/GIF/WEBP/SVG)</div>
         </label>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <label className="space-y-2">

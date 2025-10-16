@@ -20,7 +20,6 @@ async function getOrCreate() {
     }
     return doc;
   } catch (error) {
-    console.error('Failed to get or create settings:', error);
     throw new Error('Failed to access settings database');
   }
 }
@@ -37,8 +36,6 @@ router.get('/', requireAdmin, async (req, res) => {
     
     return res.json(out);
   } catch (error) {
-    console.error('Failed to fetch settings:', error);
-    
     return res.status(500).json({
       error: 'Failed to fetch settings',
       message: 'An internal server error occurred'
@@ -49,7 +46,7 @@ router.get('/', requireAdmin, async (req, res) => {
 // Validation schema for settings payload
 const settingsPayloadSchema = z.object({
   siteName: z.string().min(1, 'Site name must be at least 1 character').max(100, 'Site name must be less than 100 characters').optional(),
-  siteIconUrl: z.string().url('Invalid icon URL format').max(500, 'Icon URL must be less than 500 characters').optional(),
+  siteIcon: z.string().max(500, 'Icon path must be less than 500 characters').optional(), // Changed from siteIconUrl
   referrals: z.object({
     referrerCoins: z.coerce.number().int().min(0).max(1000000).optional(),
     referredCoins: z.coerce.number().int().min(0).max(1000000).optional(),

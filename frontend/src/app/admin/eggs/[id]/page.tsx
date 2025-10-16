@@ -11,7 +11,7 @@ type EnvVar = { key: string; value: string };
 export default function EditEggPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const [form, setForm] = useState<{ _id: string; name: string; description: string; pterodactylEggId: string; pterodactylNestId: string; recommended: boolean; allowedPlans: string[]; category?: string; iconUrl?: string } | null>(null);
+  const [form, setForm] = useState<{ _id: string; name: string; description: string; pterodactylEggId: string; pterodactylNestId: string; recommended: boolean; allowedPlans: string[]; category?: string; icon?: string } | null>(null);
   const [env, setEnv] = useState<EnvVar[]>([]);
   const [loading, setLoading] = useState(true);
   const [, setError] = useState<string | null>(null);
@@ -28,7 +28,7 @@ export default function EditEggPage() {
         _id: d._id || String(params.id),
         name: d.name || '',
         category: d.category || '',
-        iconUrl: d.iconUrl || '',
+        icon: d.icon || '',
         pterodactylEggId: d.pterodactylEggId?.toString() || '',
         pterodactylNestId: d.pterodactylNestId?.toString() || '',
         recommended: !!d.recommended,

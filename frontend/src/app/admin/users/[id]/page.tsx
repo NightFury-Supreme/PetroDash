@@ -206,7 +206,7 @@ export default function AdminUserDetailPage() {
                               storage: s.limits?.diskMb || 0,
                               url: '#',
                               eggName: s.eggId?.name,
-                              eggIcon: s.eggId?.iconUrl,
+                              eggIcon: s.eggId?.icon,
                               backups: s.limits?.backups || 0,
                               databases: s.limits?.databases || 0,
                               allocations: s.limits?.allocations || 0,

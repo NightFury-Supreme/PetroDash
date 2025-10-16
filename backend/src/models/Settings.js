@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const SettingsSchema = new mongoose.Schema(
   {
     siteName: { type: String, default: 'PteroDash' },
-    siteIconUrl: { type: String, default: '' },
+    siteIcon: { type: String, default: '' }, // Changed from siteIconUrl to siteIcon - stores file path
     referrals: {
       referrerCoins: { type: Number, default: 50 },
       referredCoins: { type: Number, default: 25 },

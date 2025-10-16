@@ -33,11 +33,9 @@ function AuthCallbackContent() {
           // Handle Discord join result
           if (discordJoin === 'success') {
             // Successfully joined Discord server
-            console.log('Successfully joined Discord server');
-          } else if (discordJoin === 'failed') {
+                      } else if (discordJoin === 'failed') {
             // Failed to join Discord server, show error
-            console.warn('Failed to join Discord server:', discordError);
-          }
+                      }
           
           // Redirect to dashboard
           router.push('/dashboard');

@@ -133,8 +133,7 @@ export default function ShopPage() {
           // You might want to update other user data here if needed
         }
       } catch (refreshError) {
-        console.warn('Failed to refresh user data after purchase:', refreshError);
-      }
+              }
     } catch (e: any) {
       const msg: string = String(e?.message || 'Purchase failed');
       setError(msg);

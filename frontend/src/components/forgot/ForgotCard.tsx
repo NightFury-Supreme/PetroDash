@@ -132,7 +132,7 @@ export default function ForgotCard() {
       <div className="space-y-4">
         <div className="space-y-2 text-left">
           <label className="block text-sm font-medium text-white">Email</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="w-full px-4 py-3 bg-[#202020] border border-[#303030] rounded-xl text-white placeholder-[#666] focus:outline-none focus:border-blue-500 transition-colors" />
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" className="w-full px-4 py-3 bg-[#202020] border border-[#303030] rounded-xl text-white placeholder-[#666] focus:outline-none focus:border-blue-500 transition-colors" />
         </div>
         {step === 'verify' && (
           <>

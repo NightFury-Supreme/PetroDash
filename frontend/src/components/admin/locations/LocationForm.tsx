@@ -1,17 +1,109 @@
 "use client";
 
+import { useState, useEffect } from 'react';
+
 export default function LocationForm({ form, setForm, onSubmit, submitting, onDelete }: any) {
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="rounded-2xl p-6 space-y-6" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <label className="space-y-1">
-            <span className="text-sm text-[#AAAAAA]">Location name</span>
-            <input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          <label className="space-y-2">
+            <span className="text-sm">Location name</span>
+            <input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Location name" />
           </label>
-          <label className="space-y-1">
-            <span className="text-sm text-[#AAAAAA]">Flag image URL</span>
-            <input className="input" value={form.flagUrl} onChange={(e) => setForm({ ...form, flagUrl: e.target.value })} />
+          <label className="space-y-2 block">
+            <span className="text-sm">Flag icon</span>
+            <div className="flex items-center gap-3">
+              {form.flag && (
+                <div className="relative w-12 h-12 bg-[#202020] border border-[#303030] rounded-lg overflow-hidden flex-shrink-0">
+                  <img 
+                    src={`${process.env.NEXT_PUBLIC_API_BASE}${form.flag}`} 
+                    alt="Flag icon" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              <label className="flex-1">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    
+                    const token = localStorage.getItem('auth_token');
+                    const oldFlag = form.flag; // Store old flag path
+                    
+                    const fd = new FormData();
+                    fd.append('icon', file);
+                    
+                    try {
+                      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/upload/icon`, {
+                        method: 'POST',
+                        headers: { Authorization: `Bearer ${token}` },
+                        body: fd
+                      });
+                      
+                      if (!res.ok) throw new Error('Upload failed');
+                      
+                      const data = await res.json();
+                      setForm({ ...form, flag: data.filePath });
+                      
+                      // Delete old flag file if it exists
+                      if (oldFlag) {
+                        fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/upload/icon`, {
+                          method: 'DELETE',
+                          headers: { 
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${token}` 
+                          },
+                          body: JSON.stringify({ filePath: oldFlag })
+                        }).catch(err => console.error('Failed to delete old flag:', err));
+                      }
+                    } catch (err) {
+                      console.error('Upload error:', err);
+                      alert('Failed to upload flag icon. Please try again.');
+                    }
+                  }}
+                />
+                <div className="input cursor-pointer flex items-center justify-between">
+                  <span className="text-[#AAAAAA]">{form.flag ? 'Change flag' : 'Upload flag'}</span>
+                  <i className="fas fa-upload text-[#AAAAAA]"></i>
+                </div>
+              </label>
+              {form.flag && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const token = localStorage.getItem('auth_token');
+                    const flagToDelete = form.flag;
+                    
+                    // Remove from form first
+                    setForm({ ...form, flag: '' });
+                    
+                    // Delete file from server
+                    if (flagToDelete) {
+                      try {
+                        await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/upload/icon`, {
+                          method: 'DELETE',
+                          headers: { 
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${token}` 
+                          },
+                          body: JSON.stringify({ filePath: flagToDelete })
+                        });
+                      } catch (err) {
+                        console.error('Failed to delete flag:', err);
+                      }
+                    }
+                  }}
+                  className="px-3 py-2 rounded-md bg-red-500/10 border border-red-500/30 text-red-400"
+                >
+                  <i className="fas fa-trash"></i>
+                </button>
+              )}
+            </div>
           </label>
         </div>
         <label className="space-y-1 block">
@@ -54,7 +146,6 @@ export default function LocationForm({ form, setForm, onSubmit, submitting, onDe
   );
 }
 
-import { useState, useEffect } from 'react';
 function AllowedPlansSelect({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
   const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

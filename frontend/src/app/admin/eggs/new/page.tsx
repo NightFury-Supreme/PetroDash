@@ -11,7 +11,7 @@ export default function NewEggPage() {
   const [form, setForm] = useState({
     name: '',
     category: '',
-    iconUrl: '',
+    icon: '',
     pterodactylEggId: '',
     pterodactylNestId: '',
     recommended: false,

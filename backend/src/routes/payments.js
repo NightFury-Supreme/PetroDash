@@ -61,7 +61,7 @@ router.get('/:id/invoice', requireAuth, createRateLimiter(5, 60 * 1000), async (
     // Header with logo and dashboard name
     const brand = settings?.payments?.paypal?.businessName || settings?.siteName || 'PteroDash';
     const address = settings?.payments?.paypal?.businessAddress || '';
-    const logoUrl = settings?.siteIconUrl;
+    const logoUrl = settings?.siteIcon;
     
     // Add logo if available
     if (logoUrl) {
@@ -72,8 +72,7 @@ router.get('/:id/invoice', requireAuth, createRateLimiter(5, 60 * 1000), async (
         doc.image(logoBuffer, 50, 50, { width: 60, height: 60 });
         doc.text(brand, 120, 70, { fontSize: 20 });
       } catch (logoError) {
-        console.warn('Failed to load logo for invoice:', logoError.message);
-        doc.fontSize(20).text(brand, { align: 'left' });
+                doc.fontSize(20).text(brand, { align: 'left' });
       }
     } else {
       doc.fontSize(20).text(brand, { align: 'left' });

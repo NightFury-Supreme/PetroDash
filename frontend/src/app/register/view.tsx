@@ -101,8 +101,8 @@ export default function RegisterClient() {
     <form onSubmit={onSubmit} className="space-y-4">
       {showEmailRegister && (
         <>
-          <AuthField label="Email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} placeholder="john@example.com" error={fieldErrors.email} />
-          <AuthField label="Username" value={form.username} onChange={(v) => setForm({ ...form, username: v })} placeholder="john" error={fieldErrors.username} />
+          <AuthField label="Email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} placeholder="your@email.com" error={fieldErrors.email} />
+          <AuthField label="Username" value={form.username} onChange={(v) => setForm({ ...form, username: v })} placeholder="username" error={fieldErrors.username} />
           <div className="grid grid-cols-2 gap-3">
             <AuthField label="First name" value={form.firstName} onChange={(v) => setForm({ ...form, firstName: v })} placeholder="John" error={fieldErrors.firstName} />
             <AuthField label="Last name" value={form.lastName} onChange={(v) => setForm({ ...form, lastName: v })} placeholder="Doe" error={fieldErrors.lastName} />

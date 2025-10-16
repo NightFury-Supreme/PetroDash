@@ -18,15 +18,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Dedicated cards/error states in admin, user, and dashboard server lists
   - Unreachable/suspended handling in server edit pages
 - New `Footer` component integrated into layout
+- **Secure Image Upload System**:
+  - Admin-only file upload middleware with 5MB limit and image validation
+  - Upload and delete API routes with rate limiting (10 uploads/min, 5 deletes/min)
+  - Static file serving for uploads with proper CORS headers
+- **Icon Management Refactor**:
+  - Branding icons (site logo/favicon) now use file uploads instead of external URLs
+  - Egg icons now use file uploads instead of external URLs
+  - Location flags now use file uploads instead of external URLs
+  - Automatic cleanup of old icon files when updating
+- **Profile Picture System**:
+  - User profile picture management for email-authenticated users
+  - Automatic profile picture fetching for Discord OAuth users (from Discord CDN)
+  - Automatic profile picture fetching for Google OAuth users (from Google)
+  - Profile picture upload/update/delete endpoints with validation
 
 ### Changed
 - Surfaced server `suspended`/`unreachable` states consistently across admin and user views
 - Updated `Shell` and layout structure to accommodate new footer and states
 - Refactored `ServerCard` into a subdirectory for better organization
+- **Backend Models Updated**:
+  - `Settings` model: Added `logoPath` and `faviconPath` fields (deprecated `logoUrl`/`faviconUrl`)
+  - `Egg` model: Added `iconPath` field (deprecated `iconUrl`)
+  - `Location` model: Added `flagPath` field (deprecated `flagUrl`)
+  - `User` model: Added `profilePicture` field for profile pictures
+- **Frontend Components Refactored**:
+  - Admin branding settings now use file upload with preview
+  - Admin egg management now uses file upload for icons
+  - Admin location management now uses file upload for flags
+  - User profile page now supports profile picture upload/management
+  - Sidebar displays user profile pictures
+- **Security Enhancements**:
+  - Enhanced security headers with proper CSP configuration
+  - Iterative input sanitization to prevent bypass attacks (fixes incomplete URL scheme checks)
+  - Prototype pollution protection in input sanitization
+  - Multi-character sanitization with loop-based replacement
+  - Removed insecure Helmet configuration
+  - Strict CORS policy (requires explicit FRONTEND_URL, no wildcard fallback)
+  - Added comprehensive validation schemas for all upload operations
 
 ### Fixed
 - Ensured individual server API response sets `status: 'unreachable'` on panel failures
 - Unified status/flag handling between list and detail responses
+- **Security Vulnerabilities (24 CodeQL issues resolved)**:
+  - Fixed incomplete URL scheme check (High severity - 2 issues)
+  - Fixed incomplete multi-character sanitization (High severity - 2 issues)
+  - Verified rate limiting on all endpoints (10 false positives)
+  - Verified NoSQL injection protection via ObjectId validation (4 issues)
+  - Fixed insecure Helmet CSP configuration (1 issue)
+  - Fixed permissive CORS configuration (1 issue)
+  - Fixed prototype pollution in frontend components (2 issues)
+- Path traversal protection in file upload system
+- Proper file extension validation and MIME type checking
+- Automatic old file cleanup when updating icons/profile pictures
 
 ## [1.0.8] - 19-09-2025
 

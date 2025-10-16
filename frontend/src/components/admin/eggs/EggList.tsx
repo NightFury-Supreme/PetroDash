@@ -21,10 +21,10 @@ export default function EggList({ eggs }: { eggs: any[] }) {
         <Link key={egg._id} href={`/admin/eggs/${egg._id}`} className="block p-5 rounded-xl" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              {egg.iconUrl ? (
+              {(egg as any).icon ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={egg.iconUrl}
+                  src={`${process.env.NEXT_PUBLIC_API_BASE}${(egg as any).icon}`}
                   alt={egg.name}
                   className="w-10 h-10 rounded-md object-contain"
                   onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}

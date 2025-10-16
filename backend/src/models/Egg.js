@@ -12,7 +12,7 @@ const EggSchema = new mongoose.Schema(
     {
         name: { type: String, required: true },
         category: { type: String, required: true },
-        iconUrl: { type: String },
+        icon: { type: String }, // Changed from iconUrl to icon - stores file path
         pterodactylEggId: { type: Number, required: true },
         pterodactylNestId: { type: Number, required: true },
         recommended: { type: Boolean, default: false },

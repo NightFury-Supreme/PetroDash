@@ -34,9 +34,9 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
-  const [user, setUser] = useState<{ username?: string; email?: string; role?: string; coins?: number; hasActivePlans?: boolean } | null>(null);
+  const [user, setUser] = useState<{ username?: string; email?: string; role?: string; coins?: number; hasActivePlans?: boolean; profilePicture?: string } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [brand, setBrand] = useState<{ name: string; iconUrl: string }>({ name: 'PteroDash', iconUrl: '' });
+  const [brand, setBrand] = useState<{ name: string; icon: string }>({ name: 'PteroDash', icon: '' });
   const [openSections, setOpenSections] = useState<{ shop: boolean }>({ shop: false });
 
   // Load collapsed state from localStorage
@@ -83,8 +83,8 @@ export default function Sidebar() {
     // Also load brand settings for icon and name
     fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/branding`)
       .then((r) => r.json())
-      .then((s) => setBrand({ name: s?.siteName || 'PteroDash', iconUrl: s?.siteIconUrl || '' }))
-      .catch(() => setBrand({ name: 'PteroDash', iconUrl: '' }));
+      .then((s) => setBrand({ name: s?.siteName || 'PteroDash', icon: s?.siteIcon || '' }))
+      .catch(() => setBrand({ name: 'PteroDash', icon: '' }));
   }, []);
 
   const renderLink = (link: NavLink) => {
@@ -120,8 +120,8 @@ export default function Sidebar() {
         {/* Profile / Brand */}
         <div className="p-6 border-b border-[#303030]">
           <div className="flex items-center space-x-4">
-            {brand.iconUrl ? (
-              <img src={brand.iconUrl} alt="icon" className="w-8 h-8 rounded" />
+            {brand.icon ? (
+              <img src={`${process.env.NEXT_PUBLIC_API_BASE}${brand.icon}`} alt="icon" className="w-8 h-8 rounded" />
             ) : (
               <img src="/logo.svg" alt="PteroDash" className="w-8 h-8" />
             )}
@@ -195,7 +195,23 @@ export default function Sidebar() {
         {/* Actions */}
         <div className="p-4 border-t border-[#303030]">
           <div className="flex items-center gap-3">
-            <i className="fas fa-user text-[#AAAAAA] flex-shrink-0"></i>
+            {/* Profile Picture */}
+            {user?.profilePicture ? (
+              <img 
+                src={user.profilePicture} 
+                alt={user.username || 'User'} 
+                className="w-10 h-10 rounded-full object-cover flex-shrink-0 border-2 border-[#404040]"
+                onError={(e) => {
+                  // Fallback to icon if image fails to load
+                  e.currentTarget.style.display = 'none';
+                  const fallback = document.createElement('i');
+                  fallback.className = 'fas fa-user text-[#AAAAAA] flex-shrink-0';
+                  e.currentTarget.parentElement?.appendChild(fallback);
+                }}
+              />
+            ) : (
+              <i className="fas fa-user text-[#AAAAAA] flex-shrink-0"></i>
+            )}
             {!collapsed ? (
               <div className="flex-1 min-w-0">
                 {loading ? (

@@ -81,7 +81,7 @@ export default function LoginClient() {
             label="Email or Username"
             value={form.emailOrUsername}
             onChange={(v) => setForm({ ...form, emailOrUsername: v })}
-            placeholder="john@example.com or john"
+            placeholder="Email or username"
             error={fieldErrors.emailOrUsername}
           />
           <AuthField

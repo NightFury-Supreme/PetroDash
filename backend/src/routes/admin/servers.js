@@ -56,8 +56,7 @@ router.get('/', requireAdmin, async (req, res) => {
         };
       } catch (error) {
         if (shouldLogPanelErrors) {
-          console.warn(`Failed to enrich admin server ${server._id}:`, error.message);
-        }
+                  }
         // Return server with fallback data and error flag
         return {
           _id: server._id,
@@ -126,8 +125,7 @@ router.get('/:id', requireAdmin, async (req, res) => {
       }
     } catch (panelError) {
       if (shouldLogPanelErrors) {
-        console.warn(`Failed to enrich admin server ${server._id}:`, panelError.message);
-      }
+              }
       unreachable = true;
       error = panelError.message;
     }

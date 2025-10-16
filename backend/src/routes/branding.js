@@ -10,19 +10,18 @@ router.get('/', async (req, res) => {
         if (!settings) {
             return res.json({ 
                 siteName: 'PteroDash', 
-                siteIconUrl: '' 
+                siteIcon: '' 
             });
         }
         
         return res.json({ 
             siteName: settings.siteName || 'PteroDash', 
-            siteIconUrl: settings.siteIconUrl || '' 
+            siteIcon: settings.siteIcon || '' 
         });
     } catch (e) { 
-        console.warn('Failed to fetch branding:', e.message);
-        return res.json({ 
+                return res.json({ 
             siteName: 'PteroDash', 
-            siteIconUrl: '' 
+            siteIcon: '' 
         }); 
     }
 });

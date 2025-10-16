@@ -20,7 +20,7 @@ async function getTransport() {
 
 function wrapHtmlWithBrand({ htmlBody, brand }) {
   const footerText = brand?.footerText || '';
-  const logoUrl = brand?.logoUrl || brand?.siteIconUrl || '';
+  const logoUrl = brand?.logoUrl || brand?.siteIcon || '';
   const siteName = brand?.name || brand?.siteName || '';
   return `
   <div style="font-family:Segoe UI,Arial,sans-serif;background:#0b0f1a;padding:32px;">
@@ -61,7 +61,7 @@ async function sendMail({ to, subject, text, html, attachments }) {
     const settings = await Settings.findOne({}).lean();
     brand = {
       name: settings?.siteName || '',
-      logoUrl: settings?.siteIconUrl || '',
+      logoUrl: settings?.siteIcon || '',
       brandColor: '#0ea5e9',
       footerText: ''
     };
@@ -78,19 +78,19 @@ async function sendMailTemplate({ to, templateKey, data, attachments }) {
   const emailSettings = await Email.getOrCreate();
   
   // Fetch branding from Settings model
-  let siteName = '', siteIconUrl = '';
+  let siteName = '', siteIcon = '';
   try {
     const Settings = require('../models/Settings');
     const settings = await Settings.findOne({}).lean();
     siteName = settings?.siteName || '';
-    siteIconUrl = settings?.siteIconUrl || '';
+    siteIcon = settings?.siteIcon || '';
   } catch (e) {
     console.error('Failed to fetch branding:', e);
   }
   
   const brandColor = '#0ea5e9';
   const footerText = '';
-  const enriched = { siteName, siteIconUrl, logoUrl: siteIconUrl, brandColor, footerText, ...(data || {}) };
+  const enriched = { siteName, siteIcon, logoUrl: siteIcon, brandColor, footerText, ...(data || {}) };
   const { subject, htmlBody, text } = renderTemplateFromEmail(emailSettings, templateKey, enriched);
   return sendMail({ to, subject, text, html: htmlBody, attachments });
 }

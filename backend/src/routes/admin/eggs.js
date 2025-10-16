@@ -9,7 +9,7 @@ const envSchema = z.object({ key: z.string().min(1), value: z.string().min(1) })
 const createSchema = z.object({
     name: z.string().min(1),
     category: z.string().min(1),
-    iconUrl: z.string().url().optional().or(z.literal('')),
+    icon: z.string().optional().or(z.literal('')), // Changed from iconUrl to icon
     pterodactylEggId: z.coerce.number().int().nonnegative(),
     pterodactylNestId: z.coerce.number().int().nonnegative(),
     recommended: z.coerce.boolean().optional().default(false),

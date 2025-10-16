@@ -87,7 +87,7 @@ export function useDashboard() {
         storage: Number(s.limits?.diskMb || 0),
         url: s.clientUrl || '#',
         eggName: s.eggId?.name || undefined,
-        eggIcon: s.eggId?.iconUrl || undefined,
+        eggIcon: s.eggId?.icon || undefined,
         backups: Number(s.limits?.backups || 0),
         databases: Number(s.limits?.databases || 0),
         allocations: Number(s.limits?.allocations || 1),

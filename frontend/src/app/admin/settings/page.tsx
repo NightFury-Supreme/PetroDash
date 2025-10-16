@@ -8,7 +8,7 @@ import { useModal } from '@/components/Modal';
 
 interface Settings {
   siteName: string;
-  siteIconUrl: string;
+  siteIcon: string; // Changed from siteIconUrl to siteIcon
   referrals?: { referrerCoins?: number; referredCoins?: number; customCodeMinInvites?: number };
   auth: {
     emailLogin: boolean;

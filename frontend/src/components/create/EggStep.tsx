@@ -72,9 +72,9 @@ export function EggStep({ eggs, form, violations, onInputChange }: EggStepProps)
               >
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-12 h-12 flex items-center justify-center">
-                  {egg.iconUrl && (
+                  {egg.icon && (
                     <img 
-                      src={egg.iconUrl} 
+                      src={`${process.env.NEXT_PUBLIC_API_BASE}${egg.icon}`} 
                       alt={egg.name}
                       className="w-8 h-8 rounded"
                     />

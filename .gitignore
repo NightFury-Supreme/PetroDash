@@ -123,3 +123,6 @@ docker-compose.override.yml
 # Local development
 .local/
 
+# Uploaded files
+backend/uploads/
+

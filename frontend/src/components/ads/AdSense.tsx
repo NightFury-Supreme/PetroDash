@@ -290,8 +290,7 @@ export function AdSense({
 
     // If publisher ID is invalid, don't show
     if (!validatePublisherId(settings.publisherId)) {
-      console.warn('Invalid AdSense publisher ID format');
-      setShouldShow(false);
+            setShouldShow(false);
       return;
     }
 

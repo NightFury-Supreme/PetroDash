@@ -90,7 +90,7 @@ export default function TemplatesEditor({ templates, brand, token, selectedKey, 
         <button className="px-2 py-1 bg-[#222] text-[#ddd] rounded" onClick={() => insert('<hr/>')}>Divider</button>
       </div>
 
-      <div className="text-xs text-[#999]">Placeholders: {'{{username}} {{verificationLink}} {{siteName}} {{siteIconUrl}} {{logoUrl}} {{brandColor}} {{serverName}} {{planName}} {{ip}} {{userAgent}} {{time}} {{reason}} {{until}} {{title}} {{snippet}}'}</div>
+      <div className="text-xs text-[#999]">Placeholders: {'{{username}} {{verificationLink}} {{siteName}} {{siteIcon}} {{logoUrl}} {{brandColor}} {{serverName}} {{planName}} {{ip}} {{userAgent}} {{time}} {{reason}} {{until}} {{title}} {{snippet}}'}</div>
 
       {key && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-300px)]">

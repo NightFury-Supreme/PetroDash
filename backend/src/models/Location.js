@@ -13,8 +13,8 @@ const PlatformSettingsSchema = new mongoose.Schema(
 const LocationSchema = new mongoose.Schema(
     {
         name: { type: String, required: true },
-        flagUrl: { type: String, default: '' },
-        latencyUrl: { type: String, default: '' },
+        flag: { type: String, default: '' }, // Changed from flagUrl to flag - stores file path
+        latencyUrl: { type: String, default: '' }, // Keep latencyUrl as it's for ping testing, not a file
         serverLimit: { type: Number, default: 0 },
         platform: { type: PlatformSettingsSchema, default: () => ({}) },
     },

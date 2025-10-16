@@ -5,11 +5,9 @@ const APP_KEY = process.env.PTERO_APP_API_KEY;
 
 if (!PANEL_BASE) {
     // Do not throw during module load to allow env tooling to run health route
-    console.warn('PTERO_BASE_URL is not set');
-}
+    }
 if (!APP_KEY) {
-    console.warn('PTERO_APP_API_KEY is not set');
-}
+    }
 
 const api = axios.create({
     baseURL: PANEL_BASE ? `${PANEL_BASE.replace(/\/$/, '')}/api/application` : undefined,
@@ -143,8 +141,7 @@ async function checkUserExists(email, username) {
         return { emailExists, usernameExists };
     } catch (error) {
         // If API is down, assume no conflicts to avoid blocking registration
-        console.warn('Pterodactyl API unavailable for user validation:', error.message);
-        return { emailExists: false, usernameExists: false };
+                return { emailExists: false, usernameExists: false };
     }
 }
 

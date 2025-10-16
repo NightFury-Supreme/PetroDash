@@ -10,7 +10,7 @@ export interface Egg {
   _id: string;
   name: string;
   description: string;
-  iconUrl: string;
+  icon: string; // Changed from iconUrl to icon
   category: string;
   serverCount?: number;
 }
@@ -18,7 +18,7 @@ export interface Egg {
 export interface Location {
   _id: string;
   name: string;
-  flagUrl: string;
+  flag: string; // Changed from flagUrl to flag
   latencyUrl: string;
   serverLimit: number;
   platform: {

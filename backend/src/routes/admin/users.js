@@ -49,7 +49,7 @@ router.get('/:id', requireAdmin, async (req, res) => {
     }
 
     const servers = await Server.find({ owner: user._id })
-      .populate('eggId', 'name iconUrl')
+      .populate('eggId', 'name icon')
       .populate('locationId', 'name')
       .lean();
 
@@ -307,7 +307,7 @@ router.get('/:id/servers/:serverId', requireAdmin, async (req, res) => {
   try {
     const base = (process.env.PTERO_BASE_URL || '').replace(/\/$/, '');
     const server = await Server.findOne({ _id: req.params.serverId, owner: req.params.id })
-      .populate('eggId', 'name iconUrl')
+      .populate('eggId', 'name icon')
       .populate('locationId', 'name')
       .lean();
     if (!server) return res.status(404).json({ error: 'Server not found' });

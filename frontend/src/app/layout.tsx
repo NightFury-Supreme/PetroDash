@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/branding`, { cache: 'no-store' });
     const s = await res.json();
     if (s?.siteName) title = s.siteName;
-    if (s?.siteIconUrl) icons = { icon: s.siteIconUrl } as any;
+    if (s?.siteIcon) icons = { icon: `${process.env.NEXT_PUBLIC_API_BASE}${s.siteIcon}` } as any;
   } catch {}
   
   // Use default logo if no custom icon is set

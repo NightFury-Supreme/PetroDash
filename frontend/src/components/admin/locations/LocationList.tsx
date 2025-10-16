@@ -21,9 +21,9 @@ export default function LocationList({ items }: { items: any[] }) {
         <Link key={location._id} href={`/admin/locations/${location._id}`} className="block p-5 rounded-xl" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              {location.flagUrl ? (
+              {location.flag ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={location.flagUrl} alt={location.name} className="w-8 h-8 rounded object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                <img src={`${process.env.NEXT_PUBLIC_API_BASE}${location.flag}`} alt={location.name} className="w-8 h-8 rounded object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
               ) : (
                 <i className="fas fa-location-dot text-white"></i>
               )}

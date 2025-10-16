@@ -8,6 +8,9 @@ const UserSchema = new mongoose.Schema(
         lastName: { type: String, required: true },
         passwordHash: { type: String }, // Made optional for OAuth users
         // OAuth providers
+        // Profile picture (for email/password users)
+        profilePicture: { type: String, default: '' }, // URL to profile picture
+        
         oauthProviders: {
             discord: {
                 id: { type: String },

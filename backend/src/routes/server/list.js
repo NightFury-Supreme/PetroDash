@@ -16,7 +16,7 @@ router.get('/', requireAuth, async (req, res) => {
 
     let listQuery = Server.find(baseQuery)
       .sort({ createdAt: -1 })
-      .populate('eggId', 'name iconUrl')
+      .populate('eggId', 'name icon')
       .populate('locationId', 'name')
       .lean();
 
@@ -66,7 +66,7 @@ router.get('/', requireAuth, async (req, res) => {
             databases: Number(s.limits?.databases || 0),
             allocations: Number(s.limits?.allocations || 0)
           },
-          eggId: s.eggId || { name: 'Unknown', iconUrl: null },
+          eggId: s.eggId || { name: 'Unknown', icon: null },
           locationId: s.locationId || { name: 'Unknown' },
           clientUrl: identifier ? `${base}/server/${identifier}` : `${base}`,
           createdAt: s.createdAt || new Date(),
@@ -100,7 +100,7 @@ router.get('/', requireAuth, async (req, res) => {
             databases: Number(s.limits?.databases || 0),
             allocations: Number(s.limits?.allocations || 0)
           },
-          eggId: s.eggId || { name: 'Unknown', iconUrl: null },
+          eggId: s.eggId || { name: 'Unknown', icon: null },
           locationId: s.locationId || { name: 'Unknown' },
           clientUrl: `${base}`,
           createdAt: s.createdAt || new Date(),

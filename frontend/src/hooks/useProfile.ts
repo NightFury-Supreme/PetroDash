@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 
 export function useProfile() {
-  const [form, setForm] = useState({ username: '', firstName: '', lastName: '', email: '', coins: 0, joinedAt: '', loginMethod: 'email', oauthProviders: {}, emailVerified: false });
+  const [form, setForm] = useState({ username: '', firstName: '', lastName: '', email: '', coins: 0, joinedAt: '', loginMethod: 'email', oauthProviders: {}, emailVerified: false, profilePicture: '' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +25,8 @@ export function useProfile() {
         joinedAt: d.createdAt || d.joinedAt || '',
         loginMethod: d.loginMethod || 'email',
         oauthProviders: d.oauthProviders || {},
-        emailVerified: Boolean(d.emailVerified)
+        emailVerified: Boolean(d.emailVerified),
+        profilePicture: d.profilePicture || ''
       });
     } catch (e: any) {
       setError(e.message);
@@ -65,7 +66,25 @@ export function useProfile() {
     } catch (e: any) { setError(e.message); } finally { setSaving(false); }
   }, []);
 
-  return { form, setForm, loading, saving, error, success, saveProfile, updateEmail, updatePassword };
+  const updateProfilePicture = useCallback(async (profilePicture: string) => {
+    setSaving(true); setError(null); setSuccess(null);
+    try {
+      const token = localStorage.getItem('auth_token');
+      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/me/profile-picture`, { 
+        method: 'PATCH', 
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, 
+        body: JSON.stringify({ profilePicture }) 
+      });
+      const d = await r.json(); 
+      if (!r.ok) throw new Error(d?.error || d?.message || 'Failed to update profile picture');
+      setForm((f) => ({ ...f, profilePicture: d.profilePicture || '' }));
+      setSuccess('Profile picture updated');
+      // Reload to refresh sidebar
+      await load();
+    } catch (e: any) { setError(e.message); } finally { setSaving(false); }
+  }, [load]);
+
+  return { form, setForm, loading, saving, error, success, saveProfile, updateEmail, updatePassword, updateProfilePicture };
 }
 
 

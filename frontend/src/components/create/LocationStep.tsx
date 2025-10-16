@@ -73,9 +73,9 @@ export function LocationStep({ locations, form, violations, onInputChange }: Loc
               >
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-12 h-12 flex items-center justify-center">
-                  {location.flagUrl && (
+                  {location.flag && (
                     <img 
-                      src={location.flagUrl} 
+                      src={`${process.env.NEXT_PUBLIC_API_BASE}${location.flag}`} 
                       alt={location.name}
                       className="w-8 h-8 rounded"
                     />

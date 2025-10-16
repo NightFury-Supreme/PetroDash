@@ -10,7 +10,7 @@ export default function NewLocationPageContent() {
   const router = useRouter();
   const [form, setForm] = useState({
     name: '',
-    flagUrl: '',
+    flag: '',
     latencyUrl: '',
     serverLimit: '0',
     platformLocationId: '',
@@ -38,7 +38,7 @@ export default function NewLocationPageContent() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           name: form.name,
-          flagUrl: form.flagUrl,
+          flag: form.flag,
           latencyUrl: form.latencyUrl,
           serverLimit: Number(form.serverLimit || 0),
           platform: {

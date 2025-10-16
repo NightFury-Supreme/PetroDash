@@ -38,14 +38,7 @@ router.post('/', requireAdmin, async (req, res) => {
 // Update
 router.patch('/:id', requireAdmin, async (req, res) => {
   try {
-    console.log('Shop update request:', {
-      userId: req.user?._id || req.user?.sub,
-      userRole: req.user?.role,
-      body: req.body,
-      params: req.params
-    });
-
-    // Check if user is properly authenticated
+        // Check if user is properly authenticated
     if (!req.user || (!req.user._id && !req.user.sub)) {
       console.error('User not properly authenticated:', req.user);
       return res.status(401).json({ error: 'User not properly authenticated' });

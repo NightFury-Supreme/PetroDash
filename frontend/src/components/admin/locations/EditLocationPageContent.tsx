@@ -23,7 +23,7 @@ export default function EditLocationPageContent() {
         setForm({
           id: d._id || d.id,
           name: d.name || '',
-          flagUrl: d.flagUrl || '',
+          flag: d.flag || '',
           latencyUrl: d.latencyUrl || '',
           serverLimit: String(d.serverLimit ?? '0'),
           platformLocationId: d.platform?.platformLocationId || '',
@@ -46,7 +46,7 @@ export default function EditLocationPageContent() {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({
         name: form.name,
-        flagUrl: form.flagUrl,
+        flag: form.flag,
         latencyUrl: form.latencyUrl,
         serverLimit: Number(form.serverLimit || 0),
         platform: {

@@ -8,7 +8,7 @@ import { useModal } from '@/components/Modal';
 import { useRouter } from 'next/navigation';
 
 export default function ProfilePage() {
-  const { form, setForm, loading, saving, error, success, saveProfile, updateEmail, updatePassword } = useProfile();
+  const { form, setForm, loading, saving, error, success, saveProfile, updateEmail, updatePassword, updateProfilePicture } = useProfile();
   const { settings: authSettings } = useAuthSettings();
   const modal = useModal();
   const router = useRouter();
@@ -76,9 +76,24 @@ export default function ProfilePage() {
           {/* Summary Card */}
           <div className="rounded-2xl p-6 flex items-center justify-between" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-[#202020] flex items-center justify-center text-white text-xl font-bold">
-                {(form.firstName || form.username || 'U').charAt(0).toUpperCase()}
-              </div>
+              {form.profilePicture ? (
+                <img 
+                  src={form.profilePicture} 
+                  alt={form.username || 'User'} 
+                  className="w-14 h-14 rounded-full object-cover border-2 border-[#404040]"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    const fallback = document.createElement('div');
+                    fallback.className = 'w-14 h-14 rounded-full bg-[#202020] flex items-center justify-center text-white text-xl font-bold';
+                    fallback.textContent = (form.firstName || form.username || 'U').charAt(0).toUpperCase();
+                    e.currentTarget.parentElement?.appendChild(fallback);
+                  }}
+                />
+              ) : (
+                <div className="w-14 h-14 rounded-full bg-[#202020] flex items-center justify-center text-white text-xl font-bold">
+                  {(form.firstName || form.username || 'U').charAt(0).toUpperCase()}
+                </div>
+              )}
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="text-xl font-bold">{`${form.firstName || ''} ${form.lastName || ''}`.trim() || form.username || 'User'}</h2>
@@ -159,6 +174,74 @@ export default function ProfilePage() {
                 <i className="fab fa-discord mr-2"></i>
                 Join Discord Server
               </button>
+            </div>
+          )}
+
+          {/* Profile Picture Section - Only for Email Users */}
+          {form.loginMethod === 'email' && (
+            <div className="rounded-xl p-6" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+              <div className="flex items-start gap-6">
+                <div className="flex-shrink-0">
+                  {form.profilePicture ? (
+                    <img 
+                      src={form.profilePicture} 
+                      alt="Profile" 
+                      className="w-24 h-24 rounded-full object-cover border-2 border-[#404040]"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const fallback = document.createElement('div');
+                        fallback.className = 'w-24 h-24 rounded-full bg-[#202020] flex items-center justify-center text-white text-3xl font-bold';
+                        fallback.textContent = (form.firstName || form.username || 'U').charAt(0).toUpperCase();
+                        e.currentTarget.parentElement?.appendChild(fallback);
+                      }}
+                    />
+                  ) : (
+                    <div className="w-24 h-24 rounded-full bg-[#202020] flex items-center justify-center text-white text-3xl font-bold">
+                      {(form.firstName || form.username || 'U').charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold mb-2">Profile Picture</h3>
+                  <p className="text-sm text-[#AAAAAA] mb-4">
+                    Set a profile picture URL. Must be a valid image link (JPG, PNG, GIF, WEBP, or SVG).
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      placeholder="Enter image URL"
+                      value={form.profilePicture}
+                      onChange={(e) => setForm({ ...form, profilePicture: e.target.value })}
+                      className="input flex-1"
+                    />
+                    <button
+                      onClick={async () => {
+                        try {
+                          await updateProfilePicture(form.profilePicture);
+                        } catch (e) {
+                          // Error already handled by updateProfilePicture
+                        }
+                      }}
+                      disabled={saving}
+                      className="px-4 py-2 rounded-md bg-white text-black border border-[var(--border)] hover:bg-[#f0f0f0] disabled:opacity-50"
+                    >
+                      {saving ? 'Saving...' : 'Save'}
+                    </button>
+                    {form.profilePicture && (
+                      <button
+                        onClick={async () => {
+                          setForm({ ...form, profilePicture: '' });
+                          await updateProfilePicture('');
+                        }}
+                        disabled={saving}
+                        className="px-4 py-2 rounded-md bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20"
+                      >
+                        <i className="fas fa-trash"></i>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -276,7 +359,7 @@ export default function ProfilePage() {
                 <div className="px-6 pb-6 grid grid-cols-1 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-[#CCCCCC] mb-1">New Email</label>
-                    <input type="email" value={emailDraft} onChange={(e) => setEmailDraft(e.target.value)} className="w-full px-3 py-2 rounded-md border border-[var(--border)] bg-[#181818] text-white placeholder-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent" placeholder="you@example.com" />
+                    <input type="email" value={emailDraft} onChange={(e) => setEmailDraft(e.target.value)} className="w-full px-3 py-2 rounded-md border border-[var(--border)] bg-[#181818] text-white placeholder-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent" placeholder="your@email.com" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-[#CCCCCC] mb-1">Current Password</label>

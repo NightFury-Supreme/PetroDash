@@ -39,7 +39,7 @@ export default function EmailSettings() {
         const brandingResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/branding`);
         const brandingData = await brandingResponse.json();
         if (brandingResponse.ok) {
-          setBranding({ name: brandingData?.siteName || '', logoUrl: brandingData?.siteIconUrl || '', brandColor: '#0ea5e9', footerText: '' });
+          setBranding({ name: brandingData?.siteName || '', logoUrl: brandingData?.siteIcon || '', brandColor: '#0ea5e9', footerText: '' });
         }
       } catch {}
     } catch (e: any) {
@@ -55,12 +55,31 @@ export default function EmailSettings() {
     setSettings((prev) => {
       const next = JSON.parse(JSON.stringify(prev || {}));
       const parts = path.split('.');
+      
+      // Prevent prototype pollution
+      if (parts.some(key => key === '__proto__' || key === 'constructor' || key === 'prototype')) {
+        return prev;
+      }
+      
       let cur = next as any;
       for (let i = 0; i < parts.length - 1; i++) {
-        cur[parts[i]] = cur[parts[i]] ?? {};
-        cur = cur[parts[i]];
+        const key = parts[i];
+        // Check each key in the path
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+          return prev;
+        }
+        cur[key] = cur[key] ?? {};
+        cur = cur[key];
       }
-      cur[parts[parts.length - 1]] = value;
+      
+      const finalKey = parts[parts.length - 1];
+      // Final check before assignment
+      if (finalKey !== '__proto__' && finalKey !== 'constructor' && finalKey !== 'prototype') {
+        cur[finalKey] = value;
+      } else {
+        return prev;
+      }
+      
       return next;
     });
     setFieldErrors((prev) => ({ ...prev, [path]: '' }));

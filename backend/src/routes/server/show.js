@@ -44,8 +44,7 @@ const shouldLogPanelErrors = process.env.NODE_ENV === 'development';
       }
     } catch (panelError) {
       if (shouldLogPanelErrors) {
-        console.warn(`Failed to enrich server ${server._id}:`, panelError.message);
-      }
+              }
       unreachable = true;
       error = panelError.message;
       // Set status to unreachable when panel call fails

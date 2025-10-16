@@ -4,11 +4,11 @@ import React, { useState, useEffect } from 'react';
 
 interface BrandingInfo {
   siteName: string;
-  siteIconUrl: string;
+  siteIcon: string;
 }
 
 export default function Footer() {
-  const [branding, setBranding] = useState<BrandingInfo>({ siteName: 'PteroDash', siteIconUrl: '' });
+  const [branding, setBranding] = useState<BrandingInfo>({ siteName: 'PteroDash', siteIcon: '' });
   const currentYear = new Date().getFullYear();
 
   useEffect(() => {
@@ -21,8 +21,7 @@ export default function Footer() {
         }
       } catch (error) {
         // Use default branding if fetch fails
-        console.warn('Failed to fetch branding for footer:', error);
-      }
+              }
     };
 
     fetchBranding();
