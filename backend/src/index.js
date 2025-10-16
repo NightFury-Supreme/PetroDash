@@ -64,7 +64,7 @@ app.use(
         origin: allowedOrigin === '*' ? true : allowedOrigin,
         credentials: true,
         methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
-        allowedHeaders: ['Content-Type','Authorization'],
+        allowedHeaders: ['Content-Type','Authorization','Cache-Control','Pragma','If-Modified-Since','If-None-Match'],
     })
 );
 

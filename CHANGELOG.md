@@ -10,6 +10,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Future features and improvements will be listed here
 
+## [1.0.9] - 16-10-2025
+
+### Added
+- Detection and handling for suspended and unreachable servers in backend API responses
+- Frontend UI states for suspended and unreachable servers:
+  - Dedicated cards/error states in admin, user, and dashboard server lists
+  - Unreachable/suspended handling in server edit pages
+- New `Footer` component integrated into layout
+
+### Changed
+- Surfaced server `suspended`/`unreachable` states consistently across admin and user views
+- Updated `Shell` and layout structure to accommodate new footer and states
+- Refactored `ServerCard` into a subdirectory for better organization
+
+### Fixed
+- Ensured individual server API response sets `status: 'unreachable'` on panel failures
+- Unified status/flag handling between list and detail responses
+
 ## [1.0.8] - 19-09-2025
 
 ### Added
@@ -345,6 +363,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **1.0.9** - Suspended/unreachable handling across API and UI, new Footer, layout updates
 - **1.0.8** - Code-based email system, forgot password system, verfication system, comprehensive security audit, component refactoring
 - **1.0.7** - Complete ticketing system with modular components, Docker installation fixes
 - **1.0.6** - Gift coupons system with user and admin management, security enhancements

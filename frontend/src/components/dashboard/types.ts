@@ -12,6 +12,9 @@ export interface ServerInfo {
   backups?: number;
   databases?: number;
   allocations?: number;
+  unreachable?: boolean;
+  error?: string;
+  suspended?: boolean;
 }
 
 export interface ResourceLimits {

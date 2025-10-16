@@ -7,7 +7,7 @@ import { EditServerForm } from '@/components/server/EditServerForm';
 import { DeleteConfirmationModal } from '@/components/server/DeleteConfirmationModal';
 import { StatusModal } from '@/components/server/StatusModal';
 import { ErrorState } from '@/components/server/ErrorState';
-import { SuspendedServerState } from '@/components/server/SuspendedServerState';
+import { SuspendedState } from '@/components/server/SuspendedState';
 
 export default function EditServerPage() {
   const params = useParams();
@@ -15,7 +15,6 @@ export default function EditServerPage() {
   const id = (params?.id as string) || '';
 
   const {
-    // State
     loading,
     server,
     form,
@@ -30,11 +29,7 @@ export default function EditServerPage() {
     showErrorModal,
     successMessage,
     errorMessage,
-    
-    // Computed values
     isFormValid,
-    
-    // Actions
     setForm,
     setShowDeleteModal,
     setShowSuccessModal,
@@ -43,7 +38,6 @@ export default function EditServerPage() {
     handleDelete,
   } = useServerEdit(id);
 
-  // Show skeleton while loading
   if (loading) {
     return (
       <Shell>
@@ -52,7 +46,6 @@ export default function EditServerPage() {
     );
   }
 
-  // Show error state
   if (error && !server) {
     return (
       <Shell>
@@ -61,11 +54,50 @@ export default function EditServerPage() {
     );
   }
 
-  // Check if server is suspended
-  if (server?.status?.toLowerCase() === 'suspended') {
+  if (server?.suspended || server?.status?.toLowerCase() === 'suspended') {
     return (
       <Shell>
-        <SuspendedServerState />
+        <SuspendedState
+          serverId={server._id}
+          action={
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="btn-white px-8 py-3 text-base font-semibold hover:bg-gray-100 transition-colors"
+            >
+              Back to Dashboard
+            </button>
+          }
+        />
+      </Shell>
+    );
+  }
+
+  if (server?.unreachable || server?.status === 'unreachable') {
+    return (
+      <Shell>
+        <div className="p-6">
+          <div className="text-center py-16 space-y-6">
+            <div className="w-24 h-24 mx-auto bg-[#1a1a1a] rounded-full flex items-center justify-center">
+              <i className="fas fa-exclamation-triangle text-[#AAAAAA] text-3xl"></i>
+            </div>
+            <div className="space-y-4 max-w-lg mx-auto text-center">
+              <h3 className="text-2xl font-bold text-white">Server Unreachable</h3>
+              <p className="text-[#AAAAAA]">This server is unreachable and cannot be edited. Contact admin for assistance.</p>
+              <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4 text-left">
+                <div className="text-[#AAAAAA] text-sm mb-1">Server ID for Support:</div>
+                <div className="text-white font-mono text-sm break-all">{server._id}</div>
+              </div>
+            </div>
+            <div>
+              <button
+                onClick={() => router.push('/dashboard')}
+                className="btn-white px-8 py-3 text-base font-semibold hover:bg-gray-100 transition-colors"
+              >
+                Back to Servers
+              </button>
+            </div>
+          </div>
+        </div>
       </Shell>
     );
   }
@@ -117,7 +149,6 @@ export default function EditServerPage() {
           message={successMessage}
           onClose={() => {
             setShowSuccessModal(false);
-            // Redirect to dashboard after success
             router.push('/dashboard');
           }}
         />

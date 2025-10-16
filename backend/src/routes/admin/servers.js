@@ -3,9 +3,11 @@ const { requireAdmin } = require('../../middleware/auth');
 const Server = require('../../models/Server');
 const { audit } = require('../../middleware/audit');
 const { z } = require('zod');
-const { updateServerBuild } = require('../../services/pterodactyl');
+const { updateServerBuild, getServer } = require('../../services/pterodactyl');
+const { hasServerLimitsChanged } = require('../../utils/security');
 
 const router = express.Router();
+const shouldLogPanelErrors = process.env.NODE_ENV === 'development';
 
 // GET /api/admin/servers - list all servers
 router.get('/', requireAdmin, async (req, res) => {
@@ -17,19 +19,63 @@ router.get('/', requireAdmin, async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
     
-    // Transform the data to match frontend expectations
-    const transformedServers = servers.map(server => ({
-      _id: server._id,
-      name: server.name,
-      status: server.status,
-      userId: server.owner, // Map owner to userId for frontend
-      egg: server.eggId,    // Map eggId to egg for frontend
-      location: server.locationId, // Map locationId to location for frontend
-      limits: server.limits,
-      createdAt: server.createdAt
+    if (!servers || servers.length === 0) {
+      return res.json([]);
+    }
+    
+    const base = (process.env.PTERO_BASE_URL || '').replace(/\/$/, '');
+    const enriched = await Promise.all(servers.map(async (server) => {
+      try {
+        const panelResponse = server.panelServerId ? await getServer(server.panelServerId) : null;
+        const panel = panelResponse?.attributes;
+        const identifier = panel?.identifier || panel?.uuid || null;
+        
+        // Check if server is suspended in panel
+        const suspended = panel?.suspended === true || panel?.suspended === 1;
+        
+        // Determine status based on panel data
+        let status = server.status || 'unknown';
+        if (suspended) {
+          status = 'suspended';
+        } else if (panel) {
+          status = panel?.status || server.status || 'unknown';
+        }
+        
+        // Transform the data to match frontend expectations
+        return {
+          _id: server._id,
+          name: server.name,
+          status: status,
+          userId: server.owner, // Map owner to userId for frontend
+          egg: server.eggId,    // Map eggId to egg for frontend
+          location: server.locationId, // Map locationId to location for frontend
+          limits: server.limits,
+          createdAt: server.createdAt,
+          clientUrl: identifier ? `${base}/server/${identifier}` : `${base}`,
+          suspended: suspended
+        };
+      } catch (error) {
+        if (shouldLogPanelErrors) {
+          console.warn(`Failed to enrich admin server ${server._id}:`, error.message);
+        }
+        // Return server with fallback data and error flag
+        return {
+          _id: server._id,
+          name: server.name,
+          status: 'unreachable',
+          userId: server.owner,
+          egg: server.eggId,
+          location: server.locationId,
+          limits: server.limits,
+          createdAt: server.createdAt,
+          clientUrl: `${base}`,
+          unreachable: true,
+          error: error.message
+        };
+      }
     }));
     
-    res.json(transformedServers);
+    res.json(enriched);
   } catch (error) {
     console.error('Failed to fetch servers:', error);
     res.status(500).json({ error: 'Failed to fetch servers' });
@@ -49,6 +95,43 @@ router.get('/:id', requireAdmin, async (req, res) => {
       return res.status(404).json({ error: 'Server not found' });
     }
     
+    // Try syncing from panel if available; ignore errors to keep endpoint responsive
+    let unreachable = false;
+    let error = null;
+    let suspended = false;
+    try {
+      if (server.panelServerId) {
+        const panelResponse = await getServer(server.panelServerId);
+        const panel = panelResponse?.attributes;
+        const panelBuild = panel?.limits || panel?.build || {};
+        const panelFeatures = panel?.feature_limits || {};
+        
+        // Check if server is suspended in panel
+        suspended = panel?.suspended === true || panel?.suspended === 1;
+        
+        const updatedLimits = {
+          diskMb: Number(panelBuild.disk) ?? server.limits.diskMb,
+          memoryMb: Number(panelBuild.memory) ?? server.limits.memoryMb,
+          cpuPercent: Number(panelBuild.cpu) ?? server.limits.cpuPercent,
+          backups: Number(panelFeatures.backups) ?? server.limits.backups,
+          databases: Number(panelFeatures.databases) ?? server.limits.databases,
+          allocations: Number(panelFeatures.allocations) ?? server.limits.allocations,
+        };
+        // Only write if there is a change
+        const hasChange = hasServerLimitsChanged(server.limits, updatedLimits);
+        if (hasChange) {
+          await Server.updateOne({ _id: server._id }, { $set: { limits: updatedLimits } });
+          Object.assign(server.limits, updatedLimits);
+        }
+      }
+    } catch (panelError) {
+      if (shouldLogPanelErrors) {
+        console.warn(`Failed to enrich admin server ${server._id}:`, panelError.message);
+      }
+      unreachable = true;
+      error = panelError.message;
+    }
+    
     // Transform the data to match frontend expectations
     const transformedServer = {
       _id: server._id,
@@ -58,7 +141,10 @@ router.get('/:id', requireAdmin, async (req, res) => {
       egg: server.eggId,    // Map eggId to egg for frontend
       location: server.locationId, // Map locationId to location for frontend
       limits: server.limits,
-      createdAt: server.createdAt
+      createdAt: server.createdAt,
+      unreachable,
+      error: error || undefined,
+      suspended
     };
     
     res.json(transformedServer);
@@ -71,6 +157,39 @@ router.get('/:id', requireAdmin, async (req, res) => {
 // PATCH /api/admin/servers/:id - update server
 router.patch('/:id', requireAdmin, async (req, res) => {
   try {
+    // First check if server exists and is reachable
+    const server = await Server.findById(req.params.id).lean();
+    if (!server) {
+      return res.status(404).json({ error: 'Server not found' });
+    }
+
+    // Check if server is unreachable or suspended
+    let unreachable = false;
+    let suspended = false;
+    try {
+      if (server.panelServerId) {
+        const panelResponse = await getServer(server.panelServerId);
+        const panel = panelResponse?.attributes;
+        suspended = panel?.suspended === true || panel?.suspended === 1;
+      }
+    } catch (panelError) {
+      unreachable = true;
+    }
+
+    if (unreachable) {
+      return res.status(400).json({ 
+        error: 'Cannot edit unreachable server',
+        details: 'This server is currently unreachable and cannot be edited. Please contact support if this issue persists.'
+      });
+    }
+
+    if (suspended) {
+      return res.status(400).json({ 
+        error: 'Cannot edit suspended server',
+        details: 'This server is suspended in the panel and cannot be edited. Please contact admin for assistance.'
+      });
+    }
+
     const schema = z.object({
       limits: z.object({
         diskMb: z.coerce.number().int().min(0),
@@ -89,11 +208,6 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     
     if (!limits) {
       return res.status(400).json({ error: 'Limits are required' });
-    }
-    
-    const server = await Server.findById(req.params.id);
-    if (!server) {
-      return res.status(404).json({ error: 'Server not found' });
     }
     
     // Check if server is suspended

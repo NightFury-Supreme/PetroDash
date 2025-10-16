@@ -3,6 +3,7 @@
 import React, { useEffect } from "react";
 import Sidebar from "./Sidebar";
 import { ModalProvider } from "./Modal";
+import Footer from "./Footer";
 
 export default function Shell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -30,14 +31,17 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     <ModalProvider>
       <div className="flex min-h-screen bg-[#0F0F0F]">
         <Sidebar />
-        <main 
-          className="flex-1 transition-all duration-300 ease-in-out"
+        <div 
+          className="flex-1 flex flex-col transition-all duration-300 ease-in-out"
           style={{
             marginLeft: 'var(--sidebar-width, 18rem)'
           }}
         >
-          {children}
-        </main>
+          <main className="flex-1">
+            {children}
+          </main>
+          <Footer />
+        </div>
       </div>
     </ModalProvider>
   );

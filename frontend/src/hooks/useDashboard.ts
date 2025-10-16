@@ -80,7 +80,7 @@ export function useDashboard() {
       const transformed: ServerInfo[] = (data || []).map((s: any) => ({
         _id: s._id,
         name: s.name,
-        status: s.status === 'active' ? 'active' : s.status === 'creating' ? 'creating' : 'error',
+        status: s.status === 'active' ? 'active' : s.status === 'creating' ? 'creating' : s.status === 'unreachable' ? 'unreachable' : s.status === 'suspended' ? 'suspended' : 'error',
         location: s.locationId?.name || 'Unknown',
         cpu: Number(s.limits?.cpuPercent || 0),
         memory: Number(s.limits?.memoryMb || 0),
@@ -91,6 +91,9 @@ export function useDashboard() {
         backups: Number(s.limits?.backups || 0),
         databases: Number(s.limits?.databases || 0),
         allocations: Number(s.limits?.allocations || 1),
+        unreachable: s.unreachable || false,
+        error: s.error || undefined,
+        suspended: s.suspended || false,
       }));
       
       setServers(transformed);

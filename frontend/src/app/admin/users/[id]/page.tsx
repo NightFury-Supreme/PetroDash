@@ -2,7 +2,9 @@
 import Shell from '@/components/Shell';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import ServerCard from '@/components/ServerCard';
+import ServerCard from '@/components/ServerCard/ServerCard';
+import SuspendedServerCard from '@/components/ServerCard/SuspendedServerCard';
+import UnreachableServerCard from '@/components/ServerCard/UnreachableServerCard';
 import AdminUserDetailSkeleton from '@/components/skeletons/admin/user/AdminUserDetailSkeleton';
 import UserSummaryCard from '@/components/admin/users/UserSummaryCard';
 import { useModal } from '@/components/Modal';
@@ -189,6 +191,43 @@ export default function AdminUserDetailPage() {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {data.servers.map((s: any) => {
+                      // Check if server is suspended
+                      if (s.suspended || s.status === 'suspended') {
+                        return (
+                          <SuspendedServerCard
+                            key={s._id}
+                            server={{
+                              _id: s._id,
+                              name: s.name,
+                              status: s.status,
+                              location: s.locationId?.name || 'Unknown',
+                              cpu: s.limits?.cpuPercent || 0,
+                              memory: s.limits?.memoryMb || 0,
+                              storage: s.limits?.diskMb || 0,
+                              url: '#',
+                              eggName: s.eggId?.name,
+                              eggIcon: s.eggId?.iconUrl,
+                              backups: s.limits?.backups || 0,
+                              databases: s.limits?.databases || 0,
+                              allocations: s.limits?.allocations || 0,
+                              suspended: true
+                            }}
+                          />
+                        );
+                      }
+
+                      // Check if server is unreachable
+                      if (s.unreachable || s.status === 'unreachable') {
+                        return (
+                          <UnreachableServerCard
+                            key={s._id}
+                            serverId={s._id}
+                            serverName={s.name}
+                            className="h-full"
+                          />
+                        );
+                      }
+
                       const transformedServer = {
                         _id: s._id,
                         name: s.name,

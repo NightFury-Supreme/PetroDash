@@ -24,30 +24,57 @@ router.get('/:id', requireAuth, validateObjectId('id'), async (req, res) => {
     const server = await Server.findOne({ _id: req.params.id, owner: req.user.sub }).lean();
     if (!server) return res.status(404).json({ error: 'Server not found' });
 
-    // Try syncing from panel if available; ignore errors to keep endpoint responsive
+    let unreachable = false;
+    let suspended = Boolean(server.status && server.status.toLowerCase() === 'suspended');
+    let errorMessage = null;
+
+    // Try syncing from panel if available; capture failures so we can surface unreachable state
     try {
       if (server.panelServerId) {
-        const panel = await getPanelServer(server.panelServerId);
+        const panelResponse = await getPanelServer(server.panelServerId);
+        const panel = panelResponse?.attributes;
         const panelBuild = panel?.limits || panel?.build || {};
         const panelFeatures = panel?.feature_limits || {};
+
+        suspended = suspended || panel?.suspended === true || panel?.suspended === 1;
+        if (panel?.status && !suspended) {
+          server.status = panel.status;
+        }
+
         const updatedLimits = {
-          diskMb: Number(panelBuild.disk) ?? server.limits.diskMb,
-          memoryMb: Number(panelBuild.memory) ?? server.limits.memoryMb,
-          cpuPercent: Number(panelBuild.cpu) ?? server.limits.cpuPercent,
+          diskMb: Number(panelBuild.disk ?? panelBuild?.diskMb) ?? server.limits.diskMb,
+          memoryMb: Number(panelBuild.memory ?? panelBuild?.memoryMb) ?? server.limits.memoryMb,
+          cpuPercent: Number(panelBuild.cpu ?? panelBuild?.cpuPercent) ?? server.limits.cpuPercent,
           backups: Number(panelFeatures.backups) ?? server.limits.backups,
           databases: Number(panelFeatures.databases) ?? server.limits.databases,
           allocations: Number(panelFeatures.allocations) ?? server.limits.allocations,
         };
-        // Only write if there is a change
+
         const hasChange = hasServerLimitsChanged(server.limits, updatedLimits);
         if (hasChange) {
           await Server.updateOne({ _id: server._id }, { $set: { limits: updatedLimits } });
           Object.assign(server.limits, updatedLimits);
         }
       }
-    } catch (_) {}
+    } catch (panelError) {
+      unreachable = true;
+      const detail = panelError?.response?.data?.errors?.[0]?.detail;
+      errorMessage = detail || panelError?.message || 'Pterodactyl request failed';
+      if (!suspended) {
+        server.status = 'unreachable';
+      }
+    }
 
-    return res.json(server);
+    const responsePayload = {
+      ...server,
+      status: server.status,
+      unreachable,
+      suspended,
+      error: errorMessage || undefined,
+    };
+
+    res.set('Cache-Control', 'no-store');
+    return res.json(responsePayload);
   } catch (e) {
     return res.status(500).json({ error: 'Failed to load server' });
   }
@@ -85,17 +112,34 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
     // Find server and verify ownership
     const server = await Server.findOne({ _id: serverId, owner: userId });
     if (!server) {
-      console.log(`[UPDATE_SERVER] Server not found: ${serverId} for user: ${userId}`);
       return res.status(404).json({ 
         error: 'Server not found',
         details: 'The specified server does not exist or you do not have permission to access it'
       });
     }
 
+    // Check suspended state against local and panel data
+    let panelServerResponse = null;
+    let panelSuspended = false;
+
+    if (server.panelServerId) {
+      try {
+        panelServerResponse = await getPanelServer(server.panelServerId);
+        const panelAttributes = panelServerResponse?.attributes;
+        panelSuspended = Boolean(
+          panelAttributes?.suspended === true ||
+          panelAttributes?.suspended === 1 ||
+          panelAttributes?.status === 'suspended'
+        );
+      } catch (_) {
+        // Ignore panel lookup failures here; unreachable handling occurs later when attempting updates.
+      }
+    }
+
     // Check server status
     const serverStatus = server.status?.toLowerCase();
-    if (serverStatus === 'suspended') {
-      console.log(`[UPDATE_SERVER] Attempted to update suspended server: ${serverId}`);
+    const locallySuspended = serverStatus === 'suspended' || server.suspended === true;
+    if (locallySuspended || panelSuspended) {
       return res.status(403).json({ 
         error: 'Cannot update suspended server', 
         details: 'Server is suspended. Contact staff for assistance.',
@@ -105,7 +149,6 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
     }
 
     if (serverStatus === 'installing' || serverStatus === 'transferring') {
-      console.log(`[UPDATE_SERVER] Attempted to update server during operation: ${serverId}, status: ${serverStatus}`);
       return res.status(409).json({ 
         error: 'Server is busy', 
         details: `Cannot update server while it is ${serverStatus}. Please wait for the operation to complete.`,
@@ -118,7 +161,6 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
     const User = require('../../models/User');
     const user = await User.findById(userId);
     if (!user) {
-      console.log(`[UPDATE_SERVER] User not found: ${userId}`);
       return res.status(404).json({ 
         error: 'User not found',
         details: 'User account could not be located'
@@ -148,10 +190,7 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
               external_id: user._id.toString() 
             });
             
-            console.log(`[UPDATE_SERVER] Successfully renamed server ${serverId} on Pterodactyl panel`);
           } catch (panelError) {
-            console.error(`[UPDATE_SERVER] Failed to rename server ${serverId} on Pterodactyl panel:`, panelError);
-            console.error(`[UPDATE_SERVER] Panel rename error response:`, panelError?.response?.data);
             return res.status(502).json({ 
               error: 'Panel rename failed', 
               details: panelError?.response?.data?.errors?.[0]?.detail || panelError.message,
@@ -247,11 +286,10 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
           const { updateServerBuild, updateServerDetails } = require('../../services/pterodactyl');
           
           // Get current server details to get the allocation ID
-          const { getServer } = require('../../services/pterodactyl');
-          const panelServerResponse = await getServer(server.panelServerId);
-          
+          if (!panelServerResponse) {
+            panelServerResponse = await getPanelServer(server.panelServerId);
+          }
 
-          
           const panelServer = panelServerResponse?.attributes;
           const allocations = panelServerResponse?.relationships?.allocations?.data;
           
@@ -265,7 +303,6 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
           }
           
           if (!allocationId) {
-            console.error(`[UPDATE_SERVER] Could not find allocation ID for server ${serverId}`);
             throw new Error('Could not find allocation ID for server. Server may not have any allocations.');
           }
           
@@ -284,10 +321,7 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
             backups: newLimits.backups,
           });
           
-          console.log(`[UPDATE_SERVER] Successfully updated server ${serverId} on Pterodactyl panel`);
         } catch (panelError) {
-          console.error(`[UPDATE_SERVER] Failed to update server ${serverId} on Pterodactyl panel:`, panelError);
-          console.error(`[UPDATE_SERVER] Panel error response:`, panelError?.response?.data);
           return res.status(502).json({ 
             error: 'Panel update failed', 
             details: panelError?.response?.data?.errors?.[0]?.detail || panelError.message,
@@ -312,8 +346,6 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
     });
 
     const responseTime = Date.now() - startTime;
-    console.log(`[UPDATE_SERVER] Successfully updated server ${serverId} in ${responseTime}ms`);
-
     return res.json({ 
       server,
       message: 'Server updated successfully',
@@ -321,7 +353,6 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
     });
 
   } catch (error) {
-    console.error(`[UPDATE_SERVER] Unexpected error:`, error);
     return res.status(500).json({ 
       error: 'Internal server error',
       details: 'An unexpected error occurred while updating the server',

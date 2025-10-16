@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useModal } from '@/components/Modal';
 import Shell from '@/components/Shell';
-import ServerCard from '@/components/ServerCard';
+import ServerCard from '@/components/ServerCard/ServerCard';
 import ServersHeader from '@/components/admin/servers/ServersHeader';
 import ServersGrid from '@/components/admin/servers/ServersGrid';
 import AdminServersSkeleton from '@/components/skeletons/admin/servers/AdminServersSkeleton';

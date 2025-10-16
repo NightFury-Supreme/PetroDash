@@ -106,13 +106,9 @@ export default function ServerCard({
       
       {/* Bottom metadata section */}
       <div className="p-4 space-y-4">
-        {/* Server name and status */}
+        {/* Server name */}
         <div className="flex items-start justify-between">
           <h3 className="text-lg font-bold text-white flex-1 pr-3">{server.name}</h3>
-          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(server.status)}`}>
-            <i className={`fas ${getStatusIcon(server.status)} mr-1`}></i>
-            {server.status}
-          </span>
         </div>
         
         {/* Server info grid */}

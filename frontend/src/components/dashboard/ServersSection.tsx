@@ -1,6 +1,8 @@
 "use client";
 
-import ServerCard from "../ServerCard";
+import ServerCard from "../ServerCard/ServerCard";
+import UnreachableServerCard from "../ServerCard/UnreachableServerCard";
+import SuspendedServerCard from "../ServerCard/SuspendedServerCard";
 import { ServerInfo } from "./types";
 
 interface ServersSectionProps {
@@ -32,6 +34,28 @@ export function ServersSection({ servers, onDelete, deleting }: ServersSectionPr
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
           {servers.map((server) => {
+            // Check if server is suspended
+            if (server.suspended || server.status === 'suspended') {
+              return (
+                <SuspendedServerCard
+                  key={server._id}
+                  server={server}
+                />
+              );
+            }
+
+            // Check if server is unreachable
+            if (server.unreachable || server.status === 'unreachable') {
+              return (
+                <UnreachableServerCard
+                  key={server._id}
+                  serverId={server._id}
+                  serverName={server.name}
+                  className="h-full"
+                />
+              );
+            }
+
             // Transform server data to match ServerCard format
             const transformedServer = {
               _id: server._id,

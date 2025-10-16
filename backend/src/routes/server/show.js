@@ -6,6 +6,7 @@ const { getServer: getPanelServer } = require('../../services/pterodactyl');
 const { hasServerLimitsChanged } = require('../../utils/security');
 
 const router = express.Router();
+const shouldLogPanelErrors = process.env.NODE_ENV === 'development';
 
     // GET /api/servers/:id
     router.get('/', requireAuth, createRateLimiter(60, 60 * 1000), async (req, res) => {
@@ -14,12 +15,18 @@ const router = express.Router();
     if (!server) return res.status(404).json({ error: 'Server not found' });
 
     // Try syncing from panel if available; ignore errors to keep endpoint responsive
+    let unreachable = false;
+    let error = null;
+    let suspended = false;
     try {
       if (server.panelServerId) {
         const panelResponse = await getPanelServer(server.panelServerId);
         const panel = panelResponse?.attributes;
         const panelBuild = panel?.limits || panel?.build || {};
         const panelFeatures = panel?.feature_limits || {};
+        
+        // Check if server is suspended in panel or local database
+        suspended = panel?.suspended === true || panel?.suspended === 1 || panel?.status === 'suspended' || server.status === 'suspended';
         const updatedLimits = {
           diskMb: Number(panelBuild.disk) ?? server.limits.diskMb,
           memoryMb: Number(panelBuild.memory) ?? server.limits.memoryMb,
@@ -35,9 +42,23 @@ const router = express.Router();
           Object.assign(server.limits, updatedLimits);
         }
       }
-    } catch (_) {}
+    } catch (panelError) {
+      if (shouldLogPanelErrors) {
+        console.warn(`Failed to enrich server ${server._id}:`, panelError.message);
+      }
+      unreachable = true;
+      error = panelError.message;
+      // Set status to unreachable when panel call fails
+      server.status = 'unreachable';
+    }
 
-    return res.json(server);
+    const response = {
+      ...server,
+      unreachable,
+      error: error || undefined,
+      suspended
+    };
+    return res.json(response);
   } catch (e) {
     return res.status(500).json({ error: 'Failed to load server' });
   }

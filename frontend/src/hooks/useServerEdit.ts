@@ -18,6 +18,9 @@ interface Server {
   panelServerId: string;
   createdAt: string;
   updatedAt: string;
+  unreachable?: boolean;
+  error?: string;
+  suspended?: boolean;
 }
 
 interface UserLimits {
@@ -132,8 +135,6 @@ export function useServerEdit(serverId: string): UseServerEditReturn {
         setUserLimits(me?.resources || null);
         setUsage(usageData || {});
         setServer(serverData);
-        
-
 
         
         const newForm = {

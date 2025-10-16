@@ -33,18 +33,31 @@ router.get('/', requireAuth, async (req, res) => {
       return res.json([]);
     }
     
-    const base = (process.env.PTERO_BASE_URL || '').replace(/\/$/, '');
+  const base = (process.env.PTERO_BASE_URL || '').replace(/\/$/, '');
+  let deletedCount = 0;
+  const { writeAudit } = require('../../middleware/audit');
     const enriched = await Promise.all((list || []).map(async (s) => {
       try {
         const panelResponse = s.panelServerId ? await getServer(s.panelServerId) : null;
         const panel = panelResponse?.attributes;
         const identifier = panel?.identifier || panel?.uuid || null;
         
+        // Check if server is suspended in panel
+        const suspended = panel?.suspended === true || panel?.suspended === 1;
+        
+        // Determine status based on panel data
+        let status = s.status || 'unknown';
+        if (suspended) {
+          status = 'suspended';
+        } else if (panel) {
+          status = panel?.status || s.status || 'unknown';
+        }
+        
         // Ensure consistent data structure
         return {
           _id: s._id,
           name: s.name || 'Unnamed Server',
-          status: s.status || 'unknown',
+          status: status,
           limits: {
             diskMb: Number(s.limits?.diskMb || 0),
             memoryMb: Number(s.limits?.memoryMb || 0),
@@ -56,15 +69,29 @@ router.get('/', requireAuth, async (req, res) => {
           eggId: s.eggId || { name: 'Unknown', iconUrl: null },
           locationId: s.locationId || { name: 'Unknown' },
           clientUrl: identifier ? `${base}/server/${identifier}` : `${base}`,
-          createdAt: s.createdAt || new Date()
+          createdAt: s.createdAt || new Date(),
+          suspended: suspended
         };
       } catch (error) {
-        console.error(`Failed to enrich server ${s._id}:`, error.message);
-        // Return server with fallback data
+        const panelStatus = error?.response?.status;
+        const panelDetail = error?.response?.data?.errors?.[0]?.detail || '';
+        const notFound = panelStatus === 404 || panelDetail.includes('assigned pterodactyl server was not found');
+        if (notFound) {
+          deletedCount += 1;
+          await Server.deleteOne({ _id: s._id });
+          writeAudit(req, 'server.delete', 'server', s._id.toString(), {
+            reason: 'panel_not_found',
+            panelServerId: s.panelServerId,
+            panelStatus,
+            panelDetail
+          });
+          return null;
+        }
+        // Return server with fallback data and error flag
         return {
           _id: s._id,
           name: s.name || 'Unnamed Server',
-          status: s.status || 'unknown',
+          status: 'unreachable',
           limits: {
             diskMb: Number(s.limits?.diskMb || 0),
             memoryMb: Number(s.limits?.memoryMb || 0),
@@ -76,17 +103,23 @@ router.get('/', requireAuth, async (req, res) => {
           eggId: s.eggId || { name: 'Unknown', iconUrl: null },
           locationId: s.locationId || { name: 'Unknown' },
           clientUrl: `${base}`,
-          createdAt: s.createdAt || new Date()
+          createdAt: s.createdAt || new Date(),
+          unreachable: true,
+          error: error.message
         };
       }
     }));
+    const filtered = enriched.filter(Boolean);
+    if (deletedCount > 0 && paginate) {
+      // Adjust total to reflect servers removed during enrichment
+      page = Math.max(1, Math.min(page, Math.ceil(Math.max(total - deletedCount, 0) / pageSize) || 1));
+    }
     
     if (paginate) {
-      return res.json({ data: enriched, meta: { total, page, pageSize } });
+      return res.json({ data: filtered, meta: { total: Math.max(total - deletedCount, 0), page, pageSize } });
     }
-    return res.json(enriched);
+    return res.json(filtered);
   } catch (e) {
-    console.error('List servers failed:', e.message);
     return res.status(500).json({ error: 'Failed to list servers' });
   }
 });
