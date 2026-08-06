@@ -19,6 +19,7 @@ export type Gift = {
   validFrom?: string;
   validUntil?: string;
   enabled?: boolean;
+  source?: 'system' | 'user';
 };
 
 export default function GiftEditor({ value, onChange, onSave, saving, plans }: { value: Gift; onChange: (v: Gift) => void; onSave: () => void; saving?: boolean; plans?: Array<{ _id: string; name: string; pricePerMonth?: number }> }) {

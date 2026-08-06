@@ -112,7 +112,7 @@ export default function AdminTicketsPage() {
               {tab.charAt(0).toUpperCase()+tab.slice(1)}
               {tab!=='deleted' && (
                 <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-black/20 border border-[var(--border)] text-[var(--muted)]">
-                  {tickets.filter(t=> (catFilter && t.category!==catFilter) ? false : (tab==='deleted' ? (t as any).deletedByUser : ((t as any).deletedByUser ? false : (tab==='all' ? true : t.status===tab)))).length}
+                  {tickets.filter(t=> (catFilter && t.category!==catFilter) ? false : (tab==='deleted' ? (t as any).deletedByUser : ((t as any).deletedByUser ? false : (tab==='all' ? true : t.status===(tab as string))))) .length}
                 </span>
               )}
             </button>
