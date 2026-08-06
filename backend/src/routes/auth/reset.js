@@ -1,5 +1,7 @@
 const express = require('express');
+// eslint-disable-next-line unused-imports/no-unused-vars
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const { z } = require('zod');
 const User = require('../../models/User');
 const VerificationToken = require('../../models/VerificationToken');
@@ -37,7 +39,8 @@ router.post('/reset', verificationRateLimit, async (req, res) => {
     }
 
     const codeHash = hashString(code);
-    const vt = await VerificationToken.findOne({ tokenHash: codeHash, purpose: 'password_reset', usedAt: null });
+    // Scope lookup to this user to prevent cross-user token use
+    const vt = await VerificationToken.findOne({ tokenHash: codeHash, purpose: 'password_reset', usedAt: null, userId: user._id });
     if (!vt) return res.status(400).json({ error: 'Invalid or expired code' });
     
     // Check if token is locked due to too many attempts
@@ -63,12 +66,8 @@ router.post('/reset', verificationRateLimit, async (req, res) => {
       });
     }
 
-    // Update password using model helper if exists; else set and save
-    if (typeof user.setPassword === 'function') {
-      await user.setPassword(newPassword);
-    } else {
-      user.password = newPassword; // assume pre-save hook hashes
-    }
+    // Hash the new password with bcrypt before saving
+    user.passwordHash = await bcrypt.hash(newPassword, 12);
     await user.save();
 
     // Mark token as used
@@ -84,6 +83,7 @@ router.post('/reset', verificationRateLimit, async (req, res) => {
     });
 
     return res.json({ ok: true });
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
     // Error logged silently for production
     return res.status(500).json({ error: 'Failed to reset password' });

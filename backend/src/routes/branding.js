@@ -10,18 +10,22 @@ router.get('/', async (req, res) => {
         if (!settings) {
             return res.json({ 
                 siteName: 'PteroDash', 
-                siteIcon: '' 
+                siteIcon: '',
+                currency: 'USD'
             });
         }
         
         return res.json({ 
             siteName: settings.siteName || 'PteroDash', 
-            siteIcon: settings.siteIcon || '' 
+            siteIcon: settings.siteIcon || '',
+            currency: settings.localization?.currency || 'USD'
         });
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (e) { 
                 return res.json({ 
             siteName: 'PteroDash', 
-            siteIcon: '' 
+            siteIcon: '',
+            currency: 'USD'
         }); 
     }
 });

@@ -7,9 +7,9 @@ services:
     container_name: pterodash-mongodb
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password123
-      MONGO_INITDB_DATABASE: pterodash
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:?MONGO_INITDB_ROOT_PASSWORD is required}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE:-pterodash}
     ports:
       - "27017:27017"
     volumes:
@@ -34,11 +34,11 @@ services:
     environment:
       NODE_ENV: production
       PORT: 4000
-      MONGODB_URI: mongodb://admin:password123@mongodb:27017/pterodash?authSource=admin
-      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
-      PTERO_BASE_URL: http://your-pterodactyl-panel:8080
-      PTERO_APP_API_KEY: your-pterodactyl-api-key
-      FRONTEND_URL: http://localhost:3000
+      MONGODB_URI: ${MONGODB_URI:?MONGODB_URI is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      PTERO_BASE_URL: ${PTERO_BASE_URL:?PTERO_BASE_URL is required}
+      PTERO_APP_API_KEY: ${PTERO_APP_API_KEY:?PTERO_APP_API_KEY is required}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
     ports:
       - "4000:4000"
     depends_on:

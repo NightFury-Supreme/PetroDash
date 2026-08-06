@@ -44,6 +44,7 @@ export default function ForgotCard() {
         const data = await res.json().catch(() => ({}));
         setError(data.error || "Failed to send reset code");
       }
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_e) {
       setError("Failed to send reset code");
     } finally {
@@ -72,6 +73,7 @@ export default function ForgotCard() {
         const data = await res.json().catch(() => ({}));
         setError(data.error || "Failed to reset password");
       }
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_e) {
       setError("Failed to reset password");
     } finally {
@@ -98,6 +100,7 @@ export default function ForgotCard() {
         const data = await res.json().catch(() => ({}));
         setError(data.error || "Failed to resend code");
       }
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_e) {
       setError("Failed to resend code");
     } finally {

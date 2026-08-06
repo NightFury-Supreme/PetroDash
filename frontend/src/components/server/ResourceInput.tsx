@@ -21,8 +21,10 @@ interface ResourceInputProps {
 }
 
 export function ResourceInput({
+  // eslint-disable-next-line unused-imports/no-unused-vars
   resourceKey,
   label,
+  // eslint-disable-next-line unused-imports/no-unused-vars
   unit,
   min,
   icon,

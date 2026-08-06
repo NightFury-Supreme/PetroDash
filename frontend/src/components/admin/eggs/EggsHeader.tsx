@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 
+// eslint-disable-next-line unused-imports/no-unused-vars
 export default function EggsHeader({ total }: { total: number }) {
   return (
     <div className="flex items-center justify-between">

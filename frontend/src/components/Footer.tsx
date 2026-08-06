@@ -19,6 +19,7 @@ export default function Footer() {
         if (data?.siteName) {
           setBranding(data);
         }
+      // eslint-disable-next-line unused-imports/no-unused-vars
       } catch (error) {
         // Use default branding if fetch fails
               }

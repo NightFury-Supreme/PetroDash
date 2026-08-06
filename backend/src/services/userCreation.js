@@ -44,6 +44,19 @@ class UserCreationService {
     // Hash password if provided (for normal registration)
     const passwordHash = password ? await bcrypt.hash(password, 12) : undefined;
 
+    // Generate a unique referral code for the new user
+    // Format: first 6 chars of username (uppercased) + 4 random alphanumeric chars
+    // Retry up to 5 times to guarantee uniqueness
+    const crypto = require('crypto');
+    let referralCode = null;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const base = username.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+      const suffix = crypto.randomBytes(3).toString('hex').toUpperCase(); // 6 hex chars
+      const candidate = `${base}${suffix}`.slice(0, 12); // max 12 chars total
+      const taken = await User.exists({ referralCode: candidate });
+      if (!taken) { referralCode = candidate; break; }
+    }
+
     // Create user in database
     const user = await User.create({
       email,
@@ -52,6 +65,7 @@ class UserCreationService {
       lastName,
       passwordHash,
       oauthProviders: oauthProviders || {},
+      referralCode, // always set at creation
       coins: Number(defaults?.coins || 0),
       resources: {
         diskMb: Number(defaults?.diskMb ?? 5120),
@@ -103,7 +117,7 @@ class UserCreationService {
     if (!ref || typeof ref !== 'string') return;
 
     try {
-      const referrer = await User.findOne({ referralCode: ref.trim().toUpperCase() });
+      const referrer = await User.findOne({ referralCode: ref.trim().toUpperCase() }).select('_id').lean();
       if (!referrer || String(referrer._id) === String(user._id)) return;
 
       // Load settings for coin rewards
@@ -111,20 +125,28 @@ class UserCreationService {
       const referrerCoins = Number(settings?.referrals?.referrerCoins ?? Number(process.env.REFERRAL_REWARD_COINS || 50));
       const referredCoins = Number(settings?.referrals?.referredCoins ?? Number(process.env.REFERRAL_REFERRED_COINS || 25));
 
-      // Set referral relationship
+      // Set referral relationship on the new user and award coins atomically
+      await User.updateOne(
+        { _id: user._id },
+        { 
+          $set: { referredBy: referrer._id },
+          $inc: { coins: referredCoins }
+        }
+      );
       user.referredBy = referrer._id;
-      await user.save();
-
-      // Update referrer stats and coins
-      referrer.referralStats = referrer.referralStats || { referredCount: 0, coinsEarned: 0 };
-      referrer.referralStats.referredCount = Number(referrer.referralStats.referredCount || 0) + 1;
-      referrer.referralStats.coinsEarned = Number(referrer.referralStats.coinsEarned || 0) + referrerCoins;
-      referrer.coins = Number(referrer.coins || 0) + referrerCoins;
-      await referrer.save();
-
-      // Award referred user coins
       user.coins = Number(user.coins || 0) + referredCoins;
-      await user.save();
+
+      // Update referrer stats and coins atomically
+      await User.updateOne(
+        { _id: referrer._id },
+        {
+          $inc: {
+            'referralStats.referredCount': 1,
+            'referralStats.coinsEarned': referrerCoins,
+            coins: referrerCoins
+          }
+        }
+      );
     } catch (error) {
       console.error('Failed to handle referral rewards:', error);
     }

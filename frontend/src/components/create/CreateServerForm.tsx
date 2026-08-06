@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useModal } from '../Modal';
 import { usePing } from '../../hooks/usePing';
@@ -19,7 +19,6 @@ import { EggStep } from './EggStep';
 import { LocationStep } from './LocationStep';
 import { ResourcesStep } from './ResourcesStep';
 import { NavigationButtons } from './NavigationButtons';
-import { CreateServerSkeleton } from '../Skeleton';
 
 const steps: StepInfo[] = [
   { id: 'name', title: 'Details', description: 'Enter server details' },
@@ -53,6 +52,7 @@ export function CreateServerForm({ eggs, locations, remaining }: CreateServerFor
   });
   const [violations, setViolations] = useState<Violations>({});
   const [submitting, setSubmitting] = useState(false);
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const [error, setError] = useState<string | null>(null);
 
   // Use ping hook for real-time ping updates

@@ -10,6 +10,7 @@ export function ReferralsCard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const [saving, setSaving] = useState(false);
   const modal = useModal();
 
@@ -35,6 +36,7 @@ export function ReferralsCard() {
       await navigator.clipboard.writeText(data.link);
       setCopied(true);
       setTimeout(() => setCopied(false), 1200);
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_) {}
   };
 
@@ -110,6 +112,7 @@ export function ReferralsCard() {
                     const d = await r.json();
                     if (!r.ok) throw new Error(d?.error || 'Failed to set code');
                     setData((prev) => prev ? { ...prev, code: d.code, link: `${origin}${encodeURIComponent(d.code)}` } : prev);
+                  // eslint-disable-next-line unused-imports/no-unused-vars
                   } catch (_) {
                   } finally {
                     setSaving(false);

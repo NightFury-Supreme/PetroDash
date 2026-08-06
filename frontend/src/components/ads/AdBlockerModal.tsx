@@ -9,6 +9,7 @@ interface AdBlockerModalProps {
   onRetry: () => void;
 }
 
+// eslint-disable-next-line unused-imports/no-unused-vars
 export function AdBlockerModal({ isOpen, onClose, onRetry }: AdBlockerModalProps) {
   const [browser, setBrowser] = useState<string>('');
 

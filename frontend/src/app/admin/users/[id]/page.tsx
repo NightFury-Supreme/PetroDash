@@ -28,47 +28,67 @@ export default function AdminUserDetailPage() {
   const [referralCode, setReferralCode] = useState<string>('');
   const [loginMethod, setLoginMethod] = useState<string>('email');
   const [oauthProviders, setOauthProviders] = useState<any>({});
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const [ban, setBan] = useState<any>({ isBanned: false, reason: '', until: null });
   const [showBanModal, setShowBanModal] = useState(false);
   const [banForm, setBanForm] = useState({ reason: '', durationMinutes: undefined as number | undefined });
   const [banning, setBanning] = useState(false);
   const [unbanning, setUnbanning] = useState(false);
 
-  useEffect(() => {
+  const reloadData = async () => {
     const token = localStorage.getItem('auth_token');
     if (!token) return;
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${id}`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(async (r) => { const d = await r.json(); if (!r.ok) throw new Error(d?.error || 'Failed'); return d; })
-      .then((d) => { 
-        setData(d); 
-        setRole(d?.user?.role || 'user'); 
-        setResources(d?.user?.resources || {}); 
-        setCoins(Number(d?.user?.coins || 0)); 
-        setPlans(d?.plans || []); 
-        setReferralCode(d?.referral?.code || ''); 
-        setLoginMethod(d?.loginMethod || 'email');
-        setOauthProviders(d?.oauthProviders || {});
-        setBan(d?.ban || { isBanned: false, reason: '', until: null });
-      })
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
+    try {
+      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d?.error || 'Failed');
+      setData(d); 
+      setRole(d?.user?.role || 'user'); 
+      setResources(d?.user?.resources || {}); 
+      setCoins(Number(d?.user?.coins || 0)); 
+      setPlans(d?.plans || []); 
+      setReferralCode(d?.referral?.code || ''); 
+      setLoginMethod(d?.loginMethod || 'email');
+      setOauthProviders(d?.oauthProviders || {});
+      setBan(d?.ban || { isBanned: false, reason: '', until: null });
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    reloadData();
     // Load list of available plans
     fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/plans`)
       .then(async (r) => { const d = await r.json(); if (r.ok) setAllPlans(d || []); })
       .catch(() => {});
   }, [id]);
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const usage = useMemo(() => data?.usage || { diskMb: 0, memoryMb: 0, cpuPercent: 0, backups: 0, databases: 0, allocations: 0 }, [data]);
 
   const save = async () => {
     setSaving(true); setError(null);
     try {
       const token = localStorage.getItem('auth_token');
+      const payload: any = { role, resources, coins };
+      if (referralCode !== undefined) payload.referralCode = referralCode;
+
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${id}`, {
         method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ role, resources, coins, referralCode })
+        body: JSON.stringify(payload)
       });
-      const d = await r.json(); if (!r.ok) throw new Error(d?.error || 'Failed');
+      const d = await r.json(); 
+      if (!r.ok) {
+        if (d.details && d.details.fieldErrors) {
+          const firstError = Object.values(d.details.fieldErrors).flat()[0];
+          throw new Error(String(firstError) || d.error || 'Failed to save');
+        }
+        throw new Error(d?.error || 'Failed');
+      }
+      await modal.success({ title: 'Saved', body: 'User updated successfully' });
     } catch (e: any) { setError(e.message); } finally { setSaving(false); }
   };
 
@@ -119,8 +139,12 @@ export default function AdminUserDetailPage() {
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#202020] rounded-2xl flex items-center justify-center shadow-lg">
-            <i className="fas fa-user text-white text-lg sm:text-2xl"></i>
+          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#202020] rounded-2xl flex items-center justify-center shadow-lg overflow-hidden flex-shrink-0">
+            {data?.user?.profilePicture ? (
+              <img src={data.user.profilePicture} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              <i className="fas fa-user text-white text-lg sm:text-2xl"></i>
+            )}
           </div>
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white">{data?.user?.username || 'User'}</h1>
@@ -184,7 +208,7 @@ export default function AdminUserDetailPage() {
 
 
               {/* Servers */}
-              <div className="rounded-2xl p-6" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+              <div className="rounded-xl p-6 border border-[var(--border)] bg-[var(--surface)] shadow-sm">
                 <div className="text-lg font-bold mb-4">Servers ({data.servers.length})</div>
                 {data.servers.length === 0 ? (
                   <div className="text-center py-8 text-[#AAAAAA]">No servers found</div>
@@ -291,22 +315,22 @@ export default function AdminUserDetailPage() {
 
             {/* Right: Editors */}
             <div className="space-y-6">
-              <div className="rounded-2xl p-6 space-y-4" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+              <div className="rounded-xl p-6 space-y-4 border border-[var(--border)] bg-[var(--surface)] shadow-sm">
                 <div>
-                  <label className="block text-sm text-[#AAAAAA] mb-1">Role</label>
-                  <select className="w-full px-3 py-2 rounded-md border border-[var(--border)] bg-[#181818] text-white" value={role} onChange={(e) => setRole(e.target.value as any)}>
-                    <option value="user">User</option>
-                    <option value="admin">Admin</option>
+                  <label className="block text-sm text-[#AAAAAA] mb-1 font-medium">Role</label>
+                  <select className="w-full px-3 py-2 rounded-lg border border-transparent hover:border-[var(--border)] focus:border-[var(--border)] bg-black/20 focus:bg-black/40 text-white transition-all focus:outline-none" value={role} onChange={(e) => setRole(e.target.value as any)}>
+                    <option value="user" className="bg-[#111]">User</option>
+                    <option value="admin" className="bg-[#111]">Admin</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-[#AAAAAA] mb-1">Coins</label>
-                  <input className="w-full px-3 py-2 rounded-md border border-[var(--border)] bg-[#181818] text-white" type="number" value={coins} onChange={(e) => setCoins(Number(e.target.value))} />
+                  <label className="block text-sm text-[#AAAAAA] mb-1 font-medium">Coins</label>
+                  <input className="w-full px-3 py-2 rounded-lg border border-transparent hover:border-[var(--border)] focus:border-[var(--border)] bg-black/20 focus:bg-black/40 text-white transition-all focus:outline-none" type="number" value={coins} onChange={(e) => setCoins(Number(e.target.value))} />
                 </div>
               </div>
 
-              <div className="rounded-2xl p-6 space-y-3" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-                <div className="text-sm font-semibold">User Resources</div>
+              <div className="rounded-xl p-6 space-y-3 border border-[var(--border)] bg-[var(--surface)] shadow-sm">
+                <div className="text-sm font-bold">User Resources</div>
                 {([
                   ['diskMb','Disk (MB)'],
                   ['memoryMb','Memory (MB)'],
@@ -317,17 +341,17 @@ export default function AdminUserDetailPage() {
                   ['serverSlots','Server Slots'],
                 ] as [keyof typeof resources, string][]).map(([k, label]) => (
                   <div key={String(k)}>
-                    <label className="block text-xs text-[#AAAAAA] mb-1">{label}</label>
-                    <input type="number" className="w-full px-3 py-2 rounded-md border border-[var(--border)] bg-[#181818] text-white" value={Number(resources?.[k] || 0)} onChange={(e) => setResources({ ...resources, [k]: Number(e.target.value) })} />
+                    <label className="block text-xs text-[#AAAAAA] mb-1 font-medium">{label}</label>
+                    <input type="number" className="w-full px-3 py-2 rounded-lg border border-transparent hover:border-[var(--border)] focus:border-[var(--border)] bg-black/20 focus:bg-black/40 text-white transition-all focus:outline-none" value={Number(resources?.[k] || 0)} onChange={(e) => setResources({ ...resources, [k]: Number(e.target.value) })} />
                   </div>
                 ))}
               </div>
 
-              <div className="rounded-2xl p-6 space-y-4" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+              <div className="rounded-xl p-6 space-y-4 border border-[var(--border)] bg-[var(--surface)] shadow-sm">
                 <div className="text-lg font-bold">Referral</div>
                 <div>
-                  <label className="block text-sm text-[#AAAAAA] mb-1">Referral Code</label>
-                  <input className="w-full px-3 py-2 rounded-md border border-[var(--border)] bg-[#181818] text-white" value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="ABC123" />
+                  <label className="block text-sm text-[#AAAAAA] mb-1 font-medium">Referral Code</label>
+                  <input className="w-full px-3 py-2 rounded-lg border border-transparent hover:border-[var(--border)] focus:border-[var(--border)] bg-black/20 focus:bg-black/40 text-white transition-all focus:outline-none" value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="ABC123" />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
@@ -344,25 +368,25 @@ export default function AdminUserDetailPage() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm font-semibold mb-2">Referred Users List</div>
-                  <div className="max-h-64 overflow-auto rounded-md border border-[var(--border)]">
+                  <div className="text-sm font-bold mb-2 mt-4">Referred Users List</div>
+                  <div className="max-h-64 overflow-auto rounded-lg border border-[var(--border)] bg-black/10">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="bg-[#151515] text-[#AAAAAA]">
-                          <th className="text-left p-2">Username</th>
-                          <th className="text-left p-2">Email</th>
-                          <th className="text-left p-2">Joined</th>
+                        <tr className="bg-black/20 text-[#AAAAAA] text-left">
+                          <th className="font-medium p-3">Username</th>
+                          <th className="font-medium p-3">Email</th>
+                          <th className="font-medium p-3">Joined</th>
                         </tr>
                       </thead>
                       <tbody>
                         {(data?.referral?.referredUsers || []).length === 0 ? (
-                          <tr><td className="p-3 text-center text-[#777]" colSpan={3}>No referred users</td></tr>
+                          <tr><td className="p-4 text-center text-[#777]" colSpan={3}>No referred users</td></tr>
                         ) : (
                           (data?.referral?.referredUsers || []).map((u: any) => (
-                            <tr key={u._id} className="border-t border-[var(--border)]">
-                              <td className="p-2">{u.username}</td>
-                              <td className="p-2">{u.email}</td>
-                              <td className="p-2">{new Date(u.createdAt).toLocaleString()}</td>
+                            <tr key={u._id} className="border-t border-[var(--border)] hover:bg-[var(--hover)] transition-colors">
+                              <td className="p-3 font-medium text-white">{u.username}</td>
+                              <td className="p-3">{u.email}</td>
+                              <td className="p-3 text-[#AAAAAA]">{new Date(u.createdAt).toLocaleString()}</td>
                             </tr>
                           ))
                         )}
@@ -372,11 +396,11 @@ export default function AdminUserDetailPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl p-6" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+              <div className="rounded-xl p-6 border border-[var(--border)] bg-[var(--surface)] shadow-sm">
                 <h3 className="text-lg font-bold mb-4">Plans</h3>
                 <div className="space-y-3">
                   {plans.length === 0 ? (
-                    <div className="text-sm text-[#AAAAAA]">No active plans.</div>
+                    <div className="text-sm text-[#AAAAAA] bg-black/20 p-4 rounded-lg text-center border border-[var(--border)]">No active plans.</div>
                   ) : (
                     (() => {
                       const planGroups = plans.reduce((acc, p) => {
@@ -402,7 +426,7 @@ export default function AdminUserDetailPage() {
                                   return;
                                 }
                                 await modal.success({ title: 'Added', body: 'Plan added successfully' });
-                                setPlans((prev) => [...prev, d.plan]);
+                                await reloadData();
                               }}>+</button>
                               <button className="px-2 py-1 rounded-md text-red-400 hover:bg-red-400/10 border border-red-500/30" onClick={async () => {
                                 const confirmed = await modal.confirm({ 
@@ -422,7 +446,7 @@ export default function AdminUserDetailPage() {
                                   return;
                                 }
                                 await modal.success({ title: 'Removed', body: 'Plan instance removed successfully' });
-                                setPlans(plans.filter(p => p._id !== lastInstance._id));
+                                await reloadData();
                               }}>-</button>
                               <button className="px-2 py-1 rounded-md text-red-400 hover:bg-red-400/10 border border-red-500/30" onClick={async () => {
                                 const confirmed = await modal.confirm({ 
@@ -438,8 +462,9 @@ export default function AdminUserDetailPage() {
                                   await Promise.all(g.instances.map(async (inst: any) => {
                                     await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${id}/plans/instance/${inst._id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
                                   }));
-                                  await modal.success({ title: 'Deleted', body: `All instances of "${g.planName}" have been deleted successfully` });
-                                  setPlans(plans.filter(p => (p.planId?._id || p.planId) !== planId));
+                                  await modal.success({ title: 'Removed', body: 'All instances removed successfully' });
+                                  await reloadData();
+                                // eslint-disable-next-line unused-imports/no-unused-vars
                                 } catch (error: any) {
                                   await modal.error({ title: 'Failed', body: 'Failed to delete plan instances. Please try again.' });
                                 }
@@ -451,17 +476,17 @@ export default function AdminUserDetailPage() {
                     })()
                   )}
                 </div>
-                <div className="flex items-end gap-2 pt-3">
+                <div className="flex items-end gap-2 pt-4">
                   <div className="flex-1">
-                    <label className="block text-xs text-[#AAAAAA] mb-1">Add Plan</label>
-                    <select className="w-full px-3 py-2 rounded-md border border-[var(--border)] bg-[#181818] text-white" value={newPlanId} onChange={(e) => setNewPlanId(e.target.value)}>
-                      <option value="">Select Plan</option>
+                    <label className="block text-xs text-[#AAAAAA] mb-1 font-medium">Add Plan</label>
+                    <select className="w-full px-3 py-2 rounded-lg border border-transparent hover:border-[var(--border)] focus:border-[var(--border)] bg-black/20 focus:bg-black/40 text-white transition-all focus:outline-none" value={newPlanId} onChange={(e) => setNewPlanId(e.target.value)}>
+                      <option value="" className="bg-[#111]">Select Plan</option>
                       {allPlans.map((p) => (
-                        <option key={p._id} value={p._id}>{p.name} — Lifetime</option>
+                        <option key={p._id} value={p._id} className="bg-[#111]">{p.name} — Lifetime</option>
                       ))}
                     </select>
                   </div>
-                  <button className="px-4 py-2 rounded-md bg-white text-black border border-[var(--border)]" onClick={async () => {
+                  <button className="px-5 py-2 rounded-lg bg-white text-black hover:bg-gray-200 transition-colors font-medium" onClick={async () => {
                     if (!newPlanId) {
                       await modal.error({ title: 'Error', body: 'Please select a plan to add' });
                       return;
@@ -473,7 +498,8 @@ export default function AdminUserDetailPage() {
                       return;
                     }
                     await modal.success({ title: 'Added', body: 'Plan added successfully' });
-                    setPlans((prev) => [...prev, d.plan]); setNewPlanId('');
+                    await reloadData();
+                    setNewPlanId('');
                   }}>Add</button>
                 </div>
               </div>

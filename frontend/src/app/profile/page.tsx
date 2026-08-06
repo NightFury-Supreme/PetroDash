@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 
 export default function ProfilePage() {
   const { form, setForm, loading, saving, error, success, saveProfile, updateEmail, updatePassword, updateProfilePicture } = useProfile();
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const { settings: authSettings } = useAuthSettings();
   const modal = useModal();
   const router = useRouter();
@@ -218,6 +219,7 @@ export default function ProfilePage() {
                       onClick={async () => {
                         try {
                           await updateProfilePicture(form.profilePicture);
+                        // eslint-disable-next-line unused-imports/no-unused-vars
                         } catch (e) {
                           // Error already handled by updateProfilePicture
                         }
@@ -306,6 +308,7 @@ export default function ProfilePage() {
                                   : data.error || 'Failed to send verification email';
                                 alert(errorMessage);
                               }
+                            // eslint-disable-next-line unused-imports/no-unused-vars
                             } catch (error) {
                               alert('Failed to send verification email');
                             }

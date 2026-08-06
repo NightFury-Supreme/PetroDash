@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { AdminGiftNewSkeleton } from '@/components/skeletons/admin/gifts/AdminGiftNewSkeleton';
 import { Gift } from '@/components/admin/gifts/GiftEditor';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export default function NewGiftPageContent() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const { currency } = useCurrency();
   const [plans, setPlans] = useState<any[]>([]);
   const [form, setForm] = useState<Gift>({ code: '', description: '', rewards: { coins: 0, resources: {} }, maxRedemptions: 0, enabled: true });
 
@@ -152,10 +154,10 @@ export default function NewGiftPageContent() {
                          }} />
                   <div>
                     <div className="text-sm font-medium">{p.name}</div>
-                    <div className="text-xs text-[#AAAAAA]">${p.pricePerMonth ?? 0}/month</div>
+                    <div className="text-xs text-[#AAAAAA]">{p.pricePerMonth ?? 0} {currency}/month</div>
                   </div>
                 </div>
-                <div className="px-2 py-1 text-xs rounded-md border" style={{ borderColor: 'var(--border)' }}>${p.pricePerMonth ?? 0}</div>
+                <div className="px-2 py-1 text-xs rounded-md border" style={{ borderColor: 'var(--border)' }}>{p.pricePerMonth ?? 0} {currency}</div>
               </label>
             ))}
           </div>

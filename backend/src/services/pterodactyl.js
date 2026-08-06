@@ -97,6 +97,15 @@ async function deleteServer(serverId) {
     return true;
 }
 
+/**
+ * Force-delete a server even if it is running or suspended.
+ * Uses the Pterodactyl ?force=true query parameter.
+ */
+async function forceDeleteServer(serverId) {
+    await withRetry(() => api.delete(`/servers/${serverId}`, { params: { force: 'true' } }));
+    return true;
+}
+
 async function suspendServer(serverId) {
     await withRetry(() => api.post(`/servers/${serverId}/suspend`));
     return true;
@@ -139,12 +148,13 @@ async function checkUserExists(email, username) {
         const usernameExists = usernameResponse.data?.data?.length > 0;
         
         return { emailExists, usernameExists };
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (error) {
         // If API is down, assume no conflicts to avoid blocking registration
                 return { emailExists: false, usernameExists: false };
     }
 }
 
-module.exports = { createPanelUser, getUserByExternalId, getUserWithServers, getEggDetails, getServer, updateServerDetails, updateServerBuild, deleteServer, getPanelUser, resetPanelUserPassword, updatePanelUser, deletePanelUser, checkUserExists, suspendServer, unsuspendServer };
+module.exports = { createPanelUser, getUserByExternalId, getUserWithServers, getEggDetails, getServer, updateServerDetails, updateServerBuild, deleteServer, forceDeleteServer, getPanelUser, resetPanelUserPassword, updatePanelUser, deletePanelUser, checkUserExists, suspendServer, unsuspendServer };
 
 

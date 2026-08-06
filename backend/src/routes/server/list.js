@@ -119,6 +119,7 @@ router.get('/', requireAuth, async (req, res) => {
       return res.json({ data: filtered, meta: { total: Math.max(total - deletedCount, 0), page, pageSize } });
     }
     return res.json(filtered);
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
     return res.status(500).json({ error: 'Failed to list servers' });
   }

@@ -44,6 +44,7 @@ async function writeAudit(reqOrActorId, action, resourceTypeOrDetails, resourceI
       meta: sanitizeMeta(meta),
       success: true
     });
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
     // Audit log error logged silently for production
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export type Gift = {
   _id?: string;
@@ -22,6 +23,7 @@ export type Gift = {
 
 export default function GiftEditor({ value, onChange, onSave, saving, plans }: { value: Gift; onChange: (v: Gift) => void; onSave: () => void; saving?: boolean; plans?: Array<{ _id: string; name: string; pricePerMonth?: number }> }) {
   const [v, setV] = useState<Gift>(value);
+  const { currency } = useCurrency();
 
   const update = (patch: Partial<Gift>) => {
     const next = { ...v, ...patch } as Gift;
@@ -74,10 +76,10 @@ export default function GiftEditor({ value, onChange, onSave, saving, plans }: {
                     />
                     <div>
                       <div className="text-sm font-medium">{p.name}</div>
-                      <div className="text-xs text-[#AAAAAA]">${p.pricePerMonth ?? 0}/month</div>
+                      <div className="text-xs text-[#AAAAAA]">{currency}{p.pricePerMonth ?? 0}/month</div>
                     </div>
                   </div>
-                  <div className="px-2 py-1 text-xs rounded-md border" style={{ borderColor: 'var(--border)' }}>${p.pricePerMonth ?? 0}</div>
+                  <div className="px-2 py-1 text-xs rounded-md border" style={{ borderColor: 'var(--border)' }}>{currency}{p.pricePerMonth ?? 0}</div>
                 </label>
               );
             })}

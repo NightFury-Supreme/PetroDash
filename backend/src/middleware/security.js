@@ -60,17 +60,12 @@ function sanitizeInput(req, res, next) {
         sanitized = sanitized.replace(new RegExp(scheme, 'gi'), '');
       }
     }
-    let prevLength = -1;
-    const eventHandlerPattern = /on\w+\s*=/gi;
-    while (sanitized.length !== prevLength) {
-      prevLength = sanitized.length;
-      sanitized = sanitized.replace(eventHandlerPattern, '');
-    }
-    prevLength = -1;
-    while (sanitized.length !== prevLength) {
-      prevLength = sanitized.length;
-      sanitized = sanitized.replace(/<[^>]*>/g, '');
-    }
+    // Remove event handlers - use non-backtracking approach
+    sanitized = sanitized.replace(/on\w+=["'][^"']*["']/gi, '');
+    sanitized = sanitized.replace(/on\w+=\S+/gi, '');
+    
+    // Remove HTML tags - use simple non-backtracking pattern
+    sanitized = sanitized.replace(/<[^>]+>/g, '');
     return sanitized.trim();
   };
 
@@ -108,6 +103,8 @@ function securityLogging(req, res, next) {
   const startTime = Date.now();
   res.on('finish', () => {
     const duration = Date.now() - startTime;
+    const level = res.statusCode >= 500 ? 'ERROR' : res.statusCode >= 400 ? 'WARN' : 'INFO';
+    console.log(`[${level}] ${req.method} ${req.path} ${res.statusCode} ${duration}ms - ${req.ip}`);
   });
   next();
 }

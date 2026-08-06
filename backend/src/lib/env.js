@@ -37,7 +37,7 @@ function validateEnv() {
 
 function validateUrl(name, value) {
   try {
-    // eslint-disable-next-line no-new
+     
     new URL(String(value));
   } catch {
     throw new Error(`${name} must be a valid URL`);

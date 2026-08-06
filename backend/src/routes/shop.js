@@ -34,15 +34,25 @@ router.post('/purchase', requireAuth, async (req, res) => {
   if (!user) return res.status(404).json({ error: 'User not found' });
 
   const totalPrice = Number(item.pricePerUnit) * Number(quantity);
-  if (user.coins < totalPrice) return res.status(400).json({ error: 'Insufficient coins' });
-
-  // Deduct coins and add resources
-  user.coins -= totalPrice;
   const increment = Number(item.amountPerUnit) * Number(quantity);
   const keyToField = item.key; // matches User.resources key
-  if (!user.resources) user.resources = {};
-  user.resources[keyToField] = Number(user.resources[keyToField] || 0) + increment;
-  await user.save();
+
+  // Atomically check coins and deduct to prevent TOCTOU race conditions
+  const updatedUser = await User.findOneAndUpdate(
+    { _id: req.user.sub, coins: { $gte: totalPrice } },
+    { 
+      $inc: { 
+        coins: -totalPrice,
+        [`resources.${keyToField}`]: increment
+      }
+    },
+    { new: true }
+  );
+
+  if (!updatedUser) {
+    return res.status(400).json({ error: 'Insufficient coins' });
+  }
+
   const { writeAudit } = require('../middleware/audit');
   await writeAudit(req, 'shop.purchase.completed', 'shop', item._id.toString(), {
     itemKey,
@@ -51,16 +61,16 @@ router.post('/purchase', requireAuth, async (req, res) => {
     itemName: item.name,
     amountPerUnit: item.amountPerUnit,
     pricePerUnit: item.pricePerUnit,
-    userId: user._id.toString(),
-    username: user.username,
+    userId: updatedUser._id.toString(),
+    username: updatedUser.username,
     purchaseDate: new Date().toISOString(),
-    coinsBefore: user.coins + totalPrice,
-    coinsAfter: user.coins,
-    resourcesBefore: { ...user.resources },
-    resourcesAfter: { ...user.resources, [keyToField]: user.resources[keyToField] }
+    coinsBefore: updatedUser.coins + totalPrice,
+    coinsAfter: updatedUser.coins,
+    resourcesBefore: { ...updatedUser.resources, [keyToField]: updatedUser.resources[keyToField] - increment },
+    resourcesAfter: { ...updatedUser.resources }
   });
 
-  return res.json({ ok: true, coins: user.coins, resources: user.resources });
+  return res.json({ ok: true, coins: updatedUser.coins, resources: updatedUser.resources });
 });
 
 module.exports = router;

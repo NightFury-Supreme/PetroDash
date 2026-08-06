@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useLayoutEffect } from "react";
+import { useMemo, useLayoutEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
 const PUBLIC_PATHS: readonly string[] = [
@@ -57,7 +57,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         if (res.ok) {
           const data = await res.json();
           // Require verification for all login methods
-          if (!data.emailVerified) {
+          if (data.emailVerification && !data.emailVerified) {
             if (typeof window !== "undefined") {
               sessionStorage.setItem("verify_email", data.email || "");
             }
@@ -67,7 +67,10 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         }
         if (!res.ok) {
           // Invalid token or other error -> login
-          router.replace("/login");
+          if (res.status === 401) {
+            if (typeof window !== "undefined") localStorage.removeItem("auth_token");
+            router.replace("/login");
+          }
           return;
         }
         // Auth OK and not banned, clear any stale ban markers
@@ -78,8 +81,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
             sessionStorage.removeItem("verify_email");
           }
         } catch {}
-      } catch {
-        router.replace("/login");
+      // eslint-disable-next-line unused-imports/no-unused-vars
+      } catch (err) {
+        // Network error - don't logout, just ignore
       }
     })();
   }, [isPublic, router, pathname]);

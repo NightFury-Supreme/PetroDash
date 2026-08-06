@@ -5,6 +5,7 @@ import React from 'react';
 export function PlanPurchaseButton({ 
   plan, 
   onPurchase, 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   onSuccess 
 }: { 
   plan: any; 

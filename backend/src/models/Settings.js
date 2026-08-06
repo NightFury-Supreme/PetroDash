@@ -9,8 +9,31 @@ const SettingsSchema = new mongoose.Schema(
       referredCoins: { type: Number, default: 25 },
       customCodeMinInvites: { type: Number, default: 10 },
     },
+    earn: {
+      enabled: { type: Boolean, default: false },
+      ads: {
+        enabled: { type: Boolean, default: false },
+        coins: { type: Number, default: 10 },
+        cooldownSeconds: { type: Number, default: 3600 },
+        waitSeconds: { type: Number, default: 30 },
+        maxClaimsPerDay: { type: Number, default: 24 },
+        ayetPlacementId: { type: Number, default: 0 },
+        ayetAdslotName: { type: String, default: '' },
+        ayetApiKey: { type: String, default: '' },
+      },
+      linkvertise: {
+        enabled: { type: Boolean, default: false },
+        coins: { type: Number, default: 20 },
+        cooldownSeconds: { type: Number, default: 3600 },
+        waitSeconds: { type: Number, default: 10 },
+        maxClaimsPerDay: { type: Number, default: 24 },
+        url: { type: String, default: '' },
+        antiBypassToken: { type: String, default: '' },
+      },
+    },
     auth: {
       emailLogin: { type: Boolean, default: true },
+      emailVerification: { type: Boolean, default: true },
       discord: {
         enabled: { type: Boolean, default: false },
         autoJoin: { type: Boolean, default: false },
@@ -27,13 +50,15 @@ const SettingsSchema = new mongoose.Schema(
         redirectUri: { type: String, default: '' },
       },
     },
+    localization: {
+      currency: { type: String, default: 'USD' },
+    },
     payments: {
       paypal: {
         enabled: { type: Boolean, default: false },
         mode: { type: String, enum: ['sandbox', 'live'], default: 'sandbox' },
         clientId: { type: String, default: '' },
         clientSecret: { type: String, default: '' },
-        currency: { type: String, default: 'USD' },
         returnUrl: { type: String, default: '' },
         cancelUrl: { type: String, default: '' },
         webhookId: { type: String, default: '' },

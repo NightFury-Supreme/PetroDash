@@ -8,22 +8,23 @@ A modern, feature-rich control panel for Pterodactyl servers with advanced user 
 
 * **Resource Management** – Create servers, manage CPU, RAM, Disk, and allocations
 * **Servers** – Create, view, and edit servers with ease
-* **User System** – Authentication, password reset, OAuth login, and permissions
-* **Email Verification** – Secure email verification system
-* **Password Reset** – forgot password functionality with email codes
+* **User System** – Authentication, password reset, OAuth login (Discord & Google), and permissions
+* **Email Verification** – Configurable email verification (can be enabled/disabled by admin)
+* **Password Reset** – Forgot password functionality with email codes
 * **Email Notifications** – Comprehensive email system for account events, security alerts, and notifications
+* **Coin Earning System** – Users can earn coins via Ads (Ayet Studios) and Linkvertise integrations
 * **Support Tickets** – Complete ticketing system with categories, priority assignment, and admin management
 * **Coupons** – Discount codes for plans and promotions
+* **Gift Codes** – Share coins and rewards with redeemable codes
 * **Store** – Buy resources and plans using coins
 * **Dashboard** – View resources, plans, and live server status
-* **Plans** – Lifetime plan support
+* **Plans** – Monthly and lifetime plan support with automatic resource grants
 * **Payment Integration** – PayPal with automatic webhook handling
 * **Advertising System** – Google AdSense integration with ad blocker detection
-* **Admin Tools** – User banning, egg and location management, analytics, and shop control
-* **Security** – JWT auth, OAuth, rate limiting, audit logs, validation, and enhanced security measures
+* **Admin Tools** – User banning, egg and location management, analytics, paginated admin lists
+* **Security** – JWT auth, OAuth, CSRF protection, rate limiting, audit logs, magic-byte upload validation
 * **UI/UX** – Modern Tailwind CSS dashboard with smooth client-side navigation
-* **System Updates**: One-click updates with GitHub integration
-* **Gift Coupons** – Share coins and rewards with redeemable codes
+* **System Updates** – One-click updates with GitHub integration
 
 ![Dashboard Screenshot](images/dashboard.png)
 ## 🚀 Setup & Deployment
@@ -118,7 +119,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Discord**: https://discord.gg/vQzbuQD7Xp
 - **Documentation**: [Wiki](https://github.com/NightFury-Supreme/PetroDash/wiki)
 - **Issues**: [GitHub Issues](https://github.com/NightFury-Supreme/PetroDash/issues)
-- **Email**: support@auto-manager.tk
 
 ## 🔄 Changelog
 

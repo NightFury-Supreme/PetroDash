@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 
-export default function CouponsList({ coupons, onToggle, onDelete, plans, deletingId }: any) {
+export default function CouponsList({ coupons, onToggle, onDelete, plans, deletingId, currency = 'USD' }: any) {
   const getPlanNames = (planIds?: string[]) => {
     if (!planIds || planIds.length === 0) return 'All plans';
     return planIds.map((id) => plans.find((p: any) => p._id === id)?.name || id).join(', ');
@@ -41,7 +41,7 @@ export default function CouponsList({ coupons, onToggle, onDelete, plans, deleti
                 </span>
                 <span className="bg-[#202020] text-white border border-[#303030] px-4 py-2 text-sm font-semibold rounded-full">
                   <i className="fas fa-percentage mr-2 text-white"></i>
-                  {c.type === 'percentage' ? `${c.value}%` : `$${c.value}`}
+                  {c.type === 'percentage' ? `${c.value}%` : `${c.value} ${currency}`}
                 </span>
               </div>
 

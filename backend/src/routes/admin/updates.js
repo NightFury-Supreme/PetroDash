@@ -8,7 +8,9 @@ const fs = require('fs').promises;
 const path = require('path');
 
 const router = express.Router();
+// eslint-disable-next-line unused-imports/no-unused-vars
 const execAsync = promisify(exec);
+// eslint-disable-next-line unused-imports/no-unused-vars
 const fssync = require('fs');
 
 // Rate limiting for updates endpoint

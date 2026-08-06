@@ -26,10 +26,17 @@ export default function GiftCard() {
       setResult({ success: true, message: d?.message || 'Redeemed!', rewards: d?.rewards });
       const rewards = d?.rewards || {};
       const parts: string[] = ['Your rewards have been applied.'];
+      if (d?.description) parts.push(`\nNote: "${d.description}"\n`);
       if (typeof rewards.coins === 'number' && rewards.coins > 0) parts.push(`+${rewards.coins} coins`);
       const resourcesObj = rewards.resources || {};
-      const hasRes = ['diskMb','memoryMb','cpuPercent','backups','databases','allocations','serverSlots'].some((k) => (resourcesObj as any)[k] > 0);
-      if (hasRes) parts.push('Resources updated');
+      if (resourcesObj.diskMb > 0) parts.push(`+${resourcesObj.diskMb} MB Disk`);
+      if (resourcesObj.memoryMb > 0) parts.push(`+${resourcesObj.memoryMb} MB RAM`);
+      if (resourcesObj.cpuPercent > 0) parts.push(`+${resourcesObj.cpuPercent}% CPU`);
+      if (resourcesObj.backups > 0) parts.push(`+${resourcesObj.backups} Backups`);
+      if (resourcesObj.databases > 0) parts.push(`+${resourcesObj.databases} Databases`);
+      if (resourcesObj.allocations > 0) parts.push(`+${resourcesObj.allocations} Allocations`);
+      if (resourcesObj.serverSlots > 0) parts.push(`+${resourcesObj.serverSlots} Server Slots`);
+      
       await modal.success({ title: 'Gift Redeemed', body: parts.join('\n') });
       setCode("");
     } catch (e: any) {

@@ -23,6 +23,14 @@ This policy covers vulnerabilities in:
 - Frontend (`frontend/`)
 - Release/update workflow files under `.github/`
 
+## Automated Security Scanning
+
+PteroDash utilizes a strict zero-vulnerability CI/CD pipeline. Every pull request and push to the `main` branch is automatically scanned using:
+- **CodeQL**: Static Application Security Testing (SAST).
+- **NPM Audit**: Fails the build on any detected package vulnerability.
+
+Contributors are required to resolve all security alerts and maintain the zero-vulnerability baseline before a PR can be merged.
+
 ## Safe Harbor
 
 We will not pursue legal action for good-faith, non-destructive research that:

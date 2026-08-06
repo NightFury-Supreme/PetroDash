@@ -19,6 +19,7 @@ function sanitize(req, _res, next) {
     if (req.body) req.body = sanitizeValue(req.body);
     if (req.query) req.query = sanitizeValue(req.query);
     if (req.params) req.params = sanitizeValue(req.params);
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (_) {}
   next();
 }

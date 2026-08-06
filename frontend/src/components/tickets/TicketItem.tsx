@@ -2,12 +2,28 @@
 
 import React, { useState } from "react";
 
-export default function TicketItem({ ticket }: { ticket: any }) {
+export default function TicketItem({ ticket, onRefresh }: { ticket: any, onRefresh?: () => void }) {
   const [isOpening, setIsOpening] = useState(false);
+  const [menu, setMenu] = useState(false);
+
+  const handleAction = async (action: string) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/tickets/${ticket._id}/status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ action })
+      });
+      if (onRefresh) onRefresh();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
     <div
       onClick={async ()=>{ setIsOpening(true); window.location.href=`/tickets/${ticket._id}`; }}
-      className={`cursor-pointer border border-[#303030] rounded-xl p-4 bg-[#181818] hover:bg-[#1c1c1c] transition-colors relative ${isOpening ? 'opacity-70' : ''}`}
+      className={`cursor-pointer border border-[var(--border)] rounded-xl p-4 bg-[var(--surface)] relative shadow-sm ${isOpening ? 'opacity-70' : ''} ${menu ? 'z-50' : 'z-10'}`}
     >
       {isOpening && (
         <div className="absolute inset-0 bg-black/30 flex items-center justify-center rounded-xl">
@@ -25,10 +41,25 @@ export default function TicketItem({ ticket }: { ticket: any }) {
             ) : (
               <span className={`px-2 py-0.5 rounded-full border ${ticket.status==='open' ? 'bg-green-600/20 text-green-300 border-green-700/50' : ticket.status==='pending' ? 'bg-yellow-600/20 text-yellow-300 border-yellow-700/50' : ticket.status==='resolved' ? 'bg-blue-600/20 text-blue-300 border-blue-700/50' : 'bg-[#303030] text-[#AAAAAA] border-[#404040]'}`}>{ticket.status}</span>
             )}
-            {ticket.category && <span className="px-2 py-0.5 rounded-full border border-[#404040] bg-[#202020] text-[#e5e5e5]"><i className="fas fa-folder mr-1"/>{ticket.category}</span>}
+            {ticket.category && <span className="px-2 py-0.5 rounded-full border border-[var(--border)] bg-[#181818] text-[#e5e5e5]"><i className="fas fa-folder mr-1"/>{ticket.category}</span>}
           </div>
         </div>
-        <div className="text-xs text-[#AAAAAA] whitespace-nowrap ml-3">{new Date(ticket.updatedAt).toLocaleString()}</div>
+        <div className="flex items-center gap-4">
+          <div className="text-xs text-[#AAAAAA] whitespace-nowrap hidden sm:block">{new Date(ticket.updatedAt).toLocaleString()}</div>
+          <div className="relative" onClick={(e)=>e.stopPropagation()}>
+            <button onClick={()=>setMenu(!menu)} className="w-9 h-9 rounded-lg border border-[var(--border)] text-white hover:bg-[var(--hover)] flex items-center justify-center transition-colors">
+              <i className="fas fa-ellipsis-h"/>
+            </button>
+            {menu && (
+              <div className="absolute right-0 top-12 w-40 rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-xl overflow-hidden z-20">
+                {ticket.status !== 'closed' && (
+                  <button onClick={async()=>{ await handleAction('close'); setMenu(false); }} className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[var(--hover)]">Close Ticket</button>
+                )}
+                <button onClick={async()=>{ await handleAction('delete'); setMenu(false); }} className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[var(--hover)]">Delete</button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

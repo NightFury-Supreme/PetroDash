@@ -1,6 +1,7 @@
 const express = require('express');
 const { z } = require('zod');
 const User = require('../../models/User');
+const Settings = require('../../models/Settings');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { writeAudit } = require('../../middleware/audit');
@@ -18,6 +19,18 @@ router.post('/login', async (req, res) => {
   let user = null;
   
   try {
+    const s = await Settings.findOne({}).lean();
+    const emailLoginEnabled = s?.auth?.emailLogin ?? true;
+    if (!emailLoginEnabled) {
+      await writeAudit(req, 'auth.login.failed', 'auth', null, {
+        reason: 'email_login_disabled',
+        emailOrUsername: req.body.emailOrUsername,
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      return res.status(403).json({ error: 'Email login is disabled' });
+    }
+
     const parsed = loginSchema.safeParse(req.body);
     if (!parsed.success) {
       await writeAudit(req, 'auth.login.failed', 'auth', null, {
@@ -83,6 +96,7 @@ router.post('/login', async (req, res) => {
           username: user.username,
         }
       });
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_) {}
     
     return res.json({ 
@@ -126,6 +140,7 @@ router.post('/logout', async (req, res) => {
         const token = authHeader.substring(7);
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         user = await User.findById(decoded.sub);
+      // eslint-disable-next-line unused-imports/no-unused-vars
       } catch (error) {
         // Invalid token, but we still want to log the logout attempt
         // Invalid token during logout - logged silently

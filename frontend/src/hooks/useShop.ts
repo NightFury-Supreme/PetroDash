@@ -16,6 +16,7 @@ export function useShop() {
   const [itemsLoading, setItemsLoading] = useState(true);
   const [plansLoading, setPlansLoading] = useState(true);
   const [bootstrapDone, setBootstrapDone] = useState(false);
+  const [currency, setCurrency] = useState('USD');
 
   const loadAll = useCallback(async () => {
     const token = localStorage.getItem('auth_token');
@@ -46,7 +47,13 @@ export function useShop() {
     try {
       const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
       const d = await r.json();
-      if (r.ok) setCoins(Number(d?.coins ?? 0));
+      if (r.ok) {
+        const nextCoins = Number(d?.coins ?? 0);
+        setCoins(nextCoins);
+        try {
+          window.dispatchEvent(new CustomEvent('coins:update', { detail: { coins: nextCoins } }));
+        } catch {}
+      }
     } catch {}
 
     // Payments
@@ -61,6 +68,13 @@ export function useShop() {
       const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/user/plans`, { headers: { Authorization: `Bearer ${token}` } });
       const d = await r.json();
       if (r.ok) setActivePlans(d || []);
+    } catch {}
+
+    // Branding (for currency)
+    try {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/branding`);
+      const d = await r.json();
+      if (r.ok && d?.currency) setCurrency(d.currency);
     } catch {}
 
   }, []);
@@ -82,6 +96,7 @@ export function useShop() {
     quantities, setQuantities,
     coins, setCoins, payments, activePlans,
     itemsLoading, plansLoading, bootstrapDone,
+    currency,
     // helpers
     clampQuantity: (it: any, next: number) => {
       const min = 1; const max = Number(it?.maxPerPurchase || 99);

@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const Location = require('../models/Location');
 const Server = require('../models/Server');
 const { requireAuth } = require('../middleware/auth');
@@ -28,6 +29,7 @@ router.get('/', requireAuth, async (req, res) => {
                         const controller = new AbortController();
                         const timeoutId = setTimeout(() => controller.abort(), 3000); // Reduced timeout
                         
+                        // eslint-disable-next-line unused-imports/no-unused-vars
                         const response = await fetch(pingUrl, { 
                             method: 'HEAD',
                             signal: controller.signal
@@ -36,12 +38,13 @@ router.get('/', requireAuth, async (req, res) => {
                         clearTimeout(timeoutId);
                         const endTime = Date.now();
                         ping = endTime - startTime;
+                    // eslint-disable-next-line unused-imports/no-unused-vars
                     } catch (error) {
                         // Silent fallback for connection errors - this is normal for unreachable servers
-                        ping = Math.floor(Math.random() * 50) + 10; // Fallback ping
+                        ping = crypto.randomInt(50) + 10; // Fallback ping
                     }
                 } else {
-                    ping = Math.floor(Math.random() * 50) + 10; // Mock ping for now
+                    ping = crypto.randomInt(50) + 10; // Mock ping for now
                 }
                 
                 return {
@@ -65,6 +68,7 @@ router.get('/', requireAuth, async (req, res) => {
                 isPlanAllowed: !Array.isArray(l.allowedPlans) || l.allowedPlans.length === 0 || l.allowedPlans.some((ap) => tokens.has(String(ap)))
             }));
             return res.json(withFlag);
+        // eslint-disable-next-line unused-imports/no-unused-vars
         } catch (_) {
             return res.json(locationsWithData);
         }

@@ -9,6 +9,7 @@ const paymentSchema = new mongoose.Schema({
   amount: { type: Number, required: true },
   currency: { type: String, default: 'USD' },
   status: { type: String, enum: ['CREATED', 'COMPLETED', 'FAILED', 'REFUNDED', 'VOIDED'], default: 'CREATED' },
+  meta: { type: mongoose.Schema.Types.Mixed, default: {} },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Payment', paymentSchema);

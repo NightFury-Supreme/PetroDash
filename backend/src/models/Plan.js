@@ -13,7 +13,7 @@ const planSchema = new mongoose.Schema({
   // Pricing
   strikeThroughPrice: { type: Number, default: 0 }, // Original price for display
   pricePerMonth: { type: Number, required: true, min: 0 }, // Actual price per month
-  pricePerYear: { type: Number, required: true, min: 0 }, // Price for yearly billing
+  pricePerYear: { type: Number, default: 0, min: 0 }, // Price for yearly billing
   
   // Visibility and availability
   visibility: { 
@@ -47,7 +47,8 @@ const planSchema = new mongoose.Schema({
   productContent: {
     // Recurrent resources (added monthly for renewable plans)
     recurrentResources: {
-      cpuPercent: { type: Number, default: 0, min: 0, max: 100 },
+      // Pterodactyl CPU is % of all cores combined, e.g. 10000 = 100 cores at 100% each
+      cpuPercent: { type: Number, default: 0, min: 0 },
       memoryMb: { type: Number, default: 0, min: 0 },
       diskMb: { type: Number, default: 0, min: 0 },
       swapMb: { type: Number, default: -1 }, // -1 for unlimited

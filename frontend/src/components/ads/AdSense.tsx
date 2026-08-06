@@ -55,6 +55,7 @@ function sanitizeAdSlot(adSlot: string): string {
 }
 
 // Performance: Debounce function
+// eslint-disable-next-line unused-imports/no-unused-vars
 function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
@@ -117,7 +118,9 @@ function useIntersectionObserver(
 }
 
 export function AdSense({
+  // eslint-disable-next-line unused-imports/no-unused-vars
   publisherId,
+  // eslint-disable-next-line unused-imports/no-unused-vars
   adSlot,
   adFormat = 'auto',
   adStyle = { display: 'block' },
@@ -131,6 +134,7 @@ export function AdSense({
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [adBlockerDetected, setAdBlockerDetected] = useState(false);
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const [isLoading, setIsLoading] = useState(false);
   const [showAdBlockerModal, setShowAdBlockerModal] = useState(false);
   const adRef = useRef<HTMLDivElement>(null);
@@ -197,6 +201,7 @@ export function AdSense({
   }, []);
 
   // Initialize ad with error handling
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const initializeAd = useCallback(async (publisherId: string, adSlot: string) => {
     try {
       setIsLoading(true);

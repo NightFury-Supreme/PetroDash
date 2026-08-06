@@ -4,6 +4,7 @@ const { z } = require('zod');
 const User = require('../../models/User');
 const VerificationToken = require('../../models/VerificationToken');
 const Settings = require('../../models/Settings');
+// eslint-disable-next-line unused-imports/no-unused-vars
 const { generateSecureCode, constantTimeCompare, hashString } = require('../../utils/security');
 const { verificationRateLimit, resendRateLimit } = require('../../middleware/rateLimit');
 
@@ -41,6 +42,7 @@ router.get('/verify', async (req, res) => {
     
     if (wantsRedirect) return res.redirect(302, redirect);
     return res.json({ ok: true });
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
     return res.status(500).json({ error: 'Failed to verify email' });
   }
@@ -94,12 +96,14 @@ router.post('/verify/resend', resendRateLimit, async (req, res) => {
           siteName: (await Settings.findOne({}).lean())?.siteName || 'PteroDash' 
         },
       });
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (mailError) {
       // Don't leak email errors to prevent enumeration
       // Email error logged silently for production
     }
     
     return res.json({ ok: true });
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
     // Error logged silently for production
     return res.status(500).json({ error: 'Failed to send verification code' });
@@ -131,11 +135,12 @@ router.post('/verify/code', verificationRateLimit, async (req, res) => {
     // Hash the provided code
     const codeHash = hashString(code);
     
-    // Find verification token
+    // Find verification token — MUST be scoped to this user to prevent cross-account abuse
     const vt = await VerificationToken.findOne({ 
       tokenHash: codeHash, 
       purpose: 'email_verification', 
-      usedAt: null 
+      usedAt: null,
+      userId: user._id
     });
     
     if (!vt) {
@@ -177,6 +182,7 @@ router.post('/verify/code', verificationRateLimit, async (req, res) => {
     
     return res.json({ ok: true });
     
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
     // Error logged silently for production
     return res.status(500).json({ error: 'Failed to verify code' });

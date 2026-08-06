@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { AdminCouponEditSkeleton } from '@/components/skeletons/admin/coupons/AdminCouponEditSkeleton';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export default function NewCouponPageContent() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const { currency } = useCurrency();
   const [plans, setPlans] = useState<any[]>([]);
   const [form, setForm] = useState<any>({
     code: '',
@@ -71,14 +73,14 @@ export default function NewCouponPageContent() {
               <div className="label">Type *</div>
               <select className="input" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
                 <option value="percentage">Percentage (%)</option>
-                <option value="fixed">Fixed amount ($)</option>
+                <option value="fixed">Fixed amount ({currency})</option>
               </select>
             </label>
             <label>
               <div className="label">Value *</div>
-              <input type="number" className="input" min="0" max={form.type === 'percentage' ? 100 : undefined as any} step="0.01" value={form.value}
-                     onChange={(e) => setForm({ ...form, value: Number(e.target.value) || 0 })} />
-              <p className="text-xs text-[#AAAAAA] mt-1">{form.type === 'percentage' ? '0 to 100' : 'Enter amount in $'}</p>
+               <input type="number" className="input" min="0" max={form.type === 'percentage' ? 100 : undefined as any} step="0.01" value={form.value}
+                      onChange={(e) => setForm({ ...form, value: Number(e.target.value) || 0 })} />
+               <p className="text-xs text-[#AAAAAA] mt-1">{form.type === 'percentage' ? '0 to 100' : `Enter amount in ${currency}`}</p>
             </label>
             <label>
               <div className="label">Max Redemptions</div>
@@ -114,10 +116,10 @@ export default function NewCouponPageContent() {
                          onChange={() => setForm({ ...form, appliesToPlanIds: form.appliesToPlanIds.includes(p._id) ? form.appliesToPlanIds.filter((id: string) => id !== p._id) : [...form.appliesToPlanIds, p._id] })} />
                   <div>
                     <div className="text-sm font-medium">{p.name}</div>
-                    <div className="text-xs text-[#AAAAAA]">${p.pricePerMonth ?? 0}/month</div>
+                    <div className="text-xs text-[#AAAAAA]">{p.pricePerMonth ?? 0} {currency}/month</div>
                   </div>
                 </div>
-                <div className="px-2 py-1 text-xs rounded-md border" style={{ borderColor: 'var(--border)' }}>${p.pricePerMonth ?? 0}</div>
+                <div className="px-2 py-1 text-xs rounded-md border" style={{ borderColor: 'var(--border)' }}>{p.pricePerMonth ?? 0} {currency}</div>
               </label>
             ))}
           </div>

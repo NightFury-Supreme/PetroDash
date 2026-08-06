@@ -9,6 +9,7 @@ router.get('/', async (req, res) => {
     if (!settings) {
       return res.json({
         emailLogin: true,
+        emailVerification: true,
         discord: { enabled: false },
         google: { enabled: false }
       });
@@ -16,6 +17,7 @@ router.get('/', async (req, res) => {
 
     return res.json({
       emailLogin: settings.auth?.emailLogin ?? true,
+      emailVerification: settings.auth?.emailVerification ?? true,
       discord: {
         enabled: settings.auth?.discord?.enabled ?? false
       },
@@ -23,6 +25,7 @@ router.get('/', async (req, res) => {
         enabled: settings.auth?.google?.enabled ?? false
       }
     });
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
     // Auth config error logged silently
     return res.status(500).json({

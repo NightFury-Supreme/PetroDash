@@ -18,6 +18,7 @@ const TEMPLATE_NAMES: Record<string, string> = {
   ticketReply: 'Ticket Reply'
 };
 
+// eslint-disable-next-line unused-imports/no-unused-vars
 export default function TemplatesEditor({ templates, brand, token, selectedKey, onSelect, onChange }:{
   templates: Record<string, Template>;
   brand: EmailBrand;
@@ -31,6 +32,7 @@ export default function TemplatesEditor({ templates, brand, token, selectedKey, 
 
   const renderPreviewHtml = () => {
     const htmlBody = tpl?.html || '<p>Preview</p>';
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const color = brand?.brandColor || '#0ea5e9';
     const footer = brand?.footerText || '';
     return `

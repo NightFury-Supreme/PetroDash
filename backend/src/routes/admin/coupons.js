@@ -10,6 +10,7 @@ router.get('/', requireAdmin, async (req, res) => {
   try {
     const coupons = await Coupon.find({}).sort({ createdAt: -1 }).lean();
     res.json(coupons);
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch coupons' });
   }
@@ -23,6 +24,7 @@ router.get('/:id', requireAdmin, async (req, res) => {
       return res.status(404).json({ error: 'Coupon not found' });
     }
     res.json(coupon);
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch coupon' });
   }

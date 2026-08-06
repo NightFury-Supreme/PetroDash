@@ -29,21 +29,17 @@ function generateSecureToken(bytes = 32) {
 
 /**
  * Constant-time string comparison to prevent timing attacks
+ * Uses Node.js built-in crypto.timingSafeEqual for correctness
  * @param {string} a - First string
  * @param {string} b - Second string
  * @returns {boolean} - True if strings are equal
  */
 function constantTimeCompare(a, b) {
-  if (a.length !== b.length) {
-    return false;
-  }
-  
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  
-  return result === 0;
+  const aBuf = Buffer.from(String(a));
+  const bBuf = Buffer.from(String(b));
+  // Buffers must be the same length for timingSafeEqual
+  if (aBuf.length !== bBuf.length) return false;
+  return crypto.timingSafeEqual(aBuf, bBuf);
 }
 
 /**
@@ -115,23 +111,7 @@ function validatePasswordStrength(password) {
   };
 }
 
-/**
- * Check if an IP address is in a rate limit window
- * @param {string} ip - IP address
- * @param {string} key - Rate limit key
- * @param {number} windowMs - Window in milliseconds
- * @param {number} maxAttempts - Maximum attempts allowed
- * @returns {object} - Rate limit status
- */
-function checkRateLimit(ip, key, windowMs, maxAttempts) {
-  // This would typically use Redis or a similar store
-  // For now, return a basic structure
-  return {
-    allowed: true,
-    remaining: maxAttempts,
-    resetTime: Date.now() + windowMs
-  };
-}
+
 
 /**
  * Check if server limits have changed
@@ -197,7 +177,6 @@ module.exports = {
   hashString,
   generateSalt,
   validatePasswordStrength,
-  checkRateLimit,
   hasServerLimitsChanged,
   handleValidationError,
   getSettings,

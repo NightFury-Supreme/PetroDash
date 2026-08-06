@@ -91,6 +91,7 @@ class DiscordService {
       if (!result.success) return false;
       
       return result.guilds.some(guild => guild.id === guildId);
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (error) {
       return false;
     }

@@ -11,6 +11,7 @@ type LedgerItem = Record<string, any>;
 
 export default function AdminLedgerPage() {
   const [items, setItems] = useState<LedgerItem[]>([]);
+  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [status, setStatus] = useState<string>("");
   const [provider, setProvider] = useState<string>("");
   const [userId, setUserId] = useState<string>("");
@@ -18,9 +19,10 @@ export default function AdminLedgerPage() {
   const [loading, setLoading] = useState(false);
   const [refunding, setRefunding] = useState<string | null>(null);
   const [voiding, setVoiding] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const modal = useModal();
 
-  const load = async () => {
+  const load = async (pageToLoad = currentPage) => {
     setError(null);
     setLoading(true);
     try {
@@ -34,8 +36,9 @@ export default function AdminLedgerPage() {
       if (status) params.set('status', status);
       if (provider) params.set('provider', provider);
       if (userId) params.set('userId', userId);
+      params.set('page', pageToLoad.toString());
+      params.set('limit', '10');
       
-      // Fixed API endpoint - now using the correct path
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/payments/ledger?${params.toString()}`, { 
         headers: { Authorization: `Bearer ${token}` } 
       });
@@ -46,7 +49,17 @@ export default function AdminLedgerPage() {
       }
       
       const data = await response.json();
-      setItems(Array.isArray(data) ? data : []);
+      if (Array.isArray(data)) {
+        setItems(data);
+        setPagination({ page: 1, totalPages: 1, total: data.length });
+      } else {
+        setItems(data.payments || []);
+        setPagination({
+          page: data.page || 1,
+          totalPages: data.totalPages || 1,
+          total: data.total || 0
+        });
+      }
     } catch (e: unknown) { 
       setError(e instanceof Error ? e.message : 'Failed to load payments'); 
     } finally {
@@ -55,8 +68,8 @@ export default function AdminLedgerPage() {
   };
 
   useEffect(() => { 
-    load(); 
-  }, []);
+    load(currentPage); 
+  }, [currentPage]);
 
   const handleRefund = async (id: string) => {
     const confirmed = await modal.confirm({
@@ -175,10 +188,36 @@ export default function AdminLedgerPage() {
           onStatusChange={setStatus}
           onProviderChange={setProvider}
           onUserIdChange={setUserId}
-          onFilter={load}
+          onFilter={() => {
+            setCurrentPage(1);
+            load(1);
+          }}
           onRefund={handleRefund}
           onVoid={handleVoid}
         />
+
+        {/* Pagination Controls */}
+        {pagination.totalPages > 1 && (
+          <div className="flex items-center justify-between pt-4">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={pagination.page <= 1}
+              className="px-4 py-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-sm font-medium hover:bg-[var(--hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Previous
+            </button>
+            <div className="text-sm text-[#AAAAAA]">
+              Page {pagination.page} of {pagination.totalPages} (Total: {pagination.total})
+            </div>
+            <button
+              onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))}
+              disabled={pagination.page >= pagination.totalPages}
+              className="px-4 py-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-sm font-medium hover:bg-[var(--hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
     </Shell>
   );

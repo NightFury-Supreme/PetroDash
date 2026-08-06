@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { AdminGiftEditSkeleton } from '@/components/skeletons/admin/gifts/AdminGiftEditSkeleton';
 import { Gift } from '@/components/admin/gifts/GiftEditor';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export default function EditGiftPageContent() {
   const params = useParams<{ id: string }>();
@@ -13,6 +14,7 @@ export default function EditGiftPageContent() {
   const [form, setForm] = useState<Gift | null>(null);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { currency } = useCurrency();
 
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
@@ -55,7 +57,7 @@ export default function EditGiftPageContent() {
 
   if (loading || !form) return <AdminGiftEditSkeleton />;
 
-  const readOnly = (form as any)?.source === 'user';
+
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -65,11 +67,11 @@ export default function EditGiftPageContent() {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-extrabold">Edit Gift</h1>
-            {readOnly && (
-              <span className="px-3 py-1 rounded-full text-xs bg-[#202020] border border-[#303030]">User-generated • read-only</span>
+            {form.source === 'user' && (
+              <span className="px-3 py-1 rounded-full text-xs bg-[#202020] border border-[#303030]">User-generated</span>
             )}
           </div>
-          <p className="text-[#AAAAAA] text-lg">{readOnly ? 'Viewing user-generated code' : 'Update rewards and limits'}</p>
+          <p className="text-[#AAAAAA] text-lg">Update rewards and limits</p>
         </div>
       </div>
 
@@ -79,18 +81,18 @@ export default function EditGiftPageContent() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <label>
               <div className="label">Code *</div>
-              <input disabled={readOnly} className="w-full bg-[#101010] border border-[#2a2a2a] rounded-lg px-3 py-2" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} placeholder="GIFT2025" />
-              <p className="text-xs text-[#AAAAAA] mt-1">Will be uppercased when saved.</p>
+              <input disabled={true} className="w-full bg-[#101010] border border-[#2a2a2a] rounded-lg px-3 py-2 opacity-50 cursor-not-allowed" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} placeholder="GIFT2025" />
+              <p className="text-xs text-[#AAAAAA] mt-1">The code string cannot be modified after creation.</p>
             </label>
             <label>
               <div className="label">Max Redemptions</div>
-              <input disabled={readOnly} type="number" className="w-full bg-[#101010] border border-[#2a2a2a] rounded-lg px-3 py-2" min="0" value={form.maxRedemptions || 0}
+              <input type="number" className="w-full bg-[#101010] border border-[#2a2a2a] rounded-lg px-3 py-2" min="0" value={form.maxRedemptions || 0}
                      onChange={(e) => setForm({ ...form, maxRedemptions: Number(e.target.value) || 0 })} />
               <p className="text-xs text-[#AAAAAA] mt-1">0 means unlimited uses.</p>
             </label>
             <label className="md:col-span-2">
               <div className="label">Description</div>
-              <input disabled={readOnly} className="input" value={form.description || ''} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Optional note" />
+              <input className="input" value={form.description || ''} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Optional note" />
             </label>
           </div>
         </div>
@@ -100,12 +102,12 @@ export default function EditGiftPageContent() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <label>
               <div className="label">Valid From</div>
-              <input disabled={readOnly} type="datetime-local" className="input" value={(form as any).validFrom || ''} onChange={(e) => setForm({ ...form, validFrom: e.target.value as any })} />
+              <input type="datetime-local" className="input" value={(form as any).validFrom || ''} onChange={(e) => setForm({ ...form, validFrom: e.target.value as any })} />
               <p className="text-xs text-[#AAAAAA] mt-1">If unset, starts instantly.</p>
             </label>
             <label>
               <div className="label">Valid Until</div>
-              <input disabled={readOnly} type="datetime-local" className="input" value={(form as any).validUntil || ''} onChange={(e) => setForm({ ...form, validUntil: e.target.value as any })} />
+              <input type="datetime-local" className="input" value={(form as any).validUntil || ''} onChange={(e) => setForm({ ...form, validUntil: e.target.value as any })} />
               <p className="text-xs text-[#AAAAAA] mt-1">If unset, no end.</p>
             </label>
           </div>
@@ -116,42 +118,42 @@ export default function EditGiftPageContent() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <label>
               <div className="label">Coins</div>
-              <input disabled={readOnly} type="number" className="input" min="0" value={form.rewards?.coins || 0}
+              <input type="number" className="input" min="0" value={form.rewards?.coins || 0}
                      onChange={(e) => setForm({ ...form, rewards: { ...form.rewards, coins: Number(e.target.value) || 0 } })} />
             </label>
             <label>
               <div className="label">CPU %</div>
-              <input disabled={readOnly} type="number" className="input" min="0" value={form.rewards?.resources?.cpuPercent || 0}
+              <input type="number" className="input" min="0" value={form.rewards?.resources?.cpuPercent || 0}
                      onChange={(e) => setForm({ ...form, rewards: { ...form.rewards, resources: { ...form.rewards.resources, cpuPercent: Number(e.target.value) || 0 } } })} />
             </label>
             <label>
               <div className="label">Memory (MB)</div>
-              <input disabled={readOnly} type="number" className="input" min="0" value={form.rewards?.resources?.memoryMb || 0}
+              <input type="number" className="input" min="0" value={form.rewards?.resources?.memoryMb || 0}
                      onChange={(e) => setForm({ ...form, rewards: { ...form.rewards, resources: { ...form.rewards.resources, memoryMb: Number(e.target.value) || 0 } } })} />
             </label>
             <label>
               <div className="label">Disk (MB)</div>
-              <input disabled={readOnly} type="number" className="input" min="0" value={form.rewards?.resources?.diskMb || 0}
+              <input type="number" className="input" min="0" value={form.rewards?.resources?.diskMb || 0}
                      onChange={(e) => setForm({ ...form, rewards: { ...form.rewards, resources: { ...form.rewards.resources, diskMb: Number(e.target.value) || 0 } } })} />
             </label>
             <label>
               <div className="label">Backups</div>
-              <input disabled={readOnly} type="number" className="input" min="0" value={form.rewards?.resources?.backups || 0}
+              <input type="number" className="input" min="0" value={form.rewards?.resources?.backups || 0}
                      onChange={(e) => setForm({ ...form, rewards: { ...form.rewards, resources: { ...form.rewards.resources, backups: Number(e.target.value) || 0 } } })} />
             </label>
             <label>
               <div className="label">Databases</div>
-              <input disabled={readOnly} type="number" className="input" min="0" value={form.rewards?.resources?.databases || 0}
+              <input type="number" className="input" min="0" value={form.rewards?.resources?.databases || 0}
                      onChange={(e) => setForm({ ...form, rewards: { ...form.rewards, resources: { ...form.rewards.resources, databases: Number(e.target.value) || 0 } } })} />
             </label>
             <label>
               <div className="label">Allocations</div>
-              <input disabled={readOnly} type="number" className="input" min="0" value={form.rewards?.resources?.allocations || 0}
+              <input type="number" className="input" min="0" value={form.rewards?.resources?.allocations || 0}
                      onChange={(e) => setForm({ ...form, rewards: { ...form.rewards, resources: { ...form.rewards.resources, allocations: Number(e.target.value) || 0 } } })} />
             </label>
             <label>
               <div className="label">Server Slots</div>
-              <input disabled={readOnly} type="number" className="input" min="0" value={form.rewards?.resources?.serverSlots || 0}
+              <input type="number" className="input" min="0" value={form.rewards?.resources?.serverSlots || 0}
                      onChange={(e) => setForm({ ...form, rewards: { ...form.rewards, resources: { ...form.rewards.resources, serverSlots: Number(e.target.value) || 0 } } })} />
             </label>
           </div>
@@ -164,7 +166,7 @@ export default function EditGiftPageContent() {
             {plans.map((p) => (
               <label key={p._id} className="flex items-center justify-between gap-3 p-3 rounded border hover:bg-[#1a1a1a] transition" style={{ borderColor: 'var(--border)' }}>
                 <div className="flex items-center gap-3">
-                  <input disabled={readOnly} type="checkbox" checked={form.rewards?.planIds?.includes(p._id) || false}
+                  <input type="checkbox" checked={form.rewards?.planIds?.includes(p._id) || false}
                          onChange={() => {
                            const current = form.rewards?.planIds || [];
                            const next = current.includes(p._id) ? current.filter((id: string) => id !== p._id) : [...current, p._id];
@@ -172,15 +174,15 @@ export default function EditGiftPageContent() {
                          }} />
                   <div>
                     <div className="text-sm font-medium">{p.name}</div>
-                    <div className="text-xs text-[#AAAAAA]">${p.pricePerMonth ?? 0}/month</div>
+                    <div className="text-xs text-[#AAAAAA]">{p.pricePerMonth ?? 0} {currency}/month</div>
                   </div>
                 </div>
-                <div className="px-2 py-1 text-xs rounded-md border" style={{ borderColor: 'var(--border)' }}>${p.pricePerMonth ?? 0}</div>
+                <div className="px-2 py-1 text-xs rounded-md border" style={{ borderColor: 'var(--border)' }}>{p.pricePerMonth ?? 0} {currency}</div>
               </label>
             ))}
           </div>
           <label className="flex items-center gap-3">
-            <button type="button" disabled={readOnly} onClick={() => setForm({ ...form, enabled: !form.enabled })} className={`relative inline-flex h-6 w-11 items-center rounded-full border ${form.enabled ? 'bg-white' : 'bg-[#303030]'} ${readOnly ? 'opacity-50 cursor-not-allowed' : ''}`} style={{ borderColor: 'var(--border)' }}>
+            <button type="button" onClick={() => setForm({ ...form, enabled: !form.enabled })} className={`relative inline-flex h-6 w-11 items-center rounded-full border ${form.enabled ? 'bg-white' : 'bg-[#303030]'}`} style={{ borderColor: 'var(--border)' }}>
               <span className={`inline-block h-5 w-5 transform rounded-full bg-[#e5e5e5] transition ${form.enabled ? 'translate-x-5' : 'translate-x-1'}`}></span>
             </button>
             <span>Enable gift</span>
@@ -212,9 +214,7 @@ export default function EditGiftPageContent() {
 
         <div className="flex items-center justify-end gap-3">
           <Link href="/admin/gift" className="btn-ghost">Back</Link>
-          {!readOnly && (
-            <button type="submit" disabled={saving} className="btn-white">{saving ? 'Saving…' : 'Save Changes'}</button>
-          )}
+          <button type="submit" disabled={saving} className="btn-white">{saving ? 'Saving…' : 'Save Changes'}</button>
         </div>
       </form>
     </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 interface PlanFormData {
   _id: string;
@@ -56,6 +56,7 @@ interface UsePlanEditReturn {
   clearError: () => void;
 }
 
+// eslint-disable-next-line unused-imports/no-unused-vars
 const initialPlanData: PlanFormData = {
   _id: '',
   name: '',

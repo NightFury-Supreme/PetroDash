@@ -22,7 +22,6 @@ export default function LocationList({ items }: { items: any[] }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               {location.flag ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img src={`${process.env.NEXT_PUBLIC_API_BASE}${location.flag}`} alt={location.name} className="w-8 h-8 rounded object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
               ) : (
                 <i className="fas fa-location-dot text-white"></i>

@@ -77,6 +77,7 @@ export default function VerifyCard() {
         const data = await res.json().catch(() => ({}));
         setError(data.error || 'Invalid verification code');
       }
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_e) {
       setError('Failed to verify code. Please try again.');
     } finally {
@@ -107,6 +108,7 @@ export default function VerifyCard() {
         const data = await res.json().catch(() => ({}));
         setError(data.error || 'Failed to send verification code');
       }
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_e) {
       setError('Failed to send verification code');
     } finally {

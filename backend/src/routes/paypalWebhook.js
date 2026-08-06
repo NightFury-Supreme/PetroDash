@@ -73,6 +73,34 @@ router.post('/', express.json({ type: '*/*' }), async (req, res) => {
       return res.json({ ok: true });
     }
 
+    if (eventType === 'CHECKOUT.ORDER.APPROVED') {
+      const orderId = resource?.id;
+      if (orderId) {
+        const payment = await Payment.findOne({ provider: 'paypal', providerOrderId: orderId, status: 'CREATED' });
+        if (payment) {
+          const { token, baseUrl } = await getAccessToken();
+          const axios = require('axios');
+          let captureData;
+          try {
+            const r = await axios.post(
+              `${baseUrl}/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`,
+              {},
+              { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
+            );
+            captureData = r.data;
+          // eslint-disable-next-line unused-imports/no-unused-vars
+          } catch (err) {
+            // Already captured by frontend or other error
+            captureData = null;
+          }
+          if (captureData && captureData.status === 'COMPLETED') {
+            const { processCapturedPayment } = require('../lib/paymentProcessor');
+            await processCapturedPayment(payment, captureData, orderId);
+          }
+        }
+      }
+    }
+
     // For legacy order events, just ack
     await WebhookEvent.create({ provider: 'paypal', eventId });
     return res.json({ ok: true });

@@ -30,6 +30,7 @@ export function LocationStep({ locations, form, violations, onInputChange }: Loc
             .filter((p: any) => ids.has(p._id))
         : [];
       setInfoPlans(list);
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_) {
       setInfoPlans([]);
     }

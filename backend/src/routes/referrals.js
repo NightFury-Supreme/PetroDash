@@ -6,9 +6,9 @@ const User = require('../models/User');
 const router = express.Router();
 
 function generateCode() {
-  // Simple base36 code from random and timestamp
-  return (Math.random().toString(36).slice(2, 6) + Date.now().toString(36).slice(-4)).toUpperCase();
-}
+  const crypto = require('crypto');
+  return (crypto.randomBytes(4).toString('hex') + Date.now().toString(36).slice(-4)).toUpperCase();
+};
 
 // Rate limiting handled globally in /api
 
@@ -49,6 +49,7 @@ router.get('/me', requireAuth, async (req, res) => {
       referredCoins,
       minInvites
     });
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
     return res.status(500).json({ error: 'Internal server error' });
   }
@@ -71,9 +72,18 @@ router.post('/custom-code', requireAuth, async (req, res) => {
     // Check availability (case-insensitive by storing uppercase)
     const exists = await User.findOne({ referralCode: desired }).lean();
     if (exists && String(exists._id) !== String(user._id)) return res.status(409).json({ error: 'Code already in use' });
+    
     user.referralCode = desired;
-    await user.save();
-    return res.json({ ok: true, code: user.referralCode });
+    try {
+      await user.save();
+      return res.json({ ok: true, code: user.referralCode });
+    } catch (saveError) {
+      if (saveError.code === 11000) {
+        return res.status(409).json({ error: 'Code already in use' });
+      }
+      throw saveError;
+    }
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
     return res.status(500).json({ error: 'Internal server error' });
   }

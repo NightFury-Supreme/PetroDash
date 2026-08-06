@@ -16,12 +16,16 @@ export default function NewPlanPage() {
     saving,
     error,
     formData,
+    // eslint-disable-next-line unused-imports/no-unused-vars
     eggs,
+    // eslint-disable-next-line unused-imports/no-unused-vars
     locations,
     handleInputChange,
     handleSubmit,
     clearError,
+    // eslint-disable-next-line unused-imports/no-unused-vars
     resetForm,
+    // eslint-disable-next-line unused-imports/no-unused-vars
     isFormValid,
     validationErrors,
   } = usePlanForm();

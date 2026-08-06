@@ -12,17 +12,23 @@ export default function CouponsPageContent() {
   const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [currency, setCurrency] = useState('USD');
 
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
     if (!token) { router.replace('/login'); return; }
     Promise.all([
       fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/coupons`, { headers: { Authorization: `Bearer ${token}` } }),
-      fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans`, { headers: { Authorization: `Bearer ${token}` } })
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/branding`)
     ])
-      .then(async ([cR, pR]) => {
+      .then(async ([cR, pR, bR]) => {
         if (cR.ok) setCoupons(await cR.json());
         if (pR.ok) setPlans(await pR.json());
+        if (bR.ok) {
+          const bData = await bR.json();
+          if (bData?.currency) setCurrency(bData.currency);
+        }
       })
       .finally(() => setLoading(false));
   }, [router]);
@@ -51,7 +57,7 @@ export default function CouponsPageContent() {
   return (
     <div className="p-6 space-y-6">
       <CouponsHeader total={coupons.length} />
-      <CouponsList coupons={coupons} plans={plans} onToggle={toggleEnabled} onDelete={deleteCoupon} deletingId={deleting} />
+      <CouponsList coupons={coupons} plans={plans} onToggle={toggleEnabled} onDelete={deleteCoupon} deletingId={deleting} currency={currency} />
     </div>
   );
 }

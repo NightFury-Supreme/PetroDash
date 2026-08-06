@@ -16,6 +16,7 @@ router.use('/logs', require('./logs'));
 router.use('/settings', require('./settings'));
 router.use('/email', require('./email'));
 router.use('/payments', require('./payments'));
+router.use('/earn', require('./earn'));
 
 module.exports = router;
 

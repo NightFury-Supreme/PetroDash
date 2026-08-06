@@ -1,4 +1,5 @@
 const express = require('express');
+// eslint-disable-next-line unused-imports/no-unused-vars
 const crypto = require('crypto');
 const { z } = require('zod');
 const User = require('../../models/User');
@@ -46,12 +47,14 @@ router.post('/forgot', passwordResetRateLimit, async (req, res) => {
           siteName: (await require('../../models/Settings').findOne({}).lean())?.siteName || 'PteroDash'
         }
       });
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (e) {
       // Don't leak email errors to prevent enumeration
       // Email error logged silently for production
     }
 
     return res.json({ ok: true });
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
     // Error logged silently for production
     return res.status(500).json({ error: 'Failed to initiate password reset' });

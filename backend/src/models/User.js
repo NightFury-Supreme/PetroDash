@@ -30,6 +30,7 @@ const UserSchema = new mongoose.Schema(
         pterodactylUserId: { type: Number },
         role: { type: String, enum: ['user', 'admin'], default: 'user' },
         coins: { type: Number, default: 0 },
+        serverLock: { type: Date, default: null }, // Atomic timeout lock for server creation/modification
         emailVerified: { type: Boolean, default: false },
         // Referrals
         referralCode: { type: String, unique: true, sparse: true },

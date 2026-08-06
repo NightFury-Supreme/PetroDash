@@ -1,16 +1,16 @@
 {
   "name": "pterodash-frontend",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "private": false,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "cross-env NODE_OPTIONS='--no-deprecation' next dev",
+    "build": "cross-env NODE_OPTIONS='--no-deprecation' next build",
+    "start": "cross-env NODE_OPTIONS='--no-deprecation' next start",
     "lint": "eslint ."
   },
   "dependencies": {
     "lucide-react": "^0.540.0",
-    "next": "15.4.7",
+    "next": "^16.3.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "zod": "^4.0.17"
@@ -21,8 +21,13 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@typescript-eslint/eslint-plugin": "^8.66.0",
+    "@typescript-eslint/parser": "^8.66.0",
+    "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "15.4.7",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-unused-imports": "^4.4.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

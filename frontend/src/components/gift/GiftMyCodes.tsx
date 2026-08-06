@@ -50,10 +50,18 @@ export default function GiftMyCodes({ filter }: { filter: 'active' | 'inactive' 
           <div className="flex items-center justify-between">
             <div>
               <div className="font-mono text-lg">{g.code}</div>
-              <div className="text-xs text-[#AAAAAA]">{g.redeemedCount || 0}{g.maxRedemptions ? ` / ${g.maxRedemptions}` : ''} redeemed</div>
+              {g.description && <div className="text-sm text-[#CCCCCC] mt-1">{g.description}</div>}
+              <div className="text-xs text-[#AAAAAA] mt-1">{g.redeemedCount || 0}{g.maxRedemptions ? ` / ${g.maxRedemptions}` : ''} redeemed</div>
             </div>
             <div className="text-right text-sm text-[#AAAAAA]">
               <div>Coins: {g.rewards?.coins || 0}</div>
+              {Number(g.rewards?.resources?.diskMb) > 0 && <div>Disk: {g.rewards.resources.diskMb} MB</div>}
+              {Number(g.rewards?.resources?.memoryMb) > 0 && <div>RAM: {g.rewards.resources.memoryMb} MB</div>}
+              {Number(g.rewards?.resources?.cpuPercent) > 0 && <div>CPU: {g.rewards.resources.cpuPercent}%</div>}
+              {Number(g.rewards?.resources?.backups) > 0 && <div>Backups: {g.rewards.resources.backups}</div>}
+              {Number(g.rewards?.resources?.databases) > 0 && <div>Databases: {g.rewards.resources.databases}</div>}
+              {Number(g.rewards?.resources?.allocations) > 0 && <div>Allocations: {g.rewards.resources.allocations}</div>}
+              {Number(g.rewards?.resources?.serverSlots) > 0 && <div>Server Slots: {g.rewards.resources.serverSlots}</div>}
               <div>Expires: {g.validUntil ? new Date(g.validUntil).toLocaleString() : '—'}</div>
             </div>
           </div>

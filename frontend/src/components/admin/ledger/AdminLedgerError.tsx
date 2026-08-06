@@ -1,17 +1,28 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import { useModal } from "@/components/Modal";
+
 interface AdminLedgerErrorProps {
   error: string | null;
 }
 
 export function AdminLedgerError({ error }: AdminLedgerErrorProps) {
-  if (!error) return null;
+  const modal = useModal();
+  const last = useRef<string | null>(null);
 
-  return (
-    <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
-      <div className="flex items-center gap-3">
-        <i className="fas fa-exclamation-triangle text-red-400"></i>
-        <span className="text-red-400 font-medium">{error}</span>
-      </div>
-    </div>
-  );
+  useEffect(() => {
+    if (!error) return;
+    if (last.current === error) return;
+    last.current = error;
+    (async () => {
+      try {
+        await modal.error({ title: "Error", body: error });
+      // eslint-disable-next-line unused-imports/no-unused-vars
+      } catch (_) {}
+    })();
+  }, [error, modal]);
+
+  return null;
 }
 

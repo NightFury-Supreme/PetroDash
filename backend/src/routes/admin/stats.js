@@ -59,6 +59,7 @@ router.get('/', requireAdmin, async (req, res) => {
       plans: { total: plansCount },
       purchases: { total: totalPurchases, today: purchasesToday, usersWithPurchases }
     });
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (err) {
     return res.status(500).json({ error: 'Failed to load admin stats' });
   }

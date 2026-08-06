@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [18.x]
+        node: [18.x, 20.x]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,7 +36,7 @@ jobs:
         working-directory: backend
         run: |
           if [ -f eslint.config.mjs ] || [ -f .eslintrc.js ] || [ -f .eslintrc.cjs ] || [ -f .eslintrc.json ]; then \
-            npx eslint "src/**/*.{js,jsx,ts,tsx}" --no-error-on-unmatched-pattern; \
+            npx eslint "src/**/*.{js,jsx,ts,tsx}" --max-warnings=0 --no-error-on-unmatched-pattern; \
           else \
             echo "No ESLint config found in backend, skipping lint"; \
           fi
@@ -45,7 +45,7 @@ jobs:
         working-directory: frontend
         run: |
           if [ -f eslint.config.mjs ] || [ -f .eslintrc.js ] || [ -f .eslintrc.cjs ] || [ -f .eslintrc.json ]; then \
-            npx eslint "src/**/*.{js,jsx,ts,tsx}" "app/**/*.{js,jsx,ts,tsx}" --no-error-on-unmatched-pattern; \
+            npx eslint "src/**/*.{js,jsx,ts,tsx}" "app/**/*.{js,jsx,ts,tsx}" --max-warnings=0 --no-error-on-unmatched-pattern; \
           else \
             echo "No ESLint config found in frontend, skipping lint"; \
           fi
@@ -54,7 +54,7 @@ jobs:
         working-directory: backend
         run: |
           if [ -f tsconfig.json ]; then \
-            (npm run type-check --if-present || npx tsc --noEmit) || true; \
+            npm run type-check --if-present || npx tsc --noEmit; \
           else \
             echo "No tsconfig.json found in backend, skipping type-check"; \
           fi
@@ -121,12 +121,40 @@ jobs:
       - name: Backend production audit
         working-directory: backend
         run: |
-          if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi
-          npm audit --production --audit-level=high || true
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+          npm audit --audit-level=low
 
       - name: Frontend production audit
         working-directory: frontend
         run: |
-          if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi
-          npm audit --production --audit-level=high || true
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+          npm audit --audit-level=low
 
+  codeql:
+    name: CodeQL Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"

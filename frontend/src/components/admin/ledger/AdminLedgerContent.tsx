@@ -3,6 +3,7 @@ import { AdminLedgerError } from './AdminLedgerError';
 import { AdminLedgerTable } from './AdminLedgerTable';
 import { AdminLedgerFiltersSkeleton, AdminLedgerTableSkeleton } from '@/components/skeletons/admin/ledger';
 
+// eslint-disable-next-line unused-imports/no-unused-vars
 interface Payment {
   _id: string;
   provider?: string;

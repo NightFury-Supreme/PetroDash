@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Plan {
   _id: string;
@@ -55,10 +56,13 @@ export function PlansList({
   plans,
   deleting,
   onDelete,
+  // eslint-disable-next-line unused-imports/no-unused-vars
   onToggleEnabled,
   onMakeUnlisted,
   onMakePublic,
 }: PlansListProps) {
+  const { currency } = useCurrency();
+  
   if (plans.length === 0) {
     return (
       <div className="text-center py-16">
@@ -124,12 +128,12 @@ export function PlansList({
               {/* Plan Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
                                  <div className="text-center p-4 bg-[#202020] rounded-xl border border-[#303030]">
-                   <div className="text-2xl font-bold text-white mb-1">${plan.pricePerMonth}</div>
+                   <div className="text-2xl font-bold text-white mb-1">{plan.pricePerMonth} {currency}</div>
                    <div className="text-sm text-[#AAAAAA]">
                      {plan.billingOptions?.lifetime ? 'Once' : 'per month'}
                    </div>
                    {plan.strikeThroughPrice > 0 && (
-                     <div className="text-sm text-gray-500 line-through">${plan.strikeThroughPrice}</div>
+                     <div className="text-sm text-gray-500 line-through">{plan.strikeThroughPrice} {currency}</div>
                    )}
                  </div>
                 

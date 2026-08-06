@@ -12,7 +12,10 @@ const router = express.Router();
 // GET /api/admin/users - list users
 router.get('/', requireAdmin, async (req, res) => {
   try {
-    const { search } = req.query;
+    const { search, page = '1', limit = '10' } = req.query;
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, parseInt(limit, 10) || 10);
+    
     let filter = {};
     if (typeof search === 'string' && search.trim()) {
       const s = search.trim();
@@ -26,14 +29,30 @@ router.get('/', requireAdmin, async (req, res) => {
       } catch {}
       filter = { $or: or };
     }
-    const users = await User.find(filter, { passwordHash: 0 }).lean();
-    // count servers per user
+    
+    const total = await User.countDocuments(filter);
+    const users = await User.find(filter, { passwordHash: 0 })
+      .skip((pageNum - 1) * limitNum)
+      .limit(limitNum)
+      .lean();
+      
+    // count servers per user for the current page
+    const userIds = users.map(u => u._id);
     const servers = await Server.aggregate([
+      { $match: { owner: { $in: userIds } } },
       { $group: { _id: '$owner', count: { $sum: 1 } } },
     ]);
     const idToCount = Object.fromEntries(servers.map((s) => [String(s._id), s.count]));
     const list = users.map((u) => ({ ...u, serverCount: idToCount[String(u._id)] || 0 }));
-    return res.json(list);
+    
+    return res.json({
+      users: list,
+      total,
+      page: pageNum,
+      limit: limitNum,
+      totalPages: Math.ceil(total / limitNum)
+    });
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
     return res.status(500).json({ error: 'Failed to list users' });
   }
@@ -119,17 +138,34 @@ const updateSchema = z.object({
   username: z.string().min(3).max(32).optional(),
   firstName: z.string().min(1).max(64).optional(),
   lastName: z.string().min(1).max(64).optional(),
-  referralCode: z.string().trim().min(3).max(20).regex(/^[A-Za-z0-9_-]+$/).optional(),
+  // Admins can update a user's referral code but cannot clear it to empty
+  referralCode: z.string().trim().min(1, 'Referral code cannot be empty').min(3, 'Referral code must be at least 3 characters').max(20).regex(/^[A-Za-z0-9_-]+$/, 'Referral code can only contain letters, numbers, hyphens and underscores').optional(),
   ban: z.object({ isBanned: z.boolean(), reason: z.string().trim().optional(), until: z.union([z.string().datetime().nullable(), z.null()]).optional() }).partial().optional(),
+  profilePicture: z.string().url('Must be a valid URL').or(z.literal('')).optional(),
 });
 
 router.patch('/:id', requireAdmin, async (req, res) => {
+  const isSelf = String(req.params.id) === String(req.user?.sub || req.user?.userId);
+
+  // Targeted self-edit guards — prevent accidental admin lockout:
+  //   1. Cannot demote your own role away from admin
+  //   2. Cannot ban yourself
+  // Everything else (resources, coins, email, referral code, etc.) is allowed.
+  if (isSelf) {
+    if (req.body?.role && req.body.role !== 'admin') {
+      return res.status(403).json({ error: 'You cannot demote your own admin role.' });
+    }
+    if (req.body?.ban?.isBanned === true) {
+      return res.status(403).json({ error: 'You cannot ban your own account.' });
+    }
+  }
+
   const parsed = updateSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
   const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ error: 'User not found' });
 
-  const { role, resources, coins, email, username, firstName, lastName, referralCode, ban } = parsed.data;
+  const { role, resources, coins, email, username, firstName, lastName, referralCode, ban, profilePicture } = parsed.data;
   if (role) user.role = role;
   if (typeof coins === 'number') user.coins = coins;
   // Direct resource editing: update user.resources directly
@@ -138,11 +174,12 @@ router.patch('/:id', requireAdmin, async (req, res) => {
   if (username) user.username = username;
   if (firstName) user.firstName = firstName;
   if (lastName) user.lastName = lastName;
-  if (typeof referralCode === 'string' && referralCode.trim()) {
+  if (profilePicture !== undefined) user.profilePicture = profilePicture;
+  if (typeof referralCode === 'string') {
     const desired = referralCode.trim().toUpperCase();
     const exists = await User.findOne({ referralCode: desired }).lean();
     if (exists && String(exists._id) !== String(user._id)) {
-      return res.status(409).json({ error: 'Referral code already in use' });
+      return res.status(409).json({ error: 'Referral code is already in use by another user.' });
     }
     user.referralCode = desired;
   }
@@ -166,9 +203,10 @@ router.patch('/:id', requireAdmin, async (req, res) => {
         data: { reason: user.ban?.reason || '', until: user.ban?.until ? new Date(user.ban.until).toISOString() : 'lifetime' }
       });
     }
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (_) {}
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, 'admin.user.update', 'user', user._id.toString(), { role, resources, coins, email, username, firstName, lastName, referralCode, ban });
+  writeAudit(req, 'admin.user.update', 'user', user._id.toString(), { role, resources, coins, email, username, firstName, lastName, ban });
   return res.json({ user });
 });
 
@@ -205,8 +243,10 @@ router.post('/:id/ban', requireAdmin, async (req, res) => {
       const { suspendServer } = require('../../services/pterodactyl');
       for (const s of servers) {
         if (!s.panelServerId) continue;
+        // eslint-disable-next-line unused-imports/no-unused-vars
         try { await suspendServer(s.panelServerId); } catch (_) {}
       }
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_) {}
   } else {
     // unban
@@ -219,8 +259,10 @@ router.post('/:id/ban', requireAdmin, async (req, res) => {
       const { unsuspendServer } = require('../../services/pterodactyl');
       for (const s of servers) {
         if (!s.panelServerId) continue;
+        // eslint-disable-next-line unused-imports/no-unused-vars
         try { await unsuspendServer(s.panelServerId); } catch (_) {}
       }
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_) {}
   }
   await user.save();
@@ -231,6 +273,10 @@ router.post('/:id/ban', requireAdmin, async (req, res) => {
 
 // DELETE /api/admin/users/:id - delete user and all servers
 router.delete('/:id', requireAdmin, async (req, res) => {
+  // Prevent admins from deleting their own account
+  if (String(req.params.id) === String(req.user?.sub || req.user?.userId)) {
+    return res.status(403).json({ error: 'Cannot delete your own admin account' });
+  }
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
@@ -329,9 +375,11 @@ router.get('/:id/servers/:serverId', requireAdmin, async (req, res) => {
       const hasChange = ['diskMb','memoryMb','cpuPercent','backups','databases','allocations'].some(k => Number(server.limits?.[k] || 0) !== Number(updatedLimits[k] || 0));
       if (hasChange) await Server.updateOne({ _id: server._id }, { $set: { limits: updatedLimits } });
       return res.json({ ...server, limits: updatedLimits, clientUrl });
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_) {
       return res.json({ ...server, clientUrl });
     }
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
     return res.status(500).json({ error: 'Failed to load server' });
   }
@@ -428,7 +476,7 @@ router.patch('/:id/servers/:serverId', requireAdmin, async (req, res) => {
   return res.json({ server });
 });
 
-module.exports = router;
+// NOTE: module.exports is at the bottom of this file after ALL route definitions
 
 // POST /api/admin/users/:id/plans - add a plan to user (months>0 adds, negative removes time)
 router.post('/:id/plans', requireAdmin, async (req, res) => {
@@ -452,6 +500,22 @@ router.post('/:id/plans', requireAdmin, async (req, res) => {
     expiresAt.setMonth(expiresAt.getMonth() + Math.max(0, months));
   }
   
+  const pc = plan.productContent || {};
+  const rr = pc.recurrentResources || {};
+  const flatResources = {
+    cpuPercent: rr.cpuPercent || 0,
+    memoryMb: rr.memoryMb || 0,
+    diskMb: rr.diskMb || 0,
+    swapMb: rr.swapMb !== undefined ? rr.swapMb : -1,
+    blockIoProportion: rr.blockIoProportion || 0,
+    cpuPinning: rr.cpuPinning || '',
+    additionalAllocations: pc.additionalAllocations || 0,
+    databases: pc.databases || 0,
+    backups: pc.backups || 0,
+    coins: pc.coins || 0,
+    serverLimit: pc.serverLimit || 0
+  };
+
   // Create a new UserPlan instance (allows multiple instances of the same plan)
   const sub = await UserPlan.create({ 
     userId: user._id, 
@@ -461,37 +525,39 @@ router.post('/:id/plans', requireAdmin, async (req, res) => {
     status: 'active',
     billingCycle: plan.billingOptions?.lifetime ? 'lifetime' : 'monthly',
     amount: plan.billingOptions?.lifetime ? plan.pricePerMonth : plan.pricePerMonth * months,
-    resources: plan.productContent,
+    resources: flatResources,
     isRenewable: plan.billingOptions?.renewable || false,
     isLifetime: plan.billingOptions?.lifetime || false
   });
 
   // Apply one-time benefits immediately
   const productContent = plan.productContent || {};
-  
-  // Add coins
-  user.coins = Number(user.coins || 0) + Number(productContent.coins || 0);
-  
-  // Add all resources to user resources
-  if (!user.resources) user.resources = {};
-  
-  // Add recurrent resources (monthly benefits)
   const recurrentResources = productContent.recurrentResources || {};
-  user.resources.diskMb = Number(user.resources.diskMb || 0) + Number(recurrentResources.diskMb || 0);
-  user.resources.memoryMb = Number(user.resources.memoryMb || 0) + Number(recurrentResources.memoryMb || 0);
-  user.resources.cpuPercent = Number(user.resources.cpuPercent || 0) + Number(recurrentResources.cpuPercent || 0);
   
-  // Add additional resources (one-time benefits)
-  user.resources.backups = Number(user.resources.backups || 0) + Number(productContent.backups || 0);
-  user.resources.databases = Number(user.resources.databases || 0) + Number(productContent.databases || 0);
-  user.resources.allocations = Number(user.resources.allocations || 0) + Number(productContent.additionalAllocations || 0);
-  user.resources.serverSlots = Number(user.resources.serverSlots || 0) + Number(productContent.serverLimit || 0);
-  
-  await user.save();
+  const incQuery = {
+    coins: Number(productContent.coins || 0),
+    'resources.diskMb': Number(recurrentResources.diskMb || 0),
+    'resources.memoryMb': Number(recurrentResources.memoryMb || 0),
+    'resources.cpuPercent': Number(recurrentResources.cpuPercent || 0),
+    'resources.backups': Number(productContent.backups || 0),
+    'resources.databases': Number(productContent.databases || 0),
+    'resources.allocations': Number(productContent.additionalAllocations || 0),
+    'resources.serverSlots': Number(productContent.serverLimit || 0),
+  };
+
+  Object.keys(incQuery).forEach(k => {
+    if (incQuery[k] === 0 || isNaN(incQuery[k])) delete incQuery[k];
+  });
+
+  if (Object.keys(incQuery).length > 0) {
+    await User.findByIdAndUpdate(user._id, { $inc: incQuery });
+  }
 
   const { writeAudit } = require('../../middleware/audit');
   writeAudit(req, 'admin.user.plan.add', 'user_plan', sub._id.toString(), { plan: plan.name, months });
-  return res.json({ plan: sub });
+  
+  const populatedSub = await UserPlan.findById(sub._id).populate('planId', 'name pricePerMonth pricePerYear').lean();
+  return res.json({ plan: populatedSub });
 });
 
 // DELETE /api/admin/users/:id/plans/:planId - cancel/remove user's plan
@@ -500,10 +566,32 @@ router.delete('/:id/plans/:planId', requireAdmin, async (req, res) => {
   const subs = await UserPlan.find({ userId: req.params.id, planId: req.params.planId, status: 'active' });
   if (subs.length === 0) return res.status(404).json({ error: 'Active plan not found' });
   
-  // Cancel all instances
+  // Cancel all instances and deduct their resources
   for (const sub of subs) {
     sub.status = 'cancelled';
     await sub.save();
+    
+    // Deduct resources
+    if (sub.resources) {
+      const decQuery = {
+        coins: -Number(sub.resources.coins || 0),
+        'resources.diskMb': -Number(sub.resources.diskMb || 0),
+        'resources.memoryMb': -Number(sub.resources.memoryMb || 0),
+        'resources.cpuPercent': -Number(sub.resources.cpuPercent || 0),
+        'resources.backups': -Number(sub.resources.backups || 0),
+        'resources.databases': -Number(sub.resources.databases || 0),
+        'resources.allocations': -Number(sub.resources.additionalAllocations || 0),
+        'resources.serverSlots': -Number(sub.resources.serverLimit || 0),
+      };
+      
+      Object.keys(decQuery).forEach(k => {
+        if (decQuery[k] === 0 || isNaN(decQuery[k])) delete decQuery[k];
+      });
+
+      if (Object.keys(decQuery).length > 0) {
+        await User.findByIdAndUpdate(req.params.id, { $inc: decQuery });
+      }
+    }
   }
   
   const { writeAudit } = require('../../middleware/audit');
@@ -519,11 +607,32 @@ router.delete('/:id/plans/instance/:instanceId', requireAdmin, async (req, res) 
   sub.status = 'cancelled';
   await sub.save();
   
+  // Deduct resources
+  if (sub.resources) {
+    const decQuery = {
+      coins: -Number(sub.resources.coins || 0),
+      'resources.diskMb': -Number(sub.resources.diskMb || 0),
+      'resources.memoryMb': -Number(sub.resources.memoryMb || 0),
+      'resources.cpuPercent': -Number(sub.resources.cpuPercent || 0),
+      'resources.backups': -Number(sub.resources.backups || 0),
+      'resources.databases': -Number(sub.resources.databases || 0),
+      'resources.allocations': -Number(sub.resources.additionalAllocations || 0),
+      'resources.serverSlots': -Number(sub.resources.serverLimit || 0),
+    };
+    
+    Object.keys(decQuery).forEach(k => {
+      if (decQuery[k] === 0 || isNaN(decQuery[k])) delete decQuery[k];
+    });
+
+    if (Object.keys(decQuery).length > 0) {
+      await User.findByIdAndUpdate(req.params.id, { $inc: decQuery });
+    }
+  }
+  
   const { writeAudit } = require('../../middleware/audit');
   writeAudit(req, 'admin.user.plan.instance.cancel', 'user_plan', sub._id.toString(), { userId: req.params.id, planId: sub.planId });
   return res.json({ ok: true });
 });
 
 
-
-
+module.exports = router;

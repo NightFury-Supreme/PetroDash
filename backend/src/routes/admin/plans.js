@@ -97,6 +97,13 @@ router.post('/', requireAdmin, async (req, res) => {
     if (error.name === 'ZodError') {
       return res.status(400).json({ error: 'Validation failed', details: error.errors });
     }
+    if (error.name === 'ValidationError') {
+      // Mongoose schema validation — return field-level details as 400, not 500
+      const fields = Object.fromEntries(
+        Object.entries(error.errors).map(([k, v]) => [k, v.message])
+      );
+      return res.status(400).json({ error: 'Plan validation failed', fields });
+    }
     console.error('Error creating plan:', error);
     res.status(500).json({ error: 'Failed to create plan' });
   }

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface PlanFormData {
   name: string;
@@ -56,7 +57,9 @@ export function PlanForm({
   onSubmit,
   onCancel,
 }: PlanFormProps) {
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const { currency } = useCurrency();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -199,7 +202,7 @@ export function PlanForm({
               {formData.billingOptions.lifetime ? 'Price' : 'Monthly Price'} <span className="text-red-400">*</span>
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">{currency}</span>
               <input
                 type="number"
                 value={formData.pricePerMonth}
@@ -220,7 +223,7 @@ export function PlanForm({
           <div className="space-y-2">
             <label className="text-sm font-medium text-[#AAAAAA]">Strike-through Price</label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">{currency}</span>
               <input
                 type="number"
                 value={formData.strikeThroughPrice}

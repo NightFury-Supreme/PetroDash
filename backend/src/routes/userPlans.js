@@ -12,6 +12,7 @@ router.get('/', requireAuth, async (req, res) => {
       .sort({ endsAt: 1 })
       .lean();
     const list = listRaw.map((p) => {
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const { isRenewable, ...rest } = p;
       return rest;
     });

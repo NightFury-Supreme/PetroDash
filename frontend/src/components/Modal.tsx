@@ -105,7 +105,7 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
                   </div>
                 </div>
               ) : (
-                state.content ?? state.body
+                state.content ?? <div className="whitespace-pre-wrap">{state.body}</div>
               )}
             </div>
             <div className="modal-actions">

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 interface OAuthProvider {
   name: string;
@@ -64,8 +65,15 @@ export function OAuthButtons({ onError }: OAuthButtonsProps) {
     fetchOAuthStatus();
   }, [onError]);
 
+  const searchParams = useSearchParams();
+
   const handleOAuthLogin = (provider: string) => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_BASE}/api/oauth/${provider.toLowerCase()}`;
+    const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE}/api/oauth/${provider.toLowerCase()}`);
+    const ref = searchParams?.get('ref');
+    if (ref) {
+      url.searchParams.set('ref', ref);
+    }
+    window.location.href = url.toString();
   };
 
   if (loading) {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useModal } from '@/components/Modal';
 import { UpdateSystem } from '../updates';
 
@@ -11,12 +11,15 @@ interface Settings {
       mode: 'sandbox' | 'live';
       clientId: string;
       clientSecret: string;
-      currency: string;
       webhookId: string;
     };
   };
+  localization?: {
+    currency: string;
+  };
   auth: {
     emailLogin: boolean;
+    emailVerification: boolean;
     discord: {
       enabled: boolean;
       autoJoin: boolean;
@@ -68,7 +71,7 @@ interface Settings {
 interface AdminSettingsContentProps {
   settings: Settings;
   loading: boolean;
-  onSave: (settings: Settings) => Promise<void>;
+  onSave: (settings: Partial<Settings>) => Promise<Settings>;
   onReload: () => void;
 }
 
@@ -82,22 +85,38 @@ export function AdminSettingsContent({
   const [saving, setSaving] = useState(false);
   const modal = useModal();
 
-  const handleSave = async () => {
+  useEffect(() => {
+    setFormData(settings);
+  }, [settings]);
+
+  const cleanPatch = (patch: Partial<Settings>) => {
+    const cleaned: any = { ...patch };
+    if (cleaned.auth) {
+      cleaned.auth = { ...(cleaned.auth as any) };
+      if (cleaned.auth.discord) {
+        cleaned.auth.discord = { ...(cleaned.auth.discord as any) };
+        if (cleaned.auth.discord.redirectUri === '') {
+          delete cleaned.auth.discord.redirectUri;
+        }
+      }
+      if (cleaned.auth.google) {
+        cleaned.auth.google = { ...(cleaned.auth.google as any) };
+        if (cleaned.auth.google.redirectUri === '') {
+          delete cleaned.auth.google.redirectUri;
+        }
+      }
+    }
+    return cleaned as Partial<Settings>;
+  };
+
+  const saveSection = async (patch: Partial<Settings>, successBody: string) => {
     setSaving(true);
     try {
-      // Clean up empty redirect URIs before saving
-      const cleanedData = { ...formData };
-      if (cleanedData.auth?.discord?.redirectUri === '') {
-        delete cleanedData.auth.discord.redirectUri;
-      }
-      if (cleanedData.auth?.google?.redirectUri === '') {
-        delete cleanedData.auth.google.redirectUri;
-      }
-      
-      await onSave(cleanedData);
+      const next = await onSave(cleanPatch(patch));
+      setFormData(next);
       await modal.success({
-        title: "Settings Saved",
-        body: "Your settings have been successfully updated."
+        title: "Saved",
+        body: successBody
       });
     } catch (error) {
       await modal.error({
@@ -288,6 +307,99 @@ export function AdminSettingsContent({
             <p className="text-xs text-[#AAAAAA] mt-1">Upload an image (max 5MB, PNG/JPG/GIF/WEBP/SVG)</p>
           </div>
         </div>
+
+        <div className="flex items-center justify-end mt-6">
+          <button
+            onClick={() => saveSection({ siteName: formData.siteName, siteIcon: formData.siteIcon }, "Brand settings updated.")}
+            disabled={saving || loading}
+            className="px-6 py-3 bg-white text-[#0b0b0f] font-medium rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {saving ? (
+              <>
+                <i className="fas fa-spinner fa-spin"></i>
+                Saving...
+              </>
+            ) : (
+              <>
+                <i className="fas fa-save"></i>
+                Save Brand
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Localization Settings */}
+      <div className="bg-[#181818] border border-[#303030] rounded-xl p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 bg-[#202020] rounded-xl flex items-center justify-center">
+            <i className="fas fa-globe text-white text-lg"></i>
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-white">Localization Settings</h3>
+            <p className="text-[#AAAAAA] text-sm">Configure global language and currency</p>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-white">Site Currency</label>
+            <p className="text-xs text-[#AAAAAA]">This currency is displayed on the shop and all plans.</p>
+            <select
+              className="w-full h-12 bg-[#202020] border border-[#303030] rounded-lg px-4 text-white focus:border-[#404040] focus:outline-none transition-colors"
+              value={formData.localization?.currency || 'USD'}
+              onChange={(e) => updateFormData('localization.currency', e.target.value)}
+              disabled={loading}
+            >
+              <option value="USD" className="bg-[#202020] text-white">USD - US Dollar</option>
+              <option value="EUR" className="bg-[#202020] text-white">EUR - Euro</option>
+              <option value="GBP" className="bg-[#202020] text-white">GBP - British Pound</option>
+              <option value="INR" className="bg-[#202020] text-white">INR - Indian Rupee</option>
+              <option value="CAD" className="bg-[#202020] text-white">CAD - Canadian Dollar</option>
+              <option value="AUD" className="bg-[#202020] text-white">AUD - Australian Dollar</option>
+              <option value="JPY" className="bg-[#202020] text-white">JPY - Japanese Yen</option>
+              <option value="CHF" className="bg-[#202020] text-white">CHF - Swiss Franc</option>
+              <option value="NZD" className="bg-[#202020] text-white">NZD - New Zealand Dollar</option>
+              <option value="SEK" className="bg-[#202020] text-white">SEK - Swedish Krona</option>
+              <option value="DKK" className="bg-[#202020] text-white">DKK - Danish Krone</option>
+              <option value="NOK" className="bg-[#202020] text-white">NOK - Norwegian Krone</option>
+              <option value="PLN" className="bg-[#202020] text-white">PLN - Polish Złoty</option>
+              <option value="CZK" className="bg-[#202020] text-white">CZK - Czech Koruna</option>
+              <option value="HUF" className="bg-[#202020] text-white">HUF - Hungarian Forint</option>
+              <option value="BRL" className="bg-[#202020] text-white">BRL - Brazilian Real</option>
+              <option value="MXN" className="bg-[#202020] text-white">MXN - Mexican Peso</option>
+              <option value="SGD" className="bg-[#202020] text-white">SGD - Singapore Dollar</option>
+              <option value="HKD" className="bg-[#202020] text-white">HKD - Hong Kong Dollar</option>
+              <option value="CNY" className="bg-[#202020] text-white">CNY - Chinese Yuan</option>
+              <option value="KRW" className="bg-[#202020] text-white">KRW - South Korean Won</option>
+              <option value="ILS" className="bg-[#202020] text-white">ILS - Israeli Shekel</option>
+              <option value="MYR" className="bg-[#202020] text-white">MYR - Malaysian Ringgit</option>
+              <option value="TWD" className="bg-[#202020] text-white">TWD - Taiwan Dollar</option>
+              <option value="PHP" className="bg-[#202020] text-white">PHP - Philippine Peso</option>
+              <option value="THB" className="bg-[#202020] text-white">THB - Thai Baht</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-end mt-6">
+          <button
+            onClick={() => saveSection({ localization: formData.localization }, "Localization settings updated.")}
+            disabled={saving || loading}
+            className="px-6 py-3 bg-white text-[#0b0b0f] font-medium rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {saving ? (
+              <>
+                <i className="fas fa-spinner fa-spin"></i>
+                Saving...
+              </>
+            ) : (
+              <>
+                <i className="fas fa-save"></i>
+                Save Localization
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Referral Settings */}
@@ -340,6 +452,26 @@ export function AdminSettingsContent({
             />
           </div>
         </div>
+
+        <div className="flex items-center justify-end mt-6">
+          <button
+            onClick={() => saveSection({ referrals: formData.referrals }, "Referral settings updated.")}
+            disabled={saving || loading}
+            className="px-6 py-3 bg-white text-[#0b0b0f] font-medium rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {saving ? (
+              <>
+                <i className="fas fa-spinner fa-spin"></i>
+                Saving...
+              </>
+            ) : (
+              <>
+                <i className="fas fa-save"></i>
+                Save Referrals
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Authentication Settings */}
@@ -361,7 +493,7 @@ export function AdminSettingsContent({
               <input
                 type="checkbox"
                 className="sr-only peer"
-                checked={formData.auth?.emailLogin || false}
+                checked={formData.auth?.emailLogin ?? true}
                 onChange={(e) => updateFormData('auth.emailLogin', e.target.checked)}
                 disabled={loading}
               />
@@ -373,6 +505,27 @@ export function AdminSettingsContent({
             </div>
           </div>
           <p className="text-[#AAAAAA] text-sm">Allow users to register and login with email and password</p>
+        </div>
+
+        {/* Email Verification Toggle */}
+        <div className="space-y-4 mb-6">
+          <div className="flex items-center gap-3">
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={formData.auth?.emailVerification ?? true}
+                onChange={(e) => updateFormData('auth.emailVerification', e.target.checked)}
+                disabled={loading}
+              />
+              <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
+            </label>
+            <div className="flex items-center gap-2">
+              <i className="fas fa-user-check text-white text-lg"></i>
+              <span className="text-white font-medium">Enable Email Verification</span>
+            </div>
+          </div>
+          <p className="text-[#AAAAAA] text-sm">Require users to verify their email before accessing the dashboard</p>
         </div>
 
         {/* Discord OAuth */}
@@ -559,6 +712,26 @@ export function AdminSettingsContent({
           )}
         </div>
 
+        <div className="flex items-center justify-end mt-6">
+          <button
+            onClick={() => saveSection({ auth: formData.auth }, "Authentication settings updated.")}
+            disabled={saving || loading}
+            className="px-6 py-3 bg-white text-[#0b0b0f] font-medium rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {saving ? (
+              <>
+                <i className="fas fa-spinner fa-spin"></i>
+                Saving...
+              </>
+            ) : (
+              <>
+                <i className="fas fa-save"></i>
+                Save Authentication
+              </>
+            )}
+          </button>
+        </div>
+
       </div>
 
       {/* Default Resources */}
@@ -598,6 +771,26 @@ export function AdminSettingsContent({
               />
             </div>
           ))}
+        </div>
+
+        <div className="flex items-center justify-end mt-6">
+          <button
+            onClick={() => saveSection({ defaults: formData.defaults }, "Default resources updated.")}
+            disabled={saving || loading}
+            className="px-6 py-3 bg-white text-[#0b0b0f] font-medium rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {saving ? (
+              <>
+                <i className="fas fa-spinner fa-spin"></i>
+                Saving...
+              </>
+            ) : (
+              <>
+                <i className="fas fa-save"></i>
+                Save Defaults
+              </>
+            )}
+          </button>
         </div>
       </div>
 
@@ -724,6 +917,26 @@ export function AdminSettingsContent({
             </div>
           )}
         </div>
+
+        <div className="flex items-center justify-end mt-6">
+          <button
+            onClick={() => saveSection({ adsense: formData.adsense }, "AdSense settings updated.")}
+            disabled={saving || loading}
+            className="px-6 py-3 bg-white text-[#0b0b0f] font-medium rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {saving ? (
+              <>
+                <i className="fas fa-spinner fa-spin"></i>
+                Saving...
+              </>
+            ) : (
+              <>
+                <i className="fas fa-save"></i>
+                Save AdSense
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* PayPal Settings */}
@@ -768,41 +981,7 @@ export function AdminSettingsContent({
                   <option value="live" className="bg-[#202020] text-white">Live (Production)</option>
                 </select>
               </div>
-              
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-white">Currency</label>
-                <select
-                  className="w-full h-12 bg-[#202020] border border-[#303030] rounded-lg px-4 text-white focus:border-[#404040] focus:outline-none transition-colors"
-                  value={formData.payments?.paypal?.currency || 'USD'}
-                  onChange={(e) => updateFormData('payments.paypal.currency', e.target.value)}
-                  disabled={loading}
-                >
-                  <option value="USD" className="bg-[#202020] text-white">USD - US Dollar</option>
-                  <option value="EUR" className="bg-[#202020] text-white">EUR - Euro</option>
-                  <option value="GBP" className="bg-[#202020] text-white">GBP - British Pound</option>
-                  <option value="CAD" className="bg-[#202020] text-white">CAD - Canadian Dollar</option>
-                  <option value="AUD" className="bg-[#202020] text-white">AUD - Australian Dollar</option>
-                  <option value="JPY" className="bg-[#202020] text-white">JPY - Japanese Yen</option>
-                  <option value="CHF" className="bg-[#202020] text-white">CHF - Swiss Franc</option>
-                  <option value="NZD" className="bg-[#202020] text-white">NZD - New Zealand Dollar</option>
-                  <option value="SEK" className="bg-[#202020] text-white">SEK - Swedish Krona</option>
-                  <option value="DKK" className="bg-[#202020] text-white">DKK - Danish Krone</option>
-                  <option value="NOK" className="bg-[#202020] text-white">NOK - Norwegian Krone</option>
-                  <option value="PLN" className="bg-[#202020] text-white">PLN - Polish Złoty</option>
-                  <option value="CZK" className="bg-[#202020] text-white">CZK - Czech Koruna</option>
-                  <option value="HUF" className="bg-[#202020] text-white">HUF - Hungarian Forint</option>
-                  <option value="BRL" className="bg-[#202020] text-white">BRL - Brazilian Real</option>
-                  <option value="MXN" className="bg-[#202020] text-white">MXN - Mexican Peso</option>
-                  <option value="SGD" className="bg-[#202020] text-white">SGD - Singapore Dollar</option>
-                  <option value="HKD" className="bg-[#202020] text-white">HKD - Hong Kong Dollar</option>
-                  <option value="KRW" className="bg-[#202020] text-white">KRW - South Korean Won</option>
-                  <option value="INR" className="bg-[#202020] text-white">INR - Indian Rupee</option>
-                  <option value="RUB" className="bg-[#202020] text-white">RUB - Russian Ruble</option>
-                  <option value="TRY" className="bg-[#202020] text-white">TRY - Turkish Lira</option>
-                  <option value="ZAR" className="bg-[#202020] text-white">ZAR - South African Rand</option>
-                </select>
-              </div>
-              
+
               <div className="md:col-span-2 space-y-2">
                 <label className="block text-sm font-medium text-white">Client ID</label>
                 <input
@@ -858,6 +1037,26 @@ export function AdminSettingsContent({
             </div>
           </div>
         </div>
+
+        <div className="flex items-center justify-end mt-6">
+          <button
+            onClick={() => saveSection({ payments: { paypal: formData.payments.paypal } }, "PayPal settings updated.")}
+            disabled={saving || loading}
+            className="px-6 py-3 bg-white text-[#0b0b0f] font-medium rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {saving ? (
+              <>
+                <i className="fas fa-spinner fa-spin"></i>
+                Saving...
+              </>
+            ) : (
+              <>
+                <i className="fas fa-save"></i>
+                Save PayPal
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* System Updates */}
@@ -865,24 +1064,6 @@ export function AdminSettingsContent({
 
       {/* Action Buttons */}
       <div className="flex items-center gap-3">
-        <button
-          onClick={handleSave}
-          disabled={saving || loading}
-          className="px-6 py-3 bg-white text-[#0b0b0f] font-medium rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-        >
-          {saving ? (
-            <>
-              <i className="fas fa-spinner fa-spin"></i>
-              Saving...
-            </>
-          ) : (
-            <>
-              <i className="fas fa-save"></i>
-              Save Settings
-            </>
-          )}
-        </button>
-        
         <button
           onClick={handleReload}
           disabled={loading}

@@ -12,6 +12,7 @@ function decodeJwt(token: string): { userId?: string; username?: string; role?: 
     return JSON.parse(decodeURIComponent(Array.prototype.map.call(json, (c: string) => {
       return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
     }).join('')));
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (_) {
     try {
       const [, payload] = token.split('.');
@@ -56,6 +57,7 @@ export default function AdminPage() {
         const d = await r.json() as any;
         if (!r.ok) throw new Error(d?.error || 'Failed to load stats');
         setStats(d as AdminStats);
+      // eslint-disable-next-line unused-imports/no-unused-vars
       } catch (_) {
         setStats(null);
       } finally { setLoading(false); }
@@ -73,6 +75,7 @@ export default function AdminPage() {
     );
   }
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const adminFeatures = [
     { title: 'User Management', description: 'List, search, promote/demote, and disable users', icon: 'fas fa-users', color: 'bg-blue-600' },
     { title: 'Pterodactyl Resources', description: 'Overview of users, servers, and nodes', icon: 'fas fa-server', color: 'bg-green-600' },

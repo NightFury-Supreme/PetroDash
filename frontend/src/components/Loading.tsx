@@ -14,6 +14,7 @@ export function SkeletonSpinner({ size = 'md', className = '' }: { size?: 'sm' |
   );
 }
 
+// eslint-disable-next-line unused-imports/no-unused-vars
 export function SkeletonDots({ size = 'md', className = '' }: { size?: 'sm' | 'md' | 'lg' | 'xl'; className?: string }) {
   const sizeClasses = {
     sm: 'w-4 h-4',
@@ -32,6 +33,7 @@ export function SkeletonDots({ size = 'md', className = '' }: { size?: 'sm' | 'm
 }
 
 // Full page skeleton loading - YouTube style
+// eslint-disable-next-line unused-imports/no-unused-vars
 export function LoadingPage({ text = 'Loading...' }: { text?: string }) {
   return (
     <div className="min-h-screen bg-[#0F0F0F]">

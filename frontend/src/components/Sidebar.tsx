@@ -70,6 +70,7 @@ export default function Sidebar() {
             } else {
               d.hasActivePlans = false;
             }
+          // eslint-disable-next-line unused-imports/no-unused-vars
           } catch (_) {
             d.hasActivePlans = false;
           }

@@ -17,7 +17,7 @@ export default function GiftCreateCard() {
       const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       if (!token) { setResult({ error: 'Please login first' }); return; }
       if (!Number.isFinite(coins) || coins <= 0) { setResult({ error: 'Enter valid coins' }); return; }
-      if (!Number.isFinite(maxRedemptions) || maxRedemptions < 1) { setResult({ error: 'Enter valid max redemptions' }); return; }
+      if (!Number.isFinite(maxRedemptions) || maxRedemptions < 1 || maxRedemptions > 100) { setResult({ error: 'Max redemptions must be between 1 and 100' }); return; }
       if (!Number.isFinite(expiresInDays) || expiresInDays < 1) { setResult({ error: 'Enter valid days' }); return; }
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/gifts/create`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -40,9 +40,13 @@ export default function GiftCreateCard() {
                  onChange={(e) => setCoins(Number(e.target.value) || 0)} placeholder="100" />
         </label>
         <label>
-          <div className="label">Max redemptions</div>
-          <input type="number" min={1} className="w-full bg-[#101010] border border-[#2a2a2a] rounded-lg px-3 py-2" value={maxRedemptions}
-                 onChange={(e) => setMaxRedemptions(Number(e.target.value) || 1)} />
+          <div className="label">Max redemptions (Max 100)</div>
+          <input type="number" min={1} max={100} className="w-full bg-[#101010] border border-[#2a2a2a] rounded-lg px-3 py-2" value={maxRedemptions}
+                 onChange={(e) => {
+                   const v = e.target.value;
+                   if (v === '') { setMaxRedemptions(0 as any); return; }
+                   setMaxRedemptions(Math.min(100, Number(v) || 1));
+                 }} />
         </label>
         <label>
           <div className="label">Expires in (days)</div>
@@ -56,7 +60,8 @@ export default function GiftCreateCard() {
         </label>
       </div>
 
-      <div className="flex items-center justify-end gap-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-[#AAAAAA]">Total Cost: <span className="font-bold text-white text-lg">{(Number(coins) || 0) * (Number(maxRedemptions) || 1)}</span> coins</div>
         <button onClick={createCode} disabled={creating || coins <= 0} className="px-5 py-3 bg-white text-black rounded-lg">
           {creating ? 'Creating…' : 'Create Code'}
         </button>

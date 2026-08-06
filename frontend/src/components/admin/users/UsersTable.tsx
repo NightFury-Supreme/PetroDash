@@ -4,24 +4,24 @@ import Link from 'next/link';
 
 export default function UsersTable({ users }: { users: any[] }) {
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+    <div className="rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--surface)] shadow-sm">
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-left" style={{ background: 'rgba(255,255,255,0.02)' }}>
-            <th className="p-3">Email</th>
-            <th className="p-3">Username</th>
-            <th className="p-3">Role</th>
-            <th className="p-3">Status</th>
-            <th className="p-3">Servers</th>
-            <th className="p-3"></th>
+          <tr className="text-left bg-black/20 text-[#AAAAAA]">
+            <th className="p-4 font-medium">Email</th>
+            <th className="p-4 font-medium">Username</th>
+            <th className="p-4 font-medium">Role</th>
+            <th className="p-4 font-medium">Status</th>
+            <th className="p-4 font-medium">Servers</th>
+            <th className="p-4"></th>
           </tr>
         </thead>
         <tbody>
           {users.map((u) => (
-            <tr key={u._id} className="border-t" style={{ borderColor: 'var(--border)' }}>
-              <td className="p-3">{u.email}</td>
-              <td className="p-3">{u.username}</td>
-              <td className="p-3">
+            <tr key={u._id} className="border-t border-[var(--border)] hover:bg-[var(--hover)] transition-colors">
+              <td className="p-4">{u.email}</td>
+              <td className="p-4 font-medium text-white">{u.username}</td>
+              <td className="p-4">
                 <span className={`px-2 py-1 text-xs font-bold rounded-full border ${
                   u.role === 'admin' 
                     ? 'bg-red-600/20 text-red-300 border-red-700/50' 
@@ -30,7 +30,7 @@ export default function UsersTable({ users }: { users: any[] }) {
                   {u.role === 'admin' ? 'admin' : 'user'}
                 </span>
               </td>
-              <td className="p-3">
+              <td className="p-4">
                 {u.ban?.isBanned ? (
                   <span className="text-xs font-medium text-red-400 flex items-center gap-1">
                     <i className="fas fa-ban text-xs"></i>
@@ -43,9 +43,9 @@ export default function UsersTable({ users }: { users: any[] }) {
                   </span>
                 )}
               </td>
-              <td className="p-3">{u.serverCount}</td>
-              <td className="p-3 text-right">
-                <Link href={`/admin/users/${u._id}`} className="px-3 py-1.5 rounded-md text-xs font-medium bg-white text-black border border-[var(--border)]">Manage</Link>
+              <td className="p-4 font-medium">{u.serverCount}</td>
+              <td className="p-4 text-right">
+                <Link href={`/admin/users/${u._id}`} className="px-4 py-2 rounded-lg text-xs font-medium bg-white text-black hover:bg-gray-200 transition-colors">Manage</Link>
               </td>
             </tr>
           ))}

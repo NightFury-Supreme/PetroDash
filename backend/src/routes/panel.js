@@ -1,16 +1,16 @@
 const express = require('express');
+const crypto = require('crypto');
 const { requireAuth } = require('../middleware/auth');
+const { createRateLimiter } = require('../middleware/rateLimit');
 const User = require('../models/User');
+// eslint-disable-next-line unused-imports/no-unused-vars
 const { getPanelUser, resetPanelUserPassword, updatePanelUser } = require('../services/pterodactyl');
+// eslint-disable-next-line unused-imports/no-unused-vars
 const { z } = require('zod');
 
 const router = express.Router();
-
-// Rate limiting for password reset
-const resetAttempts = new Map();
-
 // GET /api/panel - Get panel info for logged-in user
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', requireAuth, createRateLimiter(10, 60 * 1000), async (req, res) => {
   try {
     // Validate user exists and is active
     const user = await User.findById(req.user.sub).lean();
@@ -75,22 +75,9 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 // POST /api/panel/reset-password - Reset panel password
-router.post('/reset-password', requireAuth, async (req, res) => {
+router.post('/reset-password', requireAuth, createRateLimiter(3, 5 * 60 * 1000), async (req, res) => {
   try {
     const userId = req.user.sub;
-    
-    // Rate limiting check
-    const now = Date.now();
-    const userAttempts = resetAttempts.get(userId) || [];
-    const recentAttempts = userAttempts.filter(time => now - time < 5 * 60 * 1000); // 5 minutes
-    
-    if (recentAttempts.length >= 3) {
-      return res.status(429).json({ 
-        error: 'Too many password reset attempts',
-        details: 'Please wait 5 minutes before trying again.'
-      });
-    }
-
     // Validate user exists and is active
     const user = await User.findById(userId).lean();
     if (!user) {
@@ -118,7 +105,7 @@ router.post('/reset-password', requireAuth, async (req, res) => {
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
       let password = '';
       for (let i = 0; i < 16; i++) {
-        password += chars.charAt(Math.floor(Math.random() * chars.length));
+        password += chars.charAt(crypto.randomInt(chars.length));
       }
       return password;
     };
@@ -133,21 +120,6 @@ router.post('/reset-password', requireAuth, async (req, res) => {
       last_name: panelUser.last_name || '',
       password: newPassword,
     });
-
-    // Update rate limiting
-    userAttempts.push(now);
-    resetAttempts.set(userId, userAttempts);
-
-    // Clean up old attempts (older than 5 minutes)
-    setTimeout(() => {
-      const currentAttempts = resetAttempts.get(userId) || [];
-      const validAttempts = currentAttempts.filter(time => Date.now() - time < 5 * 60 * 1000);
-      if (validAttempts.length === 0) {
-        resetAttempts.delete(userId);
-      } else {
-        resetAttempts.set(userId, validAttempts);
-      }
-    }, 5 * 60 * 1000);
 
     return res.json({ 
       password: newPassword,

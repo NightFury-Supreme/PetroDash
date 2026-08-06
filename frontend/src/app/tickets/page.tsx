@@ -7,6 +7,7 @@ import TicketList from "@/components/tickets/TicketList";
 import TicketCreateModal from "@/components/tickets/TicketCreateModal";
 import TicketListSkeleton from "@/components/skeletons/tickets/TicketListSkeleton";
 import Sidebar from "@/components/Sidebar";
+import { useSidebarPadding } from "@/hooks/useSidebarPadding";
 
 type Ticket = {
   _id: string;
@@ -25,26 +26,13 @@ export default function TicketsPage() {
   const [message, setMessage] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
   const [category, setCategory] = useState<string>("general");
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const modal = useModal();
   const [showCreate, setShowCreate] = useState<boolean>(false);
-  const [contentPadding, setContentPadding] = useState<number>(288);
-  const [activeTab, setActiveTab] = useState<'all'|'open'|'pending'|'resolved'|'closed'|'deleted'>('all');
+  const contentPadding = useSidebarPadding();
+  const [activeTab, setActiveTab] = useState<'all'|'open'|'pending'|'resolved'|'closed'>('all');
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const [myUserId, setMyUserId] = useState<string | null>(null);
-
-  useEffect(() => {
-    try {
-      const collapsed = localStorage.getItem('sidebar_collapsed') === 'true';
-      setContentPadding(collapsed ? 80 : 288);
-    } catch {}
-    const handler = () => {
-      try {
-        const collapsed = localStorage.getItem('sidebar_collapsed') === 'true';
-        setContentPadding(collapsed ? 80 : 288);
-      } catch {}
-    };
-    window.addEventListener('sidebar-toggle', handler);
-    return () => window.removeEventListener('sidebar-toggle', handler);
-  }, []);
 
   const fetchTickets = async () => {
     try {
@@ -135,15 +123,15 @@ export default function TicketsPage() {
       {/* Tabs */}
       <div className="mb-4">
         <div className="flex w-full overflow-x-auto gap-2">
-          {(['all','open','pending','resolved','closed','deleted'] as const).map(tab => (
+          {(['all','open','pending','resolved','closed'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-lg border transition-colors text-sm ${activeTab===tab? 'bg-[#202020] text-white border-[#404040]':'bg-[#181818] text-[#AAAAAA] border-[#303030] hover:bg-[#202020] hover:text-white'}`}
+              className={`px-4 py-2 rounded-lg border transition-all text-sm ${activeTab===tab? 'bg-[var(--surface)] text-[var(--foreground)] border-[var(--border)] shadow-sm font-medium':'bg-transparent text-[var(--muted)] border-[var(--border)] hover:bg-[var(--hover)] hover:text-[var(--foreground)]'}`}
             >
               {tab.charAt(0).toUpperCase()+tab.slice(1)}
-              {tab!=='all' && tab!=='deleted' && (
-                <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-[#202020] border border-[#303030] text-[#AAAAAA]">
+              {tab!=='all' && (
+                <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-black/20 border border-[var(--border)] text-[var(--muted)]">
                   {tickets.filter(t=>t.status===tab).length}
                 </span>
               )}
@@ -167,7 +155,7 @@ export default function TicketsPage() {
               </button>
             </div>
           ) : (
-            <TicketList tickets={tickets.filter(t=> activeTab==='deleted' ? (t as any).deletedByUser : (activeTab==='all' ? t.status !== 'closed' : t.status===activeTab))} />
+            <TicketList tickets={tickets.filter(t=> activeTab==='all' ? t.status !== 'closed' : t.status===activeTab)} onRefresh={fetchTickets} />
           )}
         {/* Create Ticket Modal */}
         <TicketCreateModal

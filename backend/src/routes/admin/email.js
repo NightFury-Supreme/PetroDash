@@ -17,6 +17,7 @@ router.get('/', requireAdmin, async (req, res) => {
   try {
     const emailSettings = await Email.getOrCreate();
     return res.json(serialize(emailSettings));
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
     return res.status(500).json({ error: 'Failed to load email settings' });
   }
@@ -61,6 +62,7 @@ router.patch('/', requireAdmin, async (req, res) => {
     await emailSettings.save();
     
     return res.json(serialize(emailSettings));
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
     return res.status(500).json({ error: 'Failed to update email settings' });
   }

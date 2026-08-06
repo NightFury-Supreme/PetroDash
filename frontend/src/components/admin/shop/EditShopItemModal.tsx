@@ -39,6 +39,7 @@ export function EditShopItemModal({
     try {
       await onSave(item._id, formData);
       onClose();
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (error) {
       // Error handling is done in the parent component
     }

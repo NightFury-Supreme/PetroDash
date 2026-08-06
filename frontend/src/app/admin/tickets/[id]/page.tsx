@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import AdminTicketDetailHeader from "@/components/admin/tickets/AdminTicketDetailHeader";
@@ -9,6 +9,9 @@ import AdminTicketInputBar from "@/components/admin/tickets/AdminTicketInputBar"
 import TicketHeaderSkeleton from "@/components/skeletons/tickets/TicketHeaderSkeleton";
 import TicketDetailSkeleton from "@/components/skeletons/tickets/TicketDetailSkeleton";
 import TicketInputSkeleton from "@/components/skeletons/tickets/TicketInputSkeleton";
+import { useSidebarPadding } from "@/hooks/useSidebarPadding";
+
+const POLL_INTERVAL = 15000;
 
 export default function AdminTicketDetailPage() {
   const params = useParams();
@@ -17,98 +20,160 @@ export default function AdminTicketDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reply, setReply] = useState("");
-  const [internal, setInternal] = useState<boolean>(false);
-  const [canSend, setCanSend] = useState<boolean>(true);
-  const [status, setStatus] = useState("open");
-  const [priority, setPriority] = useState("low");
-  const [contentPadding, setContentPadding] = useState<number>(288);
+  const [internal, setInternal] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const contentPadding = useSidebarPadding();
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const api = process.env.NEXT_PUBLIC_API_BASE;
+  const token = () => typeof window !== "undefined" ? (localStorage.getItem("auth_token") || "") : "";
+
+  const fetchTicket = useCallback(async (silent = false) => {
+    if (!id) return;
+    try {
+      const r = await fetch(`${api}/api/admin/tickets/${id}`, { headers: { Authorization: `Bearer ${token()}` } });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d?.error || "Failed to load ticket");
+      setTicket(d);
+      setError(null);
+    } catch (e: any) {
+      if (!silent) setError(e.message || "Failed to load ticket");
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
 
   useEffect(() => {
-    try { setContentPadding(localStorage.getItem('sidebar_collapsed') === 'true' ? 80 : 288); } catch {}
-    const handler = () => { try { setContentPadding(localStorage.getItem('sidebar_collapsed') === 'true' ? 80 : 288); } catch {} };
-    window.addEventListener('sidebar-toggle', handler);
-    return () => window.removeEventListener('sidebar-toggle', handler);
-  }, []);
+    fetchTicket();
+    pollRef.current = setInterval(() => fetchTicket(true), POLL_INTERVAL);
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, [fetchTicket]);
 
-  const load = async () => {
-    try {
-      const token = localStorage.getItem('auth_token');
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-      const d = await r.json();
-      if (!r.ok) throw new Error(d?.error || 'Failed to load ticket');
-      setTicket(d); setStatus(d.status); setPriority(d.priority);
-      if (d && d.deletedByUser) setCanSend(false);
-    } catch (e:any) { setError(e.message || 'Failed to load ticket'); }
-    finally { setLoading(false); }
-  };
-  useEffect(() => { load(); }, [id]);
+  // Send a reply message independently of status/priority
+  const sendReply = async () => {
+    if (!reply.trim()) return;
+    setSendError(null);
+    // Optimistic update
+    const optimisticMsg = {
+      _id: `opt-${Date.now()}`, body: reply.trim(), authorRole: "admin",
+      internal, createdAt: new Date().toISOString(), author: { username: "You (Admin)" }
+    };
+    setTicket((prev: any) => prev ? { ...prev, messages: [...(prev.messages || []), optimisticMsg] } : prev);
+    const sentText = reply.trim();
+    setReply("");
 
-  const save = async () => {
     try {
-      const token = localStorage.getItem('auth_token');
-      if (reply.trim()) {
-        await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/${id}/messages`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ body: reply, internal: internal })
-        });
-      }
-      // Optionally sync status/priority if changed
-      await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/${id}`, {
-        method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ status, priority })
+      const r = await fetch(`${api}/api/admin/tickets/${id}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token()}` },
+        body: JSON.stringify({ body: sentText, internal }),
       });
-      setReply("");
-      load();
-    } catch (e:any) { setError(e.message || 'Failed to save'); }
+      const d = await r.json();
+      if (!r.ok) {
+        // Rollback optimistic message
+        setTicket((prev: any) => prev ? { ...prev, messages: (prev.messages || []).filter((m: any) => m._id !== optimisticMsg._id) } : prev);
+        setReply(sentText);
+        throw new Error(d?.error || "Failed to send");
+      }
+      fetchTicket(true);
+    } catch (e: any) {
+      setSendError(e.message || "Failed to send");
+    }
   };
+
+  // Update status independently
+  const updateStatus = async (status: string) => {
+    try {
+      const r = await fetch(`${api}/api/admin/tickets/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token()}` },
+        body: JSON.stringify({ status }),
+      });
+      if (!r.ok) { const d = await r.json(); throw new Error(d?.error || "Failed to update status"); }
+      setTicket((prev: any) => prev ? { ...prev, status } : prev);
+    } catch (e: any) { setSendError(e.message || "Failed to update status"); }
+  };
+
+  // Update priority independently
+  const updatePriority = async (priority: string) => {
+    try {
+      const r = await fetch(`${api}/api/admin/tickets/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token()}` },
+        body: JSON.stringify({ priority }),
+      });
+      if (!r.ok) { const d = await r.json(); throw new Error(d?.error || "Failed to update priority"); }
+      setTicket((prev: any) => prev ? { ...prev, priority } : prev);
+    } catch (e: any) { setSendError(e.message || "Failed to update priority"); }
+  };
+
+  const canSend = !ticket?.deletedByUser;
 
   if (loading) return (
     <div className="flex">
       <Sidebar />
       <main className="flex-1 relative h-screen overflow-hidden" style={{ paddingLeft: contentPadding }}>
         <TicketHeaderSkeleton contentPadding={contentPadding} />
-        <div className="pt-24 px-6">
-          <TicketDetailSkeleton />
-          <TicketInputSkeleton contentPadding={contentPadding} />
-        </div>
+        <div className="pt-24 px-6"><TicketDetailSkeleton /></div>
+        <TicketInputSkeleton contentPadding={contentPadding} />
       </main>
     </div>
   );
-  if (error) return <div className="flex"><Sidebar /><main className="flex-1" style={{ paddingLeft: contentPadding }}><div className="p-6 text-red-400">{error}</div></main></div>;
-  if (!ticket) return <div className="flex"><Sidebar /><main className="flex-1" style={{ paddingLeft: contentPadding }}><div className="p-6 text-[#AAAAAA]">Not found</div></main></div>;
+
+  if (error) return (
+    <div className="flex">
+      <Sidebar />
+      <main className="flex-1" style={{ paddingLeft: contentPadding }}>
+        <div className="p-6 text-red-400">{error}</div>
+      </main>
+    </div>
+  );
+
+  if (!ticket) return (
+    <div className="flex">
+      <Sidebar />
+      <main className="flex-1" style={{ paddingLeft: contentPadding }}>
+        <div className="p-6 text-[#AAAAAA]">Ticket not found</div>
+      </main>
+    </div>
+  );
 
   return (
     <div className="flex">
       <Sidebar />
-      <main className="flex-1 relative h-screen overflow-hidden" style={{ paddingLeft: contentPadding }} onClick={(e)=>{
-        try {
-          const btn = document.getElementById('adm-ticket-menu-btn');
-          const menu = document.getElementById('adm-ticket-menu');
-          if (!menu || !btn) return;
-          if ((btn as any).contains(e.target)) {
-            menu.classList.toggle('hidden');
-          } else if (!menu.contains(e.target as any)) {
-            menu.classList.add('hidden');
-          }
-        } catch {}
-      }}>
+      <main className="flex-1 relative h-screen overflow-hidden" style={{ paddingLeft: contentPadding }}>
+        <AdminTicketDetailHeader
+          ticket={ticket}
+          contentPadding={contentPadding}
+          onStatusChange={updateStatus}
+          onPriorityChange={updatePriority}
+          onAction={async (action) => {
+            if (action === "close") { await updateStatus("closed"); }
+            else if (action === "resolve") { await updateStatus("resolved"); }
+            else if (action === "delete") {
+              const r = await fetch(`${api}/api/admin/tickets/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token()}` },
+                body: JSON.stringify({ deletedByUser: true }),
+              });
+              if (r.ok) window.location.href = "/admin/tickets";
+            } else if (action === "restore") {
+              const r = await fetch(`${api}/api/admin/tickets/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token()}` },
+                body: JSON.stringify({ deletedByUser: false }),
+              });
+              if (r.ok) fetchTicket(true);
+            }
+          }}
+        />
         <div className="pb-24 pt-24 px-6">
-          <AdminTicketDetailHeader
-            ticket={ticket}
-            contentPadding={contentPadding}
-            onAction={async(action)=>{
-              try{
-                const token=localStorage.getItem('auth_token');
-                if (action==='close' || action==='resolve') {
-                  await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/${id}`, { method:'PATCH', headers:{ 'Content-Type':'application/json','Authorization':`Bearer ${token}` }, body: JSON.stringify({ status: action==='close'?'closed':'resolved' }) });
-                  await load();
-                } else if (action==='delete') {
-                  await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/${id}`, { method:'PATCH', headers:{ 'Content-Type':'application/json','Authorization':`Bearer ${token}` }, body: JSON.stringify({ deletedByUser: true }) });
-                  window.location.href='/admin/tickets';
-                }
-              } catch {}
-            }}
-          />
+          {sendError && (
+            <div className="mb-3 px-4 py-2 bg-red-600/10 border border-red-600/30 rounded-lg text-red-400 text-sm flex items-center justify-between">
+              <span>{sendError}</span>
+              <button onClick={() => setSendError(null)} className="ml-2 text-red-300 hover:text-white"><i className="fas fa-times" /></button>
+            </div>
+          )}
           <AdminTicketMessages ticket={ticket} />
           <AdminTicketInputBar
             contentPadding={contentPadding}
@@ -116,14 +181,11 @@ export default function AdminTicketDetailPage() {
             internal={internal}
             canSend={canSend}
             onChange={setReply}
-            onToggleInternal={()=>setInternal(!internal)}
-            onSend={save}
+            onToggleInternal={() => setInternal(!internal)}
+            onSend={sendReply}
           />
         </div>
       </main>
     </div>
   );
 }
-
-
-

@@ -1,7 +1,7 @@
 const express = require('express');
 const { requireAdmin } = require('../../middleware/auth');
 const Server = require('../../models/Server');
-const { audit } = require('../../middleware/audit');
+const { writeAudit } = require('../../middleware/audit');
 const { z } = require('zod');
 const { updateServerBuild, getServer } = require('../../services/pterodactyl');
 const { hasServerLimitsChanged } = require('../../utils/security');
@@ -155,8 +155,13 @@ router.get('/:id', requireAdmin, async (req, res) => {
 // PATCH /api/admin/servers/:id - update server
 router.patch('/:id', requireAdmin, async (req, res) => {
   try {
+    // Validate ObjectId format to prevent CastErrors
+    if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid server ID format' });
+    }
+
     // First check if server exists and is reachable
-    const server = await Server.findById(req.params.id).lean();
+    const server = await Server.findById(req.params.id);
     if (!server) {
       return res.status(404).json({ error: 'Server not found' });
     }
@@ -164,12 +169,15 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     // Check if server is unreachable or suspended
     let unreachable = false;
     let suspended = false;
+    let currentAllocationId = 0;
     try {
       if (server.panelServerId) {
         const panelResponse = await getServer(server.panelServerId);
         const panel = panelResponse?.attributes;
         suspended = panel?.suspended === true || panel?.suspended === 1;
+        currentAllocationId = panel?.allocation || panel?.relationships?.allocation?.attributes?.id || 0;
       }
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (panelError) {
       unreachable = true;
     }
@@ -219,12 +227,16 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     
     // Update server limits in panel
     try {
-      await updateServerBuild(server.pterodactylId, {
+      await updateServerBuild(server.panelServerId, {
+        allocation: currentAllocationId,
         memory: limits.memoryMb,
         swap: 0,
         disk: limits.diskMb,
         io: 500,
         cpu: limits.cpuPercent,
+        databases: limits.databases,
+        allocations: limits.allocations,
+        backups: limits.backups,
         threads: null,
         oom_disabled: false
       });
@@ -241,8 +253,8 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     await server.save();
     
     // Audit log
-    audit(req, 'admin.servers:update', { 
-      serverId: server._id, 
+    writeAudit(req, 'admin.servers:update', 'server', server._id.toString(), { 
+      serverId: server._id.toString(), 
       serverName: server.name,
       newLimits: limits
     });
@@ -254,47 +266,72 @@ router.patch('/:id', requireAdmin, async (req, res) => {
   }
 });
 
-// DELETE /api/admin/servers/:id - delete server
+// DELETE /api/admin/servers/:id
+//
+// Query params:
+//   ?force=true  — Force-delete via Pterodactyl even if the server is running
+//                  or suspended. Admins may always force-delete any server.
 router.delete('/:id', requireAdmin, async (req, res) => {
   try {
+    // Validate ObjectId format to prevent DB errors
+    if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid server ID format' });
+    }
+
     const server = await Server.findById(req.params.id);
     if (!server) {
       return res.status(404).json({ error: 'Server not found' });
     }
-    
-    // Check if server is suspended
-    if (server.status.toLowerCase() === 'suspended') {
-      return res.status(403).json({ 
-        error: 'Cannot delete suspended server', 
-        details: 'Server is suspended. Contact staff for assistance.',
-        serverId: server._id
-      });
+
+    const isForce = String(req.query.force).toLowerCase() === 'true';
+
+    // Delete from Pterodactyl panel
+    if (server.panelServerId) {
+      try {
+        const { deleteServer: deletePanelServer, forceDeleteServer } = require('../../services/pterodactyl');
+        if (isForce) {
+          await forceDeleteServer(server.panelServerId);
+        } else {
+          await deletePanelServer(server.panelServerId);
+        }
+      } catch (panelError) {
+        const status = panelError?.response?.status;
+        const detail = panelError?.response?.data || panelError.message;
+
+        // If the server is simply gone from the panel already, proceed silently
+        if (status === 404) {
+          console.warn(`[Admin] Panel server ${server.panelServerId} already absent — removing from DB.`);
+        } else if (!isForce) {
+          // Non-force: stop here so the DB stays in sync with the panel
+          return res.status(502).json({
+            error: 'Panel deletion failed. Use ?force=true to delete regardless.',
+            details: detail,
+          });
+        } else {
+          // Force mode: log the error but continue with DB removal
+          console.error(`[Admin] Force-delete panel error for ${server.panelServerId}:`, detail);
+        }
+      }
     }
-    
-    // Delete server from panel
-    try {
-      const { deleteServer: deletePanelServer } = require('../../services/pterodactyl');
-      await deletePanelServer(server.pterodactylId);
-    } catch (panelError) {
-      console.error('Panel deletion failed:', panelError);
-      // Continue with database deletion even if panel fails
-    }
-    
-    // Delete server from database
+
+    // Remove from our database
     await Server.findByIdAndDelete(req.params.id);
-    
+
     // Audit log
-    audit(req, 'admin.servers:delete', { 
-      serverId: req.params.id, 
+    writeAudit(req, 'admin.servers:delete', 'server', server._id.toString(), {
+      serverId: server._id.toString(),
       serverName: server.name,
-      userId: server.userId
+      ownerId: server.owner?.toString(),
+      panelServerId: server.panelServerId,
+      forced: isForce,
     });
-    
-    res.json({ message: 'Server deleted successfully' });
+
+    return res.json({ message: 'Server deleted successfully.' });
   } catch (error) {
-    console.error('Server deletion error:', error);
-    res.status(500).json({ error: 'Failed to delete server' });
+    console.error('Admin server deletion error:', error);
+    return res.status(500).json({ error: 'An unexpected error occurred while deleting the server.' });
   }
 });
+
 
 module.exports = router;

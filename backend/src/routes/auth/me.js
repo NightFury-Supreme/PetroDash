@@ -2,6 +2,7 @@ const express = require('express');
 const { requireAuth } = require('../../middleware/auth');
 const User = require('../../models/User');
 const Server = require('../../models/Server');
+const Settings = require('../../models/Settings');
 
 const router = express.Router();
 
@@ -38,6 +39,13 @@ router.get('/me', requireAuth, async (req, res) => {
       // Email user with uploaded profile picture
       profilePicture = user.profilePicture;
     }
+
+    let emailVerification = true;
+    try {
+      const s = await Settings.findOne({}).lean();
+      emailVerification = s?.auth?.emailVerification ?? true;
+    // eslint-disable-next-line unused-imports/no-unused-vars
+    } catch (_) {}
     
     return res.json({ 
       id: user._id, 
@@ -53,8 +61,10 @@ router.get('/me', requireAuth, async (req, res) => {
       loginMethod: loginMethod,
       profilePicture: profilePicture,
       oauthProviders: user.oauthProviders || {},
-      emailVerified: Boolean(user.emailVerified)
+      emailVerified: Boolean(user.emailVerified),
+      emailVerification: Boolean(emailVerification)
     });
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) { 
     // Error logged silently for production
     return res.status(500).json({ error: 'Internal server error' }); 
@@ -79,20 +89,29 @@ router.patch('/me/profile-picture', requireAuth, async (req, res) => {
     
     // Validate URL format if provided
     if (profilePicture && profilePicture.trim()) {
-      const urlPattern = /^https?:\/\/.+/i;
-      if (!urlPattern.test(profilePicture)) {
-        return res.status(400).json({ error: 'Invalid URL format. Must start with http:// or https://' });
+      // Use URL constructor for safe validation (no ReDoS)
+      try {
+        const url = new URL(profilePicture.trim());
+        if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+          return res.status(400).json({ error: 'Invalid URL format. Must start with http:// or https://' });
+        }
+        
+        // Validate image extension - use simple string check
+        const pathname = url.pathname.toLowerCase();
+        const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+        const hasValidExtension = validExtensions.some(ext => pathname.endsWith(ext));
+        
+        if (!hasValidExtension) {
+          return res.status(400).json({ 
+            error: 'Invalid image URL. Must end with .jpg, .jpeg, .png, .gif, .webp, or .svg' 
+          });
+        }
+        
+        user.profilePicture = profilePicture.trim();
+      // eslint-disable-next-line unused-imports/no-unused-vars
+      } catch (e) {
+        return res.status(400).json({ error: 'Invalid URL format' });
       }
-      
-      // Optional: Validate it's an image URL
-      const imagePattern = /\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i;
-      if (!imagePattern.test(profilePicture)) {
-        return res.status(400).json({ 
-          error: 'Invalid image URL. Must end with .jpg, .jpeg, .png, .gif, .webp, or .svg' 
-        });
-      }
-      
-      user.profilePicture = profilePicture.trim();
     } else {
       // Empty string to remove profile picture
       user.profilePicture = '';

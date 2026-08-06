@@ -30,6 +30,7 @@ export function EggStep({ eggs, form, violations, onInputChange }: EggStepProps)
             .filter((p: any) => ids.has(p._id))
         : [];
       setInfoPlans(list);
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_) {
       setInfoPlans([]);
     } finally {

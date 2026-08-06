@@ -31,10 +31,34 @@ export default function GiftsList({ gifts, onToggle, onDelete, deletingId }: { g
                   {g.enabled ? 'Enabled' : 'Disabled'}
                 </span>
                 <span className="bg-[#202020] text-white border border-[#303030] px-4 py-2 text-sm font-semibold rounded-full">
-                  <i className="fas fa-gift mr-2 text-white"></i>
+                  <i className="fas fa-coins mr-2 text-white"></i>
                   {g.rewards?.coins || 0} coins
                 </span>
+                {Number(g.rewards?.resources?.diskMb) > 0 && (
+                  <span className="bg-[#202020] text-white border border-[#303030] px-4 py-2 text-sm font-semibold rounded-full">
+                    <i className="fas fa-hdd mr-2 text-white"></i>
+                    {g.rewards.resources.diskMb} MB Disk
+                  </span>
+                )}
+                {Number(g.rewards?.resources?.memoryMb) > 0 && (
+                  <span className="bg-[#202020] text-white border border-[#303030] px-4 py-2 text-sm font-semibold rounded-full">
+                    <i className="fas fa-memory mr-2 text-white"></i>
+                    {g.rewards.resources.memoryMb} MB RAM
+                  </span>
+                )}
+                {Number(g.rewards?.resources?.cpuPercent) > 0 && (
+                  <span className="bg-[#202020] text-white border border-[#303030] px-4 py-2 text-sm font-semibold rounded-full">
+                    <i className="fas fa-microchip mr-2 text-white"></i>
+                    {g.rewards.resources.cpuPercent}% CPU
+                  </span>
+                )}
               </div>
+              
+              {g.description && (
+                <div className="mb-4 text-sm text-[#CCCCCC]">
+                  {g.description}
+                </div>
+              )}
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
                 <div className="text-center p-4 bg-[#202020] rounded-xl border border-[#303030]">
@@ -66,7 +90,7 @@ export default function GiftsList({ gifts, onToggle, onDelete, deletingId }: { g
                 </div>
                 <div className="flex items-center gap-3 p-3 bg-[#202020] rounded-lg border border-[#303030]">
                   <i className="fas fa-user text-white"></i>
-                  <span className="text-sm font-medium text-white">Created by: {g.createdBy?.username || g.createdBy?.email || 'Admin'}</span>
+                  <span className="text-sm font-medium text-white">Created by: {g.source === 'user' ? (g.createdBy?.username ? `User (${g.createdBy.username})` : 'User') : (g.createdBy?.username ? `Admin (${g.createdBy.username})` : (g.createdBy?.email ? `Admin (${g.createdBy.email})` : 'Admin'))}</span>
                 </div>
                 <div className="flex items-center gap-3 p-3 bg-[#202020] rounded-lg border border-[#303030]">
                   <i className="fas fa-users text-white"></i>

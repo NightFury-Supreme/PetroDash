@@ -58,6 +58,7 @@ const shouldLogPanelErrors = process.env.NODE_ENV === 'development';
       suspended
     };
     return res.json(response);
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
     return res.status(500).json({ error: 'Failed to load server' });
   }

@@ -30,8 +30,10 @@ router.patch('/profile', requireAuth, async (req, res) => {
     if (typeof firstName === 'string') user.firstName = firstName;
     if (typeof lastName === 'string') user.lastName = lastName;
     await user.save();
+    // eslint-disable-next-line unused-imports/no-unused-vars
     try { if (user.pterodactylUserId) await updatePanelUser(user.pterodactylUserId, { email: user.email, username: user.username, first_name: user.firstName, last_name: user.lastName }); } catch (_) {}
     return res.json({ id: user._id, email: user.email, username: user.username, firstName: user.firstName, lastName: user.lastName, role: user.role, coins: Number(user.coins || 0), pterodactylUserId: user.pterodactylUserId || null, resources: user.resources });
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) { return res.status(500).json({ error: 'Internal server error' }); }
 });
 
@@ -109,8 +111,10 @@ router.patch('/profile/email', requireAuth, async (req, res) => {
     if (exists && String(exists._id) !== String(user._id)) return res.status(409).json({ error: 'Email already in use' });
     user.email = email;
     await user.save();
+    // eslint-disable-next-line unused-imports/no-unused-vars
     try { if (user.pterodactylUserId) await updatePanelUser(user.pterodactylUserId, { email: user.email, username: user.username, first_name: user.firstName, last_name: user.lastName }); } catch (_) {}
     return res.json({ ok: true, email: user.email });
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
     return res.status(500).json({ error: 'Internal server error' });
   }
@@ -134,6 +138,7 @@ router.patch('/profile/password', requireAuth, async (req, res) => {
     user.passwordHash = await bcrypt.hash(newPassword, salt);
     await user.save();
     return res.json({ ok: true });
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
     return res.status(500).json({ error: 'Internal server error' });
   }

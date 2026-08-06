@@ -14,7 +14,7 @@ router.get('/', requireAuth, async (req, res) => {
     const paginate = String(req.query.paginate || '').toLowerCase() === 'true';
     let page = Math.max(1, parseInt(String(req.query.page || '1')) || 1);
     let pageSize = Math.max(1, Math.min(100, parseInt(String(req.query.pageSize || '20')) || 20));
-    const baseQuery = { userId: req.user.sub, status: 'COMPLETED' };
+    const baseQuery = { userId: req.user.sub };
     let q = Payment.find(baseQuery).sort({ createdAt: -1 }).lean();
     if (paginate) q = q.skip((page - 1) * pageSize).limit(pageSize);
     const [list, total] = await Promise.all([
@@ -71,6 +71,7 @@ router.get('/:id/invoice', requireAuth, createRateLimiter(5, 60 * 1000), async (
         const logoBuffer = Buffer.from(logoResponse.data);
         doc.image(logoBuffer, 50, 50, { width: 60, height: 60 });
         doc.text(brand, 120, 70, { fontSize: 20 });
+      // eslint-disable-next-line unused-imports/no-unused-vars
       } catch (logoError) {
                 doc.fontSize(20).text(brand, { align: 'left' });
       }

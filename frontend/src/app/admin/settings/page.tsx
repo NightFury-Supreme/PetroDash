@@ -12,6 +12,7 @@ interface Settings {
   referrals?: { referrerCoins?: number; referredCoins?: number; customCodeMinInvites?: number };
   auth: {
     emailLogin: boolean;
+    emailVerification: boolean;
     discord: {
       enabled: boolean;
       autoJoin: boolean;
@@ -34,9 +35,11 @@ interface Settings {
       mode: 'sandbox' | 'live';
       clientId: string;
       clientSecret: string;
-      currency: string;
       webhookId: string;
     };
+  };
+  localization?: {
+    currency: string;
   };
   defaults: {
     cpuPercent: number;
@@ -108,7 +111,7 @@ export default function AdminSettingsPage() {
     }
   }, [modal]);
 
-  const saveSettings = useCallback(async (newSettings: Settings) => {
+  const saveSettings = useCallback(async (newSettings: Partial<Settings>) => {
     try {
       const token = localStorage.getItem('auth_token');
       if (!token) {
@@ -131,6 +134,7 @@ export default function AdminSettingsPage() {
 
       const data = await response.json();
       setSettings(data);
+      return data as Settings;
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : 'Failed to save settings';
       throw new Error(errorMessage);

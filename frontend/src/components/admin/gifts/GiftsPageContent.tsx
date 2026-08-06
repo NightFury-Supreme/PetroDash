@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import GiftsHeader from '@/components/admin/gifts/GiftsHeader';
 import GiftsList from '@/components/admin/gifts/GiftsList';
@@ -9,18 +9,51 @@ import { AdminGiftsSkeleton } from '@/components/skeletons/admin/gifts/AdminGift
 export default function GiftsPageContent() {
   const router = useRouter();
   const [gifts, setGifts] = useState<any[]>([]);
+  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [tab, setTab] = useState<'active'|'inactive'|'all'>('all');
   const [query, setQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
+  const fetchGifts = useCallback(async () => {
+    setLoading(true);
     const token = localStorage.getItem('auth_token');
     if (!token) { router.replace('/login'); return; }
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/gifts`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(async (r) => { if (r.ok) setGifts(await r.json()); })
-      .finally(() => setLoading(false));
-  }, [router]);
+    
+    try {
+      const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/gifts`);
+      url.searchParams.set('page', currentPage.toString());
+      url.searchParams.set('limit', '10');
+      url.searchParams.set('tab', tab);
+      if (query.trim()) url.searchParams.set('search', query.trim());
+
+      const res = await fetch(url.toString(), { headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) {
+        const d = await res.json();
+        if (Array.isArray(d)) {
+          setGifts(d);
+          setPagination({ page: 1, totalPages: 1, total: d.length });
+        } else {
+          setGifts(d.gifts || []);
+          setPagination({
+            page: d.page || 1,
+            totalPages: d.totalPages || 1,
+            total: d.total || 0
+          });
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage, tab, query, router]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      fetchGifts();
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [fetchGifts]);
 
   const toggleEnabled = async (id: string, enabled: boolean) => {
     const token = localStorage.getItem('auth_token');
@@ -41,37 +74,56 @@ export default function GiftsPageContent() {
     }
   };
 
-  if (loading) return <AdminGiftsSkeleton />;
-
-  const now = new Date();
-  const filtered = gifts.filter((g) => {
-    const active = (!!g.enabled) && (!g.validUntil || new Date(g.validUntil) > now) && (!g.maxRedemptions || (g.redeemedCount || 0) < g.maxRedemptions);
-    if (tab === 'all') return true;
-    return tab === 'active' ? active : !active;
-  }).filter((g) => {
-    if (!query.trim()) return true;
-    const q = query.toLowerCase();
-    const byCode = String(g.code || '').toLowerCase().includes(q);
-    const byCreator = (g.createdBy?.username || g.createdBy?.email || '').toLowerCase().includes(q);
-    const redeemedUsers = (g.redemptions || []).map((r: any) => (r.user?.username || r.user?.email || '')).join(' ').toLowerCase();
-    return byCode || byCreator || redeemedUsers.includes(q);
-  });
+  if (loading && gifts.length === 0) return <AdminGiftsSkeleton />;
 
   return (
     <div className="p-6 space-y-6">
-      <GiftsHeader total={gifts.length} />
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+      <GiftsHeader total={pagination.total} />
+      
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
         <div className="flex items-center gap-2">
-          <button className={`px-3 py-1 rounded-full ${tab==='all'?'bg-white text-black':'bg-[#202020] text-white'} border border-[#303030]`} onClick={() => setTab('all')}>All</button>
-          <button className={`px-3 py-1 rounded-full ${tab==='active'?'bg-white text-black':'bg-[#202020] text-white'} border border-[#303030]`} onClick={() => setTab('active')}>Active</button>
-          <button className={`px-3 py-1 rounded-full ${tab==='inactive'?'bg-white text-black':'bg-[#202020] text-white'} border border-[#303030]`} onClick={() => setTab('inactive')}>Inactive</button>
+          <button className={`px-3 py-1 text-sm rounded-full ${tab==='all'?'bg-white text-black font-medium':'bg-[var(--surface)] text-white hover:bg-[var(--hover)]'} border border-[var(--border)] transition-colors`} onClick={() => { setTab('all'); setCurrentPage(1); }}>All</button>
+          <button className={`px-3 py-1 text-sm rounded-full ${tab==='active'?'bg-white text-black font-medium':'bg-[var(--surface)] text-white hover:bg-[var(--hover)]'} border border-[var(--border)] transition-colors`} onClick={() => { setTab('active'); setCurrentPage(1); }}>Active</button>
+          <button className={`px-3 py-1 text-sm rounded-full ${tab==='inactive'?'bg-white text-black font-medium':'bg-[var(--surface)] text-white hover:bg-[var(--hover)]'} border border-[var(--border)] transition-colors`} onClick={() => { setTab('inactive'); setCurrentPage(1); }}>Inactive</button>
         </div>
-        <div className="flex-1">
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by code or user…"
-                 className="w-full bg-[#101010] border border-[#2a2a2a] rounded-lg px-3 py-2" />
+        
+        <div className="flex items-center gap-4 w-full sm:w-auto">
+          <div className="text-sm text-[#AAAAAA] whitespace-nowrap">
+            Total Gifts: {pagination.total}
+          </div>
+          <input 
+            value={query} 
+            onChange={(e) => { setQuery(e.target.value); setCurrentPage(1); }} 
+            placeholder="Search by code..."
+            className="w-full sm:w-64 bg-[var(--surface)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm text-white placeholder-[#8A8A8A] focus:outline-none focus:border-[#555] transition-colors" 
+          />
         </div>
       </div>
-      <GiftsList gifts={filtered} onToggle={toggleEnabled} onDelete={deleteGift} deletingId={deleting} />
+      
+      <GiftsList gifts={gifts} onToggle={toggleEnabled} onDelete={deleteGift} deletingId={deleting} />
+
+      {/* Pagination Controls */}
+      {pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between pt-4">
+          <button
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={pagination.page <= 1}
+            className="px-4 py-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-sm font-medium hover:bg-[var(--hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Previous
+          </button>
+          <div className="text-sm text-[#AAAAAA]">
+            Page {pagination.page} of {pagination.totalPages}
+          </div>
+          <button
+            onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))}
+            disabled={pagination.page >= pagination.totalPages}
+            className="px-4 py-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-sm font-medium hover:bg-[var(--hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 }

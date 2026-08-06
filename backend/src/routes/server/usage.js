@@ -31,6 +31,7 @@ router.get('/', requireAuth, async (req, res) => {
           const hasChange = hasServerLimitsChanged(s.limits, updatedLimits);
           if (hasChange) await Server.updateOne({ _id: s._id }, { $set: { limits: updatedLimits } });
           return { ...s, limits: updatedLimits };
+        // eslint-disable-next-line unused-imports/no-unused-vars
         } catch (_) {
           return s; // ignore panel errors
         }

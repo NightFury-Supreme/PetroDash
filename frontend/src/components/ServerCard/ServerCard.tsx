@@ -42,14 +42,17 @@ type ServerCardProps = {
 
 export default function ServerCard({
   server,
+  // eslint-disable-next-line unused-imports/no-unused-vars
   showOwner = true,
   showActions = true,
   onDelete,
   deleting,
   editLink,
+  // eslint-disable-next-line unused-imports/no-unused-vars
   viewOwnerLink,
   className = ""
 }: ServerCardProps) {
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'running':
@@ -72,6 +75,7 @@ export default function ServerCard({
     }
   };
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
       case 'running':

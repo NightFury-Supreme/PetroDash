@@ -16,7 +16,7 @@ Thank you for your interest in contributing to PteroDash! This document provides
 3. Install dependencies:
    ```bash
    cd backend && npm install
-   cd ../frontend-v2 && npm install
+   cd ../frontend && npm install
    ```
 4. Set up environment variables (see `env.example` files)
 5. Start development servers:
@@ -25,7 +25,7 @@ Thank you for your interest in contributing to PteroDash! This document provides
    cd backend && npm run dev
    
    # Frontend
-   cd frontend-v2 && npm run dev
+   cd frontend && npm run dev
    ```
 
 ## 📝 Code Style
@@ -68,7 +68,7 @@ Thank you for your interest in contributing to PteroDash! This document provides
    cd backend && npm test
    
    # Frontend tests
-   cd frontend-v2 && npm test
+   cd frontend && npm test
    ```
 
 4. **Commit your changes**
@@ -91,6 +91,8 @@ Thank you for your interest in contributing to PteroDash! This document provides
 
 ### Before submitting a PR:
 - [ ] Code follows the project's style guidelines
+- [ ] `npm run lint` passes with 0 warnings/errors (Strict `--max-warnings=0` policy)
+- [ ] `npm audit` shows 0 vulnerabilities
 - [ ] All tests pass
 - [ ] Documentation is updated
 - [ ] No console.log statements in production code

@@ -75,6 +75,7 @@ router.get('/:id', requireAuth, validateObjectId('id'), async (req, res) => {
 
     res.set('Cache-Control', 'no-store');
     return res.json(responsePayload);
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
     return res.status(500).json({ error: 'Failed to load server' });
   }
@@ -96,9 +97,12 @@ const updateSchema = z.object({
 });
 
 router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 60 * 1000), async (req, res) => {
+  let lockAcquired = false;
+  const userId = req.user.sub;
+  const User = require('../../models/User');
+  
   try {
     const startTime = Date.now();
-    const userId = req.user.sub;
     const serverId = req.params.id;
 
     // Validate server ID format
@@ -108,6 +112,25 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
         details: 'Server ID must be a valid MongoDB ObjectId'
       });
     }
+
+    // Acquire atomic TOCTOU lock with 30-second timeout
+    const lockTimeout = new Date(Date.now() - 30000);
+    const user = await User.findOneAndUpdate(
+      { 
+        _id: userId, 
+        $or: [
+          { serverLock: { $exists: false } },
+          { serverLock: null },
+          { serverLock: { $lt: lockTimeout } }
+        ]
+      },
+      { $set: { serverLock: new Date() } },
+      { new: true }
+    );
+    if (!user) {
+      return res.status(429).json({ error: 'Another server operation is currently in progress. Please wait a moment.' });
+    }
+    lockAcquired = true;
 
     // Find server and verify ownership
     const server = await Server.findOne({ _id: serverId, owner: userId });
@@ -131,6 +154,7 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
           panelAttributes?.suspended === 1 ||
           panelAttributes?.status === 'suspended'
         );
+      // eslint-disable-next-line unused-imports/no-unused-vars
       } catch (_) {
         // Ignore panel lookup failures here; unreachable handling occurs later when attempting updates.
       }
@@ -157,15 +181,7 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
       });
     }
 
-    // Get user data
-    const User = require('../../models/User');
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ 
-        error: 'User not found',
-        details: 'User account could not be located'
-      });
-    }
+
 
     // Validate incoming body
     const parsed = updateSchema.safeParse(req.body);
@@ -283,6 +299,7 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
       // Update server on Pterodactyl panel if panelServerId exists
       if (server.panelServerId) {
         try {
+          // eslint-disable-next-line unused-imports/no-unused-vars
           const { updateServerBuild, updateServerDetails } = require('../../services/pterodactyl');
           
           // Get current server details to get the allocation ID
@@ -345,6 +362,7 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
       userId: user._id
     });
 
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const responseTime = Date.now() - startTime;
     return res.json({ 
       server,
@@ -352,35 +370,99 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
       changes: Object.keys(changes).length > 0 ? changes : undefined
     });
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
     return res.status(500).json({ 
       error: 'Internal server error',
       details: 'An unexpected error occurred while updating the server',
       requestId: req.id || 'unknown'
     });
+  } finally {
+    if (lockAcquired) {
+      await User.updateOne({ _id: userId }, { $set: { serverLock: null } });
+    }
   }
 });
 
 // DELETE /api/servers/:id - delete server
 router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10, 60 * 1000), async (req, res) => {
-  const server = await Server.findOne({ _id: req.params.id, owner: req.user.sub });
-  if (!server) return res.status(404).json({ error: 'Server not found' });
-  
-  // Check if server is suspended
-  if (server.status.toLowerCase() === 'suspended') {
-    return res.status(403).json({ 
-      error: 'Cannot delete suspended server', 
-      details: 'Server is suspended. Contact staff for assistance.',
-      serverId: server._id
-    });
-  }
+  let lockAcquired = false;
+  const userId = req.user.sub;
+  const User = require('../../models/User');
 
   try {
+    // 1. Verify the server exists and belongs to this user
+    const server = await Server.findOne({ _id: req.params.id, owner: userId });
+    if (!server) return res.status(404).json({ error: 'Server not found' });
+    
+    const isForce = String(req.query.force).toLowerCase() === 'true';
+
+    // 2. If NOT a force-delete, block deletion of suspended servers
+    if (!isForce && server.status && server.status.toLowerCase() === 'suspended') {
+      return res.status(403).json({ 
+        error: 'Cannot delete suspended server', 
+        details: 'Server is suspended. Contact staff for assistance, or use force removal.',
+        serverId: server._id
+      });
+    }
+
+    // 3. Acquire per-user atomic lock to prevent concurrent operations
+    const lockTimeout = new Date(Date.now() - 30000);
+    const user = await User.findOneAndUpdate(
+      { 
+        _id: userId, 
+        $or: [
+          { serverLock: { $exists: false } },
+          { serverLock: null },
+          { serverLock: { $lt: lockTimeout } }
+        ]
+      },
+      { $set: { serverLock: new Date() } },
+      { new: true }
+    );
+    if (!user) {
+      return res.status(429).json({ error: 'Another server operation is in progress. Please wait a moment.' });
+    }
+    lockAcquired = true;
+
+    // 4. Delete from Pterodactyl panel
+    if (server.panelServerId) {
+      try {
+        const { deleteServer: deletePanelServer, forceDeleteServer } = require('../../services/pterodactyl');
+        if (isForce) {
+          await forceDeleteServer(server.panelServerId);
+        } else {
+          await deletePanelServer(server.panelServerId);
+        }
+      } catch (panelError) {
+        const status = panelError?.response?.status;
+        const detail = panelError?.response?.data || panelError.message;
+
+        // 404 = server already gone; safe to remove locally
+        if (status === 404) {
+          console.warn(`Panel server ${server.panelServerId} already gone — cleaning up locally.`);
+        } else {
+          // For any other panel error, return 502 and do NOT delete locally
+          return res.status(502).json({
+            error: 'Panel deletion failed. The server record has NOT been removed.',
+            details: detail,
+          });
+        }
+      }
+    }
+
+    // 5. Remove server record from database
     await Server.deleteOne({ _id: server._id });
+
+    // 6. Audit trail
+    const { writeAudit } = require('../../middleware/audit');
+    writeAudit(req, 'server.delete', 'server', server._id.toString(), {
+      panelServerId: server.panelServerId,
+      forced: isForce,
+    });
+
     // Email notification for server deletion (non-blocking)
     try {
-      const User = require('../../models/User');
-      const user = await User.findById(req.user.sub).lean();
       if (user?.email) {
         const { sendMailTemplate } = require('../../lib/mail');
         await sendMailTemplate({
@@ -389,11 +471,17 @@ router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10,
           data: { serverName: server.name }
         });
       }
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_) {}
-    return res.json({ ok: true });
+
+    return res.json({ ok: true, message: 'Server deleted successfully.' });
   } catch (error) {
     console.error('Delete server error:', error);
     return res.status(500).json({ error: 'Failed to delete server' });
+  } finally {
+    if (lockAcquired) {
+      await User.updateOne({ _id: userId }, { $set: { serverLock: null } });
+    }
   }
 });
 

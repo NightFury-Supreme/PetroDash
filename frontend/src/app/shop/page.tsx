@@ -1,8 +1,7 @@
 "use client";
 import Shell from '@/components/Shell';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useModal } from '@/components/Modal';
 import ShopSkeleton from '@/components/skeletons/shop/ShopSkeleton';
 import { useShop } from '@/hooks/useShop';
@@ -10,7 +9,7 @@ import { ItemCard } from '@/components/shop/ItemCard';
 import { PlanCard } from '@/components/shop/PlanCard';
 import { PlanPurchaseButton } from '@/components/shop/PlanPurchaseButton';
 import { CouponModal } from '@/components/shop/CouponModal';
-import { ContentAd, SidebarAd, MobileAd } from '@/components/ads/AdSense';
+import { SidebarAd, MobileAd } from '@/components/ads/AdSense';
 
 export default function ShopPage() {
   const router = useRouter();
@@ -24,9 +23,11 @@ export default function ShopPage() {
     items, plans, error, setError,
     buying, setBuying,
     quantities, setQuantities,
+    // eslint-disable-next-line unused-imports/no-unused-vars
     coins, setCoins, payments, activePlans,
+    // eslint-disable-next-line unused-imports/no-unused-vars
     itemsLoading, plansLoading, bootstrapDone,
-    clampQuantity, iconFor
+    clampQuantity, iconFor, currency
   } = useShop();
 
   const downloadInvoice = async (id: string) => {
@@ -72,14 +73,6 @@ export default function ShopPage() {
 
       const billingCycle = selectedPlan.lifetime ? 'lifetime' : 'monthly';
 
-      const validationResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/plans/purchase`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ planId: selectedPlan._id, couponCode: couponCode.trim() || undefined, billingCycle })
-      });
-      const validationData = await validationResponse.json();
-      if (!validationResponse.ok) throw new Error(validationData?.error || 'Failed to validate purchase');
-
       const paypalResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/paypal/create-order`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -87,6 +80,11 @@ export default function ShopPage() {
       });
       const paypalData = await paypalResponse.json();
       if (!paypalResponse.ok) throw new Error(paypalData?.error || 'Failed to create PayPal order');
+
+      if (paypalData.bypassPaypal) {
+        router.push('/plan/success?orderId=' + encodeURIComponent(paypalData.id));
+        return;
+      }
 
       if (paypalData.links && paypalData.links.length > 0) {
         const approveLink = paypalData.links.find((link: any) => link.rel === 'approve');
@@ -119,6 +117,9 @@ export default function ShopPage() {
       }
       // Update coins and refresh user data
       setCoins(d.coins);
+      try {
+        window.dispatchEvent(new CustomEvent('coins:update', { detail: { coins: Number(d.coins ?? 0) } }));
+      } catch {}
       await modal.success({ title: 'Purchased', body: 'Purchased successfully.' });
       
       // Refresh user data to show updated resources
@@ -130,8 +131,12 @@ export default function ShopPage() {
         if (userResponse.ok) {
           const userData = await userResponse.json();
           setCoins(userData.coins);
+          try {
+            window.dispatchEvent(new CustomEvent('coins:update', { detail: { coins: Number(userData.coins ?? 0) } }));
+          } catch {}
           // You might want to update other user data here if needed
         }
+      // eslint-disable-next-line unused-imports/no-unused-vars
       } catch (refreshError) {
               }
     } catch (e: any) {
@@ -164,10 +169,6 @@ export default function ShopPage() {
               <h1 className="text-2xl font-extrabold">Shop</h1>
               <p className="text-muted">Buy additional resources with your coins</p>
             </div>
-          </div>
-          <div className="text-sm text-muted flex items-center gap-2">
-            <i className="fas fa-coins"></i>
-            <span>{typeof coins === 'number' ? `${coins} coins` : ''}</span>
           </div>
         </div>
 
@@ -226,7 +227,7 @@ export default function ShopPage() {
           <div className="flex flex-col xl:flex-row gap-6">
             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {plans.map((plan) => (
-                <PlanCard key={plan._id} plan={plan}>
+                <PlanCard key={plan._id} plan={plan} currency={currency}>
                   <PlanPurchaseButton 
                     plan={plan} 
                     onPurchase={() => {
@@ -239,7 +240,12 @@ export default function ShopPage() {
                         try {
                           const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
                           const d = await r.json();
-                          if (r.ok) setCoins(Number(d?.coins ?? 0));
+                          if (r.ok) {
+                            setCoins(Number(d?.coins ?? 0));
+                            try {
+                              window.dispatchEvent(new CustomEvent('coins:update', { detail: { coins: Number(d?.coins ?? 0) } }));
+                            } catch {}
+                          }
                         } catch {}
                       }
                     }} 
@@ -297,6 +303,7 @@ export default function ShopPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-[#AAAAAA] border-b" style={{ borderColor: 'var(--border)' }}>
+                    <th className="py-3 font-medium">Payment ID</th>
                     <th className="py-3 font-medium">Date</th>
                     <th className="py-3 font-medium">Plan</th>
                     <th className="py-3 font-medium">Amount</th>
@@ -309,21 +316,28 @@ export default function ShopPage() {
                     const status = String(p.status || '').toLowerCase();
                     const statusClass = status === 'completed' || status === 'paid'
                       ? 'bg-green-900/40 text-green-300 border-green-800'
-                      : status === 'pending'
+                      : (status === 'pending' || status === 'created')
                       ? 'bg-yellow-900/40 text-yellow-300 border-yellow-800'
                       : 'bg-red-900/40 text-red-300 border-red-800';
                     return (
                       <tr key={p.id} className="border-b hover:bg-[#151515] transition-colors" style={{ borderColor: 'var(--border)' }}>
+                        <td className="py-3 align-middle text-xs text-[#888] font-mono">{p.id}</td>
                         <td className="py-3 align-middle">{new Date(p.createdAt).toLocaleString()}</td>
                         <td className="py-3 align-middle">{p.plan?.name || p.planId}</td>
                         <td className="py-3 align-middle">
-                          <span className="font-semibold">{p.amount?.toFixed ? p.amount.toFixed(2) : p.amount}</span> <span className="text-[#AAAAAA]">{p.currency || 'USD'}</span>
+                          <span className="font-semibold">{p.amount?.toFixed ? p.amount.toFixed(2) : p.amount}</span> <span className="text-[#AAAAAA]">{p.currency || currency}</span>
                         </td>
                         <td className="py-3 align-middle">
-                          <span className={`px-2 py-1 text-[11px] rounded-full border ${statusClass}`}>{p.status}</span>
+                          <span className={`px-2 py-1 text-[11px] rounded-full border ${statusClass}`}>
+                            {status === 'created' ? 'Processing' : p.status}
+                          </span>
                         </td>
                         <td className="py-3 align-middle">
-                          <button className="text-accent underline hover:opacity-80" onClick={() => downloadInvoice(p.id)}>Download</button>
+                          {(status === 'completed' || status === 'paid') ? (
+                            <button className="text-accent underline hover:opacity-80" onClick={() => downloadInvoice(p.id)}>Download</button>
+                          ) : (
+                            <span className="text-[#555]">N/A</span>
+                          )}
                         </td>
                       </tr>
                     );

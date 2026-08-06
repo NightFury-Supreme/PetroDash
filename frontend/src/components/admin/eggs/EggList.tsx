@@ -22,7 +22,6 @@ export default function EggList({ eggs }: { eggs: any[] }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               {(egg as any).icon ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={`${process.env.NEXT_PUBLIC_API_BASE}${(egg as any).icon}`}
                   alt={egg.name}

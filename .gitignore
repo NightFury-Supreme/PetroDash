@@ -5,12 +5,16 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Environment variables
+# Environment variables — NEVER commit real .env files
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env.production
+# docker-compose.env is the template; .env is the real secrets file
+# Add docker-compose.env to this list if you copy it to .env:
+# (already tracked as example template — do NOT add real secrets to it)
 
 # Build outputs
 dist/
@@ -116,6 +120,8 @@ coverage/
 # Docker
 .dockerignore
 docker-compose.override.yml
+# If you copy docker-compose.env to .env, that .env is already excluded above.
+# The tracked docker-compose.env is the placeholder template only.
 
 # PM2
 .pm2/
@@ -125,4 +131,3 @@ docker-compose.override.yml
 
 # Uploaded files
 backend/uploads/
-

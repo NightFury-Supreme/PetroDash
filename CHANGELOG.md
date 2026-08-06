@@ -10,6 +10,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Future features and improvements will be listed here
 
+## [1.1.0] - 06-08-2026
+
+### Added
+- **Coin Earning System** (`/earn`, `/admin/earn`):
+  - Complete monetization system allowing users to earn coins via Ads (Ayet Studios) and Linkvertise integrations.
+  - Dedicated `/earn` user page and `/admin/earn` admin management interface.
+  - `EarnSession` model with indexed fields for fraud prevention and secure session tracking with per-user per-method daily claim limits, cooldowns, and wait-time enforcement.
+  - Earn settings (`ads`, `linkvertise`) added to `Settings` model with full admin configurability (coins reward, cooldown, maxClaimsPerDay, placement/token IDs).
+- **Payment Processor Abstraction**: New `paymentProcessor.js` utility for clean, centralized transaction handling.
+- **Frontend Hooks**: Introduced `useCurrency`, `useEarn`, and `useSidebarPadding` hooks for real-time UI updates.
+- **Configurable Email Verification Toggle**: Admins can now disable email verification on register. When disabled, new accounts are auto-verified.
+- **Localization Setting**: Added `localization.currency` field to `Settings` for global currency display configuration (migrated from `payments.paypal.currency`).
+- **CSRF Protection**: Added `csrfProtection` middleware to `index.js` (skips `/api` JWT-protected routes).
+- **OAuth Referral Propagation**: Referral codes (`ref` query param) are now passed through Discord and Google OAuth flows via base64-encoded `state` parameter so new OAuth users are correctly attributed.
+- **Admin Self-Protection Guards**:
+  - Admins can no longer demote their own role or ban their own account.
+  - Admins can no longer delete their own account.
+- **Server Lock Field** (`User.serverLock`): Atomic timeout lock on the `User` model to prevent race conditions on server creation/modification.
+
+### Changed
+- **`auth.js` Middleware Refactored** to `async/await` — eliminated nested promise chain and improved error differentiation (`JsonWebTokenError` → 401, unexpected errors → 500).
+- **Admin Ledger (`/api/admin/payments/ledger`)**: Fully rewrote to support server-side **pagination** (page, limit, total, totalPages) instead of a raw 500-record dump.
+- **Admin Users (`/api/admin/users`)**: Added server-side **pagination** with `page`, `limit`, `total`, `totalPages`. Server aggregation now scoped to the current page's user IDs for efficiency.
+- **Admin Tickets (`/api/admin/tickets`)**: Added server-side **pagination** and search (now also searches `category`). Messages are excluded from list view for performance. Deleted tickets are excluded by default.
+- **Admin Gifts (`/api/admin/gifts`)**: Added server-side **pagination** with search and tab filtering (`all`, `active`, `inactive`). `createdBy` and `source: 'admin'` now set on creation. Admins have full control over all gift codes (user-generated code restriction removed).
+- **`Payment.js` Model**: Added `meta` field (`Mixed`) for storing additional payment context.
+- **`Plan.js` Model**: `pricePerYear` is no longer required (defaults to `0`). Removed CPU percent max cap of 100 (Pterodactyl uses % of all cores combined).
+- **`Ticket.js` Model**: Added `authorRole` to messages, enabled `_id` per message, added `lastUserActivityAt`, `lastAdminReplyAt`, `closedAt` fields, and updated indexes for better query performance.
+- **Admin Ticket Routes**: Refactored to return paginated results, return the saved message on reply, track `lastAdminReplyAt`, enforce 5000-char message limit, and support hard-delete (`DELETE /api/admin/tickets/:id`). Removed separate `/notes` endpoint (internal notes now use `messages` with `internal: true`).
+- **Admin Server Delete (`DELETE /api/admin/servers/:id`)**: Added `?force=true` query param to force-delete servers even if the panel fails. Handles panel 404 gracefully (removes from DB silently). Proper error propagation for non-force failures.
+- **Admin Server Update (`PATCH /api/admin/servers/:id`)**: Now syncs `databases`, `allocations`, and `backups` limits to Pterodactyl. Uses `panelServerId` (not `pterodactylId`) for panel calls. Added ObjectId validation guard.
+- **Admin Plan Route**: Added `ValidationError` handler to return clean 400 field errors instead of 500s for Mongoose schema violations.
+- **Admin Settings**: Added validation schema support for `emailVerification`, `localization.currency`, and relaxed PayPal URL validation to allow relative paths and empty values.
+- **Plan Cancellation / Refund — Resource Deduction**: When an admin cancels a user's plan or issues a PayPal refund, the user's coins and resources are now correctly decremented.
+- **Admin User Plan Assignment**: Resources are now applied with `$inc` (atomic) instead of read-modify-write. Returns populated plan details on response.
+- **Login / Register**: Both now check the `emailLogin` setting and return `403` if disabled, with audit logging.
+- **Password Reset (`reset.js`)**: Scoped token lookup to the requesting user to prevent cross-user token reuse. Fixed password update to use `bcrypt.hash` directly instead of relying on an optional `setPassword` method.
+- **`nodemailer`** upgraded from `^7.0.5` to `^9.0.4`.
+- **Global API rate limit** default reduced from `3000` to `500` requests per 15 minutes.
+- **Session cookie hardened**: Added `name: 'oauth_session'` (obscures stack), `httpOnly: true`, `sameSite: 'lax'`.
+- **File Upload (`upload.js`)**: Unique suffix now uses `crypto.randomBytes(6).toString('hex')` instead of `Math.random()`.
+- **Security Logging**: Now emits structured `[INFO/WARN/ERROR]` log lines with method, path, status, duration, and IP.
+- **ReDoS Fixes in `security.js`**: Replaced backtracking-prone regex loops for event-handler and HTML-tag stripping with safe, non-backtracking single-pass patterns (fixes CodeQL alerts #57 and #58).
+- **Profile Picture Validation (`me.js`)**: Replaced vulnerable regex (`/^https?:\\/\\/.+/i`) with `URL` constructor + simple string `.endsWith()` check (no ReDoS).
+
+### Fixed
+- **Admin payment route path typo**: `/payments/:id` and `/payments/:id/refund` and `/payments/:id/void` were incorrectly prefixed; corrected to `/:id`.
+- **Audit import mismatch in `admin/servers.js`**: `audit` renamed to `writeAudit` to match actual export.
+- **`server/remove.js` and `server/update.js` deleted**: These orphaned route files were removed; their functionality is handled by `server/index.js`.
+- **File Upload — Randomized Filenames**: Uploaded files are now saved with a fully random 24-character hex name (e.g. `a3f9c2d1e8b047f6c5a2901d.jpg`). The original filename is completely discarded, preventing information leakage via public URLs (e.g. `Whatsapp_image.jpg` is no longer exposed).
+- **File Upload — Magic Byte Validation**: Added server-side content inspection after each upload. The first 12 bytes of the saved file are compared against known JPEG, PNG, GIF, and WEBP signatures. A renamed malicious file (e.g. `evil.php` → `evil.jpg`) is immediately deleted and rejected with a 400 error — even if it passed the MIME type and extension checks.
+- **File Upload — Removed `originalName` from Response**: The upload API no longer echoes back the client's original filename, closing an information disclosure vector.
+- **File Upload — Fixed `createRateLimiter` Call**: The upload route was calling `createRateLimiter` with an options object instead of `(max, windowMs)`, causing rate limiting to silently fail. Now correctly called as `createRateLimiter(20, 15 * 60 * 1000)`.
+- **File Upload — Tightened `deleteFile` Regex**: The safe-filename check in `deleteFile` now only allows lowercase hex characters followed by a whitelisted extension (matching our generated names exactly), blocking any attempt to delete non-upload files.
+
+
+### Enhanced
+- **Strict Code Quality & Security Enforcement**:
+  - Implemented zero-warning and zero-vulnerability CI/CD pipeline using GitHub Actions.
+  - Enforced strict ESLint configuration (`--max-warnings=0`) across both frontend and backend.
+  - Automated `npm audit` checks fail the build on any severity vulnerability (`--audit-level=low`).
+- **Codebase Cleanup**:
+  - Resolved 40+ React hook dependency warnings and unused variable/import issues in the frontend.
+  - Cleaned up 45+ unused imports and variables across the Express backend.
+  - Added `eslint`, `eslint-plugin-unused-imports`, and `globals` as dev dependencies to backend.
+  - Consolidated duplicate and orphaned files.
+
+
 ## [1.0.9] - 16-10-2025
 
 ### Added

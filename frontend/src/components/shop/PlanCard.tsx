@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-export function PlanCard({ plan, children }: { plan: any; children?: React.ReactNode }) {
+export function PlanCard({ plan, currency = 'USD', children }: { plan: any; currency?: string; children?: React.ReactNode }) {
   return (
     <div className={`rounded-lg overflow-hidden hover-lift relative ${plan.popular ? 'ring-2 ring-accent' : ''}`} style={{
       border: '1px solid var(--border)',
@@ -19,11 +19,11 @@ export function PlanCard({ plan, children }: { plan: any; children?: React.React
         <div className="mb-4">
           {plan.strikeThroughPrice > 0 && (
             <div className="text-lg text-muted line-through mb-1">
-              ${plan.strikeThroughPrice}
+              {plan.strikeThroughPrice} {plan.currency || currency}
             </div>
           )}
           <div className="text-3xl font-bold text-accent">
-            ${plan.pricePerMonth}
+            {plan.pricePerMonth} {plan.currency || currency}
           </div>
           <div className="text-sm text-muted">
             {plan.lifetime ? 'Once' : 'per month'}
@@ -31,7 +31,9 @@ export function PlanCard({ plan, children }: { plan: any; children?: React.React
         </div>
 
         {plan.description && (
-          <div className="text-sm text-muted mb-6" dangerouslySetInnerHTML={{ __html: plan.description }} />
+          <div className="text-sm text-muted mb-6 whitespace-pre-wrap">
+            {typeof plan.description === 'string' ? plan.description.replace(/<[^>]*>?/gm, '') : plan.description}
+          </div>
         )}
 
         {plan.lifetime && (

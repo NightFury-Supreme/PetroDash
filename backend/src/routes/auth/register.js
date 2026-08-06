@@ -1,7 +1,9 @@
 const express = require('express');
 const { z } = require('zod');
 const UserCreationService = require('../../services/userCreation');
+const Settings = require('../../models/Settings');
 const { writeAudit } = require('../../middleware/audit');
+const { createRateLimiter } = require('../../middleware/rateLimit');
 
 const router = express.Router();
 
@@ -15,7 +17,7 @@ const registerSchema = z.object({
   ref: z.string().trim().optional(),
 });
 
-router.post('/register', async (req, res) => {
+router.post('/register', createRateLimiter(5, 60 * 60 * 1000), async (req, res) => {
   const startTime = Date.now();
   let user = null;
   
@@ -38,6 +40,19 @@ router.post('/register', async (req, res) => {
 
     const { email, username, firstName, lastName, password, ref } = parsed.data;
 
+    const s = await Settings.findOne({}).lean();
+    const emailLoginEnabled = s?.auth?.emailLogin ?? true;
+    if (!emailLoginEnabled) {
+      await writeAudit(req, 'auth.register.failed', 'auth', null, {
+        reason: 'email_login_disabled',
+        email,
+        username,
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      return res.status(403).json({ error: 'Email registration is disabled' });
+    }
+
     // Use unified user creation service
     user = await UserCreationService.createUser({
       email,
@@ -52,24 +67,34 @@ router.post('/register', async (req, res) => {
     const userResponse = UserCreationService.formatUserResponse(user);
 
     // After creation, send verification email if email login
-    try {
-      const crypto = require('crypto');
-      const VerificationToken = require('../../models/VerificationToken');
-      const Settings = require('../../models/Settings');
-      const { sendMailTemplate } = require('../../lib/mail');
-      const raw = crypto.randomBytes(32).toString('hex');
-      const tokenHash = crypto.createHash('sha256').update(raw).digest('hex');
-      const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
-      await VerificationToken.deleteMany({ userId: user._id, purpose: 'email_verification', usedAt: null });
-      await VerificationToken.create({ userId: user._id, tokenHash, purpose: 'email_verification', expiresAt });
-      const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify?token=${encodeURIComponent(raw)}`;
-      const s = await Settings.findOne({}).lean();
-      await sendMailTemplate({
-        to: user.email,
-        templateKey: 'accountCreateWithVerification',
-        data: { username: user.username, verificationLink: verifyUrl, siteName: s?.siteName || 'PteroDash' },
-      });
-    } catch (_) {}
+    const emailVerificationEnabled = s?.auth?.emailVerification ?? true;
+    if (emailVerificationEnabled) {
+      try {
+        const crypto = require('crypto');
+        const VerificationToken = require('../../models/VerificationToken');
+        const { sendMailTemplate } = require('../../lib/mail');
+        const raw = crypto.randomBytes(32).toString('hex');
+        const tokenHash = crypto.createHash('sha256').update(raw).digest('hex');
+        const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
+        await VerificationToken.deleteMany({ userId: user._id, purpose: 'email_verification', usedAt: null });
+        await VerificationToken.create({ userId: user._id, tokenHash, purpose: 'email_verification', expiresAt });
+        const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify?token=${encodeURIComponent(raw)}`;
+        await sendMailTemplate({
+          to: user.email,
+          templateKey: 'accountCreateWithVerification',
+          data: { username: user.username, verificationLink: verifyUrl, siteName: s?.siteName || 'PteroDash' },
+        });
+      // eslint-disable-next-line unused-imports/no-unused-vars
+      } catch (_) {}
+    } else {
+      try {
+        if (!user.emailVerified) {
+          user.emailVerified = true;
+          await user.save();
+        }
+      // eslint-disable-next-line unused-imports/no-unused-vars
+      } catch (_) {}
+    }
 
     // Log successful registration
     await writeAudit(req, 'auth.register.success', 'auth', user._id.toString(), {

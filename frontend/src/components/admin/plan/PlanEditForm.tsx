@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface PlanFormData {
   _id: string;
@@ -58,7 +59,9 @@ export function PlanEditForm({
   onCancel,
   validationErrors = {},
 }: PlanEditFormProps) {
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const { currency } = useCurrency();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -192,31 +195,31 @@ export function PlanEditForm({
           <h2 className="text-xl font-semibold text-white">Pricing & Availability</h2>
         </div>
         
-                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 <div className="space-y-2">
-                   <label className="text-sm font-medium text-[#AAAAAA]">
-                     {plan.billingOptions.lifetime ? 'Price' : 'Monthly Price'} <span className="text-red-400">*</span>
-                   </label>
-                   <div className="relative">
-                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-                     <input
-                       type="number"
-                       value={plan.pricePerMonth}
-                       onChange={(e) => onInputChange('pricePerMonth', parseFloat(e.target.value) || 0)}
-                       className="w-full bg-[#202020] border border-[#404040] rounded-lg pl-8 pr-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-                       min="0"
-                       step="0.01"
-                     />
-                   </div>
-                   {plan.billingOptions.lifetime && (
-                     <p className="text-xs text-[#AAAAAA]">One-time payment for lifetime access</p>
-                   )}
-                 </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-[#AAAAAA]">
+              {plan.billingOptions.lifetime ? 'Price' : 'Monthly Price'} <span className="text-red-400">*</span>
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">{currency}</span>
+              <input
+                type="number"
+                value={plan.pricePerMonth}
+                onChange={(e) => onInputChange('pricePerMonth', parseFloat(e.target.value) || 0)}
+                className="w-full bg-[#202020] border border-[#404040] rounded-lg pl-8 pr-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                min="0"
+                step="0.01"
+              />
+            </div>
+            {plan.billingOptions.lifetime && (
+              <p className="text-xs text-[#AAAAAA]">One-time payment for lifetime access</p>
+            )}
+          </div>
           
           <div className="space-y-2">
             <label className="text-sm font-medium text-[#AAAAAA]">Strike-through Price</label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">{currency}</span>
               <input
                 type="number"
                 value={plan.strikeThroughPrice}

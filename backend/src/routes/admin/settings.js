@@ -19,6 +19,7 @@ async function getOrCreate() {
       doc = await Settings.create({});
     }
     return doc;
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
     throw new Error('Failed to access settings database');
   }
@@ -29,12 +30,16 @@ router.get('/', requireAdmin, async (req, res) => {
   try {
     const settings = await getOrCreate();
     const out = settings.toObject();
+    out.auth = out.auth || {};
+    out.auth.emailLogin = out.auth.emailLogin ?? true;
+    out.auth.emailVerification = out.auth.emailVerification ?? true;
     
     // Hide deprecated and sensitive fields
     delete out.themePrimary;
     delete out.__v;
     
     return res.json(out);
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
     return res.status(500).json({
       error: 'Failed to fetch settings',
@@ -54,6 +59,7 @@ const settingsPayloadSchema = z.object({
   }).optional(),
   auth: z.object({
     emailLogin: z.coerce.boolean().optional(),
+    emailVerification: z.coerce.boolean().optional(),
     discord: z.object({
       enabled: z.coerce.boolean().optional(),
       autoJoin: z.coerce.boolean().optional(),
@@ -70,16 +76,18 @@ const settingsPayloadSchema = z.object({
       redirectUri: z.string().max(500, 'Google redirect URI must be less than 500 characters').optional().or(z.literal('')),
     }).optional(),
   }).optional(),
+  localization: z.object({
+    currency: z.string().min(3, 'Currency must be at least 3 characters').max(3, 'Currency must be exactly 3 characters').optional(),
+  }).optional(),
   payments: z.object({
     paypal: z.object({
       enabled: z.coerce.boolean().optional(),
       mode: z.enum(['sandbox', 'live'], 'Invalid PayPal mode').optional(),
       clientId: z.string().max(200, 'Client ID must be less than 200 characters').optional(),
       clientSecret: z.string().max(200, 'Client secret must be less than 200 characters').optional(),
-      currency: z.string().min(3, 'Currency must be at least 3 characters').max(3, 'Currency must be exactly 3 characters').optional(),
       webhookId: z.string().max(100, 'Webhook ID must be less than 100 characters').optional(),
-      returnUrl: z.string().url('Invalid return URL format').optional(),
-      cancelUrl: z.string().url('Invalid cancel URL format').optional(),
+      returnUrl: z.string().max(1000, 'Return URL must be less than 1000 characters').optional().or(z.literal('')),
+      cancelUrl: z.string().max(1000, 'Cancel URL must be less than 1000 characters').optional().or(z.literal('')),
     }).optional(),
   }).optional(),
   defaults: z.object({
@@ -145,6 +153,7 @@ router.patch('/', requireAdmin, async (req, res) => {
 
     const settings = await getOrCreate();
     const update = { ...parsed.data };
+    let authUpdated = false;
 
     // Explicitly ignore deprecated fields
     delete update.themePrimary;
@@ -161,9 +170,13 @@ router.patch('/', requireAdmin, async (req, res) => {
 
     // Deep-merge auth settings to avoid clobbering other fields
     if (update.auth) {
+      authUpdated = true;
       settings.auth = settings.auth || {};
       if (update.auth.emailLogin !== undefined) {
         settings.auth.emailLogin = update.auth.emailLogin;
+      }
+      if (update.auth.emailVerification !== undefined) {
+        settings.auth.emailVerification = update.auth.emailVerification;
       }
       if (update.auth.discord) {
         settings.auth.discord = { ...(settings.auth.discord || {}), ...update.auth.discord };
@@ -195,6 +208,33 @@ router.patch('/', requireAdmin, async (req, res) => {
 
     // Apply remaining shallow updates
     Object.assign(settings, update);
+
+    const isValidUrl = (v) => {
+      try {
+        const s = String(v || '').trim();
+        if (!s) return false;
+        // Allow relative URLs starting with /
+        if (s.startsWith('/')) return true;
+        new URL(s);
+        return true;
+      } catch {
+        return false;
+      }
+    };
+
+    const paypalCfg = settings?.payments?.paypal || {};
+    if (paypalCfg?.enabled) {
+      const returnUrl = String(paypalCfg.returnUrl || '').trim();
+      const cancelUrl = String(paypalCfg.cancelUrl || '').trim();
+      // Only validate if a URL was explicitly provided — empty means "use FRONTEND_URL default"
+      if (returnUrl && !isValidUrl(returnUrl)) {
+        return res.status(400).json({ error: 'Invalid payload', details: { formErrors: [], fieldErrors: { payments: ['Invalid return URL format'] } } });
+      }
+      if (cancelUrl && !isValidUrl(cancelUrl)) {
+        return res.status(400).json({ error: 'Invalid payload', details: { formErrors: [], fieldErrors: { payments: ['Invalid cancel URL format'] } } });
+      }
+    }
+
     
     // Validate business logic
     if (update.defaults) {
@@ -224,7 +264,7 @@ router.patch('/', requireAdmin, async (req, res) => {
     await settings.save();
 
     // Reconfigure OAuth strategies if auth settings were updated
-    if (update.auth) {
+    if (authUpdated) {
       try {
         await reconfigureStrategies();
       } catch (error) {

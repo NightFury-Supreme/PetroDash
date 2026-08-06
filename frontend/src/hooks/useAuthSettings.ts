@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 
 interface AuthSettings {
   emailLogin: boolean;
+  emailVerification: boolean;
   discord: {
     enabled: boolean;
   };
@@ -29,6 +30,7 @@ export function useAuthSettings() {
         // Default to allowing email login if settings can't be fetched
         setSettings({
           emailLogin: true,
+          emailVerification: true,
           discord: { enabled: false },
           google: { enabled: false }
         });

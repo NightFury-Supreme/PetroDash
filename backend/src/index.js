@@ -1,13 +1,15 @@
 const express = require('express');
 const cors = require('cors');
+// eslint-disable-next-line unused-imports/no-unused-vars
 const helmet = require('helmet');
 const compression = require('compression');
 const session = require('express-session');
 const dotenv = require('dotenv');
+// eslint-disable-next-line unused-imports/no-unused-vars
 const mongoose = require('mongoose');
 const passport = require('passport');
 const { createRateLimiter } = require('./middleware/rateLimit');
-const { securityHeaders, sanitizeInput, securityLogging } = require('./middleware/security');
+const { securityHeaders, sanitizeInput, securityLogging, csrfProtection } = require('./middleware/security');
 
 dotenv.config();
 
@@ -23,6 +25,7 @@ const shopRoutes = require('./routes/shop');
 const paypalRoutes = require('./routes/paypal');
 const paypalWebhook = require('./routes/paypalWebhook');
 const { router: oauthRoutes } = require('./routes/auth/oauth');
+const earnRoutes = require('./routes/earn');
 
 const app = express();
 // Respect Cloudflare/Proxy headers so req.ip and rate-limit source are correct
@@ -39,14 +42,19 @@ app.use(sanitizeInput);
 app.use(securityLogging);
 app.use(sanitize);
 app.use(auditAuto());
+// CSRF protection (skips /api routes which use JWT)
+app.use(csrfProtection);
 
 // Session configuration for OAuth
 app.use(session({
     secret: process.env.JWT_SECRET || 'fallback-secret',
     resave: false,
     saveUninitialized: false,
+    name: 'oauth_session', // Custom name to obscure technology stack
     cookie: {
         secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,       // Prevent JavaScript access (XSS protection)
+        sameSite: 'lax',      // Required for OAuth redirects (strict breaks callback)
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
 }));
@@ -71,8 +79,8 @@ app.use(
 );
 
 // Single global API rate limit
-// Configure via env: API_RATE_MAX (default 3000), API_RATE_WINDOW_MS (default 15 min)
-const API_RATE_MAX = Number(process.env.API_RATE_MAX || 3000);
+// Configure via env: API_RATE_MAX (default 500), API_RATE_WINDOW_MS (default 15 min)
+const API_RATE_MAX = Number(process.env.API_RATE_MAX || 500);
 const API_RATE_WINDOW_MS = Number(process.env.API_RATE_WINDOW_MS || (15 * 60 * 1000));
 app.use('/api', createRateLimiter(API_RATE_MAX, API_RATE_WINDOW_MS));
 
@@ -123,6 +131,7 @@ app.get('/api/settings', async (req, res) => {
         const s = await Settings.findOne({}).lean();
         if (!s) return res.json({});
         return res.json({ siteName: s.siteName, siteIcon: s.siteIcon });
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (e) { return res.json({}); }
 });
 
@@ -151,6 +160,7 @@ app.use('/api/plans', require('./routes/plans'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/user/plans', require('./routes/userPlans'));
 app.use('/api/referrals', require('./routes/referrals'));
+app.use('/api/earn', earnRoutes);
 app.use('/api/oauth', oauthRoutes);
 
 const port = process.env.PORT || 4000;
@@ -162,7 +172,8 @@ connectToDatabase()
         // Seed shop presets once DB is connected
         ensureShopPresets().catch(() => {});
         app.listen(port, () => {
-                    });
+            console.log(`[PteroDash] Server running on port ${port} (${process.env.NODE_ENV || 'development'})`);
+        });
     })
     .catch((error) => {
         console.error('Failed to start server:', error);
@@ -170,7 +181,7 @@ connectToDatabase()
     });
 
 // Centralized error handler (last middleware)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line unused-imports/no-unused-vars
 app.use((err, req, res, next) => {
     const status = err.statusCode || 500;
     const message = status >= 500 ? 'Internal server error' : (err.message || 'Request failed');

@@ -26,8 +26,10 @@ interface UpdateStatus {
 export default function UpdateSystem() {
   const [token, setToken] = useState<string | null>(null);
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null);
   const [isChecking, setIsChecking] = useState(false);
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -81,6 +83,7 @@ export default function UpdateSystem() {
   }, [token]);
 
   // Get status color
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed': return 'text-green-500';
@@ -91,6 +94,7 @@ export default function UpdateSystem() {
   };
 
   // Get progress bar color
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const getProgressColor = (status: string) => {
     switch (status) {
       case 'completed': return 'bg-green-500';

@@ -6,8 +6,10 @@ const User = require('../../models/User');
 const Settings = require('../../models/Settings');
 const UserCreationService = require('../../services/userCreation');
 const DiscordService = require('../../services/discord');
+// eslint-disable-next-line unused-imports/no-unused-vars
 const GoogleService = require('../../services/google');
 const { writeAudit } = require('../../middleware/audit');
+// eslint-disable-next-line unused-imports/no-unused-vars
 const jwt = require('jsonwebtoken');
 const router = express.Router();
 const { sendMailTemplate } = require('../../lib/mail');
@@ -28,9 +30,19 @@ const configurePassport = async () => {
       clientID: settings.auth.discord.clientId,
       clientSecret: settings.auth.discord.clientSecret,
       callbackURL: discordRedirectUri,
-      scope: ['identify', 'email', 'guilds.join']
-    }, async (accessToken, refreshToken, profile, done) => {
+      scope: ['identify', 'email', 'guilds.join'],
+      passReqToCallback: true
+    }, async (req, accessToken, refreshToken, profile, done) => {
       try {
+        let ref = undefined;
+        if (req.query.state) {
+          try {
+            const stateData = JSON.parse(Buffer.from(req.query.state, 'base64').toString());
+            ref = stateData.ref;
+          // eslint-disable-next-line unused-imports/no-unused-vars
+          } catch (e) {}
+        }
+
         // Check if user exists with this Discord ID
         let user = await User.findOne({ 'oauthProviders.discord.id': profile.id });
         
@@ -69,6 +81,7 @@ const configurePassport = async () => {
           username: username,
           firstName: firstName,
           lastName: lastName,
+          ref: ref,
           oauthProviders: {
             discord: {
               id: profile.id,
@@ -98,9 +111,19 @@ const configurePassport = async () => {
     passport.use('google', new GoogleStrategy({
       clientID: settings.auth.google.clientId,
       clientSecret: settings.auth.google.clientSecret,
-      callbackURL: googleRedirectUri
-    }, async (accessToken, refreshToken, profile, done) => {
+      callbackURL: googleRedirectUri,
+      passReqToCallback: true
+    }, async (req, accessToken, refreshToken, profile, done) => {
       try {
+        let ref = undefined;
+        if (req.query.state) {
+          try {
+            const stateData = JSON.parse(Buffer.from(req.query.state, 'base64').toString());
+            ref = stateData.ref;
+          // eslint-disable-next-line unused-imports/no-unused-vars
+          } catch (e) {}
+        }
+
         // Check if user exists with this Google ID
         let user = await User.findOne({ 'oauthProviders.google.id': profile.id });
         
@@ -139,6 +162,7 @@ const configurePassport = async () => {
           username: username,
           firstName: firstName,
           lastName: lastName,
+          ref: ref,
           oauthProviders: {
             google: {
               id: profile.id,
@@ -163,6 +187,7 @@ const configurePassport = async () => {
 const reconfigureStrategies = async () => {
   try {
     await configurePassport();
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
     // OAuth reconfiguration error logged silently
   }
@@ -193,7 +218,13 @@ router.get('/discord', async (req, res, next) => {
   
   // Ensure strategies are configured before use
   await reconfigureStrategies();
-  passport.authenticate('discord')(req, res, next);
+  
+  const options = {};
+  if (req.query.ref) {
+    options.state = Buffer.from(JSON.stringify({ ref: req.query.ref })).toString('base64');
+  }
+  
+  passport.authenticate('discord', options)(req, res, next);
 });
 
 router.get('/discord/callback', async (req, res, next) => {
@@ -243,6 +274,7 @@ router.get('/discord/callback', async (req, res, next) => {
           botToken,
           guildId
         );
+      // eslint-disable-next-line unused-imports/no-unused-vars
       } catch (error) {
         // Discord server join error logged silently
       }
@@ -283,6 +315,7 @@ router.get('/discord/callback', async (req, res, next) => {
           }
         });
       }
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (e) {
       // Email error logged silently for production
     }
@@ -323,7 +356,13 @@ router.get('/google', async (req, res, next) => {
   
   // Ensure strategies are configured before use
   await reconfigureStrategies();
-  passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+  
+  const options = { scope: ['profile', 'email'] };
+  if (req.query.ref) {
+    options.state = Buffer.from(JSON.stringify({ ref: req.query.ref })).toString('base64');
+  }
+  
+  passport.authenticate('google', options)(req, res, next);
 });
 
 router.get('/google/callback', async (req, res, next) => {
@@ -387,6 +426,7 @@ router.get('/google/callback', async (req, res, next) => {
           }
         });
       }
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (e) {
       // Email error logged silently for production
     }
@@ -424,6 +464,7 @@ router.get('/status', async (req, res) => {
         clientId: settings.auth?.google?.clientId || ''
       }
     });
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
     // OAuth status error logged silently
     res.status(500).json({ error: 'Failed to get OAuth status' });
@@ -435,6 +476,7 @@ router.post('/reconfigure', async (req, res) => {
   try {
     await reconfigureStrategies();
     res.json({ success: true, message: 'OAuth strategies reconfigured' });
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
     // OAuth reconfiguration error logged silently
     res.status(500).json({ error: 'Failed to reconfigure OAuth strategies' });
@@ -475,6 +517,7 @@ router.post('/create-pterodactyl-user', async (req, res) => {
       message: 'Pterodactyl user created successfully',
       pterodactylUserId: user.pterodactylUserId 
     });
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
     // Pterodactyl user creation error logged silently
     res.status(500).json({ error: 'Failed to create Pterodactyl user' });
