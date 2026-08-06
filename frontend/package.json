@@ -1,6 +1,9 @@
 {
   "name": "pterodash-frontend",
   "version": "1.1.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "private": false,
   "scripts": {
     "dev": "cross-env NODE_OPTIONS='--no-deprecation' next dev",
