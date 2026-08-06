@@ -1,13 +1,13 @@
 "use client";
 
 import Shell from "@/components/Shell";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useModal } from "@/components/Modal";
 import { useEarn } from "@/hooks/useEarn";
 import { EarnMethodCard } from "@/components/earn";
 
-export default function EarnPage() {
+function EarnContent() {
   const modal = useModal();
   const searchParams = useSearchParams();
   const lvSid = searchParams.get("lvSid");
@@ -496,5 +496,13 @@ export default function EarnPage() {
         )}
       </div>
     </Shell>
+  );
+}
+
+export default function EarnPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-white/50"><i className="fas fa-spinner fa-spin text-3xl"></i></div>}>
+      <EarnContent />
+    </Suspense>
   );
 }
