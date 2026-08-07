@@ -26,7 +26,7 @@
     "helmet": "^7.1.0",
     "ioredis": "^6.0.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.5.3",
+    "mongoose": "^9.9.1",
     "multer": "^2.0.2",
     "node-fetch": "^3.3.2",
     "nodemailer": "^9.0.4",
