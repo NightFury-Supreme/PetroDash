@@ -21,8 +21,7 @@ export const measurePing = async (latencyUrl: string): Promise<PingResult> => {
     const timeoutId = setTimeout(() => controller.abort(), 3000);
     
     // Use a CORS-friendly method
-    // eslint-disable-next-line unused-imports/no-unused-vars
-    const response = await fetch(pingUrl, { 
+    await fetch(pingUrl, { 
       method: 'HEAD',
       mode: 'no-cors', // This prevents CORS errors
       signal: controller.signal

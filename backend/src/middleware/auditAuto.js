@@ -4,7 +4,7 @@ const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
 function maskSensitive(obj) {
   if (!obj || typeof obj !== 'object') return obj;
-  const clone = Array.isArray(obj) ? [] : {};
+  const clone = Array.isArray(obj) ? [] : Object.create(null);
   for (const [k, v] of Object.entries(obj)) {
     if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
     if (['password', 'passwordHash', 'token', 'apiKey'].includes(k)) {

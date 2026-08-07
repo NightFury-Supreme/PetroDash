@@ -3,7 +3,7 @@ function sanitizeValue(value) {
     return value.map(sanitizeValue);
   }
   if (value && typeof value === 'object') {
-    const result = {};
+    const result = Object.create(null);
     for (const [k, v] of Object.entries(value)) {
       if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
       // Drop keys with Mongo operator characters to mitigate NoSQL injections

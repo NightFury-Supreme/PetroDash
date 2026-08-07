@@ -75,7 +75,7 @@ function sanitizeInput(req, res, next) {
       return obj.map(item => sanitizeObject(item));
     }
     if (typeof obj === 'object') {
-      const sanitized = Array.isArray(obj) ? [] : {};
+      const sanitized = Array.isArray(obj) ? [] : Object.create(null);
       for (const key of Object.keys(obj)) {
         if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
           continue;

@@ -136,12 +136,10 @@ router.post('/logout', async (req, res) => {
     // Extract user info from JWT token if present
     let user = null;
     const authHeader = req.headers.authorization;
-    if (authHeader) {
-      const parts = authHeader.split(' ');
-      if (parts.length === 2 && parts[0] === 'Bearer') {
-        try {
-          const token = parts[1];
-          const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.substring(7);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
           user = await User.findById(String(decoded.sub));
         // eslint-disable-next-line unused-imports/no-unused-vars
         } catch (error) {
@@ -149,7 +147,6 @@ router.post('/logout', async (req, res) => {
           // Invalid token during logout - logged silently
         }
       }
-    }
     
     // Log logout attempt
     await writeAudit(req, 'auth.logout', 'auth', user?._id?.toString() || null, {
