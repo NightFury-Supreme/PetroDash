@@ -47,10 +47,10 @@ function createSecureRateLimiter(max, windowMs, options = {}) {
 
 // Pre-configured rate limiters for auth endpoints
 const verificationRateLimit = createSecureRateLimiter(5, 15 * 60 * 1000); // 5 attempts per 15 minutes
-const passwordResetRateLimit = createSecureRateLimiter(3, 60 * 60 * 1000); // 3 attempts per hour
+const passwordResetRateLimit = createSecureRateLimiter(3, 60 * 60 * 1000, { skipSuccessfulRequests: false }); // 3 attempts per hour
 const loginRateLimit = createSecureRateLimiter(10, 15 * 60 * 1000); // 10 attempts per 15 minutes
 const registrationRateLimit = createSecureRateLimiter(3, 60 * 60 * 1000); // 3 attempts per hour
-const resendRateLimit = createSecureRateLimiter(3, 60 * 60 * 1000); // 3 attempts per hour
+const resendRateLimit = createSecureRateLimiter(3, 60 * 60 * 1000, { skipSuccessfulRequests: false }); // 3 attempts per hour
 
 module.exports = { 
   createRateLimiter,

@@ -5,6 +5,7 @@ function sanitizeValue(value) {
   if (value && typeof value === 'object') {
     const result = {};
     for (const [k, v] of Object.entries(value)) {
+      if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
       // Drop keys with Mongo operator characters to mitigate NoSQL injections
       if (k.includes('$') || k.includes('.')) continue;
       result[k] = sanitizeValue(v);

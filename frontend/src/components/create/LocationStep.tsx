@@ -22,7 +22,7 @@ export function LocationStep({ locations, form, violations, onInputChange }: Loc
       const resp = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/plans`, {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
-      const allPlans = await resp.json();
+      let allPlans: any = {}; try { allPlans = await resp.json(); } catch(e) {}
       const ids = new Set((allowedPlans || []).map(String));
       const list = Array.isArray(allPlans)
         ? allPlans

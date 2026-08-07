@@ -97,7 +97,7 @@ export default function AdminSettingsPage() {
         throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const data = await response.json();
+      let data: any = {}; try { data = await response.json(); } catch(e) {}
       setSettings(data);
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : 'Failed to load settings';
@@ -132,7 +132,7 @@ export default function AdminSettingsPage() {
         throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const data = await response.json();
+      let data: any = {}; try { data = await response.json(); } catch(e) {}
       setSettings(data);
       return data as Settings;
     } catch (e: unknown) {

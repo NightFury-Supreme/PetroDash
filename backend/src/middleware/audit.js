@@ -56,6 +56,7 @@ function sanitizeMeta(meta) {
     const clone = JSON.parse(JSON.stringify(meta));
     const sensitiveKeys = ['authorization','auth','token','password','secret','clientSecret'];
     for (const k of Object.keys(clone)) {
+      if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
       if (sensitiveKeys.includes(k.toLowerCase())) clone[k] = '[redacted]';
     }
     return clone;

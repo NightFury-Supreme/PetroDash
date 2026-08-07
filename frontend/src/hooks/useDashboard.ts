@@ -24,11 +24,11 @@ export function useDashboard() {
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData: any = {}; try { errorData = await response.json(); } catch(e) {}
         throw new Error(errorData?.error || 'Failed to load usage data');
       }
       
-      const data = await response.json();
+      let data: any = {}; try { data = await response.json(); } catch(e) {}
       setUsage({
         diskMb: Number(data.diskMb || 0),
         memoryMb: Number(data.memoryMb || 0),
@@ -52,11 +52,11 @@ export function useDashboard() {
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData: any = {}; try { errorData = await response.json(); } catch(e) {}
         throw new Error(errorData?.error || 'Failed to load user resources');
       }
       
-      const data = await response.json();
+      let data: any = {}; try { data = await response.json(); } catch(e) {}
       setResources(data.resources || null);
     } catch (error: unknown) {
       console.error('Failed to load resources:', error);
@@ -72,11 +72,11 @@ export function useDashboard() {
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData: any = {}; try { errorData = await response.json(); } catch(e) {}
         throw new Error(errorData?.error || 'Failed to load servers');
       }
       
-      const data = await response.json();
+      let data: any = {}; try { data = await response.json(); } catch(e) {}
       const transformed: ServerInfo[] = (data || []).map((s: any) => ({
         _id: s._id,
         name: s.name,

@@ -224,7 +224,7 @@ router.post('/', requireAuth, async (req, res) => {
       panelServer = resp.data?.attributes;
     } catch (e) {
       console.error('Pterodactyl server creation failed:', e?.response?.data || e.message);
-      return res.status(502).json({
+      return res.status(400).json({
         error: 'Server creation on panel failed. Please try again or contact support.',
         details: e?.response?.data || e.message,
       });

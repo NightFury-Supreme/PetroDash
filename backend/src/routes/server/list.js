@@ -36,7 +36,7 @@ router.get('/', requireAuth, async (req, res) => {
   const base = (process.env.PTERO_BASE_URL || '').replace(/\/$/, '');
   let deletedCount = 0;
   const { writeAudit } = require('../../middleware/audit');
-    const enriched = await Promise.all((list || []).map(async (s) => {
+    const enriched = await Promise.all(list.map(async (s) => {
       try {
         const panelResponse = s.panelServerId ? await getServer(s.panelServerId) : null;
         const panel = panelResponse?.attributes;

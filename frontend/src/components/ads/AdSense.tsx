@@ -155,7 +155,7 @@ export function AdSense({
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const data = await response.json();
+      let data: any = {}; try { data = await response.json(); } catch(e) {}
       
       if (data && typeof data === 'object' && 'enabled' in data) {
         setSettings(data);
@@ -496,7 +496,7 @@ export function useAdSenseSettings() {
           throw new Error(`Failed to load settings: ${response.status}`);
         }
 
-        const data = await response.json();
+        let data: any = {}; try { data = await response.json(); } catch(e) {}
         
         if (data && typeof data === 'object' && 'enabled' in data) {
           setSettings(data);

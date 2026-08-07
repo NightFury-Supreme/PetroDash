@@ -48,7 +48,7 @@ export default function AdminLedgerPage() {
         throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`);
       }
       
-      const data = await response.json();
+      let data: any = {}; try { data = await response.json(); } catch(e) {}
       if (Array.isArray(data)) {
         setItems(data);
         setPagination({ page: 1, totalPages: 1, total: data.length });

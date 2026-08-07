@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useModal } from '@/components/Modal';
 import Shell from '@/components/Shell';
@@ -16,7 +16,12 @@ export default function PlanSuccessPage() {
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(false);
 
+  const hasCaptured = useRef(false);
+
   useEffect(() => {
+    if (hasCaptured.current) return;
+    hasCaptured.current = true;
+
     const handlePaymentSuccess = async () => {
       try {
         const token = localStorage.getItem('auth_token');
@@ -40,7 +45,7 @@ export default function PlanSuccessPage() {
           body: JSON.stringify({ orderId })
         });
 
-        const data = await response.json();
+        let data: any = {}; try { data = await response.json(); } catch(e) {}
         if (!response.ok) {
           throw new Error(data?.error || 'Failed to capture payment');
         }
@@ -58,6 +63,20 @@ export default function PlanSuccessPage() {
 
       } catch (error: any) {
         console.error('Payment capture error:', error);
+        
+        // Handle case where user refreshed the page after successful payment
+        if (error.message?.includes('already captured') || error.message?.includes('ORDER_ALREADY_CAPTURED')) {
+          setSuccess(true);
+          await modal.success({ 
+            title: 'Payment Successful!', 
+            body: 'Your plan has been activated successfully. You can now access your new resources.' 
+          });
+          setTimeout(() => {
+            router.push('/dashboard');
+          }, 2000);
+          return;
+        }
+
         await modal.error({ 
           title: 'Payment Error', 
           body: error.message || 'Failed to process payment. Please contact support.' 

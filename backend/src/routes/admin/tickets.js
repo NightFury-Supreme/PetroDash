@@ -20,7 +20,7 @@ router.get('/', requireAdmin, async (req, res) => {
     const query = {};
     if (deleted === '1' || deleted === 'true') {
       query.deletedByUser = true;
-    } else {
+    } else if (deleted !== 'all') {
       query.deletedByUser = { $ne: true };
     }
     if (status && ['open', 'pending', 'resolved', 'closed'].includes(status)) {
@@ -131,6 +131,9 @@ router.patch('/:id', requireAdmin, async (req, res) => {
 
     let changed = false;
     if (status !== undefined && ['open', 'pending', 'resolved', 'closed'].includes(status)) {
+      if (t.status === 'closed' && status === 'resolved') {
+        return res.status(400).json({ error: 'Cannot resolve a closed ticket. Please reopen it first.' });
+      }
       t.status = status;
       if (status === 'closed') t.closedAt = t.closedAt || new Date();
       changed = true;

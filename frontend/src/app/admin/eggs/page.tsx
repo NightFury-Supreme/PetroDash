@@ -17,7 +17,7 @@ export default function EggsListPage() {
     fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/eggs`, {
       headers: { Authorization: `Bearer ${token}` },
     }).then(async (r) => {
-      const d = await r.json();
+      let d: any = {}; try { d = await r.json(); } catch(e) {}
       if (!r.ok) throw new Error((d && d.error) || 'Failed');
       if (Array.isArray(d)) {
         setEggs(d as Array<{ _id: string; name: string; description: string; pterodactylEggId: string; pterodactylNestId: string; recommended: boolean; allowedPlans: string[] }>);

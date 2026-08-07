@@ -20,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   let icons: Metadata["icons"] | undefined = undefined;
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/branding`, { cache: 'no-store' });
-    const s = await res.json();
+    let s: any = {}; try { s = await res.json(); } catch(e) {}
     if (s?.siteName) title = s.siteName;
     if (s?.siteIcon) icons = { icon: `${process.env.NEXT_PUBLIC_API_BASE}${s.siteIcon}` } as any;
   } catch {}

@@ -84,7 +84,7 @@ export function usePlansList(): UsePlansListReturn {
         throw new Error('Failed to load plans');
       }
       
-      const data = await response.json();
+      let data: any = {}; try { data = await response.json(); } catch(e) {}
       setPlans(data);
     } catch (err: any) {
       setError(err.message || 'Failed to load plans');
@@ -108,7 +108,7 @@ export function usePlansList(): UsePlansListReturn {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData: any = {}; try { errorData = await response.json(); } catch(e) {}
         if (errorData.reason === 'Plan is currently being used by users') {
           throw new Error(`Cannot delete plan: ${errorData.activeUsers} user(s) are currently using it. Please make the plan unlisted instead.`);
         }

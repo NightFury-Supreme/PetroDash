@@ -4,7 +4,7 @@ import React, { useState } from "react";
 
 type Ticket = { _id: string; title: string; status: string; priority: string; category?: string; updatedAt: string; deletedByUser?: boolean; user?: { username?: string; email?: string } };
 
-export default function AdminTicketItem({ t, onAction }:{ t: Ticket; onAction: (action: 'close'|'resolve'|'delete'|'restore', id: string)=>Promise<void> }){
+export default function AdminTicketItem({ t, onAction }:{ t: Ticket; onAction: (action: 'close'|'resolve'|'delete'|'restore'|'reopen', id: string)=>Promise<void> }){
   const [opening, setOpening] = useState(false);
   const [menu, setMenu] = useState(false);
   return (
@@ -30,8 +30,14 @@ export default function AdminTicketItem({ t, onAction }:{ t: Ticket; onAction: (
           <div className="absolute right-3 top-12 z-20 w-44 rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-xl overflow-hidden" onClick={(e)=>e.stopPropagation()}>
             {!t.deletedByUser ? (
               <>
-                <button onClick={async()=>{ await onAction('close', t._id); setMenu(false); }} className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#202020]">Close Ticket</button>
-                <button onClick={async()=>{ await onAction('resolve', t._id); setMenu(false); }} className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#202020]">Resolve</button>
+                {(t.status === 'closed' || t.status === 'resolved') ? (
+                  <button onClick={async()=>{ await onAction('reopen', t._id); setMenu(false); }} className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#202020]">Reopen Ticket</button>
+                ) : (
+                  <>
+                    <button onClick={async()=>{ await onAction('close', t._id); setMenu(false); }} className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#202020]">Close Ticket</button>
+                    <button onClick={async()=>{ await onAction('resolve', t._id); setMenu(false); }} className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#202020]">Resolve</button>
+                  </>
+                )}
                 <button onClick={async()=>{ await onAction('delete', t._id); setMenu(false); }} className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#202020]">Soft Delete</button>
               </>
             ) : (

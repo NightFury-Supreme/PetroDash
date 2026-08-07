@@ -37,7 +37,7 @@ export function useAdSenseSettings() {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/settings/adsense`);
 
         if (response.ok) {
-          const data = await response.json();
+          let data: any = {}; try { data = await response.json(); } catch(e) {}
           setSettings(data);
         }
       } catch (error) {

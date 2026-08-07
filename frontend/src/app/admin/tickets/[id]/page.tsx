@@ -32,7 +32,7 @@ export default function AdminTicketDetailPage() {
     if (!id) return;
     try {
       const r = await fetch(`${api}/api/admin/tickets/${id}`, { headers: { Authorization: `Bearer ${token()}` } });
-      const d = await r.json();
+      let d: any = {}; try { d = await r.json(); } catch(e) {}
       if (!r.ok) throw new Error(d?.error || "Failed to load ticket");
       setTicket(d);
       setError(null);
@@ -68,7 +68,7 @@ export default function AdminTicketDetailPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token()}` },
         body: JSON.stringify({ body: sentText, internal }),
       });
-      const d = await r.json();
+      let d: any = {}; try { d = await r.json(); } catch(e) {}
       if (!r.ok) {
         // Rollback optimistic message
         setTicket((prev: any) => prev ? { ...prev, messages: (prev.messages || []).filter((m: any) => m._id !== optimisticMsg._id) } : prev);
@@ -89,7 +89,7 @@ export default function AdminTicketDetailPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token()}` },
         body: JSON.stringify({ status }),
       });
-      if (!r.ok) { const d = await r.json(); throw new Error(d?.error || "Failed to update status"); }
+      if (!r.ok) { let d: any = {}; try { d = await r.json(); } catch(e) {} throw new Error(d?.error || "Failed to update status"); }
       setTicket((prev: any) => prev ? { ...prev, status } : prev);
     } catch (e: any) { setSendError(e.message || "Failed to update status"); }
   };
@@ -102,7 +102,7 @@ export default function AdminTicketDetailPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token()}` },
         body: JSON.stringify({ priority }),
       });
-      if (!r.ok) { const d = await r.json(); throw new Error(d?.error || "Failed to update priority"); }
+      if (!r.ok) { let d: any = {}; try { d = await r.json(); } catch(e) {} throw new Error(d?.error || "Failed to update priority"); }
       setTicket((prev: any) => prev ? { ...prev, priority } : prev);
     } catch (e: any) { setSendError(e.message || "Failed to update priority"); }
   };
@@ -150,6 +150,7 @@ export default function AdminTicketDetailPage() {
           onAction={async (action) => {
             if (action === "close") { await updateStatus("closed"); }
             else if (action === "resolve") { await updateStatus("resolved"); }
+            else if (action === "reopen") { await updateStatus("open"); }
             else if (action === "delete") {
               const r = await fetch(`${api}/api/admin/tickets/${id}`, {
                 method: "PATCH",

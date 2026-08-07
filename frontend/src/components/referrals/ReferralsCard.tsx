@@ -20,7 +20,7 @@ export function ReferralsCard() {
     const fetchRef = async () => {
       try {
         const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/referrals/me`, { headers: { Authorization: `Bearer ${token}` } });
-        const d = await r.json();
+        let d: any = {}; try { d = await r.json(); } catch(e) {}
         if (!r.ok) throw new Error(d?.error || 'Failed to load referrals');
         setData(d as RefData);
       } catch (e: unknown) {
@@ -109,7 +109,7 @@ export function ReferralsCard() {
                       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                       body: JSON.stringify({ code: newCode })
                     });
-                    const d = await r.json();
+                    let d: any = {}; try { d = await r.json(); } catch(e) {}
                     if (!r.ok) throw new Error(d?.error || 'Failed to set code');
                     setData((prev) => prev ? { ...prev, code: d.code, link: `${origin}${encodeURIComponent(d.code)}` } : prev);
                   // eslint-disable-next-line unused-imports/no-unused-vars

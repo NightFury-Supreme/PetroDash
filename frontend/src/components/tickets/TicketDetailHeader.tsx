@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 
-export default function TicketDetailHeader({ ticket, contentPadding, onAction }: { ticket: any; contentPadding: number; onAction: (action: "close" | "delete") => void; }) {
+export default function TicketDetailHeader({ ticket, contentPadding, onAction }: { ticket: any; contentPadding: number; onAction: (action: "close") => void; }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -39,20 +39,21 @@ export default function TicketDetailHeader({ ticket, contentPadding, onAction }:
               <button id="ticket-menu-btn" className="w-10 h-10 rounded-xl border border-[#303030] flex items-center justify-center text-white hover:bg-[#111]" onClick={()=>setMenuOpen(v => !v)}><i className="fas fa-ellipsis-h"/></button>
               {menuOpen && (
                 <div className="absolute right-0 mt-2 w-48 rounded-lg border border-[#303030] bg-[#181818] shadow-xl z-50">
-                  {ticket?.status !== "closed" && ticket?.status !== "resolved" && (
+                  {(ticket?.status === "closed" || ticket?.status === "resolved") ? (
+                    <button
+                      onClick={() => { onAction("reopen"); setMenuOpen(false); }}
+                      className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#202020] rounded-lg"
+                    >
+                      Reopen Ticket
+                    </button>
+                  ) : (
                     <button
                       onClick={() => { onAction("close"); setMenuOpen(false); }}
-                      className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#202020]"
+                      className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#202020] rounded-lg"
                     >
                       Close Ticket
                     </button>
                   )}
-                  <button
-                    onClick={() => { onAction("delete"); setMenuOpen(false); }}
-                    className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#202020] rounded-b-lg"
-                  >
-                    Delete Ticket
-                  </button>
                 </div>
               )}
             </div>
@@ -61,6 +62,5 @@ export default function TicketDetailHeader({ ticket, contentPadding, onAction }:
       </div>
     </div>
   );
+
 }
-
-

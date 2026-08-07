@@ -3,10 +3,9 @@ const crypto = require('crypto');
 const { requireAuth } = require('../middleware/auth');
 const { createRateLimiter } = require('../middleware/rateLimit');
 const User = require('../models/User');
-// eslint-disable-next-line unused-imports/no-unused-vars
+ 
 const { getPanelUser, resetPanelUserPassword, updatePanelUser } = require('../services/pterodactyl');
-// eslint-disable-next-line unused-imports/no-unused-vars
-const { z } = require('zod');
+ 
 
 const router = express.Router();
 // GET /api/panel - Get panel info for logged-in user

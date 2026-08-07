@@ -2,8 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const { requireAdmin } = require('../../middleware/auth');
 const Payment = require('../../models/Payment');
-// eslint-disable-next-line unused-imports/no-unused-vars
-const Settings = require('../../models/Settings');
+ 
 const { getAccessToken } = require('../../lib/paypal');
 
 const router = express.Router();

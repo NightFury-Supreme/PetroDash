@@ -1,12 +1,10 @@
 const express = require('express');
 const cors = require('cors');
-// eslint-disable-next-line unused-imports/no-unused-vars
-const helmet = require('helmet');
+ 
 const compression = require('compression');
 const session = require('express-session');
 const dotenv = require('dotenv');
-// eslint-disable-next-line unused-imports/no-unused-vars
-const mongoose = require('mongoose');
+ 
 const passport = require('passport');
 const { createRateLimiter } = require('./middleware/rateLimit');
 const { securityHeaders, sanitizeInput, securityLogging, csrfProtection } = require('./middleware/security');

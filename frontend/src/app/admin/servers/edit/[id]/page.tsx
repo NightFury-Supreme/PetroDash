@@ -68,7 +68,7 @@ export default function EditServerPage() {
         throw new Error('Failed to load server');
       }
 
-      const serverData = await response.json();
+      let serverData: any = {}; try { serverData = await response.json(); } catch(e) {}
       setServer(serverData);
     } catch (err: any) {
       setError(err.message);
@@ -107,7 +107,7 @@ export default function EditServerPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData: any = {}; try { errorData = await response.json(); } catch(e) {}
         throw new Error(errorData.error || 'Failed to update server');
       }
 

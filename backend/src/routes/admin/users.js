@@ -62,7 +62,9 @@ router.get('/', requireAdmin, async (req, res) => {
 router.get('/:id', requireAdmin, async (req, res) => {
   try {
     
-    const user = await User.findById(req.params.id, { passwordHash: 0 }).lean();
+    const user = await User.findById(req.params.id, { passwordHash: 0 })
+      .populate('referredBy', 'username email referralCode')
+      .lean();
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -340,7 +342,7 @@ router.delete('/:id/servers/:serverId', requireAdmin, async (req, res) => {
   const server = await Server.findOne({ _id: req.params.serverId, owner: req.params.id });
   if (!server) return res.status(404).json({ error: 'Server not found' });
   try { await deletePanelServer(server.panelServerId); } catch (e) {
-    return res.status(502).json({ error: 'Panel delete failed', details: e?.response?.data || e.message });
+    return res.status(400).json({ error: 'Panel delete failed', details: e?.response?.data || e.message });
   }
   await Server.deleteOne({ _id: server._id });
   const { writeAudit } = require('../../middleware/audit');
@@ -457,7 +459,7 @@ router.patch('/:id/servers/:serverId', requireAdmin, async (req, res) => {
       });
       server.limits = newLimits;
     } catch (e) {
-      return res.status(502).json({ error: 'Panel update failed', details: e?.response?.data || e.message });
+      return res.status(400).json({ error: 'Panel update failed', details: e?.response?.data || e.message });
     }
   }
 
@@ -466,7 +468,7 @@ router.patch('/:id/servers/:serverId', requireAdmin, async (req, res) => {
       await updateServerDetails(server.panelServerId, { name: desired.name.trim(), user: user.pterodactylUserId, external_id: user._id.toString() });
       server.name = desired.name.trim();
     } catch (e) {
-      return res.status(502).json({ error: 'Panel rename failed', details: e?.response?.data || e.message });
+      return res.status(400).json({ error: 'Panel rename failed', details: e?.response?.data || e.message });
     }
   }
 

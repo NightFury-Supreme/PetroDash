@@ -28,7 +28,7 @@ router.post('/', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) 
       return res.status(400).json({ error: 'Invalid plan ID format' });
     }
     
-    const plan = await Plan.findById(planId).lean();
+    const plan = await Plan.findById(String(planId)).lean();
     if (!plan || !plan.paypalPlanId) return res.status(400).json({ error: 'Plan not configured for subscriptions' });
     const { token, baseUrl } = await getAccessToken();
     const s = await Settings.findOne({}).lean();
@@ -36,7 +36,7 @@ router.post('/', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) 
     let coupon = null;
     if (couponCode) {
       const now = new Date();
-      coupon = await Coupon.findOne({ code: String(couponCode).toUpperCase() });
+      coupon = await Coupon.findOne({ code: { $eq: String(couponCode).toUpperCase() } });
       if (!coupon) return res.status(400).json({ error: 'Invalid coupon' });
       if (coupon.validFrom && now < coupon.validFrom) return res.status(400).json({ error: 'Coupon not yet valid' });
       if (coupon.validUntil && now > coupon.validUntil) return res.status(400).json({ error: 'Coupon expired' });
@@ -80,7 +80,7 @@ router.post('/confirm', requireAuth, createRateLimiter(10, 60 * 1000), async (re
     const status = String(data.status || '').toLowerCase();
     const start = new Date(data.start_time || Date.now());
     const next = new Date(data.billing_info?.next_billing_time || Date.now());
-    const paypalPlanId = data.plan_id || data.plan_id || data.plan_id; // PayPal field is plan_id
+    const paypalPlanId = data.plan_id; // PayPal field is plan_id
     
     // Validate paypalPlanId to prevent NoSQL injection
     if (!paypalPlanId || typeof paypalPlanId !== 'string') {

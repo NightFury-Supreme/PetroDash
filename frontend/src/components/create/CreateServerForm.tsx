@@ -183,7 +183,7 @@ export function CreateServerForm({ eggs, locations, remaining }: CreateServerFor
         }),
       });
 
-      const data = await response.json();
+      let data: any = {}; try { data = await response.json(); } catch(e) {}
       
       if (!response.ok) {
         if (data?.violations) {

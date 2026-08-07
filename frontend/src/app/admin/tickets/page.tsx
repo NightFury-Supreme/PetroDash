@@ -32,8 +32,7 @@ export default function AdminTicketsPage() {
   const [internalNote, setInternalNote] = useState<string>("");
   const [page, setPage] = useState<number>(1);
   const pageSize = 10;
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [categories, setCategories] = useState<string[]>([]);
   const [catFilter, setCatFilter] = useState<string>("");
@@ -46,12 +45,13 @@ export default function AdminTicketsPage() {
       const token = localStorage.getItem('auth_token');
       const params = new URLSearchParams();
       if (status) params.set('status', status);
+      params.set('deleted', 'all');
       params.set('limit', '1000');
       
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets?${params.toString()}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      const d = await r.json();
+      let d: any = {}; try { d = await r.json(); } catch(e) {}
       if (!r.ok) throw new Error(d?.error || 'Failed to load');
       setTickets(d?.tickets || []);
     } catch (e:any) { setError(e.message || 'Failed to load'); }
@@ -66,7 +66,7 @@ export default function AdminTicketsPage() {
       try {
         const token = localStorage.getItem('auth_token');
         const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/settings/categories`, { headers: { Authorization: `Bearer ${token}` } });
-        const d = await r.json();
+        let d: any = {}; try { d = await r.json(); } catch(e) {}
         if (r.ok && Array.isArray(d?.categories)) setCategories(d.categories);
       } catch {}
     })();
@@ -85,7 +85,7 @@ export default function AdminTicketsPage() {
     if (catFilter && t.category!==catFilter) return false;
     if (activeTab==='deleted') return (t as any).deletedByUser;
     if ((t as any).deletedByUser) return false;
-    if (activeTab==='all') return true;
+    if (activeTab==='all') return t.status !== 'closed';
     return t.status===activeTab;
   });
 
@@ -150,8 +150,9 @@ export default function AdminTicketsPage() {
               <AdminTicketItem key={t._id} t={t as any} onAction={async (action, id)=>{
                 try{
                   const token=localStorage.getItem('auth_token');
-                  if (action==='close' || action==='resolve') {
-                    await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/${id}`, { method:'PATCH', headers:{ 'Content-Type':'application/json','Authorization':`Bearer ${token}` }, body: JSON.stringify({ status: action==='close'?'closed':'resolved' }) });
+                  if (action==='close' || action==='resolve' || action==='reopen') {
+                    const mappedStatus = action === 'reopen' ? 'open' : (action === 'close' ? 'closed' : 'resolved');
+                    await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/${id}`, { method:'PATCH', headers:{ 'Content-Type':'application/json','Authorization':`Bearer ${token}` }, body: JSON.stringify({ status: mappedStatus }) });
                   } else if (action==='delete') {
                     await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/${id}`, { method:'PATCH', headers:{ 'Content-Type':'application/json','Authorization':`Bearer ${token}` }, body: JSON.stringify({ deletedByUser: true }) });
                   } else if (action==='restore') {
@@ -255,12 +256,12 @@ function AdminTicketCategories() {
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/settings/categories`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      const d = await r.json();
+      let d: any = {}; try { d = await r.json(); } catch(e) {}
       if (r.ok && Array.isArray(d?.categories)) setCategories(d.categories);
       const u = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/settings/categories/usage`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      const ud = await u.json();
+      let ud: any = {}; try { ud = await u.json(); } catch(e) {}
       if (u.ok && ud?.usage) setUsage(ud.usage);
     } catch {}
   };
@@ -275,7 +276,7 @@ function AdminTicketCategories() {
         method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ categories })
       });
-      const d = await r.json();
+      let d: any = {}; try { d = await r.json(); } catch(e) {}
       if (r.ok) {
         await load();
       } else {

@@ -68,7 +68,6 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     );
 
     // Temporarily disable audit logging to fix the immediate issue
-    // await writeAudit(req.user._id || req.user.sub, 'shop_item_updated', {
     //   itemId: req.params.id,
     //   itemKey: existingItem.key,
     //   changes: parsed.data,

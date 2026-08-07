@@ -49,7 +49,7 @@ export default function NewLocationPageContent() {
           },
         }),
       });
-      const data = await res.json();
+      let data: any = {}; try { data = await res.json(); } catch(e) {}
       if (!res.ok) throw new Error(data?.error || 'Failed to create');
       router.push('/admin/locations');
     } catch (err: any) {

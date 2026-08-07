@@ -32,12 +32,12 @@ export default function EmailSettings() {
     setError(null);
     try {
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/email`, { headers: { Authorization: `Bearer ${token}` } });
-      const d = await r.json();
+      let d: any = {}; try { d = await r.json(); } catch(e) {}
       if (!r.ok) throw new Error(d?.error || 'Failed to load settings');
       setSettings(d as Settings);
       try {
         const brandingResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/branding`);
-        const brandingData = await brandingResponse.json();
+        let brandingData: any = {}; try { brandingData = await brandingResponse.json(); } catch(e) {}
         if (brandingResponse.ok) {
           setBranding({ name: brandingData?.siteName || '', logoUrl: brandingData?.siteIcon || '', brandColor: '#0ea5e9', footerText: '' });
         }
@@ -108,7 +108,7 @@ export default function EmailSettings() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ payments: { smtp: settings.payments?.smtp }, emailTemplates: settings.emailTemplates })
       });
-      const d = await r.json();
+      let d: any = {}; try { d = await r.json(); } catch(e) {}
       if (!r.ok) throw new Error(d?.error || 'Failed to save settings');
       setSettings(d as Settings);
       await modal.success({ title: 'Settings Saved', body: 'Email settings have been saved successfully.' });

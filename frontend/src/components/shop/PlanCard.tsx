@@ -32,7 +32,15 @@ export function PlanCard({ plan, currency = 'USD', children }: { plan: any; curr
 
         {plan.description && (
           <div className="text-sm text-muted mb-6 whitespace-pre-wrap">
-            {typeof plan.description === 'string' ? plan.description.replace(/<[^>]*>?/gm, '') : plan.description}
+            {typeof plan.description === 'string' ? (() => {
+              let text = plan.description;
+              let prev = '';
+              while (text !== prev) {
+                prev = text;
+                text = text.replace(/<[^>]+>/g, ' ');
+              }
+              return text;
+            })() : plan.description}
           </div>
         )}
 

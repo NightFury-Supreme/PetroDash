@@ -52,28 +52,6 @@ export default function ServerCard({
   viewOwnerLink,
   className = ""
 }: ServerCardProps) {
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'running':
-      case 'active':
-        return 'bg-green-600 text-white';
-      case 'stopped':
-      case 'offline':
-        return 'bg-red-600 text-white';
-      case 'starting':
-      case 'creating':
-      case 'installing':
-        return 'bg-yellow-600 text-white';
-      case 'stopping':
-      case 'deleting':
-        return 'bg-orange-600 text-white';
-      case 'suspended':
-        return 'bg-red-800 text-white';
-      default:
-        return 'bg-gray-600 text-white';
-    }
-  };
 
   // eslint-disable-next-line unused-imports/no-unused-vars
   const getStatusIcon = (status: string) => {

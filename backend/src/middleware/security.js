@@ -52,20 +52,20 @@ function sanitizeInput(req, res, next) {
   const sanitizeString = (str) => {
     if (typeof str !== 'string') return str;
     let sanitized = str;
-    const dangerousSchemes = ['javascript:', 'data:', 'vbscript:', 'file:', 'about:', 'blob:'];
-    for (const scheme of dangerousSchemes) {
-      let prevLength = -1;
-      while (sanitized.length !== prevLength && sanitized.toLowerCase().includes(scheme)) {
-        prevLength = sanitized.length;
-        sanitized = sanitized.replace(new RegExp(scheme, 'gi'), '');
+    let prev = '';
+    while (sanitized !== prev) {
+      prev = sanitized;
+      const dangerousSchemes = ['javascript:', 'data:', 'vbscript:', 'file:', 'about:', 'blob:'];
+      for (const scheme of dangerousSchemes) {
+        sanitized = sanitized.replace(new RegExp(scheme, 'gi'), ' ');
       }
+      // Remove event handlers - use non-backtracking approach
+      sanitized = sanitized.replace(/on[a-z]+=["'][^"']*["']/gi, ' ');
+      sanitized = sanitized.replace(/on[a-z]+=[^\s>]+/gi, ' ');
+      
+      // Remove HTML tags - use simple non-backtracking pattern
+      sanitized = sanitized.replace(/<[^>]+>/g, ' ');
     }
-    // Remove event handlers - use non-backtracking approach
-    sanitized = sanitized.replace(/on\w+=["'][^"']*["']/gi, '');
-    sanitized = sanitized.replace(/on\w+=\S+/gi, '');
-    
-    // Remove HTML tags - use simple non-backtracking pattern
-    sanitized = sanitized.replace(/<[^>]+>/g, '');
     return sanitized.trim();
   };
 
@@ -75,8 +75,8 @@ function sanitizeInput(req, res, next) {
       return obj.map(item => sanitizeObject(item));
     }
     if (typeof obj === 'object') {
-      const sanitized = {};
-      for (const key in obj) {
+      const sanitized = Array.isArray(obj) ? [] : {};
+      for (const key of Object.keys(obj)) {
         if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
           continue;
         }
@@ -104,7 +104,10 @@ function securityLogging(req, res, next) {
   res.on('finish', () => {
     const duration = Date.now() - startTime;
     const level = res.statusCode >= 500 ? 'ERROR' : res.statusCode >= 400 ? 'WARN' : 'INFO';
-    console.log(`[${level}] ${req.method} ${req.path} ${res.statusCode} ${duration}ms - ${req.ip}`);
+    const safePath = (req.path || '').replace(/[\r\n]/g, '');
+    const safeIp = (req.ip || '').replace(/[\r\n]/g, '');
+    const safeMethod = (req.method || '').replace(/[\r\n]/g, '');
+    console.log(`[${level}] ${safeMethod} ${safePath} ${res.statusCode} ${duration}ms - ${safeIp}`);
   });
   next();
 }

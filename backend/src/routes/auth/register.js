@@ -67,7 +67,7 @@ router.post('/register', createRateLimiter(5, 60 * 60 * 1000), async (req, res) 
     const userResponse = UserCreationService.formatUserResponse(user);
 
     // After creation, send verification email if email login
-    const emailVerificationEnabled = s?.auth?.emailVerification ?? true;
+    const emailVerificationEnabled = s?.auth?.emailVerification ?? false;
     if (emailVerificationEnabled) {
       try {
         const crypto = require('crypto');
@@ -84,14 +84,16 @@ router.post('/register', createRateLimiter(5, 60 * 60 * 1000), async (req, res) 
           templateKey: 'accountCreateWithVerification',
           data: { username: user.username, verificationLink: verifyUrl, siteName: s?.siteName || 'PteroDash' },
         });
-      // eslint-disable-next-line unused-imports/no-unused-vars
-      } catch (_) {}
+      } catch (e) {
+        console.error('Failed to send verification email during registration:', e);
+      }
     } else {
       try {
         if (!user.emailVerified) {
           user.emailVerified = true;
           await user.save();
         }
+        await UserCreationService.grantReferralRewards(user);
       // eslint-disable-next-line unused-imports/no-unused-vars
       } catch (_) {}
     }

@@ -29,8 +29,8 @@ router.get('/', requireAuth, async (req, res) => {
                         const controller = new AbortController();
                         const timeoutId = setTimeout(() => controller.abort(), 3000); // Reduced timeout
                         
-                        // eslint-disable-next-line unused-imports/no-unused-vars
-                        const response = await fetch(pingUrl, { 
+                         
+                        await fetch(pingUrl, { 
                             method: 'HEAD',
                             signal: controller.signal
                         });

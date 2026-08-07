@@ -14,8 +14,7 @@ function AuthCallbackContent() {
       const token = searchParams.get('token');
       const error = searchParams.get('error');
       const discordJoin = searchParams.get('discord_join');
-      // eslint-disable-next-line unused-imports/no-unused-vars
-      const discordError = searchParams.get('discord_error');
+
 
       if (error) {
         await modal.error({

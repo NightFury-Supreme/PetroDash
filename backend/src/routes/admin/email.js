@@ -68,8 +68,32 @@ router.patch('/', requireAdmin, async (req, res) => {
   }
 });
 
+const testEmailSchema = z.object({
+  email: z.string().email()
+});
+
 router.post('/test', requireAdmin, async (req, res) => {
-  return res.status(404).json({ error: 'Not found' });
+  try {
+    const parsed = testEmailSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
+    }
+    
+    const { email } = parsed.data;
+    const { sendMail } = require('../../lib/mail');
+    
+    await sendMail({
+      to: email,
+      subject: 'PteroDash - Test Email Configuration',
+      text: 'If you are receiving this email, your PteroDash SMTP configuration is working correctly.',
+      html: '<p>If you are receiving this email, your <strong>PteroDash SMTP configuration</strong> is working correctly.</p>'
+    });
+    
+    return res.json({ ok: true, message: 'Test email sent successfully' });
+  } catch (e) {
+    console.error('Test email failed:', e);
+    return res.status(500).json({ error: 'Failed to send test email: ' + e.message });
+  }
 });
 
 module.exports = router;

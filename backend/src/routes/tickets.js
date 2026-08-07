@@ -198,10 +198,8 @@ router.post('/:id/status', requireAuth, async (req, res) => {
     } else if (action === 'reopen') {
       t.status = 'open';
       t.closedAt = null;
-    } else if (action === 'delete') {
-      t.deletedByUser = true;
     } else {
-      return res.status(400).json({ error: 'Invalid action. Allowed: close, reopen, delete' });
+      return res.status(400).json({ error: 'Invalid action. Allowed: close, reopen' });
     }
 
     t.updatedAt = new Date();

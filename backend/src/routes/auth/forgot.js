@@ -1,6 +1,5 @@
 const express = require('express');
-// eslint-disable-next-line unused-imports/no-unused-vars
-const crypto = require('crypto');
+ 
 const { z } = require('zod');
 const User = require('../../models/User');
 const VerificationToken = require('../../models/VerificationToken');
@@ -47,10 +46,9 @@ router.post('/forgot', passwordResetRateLimit, async (req, res) => {
           siteName: (await require('../../models/Settings').findOne({}).lean())?.siteName || 'PteroDash'
         }
       });
-    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (e) {
-      // Don't leak email errors to prevent enumeration
-      // Email error logged silently for production
+      // Don't leak email errors to prevent enumeration, but log it
+      console.error('Failed to send password reset email:', e);
     }
 
     return res.json({ ok: true });

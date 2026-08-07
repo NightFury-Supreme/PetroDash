@@ -1,6 +1,6 @@
 "use client";
 import Shell from '@/components/Shell';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import ServerCard from '@/components/ServerCard/ServerCard';
 import SuspendedServerCard from '@/components/ServerCard/SuspendedServerCard';
@@ -28,8 +28,8 @@ export default function AdminUserDetailPage() {
   const [referralCode, setReferralCode] = useState<string>('');
   const [loginMethod, setLoginMethod] = useState<string>('email');
   const [oauthProviders, setOauthProviders] = useState<any>({});
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  const [ban, setBan] = useState<any>({ isBanned: false, reason: '', until: null });
+  const [ban, setBan] = useState<any>(null);
+
   const [showBanModal, setShowBanModal] = useState(false);
   const [banForm, setBanForm] = useState({ reason: '', durationMinutes: undefined as number | undefined });
   const [banning, setBanning] = useState(false);
@@ -40,7 +40,7 @@ export default function AdminUserDetailPage() {
     if (!token) return;
     try {
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-      const d = await r.json();
+      let d: any = {}; try { d = await r.json(); } catch(e) {}
       if (!r.ok) throw new Error(d?.error || 'Failed');
       setData(d); 
       setRole(d?.user?.role || 'user'); 
@@ -62,12 +62,11 @@ export default function AdminUserDetailPage() {
     reloadData();
     // Load list of available plans
     fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/plans`)
-      .then(async (r) => { const d = await r.json(); if (r.ok) setAllPlans(d || []); })
+      .then(async (r) => { let d: any = {}; try { d = await r.json(); } catch(e) {} if (r.ok) setAllPlans(d || []); })
       .catch(() => {});
   }, [id]);
 
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  const usage = useMemo(() => data?.usage || { diskMb: 0, memoryMb: 0, cpuPercent: 0, backups: 0, databases: 0, allocations: 0 }, [data]);
+
 
   const save = async () => {
     setSaving(true); setError(null);
@@ -80,7 +79,7 @@ export default function AdminUserDetailPage() {
         method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)
       });
-      const d = await r.json(); 
+      let d: any = {}; try { d = await r.json(); } catch(e) {} 
       if (!r.ok) {
         if (d.details && d.details.fieldErrors) {
           const firstError = Object.values(d.details.fieldErrors).flat()[0];
@@ -106,7 +105,7 @@ export default function AdminUserDetailPage() {
     try {
       const token = localStorage.getItem('auth_token');
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-      const d = await r.json(); 
+      let d: any = {}; try { d = await r.json(); } catch(e) {} 
       if (!r.ok) throw new Error(d?.error || 'Failed to delete user');
       
       // Show success message with details
@@ -190,7 +189,7 @@ export default function AdminUserDetailPage() {
                       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                       body: JSON.stringify({ isBanned: false })
                     });
-                    const d = await r.json();
+                    let d: any = {}; try { d = await r.json(); } catch(e) {}
                     if (!r.ok) { 
                       await modal.error({ title: 'Failed', body: d?.error || 'Failed to unban user' }); 
                       return; 
@@ -287,7 +286,7 @@ export default function AdminUserDetailPage() {
                             try {
                               const token = localStorage.getItem('auth_token');
                               const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${id}/servers/${serverId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-                              const d = await r.json(); 
+                              let d: any = {}; try { d = await r.json(); } catch(e) {} 
                               if (!r.ok) throw new Error(d?.error || 'Failed to delete server');
                               
                               await modal.success({ 
@@ -367,6 +366,20 @@ export default function AdminUserDetailPage() {
                     <div className="text-xl font-extrabold">{data?.referral?.code || '-'}</div>
                   </div>
                 </div>
+                
+                {data?.user?.referredBy && (
+                  <div className="mt-4 p-4 rounded-lg bg-black/20 border border-[var(--border)]">
+                    <div className="text-xs text-[#AAAAAA] mb-1">Joined Using Referral Code From</div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-white">{data.user.referredBy.username}</span>
+                      <span className="text-sm text-[#777]">({data.user.referredBy.email})</span>
+                    </div>
+                    {data.user.referredBy.referralCode && (
+                      <div className="text-xs text-[#555] mt-1">Code: {data.user.referredBy.referralCode}</div>
+                    )}
+                  </div>
+                )}
+                
                 <div>
                   <div className="text-sm font-bold mb-2 mt-4">Referred Users List</div>
                   <div className="max-h-64 overflow-auto rounded-lg border border-[var(--border)] bg-black/10">
@@ -421,7 +434,7 @@ export default function AdminUserDetailPage() {
                               <button className="px-2 py-1 rounded-md text-green-400 hover:bg-green-400/10 border border-green-500/30" onClick={async () => {
                                 const token = localStorage.getItem('auth_token');
                                 const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${id}/plans`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ planId, months: 0 }) });
-                                const d = await r.json(); if (!r.ok) {
+                                let d: any = {}; try { d = await r.json(); } catch(e) {} if (!r.ok) {
                                   await modal.error({ title: 'Failed', body: d?.error || 'Failed to add plan' });
                                   return;
                                 }
@@ -441,7 +454,7 @@ export default function AdminUserDetailPage() {
                                 const token = localStorage.getItem('auth_token');
                                 const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${id}/plans/instance/${lastInstance._id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
                                 if (!r.ok) { 
-                                  const d = await r.json(); 
+                                  let d: any = {}; try { d = await r.json(); } catch(e) {} 
                                   await modal.error({ title: 'Failed', body: d?.error || 'Failed to remove plan instance' });
                                   return;
                                 }
@@ -493,7 +506,7 @@ export default function AdminUserDetailPage() {
                     }
                     const token = localStorage.getItem('auth_token');
                     const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${id}/plans`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ planId: newPlanId, months: 0 }) });
-                    const d = await r.json(); if (!r.ok) {
+                    let d: any = {}; try { d = await r.json(); } catch(e) {} if (!r.ok) {
                       await modal.error({ title: 'Failed', body: d?.error || 'Failed to add plan' });
                       return;
                     }
@@ -570,7 +583,7 @@ export default function AdminUserDetailPage() {
                           durationMinutes: banForm.durationMinutes
                         })
                       });
-                      const d = await r.json();
+                      let d: any = {}; try { d = await r.json(); } catch(e) {}
                       if (!r.ok) {
                         await modal.error({ title: 'Failed', body: d?.error || 'Failed to ban user' });
                         return;

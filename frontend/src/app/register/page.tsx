@@ -9,7 +9,7 @@ async function fetchBranding() {
   try {
     const base = process.env.NEXT_PUBLIC_API_BASE || '';
     const res = await fetch(base ? `${base}/api/branding` : `${base}/api/branding`, { cache: 'no-store' });
-    const d = await res.json();
+    let d: any = {}; try { d = await res.json(); } catch(e) {}
     return { siteName: d?.siteName || 'PteroDash', siteIcon: d?.siteIcon || '' };
   } catch {
     return { siteName: 'PteroDash', siteIcon: '' };

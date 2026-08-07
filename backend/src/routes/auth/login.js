@@ -135,11 +135,11 @@ router.post('/logout', async (req, res) => {
     // Extract user info from JWT token if present
     let user = null;
     const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
+    if (authHeader && /^Bearer\s+/i.test(authHeader)) {
       try {
-        const token = authHeader.substring(7);
+        const token = authHeader.split(/\s+/)[1];
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        user = await User.findById(decoded.sub);
+        user = await User.findById(String(decoded.sub));
       // eslint-disable-next-line unused-imports/no-unused-vars
       } catch (error) {
         // Invalid token, but we still want to log the logout attempt

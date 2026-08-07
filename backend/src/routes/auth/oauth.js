@@ -6,11 +6,9 @@ const User = require('../../models/User');
 const Settings = require('../../models/Settings');
 const UserCreationService = require('../../services/userCreation');
 const DiscordService = require('../../services/discord');
-// eslint-disable-next-line unused-imports/no-unused-vars
-const GoogleService = require('../../services/google');
+ 
 const { writeAudit } = require('../../middleware/audit');
-// eslint-disable-next-line unused-imports/no-unused-vars
-const jwt = require('jsonwebtoken');
+ 
 const router = express.Router();
 const { sendMailTemplate } = require('../../lib/mail');
 
@@ -44,7 +42,7 @@ const configurePassport = async () => {
         }
 
         // Check if user exists with this Discord ID
-        let user = await User.findOne({ 'oauthProviders.discord.id': profile.id });
+        let user = await User.findOne({ 'oauthProviders.discord.id': { $eq: String(profile.id) } });
         
         if (user) {
           // Store access token for potential server joining
@@ -54,7 +52,7 @@ const configurePassport = async () => {
         }
 
         // Check if user exists with this email
-        user = await User.findOne({ email: profile.email });
+        user = await User.findOne({ email: { $eq: String(profile.email) } });
         
         if (user) {
           // Link Discord account to existing user using unified service
@@ -93,6 +91,9 @@ const configurePassport = async () => {
           }
         });
 
+        // Grant referral rewards immediately since OAuth inherently verifies email
+        await UserCreationService.grantReferralRewards(user);
+
         return done(null, user);
       } catch (error) {
         // OAuth strategy error logged silently
@@ -125,7 +126,7 @@ const configurePassport = async () => {
         }
 
         // Check if user exists with this Google ID
-        let user = await User.findOne({ 'oauthProviders.google.id': profile.id });
+        let user = await User.findOne({ 'oauthProviders.google.id': { $eq: String(profile.id) } });
         
         if (user) {
           // Store access token for potential Google API calls
@@ -135,7 +136,7 @@ const configurePassport = async () => {
         }
 
         // Check if user exists with this email
-        user = await User.findOne({ email: profile.emails[0].value });
+        user = await User.findOne({ email: { $eq: String(profile.emails[0].value) } });
         
         if (user) {
           // Link Google account to existing user using unified service
@@ -173,6 +174,9 @@ const configurePassport = async () => {
             }
           }
         });
+
+        // Grant referral rewards immediately since OAuth inherently verifies email
+        await UserCreationService.grantReferralRewards(user);
 
         return done(null, user);
       } catch (error) {
@@ -497,7 +501,7 @@ router.post('/create-pterodactyl-user', async (req, res) => {
       return res.status(400).json({ error: 'Invalid user ID format' });
     }
     
-    const user = await User.findById(userId);
+    const user = await User.findById(String(userId));
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }

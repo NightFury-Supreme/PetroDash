@@ -124,7 +124,7 @@ export function usePlanEdit(): UsePlanEditReturn {
         throw new Error('Failed to load plan');
       }
 
-      const data = await response.json();
+      let data: any = {}; try { data = await response.json(); } catch(e) {}
       setPlan(data);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load plan');
@@ -293,7 +293,7 @@ export function usePlanEdit(): UsePlanEditReturn {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData: any = {}; try { errorData = await response.json(); } catch(e) {}
         throw new Error(errorData.error || 'Failed to update plan');
       }
 

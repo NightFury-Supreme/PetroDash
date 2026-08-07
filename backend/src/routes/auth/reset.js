@@ -1,6 +1,5 @@
 const express = require('express');
-// eslint-disable-next-line unused-imports/no-unused-vars
-const crypto = require('crypto');
+ 
 const bcrypt = require('bcryptjs');
 const { z } = require('zod');
 const User = require('../../models/User');
@@ -53,13 +52,17 @@ router.post('/reset', verificationRateLimit, async (req, res) => {
     
     if (vt.expiresAt && vt.expiresAt < new Date()) return res.status(400).json({ error: 'Code has expired' });
 
-    // Increment attempt counter
-    vt.attempts += 1;
+    // VULNERABILITY FIX: Use atomic increment to prevent concurrent brute-forcing
+    const updatedVt = await VerificationToken.findOneAndUpdate(
+      { _id: vt._id },
+      { $inc: { attempts: 1 } },
+      { new: true }
+    );
     
     // Check if max attempts exceeded
-    if (vt.attempts >= vt.maxAttempts) {
-      vt.lockedUntil = new Date(Date.now() + 15 * 60 * 1000); // Lock for 15 minutes
-      await vt.save();
+    if (updatedVt.attempts >= updatedVt.maxAttempts) {
+      updatedVt.lockedUntil = new Date(Date.now() + 15 * 60 * 1000); // Lock for 15 minutes
+      await updatedVt.save();
       return res.status(429).json({ 
         error: 'Too many failed attempts. Please request a new code.',
         retryAfter: 900
@@ -71,8 +74,8 @@ router.post('/reset', verificationRateLimit, async (req, res) => {
     await user.save();
 
     // Mark token as used
-    vt.usedAt = new Date();
-    await vt.save();
+    updatedVt.usedAt = new Date();
+    await updatedVt.save();
 
     // Invalidate all other password reset tokens for this user
     await VerificationToken.deleteMany({ 

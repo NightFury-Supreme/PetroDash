@@ -242,7 +242,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
       });
     } catch (panelError) {
       console.error('Panel update failed:', panelError);
-      return res.status(502).json({ 
+      return res.status(400).json({ 
         error: 'Panel update failed', 
         details: panelError.message 
       });
@@ -303,7 +303,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
           console.warn(`[Admin] Panel server ${server.panelServerId} already absent — removing from DB.`);
         } else if (!isForce) {
           // Non-force: stop here so the DB stays in sync with the panel
-          return res.status(502).json({
+          return res.status(400).json({
             error: 'Panel deletion failed. Use ?force=true to delete regardless.',
             details: detail,
           });

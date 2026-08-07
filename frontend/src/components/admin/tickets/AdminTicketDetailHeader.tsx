@@ -80,7 +80,7 @@ export default function AdminTicketDetailHeader({
 }: {
   ticket: any;
   contentPadding: number;
-  onAction: (action: "close" | "resolve" | "delete" | "restore") => Promise<void>;
+  onAction: (action: "close" | "resolve" | "delete" | "restore" | "reopen") => Promise<void>;
   onStatusChange: (s: string) => Promise<void>;
   onPriorityChange: (p: string) => Promise<void>;
 }) {
@@ -156,18 +156,29 @@ export default function AdminTicketDetailHeader({
               <div className="absolute right-0 mt-2 w-48 rounded-lg border border-[#303030] bg-[#181818] shadow-xl z-50 overflow-hidden">
                 {!ticket?.deletedByUser ? (
                   <>
-                    <button
-                      onClick={async () => { await onAction("close"); setMenuOpen(false); }}
-                      className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#202020]"
-                    >
-                      Close Ticket
-                    </button>
-                    <button
-                      onClick={async () => { await onAction("resolve"); setMenuOpen(false); }}
-                      className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#202020]"
-                    >
-                      Resolve
-                    </button>
+                    {(ticket?.status === 'closed' || ticket?.status === 'resolved') ? (
+                      <button
+                        onClick={async () => { await onAction("reopen"); setMenuOpen(false); }}
+                        className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#202020]"
+                      >
+                        Reopen Ticket
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          onClick={async () => { await onAction("close"); setMenuOpen(false); }}
+                          className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#202020]"
+                        >
+                          Close Ticket
+                        </button>
+                        <button
+                          onClick={async () => { await onAction("resolve"); setMenuOpen(false); }}
+                          className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#202020]"
+                        >
+                          Resolve
+                        </button>
+                      </>
+                    )}
                     <button
                       onClick={async () => { await onAction("delete"); setMenuOpen(false); }}
                       className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#202020]"

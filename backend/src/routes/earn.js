@@ -73,7 +73,6 @@ async function verifyLinkvertiseHash(token, hash) {
     }
     if (data && typeof data === 'object') {
       const v = data;
-      if (v === null) return false;
       if (isTruthy(v.ok) || isTruthy(v.success) || isTruthy(v.valid) || isTruthy(v.verified)) return true;
 
       const msg1 = msgVerdict(v.response);
@@ -556,7 +555,7 @@ router.post('/ads/ayet/rewarded', requireAuth, async (req, res) => {
 
     return res.json({ ok: true });
   } catch (e) {
-    if (e && (e.code === 11000 || e?.code === 11000)) {
+    if (e && e.code === 11000) {
       return res.status(409).json({ error: 'Duplicate conversion' });
     }
     return res.status(500).json({ error: 'Internal server error' });
@@ -610,7 +609,7 @@ router.get('/ads/admob/ssv', async (req, res) => {
 
     return res.status(200).send('ok');
   } catch (e) {
-    if (e && (e.code === 11000 || e?.code === 11000)) {
+    if (e && e.code === 11000) {
       return res.status(409).send('conflict');
     }
     return res.status(500).send('error');

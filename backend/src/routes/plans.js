@@ -1,14 +1,10 @@
 const express = require('express');
-// eslint-disable-next-line unused-imports/no-unused-vars
-const { requireAuth } = require('../middleware/auth');
+ 
 const Plan = require('../models/Plan');
-// eslint-disable-next-line unused-imports/no-unused-vars
-const UserPlan = require('../models/UserPlan');
-// eslint-disable-next-line unused-imports/no-unused-vars
-const Coupon = require('../models/Coupon');
+ 
+ 
 const Settings = require('../models/Settings');
-// eslint-disable-next-line unused-imports/no-unused-vars
-const { writeAudit } = require('../middleware/audit');
+ 
 
 const router = express.Router();
 

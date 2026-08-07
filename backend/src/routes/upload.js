@@ -22,11 +22,19 @@ router.post('/icon', requireAdmin, uploadLimiter, (req, res, next) => {
       // Second line of defence: verify actual file content via magic bytes.
       // This catches files that were renamed (e.g. evil.php → evil.jpg) and
       // bypassed the MIME type / extension filter.
-      if (!validateMagicBytes(req.file.path)) {
+      const fs = require('fs');
+      const path = require('path');
+      const uploadsDir = path.resolve(__dirname, '../../uploads');
+      const safePath = path.resolve(uploadsDir, path.basename(req.file.filename));
+      
+      if (!safePath.startsWith(uploadsDir)) {
+        return res.status(403).json({ error: 'Invalid file path' });
+      }
+
+      if (!validateMagicBytes(safePath)) {
         // Delete the already-saved file immediately
-        const fs = require('fs');
         // eslint-disable-next-line unused-imports/no-unused-vars
-        try { fs.unlinkSync(req.file.path); } catch (_) {}
+        try { fs.unlinkSync(safePath); } catch (_) {}
         return res.status(400).json({ error: 'File content does not match a valid image.' });
       }
 

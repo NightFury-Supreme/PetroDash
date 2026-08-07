@@ -4,8 +4,9 @@ const { z } = require('zod');
 const User = require('../../models/User');
 const VerificationToken = require('../../models/VerificationToken');
 const Settings = require('../../models/Settings');
-// eslint-disable-next-line unused-imports/no-unused-vars
-const { generateSecureCode, constantTimeCompare, hashString } = require('../../utils/security');
+const UserCreationService = require('../../services/userCreation');
+ 
+const { generateSecureCode, hashString } = require('../../utils/security');
 const { verificationRateLimit, resendRateLimit } = require('../../middleware/rateLimit');
 
 const router = express.Router();
@@ -36,6 +37,8 @@ router.get('/verify', async (req, res) => {
     await user.save();
     vt.usedAt = new Date();
     await vt.save();
+
+    await UserCreationService.grantReferralRewards(user);
     
     const redirect = (process.env.FRONTEND_URL || 'http://localhost:3000') + '/dashboard?verified=1';
     const wantsRedirect = String(req.query.redirect || '1') !== '0';
@@ -103,9 +106,8 @@ router.post('/verify/resend', resendRateLimit, async (req, res) => {
     }
     
     return res.json({ ok: true });
-  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
-    // Error logged silently for production
+    console.error('Failed to send verification code:', e);
     return res.status(500).json({ error: 'Failed to send verification code' });
   }
 });
@@ -159,13 +161,17 @@ router.post('/verify/code', verificationRateLimit, async (req, res) => {
       return res.status(400).json({ error: 'Verification code has expired' });
     }
     
-    // Increment attempt counter
-    vt.attempts += 1;
+    // VULNERABILITY FIX: Use atomic increment to prevent concurrent brute-forcing
+    const updatedVt = await VerificationToken.findOneAndUpdate(
+      { _id: vt._id },
+      { $inc: { attempts: 1 } },
+      { new: true }
+    );
     
     // Check if max attempts exceeded
-    if (vt.attempts >= vt.maxAttempts) {
-      vt.lockedUntil = new Date(Date.now() + 15 * 60 * 1000); // Lock for 15 minutes
-      await vt.save();
+    if (updatedVt.attempts >= updatedVt.maxAttempts) {
+      updatedVt.lockedUntil = new Date(Date.now() + 15 * 60 * 1000); // Lock for 15 minutes
+      await updatedVt.save();
       return res.status(429).json({ 
         error: 'Too many failed attempts. Please request a new code.',
         retryAfter: 900
@@ -177,8 +183,10 @@ router.post('/verify/code', verificationRateLimit, async (req, res) => {
     await user.save();
     
     // Mark token as used
-    vt.usedAt = new Date();
-    await vt.save();
+    updatedVt.usedAt = new Date();
+    await updatedVt.save();
+
+    await UserCreationService.grantReferralRewards(user);
     
     return res.json({ ok: true });
     

@@ -45,9 +45,16 @@ export default function LocationForm({ form, setForm, onSubmit, submitting, onDe
                         body: fd
                       });
                       
-                      if (!res.ok) throw new Error('Upload failed');
+                      if (!res.ok) {
+  let _err = 'Upload failed';
+  try {
+    const _d = await res.json();
+    if (_d && _d.error) _err = _d.error;
+  } catch(e) {}
+  throw new Error(_err);
+}
                       
-                      const data = await res.json();
+                      let data: any = {}; try { data = await res.json(); } catch(e) {}
                       setForm({ ...form, flag: data.filePath });
                       
                       // Delete old flag file if it exists

@@ -15,7 +15,7 @@ export default function LocationsPageContent() {
     const token = localStorage.getItem('auth_token');
     if (!token) { router.replace('/login'); return; }
     fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/locations`, { headers: { Authorization: `Bearer ${token}` }})
-      .then(async (r) => { const d = await r.json(); if (!r.ok) throw new Error(d?.error || 'Failed'); setItems(d); })
+      .then(async (r) => { let d: any = {}; try { d = await r.json(); } catch(e) {} if (!r.ok) throw new Error(d?.error || 'Failed'); setItems(d); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [router]);

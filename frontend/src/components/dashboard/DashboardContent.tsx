@@ -33,7 +33,7 @@ export function DashboardContent() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData: any = {}; try { errorData = await response.json(); } catch(e) {}
         throw new Error(errorData?.error || 'Failed to delete server');
       }
 

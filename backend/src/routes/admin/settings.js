@@ -32,7 +32,7 @@ router.get('/', requireAdmin, async (req, res) => {
     const out = settings.toObject();
     out.auth = out.auth || {};
     out.auth.emailLogin = out.auth.emailLogin ?? true;
-    out.auth.emailVerification = out.auth.emailVerification ?? true;
+    out.auth.emailVerification = out.auth.emailVerification ?? false;
     
     // Hide deprecated and sensitive fields
     delete out.themePrimary;

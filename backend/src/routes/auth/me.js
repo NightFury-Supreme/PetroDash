@@ -40,10 +40,10 @@ router.get('/me', requireAuth, async (req, res) => {
       profilePicture = user.profilePicture;
     }
 
-    let emailVerification = true;
+    let emailVerification = false;
     try {
       const s = await Settings.findOne({}).lean();
-      emailVerification = s?.auth?.emailVerification ?? true;
+      emailVerification = s?.auth?.emailVerification ?? false;
     // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_) {}
     

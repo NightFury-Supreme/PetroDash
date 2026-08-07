@@ -25,8 +25,16 @@ const MAGIC_BYTES = [
  */
 function validateMagicBytes(filePath) {
   try {
+    const path = require('path');
+    const filename = path.basename(filePath);
+    const uploadsDir = path.resolve(__dirname, '../../uploads');
+    const safePath = path.resolve(uploadsDir, filename);
+    
+    if (!safePath.startsWith(uploadsDir)) {
+      return false;
+    }
     // Read only the first 12 bytes — enough for all signatures above
-    const fd = fs.openSync(filePath, 'r');
+    const fd = fs.openSync(safePath, 'r');
     const buf = Buffer.alloc(12);
     fs.readSync(fd, buf, 0, 12, 0);
     fs.closeSync(fd);

@@ -78,8 +78,8 @@ class UserCreationService {
       },
     });
 
-    // Handle referral attribution and rewards
-    await this.handleReferralRewards(user, ref);
+    // Set referral relationship (coins will be granted after email verification)
+    await this.setReferrer(user, ref);
 
     // Create Pterodactyl user
     await this.createPterodactylUser(user, password);
@@ -109,31 +109,57 @@ class UserCreationService {
   }
 
   /**
-   * Handle referral rewards for new users
+   * Set the referrer for a new user without granting rewards
    * @param {Object} user - User object
    * @param {string} ref - Referral code
    */
-  static async handleReferralRewards(user, ref) {
+  static async setReferrer(user, ref) {
     if (!ref || typeof ref !== 'string') return;
 
     try {
       const referrer = await User.findOne({ referralCode: ref.trim().toUpperCase() }).select('_id').lean();
       if (!referrer || String(referrer._id) === String(user._id)) return;
 
+      // Only set referral relationship, do NOT award coins yet
+      await User.updateOne(
+        { _id: user._id },
+        { $set: { referredBy: referrer._id } }
+      );
+      user.referredBy = referrer._id;
+    } catch (error) {
+      console.error('Failed to set referrer:', error);
+    }
+  }
+
+  /**
+   * Grant referral rewards once the user's email is verified
+   * @param {Object} user - User object
+   */
+  static async grantReferralRewards(user) {
+    if (!user || !user.referredBy || user.referralRewardReceived) return;
+
+    try {
+      const referrer = await User.findById(user.referredBy);
+      if (!referrer) return;
+
       // Load settings for coin rewards
       const settings = await Settings.findOne({}).lean();
       const referrerCoins = Number(settings?.referrals?.referrerCoins ?? Number(process.env.REFERRAL_REWARD_COINS || 50));
       const referredCoins = Number(settings?.referrals?.referredCoins ?? Number(process.env.REFERRAL_REFERRED_COINS || 25));
 
-      // Set referral relationship on the new user and award coins atomically
-      await User.updateOne(
-        { _id: user._id },
+      // Award coins to the referred user and mark as rewarded atomically
+      const result = await User.updateOne(
+        { _id: user._id, referralRewardReceived: { $ne: true } },
         { 
-          $set: { referredBy: referrer._id },
+          $set: { referralRewardReceived: true },
           $inc: { coins: referredCoins }
         }
       );
-      user.referredBy = referrer._id;
+      
+      // VULNERABILITY FIX: If modifiedCount is 0, another concurrent request already claimed this reward.
+      // We MUST abort here to prevent the referrer from getting duplicated coins.
+      if (result.modifiedCount === 0) return;
+      user.referralRewardReceived = true;
       user.coins = Number(user.coins || 0) + referredCoins;
 
       // Update referrer stats and coins atomically
@@ -148,7 +174,7 @@ class UserCreationService {
         }
       );
     } catch (error) {
-      console.error('Failed to handle referral rewards:', error);
+      console.error('Failed to grant referral rewards:', error);
     }
   }
 

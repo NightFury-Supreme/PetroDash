@@ -30,7 +30,7 @@ export default function GiftsPageContent() {
 
       const res = await fetch(url.toString(), { headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) {
-        const d = await res.json();
+        let d: any = {}; try { d = await res.json(); } catch(e) {}
         if (Array.isArray(d)) {
           setGifts(d);
           setPagination({ page: 1, totalPages: 1, total: d.length });

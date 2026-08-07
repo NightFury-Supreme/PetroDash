@@ -143,7 +143,7 @@ export function useEarn() {
 
       if (d?.linkvertise?.sessionSecret && d?.session?.id) {
         try {
-          localStorage.setItem(lvSecretKey(d.session.id), d.linkvertise.sessionSecret);
+          localStorage.setItem(lvSecretKey(d.session.id), btoa(d.linkvertise.sessionSecret));
         // eslint-disable-next-line unused-imports/no-unused-vars
         } catch (_) {}
       }
@@ -170,8 +170,8 @@ export function useEarn() {
 
       const payload: any = { sessionId };
       if (method === "linkvertise") {
-        const secret = localStorage.getItem(lvSecretKey(sessionId)) || "";
-        payload.secret = secret;
+        const rawSecret = localStorage.getItem(lvSecretKey(sessionId));
+        payload.secret = rawSecret ? atob(rawSecret) : "";
         if (extra?.hash) payload.hash = extra.hash;
       }
 

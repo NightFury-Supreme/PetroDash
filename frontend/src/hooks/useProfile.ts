@@ -14,7 +14,7 @@ export function useProfile() {
       const token = localStorage.getItem('auth_token');
       if (!token) { setLoading(false); return; }
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
-      const d = await r.json();
+      let d: any = {}; try { d = await r.json(); } catch(e) {}
       if (!r.ok) throw new Error(d?.error || 'Failed to load profile');
       setForm({
         username: d.username || '',
@@ -40,7 +40,7 @@ export function useProfile() {
     try {
       const token = localStorage.getItem('auth_token');
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/profile`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ username: form.username, firstName: form.firstName, lastName: form.lastName }) });
-      const d = await r.json(); if (!r.ok) throw new Error(d?.error || 'Failed');
+      let d: any = {}; try { d = await r.json(); } catch(e) {} if (!r.ok) throw new Error(d?.error || 'Failed');
       setSuccess('Profile updated');
     } catch (e: any) { setError(e.message); } finally { setSaving(false); }
   }, [form]);
@@ -50,7 +50,7 @@ export function useProfile() {
     try {
       const token = localStorage.getItem('auth_token');
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/profile/email`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ email, password }) });
-      const d = await r.json(); if (!r.ok) throw new Error(d?.error || 'Failed to update email');
+      let d: any = {}; try { d = await r.json(); } catch(e) {} if (!r.ok) throw new Error(d?.error || 'Failed to update email');
       setForm((f) => ({ ...f, email: d.email }));
       setSuccess('Email updated');
     } catch (e: any) { setError(e.message); } finally { setSaving(false); }
@@ -61,7 +61,7 @@ export function useProfile() {
     try {
       const token = localStorage.getItem('auth_token');
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/profile/password`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ currentPassword, newPassword }) });
-      const d = await r.json(); if (!r.ok) throw new Error(d?.error || 'Failed to update password');
+      let d: any = {}; try { d = await r.json(); } catch(e) {} if (!r.ok) throw new Error(d?.error || 'Failed to update password');
       setSuccess('Password updated');
     } catch (e: any) { setError(e.message); } finally { setSaving(false); }
   }, []);
@@ -75,7 +75,7 @@ export function useProfile() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, 
         body: JSON.stringify({ profilePicture }) 
       });
-      const d = await r.json(); 
+      let d: any = {}; try { d = await r.json(); } catch(e) {} 
       if (!r.ok) throw new Error(d?.error || d?.message || 'Failed to update profile picture');
       setForm((f) => ({ ...f, profilePicture: d.profilePicture || '' }));
       setSuccess('Profile picture updated');

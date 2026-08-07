@@ -119,10 +119,24 @@ export function useServerEdit(serverId: string): UseServerEditReturn {
           })
         ]);
 
-        if (!meResponse.ok) throw new Error('Failed to load user data');
-        if (!usageResponse.ok) throw new Error('Failed to load usage data');
+        if (!meResponse.ok) {
+  let _err = 'Failed to load user data';
+  try {
+    const _d = await meResponse.json();
+    if (_d && _d.error) _err = _d.error;
+  } catch(e) {}
+  throw new Error(_err);
+}
+        if (!usageResponse.ok) {
+  let _err = 'Failed to load usage data';
+  try {
+    const _d = await usageResponse.json();
+    if (_d && _d.error) _err = _d.error;
+  } catch(e) {}
+  throw new Error(_err);
+}
         if (!serverResponse.ok) {
-          const errorData = await serverResponse.json();
+          let errorData: any = {}; try { errorData = await serverResponse.json(); } catch(e) {}
           throw new Error(errorData?.error || 'Server not found');
         }
 
@@ -302,7 +316,7 @@ export function useServerEdit(serverId: string): UseServerEditReturn {
         body: JSON.stringify(requestBody)
       });
 
-      const data = await response.json();
+      let data: any = {}; try { data = await response.json(); } catch(e) {}
       
       if (!response.ok) {
         if (data?.violations) {
@@ -363,7 +377,7 @@ export function useServerEdit(serverId: string): UseServerEditReturn {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      const data = await response.json();
+      let data: any = {}; try { data = await response.json(); } catch(e) {}
       
       if (!response.ok) {
         throw new Error(data?.error || 'Delete failed');

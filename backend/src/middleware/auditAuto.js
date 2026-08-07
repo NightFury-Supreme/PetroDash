@@ -6,6 +6,7 @@ function maskSensitive(obj) {
   if (!obj || typeof obj !== 'object') return obj;
   const clone = Array.isArray(obj) ? [] : {};
   for (const [k, v] of Object.entries(obj)) {
+    if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
     if (['password', 'passwordHash', 'token', 'apiKey'].includes(k)) {
       clone[k] = '***';
     } else if (v && typeof v === 'object') {
@@ -57,5 +58,3 @@ function auditAuto() {
 }
 
 module.exports = { auditAuto };
-
-

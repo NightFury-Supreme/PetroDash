@@ -12,7 +12,7 @@ export default function GiftMyCodes({ filter }: { filter: 'active' | 'inactive' 
         const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
         if (!token) return;
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/gifts/mine`, { headers: { Authorization: `Bearer ${token}` } });
-        const d = await res.json();
+        let d: any = {}; try { d = await res.json(); } catch(e) {}
         if (Array.isArray(d)) setItems(d);
       } finally { setLoading(false); }
     };

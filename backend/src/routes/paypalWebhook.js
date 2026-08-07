@@ -74,8 +74,8 @@ router.post('/', express.json({ type: '*/*' }), async (req, res) => {
     }
 
     if (eventType === 'CHECKOUT.ORDER.APPROVED') {
-      const orderId = resource?.id;
-      if (orderId) {
+      const orderId = String(resource?.id || '').trim();
+      if (/^[A-Z0-9]{17,20}$/.test(orderId)) {
         const payment = await Payment.findOne({ provider: 'paypal', providerOrderId: orderId, status: 'CREATED' });
         if (payment) {
           const { token, baseUrl } = await getAccessToken();

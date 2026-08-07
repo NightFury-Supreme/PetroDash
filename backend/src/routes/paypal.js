@@ -3,15 +3,12 @@ const { createRateLimiter } = require('../middleware/rateLimit');
 const axios = require('axios');
 const { requireAuth } = require('../middleware/auth');
 const Plan = require('../models/Plan');
-// eslint-disable-next-line unused-imports/no-unused-vars
-const User = require('../models/User');
+ 
 const UserPlan = require('../models/UserPlan');
 const Coupon = require('../models/Coupon');
-// eslint-disable-next-line unused-imports/no-unused-vars
-const { writeAudit } = require('../middleware/audit');
+ 
 const Payment = require('../models/Payment');
-// eslint-disable-next-line unused-imports/no-unused-vars
-const { sendMailTemplate } = require('../lib/mail');
+ 
 const { getAccessToken } = require('../lib/paypal');
 
 const router = express.Router();
@@ -81,7 +78,7 @@ router.post('/create-order', requireAuth, createRateLimiter(10, 60 * 1000), asyn
       return res.status(400).json({ error: 'Invalid billing cycle' });
     }
 
-    const plan = await Plan.findById(planId).lean();
+    const plan = await Plan.findById(String(planId)).lean();
     if (!plan) return res.status(404).json({ error: 'Plan not found' });
 
     // Check plan availability
@@ -117,7 +114,7 @@ router.post('/create-order', requireAuth, createRateLimiter(10, 60 * 1000), asyn
     // Apply coupon securely
     let discountAmount = 0;
     if (couponCode) {
-      const coupon = await Coupon.findOne({ code: couponCode.toUpperCase().trim(), enabled: true }).lean();
+      const coupon = await Coupon.findOne({ code: { $eq: String(couponCode).toUpperCase().trim() }, enabled: true }).lean();
       if (!coupon) return res.status(400).json({ error: 'Invalid coupon code' });
 
       if (coupon.validFrom && now < new Date(coupon.validFrom)) return res.status(400).json({ error: 'Coupon not yet valid' });

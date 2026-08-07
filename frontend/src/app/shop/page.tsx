@@ -23,11 +23,9 @@ export default function ShopPage() {
     items, plans, error, setError,
     buying, setBuying,
     quantities, setQuantities,
-    // eslint-disable-next-line unused-imports/no-unused-vars
-    coins, setCoins, payments, activePlans,
-    // eslint-disable-next-line unused-imports/no-unused-vars
-    itemsLoading, plansLoading, bootstrapDone,
-    clampQuantity, iconFor, currency
+
+    clampQuantity, iconFor, currency,
+    bootstrapDone, coins, setCoins, activePlans, payments
   } = useShop();
 
   const downloadInvoice = async (id: string) => {
@@ -78,7 +76,7 @@ export default function ShopPage() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ planId: selectedPlan._id, billingCycle, couponCode: couponCode.trim() || undefined })
       });
-      const paypalData = await paypalResponse.json();
+      let paypalData: any = {}; try { paypalData = await paypalResponse.json(); } catch(e) {}
       if (!paypalResponse.ok) throw new Error(paypalData?.error || 'Failed to create PayPal order');
 
       if (paypalData.bypassPaypal) {
@@ -110,7 +108,7 @@ export default function ShopPage() {
     try {
       const token = localStorage.getItem('auth_token');
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/shop/purchase`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ itemKey: key, quantity }) });
-      const d = await r.json();
+      let d: any = {}; try { d = await r.json(); } catch(e) {}
       if (!r.ok) {
         const message = d?.error || 'Purchase failed';
         throw new Error(message);
@@ -129,7 +127,7 @@ export default function ShopPage() {
           headers: { Authorization: `Bearer ${token}` } 
         });
         if (userResponse.ok) {
-          const userData = await userResponse.json();
+          let userData: any = {}; try { userData = await userResponse.json(); } catch(e) {}
           setCoins(userData.coins);
           try {
             window.dispatchEvent(new CustomEvent('coins:update', { detail: { coins: Number(userData.coins ?? 0) } }));
@@ -239,7 +237,7 @@ export default function ShopPage() {
                       if (token) {
                         try {
                           const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
-                          const d = await r.json();
+                          let d: any = {}; try { d = await r.json(); } catch(e) {}
                           if (r.ok) {
                             setCoins(Number(d?.coins ?? 0));
                             try {
@@ -312,7 +310,7 @@ export default function ShopPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {payments.map((p) => {
+                  {payments.map((p: any) => {
                     const status = String(p.status || '').toLowerCase();
                     const statusClass = status === 'completed' || status === 'paid'
                       ? 'bg-green-900/40 text-green-300 border-green-800'

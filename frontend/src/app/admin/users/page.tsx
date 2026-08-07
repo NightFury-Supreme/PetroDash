@@ -23,7 +23,7 @@ export default function AdminUsersListPage() {
     
     fetch(url.toString(), { headers: { Authorization: `Bearer ${token}` } })
       .then(async (r) => { 
-        const d = await r.json(); 
+        let d: any = {}; try { d = await r.json(); } catch(e) {} 
         if (!r.ok) throw new Error(d?.error || 'Failed'); 
         
         // Handle both new paginated format and old array format just in case

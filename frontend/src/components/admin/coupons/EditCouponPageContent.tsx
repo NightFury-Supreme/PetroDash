@@ -24,8 +24,15 @@ export default function EditCouponPageContent() {
     ])
       .then(async ([cR, pR]) => {
         if (pR.ok) setPlans(await pR.json());
-        if (!cR.ok) throw new Error('Failed to load coupon');
-        const d = await cR.json();
+        if (!cR.ok) {
+  let _err = 'Failed to load coupon';
+  try {
+    const _d = await cR.json();
+    if (_d && _d.error) _err = _d.error;
+  } catch(e) {}
+  throw new Error(_err);
+}
+        let d: any = {}; try { d = await cR.json(); } catch(e) {}
         setForm({
           ...d,
           validFrom: d.validFrom ? new Date(d.validFrom).toISOString().slice(0,16) : '',

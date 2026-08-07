@@ -25,8 +25,15 @@ export default function EditGiftPageContent() {
     ])
       .then(async ([gR, pR]) => {
         if (pR.ok) setPlans(await pR.json());
-        if (!gR.ok) throw new Error('Failed to load gift');
-        const d = await gR.json();
+        if (!gR.ok) {
+  let _err = 'Failed to load gift';
+  try {
+    const _d = await gR.json();
+    if (_d && _d.error) _err = _d.error;
+  } catch(e) {}
+  throw new Error(_err);
+}
+        let d: any = {}; try { d = await gR.json(); } catch(e) {}
         setForm({
           ...d,
           validFrom: d.validFrom ? new Date(d.validFrom).toISOString().slice(0,16) as any : undefined,

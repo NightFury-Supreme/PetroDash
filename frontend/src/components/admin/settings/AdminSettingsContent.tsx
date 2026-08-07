@@ -83,6 +83,8 @@ export function AdminSettingsContent({
 }: AdminSettingsContentProps) {
   const [formData, setFormData] = useState<Settings>(settings);
   const [saving, setSaving] = useState(false);
+  const [iconFile, setIconFile] = useState<File | null>(null);
+  const [iconPreview, setIconPreview] = useState<string | null>(null);
   const modal = useModal();
 
   useEffect(() => {
@@ -204,10 +206,10 @@ export function AdminSettingsContent({
           <div className="space-y-2">
             <label className="block text-sm font-medium text-white">Site Icon</label>
             <div className="flex items-center gap-3">
-              {formData.siteIcon && (
+              {(iconPreview || formData.siteIcon) && (
                 <div className="relative w-12 h-12 bg-[#202020] border border-[#303030] rounded-lg overflow-hidden flex-shrink-0">
                   <img 
-                    src={`${process.env.NEXT_PUBLIC_API_BASE}${formData.siteIcon}`} 
+                    src={iconPreview || `${process.env.NEXT_PUBLIC_API_BASE}${formData.siteIcon}`} 
                     alt="Site icon" 
                     className="w-full h-full object-cover"
                   />
@@ -218,55 +220,23 @@ export function AdminSettingsContent({
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={async (e) => {
+                  onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
                     
-                    const token = localStorage.getItem('auth_token');
-                    const oldIcon = formData.siteIcon; // Store old icon path
+                    setIconFile(file);
+                    setIconPreview(URL.createObjectURL(file));
                     
-                    const fd = new FormData();
-                    fd.append('icon', file);
-                    
-                    try {
-                      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/upload/icon`, {
-                        method: 'POST',
-                        headers: { Authorization: `Bearer ${token}` },
-                        body: fd
-                      });
-                      
-                      if (!res.ok) throw new Error('Upload failed');
-                      
-                      const data = await res.json();
-                      updateFormData('siteIcon', data.filePath);
-                      
-                      // Delete old icon file if it exists
-                      if (oldIcon) {
-                        fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/upload/icon`, {
-                          method: 'DELETE',
-                          headers: { 
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${token}` 
-                          },
-                          body: JSON.stringify({ filePath: oldIcon })
-                        }).catch(err => console.error('Failed to delete old icon:', err));
-                      }
-                    } catch (err) {
-                      console.error('Upload error:', err);
-                      await modal.error({
-                        title: "Upload Failed",
-                        body: "Failed to upload icon. Please try again."
-                      });
-                    }
+                    // Note: Actual upload happens when clicking "Save Brand Settings"
                   }}
                   disabled={loading}
                 />
                 <div className="w-full h-12 bg-[#202020] border border-[#303030] rounded-lg px-4 text-white cursor-pointer hover:border-[#404040] transition-colors flex items-center justify-between">
-                  <span className="text-[#AAAAAA]">{formData.siteIcon ? 'Change icon' : 'Upload icon'}</span>
+                  <span className="text-[#AAAAAA]">{(iconPreview || formData.siteIcon) ? 'Change icon' : 'Upload icon'}</span>
                   <i className="fas fa-upload text-[#AAAAAA]"></i>
                 </div>
               </label>
-              {formData.siteIcon && (
+              {(iconPreview || formData.siteIcon) && (
                 <button
                   onClick={async () => {
                     const confirmed = await modal.confirm({
@@ -274,26 +244,17 @@ export function AdminSettingsContent({
                       body: "Are you sure you want to remove the site icon?"
                     });
                     if (confirmed) {
-                      const token = localStorage.getItem('auth_token');
-                      const iconToDelete = formData.siteIcon;
+                      if (iconPreview) {
+                        URL.revokeObjectURL(iconPreview);
+                      }
+                      setIconFile(null);
+                      setIconPreview(null);
                       
-                      // Remove from form first
-                      updateFormData('siteIcon', '');
-                      
-                      // Delete file from server
-                      if (iconToDelete) {
-                        try {
-                          await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/upload/icon`, {
-                            method: 'DELETE',
-                            headers: { 
-                              'Content-Type': 'application/json',
-                              Authorization: `Bearer ${token}` 
-                            },
-                            body: JSON.stringify({ filePath: iconToDelete })
-                          });
-                        } catch (err) {
-                          console.error('Failed to delete icon:', err);
-                        }
+                      if (formData.siteIcon) {
+                        // Note: The actual file deletion on the server can be handled differently, 
+                        // but for now we simply clear it from the formData payload so when "Save" is 
+                        // clicked, it updates the DB to have no icon.
+                        updateFormData('siteIcon', '');
                       }
                     }
                   }}
@@ -310,7 +271,51 @@ export function AdminSettingsContent({
 
         <div className="flex items-center justify-end mt-6">
           <button
-            onClick={() => saveSection({ siteName: formData.siteName, siteIcon: formData.siteIcon }, "Brand settings updated.")}
+            onClick={async () => {
+              setSaving(true);
+              let finalSiteIcon = formData.siteIcon;
+              
+              try {
+                if (iconFile) {
+                  const token = localStorage.getItem('auth_token');
+                  const fd = new FormData();
+                  fd.append('icon', iconFile);
+                  
+                  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/upload/icon`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${token}` },
+                    body: fd
+                  });
+                  
+                  if (!res.ok) {
+                    let errorMessage = 'Upload failed';
+                    try {
+                      let errData: any = {}; try { errData = await res.json(); } catch(e) {}
+                      if (errData.error) errorMessage = errData.error;
+                    } catch (e) {}
+                    throw new Error(errorMessage);
+                  }
+                  
+                  let data: any = {}; try { data = await res.json(); } catch(e) {}
+                  finalSiteIcon = data.filePath;
+                  
+                  if (iconPreview) {
+                    URL.revokeObjectURL(iconPreview);
+                    setIconPreview(null);
+                  }
+                  setIconFile(null);
+                }
+                
+                await saveSection({ siteName: formData.siteName, siteIcon: finalSiteIcon }, "Brand settings updated.");
+              } catch (err) {
+                console.error('Upload error:', err);
+                await modal.error({
+                  title: "Upload Failed",
+                  body: err instanceof Error ? err.message : "Failed to upload new site icon. Please try again."
+                });
+                setSaving(false);
+              }
+            }}
             disabled={saving || loading}
             className="px-6 py-3 bg-white text-[#0b0b0f] font-medium rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >

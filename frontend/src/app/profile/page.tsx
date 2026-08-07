@@ -1,7 +1,6 @@
 "use client";
 import Shell from '@/components/Shell';
 import { useProfile } from '@/hooks/useProfile';
-import { useAuthSettings } from '@/hooks/useAuthSettings';
 import ProfileSkeleton from '@/components/skeletons/profile/ProfileSkeleton';
 import { useState } from 'react';
 import { useModal } from '@/components/Modal';
@@ -9,8 +8,7 @@ import { useRouter } from 'next/navigation';
 
 export default function ProfilePage() {
   const { form, setForm, loading, saving, error, success, saveProfile, updateEmail, updatePassword, updateProfilePicture } = useProfile();
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  const { settings: authSettings } = useAuthSettings();
+
   const modal = useModal();
   const router = useRouter();
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -38,7 +36,7 @@ export default function ProfilePage() {
     try {
       const token = localStorage.getItem('auth_token');
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/profile`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-      const d = await r.json(); 
+      let d: any = {}; try { d = await r.json(); } catch(e) {} 
       if (!r.ok) throw new Error(d?.error || 'Failed to delete account');
       
       // Show success message with details
@@ -302,7 +300,7 @@ export default function ProfilePage() {
                               if (res.ok) {
                                 alert('Verification email sent! Please check your inbox.');
                               } else {
-                                const data = await res.json();
+                                let data: any = {}; try { data = await res.json(); } catch(e) {}
                                 const errorMessage = data.details 
                                   ? `${data.error}: ${data.details}` 
                                   : data.error || 'Failed to send verification email';

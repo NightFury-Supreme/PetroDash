@@ -36,11 +36,7 @@ export default function TicketItem({ ticket, onRefresh }: { ticket: any, onRefre
             <h3 className="text-white font-semibold truncate max-w-[60vw]">{ticket.title}</h3>
           </div>
           <div className="flex items-center gap-2 text-[11px]">
-            {ticket.deletedByUser ? (
-              <span className="px-2 py-0.5 rounded-full border bg-red-600/20 text-red-300 border-red-700/50">Deleted</span>
-            ) : (
-              <span className={`px-2 py-0.5 rounded-full border ${ticket.status==='open' ? 'bg-green-600/20 text-green-300 border-green-700/50' : ticket.status==='pending' ? 'bg-yellow-600/20 text-yellow-300 border-yellow-700/50' : ticket.status==='resolved' ? 'bg-blue-600/20 text-blue-300 border-blue-700/50' : 'bg-[#303030] text-[#AAAAAA] border-[#404040]'}`}>{ticket.status}</span>
-            )}
+            <span className={`px-2 py-0.5 rounded-full border ${ticket.status==='open' ? 'bg-green-600/20 text-green-300 border-green-700/50' : ticket.status==='pending' ? 'bg-yellow-600/20 text-yellow-300 border-yellow-700/50' : ticket.status==='resolved' ? 'bg-blue-600/20 text-blue-300 border-blue-700/50' : 'bg-[#303030] text-[#AAAAAA] border-[#404040]'}`}>{ticket.status}</span>
             {ticket.category && <span className="px-2 py-0.5 rounded-full border border-[var(--border)] bg-[#181818] text-[#e5e5e5]"><i className="fas fa-folder mr-1"/>{ticket.category}</span>}
           </div>
         </div>
@@ -52,10 +48,11 @@ export default function TicketItem({ ticket, onRefresh }: { ticket: any, onRefre
             </button>
             {menu && (
               <div className="absolute right-0 top-12 w-40 rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-xl overflow-hidden z-20">
-                {ticket.status !== 'closed' && (
+                {(ticket.status === 'closed' || ticket.status === 'resolved') ? (
+                  <button onClick={async()=>{ await handleAction('reopen'); setMenu(false); }} className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[var(--hover)]">Reopen Ticket</button>
+                ) : (
                   <button onClick={async()=>{ await handleAction('close'); setMenu(false); }} className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[var(--hover)]">Close Ticket</button>
                 )}
-                <button onClick={async()=>{ await handleAction('delete'); setMenu(false); }} className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[var(--hover)]">Delete</button>
               </div>
             )}
           </div>

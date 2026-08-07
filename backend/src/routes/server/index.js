@@ -207,7 +207,7 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
             });
             
           } catch (panelError) {
-            return res.status(502).json({ 
+            return res.status(400).json({ 
               error: 'Panel rename failed', 
               details: panelError?.response?.data?.errors?.[0]?.detail || panelError.message,
               panelError: process.env.NODE_ENV === 'development' ? panelError.message : undefined,
@@ -299,7 +299,6 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
       // Update server on Pterodactyl panel if panelServerId exists
       if (server.panelServerId) {
         try {
-          // eslint-disable-next-line unused-imports/no-unused-vars
           const { updateServerBuild, updateServerDetails } = require('../../services/pterodactyl');
           
           // Get current server details to get the allocation ID
@@ -339,7 +338,7 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
           });
           
         } catch (panelError) {
-          return res.status(502).json({ 
+          return res.status(400).json({ 
             error: 'Panel update failed', 
             details: panelError?.response?.data?.errors?.[0]?.detail || panelError.message,
             panelError: process.env.NODE_ENV === 'development' ? panelError.message : undefined,
@@ -362,8 +361,8 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
       userId: user._id
     });
 
-    // eslint-disable-next-line unused-imports/no-unused-vars
-    const responseTime = Date.now() - startTime;
+     
+//     const responseTime = Date.now() - startTime;
     return res.json({ 
       server,
       message: 'Server updated successfully',
@@ -443,7 +442,7 @@ router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10,
           console.warn(`Panel server ${server.panelServerId} already gone — cleaning up locally.`);
         } else {
           // For any other panel error, return 502 and do NOT delete locally
-          return res.status(502).json({
+          return res.status(400).json({
             error: 'Panel deletion failed. The server record has NOT been removed.',
             details: detail,
           });

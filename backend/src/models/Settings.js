@@ -33,7 +33,7 @@ const SettingsSchema = new mongoose.Schema(
     },
     auth: {
       emailLogin: { type: Boolean, default: true },
-      emailVerification: { type: Boolean, default: true },
+      emailVerification: { type: Boolean, default: false },
       discord: {
         enabled: { type: Boolean, default: false },
         autoJoin: { type: Boolean, default: false },

@@ -35,6 +35,7 @@ const UserSchema = new mongoose.Schema(
         // Referrals
         referralCode: { type: String, unique: true, sparse: true },
         referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        referralRewardReceived: { type: Boolean, default: false },
         referralStats: {
             referredCount: { type: Number, default: 0 },
             coinsEarned: { type: Number, default: 0 },

@@ -31,7 +31,7 @@ export default function TicketDetailPage() {
     if (!id) return;
     try {
       const r = await fetch(`${api}/api/tickets/${id}`, { headers: { Authorization: `Bearer ${token()}` } });
-      const d = await r.json();
+      let d: any = {}; try { d = await r.json(); } catch(e) {}
       if (!r.ok) throw new Error(d?.error || "Failed to load ticket");
       setTicket(d);
       setError(null);
@@ -61,7 +61,7 @@ export default function TicketDetailPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token()}` },
         body: JSON.stringify({ body: text }),
       });
-      const d = await r.json();
+      let d: any = {}; try { d = await r.json(); } catch(e) {}
       if (!r.ok) {
         // Roll back optimistic message
         setTicket((prev: any) => prev ? { ...prev, messages: (prev.messages || []).filter((m: any) => m._id !== optimisticMsg._id) } : prev);
@@ -74,7 +74,7 @@ export default function TicketDetailPage() {
     }
   };
 
-  const updateStatus = async (action: "close" | "reopen" | "delete") => {
+  const updateStatus = async (action: "close" | "reopen") => {
     setStatusUpdating(true);
     try {
       const r = await fetch(`${api}/api/tickets/${id}/status`, {
@@ -82,13 +82,9 @@ export default function TicketDetailPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token()}` },
         body: JSON.stringify({ action }),
       });
-      const d = await r.json();
+      let d: any = {}; try { d = await r.json(); } catch(e) {}
       if (!r.ok) throw new Error(d?.error || "Failed to update");
-      if (action === "delete") {
-        window.location.href = "/tickets";
-      } else {
-        await fetchTicket(true);
-      }
+      await fetchTicket(true);
     } catch (e: any) {
       setSendError(e.message || "Failed to update status");
     } finally {
@@ -117,10 +113,10 @@ export default function TicketDetailPage() {
       <main className="flex-1 flex flex-col items-center justify-center h-screen" style={{ paddingLeft: contentPadding }}>
         <div className="text-center px-6 max-w-md mx-auto">
           <div className="w-24 h-24 mx-auto mb-6 bg-[#202020] rounded-full flex items-center justify-center">
-            <i className={`fa-solid ${error?.includes('deleted') ? 'fa-trash-can' : 'fa-triangle-exclamation'} text-white text-3xl`}></i>
+            <i className={`fa-solid fa-triangle-exclamation text-white text-3xl`}></i>
           </div>
           <h3 className="text-2xl font-bold mb-3 text-white">
-            {error?.includes('deleted') ? 'Ticket Deleted' : 'Oops! Something went wrong'}
+            Oops! Something went wrong
           </h3>
           <p className="text-[#AAAAAA] text-lg mb-6">
             {error || 'The ticket you are looking for does not exist or you do not have permission to view it.'}
@@ -148,26 +144,14 @@ export default function TicketDetailPage() {
               <button onClick={() => setSendError(null)} className="ml-2 text-red-300 hover:text-white"><i className="fas fa-times" /></button>
             </div>
           )}
-          {/* Closed/Resolved banner */}
-          {(isClosed || isResolved) && (
-            <div className={`mb-3 px-4 py-3 rounded-lg border flex items-center justify-between ${isClosed ? "bg-[#303030]/40 border-[#404040]" : "bg-blue-600/10 border-blue-600/30"}`}>
-              <span className="text-sm text-[#CCCCCC]">
-                {isClosed ? "This ticket is closed." : "This ticket has been resolved."}
-                {" "}You can reopen it if you need further help.
-              </span>
-              <button
-                onClick={() => updateStatus("reopen")}
-                disabled={statusUpdating}
-                className="ml-4 px-3 py-1 text-sm bg-white hover:bg-gray-100 text-black rounded-lg font-medium disabled:opacity-50"
-              >
-                {statusUpdating ? "Reopening…" : "Reopen"}
-              </button>
-            </div>
-          )}
           <TicketMessages ticket={ticket} />
           <TicketInputBar
             contentPadding={contentPadding}
             disabled={!canSend}
+            isClosed={isClosed}
+            isResolved={isResolved}
+            statusUpdating={statusUpdating}
+            onReopen={() => updateStatus("reopen")}
             onSend={sendMessage}
           />
         </div>

@@ -18,7 +18,7 @@ export default function EditLocationPageContent() {
     if (!token) { router.replace('/login'); return; }
     fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/locations/${params.id}`, { headers: { Authorization: `Bearer ${token}` }})
       .then(async (r) => {
-        const d = await r.json();
+        let d: any = {}; try { d = await r.json(); } catch(e) {}
         if (!r.ok) throw new Error(d?.error || 'Failed');
         setForm({
           id: d._id || d.id,
@@ -58,7 +58,7 @@ export default function EditLocationPageContent() {
         allowedPlans: Array.isArray(form.allowedPlans) ? form.allowedPlans : [],
       }),
     });
-    const data = await res.json();
+    let data: any = {}; try { data = await res.json(); } catch(e) {}
     if (!res.ok) { setError(data?.error || 'Failed to update'); return; }
     router.push('/admin/locations');
   };

@@ -47,11 +47,11 @@ export function usePanel(): UsePanelReturn {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData: any = {}; try { errorData = await response.json(); } catch(e) {}
         throw new Error(errorData?.error || 'Failed to load panel information');
       }
 
-      const data = await response.json();
+      let data: any = {}; try { data = await response.json(); } catch(e) {}
       setInfo(data);
     } catch (err: any) {
       setError(err.message || 'Failed to load panel information');
@@ -81,11 +81,11 @@ export function usePanel(): UsePanelReturn {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData: any = {}; try { errorData = await response.json(); } catch(e) {}
         throw new Error(errorData?.error || 'Failed to reset password');
       }
 
-      const data = await response.json();
+      let data: any = {}; try { data = await response.json(); } catch(e) {}
       setNewPassword(data.password);
     } catch (err: any) {
       setError(err.message || 'Failed to reset password');

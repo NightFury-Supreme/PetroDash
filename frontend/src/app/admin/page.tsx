@@ -75,12 +75,7 @@ export default function AdminPage() {
     );
   }
 
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  const adminFeatures = [
-    { title: 'User Management', description: 'List, search, promote/demote, and disable users', icon: 'fas fa-users', color: 'bg-blue-600' },
-    { title: 'Pterodactyl Resources', description: 'Overview of users, servers, and nodes', icon: 'fas fa-server', color: 'bg-green-600' },
-    { title: 'Audit Logs', description: 'Track API key usage and system activities', icon: 'fas fa-clipboard-list', color: 'bg-purple-600' },
-  ];
+
 
   return (
     <Shell>

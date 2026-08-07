@@ -50,7 +50,7 @@ export default function UpdateSystem() {
         throw new Error('Failed to check for updates');
       }
 
-      const data = await response.json();
+      let data: any = {}; try { data = await response.json(); } catch(e) {}
       setUpdateInfo(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to check for updates');

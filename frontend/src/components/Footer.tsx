@@ -15,7 +15,7 @@ export default function Footer() {
     const fetchBranding = async () => {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/branding`, { cache: 'no-store' });
-        const data = await res.json();
+        let data: any = {}; try { data = await res.json(); } catch(e) {}
         if (data?.siteName) {
           setBranding(data);
         }

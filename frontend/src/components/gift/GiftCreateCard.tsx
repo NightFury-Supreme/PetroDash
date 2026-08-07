@@ -23,7 +23,7 @@ export default function GiftCreateCard() {
         method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ coins, maxRedemptions, expiresInDays, description })
       });
-      const d = await res.json();
+      let d: any = {}; try { d = await res.json(); } catch(e) {}
       if (!res.ok) throw new Error(d?.error || 'Failed to create code');
       setResult({ code: d.code });
     } catch (e: any) {

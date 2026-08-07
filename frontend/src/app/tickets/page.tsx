@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useModal } from "@/components/Modal";
 import TicketsHeader from "@/components/tickets/TicketsHeader";
 import TicketList from "@/components/tickets/TicketList";
 import TicketCreateModal from "@/components/tickets/TicketCreateModal";
@@ -26,13 +25,12 @@ export default function TicketsPage() {
   const [message, setMessage] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
   const [category, setCategory] = useState<string>("general");
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  const modal = useModal();
+
   const [showCreate, setShowCreate] = useState<boolean>(false);
   const contentPadding = useSidebarPadding();
   const [activeTab, setActiveTab] = useState<'all'|'open'|'pending'|'resolved'|'closed'>('all');
-  // eslint-disable-next-line unused-imports/no-unused-vars
   const [myUserId, setMyUserId] = useState<string | null>(null);
+
 
   const fetchTickets = async () => {
     try {
@@ -40,7 +38,7 @@ export default function TicketsPage() {
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/tickets/mine`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      const d = await r.json();
+      let d: any = {}; try { d = await r.json(); } catch(e) {}
       if (!r.ok) throw new Error(d?.error || 'Failed to load tickets');
       setTickets(d);
     } catch (e:any) {
@@ -60,7 +58,7 @@ export default function TicketsPage() {
         const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/tickets/categories`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        const d = await r.json();
+        let d: any = {}; try { d = await r.json(); } catch(e) {}
         if (r.ok && Array.isArray(d?.categories)) {
           setCategories(d.categories);
           setCategory(d.categories[0] || 'general');
@@ -82,7 +80,7 @@ export default function TicketsPage() {
       if (!token) return;
       fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
         .then(async r => {
-          const d = await r.json();
+          let d: any = {}; try { d = await r.json(); } catch(e) {}
           if (r.ok && (d?._id || d?.id)) setMyUserId(String(d._id || d.id));
         })
         .catch(() => {});
@@ -102,7 +100,7 @@ export default function TicketsPage() {
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ title, message, category })
       });
-      const d = await r.json();
+      let d: any = {}; try { d = await r.json(); } catch(e) {}
       if (!r.ok) {
         setError(d?.error || 'Failed to create ticket');
         return false;

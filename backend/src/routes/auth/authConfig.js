@@ -9,7 +9,7 @@ router.get('/', async (req, res) => {
     if (!settings) {
       return res.json({
         emailLogin: true,
-        emailVerification: true,
+        emailVerification: false,
         discord: { enabled: false },
         google: { enabled: false }
       });
@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
 
     return res.json({
       emailLogin: settings.auth?.emailLogin ?? true,
-      emailVerification: settings.auth?.emailVerification ?? true,
+      emailVerification: settings.auth?.emailVerification ?? false,
       discord: {
         enabled: settings.auth?.discord?.enabled ?? false
       },

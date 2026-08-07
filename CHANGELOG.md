@@ -10,6 +10,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Future features and improvements will be listed here
 
+## [1.2.0] - 07-08-2026
+
+### Added
+- **Referral Verification System**: Referral rewards (coins) are now granted strictly *after* email verification if email verification is enabled on the server.
+- **Referral Origin Tracking**: Admin user detail page now displays who referred a user ("Joined Using Referral Code From").
+
+### Changed
+- **Default Email Verification**: New installations now default to requiring NO email verification upon registration for less friction.
+- **Ticket Interface for Users**:
+  - Completely replaced the input box with a "Reopen Ticket" banner when a ticket is closed or resolved, preventing UX confusion.
+  - Removed "Delete" ticket functionality from the user side to prevent accidental data loss.
+- **Admin Ticket Logic**:
+  - The three-dots menu dynamically hides on closed tickets to prevent empty drop-downs.
+  - Backend properly rejects attempts to change the status of an already closed/resolved ticket.
+- **Security & Stability**: 
+  - Comprehensive codebase linting and formatting pass for both frontend and backend, cleaning up hundreds of unused variables and imports.
+  - Audited ticket and email systems to ensure 0 vulnerability exposure.
+  - Enforced `node-fetch` usage across the backend for consistent API calls.
+  - Updated dashboard screenshots/images.
+
 ## [1.1.0] - 06-08-2026
 
 ### Added
