@@ -10,9 +10,9 @@ const getStore = () => {
   return client ? new RedisStore({ sendCommand: (...args) => client.call(...args) }) : undefined;
 };
 
-const listLimiter = rateLimit({ windowMs: 60 * 1000, max: 30, store: getStore(), skip: () => process.env.NODE_ENV === 'development', message: { error: 'Too many requests' } });
-const createLimiter = rateLimit({ windowMs: 60 * 1000, max: 5, store: getStore(), skip: () => process.env.NODE_ENV === 'development', message: { error: 'Too many requests' } });
-const actionLimiter = rateLimit({ windowMs: 60 * 1000, max: 10, store: getStore(), skip: () => process.env.NODE_ENV === 'development', message: { error: 'Too many requests' } });
+const listLimiter = rateLimit({ windowMs: 60 * 1000, max: 30, store: getStore(), message: { error: 'Too many requests' } });
+const createLimiter = rateLimit({ windowMs: 60 * 1000, max: 5, store: getStore(), message: { error: 'Too many requests' } });
+const actionLimiter = rateLimit({ windowMs: 60 * 1000, max: 10, store: getStore(), message: { error: 'Too many requests' } });
 const Plan = require('../models/Plan');
 const { getSettings } = require('../lib/settings');
 const Subscription = require('../models/Subscription');

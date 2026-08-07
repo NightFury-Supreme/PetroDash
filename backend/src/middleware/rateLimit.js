@@ -19,7 +19,6 @@ function createRateLimiter(max, windowMs, options = {}) {
     standardHeaders: true,
     legacyHeaders: false,
     store,
-    skip: () => process.env.NODE_ENV === 'development',
     message: { error: 'Too many requests, please try again later.' },
     ...options
   });
@@ -44,7 +43,6 @@ function createSecureRateLimiter(max, windowMs, options = {}) {
     standardHeaders: true,
     legacyHeaders: false,
     store,
-    skip: () => process.env.NODE_ENV === 'development',
     message: { 
       error: 'Too many requests, please try again later.',
       retryAfter: Math.ceil(windowMs / 1000)

@@ -15,7 +15,7 @@ const getStore = () => {
   return client ? new RedisStore({ sendCommand: (...args) => client.call(...args) }) : undefined;
 };
 
-const showLimiter = rateLimit({ windowMs: 60 * 1000, max: 60, store: getStore(), skip: () => process.env.NODE_ENV === 'development', message: { error: 'Too many requests' } });
+const showLimiter = rateLimit({ windowMs: 60 * 1000, max: 60, store: getStore(), message: { error: 'Too many requests' } });
 
     // GET /api/servers/:id
     router.get('/', requireAuth, showLimiter, async (req, res) => {
