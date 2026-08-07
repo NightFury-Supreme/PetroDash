@@ -53,14 +53,12 @@ async function writeAudit(reqOrActorId, action, resourceTypeOrDetails, resourceI
 function sanitizeMeta(meta) {
   try {
     if (!meta || typeof meta !== 'object') return meta;
-    const clone = Object.create(null);
-    const parsed = JSON.parse(JSON.stringify(meta));
-    const sensitiveKeys = ['authorization','auth','token','password','secret','clientSecret'];
-    for (const k of Object.keys(parsed)) {
-      if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
-      clone[k] = sensitiveKeys.includes(k.toLowerCase()) ? '[redacted]' : parsed[k];
-    }
-    return clone;
+    const sensitiveKeys = ['authorization','auth','token','password','secret','clientsecret'];
+    return JSON.parse(JSON.stringify(meta, (k, v) => {
+      if (k === '__proto__' || k === 'constructor' || k === 'prototype') return undefined;
+      if (sensitiveKeys.includes(k.toLowerCase())) return '[redacted]';
+      return v;
+    }));
   } catch {
     return {};
   }

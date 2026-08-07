@@ -1,7 +1,18 @@
 const express = require('express');
 const axios = require('axios');
 const { requireAuth } = require('../middleware/auth');
-const { createRateLimiter } = require('../middleware/rateLimit');
+const rateLimit = require('express-rate-limit');
+const RedisStore = require('rate-limit-redis').default;
+const { getClient } = require('../lib/redis');
+
+const getStore = () => {
+  const client = getClient();
+  return client ? new RedisStore({ sendCommand: (...args) => client.call(...args) }) : undefined;
+};
+
+const listLimiter = rateLimit({ windowMs: 60 * 1000, max: 30, store: getStore(), skip: () => process.env.NODE_ENV === 'development', message: { error: 'Too many requests' } });
+const createLimiter = rateLimit({ windowMs: 60 * 1000, max: 5, store: getStore(), skip: () => process.env.NODE_ENV === 'development', message: { error: 'Too many requests' } });
+const actionLimiter = rateLimit({ windowMs: 60 * 1000, max: 10, store: getStore(), skip: () => process.env.NODE_ENV === 'development', message: { error: 'Too many requests' } });
 const Plan = require('../models/Plan');
 const { getSettings } = require('../lib/settings');
 const Subscription = require('../models/Subscription');
@@ -12,7 +23,7 @@ const router = express.Router();
 
 
 // GET /api/subscriptions - list my subscriptions
-router.get('/', requireAuth, createRateLimiter(30, 60 * 1000), async (req, res) => {
+router.get('/', requireAuth, listLimiter, async (req, res) => {
   const { getCache, setCache } = require('../lib/redis');
   const cacheKey = `subscriptions:mine:${req.user.sub}`;
   
@@ -26,7 +37,7 @@ router.get('/', requireAuth, createRateLimiter(30, 60 * 1000), async (req, res) 
 });
 
 // POST /api/subscriptions - create a subscription for a plan
-router.post('/', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) => {
+router.post('/', requireAuth, createLimiter, async (req, res) => {
   try {
     const { planId, couponCode } = req.body || {};
     if (!planId) return res.status(400).json({ error: 'planId is required' });
@@ -65,7 +76,7 @@ router.post('/', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) 
 });
 
 // POST /api/subscriptions/confirm - confirm approved subscription by id from return URL
-router.post('/confirm', requireAuth, createRateLimiter(10, 60 * 1000), async (req, res) => {
+router.post('/confirm', requireAuth, actionLimiter, async (req, res) => {
   try {
     const { subscriptionId, couponCode } = req.body || {};
     if (!subscriptionId) return res.status(400).json({ error: 'subscriptionId required' });
@@ -107,7 +118,7 @@ router.post('/confirm', requireAuth, createRateLimiter(10, 60 * 1000), async (re
 });
 
 // POST /api/subscriptions/:id/pause
-router.post('/:id/pause', requireAuth, createRateLimiter(10, 60 * 1000), async (req, res) => {
+router.post('/:id/pause', requireAuth, actionLimiter, async (req, res) => {
   // Validate ObjectId format to prevent NoSQL injection
   if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
     return res.status(400).json({ error: 'Invalid subscription ID format' });
@@ -121,7 +132,7 @@ router.post('/:id/pause', requireAuth, createRateLimiter(10, 60 * 1000), async (
 });
 
 // POST /api/subscriptions/:id/resume
-router.post('/:id/resume', requireAuth, createRateLimiter(10, 60 * 1000), async (req, res) => {
+router.post('/:id/resume', requireAuth, actionLimiter, async (req, res) => {
   // Validate ObjectId format to prevent NoSQL injection
   if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
     return res.status(400).json({ error: 'Invalid subscription ID format' });
@@ -135,7 +146,7 @@ router.post('/:id/resume', requireAuth, createRateLimiter(10, 60 * 1000), async 
 });
 
 // POST /api/subscriptions/:id/upgrade - change plan (proration TBD)
-router.post('/:id/upgrade', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) => {
+router.post('/:id/upgrade', requireAuth, createLimiter, async (req, res) => {
   const { newPlanId } = req.body || {};
   if (!newPlanId) return res.status(400).json({ error: 'newPlanId required' });
   
@@ -156,7 +167,7 @@ router.post('/:id/upgrade', requireAuth, createRateLimiter(5, 60 * 1000), async 
 });
 
 // POST /api/subscriptions/:id/cancel - cancel at period end
-router.post('/:id/cancel', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) => {
+router.post('/:id/cancel', requireAuth, createLimiter, async (req, res) => {
   try {
     // Validate ObjectId format to prevent NoSQL injection
     if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {

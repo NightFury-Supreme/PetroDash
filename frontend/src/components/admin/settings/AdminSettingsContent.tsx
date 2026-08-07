@@ -209,7 +209,12 @@ export function AdminSettingsContent({
               {(iconPreview || formData.siteIcon) && (
                 <div className="relative w-12 h-12 bg-[#202020] border border-[#303030] rounded-lg overflow-hidden flex-shrink-0">
                   <img 
-                    src={iconPreview || (formData.siteIcon ? `${process.env.NEXT_PUBLIC_API_BASE || ''}${formData.siteIcon.split('/').map(encodeURIComponent).join('/')}` : '')} 
+                    src={(() => {
+                      if (iconPreview) return iconPreview;
+                      if (!formData.siteIcon) return '';
+                      if (formData.siteIcon.toLowerCase().trim().startsWith('javascript:')) return '';
+                      return `${process.env.NEXT_PUBLIC_API_BASE || ''}${formData.siteIcon.split('/').map(encodeURIComponent).join('/')}`;
+                    })()} 
                     alt="Site icon" 
                     className="w-full h-full object-cover"
                   />

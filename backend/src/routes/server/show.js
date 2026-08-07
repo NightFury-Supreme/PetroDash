@@ -1,6 +1,8 @@
 const express = require('express');
 const { requireAuth } = require('../../middleware/auth');
-const { createRateLimiter } = require('../../middleware/rateLimit');
+const rateLimit = require('express-rate-limit');
+const RedisStore = require('rate-limit-redis').default;
+const { getClient } = require('../../lib/redis');
 const Server = require('../../models/Server');
 const { getServer: getPanelServer } = require('../../services/pterodactyl');
 const { hasServerLimitsChanged } = require('../../utils/security');
@@ -8,8 +10,15 @@ const { hasServerLimitsChanged } = require('../../utils/security');
 const router = express.Router();
 const shouldLogPanelErrors = process.env.NODE_ENV === 'development';
 
+const getStore = () => {
+  const client = getClient();
+  return client ? new RedisStore({ sendCommand: (...args) => client.call(...args) }) : undefined;
+};
+
+const showLimiter = rateLimit({ windowMs: 60 * 1000, max: 60, store: getStore(), skip: () => process.env.NODE_ENV === 'development', message: { error: 'Too many requests' } });
+
     // GET /api/servers/:id
-    router.get('/', requireAuth, createRateLimiter(60, 60 * 1000), async (req, res) => {
+    router.get('/', requireAuth, showLimiter, async (req, res) => {
       try {
         const { getCache, setCache } = require('../../lib/redis');
         const cacheKey = `server:details:${req.user.sub}:${req.params.id}`;

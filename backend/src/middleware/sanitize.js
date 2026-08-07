@@ -1,18 +1,13 @@
 function sanitizeValue(value) {
-  if (Array.isArray(value)) {
-    return value.map(sanitizeValue);
+  try {
+    return JSON.parse(JSON.stringify(value, (k, v) => {
+      if (k === '__proto__' || k === 'constructor' || k === 'prototype') return undefined;
+      if (k.includes('$') || k.includes('.')) return undefined; // Mitigate NoSQL injections
+      return v;
+    }));
+  } catch {
+    return value;
   }
-  if (value && typeof value === 'object') {
-    const result = Object.create(null);
-    for (const [k, v] of Object.entries(value)) {
-      if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
-      // Drop keys with Mongo operator characters to mitigate NoSQL injections
-      if (k.includes('$') || k.includes('.')) continue;
-      result[k] = sanitizeValue(v);
-    }
-    return result;
-  }
-  return value;
 }
 
 function sanitize(req, _res, next) {

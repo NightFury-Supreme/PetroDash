@@ -70,24 +70,15 @@ function sanitizeInput(req, res, next) {
   };
 
   const sanitizeObject = (obj) => {
-    if (obj === null || obj === undefined) return obj;
-    if (Array.isArray(obj)) {
-      return obj.map(item => sanitizeObject(item));
+    try {
+      return JSON.parse(JSON.stringify(obj, (k, v) => {
+        if (k === '__proto__' || k === 'constructor' || k === 'prototype') return undefined;
+        if (typeof v === 'string') return sanitizeString(v);
+        return v;
+      }));
+    } catch {
+      return obj;
     }
-    if (typeof obj === 'object') {
-      const sanitized = Array.isArray(obj) ? [] : Object.create(null);
-      for (const key of Object.keys(obj)) {
-        if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
-          continue;
-        }
-        sanitized[key] = sanitizeObject(obj[key]);
-      }
-      return sanitized;
-    }
-    if (typeof obj === 'string') {
-      return sanitizeString(obj);
-    }
-    return obj;
   };
 
   if (req.body && typeof req.body === 'object') {
