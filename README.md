@@ -1,5 +1,7 @@
 # PteroDash - Premium Control Panel
 
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/13986/badge)](https://www.bestpractices.dev/projects/13986)
+
 A modern, feature-rich control panel for Pterodactyl servers with advanced user management, plan-based access control, integrated payment systems, resources shop, comprehensive advertising monetization and more.
 
 ![PteroDash Logo](images/logo.svg)
