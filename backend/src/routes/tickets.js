@@ -143,7 +143,7 @@ router.get('/:id', requireAuth, async (req, res) => {
       return res.json(cached);
     }
 
-    const t = await Ticket.findById(req.params.id)
+    const t = await Ticket.findById(String(req.params.id))
       .populate('user', 'username email')
       .populate('messages.author', 'username email')
       .lean();
@@ -174,7 +174,7 @@ router.post('/:id/messages', requireAuth, createRateLimiter(10, 60 * 1000), asyn
     if (!/^[0-9a-fA-F]{24}$/.test(req.params.id))
       return res.status(400).json({ error: 'Invalid ticket ID format' });
 
-    const t = await Ticket.findById(req.params.id).populate('messages.author', 'username email');
+    const t = await Ticket.findById(String(req.params.id)).populate('messages.author', 'username email');
     if (!t) return res.status(404).json({ error: 'Not found' });
     if (String(t.user) !== String(userId)) return res.status(403).json({ error: 'Forbidden' });
     if (t.deletedByUser) return res.status(403).json({ error: 'Ticket is deleted' });
@@ -217,7 +217,7 @@ router.post('/:id/status', requireAuth, async (req, res) => {
     if (!/^[0-9a-fA-F]{24}$/.test(req.params.id))
       return res.status(400).json({ error: 'Invalid ticket ID format' });
 
-    const t = await Ticket.findById(req.params.id);
+    const t = await Ticket.findById(String(req.params.id));
     if (!t) return res.status(404).json({ error: 'Not found' });
     if (String(t.user) !== String(userId)) return res.status(403).json({ error: 'Forbidden' });
 

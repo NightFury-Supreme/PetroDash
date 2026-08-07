@@ -212,7 +212,7 @@ export function AdminSettingsContent({
                     src={(() => {
                       if (iconPreview) return iconPreview;
                       if (!formData.siteIcon) return '';
-                      if (formData.siteIcon.toLowerCase().trim().startsWith('javascript:')) return '';
+                      if (/^\s*javascript:/i.test(formData.siteIcon)) return '';
                       return `${process.env.NEXT_PUBLIC_API_BASE || ''}${formData.siteIcon.split('/').map(encodeURIComponent).join('/')}`;
                     })()} 
                     alt="Site icon" 

@@ -47,7 +47,7 @@ router.get('/:id', requireAdmin, async (req, res) => {
     const cached = await getCache(cacheKey);
     if (cached) return res.json(cached);
 
-    const egg = await Egg.findById(req.params.id).lean();
+    const egg = await Egg.findById(String(req.params.id)).lean();
     if (!egg) return res.status(404).json({ error: 'Not found' });
 
     await setCache(cacheKey, egg, 30);
@@ -59,7 +59,7 @@ router.put('/:id', requireAdmin, async (req, res) => {
     if (!parsed.success) {
         return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
     }
-    const egg = await Egg.findByIdAndUpdate(req.params.id, parsed.data, { new: true }).lean();
+    const egg = await Egg.findByIdAndUpdate(String(req.params.id), parsed.data, { new: true }).lean();
     if (!egg) return res.status(404).json({ error: 'Not found' });
 
     const { deleteCachePattern } = require('../../lib/redis');
@@ -70,7 +70,7 @@ router.put('/:id', requireAdmin, async (req, res) => {
 });
 
 router.delete('/:id', requireAdmin, async (req, res) => {
-    const egg = await Egg.findByIdAndDelete(req.params.id).lean();
+    const egg = await Egg.findByIdAndDelete(String(req.params.id)).lean();
     if (!egg) return res.status(404).json({ error: 'Not found' });
 
     const { deleteCachePattern } = require('../../lib/redis');

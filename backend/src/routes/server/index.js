@@ -22,7 +22,7 @@ router.use('/usage', usageRouter);     // GET /api/servers/usage
 // Handle ID-specific routes directly in this file to avoid conflicts
 router.get('/:id', requireAuth, validateObjectId('id'), async (req, res) => {
   try {
-    const server = await Server.findOne({ _id: req.params.id, owner: req.user.sub }).lean();
+    const server = await Server.findOne({ _id: String(req.params.id), owner: req.user.sub }).lean();
     if (!server) return res.status(404).json({ error: 'Server not found' });
 
     let unreachable = false;
@@ -133,7 +133,7 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
     lockAcquired = true;
 
     // Find server and verify ownership
-    const server = await Server.findOne({ _id: serverId, owner: userId });
+    const server = await Server.findOne({ _id: String(serverId), owner: userId });
     if (!server) {
       return res.status(404).json({ 
         error: 'Server not found',
@@ -209,9 +209,7 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
           } catch (panelError) {
             return res.status(400).json({ 
               error: 'Panel rename failed', 
-              details: panelError?.response?.data?.errors?.[0]?.detail || panelError.message,
-              panelError: process.env.NODE_ENV === 'development' ? panelError.message : undefined,
-              panelResponse: process.env.NODE_ENV === 'development' ? panelError?.response?.data : undefined
+              details: panelError?.response?.data?.errors?.[0]?.detail || panelError.message
             });
           }
         }
@@ -339,9 +337,7 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
         } catch (panelError) {
           return res.status(400).json({ 
             error: 'Panel update failed', 
-            details: panelError?.response?.data?.errors?.[0]?.detail || panelError.message,
-            panelError: process.env.NODE_ENV === 'development' ? panelError.message : undefined,
-            panelResponse: process.env.NODE_ENV === 'development' ? panelError?.response?.data : undefined
+            details: panelError?.response?.data?.errors?.[0]?.detail || panelError.message
           });
         }
       }
@@ -396,7 +392,7 @@ router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10,
 
   try {
     // 1. Verify the server exists and belongs to this user
-    const server = await Server.findOne({ _id: req.params.id, owner: userId });
+    const server = await Server.findOne({ _id: String(req.params.id), owner: userId });
     if (!server) return res.status(404).json({ error: 'Server not found' });
     
     const isForce = String(req.query.force).toLowerCase() === 'true';

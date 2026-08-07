@@ -76,7 +76,7 @@ router.get('/:id', requireAdmin, async (req, res) => {
     const cached = await getCache(cacheKey);
     if (cached) return res.json(cached);
 
-    const t = await Ticket.findById(req.params.id)
+    const t = await Ticket.findById(String(req.params.id))
       .populate('user', 'username email')
       .populate('messages.author', 'username email')
       .lean();
@@ -102,7 +102,7 @@ router.post('/:id/messages', requireAdmin, async (req, res) => {
     if (!/^[0-9a-fA-F]{24}$/.test(req.params.id))
       return res.status(400).json({ error: 'Invalid ticket ID format' });
 
-    const t = await Ticket.findById(req.params.id).populate('messages.author', 'username email');
+    const t = await Ticket.findById(String(req.params.id)).populate('messages.author', 'username email');
     if (!t) return res.status(404).json({ error: 'Not found' });
     if (t.deletedByUser) return res.status(403).json({ error: 'Ticket is deleted' });
 
@@ -149,7 +149,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Invalid ticket ID format' });
 
     const { status, assignee, priority, tags, deletedByUser } = req.body || {};
-    const t = await Ticket.findById(req.params.id);
+    const t = await Ticket.findById(String(req.params.id));
     if (!t) return res.status(404).json({ error: 'Not found' });
 
     let changed = false;
@@ -200,7 +200,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
   try {
     if (!/^[0-9a-fA-F]{24}$/.test(req.params.id))
       return res.status(400).json({ error: 'Invalid ticket ID format' });
-    const result = await Ticket.findByIdAndDelete(req.params.id);
+    const result = await Ticket.findByIdAndDelete(String(req.params.id));
     if (!result) return res.status(404).json({ error: 'Not found' });
     
     // Invalidate caches

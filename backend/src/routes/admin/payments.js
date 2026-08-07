@@ -58,7 +58,7 @@ router.get('/ledger', requireAdmin, async (req, res) => {
 router.patch('/:id', requireAdmin, async (req, res) => {
   try {
     const { status, amount, currency } = req.body;
-    const p = await Payment.findById(req.params.id);
+    const p = await Payment.findById(String(req.params.id));
     if (!p) return res.status(404).json({ error: 'Payment not found' });
     
     // Update allowed fields
@@ -80,7 +80,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
 // POST /api/admin/payments/:id/refund
 router.post('/:id/refund', requireAdmin, async (req, res) => {
   try {
-    const p = await Payment.findById(req.params.id);
+    const p = await Payment.findById(String(req.params.id));
     if (!p) return res.status(404).json({ error: 'Not found' });
     if (p.provider !== 'paypal') return res.status(400).json({ error: 'Only PayPal supported' });
     const { token, baseUrl } = await getAccessToken();
@@ -140,7 +140,7 @@ router.post('/:id/refund', requireAdmin, async (req, res) => {
 // POST /api/admin/payments/:id/void
 router.post('/:id/void', requireAdmin, async (req, res) => {
   try {
-    const p = await Payment.findById(req.params.id);
+    const p = await Payment.findById(String(req.params.id));
     if (!p) return res.status(404).json({ error: 'Not found' });
     if (p.provider !== 'paypal') return res.status(400).json({ error: 'Only PayPal supported' });
     // Voiding an order depends on status; in practice, treat as refund for captured, else mark voided

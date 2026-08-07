@@ -25,7 +25,7 @@ router.get('/', requireAdmin, async (req, res) => {
 // GET /api/admin/coupons/:id - get specific coupon
 router.get('/:id', requireAdmin, async (req, res) => {
   try {
-    const coupon = await Coupon.findById(req.params.id).lean();
+    const coupon = await Coupon.findById(String(req.params.id)).lean();
     if (!coupon) {
       return res.status(404).json({ error: 'Coupon not found' });
     }
@@ -117,7 +117,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
       enabled
     } = req.body;
 
-    const coupon = await Coupon.findById(req.params.id);
+    const coupon = await Coupon.findById(String(req.params.id));
     if (!coupon) {
       return res.status(404).json({ error: 'Coupon not found' });
     }
@@ -173,7 +173,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
 // DELETE /api/admin/coupons/:id - delete coupon
 router.delete('/:id', requireAdmin, async (req, res) => {
   try {
-    const coupon = await Coupon.findById(req.params.id);
+    const coupon = await Coupon.findById(String(req.params.id));
     if (!coupon) {
       return res.status(404).json({ error: 'Coupon not found' });
     }
@@ -183,7 +183,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Cannot delete coupon that has been used' });
     }
 
-    await Coupon.findByIdAndDelete(req.params.id);
+    await Coupon.findByIdAndDelete(String(req.params.id));
 
     // Audit log
     writeAudit(req, 'admin.coupons.delete', 'coupon', req.params.id, { code: coupon.code });

@@ -58,7 +58,7 @@ router.get('/', requireAuth, async (req, res) => {
 // GET /api/payments/:id/invoice - PDF invoice download (only for COMPLETED)
 router.get('/:id/invoice', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) => {
   try {
-    const p = await Payment.findOne({ _id: req.params.id, userId: req.user.sub, status: 'COMPLETED' }).lean();
+    const p = await Payment.findOne({ _id: String(req.params.id), userId: req.user.sub, status: 'COMPLETED' }).lean();
     if (!p) return res.status(404).json({ error: 'Invoice not found' });
     const plan = await Plan.findById(p.planId).lean();
     res.setHeader('Content-Type', 'application/pdf');

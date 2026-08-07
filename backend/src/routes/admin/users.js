@@ -70,7 +70,7 @@ router.get('/', requireAdmin, async (req, res) => {
 router.get('/:id', requireAdmin, async (req, res) => {
   try {
     
-    const user = await User.findById(req.params.id, { passwordHash: 0 })
+    const user = await User.findById(String(req.params.id), { passwordHash: 0 })
       .populate('referredBy', 'username email referralCode')
       .lean();
     if (!user) {
@@ -172,7 +172,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
 
   const parsed = updateSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
-  const user = await User.findById(req.params.id);
+  const user = await User.findById(String(req.params.id));
   if (!user) return res.status(404).json({ error: 'User not found' });
 
   const { role, resources, coins, email, username, firstName, lastName, referralCode, ban, profilePicture } = parsed.data;
@@ -235,7 +235,7 @@ router.post('/:id/ban', requireAdmin, async (req, res) => {
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
   const { isBanned, reason, durationMinutes } = parsed.data;
-  const user = await User.findById(req.params.id);
+  const user = await User.findById(String(req.params.id));
   if (!user) return res.status(404).json({ error: 'User not found' });
 
   if (!user.ban) user.ban = {};
@@ -296,7 +296,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
     return res.status(403).json({ error: 'Cannot delete your own admin account' });
   }
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(String(req.params.id));
     if (!user) return res.status(404).json({ error: 'User not found' });
     
     const servers = await Server.find({ owner: user._id });
@@ -358,7 +358,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
 
 // DELETE /api/admin/users/:id/servers/:serverId - delete specific server of user
 router.delete('/:id/servers/:serverId', requireAdmin, async (req, res) => {
-  const server = await Server.findOne({ _id: req.params.serverId, owner: req.params.id });
+  const server = await Server.findOne({ _id: String(req.params.serverId), owner: String(req.params.id) });
   if (!server) return res.status(404).json({ error: 'Server not found' });
   try { await deletePanelServer(server.panelServerId); } catch (e) {
     return res.status(400).json({ error: 'Panel delete failed', details: e?.response?.data || e.message });
@@ -377,7 +377,7 @@ router.delete('/:id/servers/:serverId', requireAdmin, async (req, res) => {
 router.get('/:id/servers/:serverId', requireAdmin, async (req, res) => {
   try {
     const base = (process.env.PTERO_BASE_URL || '').replace(/\/$/, '');
-    const server = await Server.findOne({ _id: req.params.serverId, owner: req.params.id })
+    const server = await Server.findOne({ _id: String(req.params.serverId), owner: String(req.params.id) })
       .populate('eggId', 'name icon')
       .populate('locationId', 'name')
       .lean();
@@ -426,9 +426,9 @@ const serverUpdateSchema = z.object({
 router.patch('/:id/servers/:serverId', requireAdmin, async (req, res) => {
   const parsed = serverUpdateSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
-  const server = await Server.findOne({ _id: req.params.serverId, owner: req.params.id });
+  const server = await Server.findOne({ _id: String(req.params.serverId), owner: String(req.params.id) });
   if (!server) return res.status(404).json({ error: 'Server not found' });
-  const user = await User.findById(req.params.id);
+  const user = await User.findById(String(req.params.id));
   if (!user) return res.status(404).json({ error: 'User not found' });
 
   const desired = parsed.data;
@@ -509,7 +509,7 @@ router.post('/:id/plans', requireAdmin, async (req, res) => {
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
   const { planId, months } = parsed.data;
-  const user = await User.findById(req.params.id);
+  const user = await User.findById(String(req.params.id));
   if (!user) return res.status(404).json({ error: 'User not found' });
   const plan = await Plan.findById(planId);
   if (!plan) return res.status(404).json({ error: 'Plan not found' });
@@ -592,7 +592,7 @@ router.post('/:id/plans', requireAdmin, async (req, res) => {
 // DELETE /api/admin/users/:id/plans/:planId - cancel/remove user's plan
 router.delete('/:id/plans/:planId', requireAdmin, async (req, res) => {
   // Find all active UserPlan instances for this plan
-  const subs = await UserPlan.find({ userId: req.params.id, planId: req.params.planId, status: 'active' });
+  const subs = await UserPlan.find({ userId: String(req.params.id), planId: String(req.params.planId), status: 'active' });
   if (subs.length === 0) return res.status(404).json({ error: 'Active plan not found' });
   
   // Cancel all instances and deduct their resources
@@ -618,7 +618,7 @@ router.delete('/:id/plans/:planId', requireAdmin, async (req, res) => {
       });
 
       if (Object.keys(decQuery).length > 0) {
-        await User.findByIdAndUpdate(req.params.id, { $inc: decQuery });
+        await User.findByIdAndUpdate(String(req.params.id), { $inc: decQuery });
       }
     }
   }
@@ -635,7 +635,7 @@ router.delete('/:id/plans/:planId', requireAdmin, async (req, res) => {
 
 // DELETE /api/admin/users/:id/plans/instance/:instanceId - cancel/remove specific plan instance
 router.delete('/:id/plans/instance/:instanceId', requireAdmin, async (req, res) => {
-  const sub = await UserPlan.findOne({ _id: req.params.instanceId, userId: req.params.id, status: 'active' });
+  const sub = await UserPlan.findOne({ _id: String(req.params.instanceId), userId: String(req.params.id), status: 'active' });
   if (!sub) return res.status(404).json({ error: 'Active plan instance not found' });
   
   sub.status = 'cancelled';
@@ -659,7 +659,7 @@ router.delete('/:id/plans/instance/:instanceId', requireAdmin, async (req, res) 
     });
 
     if (Object.keys(decQuery).length > 0) {
-      await User.findByIdAndUpdate(req.params.id, { $inc: decQuery });
+      await User.findByIdAndUpdate(String(req.params.id), { $inc: decQuery });
     }
   }
   

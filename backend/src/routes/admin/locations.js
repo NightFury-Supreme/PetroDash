@@ -44,7 +44,7 @@ router.post('/', requireAdmin, async (req, res) => {
 });
 
 router.get('/:id', requireAdmin, async (req, res) => {
-    const loc = await Location.findById(req.params.id).lean();
+    const loc = await Location.findById(String(req.params.id)).lean();
     if (!loc) return res.status(404).json({ error: 'Not found' });
     res.json(loc);
 });
@@ -52,7 +52,7 @@ router.get('/:id', requireAdmin, async (req, res) => {
 router.put('/:id', requireAdmin, async (req, res) => {
     const parsed = schema.partial().safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
-    const updated = await Location.findByIdAndUpdate(req.params.id, parsed.data, { new: true }).lean();
+    const updated = await Location.findByIdAndUpdate(String(req.params.id), parsed.data, { new: true }).lean();
     if (!updated) return res.status(404).json({ error: 'Not found' });
 
     const { deleteCachePattern } = require('../../lib/redis');
@@ -62,7 +62,7 @@ router.put('/:id', requireAdmin, async (req, res) => {
 });
 
 router.delete('/:id', requireAdmin, async (req, res) => {
-    const deleted = await Location.findByIdAndDelete(req.params.id).lean();
+    const deleted = await Location.findByIdAndDelete(String(req.params.id)).lean();
     if (!deleted) return res.status(404).json({ error: 'Not found' });
 
     const { deleteCachePattern } = require('../../lib/redis');

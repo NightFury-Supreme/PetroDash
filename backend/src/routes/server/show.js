@@ -8,7 +8,7 @@ const { getServer: getPanelServer } = require('../../services/pterodactyl');
 const { hasServerLimitsChanged } = require('../../utils/security');
 
 const router = express.Router();
-const shouldLogPanelErrors = process.env.NODE_ENV === 'development';
+const shouldLogPanelErrors = true;
 
 const getStore = () => {
   const client = getClient();
@@ -26,7 +26,7 @@ const showLimiter = rateLimit({ windowMs: 60 * 1000, max: 60, store: getStore(),
         const cached = await getCache(cacheKey);
         if (cached) return res.json(cached);
 
-        const server = await Server.findOne({ _id: req.params.id, owner: req.user.sub }).lean();
+        const server = await Server.findOne({ _id: String(req.params.id), owner: req.user.sub }).lean();
     if (!server) return res.status(404).json({ error: 'Server not found' });
 
     // Try syncing from panel if available; ignore errors to keep endpoint responsive

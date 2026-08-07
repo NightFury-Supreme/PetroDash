@@ -68,7 +68,7 @@ router.get('/', requireAdmin, async (req, res) => {
 // GET /api/admin/plans/:id - Get single plan
 router.get('/:id', requireAdmin, validateObjectId('id'), async (req, res) => {
   try {
-    const plan = await Plan.findById(req.params.id);
+    const plan = await Plan.findById(String(req.params.id));
     if (!plan) {
       return res.status(404).json({ error: 'Plan not found' });
     }
@@ -120,7 +120,7 @@ router.post('/', requireAdmin, async (req, res) => {
 // PUT /api/admin/plans/:id - Update plan
 router.put('/:id', requireAdmin, validateObjectId('id'), async (req, res) => {
   try {
-    const plan = await Plan.findById(req.params.id);
+    const plan = await Plan.findById(String(req.params.id));
     if (!plan) {
       return res.status(404).json({ error: 'Plan not found' });
     }
@@ -178,7 +178,7 @@ router.put('/:id', requireAdmin, validateObjectId('id'), async (req, res) => {
 // PATCH /api/admin/plans/:id - Partial update plan (for quick actions like visibility toggle)
 router.patch('/:id', requireAdmin, validateObjectId('id'), async (req, res) => {
   try {
-    const plan = await Plan.findById(req.params.id);
+    const plan = await Plan.findById(String(req.params.id));
     if (!plan) {
       return res.status(404).json({ error: 'Plan not found' });
     }
@@ -221,7 +221,7 @@ router.patch('/:id', requireAdmin, validateObjectId('id'), async (req, res) => {
 // DELETE /api/admin/plans/:id - Delete plan
 router.delete('/:id', requireAdmin, validateObjectId('id'), async (req, res) => {
   try {
-    const plan = await Plan.findById(req.params.id);
+    const plan = await Plan.findById(String(req.params.id));
     if (!plan) {
       return res.status(404).json({ error: 'Plan not found' });
     }
@@ -242,7 +242,7 @@ router.delete('/:id', requireAdmin, validateObjectId('id'), async (req, res) => 
       });
     }
     
-    await Plan.findByIdAndDelete(req.params.id);
+    await Plan.findByIdAndDelete(String(req.params.id));
     
     await writeAudit(req, 'admin.plan.delete', 'plan', req.params.id, { planName: plan.name });
     

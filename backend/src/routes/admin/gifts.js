@@ -60,7 +60,7 @@ router.get('/', requireAdmin, async (req, res) => {
 // GET /api/admin/gifts/:id
 router.get('/:id', requireAdmin, async (req, res) => {
   try {
-    const gift = await Gift.findById(req.params.id)
+    const gift = await Gift.findById(String(req.params.id))
       .populate('createdBy', 'username email')
       .populate('redemptions.user', 'username email')
       .lean();
@@ -126,7 +126,7 @@ router.post('/', requireAdmin, async (req, res) => {
 // PATCH /api/admin/gifts/:id
 router.patch('/:id', requireAdmin, async (req, res) => {
   try {
-    const gift = await Gift.findById(req.params.id);
+    const gift = await Gift.findById(String(req.params.id));
     if (!gift) return res.status(404).json({ error: 'Gift not found' });
     // Admins have full control over user-generated codes
 
@@ -165,9 +165,9 @@ router.patch('/:id', requireAdmin, async (req, res) => {
 // DELETE /api/admin/gifts/:id
 router.delete('/:id', requireAdmin, async (req, res) => {
   try {
-    const gift = await Gift.findById(req.params.id);
+    const gift = await Gift.findById(String(req.params.id));
     if (!gift) return res.status(404).json({ error: 'Gift not found' });
-    await Gift.findByIdAndDelete(req.params.id);
+    await Gift.findByIdAndDelete(String(req.params.id));
     writeAudit(req, 'admin.gifts.delete', 'gift', req.params.id, { code: gift.code });
     res.json({ message: 'Gift deleted' });
   } catch (error) {

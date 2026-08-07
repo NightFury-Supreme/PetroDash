@@ -7,7 +7,7 @@ const { updateServerBuild, getServer } = require('../../services/pterodactyl');
 const { hasServerLimitsChanged } = require('../../utils/security');
 
 const router = express.Router();
-const shouldLogPanelErrors = process.env.NODE_ENV === 'development';
+const shouldLogPanelErrors = true;
 
 const { getCache, setCache, deleteCachePattern } = require('../../lib/redis');
 
@@ -90,7 +90,7 @@ router.get('/', requireAdmin, async (req, res) => {
 // GET /api/admin/servers/:id - get specific server
 router.get('/:id', requireAdmin, async (req, res) => {
   try {
-    const server = await Server.findById(req.params.id)
+    const server = await Server.findById(String(req.params.id))
       .populate('owner', 'username email')
       .populate('eggId', 'name')
       .populate('locationId', 'name')
@@ -173,7 +173,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     }
 
     // First check if server exists and is reachable
-    const server = await Server.findById(req.params.id);
+    const server = await Server.findById(String(req.params.id));
     if (!server) {
       return res.status(404).json({ error: 'Server not found' });
     }
@@ -297,7 +297,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Invalid server ID format' });
     }
 
-    const server = await Server.findById(req.params.id);
+    const server = await Server.findById(String(req.params.id));
     if (!server) {
       return res.status(404).json({ error: 'Server not found' });
     }
@@ -334,7 +334,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
     }
 
     // Remove from our database
-    await Server.findByIdAndDelete(req.params.id);
+    await Server.findByIdAndDelete(String(req.params.id));
 
     // Audit log
     writeAudit(req, 'admin.servers:delete', 'server', server._id.toString(), {

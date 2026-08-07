@@ -51,7 +51,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     }
 
     // Validate the item exists first
-    const existingItem = await ShopItem.findById(req.params.id);
+    const existingItem = await ShopItem.findById(String(req.params.id));
     if (!existingItem) {
       return res.status(404).json({ error: 'Shop item not found' });
     }
@@ -68,7 +68,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
 
     // Apply updates
     const updatedItem = await ShopItem.findByIdAndUpdate(
-      req.params.id, 
+      String(req.params.id), 
       parsed.data, 
       { new: true, runValidators: true }
     );

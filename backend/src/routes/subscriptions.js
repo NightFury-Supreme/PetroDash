@@ -124,7 +124,7 @@ router.post('/:id/pause', requireAuth, actionLimiter, async (req, res) => {
     return res.status(400).json({ error: 'Invalid subscription ID format' });
   }
   
-  const sub = await Subscription.findOne({ _id: req.params.id, userId: req.user.sub });
+  const sub = await Subscription.findOne({ _id: String(req.params.id), userId: req.user.sub });
   if (!sub) return res.status(404).json({ error: 'Not found' });
   sub.status = 'paused';
   await sub.save();
@@ -138,7 +138,7 @@ router.post('/:id/resume', requireAuth, actionLimiter, async (req, res) => {
     return res.status(400).json({ error: 'Invalid subscription ID format' });
   }
   
-  const sub = await Subscription.findOne({ _id: req.params.id, userId: req.user.sub });
+  const sub = await Subscription.findOne({ _id: String(req.params.id), userId: req.user.sub });
   if (!sub) return res.status(404).json({ error: 'Not found' });
   sub.status = 'active';
   await sub.save();
@@ -158,7 +158,7 @@ router.post('/:id/upgrade', requireAuth, createLimiter, async (req, res) => {
     return res.status(400).json({ error: 'Invalid plan ID format' });
   }
   
-  const sub = await Subscription.findOne({ _id: req.params.id, userId: req.user.sub });
+  const sub = await Subscription.findOne({ _id: String(req.params.id), userId: req.user.sub });
   if (!sub) return res.status(404).json({ error: 'Not found' });
   // For MVP: store desired change; webhook will reconcile on next renewal
   sub.pendingChange = { newPlanId, at: new Date() };
@@ -174,7 +174,7 @@ router.post('/:id/cancel', requireAuth, createLimiter, async (req, res) => {
       return res.status(400).json({ error: 'Invalid subscription ID format' });
     }
     
-    const sub = await Subscription.findOne({ _id: req.params.id, userId: req.user.sub });
+    const sub = await Subscription.findOne({ _id: String(req.params.id), userId: req.user.sub });
     if (!sub) return res.status(404).json({ error: 'Not found' });
     sub.cancelAtPeriodEnd = true;
     await sub.save();
