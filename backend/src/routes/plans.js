@@ -3,14 +3,22 @@ const express = require('express');
 const Plan = require('../models/Plan');
  
  
-const Settings = require('../models/Settings');
- 
+const { getSettings } = require('../lib/settings');
+const { getCache, setCache } = require('../lib/redis');
 
 const router = express.Router();
 
 // GET /api/plans - list all public plans
 router.get('/', async (req, res) => {
   try {
+    const paginate = String(req.query.paginate || '').toLowerCase() === 'true';
+    let page = Math.max(1, parseInt(String(req.query.page || '1')) || 1);
+    let pageSize = Math.max(1, Math.min(100, parseInt(String(req.query.pageSize || '12')) || 12));
+
+    const cacheKey = `api:plans:${paginate}:${page}:${pageSize}`;
+    const cached = await getCache(cacheKey);
+    if (cached) return res.json(cached);
+
     const now = new Date();
     const plansQuery = Plan.find({
       visibility: 'public',
@@ -37,13 +45,10 @@ router.get('/', async (req, res) => {
     }).sort({ sortOrder: 1, createdAt: -1 }).lean();
     
     // Optional pagination
-    const paginate = String(req.query.paginate || '').toLowerCase() === 'true';
-    let page = Math.max(1, parseInt(String(req.query.page || '1')) || 1);
-    let pageSize = Math.max(1, Math.min(100, parseInt(String(req.query.pageSize || '12')) || 12));
     let plansRaw;
     
     // Fetch global currency for display
-    const settings = await Settings.findOne({}).lean();
+    const settings = await getSettings();
     const currency = settings?.localization?.currency || 'USD';
     
     if (paginate) {
@@ -58,7 +63,9 @@ router.get('/', async (req, res) => {
         const { staffNotes, totalPurchases, currentUsers, stock, limitPerCustomer, redirectionLink, billingOptions, ...rest } = p;
         return { ...rest, lifetime: Boolean(billingOptions?.lifetime), currency };
       });
-      return res.json({ data: plans, meta: { total, page, pageSize } });
+      const responseData = { data: plans, meta: { total, page, pageSize } };
+      await setCache(cacheKey, responseData, 60);
+      return res.json(responseData);
     } else {
       plansRaw = await plansQuery;
     }
@@ -87,6 +94,8 @@ router.get('/', async (req, res) => {
         currency,
       };
     });
+    
+    await setCache(cacheKey, plans, 60);
     res.json(plans);
   } catch (error) {
     console.error('Error fetching plans:', error);
@@ -96,17 +105,7 @@ router.get('/', async (req, res) => {
 
 
 
-// Helper function to get billing cycle duration in milliseconds
-// eslint-disable-next-line unused-imports/no-unused-vars
-function getBillingCycleMs(cycle) {
-  switch (cycle) {
-    case 'monthly': return 30 * 24 * 60 * 60 * 1000;
-    case 'quarterly': return 90 * 24 * 60 * 60 * 1000;
-    case 'semi-annual': return 180 * 24 * 60 * 60 * 1000;
-    case 'annual': return 365 * 24 * 60 * 60 * 1000;
-    default: return 30 * 24 * 60 * 60 * 1000;
-  }
-}
+
 
 module.exports = router;
 

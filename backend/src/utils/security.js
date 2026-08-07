@@ -138,25 +138,6 @@ function handleValidationError(res, parsed) {
   return false;
 }
 
-/**
- * Get settings from database (cached for performance)
- * @returns {Promise<Object>} - Settings object
- */
-let settingsCache = null;
-let settingsCacheTime = 0;
-const SETTINGS_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
-async function getSettings() {
-  const now = Date.now();
-  if (settingsCache && (now - settingsCacheTime) < SETTINGS_CACHE_TTL) {
-    return settingsCache;
-  }
-  
-  const Settings = require('../models/Settings');
-  settingsCache = await Settings.findOne({}).lean();
-  settingsCacheTime = now;
-  return settingsCache;
-}
 
 /**
  * Send a standardized 500 error response
@@ -179,6 +160,5 @@ module.exports = {
   validatePasswordStrength,
   hasServerLimitsChanged,
   handleValidationError,
-  getSettings,
   sendServerError
 };

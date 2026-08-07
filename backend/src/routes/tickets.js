@@ -1,9 +1,10 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const Ticket = require('../models/Ticket');
-const Settings = require('../models/Settings');
+const { getSettings } = require('../lib/settings');
 const { requireAuth } = require('../middleware/auth');
 const { createRateLimiter } = require('../middleware/rateLimit');
+const { getCache, setCache, deleteCachePattern } = require('../lib/redis');
 const router = express.Router();
 
 function extractUserId(req) {
@@ -36,7 +37,7 @@ router.post('/', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) 
 
     let allowedCategories = ['general', 'billing', 'technical', 'abuse', 'account', 'server', 'payment', 'other'];
     try {
-      const s = await Settings.findOne({}).lean();
+      const s = await getSettings();
       if (s && Array.isArray(s.ticketCategories) && s.ticketCategories.length > 0)
         allowedCategories = s.ticketCategories.map((c) => String(c)).filter(Boolean);
     // eslint-disable-next-line unused-imports/no-unused-vars
@@ -74,6 +75,9 @@ router.post('/', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) 
     // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_) {}
 
+    // Invalidate user's ticket cache
+    await deleteCachePattern(`tickets:mine:${userId}:*`);
+
     res.status(201).json(ticket);
   } catch (err) {
     console.error('Create ticket error:', err);
@@ -87,10 +91,20 @@ router.get('/mine', requireAuth, async (req, res) => {
     const userId = extractUserId(req);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
     const { status } = req.query;
+    
+    const cacheKey = `tickets:mine:${userId}:${status || 'all'}`;
+    const cachedTickets = await getCache(cacheKey);
+    if (cachedTickets) {
+      return res.json(cachedTickets);
+    }
+
     const query = { user: userId, deletedByUser: { $ne: true } };
     if (status && ['open', 'pending', 'resolved', 'closed'].includes(status))
       query.status = { $eq: status };
     const tickets = await Ticket.find(query).select('-messages').sort({ updatedAt: -1 }).lean();
+    
+    await setCache(cacheKey, tickets, 30); // Cache for 30 seconds
+    
     res.json(tickets);
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (err) {
@@ -103,7 +117,7 @@ router.get('/categories', requireAuth, async (req, res) => {
   try {
     let categories = ['general', 'billing', 'technical', 'abuse', 'account', 'server', 'payment', 'other'];
     try {
-      const s = await Settings.findOne({}).lean();
+      const s = await getSettings();
       if (s && Array.isArray(s.ticketCategories) && s.ticketCategories.length > 0)
         categories = s.ticketCategories.map((c) => String(c)).filter(Boolean);
     // eslint-disable-next-line unused-imports/no-unused-vars
@@ -121,6 +135,14 @@ router.get('/:id', requireAuth, async (req, res) => {
     const userId = extractUserId(req);
     if (!/^[0-9a-fA-F]{24}$/.test(req.params.id))
       return res.status(400).json({ error: 'Invalid ticket ID format' });
+
+    const cacheKey = `tickets:detail:${req.params.id}`;
+    const cached = await getCache(cacheKey);
+    if (cached) {
+      if (String(cached.user._id) !== String(userId)) return res.status(403).json({ error: 'Forbidden' });
+      return res.json(cached);
+    }
+
     const t = await Ticket.findById(req.params.id)
       .populate('user', 'username email')
       .populate('messages.author', 'username email')
@@ -130,6 +152,8 @@ router.get('/:id', requireAuth, async (req, res) => {
     if (t.deletedByUser) return res.status(403).json({ error: 'This ticket has been deleted' });
     // Filter out internal admin notes from user view
     t.messages = (t.messages || []).filter((m) => !m.internal);
+
+    await setCache(cacheKey, t, 30);
     res.json(t);
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (err) {
@@ -173,6 +197,11 @@ router.post('/:id/messages', requireAuth, createRateLimiter(10, 60 * 1000), asyn
     await t.save();
 
     const savedMsg = t.messages[t.messages.length - 1];
+    
+    // Invalidate cache
+    await deleteCachePattern(`tickets:mine:${userId}:*`);
+    await deleteCachePattern(`tickets:detail:${req.params.id}`);
+    
     res.json({ ok: true, message: savedMsg, status: t.status });
   } catch (err) {
     console.error('Send message error:', err);
@@ -204,6 +233,11 @@ router.post('/:id/status', requireAuth, async (req, res) => {
 
     t.updatedAt = new Date();
     await t.save();
+    
+    // Invalidate cache
+    await deleteCachePattern(`tickets:mine:${userId}:*`);
+    await deleteCachePattern(`tickets:detail:${req.params.id}`);
+    
     res.json({ ok: true, status: t.status });
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (err) {

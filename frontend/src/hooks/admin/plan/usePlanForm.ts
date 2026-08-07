@@ -128,12 +128,12 @@ export function usePlanForm(): UsePlanFormReturn {
       ]);
 
       if (eggsRes.ok) {
-        let eggsData: any = {}; try { eggsData = await eggsRes.json(); } catch(e) {}
+        let eggsData: any = {}; try { eggsData = await eggsRes.json(); } catch {}
         setEggs(eggsData);
       }
 
       if (locationsRes.ok) {
-        let locationsData: any = {}; try { locationsData = await locationsRes.json(); } catch(e) {}
+        let locationsData: any = {}; try { locationsData = await locationsRes.json(); } catch {}
         setLocations(locationsData);
       }
     } catch (err: unknown) {
@@ -315,7 +315,7 @@ export function usePlanForm(): UsePlanFormReturn {
       });
 
       if (!response.ok) {
-        let errorData: any = {}; try { errorData = await response.json(); } catch(e) {}
+        let errorData: any = {}; try { errorData = await response.json(); } catch {}
         throw new Error(errorData.error || 'Failed to create plan');
       }
 

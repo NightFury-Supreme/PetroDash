@@ -58,6 +58,11 @@ router.get('/', requireAdmin, async (req, res) => {
     const limit = pageSize;
     const skip = (page - 1) * limit;
 
+    const { getCache, setCache } = require('../../lib/redis');
+    const cacheKey = `admin:logs:${page}:${pageSize}:${action || ''}:${actorId || ''}:${resourceType || ''}`;
+    const cached = await getCache(cacheKey);
+    if (cached) return res.json(cached);
+
     // Execute queries with proper error handling
     const [list, total] = await Promise.all([
       AuditLog.find(query)
@@ -74,7 +79,7 @@ router.get('/', requireAdmin, async (req, res) => {
     const hasNext = page < totalPages;
     const hasPrev = page > 1;
 
-    return res.json({
+    const result = {
       list: list || [],
       total,
       page,
@@ -82,7 +87,10 @@ router.get('/', requireAdmin, async (req, res) => {
       totalPages,
       hasNext,
       hasPrev
-    });
+    };
+
+    await setCache(cacheKey, result, 30);
+    return res.json(result);
 
   } catch (error) {
     console.error('Failed to fetch audit logs:', error);

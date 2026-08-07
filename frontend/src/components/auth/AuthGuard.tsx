@@ -45,7 +45,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         const res = await fetch(`${base}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
         if (res.status === 403) {
           try {
-            let d: any = {}; try { d = await res.json(); } catch(e) {}
+            let d: any = {}; try { d = await res.json(); } catch {}
             if (typeof window !== "undefined") {
               if (d?.reason) sessionStorage.setItem("ban_reason", d.reason);
               if (d?.until) sessionStorage.setItem("ban_until", String(d.until)); else sessionStorage.removeItem("ban_until");
@@ -55,7 +55,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
           return;
         }
         if (res.ok) {
-          let data: any = {}; try { data = await res.json(); } catch(e) {}
+          let data: any = {}; try { data = await res.json(); } catch {}
           // Require verification for all login methods
           if (data.emailVerification && !data.emailVerified) {
             if (typeof window !== "undefined") {

@@ -32,8 +32,7 @@ export default function TemplatesEditor({ templates, brand, token, selectedKey, 
 
   const renderPreviewHtml = () => {
     const htmlBody = tpl?.html || '<p>Preview</p>';
-    // eslint-disable-next-line unused-imports/no-unused-vars
-    const color = brand?.brandColor || '#0ea5e9';
+
     const footer = brand?.footerText || '';
     return `
     <div style="font-family:Segoe UI,Arial,sans-serif;background:#f6f8fb;padding:24px;">

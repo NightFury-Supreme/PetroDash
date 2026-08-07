@@ -23,7 +23,7 @@ export function useAuthSettings() {
         if (!response.ok) {
           throw new Error('Failed to fetch auth settings');
         }
-        let data: any = {}; try { data = await response.json(); } catch(e) {}
+        let data: any = {}; try { data = await response.json(); } catch {}
         setSettings(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');

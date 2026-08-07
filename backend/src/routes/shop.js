@@ -3,12 +3,17 @@ const { z } = require('zod');
 const { requireAuth } = require('../middleware/auth');
 const ShopItem = require('../models/ShopItem');
 const User = require('../models/User');
+const { getCache, setCache, deleteCache } = require('../lib/redis');
 
 const router = express.Router();
 
 // Public list for authenticated users
 router.get('/', requireAuth, async (req, res) => {
+  const cached = await getCache('api:shop');
+  if (cached) return res.json(cached);
+
   const items = await ShopItem.find({ enabled: true }).lean();
+  await setCache('api:shop', items, 60);
   return res.json(items);
 });
 
@@ -69,6 +74,8 @@ router.post('/purchase', requireAuth, async (req, res) => {
     resourcesBefore: { ...updatedUser.resources, [keyToField]: updatedUser.resources[keyToField] - increment },
     resourcesAfter: { ...updatedUser.resources }
   });
+
+  await deleteCache(`user:${updatedUser._id}:profile`);
 
   return res.json({ ok: true, coins: updatedUser.coins, resources: updatedUser.resources });
 });

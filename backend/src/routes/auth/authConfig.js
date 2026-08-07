@@ -1,11 +1,11 @@
 const express = require('express');
-const Settings = require('../../models/Settings');
+const { getSettings } = require('../../lib/settings');
 const router = express.Router();
 
 // GET /api/auth/ - Public endpoint to get auth configuration
 router.get('/', async (req, res) => {
   try {
-    const settings = await Settings.findOne();
+    const settings = await getSettings();
     if (!settings) {
       return res.json({
         emailLogin: true,

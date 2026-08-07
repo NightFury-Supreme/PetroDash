@@ -38,8 +38,8 @@ function wrapHtmlWithBrand({ htmlBody, brand }) {
 }
 
 function renderTemplateFromEmail(emailSettings, templateKey, data) {
-  const templates = emailSettings.templates || new Map();
-  const tpl = templates.get(templateKey) || {};
+  const templates = emailSettings.templates || {};
+  const tpl = typeof templates.get === 'function' ? templates.get(templateKey) : (templates[templateKey] || {});
   const subjectTpl = tpl.subject || '';
   const htmlTpl = tpl.html || '';
   const textTpl = tpl.text || '';
@@ -57,8 +57,8 @@ async function sendMail({ to, subject, text, html, attachments }) {
   // Fetch branding from branding API
   let brand = { name: '', logoUrl: '', brandColor: '#0ea5e9', footerText: '' };
   try {
-    const Settings = require('../models/Settings');
-    const settings = await Settings.findOne({}).lean();
+    const { getSettings } = require('./settings');
+    const settings = await getSettings();
     brand = {
       name: settings?.siteName || '',
       logoUrl: settings?.siteIcon || '',
@@ -80,8 +80,8 @@ async function sendMailTemplate({ to, templateKey, data, attachments }) {
   // Fetch branding from Settings model
   let siteName = '', siteIcon = '';
   try {
-    const Settings = require('../models/Settings');
-    const settings = await Settings.findOne({}).lean();
+    const { getSettings } = require('./settings');
+    const settings = await getSettings();
     siteName = settings?.siteName || '';
     siteIcon = settings?.siteIcon || '';
   } catch (e) {

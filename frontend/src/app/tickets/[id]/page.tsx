@@ -31,7 +31,7 @@ export default function TicketDetailPage() {
     if (!id) return;
     try {
       const r = await fetch(`${api}/api/tickets/${id}`, { headers: { Authorization: `Bearer ${token()}` } });
-      let d: any = {}; try { d = await r.json(); } catch(e) {}
+      let d: any = {}; try { d = await r.json(); } catch {}
       if (!r.ok) throw new Error(d?.error || "Failed to load ticket");
       setTicket(d);
       setError(null);
@@ -61,7 +61,7 @@ export default function TicketDetailPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token()}` },
         body: JSON.stringify({ body: text }),
       });
-      let d: any = {}; try { d = await r.json(); } catch(e) {}
+      let d: any = {}; try { d = await r.json(); } catch {}
       if (!r.ok) {
         // Roll back optimistic message
         setTicket((prev: any) => prev ? { ...prev, messages: (prev.messages || []).filter((m: any) => m._id !== optimisticMsg._id) } : prev);
@@ -82,7 +82,7 @@ export default function TicketDetailPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token()}` },
         body: JSON.stringify({ action }),
       });
-      let d: any = {}; try { d = await r.json(); } catch(e) {}
+      let d: any = {}; try { d = await r.json(); } catch {}
       if (!r.ok) throw new Error(d?.error || "Failed to update");
       await fetchTicket(true);
     } catch (e: any) {

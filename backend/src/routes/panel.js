@@ -4,12 +4,12 @@ const { requireAuth } = require('../middleware/auth');
 const { createRateLimiter } = require('../middleware/rateLimit');
 const User = require('../models/User');
  
-const { getPanelUser, resetPanelUserPassword, updatePanelUser } = require('../services/pterodactyl');
+const { getPanelUser, updatePanelUser } = require('../services/pterodactyl');
  
 
 const router = express.Router();
 // GET /api/panel - Get panel info for logged-in user
-router.get('/', requireAuth, createRateLimiter(10, 60 * 1000), async (req, res) => {
+router.get('/', requireAuth, createRateLimiter(100, 60 * 1000), async (req, res) => {
   try {
     // Validate user exists and is active
     const user = await User.findById(req.user.sub).lean();
@@ -24,15 +24,6 @@ router.get('/', requireAuth, createRateLimiter(10, 60 * 1000), async (req, res) 
       });
     }
 
-    // Fetch panel user info
-    const panelUser = await getPanelUser(user.pterodactylUserId);
-    if (!panelUser) {
-      return res.status(404).json({ 
-        error: 'Panel user not found',
-        details: 'Your panel account could not be located. Please contact support.'
-      });
-    }
-
     // Construct panel URLs
     const panelUrl = (process.env.PTERO_BASE_URL || '').replace(/\/$/, '');
     if (!panelUrl) {
@@ -42,12 +33,29 @@ router.get('/', requireAuth, createRateLimiter(10, 60 * 1000), async (req, res) 
       });
     }
 
-    return res.json({
+    const { getCache, setCache } = require('../lib/redis');
+    const cacheKey = `user:${req.user.sub}:panel`;
+    const cached = await getCache(cacheKey);
+    if (cached) return res.json(cached);
+
+    // Fetch panel user info
+    const panelUser = await getPanelUser(user.pterodactylUserId);
+    if (!panelUser) {
+      return res.status(404).json({ 
+        error: 'Panel user not found',
+        details: 'Your panel account could not be located. Please contact support.'
+      });
+    }
+
+    const result = {
       email: panelUser.email || user.email,
       username: panelUser.username || user.username,
       panelUrl,
       loginUrl: `${panelUrl}/auth/login`,
-    });
+    };
+
+    await setCache(cacheKey, result, 60);
+    return res.json(result);
   } catch (error) {
     console.error('Panel info fetch error:', error);
     

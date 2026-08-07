@@ -23,7 +23,12 @@ const schema = z.object({
 });
 
 router.get('/', requireAdmin, async (req, res) => {
+    const { getCache, setCache } = require('../../lib/redis');
+    const cached = await getCache('admin:locations');
+    if (cached) return res.json(cached);
+
     const items = await Location.find().sort({ createdAt: -1 }).lean();
+    await setCache('admin:locations', items, 30);
     res.json(items);
 });
 
@@ -31,6 +36,10 @@ router.post('/', requireAdmin, async (req, res) => {
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
     const created = await Location.create(parsed.data);
+
+    const { deleteCachePattern } = require('../../lib/redis');
+    await deleteCachePattern('admin:locations');
+
     res.status(201).json(created);
 });
 
@@ -45,12 +54,20 @@ router.put('/:id', requireAdmin, async (req, res) => {
     if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
     const updated = await Location.findByIdAndUpdate(req.params.id, parsed.data, { new: true }).lean();
     if (!updated) return res.status(404).json({ error: 'Not found' });
+
+    const { deleteCachePattern } = require('../../lib/redis');
+    await deleteCachePattern('admin:locations');
+
     res.json(updated);
 });
 
 router.delete('/:id', requireAdmin, async (req, res) => {
     const deleted = await Location.findByIdAndDelete(req.params.id).lean();
     if (!deleted) return res.status(404).json({ error: 'Not found' });
+
+    const { deleteCachePattern } = require('../../lib/redis');
+    await deleteCachePattern('admin:locations');
+
     res.json({ success: true });
 });
 

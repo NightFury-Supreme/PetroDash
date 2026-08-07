@@ -52,7 +52,12 @@ const updateSchema = createSchema.partial();
 // GET /api/admin/plans - List all plans
 router.get('/', requireAdmin, async (req, res) => {
   try {
+    const { getCache, setCache } = require('../../lib/redis');
+    const cached = await getCache('admin:plans');
+    if (cached) return res.json(cached);
+
     const plans = await Plan.find().sort({ sortOrder: 1, createdAt: -1 });
+    await setCache('admin:plans', plans, 30);
     res.json(plans);
   } catch (error) {
     console.error('Error fetching plans:', error);
@@ -92,6 +97,9 @@ router.post('/', requireAdmin, async (req, res) => {
     
     await writeAudit(req, 'admin.plan.create', 'plan', plan._id.toString(), { planName: plan.name });
     
+    const { deleteCachePattern } = require('../../lib/redis');
+    await deleteCachePattern('admin:plans');
+
     res.status(201).json(plan);
   } catch (error) {
     if (error.name === 'ZodError') {
@@ -154,6 +162,9 @@ router.put('/:id', requireAdmin, validateObjectId('id'), async (req, res) => {
     
     await writeAudit(req, 'admin.plan.update', 'plan', plan._id.toString(), { planName: plan.name });
     
+    const { deleteCachePattern } = require('../../lib/redis');
+    await deleteCachePattern('admin:plans');
+
     res.json(plan);
   } catch (error) {
     if (error.name === 'ZodError') {
@@ -197,6 +208,9 @@ router.patch('/:id', requireAdmin, validateObjectId('id'), async (req, res) => {
       meta: { planName: plan.name, updatedFields: Object.keys(updateData) }
     });
     
+    const { deleteCachePattern } = require('../../lib/redis');
+    await deleteCachePattern('admin:plans');
+
     res.json(plan);
   } catch (error) {
     console.error('Error updating plan:', error);
@@ -232,6 +246,9 @@ router.delete('/:id', requireAdmin, validateObjectId('id'), async (req, res) => 
     
     await writeAudit(req, 'admin.plan.delete', 'plan', req.params.id, { planName: plan.name });
     
+    const { deleteCachePattern } = require('../../lib/redis');
+    await deleteCachePattern('admin:plans');
+
     res.json({ message: 'Plan deleted successfully' });
   } catch (error) {
     console.error('Error deleting plan:', error);

@@ -56,47 +56,7 @@ interface UsePlanEditReturn {
   clearError: () => void;
 }
 
-// eslint-disable-next-line unused-imports/no-unused-vars
-const initialPlanData: PlanFormData = {
-  _id: '',
-  name: '',
-  description: '',
-  strikeThroughPrice: 0,
-  pricePerMonth: 0,
-  pricePerYear: 0,
-  visibility: 'public',
-  availableAt: '',
-  availableUntil: '',
-  stock: 0,
-  limitPerCustomer: 1,
-  category: '',
-  redirectionLink: '',
-  billingOptions: {
-    renewable: true,
-    nonRenewable: false,
-    lifetime: false,
-  },
-  availableBillingCycles: ['monthly'],
-  productContent: {
-    recurrentResources: {
-      cpuPercent: 100,
-      memoryMb: 1024,
-      diskMb: 10240,
-      swapMb: 0,
-      blockIoProportion: 100,
-      cpuPinning: '',
-    },
-    additionalAllocations: 0,
-    databases: 1,
-    backups: 1,
-    coins: 0,
-    serverLimit: 1,
-  },
-  staffNotes: '',
-  popular: false,
-  enabled: true,
-  sortOrder: 0,
-};
+
 
 export function usePlanEdit(): UsePlanEditReturn {
   const [loading, setLoading] = useState(true);
@@ -124,7 +84,7 @@ export function usePlanEdit(): UsePlanEditReturn {
         throw new Error('Failed to load plan');
       }
 
-      let data: any = {}; try { data = await response.json(); } catch(e) {}
+      let data: any = {}; try { data = await response.json(); } catch {}
       setPlan(data);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load plan');
@@ -293,7 +253,7 @@ export function usePlanEdit(): UsePlanEditReturn {
       });
 
       if (!response.ok) {
-        let errorData: any = {}; try { errorData = await response.json(); } catch(e) {}
+        let errorData: any = {}; try { errorData = await response.json(); } catch {}
         throw new Error(errorData.error || 'Failed to update plan');
       }
 

@@ -2,14 +2,11 @@ const express = require('express');
 const axios = require('axios');
 const { requireAdmin } = require('../../middleware/auth');
 const { createRateLimiter } = require('../../middleware/rateLimit');
-const { exec } = require('child_process');
-const { promisify } = require('util');
 const fs = require('fs').promises;
 const path = require('path');
 
 const router = express.Router();
  
-// const execAsync = promisify(exec);
  
 
 // Rate limiting for updates endpoint

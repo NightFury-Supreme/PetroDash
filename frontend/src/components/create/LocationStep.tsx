@@ -22,7 +22,7 @@ export function LocationStep({ locations, form, violations, onInputChange }: Loc
       const resp = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/plans`, {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
-      let allPlans: any = {}; try { allPlans = await resp.json(); } catch(e) {}
+      let allPlans: any = {}; try { allPlans = await resp.json(); } catch {}
       const ids = new Set((allowedPlans || []).map(String));
       const list = Array.isArray(allPlans)
         ? allPlans
@@ -49,6 +49,7 @@ export function LocationStep({ locations, form, violations, onInputChange }: Loc
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {locations.map((location) => {
+            const isDown = location.ping === -1;
             const isFull = Number(location.serverCount || 0) >= Number(location.serverLimit || 0);
             const hasPremium = Array.isArray((location as any).allowedPlans) && (location as any).allowedPlans.length > 0;
             const locked = hasPremium && !(location as any).isPlanAllowed;
@@ -58,7 +59,7 @@ export function LocationStep({ locations, form, violations, onInputChange }: Loc
                 key={location._id}
                 type="button"
                 onClick={() => {
-                  if (isFull) return;
+                  if (isFull || isDown) return;
                   if (locked) {
                     openPlansInfo((location as any).allowedPlans);
                     return;
@@ -69,8 +70,8 @@ export function LocationStep({ locations, form, violations, onInputChange }: Loc
                   selected
                     ? 'border-white bg-white/10'
                     : 'border-[#303030] hover:border-[#404040]'
-                } ${(isFull || locked) ? 'opacity-50 cursor-pointer' : ''}`}
-                aria-disabled={isFull || locked}
+                } ${(isFull || locked || isDown) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                aria-disabled={isFull || locked || isDown}
               >
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-12 h-12 flex items-center justify-center">
@@ -85,10 +86,13 @@ export function LocationStep({ locations, form, violations, onInputChange }: Loc
                 <div>
                   <div className="flex items-center gap-2">
                     <h4 className="font-semibold text-white">{location.name}</h4>
-                    {location.ping && (
+                    {location.ping !== null && location.ping !== undefined && location.ping !== -1 && (
                       <span className="text-sm text-[#AAAAAA]">({location.ping}ms)</span>
                     )}
-                    {isFull && (
+                    {isDown && (
+                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20">Down</span>
+                    )}
+                    {isFull && !isDown && (
                       <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20">Full</span>
                     )}
                     {!isFull && hasPremium && (

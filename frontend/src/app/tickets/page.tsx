@@ -29,7 +29,7 @@ export default function TicketsPage() {
   const [showCreate, setShowCreate] = useState<boolean>(false);
   const contentPadding = useSidebarPadding();
   const [activeTab, setActiveTab] = useState<'all'|'open'|'pending'|'resolved'|'closed'>('all');
-  const [myUserId, setMyUserId] = useState<string | null>(null);
+  
 
 
   const fetchTickets = async () => {
@@ -38,10 +38,10 @@ export default function TicketsPage() {
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/tickets/mine`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      let d: any = {}; try { d = await r.json(); } catch(e) {}
+      let d: any = {}; try { d = await r.json(); } catch {}
       if (!r.ok) throw new Error(d?.error || 'Failed to load tickets');
       setTickets(d);
-    } catch (e:any) {
+    } catch (e: any) {
       setError(e.message || 'Failed to load tickets');
     } finally {
       setLoading(false);
@@ -58,7 +58,7 @@ export default function TicketsPage() {
         const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/tickets/categories`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        let d: any = {}; try { d = await r.json(); } catch(e) {}
+        let d: any = {}; try { d = await r.json(); } catch {}
         if (r.ok && Array.isArray(d?.categories)) {
           setCategories(d.categories);
           setCategory(d.categories[0] || 'general');
@@ -73,19 +73,6 @@ export default function TicketsPage() {
     })();
   }, []);
 
-  // Load current user id for unread indicator
-  useEffect(() => {
-    try {
-      const token = localStorage.getItem('auth_token');
-      if (!token) return;
-      fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
-        .then(async r => {
-          let d: any = {}; try { d = await r.json(); } catch(e) {}
-          if (r.ok && (d?._id || d?.id)) setMyUserId(String(d._id || d.id));
-        })
-        .catch(() => {});
-    } catch {}
-  }, []);
 
   const createTicket = async (): Promise<boolean> => {
     setError(null);
@@ -100,7 +87,7 @@ export default function TicketsPage() {
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ title, message, category })
       });
-      let d: any = {}; try { d = await r.json(); } catch(e) {}
+      let d: any = {}; try { d = await r.json(); } catch {}
       if (!r.ok) {
         setError(d?.error || 'Failed to create ticket');
         return false;
@@ -108,7 +95,7 @@ export default function TicketsPage() {
       setTitle(""); setMessage("");
       fetchTickets();
       return true;
-    } catch (e:any) { setError(e.message || 'Failed to create ticket'); return false; }
+    } catch (e: any) { setError(e.message || 'Failed to create ticket'); return false; }
   };
 
   return (

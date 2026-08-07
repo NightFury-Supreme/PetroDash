@@ -8,6 +8,7 @@ const Server = require('../../models/Server');
 const UserPlan = require('../../models/UserPlan');
 const axios = require('axios');
 const { getEggDetails } = require('../../services/pterodactyl');
+const { deleteCache, deleteCachePattern } = require('../../lib/redis');
 const { writeAudit } = require('../../middleware/audit');
 
 const router = express.Router();
@@ -255,6 +256,13 @@ router.post('/', requireAuth, async (req, res) => {
       });
     // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_) {}
+
+    // Invalidate user profile cache and server lists
+    await deleteCache(`user:${req.user.sub}:profile`);
+    await deleteCachePattern(`api:servers:${req.user.sub}:*`);
+    await deleteCachePattern(`server:usage:${req.user.sub}`);
+    await deleteCachePattern('admin:servers');
+    await deleteCache('eggs:counts');
 
     return res.status(201).json({ server: created, panel: panelServer });
 

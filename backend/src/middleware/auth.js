@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { getCache, setCache } = require('../lib/redis');
 
 async function requireAuth(req, res, next) {
     const header = req.headers.authorization || '';
@@ -14,7 +15,15 @@ async function requireAuth(req, res, next) {
         const userId = payload?.sub || payload?.userId || null;
         if (!userId) return res.status(401).json({ error: 'Unauthorized' });
         
-        const u = await User.findById(userId).lean();
+        const cacheKey = `user:auth:${userId}`;
+        let u = await getCache(cacheKey);
+        if (!u) {
+            u = await User.findById(userId).select('ban role').lean();
+            if (u) {
+                await setCache(cacheKey, u, 60);
+            }
+        }
+        
         if (!u) return res.status(401).json({ error: 'Unauthorized' });
         
         const ban = u.ban || {};

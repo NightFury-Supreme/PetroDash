@@ -174,7 +174,7 @@ export default function AdminPage() {
           </div>
 
           {/* Breakdown tables */}
-          {!loading && stats && (
+          {stats && (
             <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="p-6 rounded-xl" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
                 <h3 className="font-semibold mb-4">Servers by Egg</h3>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { measurePingBatch } from '../utils/ping';
+
 import { Location } from '../components/create/types';
 
 export function usePing(locations: Location[]) {
@@ -7,9 +7,22 @@ export function usePing(locations: Location[]) {
 
   useEffect(() => {
     const updatePing = async () => {
-      if (locations.length > 0) {
-        const updatedLocations = await measurePingBatch(locations);
-        setLocationsWithPing(updatedLocations);
+      try {
+        const token = localStorage.getItem('auth_token');
+        if (!token) return;
+        
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/locations`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data)) {
+            setLocationsWithPing(data);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to update pings:', error);
       }
     };
 

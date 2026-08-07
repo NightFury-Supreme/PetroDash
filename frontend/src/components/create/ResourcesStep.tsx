@@ -32,7 +32,7 @@ export function ResourcesStep({ form, violations, remaining, exceeds, onInputCha
               <input 
                 type="number"
                 className={`w-full bg-[#181818] border rounded-lg p-3 text-white focus:outline-none transition-colors ${
-                  exceeds.cpuPercent || violations.cpuPercent ? 'border-red-500' : 'border-[#303030] focus:border-white'
+                  exceeds.cpuPercent || violations.cpuPercent || (form.cpuPercent !== '' && Number(form.cpuPercent) < 10) ? 'border-red-500' : 'border-[#303030] focus:border-white'
                 }`}
                 value={form.cpuPercent} 
                 onChange={(e) => onInputChange('cpuPercent', e.target.value)} 
@@ -40,9 +40,9 @@ export function ResourcesStep({ form, violations, remaining, exceeds, onInputCha
                 max="100"
                 required
               />
-              {(exceeds.cpuPercent || violations.cpuPercent) && (
+              {(exceeds.cpuPercent || violations.cpuPercent || (form.cpuPercent !== '' && Number(form.cpuPercent) < 10)) && (
                 <div className="text-xs text-red-400">
-                  {violations.cpuPercent || `Exceeds remaining CPU (${remaining.cpuPercent}%)`}
+                  {violations.cpuPercent || (exceeds.cpuPercent ? `Exceeds remaining CPU (${remaining.cpuPercent}%)` : 'Minimum CPU is 10%')}
                 </div>
               )}
             </div>
@@ -56,16 +56,16 @@ export function ResourcesStep({ form, violations, remaining, exceeds, onInputCha
               <input 
                 type="number"
                 className={`w-full bg-[#181818] border rounded-lg p-3 text-white focus:outline-none transition-colors ${
-                  exceeds.memoryMb || violations.memoryMb ? 'border-red-500' : 'border-[#303030] focus:border-white'
+                  exceeds.memoryMb || violations.memoryMb || (form.memoryMb !== '' && Number(form.memoryMb) < 128) ? 'border-red-500' : 'border-[#303030] focus:border-white'
                 }`}
                 value={form.memoryMb} 
                 onChange={(e) => onInputChange('memoryMb', e.target.value)} 
                 min="128"
                 required
               />
-              {(exceeds.memoryMb || violations.memoryMb) && (
+              {(exceeds.memoryMb || violations.memoryMb || (form.memoryMb !== '' && Number(form.memoryMb) < 128)) && (
                 <div className="text-xs text-red-400">
-                  {violations.memoryMb || `Exceeds remaining memory (${remaining.memoryMb} MB)`}
+                  {violations.memoryMb || (exceeds.memoryMb ? `Exceeds remaining memory (${remaining.memoryMb} MB)` : 'Minimum Memory is 128 MB')}
                 </div>
               )}
             </div>
@@ -79,16 +79,16 @@ export function ResourcesStep({ form, violations, remaining, exceeds, onInputCha
               <input 
                 type="number"
                 className={`w-full bg-[#181818] border rounded-lg p-3 text-white focus:outline-none transition-colors ${
-                  exceeds.diskMb || violations.diskMb ? 'border-red-500' : 'border-[#303030] focus:border-white'
+                  exceeds.diskMb || violations.diskMb || (form.diskMb !== '' && Number(form.diskMb) < 100) ? 'border-red-500' : 'border-[#303030] focus:border-white'
                 }`}
                 value={form.diskMb} 
                 onChange={(e) => onInputChange('diskMb', e.target.value)} 
                 min="100"
                 required
               />
-              {(exceeds.diskMb || violations.diskMb) && (
+              {(exceeds.diskMb || violations.diskMb || (form.diskMb !== '' && Number(form.diskMb) < 100)) && (
                 <div className="text-xs text-red-400">
-                  {violations.diskMb || `Exceeds remaining disk (${remaining.diskMb} MB)`}
+                  {violations.diskMb || (exceeds.diskMb ? `Exceeds remaining disk (${remaining.diskMb} MB)` : 'Minimum Disk is 100 MB')}
                 </div>
               )}
             </div>

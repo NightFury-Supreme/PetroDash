@@ -13,7 +13,7 @@ router.get('/ledger', requireAdmin, async (req, res) => {
   try {
     const { status, provider, userId, page = '1', limit = '10' } = req.query;
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
-    const limitNum = Math.max(1, parseInt(limit, 10) || 10);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
 
     const q = {};
     if (status && ['pending', 'completed', 'failed', 'refunded'].includes(status)) {
@@ -25,6 +25,11 @@ router.get('/ledger', requireAdmin, async (req, res) => {
     if (userId && /^[0-9a-fA-F]{24}$/.test(userId)) {
       q.userId = { $eq: userId };
     }
+
+    const { getCache, setCache } = require('../../lib/redis');
+    const cacheKey = `admin:ledger:${status || ''}:${provider || ''}:${userId || ''}:${pageNum}:${limitNum}`;
+    const cached = await getCache(cacheKey);
+    if (cached) return res.json(cached);
     
     const total = await Payment.countDocuments(q);
     const list = await Payment.find(q)
@@ -33,13 +38,16 @@ router.get('/ledger', requireAdmin, async (req, res) => {
       .limit(limitNum)
       .lean();
       
-    res.json({
+    const result = {
       payments: list,
       total,
       page: pageNum,
       limit: limitNum,
       totalPages: Math.ceil(total / limitNum)
-    });
+    };
+
+    await setCache(cacheKey, result, 30);
+    res.json(result);
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch ledger' });
@@ -59,6 +67,10 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     if (currency !== undefined) p.currency = currency;
     
     await p.save();
+
+    const { deleteCachePattern } = require('../../lib/redis');
+    await deleteCachePattern('admin:ledger');
+
     res.json({ ok: true, payment: p });
   } catch (e) { 
     res.status(400).json({ error: e.message }); 
@@ -117,6 +129,10 @@ router.post('/:id/refund', requireAdmin, async (req, res) => {
 
     p.status = 'REFUNDED';
     await p.save();
+
+    const { deleteCachePattern } = require('../../lib/redis');
+    await deleteCachePattern('admin:ledger');
+
     res.json({ ok: true });
   } catch (e) { res.status(400).json({ error: e.message }); }
 });
@@ -131,6 +147,10 @@ router.post('/:id/void', requireAdmin, async (req, res) => {
     if (p.status === 'COMPLETED') return res.status(400).json({ error: 'Use refund for completed payments' });
     p.status = 'VOIDED';
     await p.save();
+
+    const { deleteCachePattern } = require('../../lib/redis');
+    await deleteCachePattern('admin:ledger');
+
     res.json({ ok: true });
   } catch (e) { res.status(400).json({ error: e.message }); }
 });

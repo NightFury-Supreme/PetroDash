@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 
-export default function TicketDetailHeader({ ticket, contentPadding, onAction }: { ticket: any; contentPadding: number; onAction: (action: "close") => void; }) {
+export default function TicketDetailHeader({ ticket, contentPadding, onAction }: { ticket: any; contentPadding: number; onAction: (action: "close" | "reopen") => void; }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 

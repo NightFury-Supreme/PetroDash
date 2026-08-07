@@ -1,15 +1,16 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
 const express = require('express');
 const cors = require('cors');
  
 const compression = require('compression');
 const session = require('express-session');
-const dotenv = require('dotenv');
+const { RedisStore } = require('connect-redis');
  
 const passport = require('passport');
 const { createRateLimiter } = require('./middleware/rateLimit');
 const { securityHeaders, sanitizeInput, securityLogging, csrfProtection } = require('./middleware/security');
-
-dotenv.config();
 
 const { connectToDatabase } = require('./lib/mongo');
 const { validateEnv } = require('./lib/env');
@@ -44,7 +45,9 @@ app.use(auditAuto());
 app.use(csrfProtection);
 
 // Session configuration for OAuth
+const redisClient = require('./lib/redis').getClient();
 app.use(session({
+    store: redisClient ? new RedisStore({ client: redisClient }) : undefined,
     secret: process.env.JWT_SECRET || 'fallback-secret',
     resave: false,
     saveUninitialized: false,
@@ -125,8 +128,8 @@ app.use('/uploads', (req, res, next) => {
 // Public settings endpoint for client-side branding (read-only)
 app.get('/api/settings', async (req, res) => {
     try {
-        const Settings = require('./models/Settings');
-        const s = await Settings.findOne({}).lean();
+        const { getSettings } = require('./lib/settings');
+        const s = await getSettings();
         if (!s) return res.json({});
         return res.json({ siteName: s.siteName, siteIcon: s.siteIcon });
     // eslint-disable-next-line unused-imports/no-unused-vars
@@ -169,6 +172,9 @@ connectToDatabase()
         validateEnv();
         // Seed shop presets once DB is connected
         ensureShopPresets().catch(() => {});
+        // Start background ping worker
+        const { startPingWorker } = require('./services/pingWorker');
+        startPingWorker();
         app.listen(port, () => {
             console.log(`[PteroDash] Server running on port ${port} (${process.env.NODE_ENV || 'development'})`);
         });

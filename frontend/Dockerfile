@@ -8,20 +8,16 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install ALL dependencies (including dev dependencies for build)
-RUN if [ -f package-lock.json ]; then \
-      echo "Using package-lock.json for installation" && \
-      npm ci; \
-    else \
-      echo "No package-lock.json found, using npm install" && \
-      npm install; \
-    fi
-
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+COPY package*.json ./
+RUN npm install
 COPY . .
+
+# Set environment variables for build
+ARG NEXT_PUBLIC_API_BASE
+ENV NEXT_PUBLIC_API_BASE=$NEXT_PUBLIC_API_BASE
 
 # Build the application
 RUN npm run build

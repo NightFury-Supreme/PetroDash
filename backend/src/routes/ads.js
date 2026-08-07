@@ -1,20 +1,24 @@
 const express = require('express');
-const Settings = require('../models/Settings');
+const { getSettings } = require('../lib/settings');
 const { createRateLimiter } = require('../middleware/rateLimit');
 
 const router = express.Router();
 
-// Rate limiting for ads endpoint
-const adsRateLimiter = createRateLimiter(100, 15 * 60 * 1000); // 100 requests per 15 minutes
+// Rate limiting for ads endpoint - increased to handle multiple ad components per page
+const adsRateLimiter = createRateLimiter(500, 15 * 60 * 1000); // 500 requests per 15 minutes
 router.use(adsRateLimiter);
 
 // GET /api/ads - Public endpoint for AdSense settings
 router.get('/', async (req, res) => {
   try {
-    const settings = await Settings.findOne({});
+    const { getCache, setCache } = require('../lib/redis');
+    const cached = await getCache('api:ads');
+    if (cached) return res.json(cached);
+
+    const settings = await getSettings();
     
     if (!settings || !settings.adsense) {
-      return res.json({
+      const defaultAds = {
         enabled: false,
         publisherId: '',
         adSlots: {
@@ -32,10 +36,13 @@ router.get('/', async (req, res) => {
           inArticle: false,
           matchedContent: false
         }
-      });
+      };
+      await setCache('api:ads', defaultAds, 60);
+      return res.json(defaultAds);
     }
 
     // Return only AdSense settings, no sensitive data
+    await setCache('api:ads', settings.adsense, 60);
     return res.json(settings.adsense);
   } catch (error) {
     console.error('Failed to fetch AdSense settings:', error);

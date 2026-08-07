@@ -4,28 +4,21 @@ FROM node:20-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-
-# Install dependencies (lock-aware)
-RUN if [ -f package-lock.json ]; then \
-      echo "Using package-lock.json for installation" && \
-      npm ci; \
-    else \
-      echo "No package-lock.json found, using npm install" && \
-      npm install; \
-    fi && npm cache clean --force
-
-# Copy source code
-COPY . .
-
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
+    adduser -S nodejs -u 1001 && \
+    chown nodejs:nodejs /app
 
-# Change ownership of the app directory
-RUN chown -R nodejs:nodejs /app
 USER nodejs
+
+# Copy package files
+COPY --chown=nodejs:nodejs package*.json ./
+
+# Install dependencies (lock-aware)
+RUN npm install && npm cache clean --force
+
+# Copy source code
+COPY --chown=nodejs:nodejs . .
 
 # Expose port
 EXPOSE 4000

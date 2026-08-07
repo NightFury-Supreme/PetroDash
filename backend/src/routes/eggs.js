@@ -2,23 +2,31 @@ const express = require('express');
 const Egg = require('../models/Egg');
 const Server = require('../models/Server');
 const { requireAuth } = require('../middleware/auth');
+const { getCache, setCache } = require('../lib/redis');
 
 const router = express.Router();
 
 router.get('/', requireAuth, async (req, res) => {
     try {
-        const eggs = await Egg.find().lean();
+        let eggsWithCounts = await getCache('eggs:counts');
         
-        // Get server count for each egg
-        const eggsWithCounts = await Promise.all(
-            eggs.map(async (egg) => {
-                const serverCount = await Server.countDocuments({ eggId: egg._id });
-                return {
-                    ...egg,
-                    serverCount
-                };
-            })
-        );
+        if (!eggsWithCounts) {
+            const eggs = await Egg.find().lean();
+            
+            // Get server count for each egg
+            eggsWithCounts = await Promise.all(
+                eggs.map(async (egg) => {
+                    const serverCount = await Server.countDocuments({ eggId: egg._id });
+                    return {
+                        ...egg,
+                        serverCount
+                    };
+                })
+            );
+            
+            // Cache for 5 minutes
+            await setCache('eggs:counts', eggsWithCounts, 300);
+        }
 
         // Mark isPlanAllowed based on active plans
         try {

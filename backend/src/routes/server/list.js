@@ -2,6 +2,7 @@ const express = require('express');
 const { requireAuth } = require('../../middleware/auth');
 const Server = require('../../models/Server');
 const { getServer } = require('../../services/pterodactyl');
+const { getCache, setCache } = require('../../lib/redis');
 
 const router = express.Router();
 
@@ -11,6 +12,10 @@ router.get('/', requireAuth, async (req, res) => {
     const paginate = String(req.query.paginate || '').toLowerCase() === 'true';
     let page = Math.max(1, parseInt(String(req.query.page || '1')) || 1);
     let pageSize = Math.max(1, Math.min(100, parseInt(String(req.query.pageSize || '10')) || 10));
+
+    const cacheKey = `api:servers:${req.user.sub}:${paginate}:${page}:${pageSize}`;
+    const cached = await getCache(cacheKey);
+    if (cached) return res.json(cached);
 
     const baseQuery = { owner: req.user.sub };
 
@@ -116,8 +121,11 @@ router.get('/', requireAuth, async (req, res) => {
     }
     
     if (paginate) {
-      return res.json({ data: filtered, meta: { total: Math.max(total - deletedCount, 0), page, pageSize } });
+      const responseData = { data: filtered, meta: { total: Math.max(total - deletedCount, 0), page, pageSize } };
+      await setCache(cacheKey, responseData, 30);
+      return res.json(responseData);
     }
+    await setCache(cacheKey, filtered, 30);
     return res.json(filtered);
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {

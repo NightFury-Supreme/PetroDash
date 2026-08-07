@@ -1,12 +1,24 @@
 const rateLimit = require('express-rate-limit');
 const { ipKeyGenerator } = require('express-rate-limit');
+const RedisStore = require('rate-limit-redis').default;
+const { getClient } = require('../lib/redis');
 
 function createRateLimiter(max, windowMs, options = {}) {
+  const redisClient = getClient();
+  const defaultPrefix = `rl:${windowMs}:${max}:${Math.random().toString(36).substring(2, 9)}:`;
+  const store = redisClient 
+    ? new RedisStore({ 
+        sendCommand: (...args) => redisClient.call(...args),
+        prefix: options.prefix || defaultPrefix
+      })
+    : undefined;
+
   return rateLimit({
     windowMs,
     max,
     standardHeaders: true,
     legacyHeaders: false,
+    store,
     message: { error: 'Too many requests, please try again later.' },
     ...options
   });
@@ -16,11 +28,21 @@ function createRateLimiter(max, windowMs, options = {}) {
  * Create a strict rate limiter for authentication endpoints
  */
 function createSecureRateLimiter(max, windowMs, options = {}) {
+  const redisClient = getClient();
+  const defaultPrefix = `rl_sec:${windowMs}:${max}:${Math.random().toString(36).substring(2, 9)}:`;
+  const store = redisClient 
+    ? new RedisStore({ 
+        sendCommand: (...args) => redisClient.call(...args),
+        prefix: options.prefix || defaultPrefix
+      })
+    : undefined;
+
   return rateLimit({
     windowMs,
     max,
     standardHeaders: true,
     legacyHeaders: false,
+    store,
     message: { 
       error: 'Too many requests, please try again later.',
       retryAfter: Math.ceil(windowMs / 1000)

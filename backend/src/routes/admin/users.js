@@ -14,8 +14,13 @@ router.get('/', requireAdmin, async (req, res) => {
   try {
     const { search, page = '1', limit = '10' } = req.query;
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
-    const limitNum = Math.max(1, parseInt(limit, 10) || 10);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
     
+    const { getCache, setCache } = require('../../lib/redis');
+    const cacheKey = `admin:users:${search || ''}:${pageNum}:${limitNum}`;
+    const cached = await getCache(cacheKey);
+    if (cached) return res.json(cached);
+
     let filter = {};
     if (typeof search === 'string' && search.trim()) {
       const s = search.trim();
@@ -45,13 +50,16 @@ router.get('/', requireAdmin, async (req, res) => {
     const idToCount = Object.fromEntries(servers.map((s) => [String(s._id), s.count]));
     const list = users.map((u) => ({ ...u, serverCount: idToCount[String(u._id)] || 0 }));
     
-    return res.json({
+    const result = {
       users: list,
       total,
       page: pageNum,
       limit: limitNum,
       totalPages: Math.ceil(total / limitNum)
-    });
+    };
+
+    await setCache(cacheKey, result, 30);
+    return res.json(result);
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
     return res.status(500).json({ error: 'Failed to list users' });
@@ -209,6 +217,10 @@ router.patch('/:id', requireAdmin, async (req, res) => {
   } catch (_) {}
   const { writeAudit } = require('../../middleware/audit');
   writeAudit(req, 'admin.user.update', 'user', user._id.toString(), { role, resources, coins, email, username, firstName, lastName, ban });
+
+  const { deleteCachePattern } = require('../../lib/redis');
+  await deleteCachePattern('admin:users');
+
   return res.json({ user });
 });
 
@@ -270,6 +282,10 @@ router.post('/:id/ban', requireAdmin, async (req, res) => {
   await user.save();
   const { writeAudit } = require('../../middleware/audit');
   writeAudit(req, isBanned ? 'admin.user.ban' : 'admin.user.unban', 'user', user._id.toString(), { reason: user.ban.reason, until: user.ban.until });
+
+  const { deleteCachePattern } = require('../../lib/redis');
+  await deleteCachePattern('admin:users');
+
   return res.json({ ok: true, ban: user.ban });
 });
 
@@ -321,6 +337,9 @@ router.delete('/:id', requireAdmin, async (req, res) => {
     });
     
     // Return success with any errors that occurred
+    const { deleteCachePattern } = require('../../lib/redis');
+    await deleteCachePattern('admin:users');
+
     return res.json({ 
       ok: true, 
       serversDeleted: deletedServers,
@@ -347,6 +366,10 @@ router.delete('/:id/servers/:serverId', requireAdmin, async (req, res) => {
   await Server.deleteOne({ _id: server._id });
   const { writeAudit } = require('../../middleware/audit');
   writeAudit(req, 'admin.user.server.delete', 'server', server._id.toString(), { owner: req.params.id });
+
+  const { deleteCachePattern } = require('../../lib/redis');
+  await deleteCachePattern('admin:users');
+
   return res.json({ ok: true });
 });
 
@@ -558,6 +581,10 @@ router.post('/:id/plans', requireAdmin, async (req, res) => {
   const { writeAudit } = require('../../middleware/audit');
   writeAudit(req, 'admin.user.plan.add', 'user_plan', sub._id.toString(), { plan: plan.name, months });
   
+  const { deleteCachePattern } = require('../../lib/redis');
+  await deleteCachePattern('admin:users');
+  await deleteCachePattern(`user:${user._id}:plans`);
+
   const populatedSub = await UserPlan.findById(sub._id).populate('planId', 'name pricePerMonth pricePerYear').lean();
   return res.json({ plan: populatedSub });
 });
@@ -598,6 +625,11 @@ router.delete('/:id/plans/:planId', requireAdmin, async (req, res) => {
   
   const { writeAudit } = require('../../middleware/audit');
   writeAudit(req, 'admin.user.plan.cancel', 'user_plan', req.params.planId, { userId: req.params.id, planId: req.params.planId, instancesCancelled: subs.length });
+
+  const { deleteCachePattern } = require('../../lib/redis');
+  await deleteCachePattern('admin:users');
+  await deleteCachePattern(`user:${req.params.id}:plans`);
+
   return res.json({ ok: true, instancesCancelled: subs.length });
 });
 
@@ -633,6 +665,11 @@ router.delete('/:id/plans/instance/:instanceId', requireAdmin, async (req, res) 
   
   const { writeAudit } = require('../../middleware/audit');
   writeAudit(req, 'admin.user.plan.instance.cancel', 'user_plan', sub._id.toString(), { userId: req.params.id, planId: sub.planId });
+
+  const { deleteCachePattern } = require('../../lib/redis');
+  await deleteCachePattern('admin:users');
+  await deleteCachePattern(`user:${req.params.id}:plans`);
+
   return res.json({ ok: true });
 });
 

@@ -8,7 +8,13 @@ const router = express.Router();
 // GET /api/admin/coupons - list all coupons
 router.get('/', requireAdmin, async (req, res) => {
   try {
+    const { getCache, setCache } = require('../../lib/redis');
+    const cached = await getCache('admin:coupons');
+    if (cached) return res.json(cached);
+
     const coupons = await Coupon.find({}).sort({ createdAt: -1 }).lean();
+    
+    await setCache('admin:coupons', coupons, 30);
     res.json(coupons);
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
@@ -87,6 +93,9 @@ router.post('/', requireAdmin, async (req, res) => {
     // Audit log
     writeAudit(req, 'admin.coupons.create', 'coupon', coupon._id.toString(), { code: coupon.code });
 
+    const { deleteCachePattern } = require('../../lib/redis');
+    await deleteCachePattern('admin:coupons');
+
     res.status(201).json(coupon);
   } catch (error) {
     console.error('Coupon creation error:', error);
@@ -151,6 +160,9 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     // Audit log
     writeAudit(req, 'admin.coupons.update', 'coupon', coupon._id.toString(), { code: coupon.code });
 
+    const { deleteCachePattern } = require('../../lib/redis');
+    await deleteCachePattern('admin:coupons');
+
     res.json(coupon);
   } catch (error) {
     console.error('Coupon update error:', error);
@@ -175,6 +187,9 @@ router.delete('/:id', requireAdmin, async (req, res) => {
 
     // Audit log
     writeAudit(req, 'admin.coupons.delete', 'coupon', req.params.id, { code: coupon.code });
+
+    const { deleteCachePattern } = require('../../lib/redis');
+    await deleteCachePattern('admin:coupons');
 
     res.json({ message: 'Coupon deleted successfully' });
   } catch (error) {

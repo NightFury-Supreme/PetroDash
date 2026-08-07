@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const Ticket = require('../../models/Ticket');
 const Settings = require('../../models/Settings');
 const { requireAdmin } = require('../../middleware/auth');
+const { getCache, setCache, deleteCachePattern } = require('../../lib/redis');
+const { getSettings, clearSettingsCache } = require('../../lib/settings');
 
 const router = express.Router();
 
@@ -39,6 +41,12 @@ router.get('/', requireAdmin, async (req, res) => {
       ];
     }
 
+    const cacheKey = `tickets:admin:list:${q || ''}:${status || ''}:${priority || ''}:${deleted || ''}:${pageNum}:${limitNum}`;
+    const cachedTickets = await getCache(cacheKey);
+    if (cachedTickets) {
+      return res.json(cachedTickets);
+    }
+
     const total = await Ticket.countDocuments(query);
     const tickets = await Ticket.find(query)
       .select('-messages') // exclude messages in list view for performance
@@ -48,7 +56,10 @@ router.get('/', requireAdmin, async (req, res) => {
       .populate('user', 'username email')
       .lean();
 
-    res.json({ tickets, total, page: pageNum, pages: Math.ceil(total / limitNum) });
+    const responseData = { tickets, total, page: pageNum, pages: Math.ceil(total / limitNum) };
+    await setCache(cacheKey, responseData, 30); // Cache for 30 seconds
+
+    res.json(responseData);
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (err) {
     res.status(500).json({ error: 'Failed to list tickets' });
@@ -60,11 +71,18 @@ router.get('/:id', requireAdmin, async (req, res) => {
   try {
     if (!/^[0-9a-fA-F]{24}$/.test(req.params.id))
       return res.status(400).json({ error: 'Invalid ticket ID format' });
+
+    const cacheKey = `tickets:admin:detail:${req.params.id}`;
+    const cached = await getCache(cacheKey);
+    if (cached) return res.json(cached);
+
     const t = await Ticket.findById(req.params.id)
       .populate('user', 'username email')
       .populate('messages.author', 'username email')
       .lean();
     if (!t) return res.status(404).json({ error: 'Not found' });
+
+    await setCache(cacheKey, t, 30);
     res.json(t);
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (err) {
@@ -110,6 +128,11 @@ router.post('/:id/messages', requireAdmin, async (req, res) => {
       // eslint-disable-next-line unused-imports/no-unused-vars
       } catch (_) {}
     }
+
+    // Invalidate caches
+    await deleteCachePattern('tickets:admin:list:*');
+    await deleteCachePattern(`tickets:mine:${t.user}:*`);
+    await deleteCachePattern(`tickets:admin:detail:${req.params.id}`);
 
     const savedMsg = t.messages[t.messages.length - 1];
     res.json({ ok: true, message: savedMsg });
@@ -158,6 +181,11 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     if (changed) {
       t.updatedAt = new Date();
       await t.save();
+      
+      // Invalidate caches
+      await deleteCachePattern('tickets:admin:list:*');
+      await deleteCachePattern(`tickets:mine:${t.user}:*`);
+      await deleteCachePattern(`tickets:admin:detail:${req.params.id}`);
     }
 
     res.json({ ok: true, status: t.status, priority: t.priority });
@@ -174,6 +202,12 @@ router.delete('/:id', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Invalid ticket ID format' });
     const result = await Ticket.findByIdAndDelete(req.params.id);
     if (!result) return res.status(404).json({ error: 'Not found' });
+    
+    // Invalidate caches
+    await deleteCachePattern('tickets:admin:list:*');
+    if (result.user) await deleteCachePattern(`tickets:mine:${result.user}:*`);
+    await deleteCachePattern(`tickets:admin:detail:${req.params.id}`);
+    
     res.json({ ok: true });
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (err) {
@@ -184,7 +218,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
 // GET /api/admin/tickets/settings/categories
 router.get('/settings/categories', requireAdmin, async (req, res) => {
   try {
-    const s = await Settings.findOne({}).lean();
+    const s = await getSettings();
     const categories = (s && Array.isArray(s.ticketCategories) ? s.ticketCategories : []);
     res.json({ categories });
   // eslint-disable-next-line unused-imports/no-unused-vars
@@ -236,6 +270,7 @@ router.patch('/settings/categories', requireAdmin, async (req, res) => {
     if (!s) s = await Settings.create({});
     s.ticketCategories = newSet;
     await s.save();
+    clearSettingsCache();
     res.json({ ok: true, categories: s.ticketCategories });
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (err) {

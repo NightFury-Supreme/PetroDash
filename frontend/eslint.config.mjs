@@ -5,7 +5,7 @@ import unusedImports from "eslint-plugin-unused-imports";
 
 export default [
   {
-    ignores: ["**/.next/**", "**/node_modules/**", "**/dist/**", "**/build/**", "**/out/**"]
+    ignores: [".next/", "node_modules/", "dist/", "build/", "out/"]
   },
   {
     files: ["**/*.ts", "**/*.tsx"],

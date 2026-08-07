@@ -2,6 +2,7 @@ const express = require('express');
 const { z } = require('zod');
 const { requireAdmin } = require('../../middleware/auth');
 const { createRateLimiter } = require('../../middleware/rateLimit');
+const { getSettings, clearSettingsCache } = require('../../lib/settings');
 const Settings = require('../../models/Settings');
 const EarnSession = require('../../models/EarnSession');
 
@@ -43,8 +44,8 @@ function sanitizeEarn(earn) {
 
 router.get('/', requireAdmin, async (req, res) => {
   try {
-    const s = await getOrCreate();
-    const out = sanitizeEarn(s.earn);
+    const s = await getSettings();
+    const out = sanitizeEarn(s?.earn);
     return res.json(out);
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
@@ -114,6 +115,7 @@ router.patch('/', requireAdmin, async (req, res) => {
     }
 
     await settings.save();
+    clearSettingsCache();
 
     return res.json(sanitizeEarn(settings.earn));
   // eslint-disable-next-line unused-imports/no-unused-vars

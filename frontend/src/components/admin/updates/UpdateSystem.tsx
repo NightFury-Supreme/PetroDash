@@ -26,11 +26,9 @@ interface UpdateStatus {
 export default function UpdateSystem() {
   const [token, setToken] = useState<string | null>(null);
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null);
+  const [, _setUpdateStatus] = useState<UpdateStatus | null>(null);
   const [isChecking, setIsChecking] = useState(false);
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [, _setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Check for updates
@@ -50,7 +48,7 @@ export default function UpdateSystem() {
         throw new Error('Failed to check for updates');
       }
 
-      let data: any = {}; try { data = await response.json(); } catch(e) {}
+      let data: any = {}; try { data = await response.json(); } catch {}
       setUpdateInfo(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to check for updates');
@@ -82,26 +80,6 @@ export default function UpdateSystem() {
     }
   }, [token]);
 
-  // Get status color
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'text-green-500';
-      case 'failed': return 'text-red-500';
-      case 'idle': return 'text-gray-500';
-      default: return 'text-blue-500';
-    }
-  };
-
-  // Get progress bar color
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  const getProgressColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'bg-green-500';
-      case 'failed': return 'bg-red-500';
-      default: return 'bg-blue-500';
-    }
-  };
 
   return (
     <div className="bg-[#181818] border border-[#303030] rounded-xl p-6">
@@ -217,7 +195,7 @@ export default function UpdateSystem() {
       <div className="flex gap-3">
         <button
           onClick={checkForUpdates}
-          disabled={isChecking || isUpdating}
+          disabled={isChecking}
           className="px-4 py-2 bg-[#303030] text-white rounded-lg font-medium hover:bg-[#404040] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isChecking ? (

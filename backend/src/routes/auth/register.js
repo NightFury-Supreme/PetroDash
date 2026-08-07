@@ -1,7 +1,7 @@
 const express = require('express');
 const { z } = require('zod');
 const UserCreationService = require('../../services/userCreation');
-const Settings = require('../../models/Settings');
+const { getSettings } = require('../../lib/settings');
 const { writeAudit } = require('../../middleware/audit');
 const { createRateLimiter } = require('../../middleware/rateLimit');
 
@@ -40,7 +40,7 @@ router.post('/register', createRateLimiter(5, 60 * 60 * 1000), async (req, res) 
 
     const { email, username, firstName, lastName, password, ref } = parsed.data;
 
-    const s = await Settings.findOne({}).lean();
+    const s = await getSettings();
     const emailLoginEnabled = s?.auth?.emailLogin ?? true;
     if (!emailLoginEnabled) {
       await writeAudit(req, 'auth.register.failed', 'auth', null, {

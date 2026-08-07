@@ -1,14 +1,14 @@
 {
   "name": "pterodash-frontend",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "engines": {
     "node": ">=20.0.0"
   },
   "private": false,
   "scripts": {
-    "dev": "cross-env NODE_OPTIONS='--no-deprecation' next dev",
-    "build": "cross-env NODE_OPTIONS='--no-deprecation' next build",
-    "start": "cross-env NODE_OPTIONS='--no-deprecation' next start",
+    "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
+    "build": "cross-env NODE_OPTIONS=--no-deprecation next build",
+    "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "lint": "eslint ."
   },
   "dependencies": {
@@ -27,6 +27,7 @@
     "@typescript-eslint/eslint-plugin": "^8.66.0",
     "@typescript-eslint/parser": "^8.66.0",
     "cross-env": "^10.1.0",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.4.7",
     "eslint-plugin-react-hooks": "^7.1.1",

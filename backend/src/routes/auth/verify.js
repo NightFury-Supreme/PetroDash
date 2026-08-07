@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const { z } = require('zod');
 const User = require('../../models/User');
 const VerificationToken = require('../../models/VerificationToken');
-const Settings = require('../../models/Settings');
+const { getSettings } = require('../../lib/settings');
 const UserCreationService = require('../../services/userCreation');
  
 const { generateSecureCode, hashString } = require('../../utils/security');
@@ -37,6 +37,9 @@ router.get('/verify', async (req, res) => {
     await user.save();
     vt.usedAt = new Date();
     await vt.save();
+
+    const { deleteCachePattern } = require('../../lib/redis');
+    await deleteCachePattern(`user:${user._id}:profile`);
 
     await UserCreationService.grantReferralRewards(user);
     
@@ -96,7 +99,7 @@ router.post('/verify/resend', resendRateLimit, async (req, res) => {
         data: { 
           username: user.username, 
           verificationCode: verificationCode,
-          siteName: (await Settings.findOne({}).lean())?.siteName || 'PteroDash' 
+          siteName: (await getSettings())?.siteName || 'PteroDash' 
         },
       });
     // eslint-disable-next-line unused-imports/no-unused-vars
@@ -185,6 +188,9 @@ router.post('/verify/code', verificationRateLimit, async (req, res) => {
     // Mark token as used
     updatedVt.usedAt = new Date();
     await updatedVt.save();
+
+    const { deleteCachePattern } = require('../../lib/redis');
+    await deleteCachePattern(`user:${user._id}:profile`);
 
     await UserCreationService.grantReferralRewards(user);
     

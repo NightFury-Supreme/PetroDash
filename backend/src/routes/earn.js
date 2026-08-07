@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const { z } = require('zod');
 const { requireAuth } = require('../middleware/auth');
 const { createRateLimiter } = require('../middleware/rateLimit');
-const Settings = require('../models/Settings');
+const { getSettings } = require('../lib/settings');
 const EarnSession = require('../models/EarnSession');
 const User = require('../models/User');
 const { writeAudit } = require('../middleware/audit');
@@ -320,8 +320,13 @@ router.get('/', requireAuth, async (req, res) => {
     const userId = req.user?.sub;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
+    const { getCache, setCache } = require('../lib/redis');
+    const cacheKey = `earn:status:${userId}`;
+    const cached = await getCache(cacheKey);
+    if (cached) return res.json(cached);
+
     const [settings, user] = await Promise.all([
-      Settings.findOne({}).lean(),
+      getSettings(),
       User.findById(userId).lean(),
     ]);
 
@@ -435,11 +440,14 @@ router.get('/', requireAuth, async (req, res) => {
       };
     }
 
-    return res.json({
+    const result = {
       coins: Number(user.coins || 0),
       config: publicCfg,
       status,
-    });
+    };
+    
+    await setCache(cacheKey, result, 30);
+    return res.json(result);
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
     return res.status(500).json({ error: 'Internal server error' });
@@ -448,7 +456,7 @@ router.get('/', requireAuth, async (req, res) => {
 
 router.get('/ads/ayet/callback', async (req, res) => {
   try {
-    const settings = await Settings.findOne({}).lean();
+    const settings = await getSettings();
     const apiKey = String(settings?.earn?.ads?.ayetApiKey || '').trim();
     if (!apiKey) return res.status(200).send('ok');
 
@@ -508,7 +516,7 @@ router.post('/ads/ayet/rewarded', requireAuth, async (req, res) => {
     const sessionId = String(parsed.data.sessionId || '').trim();
     if (!/^[0-9a-fA-F]{24}$/.test(sessionId)) return res.status(400).json({ error: 'Invalid sessionId' });
 
-    const settings = await Settings.findOne({}).lean();
+    const settings = await getSettings();
     const apiKey = String(settings?.earn?.ads?.ayetApiKey || '').trim();
     if (!apiKey) return res.status(403).json({ error: 'ayeT is not configured' });
 
@@ -627,7 +635,7 @@ router.post('/:method/start', requireAuth, async (req, res) => {
 
     const method = parsedParams.data.method;
 
-    const settings = await Settings.findOne({}).lean();
+    const settings = await getSettings();
     const cfg = getEarnConfig(settings);
     const methodCfg = cfg[method];
 
@@ -739,6 +747,9 @@ router.post('/:method/start', requireAuth, async (req, res) => {
       expiresAt: session.expiresAt,
     });
 
+    const { deleteCachePattern } = require('../lib/redis');
+    await deleteCachePattern(`earn:status:${userId}`);
+
     return res.json(response);
   } catch (e) {
     console.error('Earn start failed:', e?.message || e);
@@ -766,7 +777,7 @@ router.post('/:method/claim', requireAuth, async (req, res) => {
     const method = parsedParams.data.method;
     const sessionId = parsedBody.data.sessionId;
 
-    const settings = await Settings.findOne({}).lean();
+    const settings = await getSettings();
     const cfg = getEarnConfig(settings);
     const methodCfg = cfg[method];
 
@@ -866,6 +877,10 @@ router.post('/:method/claim', requireAuth, async (req, res) => {
         sessionId: String(locked._id),
       });
 
+      const { deleteCachePattern } = require('../lib/redis');
+      await deleteCachePattern(`earn:status:${userId}`);
+      await deleteCachePattern(`user:${userId}:profile`);
+
       return res.json({ ok: true, coins: Number(userAfter.coins || 0), rewardCoins: reward });
     }
 
@@ -929,6 +944,10 @@ router.post('/:method/claim', requireAuth, async (req, res) => {
       coinsAfter: result.coinsAfter,
       sessionId: result.sessionId,
     });
+
+    const { deleteCachePattern } = require('../lib/redis');
+    await deleteCachePattern(`earn:status:${userId}`);
+    await deleteCachePattern(`user:${userId}:profile`);
 
     return res.json({ ok: true, coins: result.coinsAfter, rewardCoins: result.rewardCoins });
   } catch (e) {

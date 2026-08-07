@@ -36,7 +36,7 @@ export default function ProfilePage() {
     try {
       const token = localStorage.getItem('auth_token');
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/profile`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-      let d: any = {}; try { d = await r.json(); } catch(e) {} 
+      let d: any = {}; try { d = await r.json(); } catch {} 
       if (!r.ok) throw new Error(d?.error || 'Failed to delete account');
       
       // Show success message with details
@@ -300,7 +300,7 @@ export default function ProfilePage() {
                               if (res.ok) {
                                 alert('Verification email sent! Please check your inbox.');
                               } else {
-                                let data: any = {}; try { data = await res.json(); } catch(e) {}
+                                let data: any = {}; try { data = await res.json(); } catch {}
                                 const errorMessage = data.details 
                                   ? `${data.error}: ${data.details}` 
                                   : data.error || 'Failed to send verification email';

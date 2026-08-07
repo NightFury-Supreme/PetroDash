@@ -124,7 +124,7 @@ export function useServerEdit(serverId: string): UseServerEditReturn {
   try {
     const _d = await meResponse.json();
     if (_d && _d.error) _err = _d.error;
-  } catch(e) {}
+  } catch {}
   throw new Error(_err);
 }
         if (!usageResponse.ok) {
@@ -132,11 +132,11 @@ export function useServerEdit(serverId: string): UseServerEditReturn {
   try {
     const _d = await usageResponse.json();
     if (_d && _d.error) _err = _d.error;
-  } catch(e) {}
+  } catch {}
   throw new Error(_err);
 }
         if (!serverResponse.ok) {
-          let errorData: any = {}; try { errorData = await serverResponse.json(); } catch(e) {}
+          let errorData: any = {}; try { errorData = await serverResponse.json(); } catch {}
           throw new Error(errorData?.error || 'Server not found');
         }
 
@@ -316,7 +316,7 @@ export function useServerEdit(serverId: string): UseServerEditReturn {
         body: JSON.stringify(requestBody)
       });
 
-      let data: any = {}; try { data = await response.json(); } catch(e) {}
+      let data: any = {}; try { data = await response.json(); } catch {}
       
       if (!response.ok) {
         if (data?.violations) {
@@ -377,7 +377,7 @@ export function useServerEdit(serverId: string): UseServerEditReturn {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      let data: any = {}; try { data = await response.json(); } catch(e) {}
+      let data: any = {}; try { data = await response.json(); } catch {}
       
       if (!response.ok) {
         throw new Error(data?.error || 'Delete failed');

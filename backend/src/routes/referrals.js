@@ -2,6 +2,7 @@ const express = require('express');
 const { z } = require('zod');
 const { requireAuth } = require('../middleware/auth');
 const User = require('../models/User');
+const { getSettings } = require('../lib/settings');
 
 const router = express.Router();
 
@@ -33,8 +34,7 @@ router.get('/me', requireAuth, async (req, res) => {
     const link = `${base}/join/${encodeURIComponent(user.referralCode)}`;
     const stats = user.referralStats || { referredCount: 0, coinsEarned: 0 };
     // Fetch threshold from settings
-    const Settings = require('../models/Settings');
-    const s = await Settings.findOne({}).lean();
+    const s = await getSettings();
     const minInvites = Number(s?.referrals?.customCodeMinInvites ?? 10);
     const referrerCoins = Number(s?.referrals?.referrerCoins ?? 50);
     const referredCoins = Number(s?.referrals?.referredCoins ?? 25);
@@ -64,8 +64,7 @@ router.post('/custom-code', requireAuth, async (req, res) => {
     const desired = parsed.data.code.toUpperCase();
     const user = await User.findById(req.user.sub);
     if (!user) return res.status(404).json({ error: 'Not found' });
-    const Settings = require('../models/Settings');
-    const s = await Settings.findOne({}).lean();
+    const s = await getSettings();
     const minInvites = Number(s?.referrals?.customCodeMinInvites ?? 10);
     const currentCount = Number(user.referralStats?.referredCount || 0);
     if (currentCount < minInvites) return res.status(403).json({ error: 'Not eligible to set custom code' });

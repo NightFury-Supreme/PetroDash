@@ -6,11 +6,17 @@ const Egg = require('../../models/Egg');
 const Location = require('../../models/Location');
 const Plan = require('../../models/Plan');
 const UserPlan = require('../../models/UserPlan');
+const { getCache, setCache } = require('../../lib/redis');
 
 const router = express.Router();
 
 router.get('/', requireAdmin, async (req, res) => {
   try {
+    const cachedStats = await getCache('admin:stats');
+    if (cachedStats) {
+      return res.json(cachedStats);
+    }
+
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
 
@@ -51,17 +57,21 @@ router.get('/', requireAdmin, async (req, res) => {
       { $project: { _id: 0, locationId: '$_id', name: '$location.name', serverLimit: '$location.serverLimit', count: 1 } }
     ]);
 
-    return res.json({
+    const responseData = {
       users: { total: totalUsers, today: usersToday },
       servers: { total: totalServers, byEgg: serversByEgg, byLocation: serversByLocation },
       eggs: { total: eggsCount },
       locations: { total: locationsCount },
       plans: { total: plansCount },
       purchases: { total: totalPurchases, today: purchasesToday, usersWithPurchases }
-    });
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  } catch (err) {
-    return res.status(500).json({ error: 'Failed to load admin stats' });
+    };
+
+    await setCache('admin:stats', responseData, 60); // Cache for 60 seconds
+
+    return res.json(responseData);
+  } catch (e) {
+    console.error('Stats error:', e);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });
 

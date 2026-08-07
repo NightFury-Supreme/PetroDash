@@ -22,7 +22,7 @@ export default function EditEggPage() {
     fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/eggs/${params.id}`, {
       headers: { Authorization: `Bearer ${token}` },
     }).then(async (r) => {
-      let d: any = {}; try { d = await r.json(); } catch(e) {}
+      let d: any = {}; try { d = await r.json(); } catch {}
       if (!r.ok) throw new Error(d?.error || 'Failed');
       setForm({
         _id: d._id || String(params.id),

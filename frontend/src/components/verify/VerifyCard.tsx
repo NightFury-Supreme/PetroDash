@@ -25,7 +25,7 @@ export default function VerifyCard() {
         const base = process.env.NEXT_PUBLIC_API_BASE || "";
         const res = await fetch(`${base}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
         if (res.ok) {
-          let data: any = {}; try { data = await res.json(); } catch(e) {}
+          let data: any = {}; try { data = await res.json(); } catch {}
           if (data.emailVerified) {
             if (!active) return;
             try { sessionStorage.removeItem("verify_email"); } catch {}

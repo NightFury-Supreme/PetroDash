@@ -13,7 +13,7 @@ export const measurePing = async (latencyUrl: string): Promise<PingResult> => {
     // Ensure URL has protocol
     let pingUrl = latencyUrl;
     if (!pingUrl.startsWith('http://') && !pingUrl.startsWith('https://')) {
-      pingUrl = `https://${pingUrl}`;
+      pingUrl = (pingUrl.includes('localhost') || pingUrl.includes('127.0.0.1')) ? `http://${pingUrl}` : `https://${pingUrl}`;
     }
     
     const startTime = Date.now();
@@ -37,7 +37,7 @@ export const measurePing = async (latencyUrl: string): Promise<PingResult> => {
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error',
-      ping: Math.floor(Math.random() * 50) + 10 // Fallback ping
+      ping: -1 // Mark as Down
     };
   }
 };
@@ -48,7 +48,7 @@ export const measurePingBatch = async <T extends { latencyUrl: string; ping?: nu
       const result = await measurePing(location.latencyUrl);
       return {
         ...location,
-        ping: result.success ? result.ping : (location.ping || Math.floor(Math.random() * 50) + 10)
+        ping: result.success ? result.ping : -1
       };
     })
   );

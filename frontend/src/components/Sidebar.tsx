@@ -57,7 +57,7 @@ export default function Sidebar() {
     if (token) {
       fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
         .then(async (r) => { 
-          let d: any = {}; try { d = await r.json(); } catch(e) {} 
+          let d: any = {}; try { d = await r.json(); } catch {} 
           if (!r.ok) throw new Error(d?.error || 'Failed'); 
           // Check if user has active plans for premium badge
           try {
@@ -65,7 +65,7 @@ export default function Sidebar() {
               headers: { Authorization: `Bearer ${token}` } 
             });
             if (plansResponse.ok) {
-              let plans: any = {}; try { plans = await plansResponse.json(); } catch(e) {}
+              let plans: any = {}; try { plans = await plansResponse.json(); } catch {}
               d.hasActivePlans = plans && plans.length > 0;
             } else {
               d.hasActivePlans = false;

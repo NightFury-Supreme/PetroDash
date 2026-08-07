@@ -10,9 +10,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Future features and improvements will be listed here
 
-## [1.2.0] - 07-08-2026
+## [1.3.0] - 08-08-2026
 
 ### Added
+- **Redis Caching Layer**: Completely overhauled backend performance by integrating `ioredis`. Implemented aggressive caching across almost all API routes (admin endpoints, eggs, coupons, locations, auth, and user profiles) to drastically reduce MongoDB load.
+- **Distributed Rate Limiting**: Upgraded `express-rate-limit` to use `rate-limit-redis`, ensuring accurate and robust rate limiting across multiple backend instances.
+- **Redis Session Store**: Upgraded `express-session` to use `connect-redis`, making OAuth sessions and admin authentications persistent and horizontally scalable.
+- **Background Ping Worker**: Introduced a dedicated background worker (`pingWorker.js`) to offload node pinging from the main request thread.
+- **Docker Production Fixes**: Re-architected `docker-compose.yml` to pass `NEXT_PUBLIC_API_BASE` as a build argument so Next.js embeds the correct API URL at build time (fixing the `/undefined/` API bug). Included the new Redis service in all docker configs.
+- **Missing Database Collections**: Added 9 missing collections (gifts, shopitems, tickets, etc.) and vital performance indexes to `01-init-db.js`.
+
+### Changed
+- **Settings Optimization**: Abstracted all `Settings.findOne()` database calls into a newly cached `lib/settings.js` module, virtually eliminating repetitive MongoDB queries for site configuration.
+- **Removed Nginx Bundle**: Completely removed the internal Nginx container and its configs to ensure 100% compatibility for users running PteroDash on the same VPS as Pterodactyl or Wings. Users now rely on their host reverse proxy.
+- **Cross-Platform Scripts**: Upgraded `npm run dev` and other scripts in `package.json` to use `cross-env`, guaranteeing flawless environment variable injection natively on Windows PowerShell, Mac, and Linux.
+- **Build Speed Optimizations**: Modified `frontend/Dockerfile` to utilize `package-lock.json` properly instead of deleting it, drastically speeding up the build. Modified `backend/Dockerfile` to properly switch to non-root user *before* npm installs to eliminate 5-minute recursive `chown` freezes.
+- **Network Stability**: Added `network: host` to Docker Compose build steps to permanently fix `getaddrinfo EAI_AGAIN` DNS failures inside WSL2 and locked-down network environments.
+- **Documentation Overhaul**: Completely rewrote `INSTALL.md` and `README.md` to reflect the new proxy-less architecture, emphasizing `--build -d --force-recreate` as the official standard, and warning against using the `docker-compose.override.yml` in production.
+
+### Fixed
+- **Security ReDoS Mitigation**: Refactored input sanitization regex in `middleware/security.js` (removing backtracking `/on[a-z]+=["'][^"']*["']/gi`) to permanently secure the application against Regular Expression Denial of Service attacks.
+- **Turbopack Warning**: Deleted orphaned lockfiles in the root directory that were confusing the Next.js 15 Turbopack root detection.
+- **API Cache Invalidation**: Fixed stale data bugs by explicitly clearing Redis cache patterns upon mutating operations (e.g., updating settings, creating eggs, processing payments).
+
+## [1.2.0] - 07-08-2026
 - **Referral Verification System**: Referral rewards (coins) are now granted strictly *after* email verification if email verification is enabled on the server.
 - **Referral Origin Tracking**: Admin user detail page now displays who referred a user ("Joined Using Referral Code From").
 

@@ -26,7 +26,7 @@ export default function CouponsPageContent() {
         if (cR.ok) setCoupons(await cR.json());
         if (pR.ok) setPlans(await pR.json());
         if (bR.ok) {
-          let bData: any = {}; try { bData = await bR.json(); } catch(e) {}
+          let bData: any = {}; try { bData = await bR.json(); } catch {}
           if (bData?.currency) setCurrency(bData.currency);
         }
       })

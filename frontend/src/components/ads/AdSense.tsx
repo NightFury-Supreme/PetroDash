@@ -54,19 +54,6 @@ function sanitizeAdSlot(adSlot: string): string {
   return adSlot.replace(/[^a-zA-Z0-9_\s-]/g, '').trim();
 }
 
-// Performance: Debounce function
-// eslint-disable-next-line unused-imports/no-unused-vars
-function debounce<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout;
-  return (...args: Parameters<T>) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-}
-
 // Privacy: Check if user has ad blocking enabled
 function hasAdBlocker(): Promise<boolean> {
   return new Promise((resolve) => {
@@ -134,8 +121,7 @@ export function AdSense({
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [adBlockerDetected, setAdBlockerDetected] = useState(false);
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  const [isLoading, setIsLoading] = useState(false);
+  const [, setIsLoading] = useState(false);
   const [showAdBlockerModal, setShowAdBlockerModal] = useState(false);
   const adRef = useRef<HTMLDivElement>(null);
   const isIntersecting = useIntersectionObserver(adRef as React.RefObject<HTMLElement>, { threshold: 0.1 });
@@ -155,7 +141,7 @@ export function AdSense({
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      let data: any = {}; try { data = await response.json(); } catch(e) {}
+      let data: any = {}; try { data = await response.json(); } catch {}
       
       if (data && typeof data === 'object' && 'enabled' in data) {
         setSettings(data);
@@ -496,7 +482,7 @@ export function useAdSenseSettings() {
           throw new Error(`Failed to load settings: ${response.status}`);
         }
 
-        let data: any = {}; try { data = await response.json(); } catch(e) {}
+        let data: any = {}; try { data = await response.json(); } catch {}
         
         if (data && typeof data === 'object' && 'enabled' in data) {
           setSettings(data);

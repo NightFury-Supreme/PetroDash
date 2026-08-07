@@ -9,6 +9,11 @@ const router = express.Router();
 // GET /api/servers/usage - aggregate usage from servers in our DB
 router.get('/', requireAuth, async (req, res) => {
   try {
+    const { getCache, setCache } = require('../../lib/redis');
+    const cacheKey = `server:usage:${req.user.sub}`;
+    const cached = await getCache(cacheKey);
+    if (cached) return res.json(cached);
+
     const servers = await Server.find({ owner: req.user.sub }).lean();
 
     // Opportunistic sync with panel
@@ -63,6 +68,7 @@ router.get('/', requireAuth, async (req, res) => {
       servers: Number(servers.length || 0)
     };
     
+    await setCache(cacheKey, response, 60);
     return res.json(response);
   } catch (e) {
     console.error('Usage aggregation failed:', e.message);

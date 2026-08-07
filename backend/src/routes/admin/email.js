@@ -15,8 +15,14 @@ function serialize(emailDoc) {
 
 router.get('/', requireAdmin, async (req, res) => {
   try {
+    const { getCache, setCache } = require('../../lib/redis');
+    const cached = await getCache('email:settings');
+    if (cached) return res.json(cached);
+
     const emailSettings = await Email.getOrCreate();
-    return res.json(serialize(emailSettings));
+    const result = serialize(emailSettings);
+    await setCache('email:settings', result, 60);
+    return res.json(result);
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
     return res.status(500).json({ error: 'Failed to load email settings' });
@@ -60,6 +66,10 @@ router.patch('/', requireAdmin, async (req, res) => {
     }
     
     await emailSettings.save();
+    
+    // Invalidate the email settings cache
+    const { deleteCachePattern } = require('../../lib/redis');
+    await deleteCachePattern('email:settings');
     
     return res.json(serialize(emailSettings));
   // eslint-disable-next-line unused-imports/no-unused-vars

@@ -2,11 +2,12 @@ const express = require('express');
 const { z } = require('zod');
 const { requireAuth } = require('../../middleware/auth');
 const Server = require('../../models/Server');
-const { getServer: getPanelServer } = require('../../services/pterodactyl');
+const { getServer: getPanelServer, updateServerBuild } = require('../../services/pterodactyl');
 const { hasServerLimitsChanged } = require('../../utils/security');
 
 const router = express.Router();
 const { validateObjectId } = require('../../middleware/validateObjectId');
+const { deleteCache, deleteCachePattern } = require('../../lib/redis');
 
 // Import route handlers
 const listRouter = require('./list');
@@ -102,7 +103,6 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
   const User = require('../../models/User');
   
   try {
-    const startTime = Date.now();
     const serverId = req.params.id;
 
     // Validate server ID format
@@ -299,7 +299,6 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
       // Update server on Pterodactyl panel if panelServerId exists
       if (server.panelServerId) {
         try {
-          const { updateServerBuild, updateServerDetails } = require('../../services/pterodactyl');
           
           // Get current server details to get the allocation ID
           if (!panelServerResponse) {
@@ -360,6 +359,12 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
       serverName: server.name,
       userId: user._id
     });
+
+    // Invalidate user profile cache and server lists
+    await deleteCache(`user:${userId}:profile`);
+    await deleteCachePattern(`api:servers:${userId}:*`);
+    await deleteCachePattern(`server:usage:${userId}`);
+    await deleteCache('api:admin:servers');
 
      
 //     const responseTime = Date.now() - startTime;
@@ -472,6 +477,13 @@ router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10,
       }
     // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_) {}
+
+    // Invalidate user profile cache and server lists
+    await deleteCache(`user:${userId}:profile`);
+    await deleteCachePattern(`api:servers:${userId}:*`);
+    await deleteCachePattern(`server:usage:${userId}`);
+    await deleteCache('api:admin:servers');
+    await deleteCache('eggs:counts');
 
     return res.json({ ok: true, message: 'Server deleted successfully.' });
   } catch (error) {

@@ -18,7 +18,8 @@ const SHELL_PAGES = [
   '/admin',
   '/server',
   '/referals',
-  '/tickets'
+  '/tickets',
+  '/profile'
 ];
 
 export default function LayoutWithAds({ children }: LayoutWithAdsProps) {

@@ -60,8 +60,8 @@ function sanitizeInput(req, res, next) {
         sanitized = sanitized.replace(new RegExp(scheme, 'gi'), ' ');
       }
       // Remove event handlers - use non-backtracking approach
-      sanitized = sanitized.replace(/on[a-z]+=["'][^"']*["']/gi, ' ');
-      sanitized = sanitized.replace(/on[a-z]+=[^\s>]+/gi, ' ');
+      sanitized = sanitized.replace(/on[a-z]{1,20}=["'][^"']*["']/gi, ' ');
+      sanitized = sanitized.replace(/on[a-z]{1,20}=[^\s>]+/gi, ' ');
       
       // Remove HTML tags - use simple non-backtracking pattern
       sanitized = sanitized.replace(/<[^>]+>/g, ' ');

@@ -48,10 +48,10 @@ export function ResourceInput({
       <input
         type="number"
         min={min}
-        value={Number(value)}
-        onChange={(e) => onChange(Math.max(min, Number(e.target.value)))}
+        value={value}
+        onChange={(e) => onChange(e.target.value === '' ? 0 : Number(e.target.value))}
         className={`w-full bg-[#181818] border rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:ring-1 focus:ring-blue-500 transition-colors ${
-          exceeds 
+          exceeds || violation
             ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
             : 'border-[#404040] focus:border-blue-500'
         }`}

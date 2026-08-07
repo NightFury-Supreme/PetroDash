@@ -62,6 +62,9 @@ router.post('/create', requireAuth, async (req, res) => {
       source: 'user'
     });
 
+    const { deleteCachePattern } = require('../lib/redis');
+    await deleteCachePattern(`gifts:mine:${userId}`);
+
     return res.status(201).json({ code: gift.code, coins: coinsNum, maxRedemptions: gift.maxRedemptions, validUntil });
   } catch (error) {
     console.error('Create gift error:', error);
@@ -74,7 +77,14 @@ router.get('/mine', requireAuth, async (req, res) => {
   try {
     const userId = (req.user && (req.user.sub || req.user.userId || req.user._id || req.user.id)) || null;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    
+    const { getCache, setCache } = require('../lib/redis');
+    const cacheKey = `gifts:mine:${userId}`;
+    const cached = await getCache(cacheKey);
+    if (cached) return res.json(cached);
+
     const gifts = await Gift.find({ createdBy: userId }).sort({ createdAt: -1 }).lean();
+    await setCache(cacheKey, gifts, 30);
     res.json(gifts);
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {

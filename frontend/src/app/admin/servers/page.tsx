@@ -59,7 +59,7 @@ export default function AdminServersPage() {
         throw new Error('Failed to load servers');
       }
 
-      let data: any = {}; try { data = await response.json(); } catch(e) {}
+      let data: any = {}; try { data = await response.json(); } catch {}
       setServers(data);
     } catch (err: any) {
       setError(err.message);

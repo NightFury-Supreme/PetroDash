@@ -9,6 +9,9 @@ interface NameStepProps {
 }
 
 export function NameStep({ form, violations, onInputChange }: NameStepProps) {
+  const isValidName = form.name.trim().length === 0 || /^[a-zA-Z0-9\s\-_]+$/.test(form.name);
+  const errorMessage = violations.name || (!isValidName ? 'Name can only contain letters, numbers, spaces, hyphens, and underscores' : null);
+
   return (
     <div className="space-y-6">
       <div>
@@ -23,15 +26,15 @@ export function NameStep({ form, violations, onInputChange }: NameStepProps) {
         <input 
           type="text"
           className={`w-full bg-[#181818] border rounded-lg p-3 text-white focus:outline-none transition-colors ${
-            violations.name ? 'border-red-500' : 'border-[#303030] focus:border-white'
+            errorMessage ? 'border-red-500' : 'border-[#303030] focus:border-white'
           }`}
           value={form.name} 
           onChange={(e) => onInputChange('name', e.target.value)} 
           placeholder="Enter server name"
           required
         />
-        {violations.name && (
-          <div className="text-xs text-red-400">{violations.name}</div>
+        {errorMessage && (
+          <div className="text-xs text-red-400 mt-1">{errorMessage}</div>
         )}
       </div>
     </div>

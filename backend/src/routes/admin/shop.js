@@ -9,8 +9,14 @@ const { ensureShopPresets } = require('../../lib/shopPresets');
 // List
 router.get('/', requireAdmin, async (req, res) => {
   try {
+    const { getCache, setCache } = require('../../lib/redis');
+    const cached = await getCache('admin:shop');
+    if (cached) return res.json(cached);
+
     await ensureShopPresets();
     const items = await ShopItem.find({}).lean().sort({ key: 1 });
+    
+    await setCache('admin:shop', items, 30);
     return res.json(items);
   } catch (error) {
     console.error('Error fetching shop items:', error);
@@ -79,6 +85,9 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     //     maxPerPurchase: existingItem.maxPerPurchase,
     //   }
     // });
+
+    const { deleteCachePattern } = require('../../lib/redis');
+    await deleteCachePattern('admin:shop');
 
     return res.json(updatedItem);
   } catch (error) {

@@ -24,11 +24,11 @@ export function useDashboard() {
       });
       
       if (!response.ok) {
-        let errorData: any = {}; try { errorData = await response.json(); } catch(e) {}
+        let errorData: any = {}; try { errorData = await response.json(); } catch {}
         throw new Error(errorData?.error || 'Failed to load usage data');
       }
       
-      let data: any = {}; try { data = await response.json(); } catch(e) {}
+      let data: any = {}; try { data = await response.json(); } catch {}
       setUsage({
         diskMb: Number(data.diskMb || 0),
         memoryMb: Number(data.memoryMb || 0),
@@ -52,11 +52,11 @@ export function useDashboard() {
       });
       
       if (!response.ok) {
-        let errorData: any = {}; try { errorData = await response.json(); } catch(e) {}
+        let errorData: any = {}; try { errorData = await response.json(); } catch {}
         throw new Error(errorData?.error || 'Failed to load user resources');
       }
       
-      let data: any = {}; try { data = await response.json(); } catch(e) {}
+      let data: any = {}; try { data = await response.json(); } catch {}
       setResources(data.resources || null);
     } catch (error: unknown) {
       console.error('Failed to load resources:', error);
@@ -72,11 +72,11 @@ export function useDashboard() {
       });
       
       if (!response.ok) {
-        let errorData: any = {}; try { errorData = await response.json(); } catch(e) {}
+        let errorData: any = {}; try { errorData = await response.json(); } catch {}
         throw new Error(errorData?.error || 'Failed to load servers');
       }
       
-      let data: any = {}; try { data = await response.json(); } catch(e) {}
+      let data: any = {}; try { data = await response.json(); } catch {}
       const transformed: ServerInfo[] = (data || []).map((s: any) => ({
         _id: s._id,
         name: s.name,

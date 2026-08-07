@@ -2,12 +2,19 @@ const express = require('express');
 const { requireAuth } = require('../../middleware/auth');
 const User = require('../../models/User');
 const Server = require('../../models/Server');
-const Settings = require('../../models/Settings');
+const { getSettings } = require('../../lib/settings');
+const { getCache, setCache, deleteCache } = require('../../lib/redis');
 
 const router = express.Router();
 
 router.get('/me', requireAuth, async (req, res) => {
   try {
+    const cacheKey = `user:${req.user.sub}:profile`;
+    const cachedProfile = await getCache(cacheKey);
+    if (cachedProfile) {
+      return res.json(cachedProfile);
+    }
+
     const user = await User.findById(req.user.sub).lean();
     if (!user) return res.status(404).json({ error: 'Not found' });
     // If banned, short-circuit with 403 for guard to redirect
@@ -42,12 +49,12 @@ router.get('/me', requireAuth, async (req, res) => {
 
     let emailVerification = false;
     try {
-      const s = await Settings.findOne({}).lean();
+      const s = await getSettings();
       emailVerification = s?.auth?.emailVerification ?? false;
     // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_) {}
     
-    return res.json({ 
+    const responseData = { 
       id: user._id, 
       email: user.email, 
       username: user.username, 
@@ -63,7 +70,11 @@ router.get('/me', requireAuth, async (req, res) => {
       oauthProviders: user.oauthProviders || {},
       emailVerified: Boolean(user.emailVerified),
       emailVerification: Boolean(emailVerification)
-    });
+    };
+    
+    await setCache(cacheKey, responseData, 10); // Cache for 10 seconds to prevent F5 spam
+    
+    return res.json(responseData);
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) { 
     // Error logged silently for production
@@ -118,6 +129,9 @@ router.patch('/me/profile-picture', requireAuth, async (req, res) => {
     }
     
     await user.save();
+    
+    // Invalidate profile cache
+    await deleteCache(`user:${req.user.sub}:profile`);
     
     return res.json({ 
       message: 'Profile picture updated successfully',

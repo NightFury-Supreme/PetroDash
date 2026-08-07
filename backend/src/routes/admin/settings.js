@@ -3,6 +3,7 @@ const { z } = require('zod');
 const { requireAdmin } = require('../../middleware/auth');
 const Settings = require('../../models/Settings');
 const DefaultResources = require('../../models/DefaultResources');
+const { clearSettingsCache } = require('../../lib/settings');
 const { createRateLimiter } = require('../../middleware/rateLimit');
 const { reconfigureStrategies } = require('../auth/oauth');
 
@@ -28,6 +29,10 @@ async function getOrCreate() {
 // GET /api/admin/settings
 router.get('/', requireAdmin, async (req, res) => {
   try {
+    const { getCache, setCache } = require('../../lib/redis');
+    const cached = await getCache('admin:settings');
+    if (cached) return res.json(cached);
+
     const settings = await getOrCreate();
     const out = settings.toObject();
     out.auth = out.auth || {};
@@ -38,6 +43,7 @@ router.get('/', requireAdmin, async (req, res) => {
     delete out.themePrimary;
     delete out.__v;
     
+    await setCache('admin:settings', out, 30);
     return res.json(out);
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
@@ -262,6 +268,12 @@ router.patch('/', requireAdmin, async (req, res) => {
 
     // Save settings
     await settings.save();
+    await clearSettingsCache();
+
+    const { deleteCachePattern } = require('../../lib/redis');
+    await deleteCachePattern('admin:settings');
+    await deleteCachePattern('auth:oauth:status');
+    await deleteCachePattern('api:ads');
 
     // Reconfigure OAuth strategies if auth settings were updated
     if (authUpdated) {

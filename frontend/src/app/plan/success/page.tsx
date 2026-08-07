@@ -45,7 +45,7 @@ export default function PlanSuccessPage() {
           body: JSON.stringify({ orderId })
         });
 
-        let data: any = {}; try { data = await response.json(); } catch(e) {}
+        let data: any = {}; try { data = await response.json(); } catch {}
         if (!response.ok) {
           throw new Error(data?.error || 'Failed to capture payment');
         }

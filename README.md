@@ -37,28 +37,21 @@ Quick links:
 
 ### Environment Variables
 
-#### Backend (.env)
+#### Backend (`backend/.env`)
 ```env
-# Server Configuration
 PORT=4000
-
-# Database
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/?retryWrites=true&w=majority
-
-# JWT
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-
-# Pterodactyl Panel
-PTERO_BASE_URL=http://your-panel-ip
-PTERO_APP_API_KEY=your-pterodactyl-api-key
-
-# Frontend URL (for CORS)
-FRONTEND_URL=https://your-dashboard-domain.com
+MONGODB_URI=mongodb://username:password@host:port/database
+JWT_SECRET=your_jwt_secret_here
+PTERO_BASE_URL=http://localhost
+PTERO_APP_API_KEY=ptla_your_pterodactyl_api_key_here
+FRONTEND_URL=http://localhost:3000
+REDIS_URL=redis://default:password@host:port
 ```
 
-#### Frontend (.env.local)
+#### Frontend (`frontend/.env`)
 ```env
-NEXT_PUBLIC_API_BASE=https://your-api-domain.com
+NEXT_PUBLIC_API_BASE=http://localhost:4000
+ALLOWED_DEV_ORIGINS=localhost:3000
 ```
 
 ## 🏗️ Project Structure
@@ -89,8 +82,9 @@ pterodash/
 1. Set `NODE_ENV=production`
 2. Configure production MongoDB URI
 3. Set up SSL certificates
-4. Configure reverse proxy (Nginx/Apache)
-5. Set up PM2 or similar process manager
+4. Configure reverse proxy (Nginx/Apache). *Note: Nginx is not bundled with this project to avoid port conflicts with existing panels like Pterodactyl. You must configure your own web server.*
+5. Remove `docker-compose.override.yml` if it exists, as it is only for local development and breaks production builds.
+6. Build and start using: `docker compose up --build -d --force-recreate`
 
 ## 🤝 Contributing
 

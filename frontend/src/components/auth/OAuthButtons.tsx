@@ -25,7 +25,7 @@ export function OAuthButtons({ onError }: OAuthButtonsProps) {
     const fetchOAuthStatus = async () => {
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/`);
-        let data: any = {}; try { data = await response.json(); } catch(e) {}
+        let data: any = {}; try { data = await response.json(); } catch {}
         
         const availableProviders: OAuthProvider[] = [];
         

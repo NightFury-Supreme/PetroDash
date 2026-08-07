@@ -93,22 +93,31 @@ JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
 PTERO_BASE_URL=http://your-pterodactyl-panel:8080
 PTERO_APP_API_KEY=your-pterodactyl-api-key
 
-# Frontend URL
-FRONTEND_URL=http://your-domain.com
+# Frontend URL (The URL where users will access your dashboard)
+FRONTEND_URL=https://dashboard.your-domain.com
 
 # Backend Configuration
 NODE_ENV=production
 PORT=4000
+
+# Next.js API Base (Must match your actual backend URL or reverse proxy URL)
+# IMPORTANT: This is baked into the frontend during build. If you change this later, you MUST rebuild the container.
+NEXT_PUBLIC_API_BASE=https://dashboard.your-domain.com
 ```
 
-### Step 5: Start PteroDash
+### Step 5: Start PteroDash (Production Build)
+To ensure all environment variables (especially `NEXT_PUBLIC_API_BASE`) are correctly compiled into the Next.js frontend, always use this command to build and start:
+
 ```bash
-./docker-scripts.sh start
+# Optional: Remove the local dev override if it exists, to prevent volume masking
+rm -f docker-compose.override.yml
+
+sudo docker compose up --build -d --force-recreate
 ```
 
 ### Step 6: Access PteroDash
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:4000
+- **Frontend**: http://localhost:3000 (Or your domain via Reverse Proxy)
+- **Backend API**: http://localhost:4000 (Or your domain via Reverse Proxy)
 
 
 ## 🎯 First-Time Setup
@@ -183,17 +192,14 @@ docker-scripts.bat help
 
 ### Manual Docker Commands
 ```bash
-# Start services
-docker-compose up -d
+# Start and strictly rebuild services (Best Practice for Production)
+docker-compose up --build -d --force-recreate
 
 # Stop services
 docker-compose down
 
 # View logs
 docker-compose logs -f
-
-# Rebuild services
-docker-compose up -d --build
 ```
 
 ## 🔍 Verification
@@ -286,16 +292,23 @@ docker volume rm pterodash_mongodb_data
 ./docker-scripts.sh start
 ```
 
-#### 6. Frontend Not Loading
+#### 6. Frontend Not Loading / "sh: next: not found"
+If your frontend container refuses to start and logs `sh: next: not found`:
 ```bash
-# Check frontend logs
-docker-compose logs frontend
-
-# Rebuild frontend
-docker-compose up -d --build frontend
+# The issue is likely docker-compose.override.yml mounting an empty anonymous volume over your node_modules.
+# Delete the override file and force a fresh rebuild:
+rm -f docker-compose.override.yml
+docker-compose up --build -d --force-recreate
 ```
 
-#### 7. Backend API Errors
+#### 7. API Requests say "undefined" (e.g. /undefined/api/auth)
+Next.js compiles `NEXT_PUBLIC_` variables at **build time**. If you changed your `.env` file, the container must be rebuilt!
+```bash
+# Rebuild the frontend to bake in the new NEXT_PUBLIC_API_BASE
+docker-compose up --build -d --force-recreate
+```
+
+#### 8. Backend API Errors
 ```bash
 # Check backend logs
 docker-compose logs backend
@@ -367,7 +380,9 @@ docker-compose exec mongodb mongorestore /data/mongodb-backup
 
 ### SSL/HTTPS Setup
 
-For production deployments, consider using a reverse proxy like Nginx with SSL certificates:
+For production deployments, consider using a reverse proxy like Nginx with SSL certificates. 
+
+> **Important**: This project intentionally does not bundle its own Nginx container. This ensures it does not conflict with existing panels (like Pterodactyl or Wings) running on your server. You must configure your existing web server to reverse proxy to the frontend (port 3000) and backend (port 4000).
 
 ```bash
 # Install Certbot for Let's Encrypt

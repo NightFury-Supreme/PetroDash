@@ -30,10 +30,10 @@ export default function EditGiftPageContent() {
   try {
     const _d = await gR.json();
     if (_d && _d.error) _err = _d.error;
-  } catch(e) {}
+  } catch {}
   throw new Error(_err);
 }
-        let d: any = {}; try { d = await gR.json(); } catch(e) {}
+        let d: any = {}; try { d = await gR.json(); } catch {}
         setForm({
           ...d,
           validFrom: d.validFrom ? new Date(d.validFrom).toISOString().slice(0,16) as any : undefined,

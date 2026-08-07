@@ -35,7 +35,7 @@ export function useAdminShop() {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      let data: any = {}; try { data = await response.json(); } catch(e) {}
+      let data: any = {}; try { data = await response.json(); } catch {}
       if (!response.ok) throw new Error(data?.error || 'Failed to load shop items');
       
       setItems(data || []);
@@ -63,7 +63,7 @@ export function useAdminShop() {
         body: JSON.stringify(updates)
       });
       
-      let data: any = {}; try { data = await response.json(); } catch(e) {}
+      let data: any = {}; try { data = await response.json(); } catch {}
       if (!response.ok) throw new Error(data?.error || 'Failed to update item');
       
       // Update local state

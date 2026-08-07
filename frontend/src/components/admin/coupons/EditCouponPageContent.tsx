@@ -29,10 +29,10 @@ export default function EditCouponPageContent() {
   try {
     const _d = await cR.json();
     if (_d && _d.error) _err = _d.error;
-  } catch(e) {}
+  } catch {}
   throw new Error(_err);
 }
-        let d: any = {}; try { d = await cR.json(); } catch(e) {}
+        let d: any = {}; try { d = await cR.json(); } catch {}
         setForm({
           ...d,
           validFrom: d.validFrom ? new Date(d.validFrom).toISOString().slice(0,16) : '',

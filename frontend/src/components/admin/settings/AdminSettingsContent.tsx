@@ -209,7 +209,7 @@ export function AdminSettingsContent({
               {(iconPreview || formData.siteIcon) && (
                 <div className="relative w-12 h-12 bg-[#202020] border border-[#303030] rounded-lg overflow-hidden flex-shrink-0">
                   <img 
-                    src={iconPreview || `${process.env.NEXT_PUBLIC_API_BASE}${formData.siteIcon}`} 
+                    src={iconPreview || (formData.siteIcon ? `${process.env.NEXT_PUBLIC_API_BASE || ''}${encodeURI(formData.siteIcon)}` : '')} 
                     alt="Site icon" 
                     className="w-full h-full object-cover"
                   />
@@ -290,13 +290,13 @@ export function AdminSettingsContent({
                   if (!res.ok) {
                     let errorMessage = 'Upload failed';
                     try {
-                      let errData: any = {}; try { errData = await res.json(); } catch(e) {}
+                      let errData: any = {}; try { errData = await res.json(); } catch {}
                       if (errData.error) errorMessage = errData.error;
-                    } catch (e) {}
+                    } catch {}
                     throw new Error(errorMessage);
                   }
                   
-                  let data: any = {}; try { data = await res.json(); } catch(e) {}
+                  let data: any = {}; try { data = await res.json(); } catch {}
                   finalSiteIcon = data.filePath;
                   
                   if (iconPreview) {

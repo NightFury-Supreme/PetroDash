@@ -1,10 +1,11 @@
 const express = require('express');
 const { z } = require('zod');
 const User = require('../../models/User');
-const Settings = require('../../models/Settings');
+const { getSettings } = require('../../lib/settings');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { writeAudit } = require('../../middleware/audit');
+const { loginRateLimit } = require('../../middleware/rateLimit');
 
 const router = express.Router();
 
@@ -14,12 +15,12 @@ function generateJwt(user) {
   return jwt.sign({ sub: user._id.toString(), email: user.email, username: user.username, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
 }
 
-router.post('/login', async (req, res) => {
+router.post('/login', loginRateLimit, async (req, res) => {
   const startTime = Date.now();
   let user = null;
   
   try {
-    const s = await Settings.findOne({}).lean();
+    const s = await getSettings();
     const emailLoginEnabled = s?.auth?.emailLogin ?? true;
     if (!emailLoginEnabled) {
       await writeAudit(req, 'auth.login.failed', 'auth', null, {
@@ -135,15 +136,18 @@ router.post('/logout', async (req, res) => {
     // Extract user info from JWT token if present
     let user = null;
     const authHeader = req.headers.authorization;
-    if (authHeader && /^Bearer\s+/i.test(authHeader)) {
-      try {
-        const token = authHeader.split(/\s+/)[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        user = await User.findById(String(decoded.sub));
-      // eslint-disable-next-line unused-imports/no-unused-vars
-      } catch (error) {
-        // Invalid token, but we still want to log the logout attempt
-        // Invalid token during logout - logged silently
+    if (authHeader) {
+      const parts = authHeader.split(' ');
+      if (parts.length === 2 && parts[0] === 'Bearer') {
+        try {
+          const token = parts[1];
+          const decoded = jwt.verify(token, process.env.JWT_SECRET);
+          user = await User.findById(String(decoded.sub));
+        // eslint-disable-next-line unused-imports/no-unused-vars
+        } catch (error) {
+          // Invalid token, but we still want to log the logout attempt
+          // Invalid token during logout - logged silently
+        }
       }
     }
     

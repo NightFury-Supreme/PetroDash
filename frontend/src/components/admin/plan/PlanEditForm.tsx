@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useCurrency } from '@/hooks/useCurrency';
 
 interface PlanFormData {
@@ -59,8 +58,7 @@ export function PlanEditForm({
   onCancel,
   validationErrors = {},
 }: PlanEditFormProps) {
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  const [showAdvanced, setShowAdvanced] = useState(false);
+
   const { currency } = useCurrency();
 
   const handleSubmit = async (e: React.FormEvent) => {

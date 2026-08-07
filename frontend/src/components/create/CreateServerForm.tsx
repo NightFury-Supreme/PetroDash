@@ -52,8 +52,7 @@ export function CreateServerForm({ eggs, locations, remaining }: CreateServerFor
   });
   const [violations, setViolations] = useState<Violations>({});
   const [submitting, setSubmitting] = useState(false);
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
 
   // Use ping hook for real-time ping updates
   const locationsWithPing = usePing(locations);
@@ -69,8 +68,10 @@ export function CreateServerForm({ eggs, locations, remaining }: CreateServerFor
   };
 
   // Form validation
+  const isValidName = /^[a-zA-Z0-9\s\-_]+$/.test(form.name);
   const isFormValid = Boolean(
     form.name.trim() && 
+    isValidName &&
     form.eggId && 
     form.locationId &&
     Number(form.diskMb) >= 100 && 
@@ -90,11 +91,11 @@ export function CreateServerForm({ eggs, locations, remaining }: CreateServerFor
   const canProceedToNext = (step: Step): boolean => {
     switch (step) {
       case 'name':
-        return form.name.trim().length > 0;
+        return form.name.trim().length > 0 && isValidName;
       case 'egg':
-        return form.name.trim().length > 0 && form.eggId.length > 0;
+        return form.name.trim().length > 0 && isValidName && form.eggId.length > 0;
       case 'location':
-        if (!(form.name.trim().length > 0 && form.eggId.length > 0 && form.locationId.length > 0)) return false;
+        if (!(form.name.trim().length > 0 && isValidName && form.eggId.length > 0 && form.locationId.length > 0)) return false;
         const selected = locationsWithPing.find(l => l._id === form.locationId);
         if (!selected) return false;
         const isFull = Number(selected.serverCount || 0) >= Number(selected.serverLimit || 0);
@@ -183,13 +184,33 @@ export function CreateServerForm({ eggs, locations, remaining }: CreateServerFor
         }),
       });
 
-      let data: any = {}; try { data = await response.json(); } catch(e) {}
+      let data: any = {}; try { data = await response.json(); } catch {}
       
       if (!response.ok) {
+        let errorMsg = data?.error || 'Failed to create server';
         if (data?.violations) {
           setViolations(data.violations);
+        } else if (data?.details?.fieldErrors) {
+          const formattedViolations: Record<string, string> = {};
+          for (const [field, errors] of Object.entries(data.details.fieldErrors)) {
+            if (Array.isArray(errors) && errors.length > 0) {
+              formattedViolations[field] = String(errors[0]);
+            }
+          }
+          setViolations(formattedViolations);
+          
+          if (formattedViolations.name) {
+             errorMsg = formattedViolations.name;
+          }
+        } else if (data?.details?.errors && Array.isArray(data.details.errors)) {
+          const msgs = data.details.errors.map((e: any) => e.detail || e.message || 'Unknown error').join(', ');
+          errorMsg = `${errorMsg}: ${msgs}`;
+        } else if (data?.details && typeof data.details === 'string') {
+          errorMsg = `${errorMsg}: ${data.details}`;
+        } else if (data?.details && typeof data.details === 'object') {
+          try { errorMsg = `${errorMsg}: ${JSON.stringify(data.details)}`; } catch {}
         }
-        throw new Error(data?.error || 'Failed to create server');
+        throw new Error(errorMsg);
       }
 
       await modal.success({

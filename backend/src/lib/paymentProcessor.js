@@ -180,6 +180,13 @@ async function processCapturedPayment(payment, captureData, sanitizedOrderId) {
     }
   }
 
+  // Invalidate payment and user plans cache
+  const { deleteCachePattern } = require('./redis');
+  await deleteCachePattern(`payments:mine:${payment.userId}:*`);
+  await deleteCachePattern(`user:${payment.userId}:plans`);
+  await deleteCachePattern(`user:${payment.userId}:profile`); // Profile resources updated
+  await deleteCachePattern('admin:ledger');
+
   // Send confirmation email (non-blocking, never fail the response)
   try {
     const freshUser = await User.findById(payment.userId).lean();

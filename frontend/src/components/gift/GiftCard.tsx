@@ -21,7 +21,7 @@ export default function GiftCard() {
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/gifts/redeem`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ code })
       });
-      let d: any = {}; try { d = await r.json(); } catch(e) {}
+      let d: any = {}; try { d = await r.json(); } catch {}
       if (!r.ok) throw new Error(d?.error || 'Redeem failed');
       setResult({ success: true, message: d?.message || 'Redeemed!', rewards: d?.rewards });
       const rewards = d?.rewards || {};

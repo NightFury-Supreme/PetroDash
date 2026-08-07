@@ -12,6 +12,15 @@ db.createCollection('settings');
 db.createCollection('auditlogs');
 db.createCollection('coupons');
 db.createCollection('webhookevents');
+db.createCollection('gifts');
+db.createCollection('shopitems');
+db.createCollection('tickets');
+db.createCollection('payments');
+db.createCollection('defaultresources');
+db.createCollection('earnsessions');
+db.createCollection('emails');
+db.createCollection('subscriptions');
+db.createCollection('verificationtokens');
 
 // Create indexes for better performance
 db.users.createIndex({ "email": 1 }, { unique: true });
@@ -32,11 +41,14 @@ db.auditlogs.createIndex({ "action": 1 });
 
 db.coupons.createIndex({ "code": 1 }, { unique: true });
 db.webhookevents.createIndex({ "eventId": 1 }, { unique: true });
+db.gifts.createIndex({ "code": 1 }, { unique: true });
+db.tickets.createIndex({ "userId": 1 });
+db.tickets.createIndex({ "status": 1 });
 
 // Create default settings
 db.settings.insertOne({
   siteName: "PteroDash",
-  siteIconUrl: "",
+  siteIcon: "",
   createdAt: new Date(),
   updatedAt: new Date()
 });

@@ -92,10 +92,18 @@ const emailSchema = new mongoose.Schema({
 
 // Ensure only one email settings document exists
 emailSchema.statics.getOrCreate = async function() {
+  const { getCache, setCache } = require('../lib/redis');
+  const cacheKey = 'email:settings';
+  
+  const cached = await getCache(cacheKey);
+  if (cached) return cached;
+
   let doc = await this.findOne({});
   if (!doc) {
     doc = await this.create({});
   }
+  
+  await setCache(cacheKey, doc.toObject(), 300); // Cache for 5 minutes
   return doc;
 };
 

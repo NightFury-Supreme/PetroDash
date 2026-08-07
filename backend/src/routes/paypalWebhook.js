@@ -1,5 +1,5 @@
 const express = require('express');
-const Settings = require('../models/Settings');
+const { getSettings } = require('../lib/settings');
 const { verifyWebhookSignature, getAccessToken } = require('../lib/paypal');
 const Payment = require('../models/Payment');
 
@@ -10,7 +10,7 @@ const WebhookEvent = require('../models/WebhookEvent');
 
 router.post('/', express.json({ type: '*/*' }), async (req, res) => {
   try {
-    const s = await Settings.findOne({}).lean();
+    const s = await getSettings();
     const webhookId = s?.payments?.paypal?.webhookId;
     if (!webhookId) return res.status(400).json({ error: 'Webhook not configured' });
 

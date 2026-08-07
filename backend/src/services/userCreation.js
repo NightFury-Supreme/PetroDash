@@ -1,6 +1,6 @@
 const User = require('../models/User');
 const DefaultResources = require('../models/DefaultResources');
-const Settings = require('../models/Settings');
+const { getSettings } = require('../lib/settings');
 const { createPanelUser, checkUserExists } = require('./pterodactyl');
 const bcrypt = require('bcryptjs');
 
@@ -143,7 +143,7 @@ class UserCreationService {
       if (!referrer) return;
 
       // Load settings for coin rewards
-      const settings = await Settings.findOne({}).lean();
+      const settings = await getSettings();
       const referrerCoins = Number(settings?.referrals?.referrerCoins ?? Number(process.env.REFERRAL_REWARD_COINS || 50));
       const referredCoins = Number(settings?.referrals?.referredCoins ?? Number(process.env.REFERRAL_REFERRED_COINS || 25));
 

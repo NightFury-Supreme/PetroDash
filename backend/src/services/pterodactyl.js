@@ -63,8 +63,19 @@ async function getUserWithServers(userId) {
 }
 
 async function getEggDetails(nestId, eggId) {
+    const { getCache, setCache } = require('../lib/redis');
+    const cacheKey = `ptero:egg:${nestId}:${eggId}`;
+    
+    const cached = await getCache(cacheKey);
+    if (cached) return cached;
+    
     const { data } = await withRetry(() => api.get(`/nests/${nestId}/eggs/${eggId}`));
-    return data?.attributes;
+    const attributes = data?.attributes;
+    
+    if (attributes) {
+        await setCache(cacheKey, attributes, 900); // 15 minutes
+    }
+    return attributes;
 }
 
 async function getServer(serverId) {
@@ -117,8 +128,19 @@ async function unsuspendServer(serverId) {
 }
 
 async function getPanelUser(userId) {
+    const { getCache, setCache } = require('../lib/redis');
+    const cacheKey = `ptero:user:${userId}`;
+    
+    const cached = await getCache(cacheKey);
+    if (cached) return cached;
+
     const { data } = await withRetry(() => api.get(`/users/${userId}`));
-    return data?.attributes;
+    const attributes = data?.attributes;
+    
+    if (attributes) {
+        await setCache(cacheKey, attributes, 60); // Cache for 60 seconds
+    }
+    return attributes;
 }
 
 async function resetPanelUserPassword(userId) {
@@ -129,6 +151,11 @@ async function resetPanelUserPassword(userId) {
 
 async function updatePanelUser(userId, payload) {
     const { data } = await withRetry(() => api.patch(`/users/${userId}`, payload));
+    
+    // Invalidate cache
+    const { deleteCache } = require('../lib/redis');
+    await deleteCache(`ptero:user:${userId}`);
+    
     return data?.attributes;
 }
 

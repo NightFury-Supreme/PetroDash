@@ -4,7 +4,7 @@ const { createRateLimiter } = require('../middleware/rateLimit');
 const Payment = require('../models/Payment');
 const Plan = require('../models/Plan');
 const PDFDocument = require('pdfkit');
-const Settings = require('../models/Settings');
+const { getSettings } = require('../lib/settings');
 
 const router = express.Router();
 
@@ -16,7 +16,16 @@ router.get('/', requireAuth, async (req, res) => {
     let pageSize = Math.max(1, Math.min(100, parseInt(String(req.query.pageSize || '20')) || 20));
     const baseQuery = { userId: req.user.sub };
     let q = Payment.find(baseQuery).sort({ createdAt: -1 }).lean();
+    const { getCache, setCache } = require('../lib/redis');
+    const cacheKey = `payments:mine:${req.user.sub}:p${page}:s${pageSize}`;
+    
+    const cached = await getCache(cacheKey);
+    if (cached) {
+      return res.json(cached);
+    }
+    
     if (paginate) q = q.skip((page - 1) * pageSize).limit(pageSize);
+    
     const [list, total] = await Promise.all([
       q,
       paginate ? Payment.countDocuments(baseQuery) : Promise.resolve(0)
@@ -36,10 +45,11 @@ router.get('/', requireAuth, async (req, res) => {
       status: p.status,
       createdAt: p.createdAt,
     }));
-    if (paginate) {
-      return res.json({ data: out, meta: { total, page, pageSize } });
-    }
-    res.json(out);
+    
+    const responsePayload = paginate ? { data: out, meta: { total, page, pageSize } } : out;
+    await setCache(cacheKey, responsePayload, 30); // Cache for 30 seconds
+    
+    res.json(responsePayload);
   } catch (e) {
     res.status(400).json({ error: e.message });
   }
@@ -54,7 +64,7 @@ router.get('/:id/invoice', requireAuth, createRateLimiter(5, 60 * 1000), async (
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="invoice-${p._id}.pdf"`);
 
-    const settings = await Settings.findOne({}).lean();
+    const settings = await getSettings();
     const doc = new PDFDocument({ size: 'A4', margin: 50 });
     doc.pipe(res);
 

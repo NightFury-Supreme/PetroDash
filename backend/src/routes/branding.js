@@ -1,12 +1,12 @@
 const express = require('express');
-const Settings = require('../models/Settings');
+const { getSettings } = require('../lib/settings');
 
 const router = express.Router();
 
 // GET /api/branding - Get dashboard branding info (name and icon)
 router.get('/', async (req, res) => {
     try {
-        const settings = await Settings.findOne({}).lean();
+        const settings = await getSettings();
         if (!settings) {
             return res.json({ 
                 siteName: 'PteroDash', 

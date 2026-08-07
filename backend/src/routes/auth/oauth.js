@@ -3,7 +3,7 @@ const passport = require('passport');
 const DiscordStrategy = require('passport-discord').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../../models/User');
-const Settings = require('../../models/Settings');
+const { getSettings } = require('../../lib/settings');
 const UserCreationService = require('../../services/userCreation');
 const DiscordService = require('../../services/discord');
  
@@ -14,7 +14,7 @@ const { sendMailTemplate } = require('../../lib/mail');
 
 // Configure Passport strategies
 const configurePassport = async () => {
-  const settings = await Settings.findOne();
+  const settings = await getSettings();
   if (!settings) return;
 
   // Discord Strategy
@@ -257,11 +257,13 @@ router.get('/discord/callback', async (req, res, next) => {
       if (!req.user.emailVerified) {
         req.user.emailVerified = true;
         await req.user.save();
+        const { deleteCache } = require('../../lib/redis');
+        await deleteCache(`user:${req.user._id}:profile`);
       }
     } catch {}
     
     // Check if Discord server auto-join is configured and enabled
-    const settings = await Settings.findOne();
+    const settings = await getSettings();
     const autoJoinEnabled = settings?.auth?.discord?.autoJoin;
     const botToken = settings?.auth?.discord?.botToken;
     const guildId = settings?.auth?.discord?.guildId;
@@ -395,6 +397,8 @@ router.get('/google/callback', async (req, res, next) => {
       if (!req.user.emailVerified) {
         req.user.emailVerified = true;
         await req.user.save();
+        const { deleteCache } = require('../../lib/redis');
+        await deleteCache(`user:${req.user._id}:profile`);
       }
     } catch {}
     
@@ -453,12 +457,16 @@ router.get('/google/callback', async (req, res, next) => {
 // Get OAuth status
 router.get('/status', async (req, res) => {
   try {
-    const settings = await Settings.findOne();
+    const { getCache, setCache } = require('../../lib/redis');
+    const cached = await getCache('auth:oauth:status');
+    if (cached) return res.json(cached);
+
+    const settings = await getSettings();
     if (!settings) {
       return res.json({ discord: false, google: false });
     }
 
-    res.json({
+    const result = {
       discord: {
         enabled: settings.auth?.discord?.enabled || false,
         clientId: settings.auth?.discord?.clientId || ''
@@ -467,7 +475,10 @@ router.get('/status', async (req, res) => {
         enabled: settings.auth?.google?.enabled || false,
         clientId: settings.auth?.google?.clientId || ''
       }
-    });
+    };
+    
+    await setCache('auth:oauth:status', result, 60);
+    res.json(result);
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
     // OAuth status error logged silently

@@ -1,8 +1,8 @@
 const axios = require('axios');
-const Settings = require('../models/Settings');
+const { getSettings } = require('./settings');
 
 async function getAccessToken() {
-  const s = await Settings.findOne({}).lean();
+  const s = await getSettings();
   const paypal = s?.payments?.paypal || {};
   if (!paypal.clientId || !paypal.clientSecret) throw new Error('PayPal not configured');
   const baseUrl = paypal.mode === 'live' ? 'https://api.paypal.com' : 'https://api.sandbox.paypal.com';
@@ -21,7 +21,7 @@ async function verifyWebhookSignature(headers, eventBody) {
   const certUrl = headers['paypal-cert-url'];
   const authAlgo = headers['paypal-auth-algo'];
   const transmissionSig = headers['paypal-transmission-sig'];
-  const s = await Settings.findOne({}).lean();
+  const s = await getSettings();
   const webhookId = s?.payments?.paypal?.webhookId;
   if (!webhookId) throw new Error('Webhook not configured');
   const verifyRes = await axios.post(

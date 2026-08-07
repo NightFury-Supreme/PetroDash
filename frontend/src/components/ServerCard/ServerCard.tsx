@@ -53,29 +53,7 @@ export default function ServerCard({
   className = ""
 }: ServerCardProps) {
 
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  const getStatusIcon = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'running':
-      case 'active':
-        return 'fa-play-circle';
-      case 'stopped':
-      case 'offline':
-      case 'error':
-        return 'fa-stop-circle';
-      case 'starting':
-      case 'creating':
-      case 'installing':
-        return 'fa-spinner fa-spin';
-      case 'stopping':
-      case 'deleting':
-        return 'fa-pause-circle';
-      case 'suspended':
-        return 'fa-ban';
-      default:
-        return 'fa-question-circle';
-    }
-  };
+
 
   // Check if server is suspended
   const isSuspended = server.status.toLowerCase() === 'suspended';

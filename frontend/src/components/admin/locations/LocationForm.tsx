@@ -50,11 +50,11 @@ export default function LocationForm({ form, setForm, onSubmit, submitting, onDe
   try {
     const _d = await res.json();
     if (_d && _d.error) _err = _d.error;
-  } catch(e) {}
+  } catch {}
   throw new Error(_err);
 }
                       
-                      let data: any = {}; try { data = await res.json(); } catch(e) {}
+                      let data: any = {}; try { data = await res.json(); } catch {}
                       setForm({ ...form, flag: data.filePath });
                       
                       // Delete old flag file if it exists

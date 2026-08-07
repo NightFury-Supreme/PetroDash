@@ -51,7 +51,7 @@ export default function AdminTicketsPage() {
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets?${params.toString()}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      let d: any = {}; try { d = await r.json(); } catch(e) {}
+      let d: any = {}; try { d = await r.json(); } catch {}
       if (!r.ok) throw new Error(d?.error || 'Failed to load');
       setTickets(d?.tickets || []);
     } catch (e:any) { setError(e.message || 'Failed to load'); }
@@ -66,7 +66,7 @@ export default function AdminTicketsPage() {
       try {
         const token = localStorage.getItem('auth_token');
         const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/settings/categories`, { headers: { Authorization: `Bearer ${token}` } });
-        let d: any = {}; try { d = await r.json(); } catch(e) {}
+        let d: any = {}; try { d = await r.json(); } catch {}
         if (r.ok && Array.isArray(d?.categories)) setCategories(d.categories);
       } catch {}
     })();
@@ -256,12 +256,12 @@ function AdminTicketCategories() {
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/settings/categories`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      let d: any = {}; try { d = await r.json(); } catch(e) {}
+      let d: any = {}; try { d = await r.json(); } catch {}
       if (r.ok && Array.isArray(d?.categories)) setCategories(d.categories);
       const u = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/settings/categories/usage`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      let ud: any = {}; try { ud = await u.json(); } catch(e) {}
+      let ud: any = {}; try { ud = await u.json(); } catch {}
       if (u.ok && ud?.usage) setUsage(ud.usage);
     } catch {}
   };
@@ -276,7 +276,7 @@ function AdminTicketCategories() {
         method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ categories })
       });
-      let d: any = {}; try { d = await r.json(); } catch(e) {}
+      let d: any = {}; try { d = await r.json(); } catch {}
       if (r.ok) {
         await load();
       } else {

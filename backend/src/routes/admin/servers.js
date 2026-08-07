@@ -9,9 +9,14 @@ const { hasServerLimitsChanged } = require('../../utils/security');
 const router = express.Router();
 const shouldLogPanelErrors = process.env.NODE_ENV === 'development';
 
+const { getCache, setCache, deleteCachePattern } = require('../../lib/redis');
+
 // GET /api/admin/servers - list all servers
 router.get('/', requireAdmin, async (req, res) => {
   try {
+    const cached = await getCache('api:admin:servers');
+    if (cached) return res.json(cached);
+
     const servers = await Server.find({})
       .populate('owner', 'username email')
       .populate('eggId', 'name')
@@ -74,6 +79,7 @@ router.get('/', requireAdmin, async (req, res) => {
       }
     }));
     
+    await setCache('api:admin:servers', enriched, 30);
     res.json(enriched);
   } catch (error) {
     console.error('Failed to fetch servers:', error);
@@ -93,6 +99,11 @@ router.get('/:id', requireAdmin, async (req, res) => {
     if (!server) {
       return res.status(404).json({ error: 'Server not found' });
     }
+
+    const { getCache, setCache } = require('../../lib/redis');
+    const cacheKey = `api:admin:server:${req.params.id}`;
+    const cached = await getCache(cacheKey);
+    if (cached) return res.json(cached);
     
     // Try syncing from panel if available; ignore errors to keep endpoint responsive
     let unreachable = false;
@@ -145,6 +156,7 @@ router.get('/:id', requireAdmin, async (req, res) => {
       suspended
     };
     
+    await setCache(cacheKey, transformedServer, 30);
     res.json(transformedServer);
   } catch (error) {
     console.error('Failed to fetch server:', error);
@@ -253,12 +265,19 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     await server.save();
     
     // Audit log
+    // Audit log
     writeAudit(req, 'admin.servers:update', 'server', server._id.toString(), { 
       serverId: server._id.toString(), 
       serverName: server.name,
       newLimits: limits
     });
     
+    // Invalidate caches
+    await deleteCachePattern('api:admin:servers');
+    await deleteCachePattern(`api:servers:${server.owner}:*`);
+    await deleteCachePattern(`server:usage:${server.owner}`);
+    await deleteCachePattern(`api:admin:server:${req.params.id}`);
+
     res.json(server);
   } catch (error) {
     console.error('Server update error:', error);
@@ -325,6 +344,12 @@ router.delete('/:id', requireAdmin, async (req, res) => {
       panelServerId: server.panelServerId,
       forced: isForce,
     });
+
+    // Invalidate caches
+    await deleteCachePattern('api:admin:servers');
+    await deleteCachePattern(`api:servers:${server.owner}:*`);
+    await deleteCachePattern(`server:usage:${server.owner}`);
+    await deleteCachePattern(`api:admin:server:${req.params.id}`);
 
     return res.json({ message: 'Server deleted successfully.' });
   } catch (error) {

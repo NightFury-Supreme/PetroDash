@@ -19,7 +19,12 @@ const createSchema = z.object({
 });
 
 router.get('/', requireAdmin, async (req, res) => {
+    const { getCache, setCache } = require('../../lib/redis');
+    const cached = await getCache('admin:eggs');
+    if (cached) return res.json(cached);
+
     const list = await Egg.find().sort({ createdAt: -1 }).lean();
+    await setCache('admin:eggs', list, 30);
     res.json(list);
 });
 
@@ -29,12 +34,23 @@ router.post('/', requireAdmin, async (req, res) => {
         return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
     }
     const egg = await Egg.create({ ...parsed.data });
+    
+    const { deleteCachePattern } = require('../../lib/redis');
+    await deleteCachePattern('admin:eggs');
+
     res.status(201).json(egg);
 });
 
 router.get('/:id', requireAdmin, async (req, res) => {
+    const { getCache, setCache } = require('../../lib/redis');
+    const cacheKey = `admin:egg:${req.params.id}`;
+    const cached = await getCache(cacheKey);
+    if (cached) return res.json(cached);
+
     const egg = await Egg.findById(req.params.id).lean();
     if (!egg) return res.status(404).json({ error: 'Not found' });
+
+    await setCache(cacheKey, egg, 30);
     res.json(egg);
 });
 
@@ -45,12 +61,22 @@ router.put('/:id', requireAdmin, async (req, res) => {
     }
     const egg = await Egg.findByIdAndUpdate(req.params.id, parsed.data, { new: true }).lean();
     if (!egg) return res.status(404).json({ error: 'Not found' });
+
+    const { deleteCachePattern } = require('../../lib/redis');
+    await deleteCachePattern('admin:eggs');
+    await deleteCachePattern(`admin:egg:${req.params.id}`);
+
     res.json(egg);
 });
 
 router.delete('/:id', requireAdmin, async (req, res) => {
     const egg = await Egg.findByIdAndDelete(req.params.id).lean();
     if (!egg) return res.status(404).json({ error: 'Not found' });
+
+    const { deleteCachePattern } = require('../../lib/redis');
+    await deleteCachePattern('admin:eggs');
+    await deleteCachePattern(`admin:egg:${req.params.id}`);
+
     res.json({ success: true });
 });
 

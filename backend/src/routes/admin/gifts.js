@@ -10,7 +10,7 @@ router.get('/', requireAdmin, async (req, res) => {
   try {
     const { search = '', tab = 'all', page = '1', limit = '10' } = req.query;
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
-    const limitNum = Math.max(1, parseInt(limit, 10) || 10);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
 
     let filter = {};
     if (search.trim()) {
