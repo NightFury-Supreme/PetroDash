@@ -1,6 +1,6 @@
 const express = require('express');
 const { requireAuth } = require('../../middleware/auth');
-const rateLimit = require('express-rate-limit');
+const { createRateLimiter } = require('../../middleware/rateLimit');
 const Server = require('../../models/Server');
 const { getServer: getPanelServer } = require('../../services/pterodactyl');
 const { hasServerLimitsChanged } = require('../../utils/security');
@@ -9,7 +9,7 @@ const router = express.Router();
 const shouldLogPanelErrors = process.env.NODE_ENV === 'development';
 
     // GET /api/servers/:id
-    router.get('/', requireAuth, rateLimit({ max: 60, windowMs: 60 * 1000 }), async (req, res) => {
+    router.get('/', requireAuth, createRateLimiter(60, 60 * 1000), async (req, res) => {
       try {
         const { getCache, setCache } = require('../../lib/redis');
         const cacheKey = `server:details:${req.user.sub}:${req.params.id}`;

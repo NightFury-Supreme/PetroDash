@@ -133,7 +133,7 @@ async function deleteCachePattern(pattern) {
 
     if (!redis || usingMemoryFallback) {
         for (const key of memoryCache.keys()) {
-            if (key.startsWith(pattern.replace('*', ''))) {
+            if (key.startsWith(pattern.replaceAll('*', ''))) {
                 memoryCache.delete(key);
             }
         }
