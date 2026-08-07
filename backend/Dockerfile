@@ -1,5 +1,5 @@
 # Use Node.js 20 Alpine for smaller image size
-FROM node:20-alpine@sha256:c0602f06b4d3fbe2e9d2f211326c596ea67fb90956b6b3e944b7d159a224ba46
+FROM node@sha256:c0602f06b4d3fbe2e9d2f211326c596ea67fb90956b6b3e944b7d159a224ba46
 
 # Set working directory
 WORKDIR /app

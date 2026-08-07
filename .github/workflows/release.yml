@@ -11,17 +11,13 @@ on:
         required: true
         type: string
 
-permissions:
-  contents: write
-  actions: read
-  pull-requests: write
-  issues: write
-
 permissions: read-all
 
 jobs:
   build-and-release:
     runs-on: ubuntu-22.04
+    permissions:
+      contents: write
     
     steps:
     - name: Checkout code
