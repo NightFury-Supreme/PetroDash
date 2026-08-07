@@ -19,7 +19,7 @@
     "compression": "^1.8.1",
     "connect-redis": "^10.0.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
+    "dotenv": "^17.4.2",
     "express": "^4.19.2",
     "express-rate-limit": "^8.0.1",
     "express-session": "^1.18.2",
