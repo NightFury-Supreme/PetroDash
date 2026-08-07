@@ -18,6 +18,7 @@ const getStore = () => {
 const showLimiter = rateLimit({ windowMs: 60 * 1000, max: 60, store: getStore(), message: { error: 'Too many requests' } });
 
     // GET /api/servers/:id
+    // codeql[js/missing-rate-limiting]
     router.get('/', requireAuth, showLimiter, async (req, res) => {
       try {
         const { getCache, setCache } = require('../../lib/redis');

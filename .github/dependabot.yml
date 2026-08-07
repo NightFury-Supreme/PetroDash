@@ -16,8 +16,6 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
-    security-updates:
-      ignore: []
 
   # Maintain frontend npm dependencies
   - package-ecosystem: "npm"
@@ -25,5 +23,3 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
-    security-updates:
-      ignore: []

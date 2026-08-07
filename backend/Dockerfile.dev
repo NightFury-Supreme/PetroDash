@@ -1,5 +1,5 @@
 # Development Dockerfile for Backend
-FROM node:18-alpine
+FROM node@sha256:91bc86b4f74d6f30e014eebdaedbdad712e08a6d476906201e7413f1e944b204 # 18-alpine
 
 # Set working directory
 WORKDIR /app

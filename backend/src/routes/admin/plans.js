@@ -229,7 +229,7 @@ router.delete('/:id', requireAdmin, validateObjectId('id'), async (req, res) => 
     // Check if any users are currently using this plan
     const UserPlan = require('../../models/UserPlan');
     const activeUsers = await UserPlan.countDocuments({ 
-      planId: req.params.id, 
+      planId: String(req.params.id), 
       status: 'active' 
     });
     

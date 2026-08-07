@@ -23,6 +23,7 @@ const router = express.Router();
 
 
 // GET /api/subscriptions - list my subscriptions
+// codeql[js/missing-rate-limiting]
 router.get('/', requireAuth, listLimiter, async (req, res) => {
   const { getCache, setCache } = require('../lib/redis');
   const cacheKey = `subscriptions:mine:${req.user.sub}`;
@@ -37,6 +38,7 @@ router.get('/', requireAuth, listLimiter, async (req, res) => {
 });
 
 // POST /api/subscriptions - create a subscription for a plan
+// codeql[js/missing-rate-limiting]
 router.post('/', requireAuth, createLimiter, async (req, res) => {
   try {
     const { planId, couponCode } = req.body || {};
@@ -76,6 +78,7 @@ router.post('/', requireAuth, createLimiter, async (req, res) => {
 });
 
 // POST /api/subscriptions/confirm - confirm approved subscription by id from return URL
+// codeql[js/missing-rate-limiting]
 router.post('/confirm', requireAuth, actionLimiter, async (req, res) => {
   try {
     const { subscriptionId, couponCode } = req.body || {};
@@ -118,6 +121,7 @@ router.post('/confirm', requireAuth, actionLimiter, async (req, res) => {
 });
 
 // POST /api/subscriptions/:id/pause
+// codeql[js/missing-rate-limiting]
 router.post('/:id/pause', requireAuth, actionLimiter, async (req, res) => {
   // Validate ObjectId format to prevent NoSQL injection
   if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
@@ -132,6 +136,7 @@ router.post('/:id/pause', requireAuth, actionLimiter, async (req, res) => {
 });
 
 // POST /api/subscriptions/:id/resume
+// codeql[js/missing-rate-limiting]
 router.post('/:id/resume', requireAuth, actionLimiter, async (req, res) => {
   // Validate ObjectId format to prevent NoSQL injection
   if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
@@ -146,6 +151,7 @@ router.post('/:id/resume', requireAuth, actionLimiter, async (req, res) => {
 });
 
 // POST /api/subscriptions/:id/upgrade - change plan (proration TBD)
+// codeql[js/missing-rate-limiting]
 router.post('/:id/upgrade', requireAuth, createLimiter, async (req, res) => {
   const { newPlanId } = req.body || {};
   if (!newPlanId) return res.status(400).json({ error: 'newPlanId required' });
@@ -167,6 +173,7 @@ router.post('/:id/upgrade', requireAuth, createLimiter, async (req, res) => {
 });
 
 // POST /api/subscriptions/:id/cancel - cancel at period end
+// codeql[js/missing-rate-limiting]
 router.post('/:id/cancel', requireAuth, createLimiter, async (req, res) => {
   try {
     // Validate ObjectId format to prevent NoSQL injection

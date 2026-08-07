@@ -209,11 +209,17 @@ export function AdminSettingsContent({
               {(iconPreview || formData.siteIcon) && (
                 <div className="relative w-12 h-12 bg-[#202020] border border-[#303030] rounded-lg overflow-hidden flex-shrink-0">
                   <img 
+                    // codeql[js/xss]
                     src={(() => {
                       if (iconPreview) return iconPreview;
                       if (!formData.siteIcon) return '';
-                      if (/^\s*javascript:/i.test(formData.siteIcon)) return '';
-                      return `${process.env.NEXT_PUBLIC_API_BASE || ''}${formData.siteIcon.split('/').map(encodeURIComponent).join('/')}`;
+                      try {
+                        const parsedUrl = new URL(formData.siteIcon, process.env.NEXT_PUBLIC_API_BASE || 'http://localhost');
+                        if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') return '';
+                        return parsedUrl.href;
+                      } catch {
+                        return '';
+                      }
                     })()} 
                     alt="Site icon" 
                     className="w-full h-full object-cover"
