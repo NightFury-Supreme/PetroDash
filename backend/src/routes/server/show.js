@@ -8,6 +8,9 @@ const { getServer: getPanelServer } = require('../../services/pterodactyl');
 const { hasServerLimitsChanged } = require('../../utils/security');
 
 const router = express.Router();
+
+// Apply a baseline rate limiter to the entire router to satisfy CodeQL
+router.use(rateLimit({ windowMs: 60 * 1000, max: 100, message: { error: 'Too many requests' } }));
 const shouldLogPanelErrors = true;
 
 const getStore = () => {

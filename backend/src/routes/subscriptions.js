@@ -21,6 +21,8 @@ const { getAccessToken } = require('../lib/paypal');
 
 const router = express.Router();
 
+// Apply a baseline rate limiter to the entire router to satisfy CodeQL
+router.use(listLimiter);
 
 // GET /api/subscriptions - list my subscriptions
 // codeql[js/missing-rate-limiting]

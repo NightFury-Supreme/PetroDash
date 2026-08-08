@@ -76,19 +76,11 @@ jobs:
       run: |
         echo "Installing backend dependencies..."
         cd backend
-        if [ -f package-lock.json ]; then
-          npm ci
-        else
-          npm install
-        fi
+        npm ci
         
         echo "Installing frontend dependencies..."
         cd ../frontend
-        if [ -f package-lock.json ]; then
-          npm ci
-        else
-          npm install
-        fi
+        npm ci
         
     - name: Build frontend
       run: |
@@ -190,12 +182,12 @@ jobs:
         echo '# Install backend dependencies' >> full-package/install.sh
         echo 'echo "Installing backend dependencies..."' >> full-package/install.sh
         echo 'cd backend' >> full-package/install.sh
-        echo 'if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi' >> full-package/install.sh
+        echo 'npm ci --omit=dev' >> full-package/install.sh
         echo '' >> full-package/install.sh
         echo '# Install frontend dependencies' >> full-package/install.sh
         echo 'echo "Installing frontend dependencies..."' >> full-package/install.sh
         echo 'cd ../frontend' >> full-package/install.sh
-        echo 'if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi' >> full-package/install.sh
+        echo 'npm ci --omit=dev' >> full-package/install.sh
         echo '' >> full-package/install.sh
         echo '# Build frontend' >> full-package/install.sh
         echo 'echo "Building frontend..."' >> full-package/install.sh

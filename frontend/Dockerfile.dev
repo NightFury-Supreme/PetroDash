@@ -8,13 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install all dependencies (including dev dependencies)
-RUN if [ -f package-lock.json ]; then \
-      echo "Using package-lock.json for installation" && \
-      npm ci; \
-    else \
-      echo "No package-lock.json found, using npm install" && \
-      npm install; \
-    fi
+RUN npm ci
 
 # Copy source code
 COPY . .

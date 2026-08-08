@@ -27,12 +27,12 @@ jobs:
       - name: Install backend deps
         working-directory: backend
         run: |
-          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+          npm ci
 
       - name: Install frontend deps
         working-directory: frontend
         run: |
-          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+          npm ci
 
       - name: Lint backend
         working-directory: backend
@@ -123,13 +123,13 @@ jobs:
       - name: Backend production audit
         working-directory: backend
         run: |
-          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+          npm ci
           npm audit --audit-level=low
 
       - name: Frontend production audit
         working-directory: frontend
         run: |
-          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+          npm ci
           npm audit --audit-level=low
 
   codeql:

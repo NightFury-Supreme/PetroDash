@@ -15,7 +15,7 @@ USER nodejs
 COPY --chown=nodejs:nodejs package*.json ./
 
 # Install dependencies (lock-aware)
-RUN npm install && npm cache clean --force
+RUN npm ci && npm cache clean --force
 
 # Copy source code
 COPY --chown=nodejs:nodejs . .

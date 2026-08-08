@@ -12,7 +12,7 @@ COPY package*.json ./
 FROM base AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 COPY . .
 
 # Set environment variables for build

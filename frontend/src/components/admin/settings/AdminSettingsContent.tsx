@@ -169,12 +169,25 @@ export function AdminSettingsContent({
     }
     
     const finalKey = keys[keys.length - 1];
-      // Final check before assignment
-      if (finalKey !== '__proto__' && finalKey !== 'constructor' && finalKey !== 'prototype') {
-        current[finalKey] = value;
-        setFormData(newData);
-      }
+    // Final check before assignment
+    if (finalKey !== '__proto__' && finalKey !== 'constructor' && finalKey !== 'prototype') {
+      current[finalKey] = value;
+      setFormData(newData);
+    }
   };
+
+  const getSafeIconUrl = () => {
+    if (iconPreview) return iconPreview;
+    if (!formData.siteIcon) return '';
+    try {
+      const parsedUrl = new URL(formData.siteIcon, process.env.NEXT_PUBLIC_API_BASE || 'http://localhost');
+      if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') return '';
+      return parsedUrl.href;
+    } catch {
+      return '';
+    }
+  };
+  const safeSiteIcon = getSafeIconUrl();
 
   return (
     <div className="space-y-6">
@@ -209,18 +222,7 @@ export function AdminSettingsContent({
               {(iconPreview || formData.siteIcon) && (
                 <div className="relative w-12 h-12 bg-[#202020] border border-[#303030] rounded-lg overflow-hidden flex-shrink-0">
                   <img 
-                    // codeql[js/xss]
-                    src={(() => {
-                      if (iconPreview) return iconPreview;
-                      if (!formData.siteIcon) return '';
-                      try {
-                        const parsedUrl = new URL(formData.siteIcon, process.env.NEXT_PUBLIC_API_BASE || 'http://localhost');
-                        if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') return '';
-                        return parsedUrl.href;
-                      } catch {
-                        return '';
-                      }
-                    })()} 
+                    src={safeSiteIcon}
                     alt="Site icon" 
                     className="w-full h-full object-cover"
                   />
