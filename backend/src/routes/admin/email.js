@@ -5,26 +5,31 @@ const Email = require('../../models/Email');
 
 const router = express.Router();
 
-function serialize(emailDoc) {
+function serialize(emailDoc, settingsDoc) {
   const e = emailDoc.toObject ? emailDoc.toObject() : emailDoc;
+  const s = settingsDoc.toObject ? settingsDoc.toObject() : settingsDoc;
   return {
     payments: { smtp: e?.smtp || {} },
-    emailTemplates: Object.fromEntries(e?.templates || new Map()),
+    auth: { emailVerification: !!s?.auth?.emailVerification }
   };
 }
 
 router.get('/', requireAdmin, async (req, res) => {
   try {
     const { getCache, setCache } = require('../../lib/redis');
-    const cached = await getCache('email:settings');
-    if (cached) return res.json(cached);
+    const cached = await getCache('api:email:settings');
+    if (cached && cached.payments) return res.json(cached);
 
     const emailSettings = await Email.getOrCreate();
-    const result = serialize(emailSettings);
-    await setCache('email:settings', result, 60);
+    const Settings = require('../../models/Settings');
+    let settingsDoc = await Settings.findOne({});
+    if (!settingsDoc) settingsDoc = await Settings.create({});
+    
+    const result = serialize(emailSettings, settingsDoc);
+    await setCache('api:email:settings', result, 60);
     return res.json(result);
-  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
+    console.error('GET /api/admin/email failed:', e);
     return res.status(500).json({ error: 'Failed to load email settings' });
   }
 });
@@ -40,11 +45,10 @@ const payloadSchema = z.object({
       fromEmail: z.string().email().optional(),
     }).optional(),
   }).optional(),
-  emailTemplates: z.record(z.string(), z.object({
-    subject: z.string().max(200).optional(),
-    html: z.string().max(10000).optional(),
-    text: z.string().max(10000).optional(),
-  })).optional()
+
+  auth: z.object({
+    emailVerification: z.boolean().optional()
+  }).optional()
 });
 
 router.patch('/', requireAdmin, async (req, res) => {
@@ -54,57 +58,47 @@ router.patch('/', requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
     }
     
-    const emailSettings = await Email.getOrCreate();
-    const { payments, emailTemplates } = parsed.data;
+    let emailSettings = await Email.findOne({});
+    if (!emailSettings) emailSettings = await Email.create({});
+    const Settings = require('../../models/Settings');
+    let settingsDoc = await Settings.findOne({});
+    if (!settingsDoc) settingsDoc = await Settings.create({});
+    
+    const { payments, auth } = parsed.data;
 
     if (payments?.smtp) {
-      emailSettings.smtp = { ...(emailSettings.smtp || {}), ...payments.smtp };
+      if (!emailSettings.smtp) emailSettings.smtp = {};
+      for (const [key, value] of Object.entries(payments.smtp)) {
+        if (value !== undefined) emailSettings.smtp[key] = value;
+      }
     }
-    if (emailTemplates) {
-      const templatesMap = new Map(Object.entries(emailTemplates));
-      emailSettings.templates = templatesMap;
-    }
+
     
     await emailSettings.save();
+    
+    if (auth && auth.emailVerification !== undefined) {
+      const smtp = emailSettings.smtp || {};
+      const isSmtpConfigured = !!(smtp.host && smtp.fromEmail);
+      
+      settingsDoc.auth = settingsDoc.auth || {};
+      settingsDoc.auth.emailVerification = auth.emailVerification && isSmtpConfigured;
+      await settingsDoc.save();
+      const { clearSettingsCache } = require('../../lib/settings');
+      await clearSettingsCache();
+    }
     
     // Invalidate the email settings cache
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('email:settings');
+    await deleteCachePattern('api:email:settings');
     
-    return res.json(serialize(emailSettings));
-  // eslint-disable-next-line unused-imports/no-unused-vars
+    return res.json(serialize(emailSettings, settingsDoc));
   } catch (e) {
+    console.error('PATCH /api/admin/email failed:', e);
     return res.status(500).json({ error: 'Failed to update email settings' });
   }
 });
 
-const testEmailSchema = z.object({
-  email: z.string().email()
-});
-
-router.post('/test', requireAdmin, async (req, res) => {
-  try {
-    const parsed = testEmailSchema.safeParse(req.body);
-    if (!parsed.success) {
-      return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
-    }
-    
-    const { email } = parsed.data;
-    const { sendMail } = require('../../lib/mail');
-    
-    await sendMail({
-      to: email,
-      subject: 'PteroDash - Test Email Configuration',
-      text: 'If you are receiving this email, your PteroDash SMTP configuration is working correctly.',
-      html: '<p>If you are receiving this email, your <strong>PteroDash SMTP configuration</strong> is working correctly.</p>'
-    });
-    
-    return res.json({ ok: true, message: 'Test email sent successfully' });
-  } catch (e) {
-    console.error('Test email failed:', e);
-    return res.status(500).json({ error: 'Failed to send test email: ' + e.message });
-  }
-});
 
 module.exports = router;
 

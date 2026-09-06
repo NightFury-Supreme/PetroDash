@@ -2,7 +2,6 @@
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useModal } from '@/components/Modal';
-import Shell from '@/components/Shell';
 import { PlanSkeleton } from '@/components/skeletons/admin/plan/new/PlanSkeleton';
 import { usePlanForm } from '@/hooks/admin/plan/usePlanForm';
 import { PlanForm } from '@/components/admin/plan/PlanForm';
@@ -47,14 +46,14 @@ export default function NewPlanPage() {
   // Show skeleton while loading
   if (loading) {
     return (
-      <Shell>
+      
         <PlanSkeleton />
-      </Shell>
+      
     );
   }
 
   return (
-    <Shell>
+    
       <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 bg-[#0F0F0F] min-h-screen">
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
@@ -65,7 +64,7 @@ export default function NewPlanPage() {
             <i className="fas fa-arrow-left text-white"></i>
           </Link>
           <div className="w-16 h-16 bg-[#202020] rounded-2xl flex items-center justify-center shadow-lg">
-            <i className="fas fa-crown text-white text-2xl"></i>
+            <i className="fas fa-crown text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)] text-2xl"></i>
           </div>
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Create New Plan</h1>
@@ -102,6 +101,6 @@ export default function NewPlanPage() {
           onCancel={handleCancel}
         />
       </div>
-    </Shell>
+    
   );
 }

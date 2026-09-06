@@ -22,7 +22,7 @@ export default function GiftsPageContent() {
     if (!token) { router.replace('/login'); return; }
     
     try {
-      const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/gifts`);
+      const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/gifts`);
       url.searchParams.set('page', currentPage.toString());
       url.searchParams.set('limit', '10');
       url.searchParams.set('tab', tab);
@@ -57,7 +57,7 @@ export default function GiftsPageContent() {
 
   const toggleEnabled = async (id: string, enabled: boolean) => {
     const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/gifts/${id}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/gifts/${id}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ enabled })
     });
     if (res.ok) setGifts((prev) => prev.map((c) => (c._id === id ? { ...c, enabled } : c)));
@@ -67,7 +67,7 @@ export default function GiftsPageContent() {
     const token = localStorage.getItem('auth_token');
     setDeleting(id);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/gifts/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/gifts/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) setGifts((prev) => prev.filter((c) => c._id !== id));
     } finally {
       setDeleting(null);

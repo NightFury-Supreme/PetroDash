@@ -66,7 +66,40 @@ router.get('/', requireAdmin, async (req, res) => {
   }
 });
 
-// GET /api/admin/tickets/:id — full ticket with messages
+// GET /api/admin/tickets/:id/messages — paginated messages (includes internal notes)
+router.get('/:id/messages', requireAdmin, async (req, res) => {
+  try {
+    if (!/^[0-9a-fA-F]{24}$/.test(req.params.id))
+      return res.status(400).json({ error: 'Invalid ticket ID format' });
+
+    const TicketMessage = require('../../models/TicketMessage');
+    const limit = parseInt(req.query.limit) || 50;
+    const before = req.query.before;
+
+    const query = { ticket: req.params.id }; // Admin sees internal notes
+    if (before && /^[0-9a-fA-F]{24}$/.test(before)) {
+      query._id = { $lt: new mongoose.Types.ObjectId(before) };
+    }
+
+    const messages = await TicketMessage.find(query)
+      .sort({ _id: -1 })
+      .limit(limit + 1)
+      .populate('author', 'username email profilePicture')
+      .lean();
+
+    const hasMore = messages.length > limit;
+    if (hasMore) messages.pop();
+
+    res.json({
+      messages: messages.reverse(),
+      hasMore
+    });
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch messages' });
+  }
+});
+
+// GET /api/admin/tickets/:id — full ticket (no embedded messages)
 router.get('/:id', requireAdmin, async (req, res) => {
   try {
     if (!/^[0-9a-fA-F]{24}$/.test(req.params.id))
@@ -78,9 +111,11 @@ router.get('/:id', requireAdmin, async (req, res) => {
 
     const t = await Ticket.findById(String(req.params.id))
       .populate('user', 'username email')
-      .populate('messages.author', 'username email')
+      .populate('assignee', 'username email')
       .lean();
     if (!t) return res.status(404).json({ error: 'Not found' });
+
+    t.messages = [];
 
     await setCache(cacheKey, t, 30);
     res.json(t);
@@ -102,14 +137,29 @@ router.post('/:id/messages', requireAdmin, async (req, res) => {
     if (!/^[0-9a-fA-F]{24}$/.test(req.params.id))
       return res.status(400).json({ error: 'Invalid ticket ID format' });
 
-    const t = await Ticket.findById(String(req.params.id)).populate('messages.author', 'username email');
+    const t = await Ticket.findById(String(req.params.id));
     if (!t) return res.status(404).json({ error: 'Not found' });
     if (t.deletedByUser) return res.status(403).json({ error: 'Ticket is deleted' });
 
     const isInternal = !!internal;
-    t.messages.push({ body: body.trim(), author: adminId, authorRole: 'admin', internal: isInternal });
+    const TicketMessage = require('../../models/TicketMessage');
+
+    const savedMsg = await TicketMessage.create({
+      ticket: t._id,
+      author: adminId,
+      authorRole: 'admin',
+      body: body.trim(),
+      internal: isInternal,
+      createdAt: new Date()
+    });
+
     t.updatedAt = new Date();
-    if (!isInternal) t.lastAdminReplyAt = new Date();
+    if (!isInternal) {
+      t.lastAdminReplyAt = new Date();
+      // Auto-transition: open → pending when admin replies publicly
+      if (t.status === 'open') t.status = 'pending';
+      // pending stays pending, resolved/closed are not changed by a reply
+    }
     await t.save();
 
     // Notify ticket owner on public reply (non-blocking)
@@ -119,10 +169,30 @@ router.post('/:id/messages', requireAdmin, async (req, res) => {
         const owner = await User.findById(t.user).lean();
         if (owner && owner.email) {
           const { sendMailTemplate } = require('../../lib/mail');
+          let frontendHost = process.env.FRONTEND_URL || '';
+          if (frontendHost && !frontendHost.startsWith('http')) frontendHost = `https://${frontendHost}`;
+          
+          let statusBg = '#2b2512', statusColor = '#fde047', statusBorder = '#453413'; // default pending
+          if (t.status === 'open') { statusBg = '#102a1d'; statusColor = '#86efac'; statusBorder = '#144026'; }
+          else if (t.status === 'resolved') { statusBg = '#18253a'; statusColor = '#93c5fd'; statusBorder = '#1a396b'; }
+          else if (t.status === 'closed') { statusBg = '#303030'; statusColor = '#AAAAAA'; statusBorder = '#404040'; }
+
           await sendMailTemplate({
             to: owner.email,
             templateKey: 'ticketReply',
-            data: { title: t.title, snippet: String(body).slice(0, 200) }
+            data: { 
+              username: owner.username,
+              title: t.title, 
+              snippet: String(body).slice(0, 200),
+              ticketId: String(t._id),
+              category: String(t.category).charAt(0).toUpperCase() + String(t.category).slice(1),
+              priority: String(t.priority).charAt(0).toUpperCase() + String(t.priority).slice(1),
+              status: String(t.status).charAt(0).toUpperCase() + String(t.status).slice(1),
+              statusBg,
+              statusColor,
+              statusBorder,
+              frontendUrl: frontendHost
+            }
           });
         }
       // eslint-disable-next-line unused-imports/no-unused-vars
@@ -134,8 +204,8 @@ router.post('/:id/messages', requireAdmin, async (req, res) => {
     await deleteCachePattern(`tickets:mine:${t.user}:*`);
     await deleteCachePattern(`tickets:admin:detail:${req.params.id}`);
 
-    const savedMsg = t.messages[t.messages.length - 1];
-    res.json({ ok: true, message: savedMsg });
+    await savedMsg.populate('author', 'username email profilePicture');
+    res.json({ ok: true, message: savedMsg, status: t.status });
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (err) {
     res.status(500).json({ error: 'Failed to add message' });
@@ -157,6 +227,31 @@ router.patch('/:id', requireAdmin, async (req, res) => {
       if (t.status === 'closed' && status === 'resolved') {
         return res.status(400).json({ error: 'Cannot resolve a closed ticket. Please reopen it first.' });
       }
+      
+      if (t.status !== status && (status === 'resolved' || status === 'closed')) {
+        try {
+          const User = require('../../models/User');
+          const owner = await User.findById(t.user).lean();
+          if (owner && owner.email) {
+            const { sendMailTemplate } = require('../../lib/mail');
+            let frontendHost = process.env.FRONTEND_URL || '';
+            if (frontendHost && !frontendHost.startsWith('http')) frontendHost = `https://${frontendHost}`;
+            await sendMailTemplate({
+              to: owner.email,
+              templateKey: status === 'resolved' ? 'ticketResolved' : 'ticketClosed',
+              data: {
+                username: owner.username,
+                title: t.title,
+                ticketId: String(t._id),
+                category: String(t.category).charAt(0).toUpperCase() + String(t.category).slice(1),
+                priority: String(t.priority).charAt(0).toUpperCase() + String(t.priority).slice(1),
+                frontendUrl: frontendHost
+              }
+            });
+          }
+        } catch {}
+      }
+      
       t.status = status;
       if (status === 'closed') t.closedAt = t.closedAt || new Date();
       changed = true;

@@ -36,7 +36,6 @@ function sanitizeEarn(earn) {
   };
 
   return {
-    enabled: Boolean(e.enabled),
     ads: normalizeMethod(e.ads, { coins: 10, cooldownSeconds: 3600, waitSeconds: 30, maxClaimsPerDay: 24, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '' }),
     linkvertise: normalizeMethod(e.linkvertise, { coins: 20, cooldownSeconds: 3600, waitSeconds: 10, maxClaimsPerDay: 24, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '' }),
   };
@@ -54,7 +53,6 @@ router.get('/', requireAdmin, async (req, res) => {
 });
 
 const earnPatchSchema = z.object({
-  enabled: z.coerce.boolean().optional(),
   ads: z.object({
     enabled: z.coerce.boolean().optional(),
     coins: z.coerce.number().int().min(0).max(1000000).optional(),
@@ -85,7 +83,6 @@ router.patch('/', requireAdmin, async (req, res) => {
     settings.earn = settings.earn || {};
 
     const update = parsed.data;
-    if (update.enabled !== undefined) settings.earn.enabled = update.enabled;
 
     const applyMethod = (key) => {
       if (!update[key]) return;

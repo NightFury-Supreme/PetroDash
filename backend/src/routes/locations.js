@@ -13,6 +13,13 @@ router.get('/', requireAuth, async (req, res) => {
         
         if (!locationsWithData) {
             const locations = await Location.find().lean();
+            const Plan = require('../models/Plan');
+            const allPlans = await Plan.find({}, '_id name').lean();
+            const planMap = new Map();
+            allPlans.forEach(p => {
+                planMap.set(p._id.toString(), p.name);
+                planMap.set(p.name, p.name);
+            });
             
             // Get server count and ping for each location
             locationsWithData = await Promise.all(
@@ -23,10 +30,15 @@ router.get('/', requireAuth, async (req, res) => {
                     const cacheData = await getCache(`ping:${location._id}`);
                     const ping = cacheData ? cacheData.ping : null;
                     
+                    const allowedPlanNames = (location.allowedPlans || [])
+                        .map(ap => planMap.get(String(ap)))
+                        .filter(Boolean);
+
                     return {
                         ...location,
                         serverCount,
-                        ping
+                        ping,
+                        allowedPlanNames: [...new Set(allowedPlanNames)] // unique names
                     };
                 })
             );

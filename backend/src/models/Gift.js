@@ -20,7 +20,7 @@ const giftRewardSchema = new mongoose.Schema(
 const giftSchema = new mongoose.Schema(
   {
     code: { type: String, required: true, unique: true, uppercase: true, trim: true },
-    description: { type: String, default: '' },
+    description: { type: String, default: '', maxlength: 100 },
     rewards: { type: giftRewardSchema, default: () => ({}) },
     maxRedemptions: { type: Number, default: 0 }, // 0 => unlimited
     redeemedCount: { type: Number, default: 0 },

@@ -1,6 +1,5 @@
 "use client";
 
-import Shell from "@/components/Shell";
 import { useEffect, useMemo, useRef, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useModal } from "@/components/Modal";
@@ -115,7 +114,7 @@ function EarnContent() {
         const t = localStorage.getItem("auth_token");
         if (!t) throw new Error("Not authenticated");
 
-        const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/earn/ads/ayet/rewarded`, {
+        const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/earn/ads/ayet/rewarded`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -331,7 +330,7 @@ function EarnContent() {
 
   if (loading) {
     return (
-      <Shell>
+      
         <div className="p-6 space-y-6">
           <div className="h-12 w-64 bg-[#202020] rounded-lg animate-pulse" />
           <div className="space-y-6">
@@ -340,12 +339,12 @@ function EarnContent() {
             ))}
           </div>
         </div>
-      </Shell>
+      
     );
   }
 
   return (
-    <Shell>
+    
       <div className="p-4 sm:p-6 space-y-6 bg-[#0F0F0F] min-h-screen text-white">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -356,15 +355,6 @@ function EarnContent() {
               <h1 className="text-2xl sm:text-3xl font-extrabold">Earn</h1>
               <p className="text-[#AAAAAA]">Watch rewarded videos and complete tasks to earn coins.</p>
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              className="btn-ghost"
-              onClick={() => refresh()}
-              disabled={loading}
-            >
-              <i className="fas fa-rotate-right" />
-            </button>
           </div>
         </div>
 
@@ -495,7 +485,7 @@ function EarnContent() {
           </div>
         )}
       </div>
-    </Shell>
+    
   );
 }
 

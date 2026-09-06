@@ -60,6 +60,18 @@ router.post('/', requireAuth, async (req, res) => {
 
   // 3. All further work is inside try/finally so the lock is ALWAYS released
   try {
+    // 3.5. Just-In-Time Pterodactyl User Sync
+    // If the user registered while the panel was offline, their panel account is pending.
+    if (!user.pterodactylUserId) {
+      const UserCreationService = require('../../services/userCreation');
+      await UserCreationService.createPterodactylUser(user);
+      if (!user.pterodactylUserId) {
+        return res.status(503).json({ 
+          error: 'The Pterodactyl panel is currently unreachable, so your account cannot be provisioned right now. Please try again later.' 
+        });
+      }
+    }
+
     const { name, eggId, locationId, limits } = parsed.data;
 
     // Fetch egg and location — validate they exist
@@ -173,14 +185,24 @@ router.post('/', requireAuth, async (req, res) => {
     // 9. Fetch egg startup/docker details from Pterodactyl
     let startup = '';
     let dockerImage = '';
+    let pteroVariables = {};
     try {
       const ed = await getEggDetails(egg.pterodactylNestId, egg.pterodactylEggId);
       startup = ed?.startup || '';
       dockerImage = ed?.docker_image || ed?.dockerImage || '';
+      
+      if (ed?.relationships?.variables?.data) {
+        for (const v of ed.relationships.variables.data) {
+          pteroVariables[v.attributes.env_variable] = String(v.attributes.default_value || '');
+        }
+      }
     // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_) {
       // Non-fatal: panel may still accept defaults
     }
+
+    const localEnv = Object.fromEntries((egg.env || []).map(v => [v.key, v.value]));
+    const environment = { ...pteroVariables, ...localEnv };
 
     // 10. Submit server creation request to Pterodactyl panel
     const panelPayload = {
@@ -189,7 +211,7 @@ router.post('/', requireAuth, async (req, res) => {
       egg: egg.pterodactylEggId,
       docker_image: dockerImage,
       startup,
-      environment: Object.fromEntries((egg.env || []).map(v => [v.key, v.value])),
+      environment,
       limits: {
         memory: limits.memoryMb,
         swap: 0,
@@ -212,6 +234,7 @@ router.post('/', requireAuth, async (req, res) => {
     };
 
     let panelServer;
+    let isQueued = false;
     try {
       const base = (process.env.PTERO_BASE_URL || '').replace(/\/$/, '');
       const resp = await axios.post(`${base}/api/application/servers`, panelPayload, {
@@ -225,13 +248,28 @@ router.post('/', requireAuth, async (req, res) => {
       panelServer = resp.data?.attributes;
     } catch (e) {
       console.error('Pterodactyl server creation failed:', e?.response?.data || e.message);
-      return res.status(400).json({
-        error: 'Server creation on panel failed. Please try again or contact support.',
-        details: e?.response?.data || e.message,
-      });
+      
+      const errorStr = JSON.stringify(e?.response?.data || {}).toLowerCase();
+      // If node is offline, full, or connection refused, queue it instead of rejecting
+      const isNodeIssue = errorStr.includes('not enough space') || 
+                          errorStr.includes('no nodes satisfying') ||
+                          errorStr.includes('offline') ||
+                          errorStr.includes('allocations') ||
+                          e.code === 'ECONNREFUSED' || 
+                          e.code === 'ETIMEDOUT';
+                          
+      if (isNodeIssue) {
+        isQueued = true;
+      } else {
+        return res.status(400).json({
+          error: 'Server creation on panel failed. Please try again or contact support.',
+          details: e?.response?.data || e.message,
+        });
+      }
     }
 
     // 11. Persist server record in our database
+    const isPremium = activePlans && activePlans.length > 0;
     const created = await Server.create({
       owner: user._id,
       panelServerId: panelServer?.id,
@@ -239,7 +277,16 @@ router.post('/', requireAuth, async (req, res) => {
       eggId: egg._id,
       locationId: location._id,
       limits,
-      status: 'active',
+      priority: isPremium ? 1 : 0,
+      status: isQueued ? 'queued' : 'active',
+    });
+
+    const { logUserActivity } = require('../../middleware/userActivity');
+    await logUserActivity(req, 'server.create', { 
+      serverName: name, 
+      serverId: panelServer?.id, 
+      dbId: created._id.toString(),
+      ...limits 
     });
 
     writeAudit(req, 'server.create', 'server', created._id.toString(), {
@@ -249,10 +296,43 @@ router.post('/', requireAuth, async (req, res) => {
     // 12. Send confirmation email (non-blocking, failure is not fatal)
     try {
       const { sendMailTemplate } = require('../../lib/mail');
+      
+      const backendUrl = (process.env.API_URL || process.env.BACKEND_URL) 
+        ? (process.env.API_URL || process.env.BACKEND_URL).replace(/\/$/, '')
+        : `${req.protocol}://${req.get('host')}`;
+        
+      const frontendUrl = process.env.FRONTEND_URL 
+        ? process.env.FRONTEND_URL.replace(/\/$/, '') 
+        : backendUrl;
+      
+      let locationHtml = location.name || 'Unknown';
+      if (location.flag) {
+        const flagUrl = location.flag.startsWith('http') ? location.flag : `${backendUrl}${location.flag.startsWith('/') ? '' : '/'}${location.flag}`;
+        locationHtml = `<img src="${flagUrl}" alt="" style="height: 14px; width: 20px; border-radius: 2px; vertical-align: middle; margin-top: -2px; margin-right: 8px; object-fit: cover;" />${location.name}`;
+      }
+
+      let eggHtml = egg.name || 'Unknown';
+      if (egg.icon) {
+        const iconUrl = egg.icon.startsWith('http') ? egg.icon : `${backendUrl}${egg.icon.startsWith('/') ? '' : '/'}${egg.icon}`;
+        eggHtml = `<img src="${iconUrl}" alt="" style="height: 18px; width: 18px; vertical-align: middle; margin-top: -2px; margin-right: 8px; object-fit: contain;" />${egg.name}`;
+      }
+
       await sendMailTemplate({
         to: user.email,
         templateKey: 'serverCreated',
-        data: { serverName: name },
+        data: { 
+          username: user.username,
+          serverName: name,
+          serverId: panelServer?.identifier || panelServer?.id || 'Pending',
+          cpu: limits.cpuPercent,
+          ram: limits.memoryMb,
+          disk: limits.diskMb,
+          ports: limits.allocations,
+          databases: limits.databases,
+          eggHtml,
+          locationHtml,
+          dashboardUrl: frontendUrl + '/dashboard'
+        },
       });
     // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_) {}
@@ -261,10 +341,15 @@ router.post('/', requireAuth, async (req, res) => {
     await deleteCache(`user:${req.user.sub}:profile`);
     await deleteCachePattern(`api:servers:${req.user.sub}:*`);
     await deleteCachePattern(`server:usage:${req.user.sub}`);
-    await deleteCachePattern('admin:servers');
+    await deleteCachePattern('api:admin:servers:*');
     await deleteCache('eggs:counts');
 
-    return res.status(201).json({ server: created, panel: panelServer });
+    return res.status(isQueued ? 202 : 201).json({ 
+      server: created, 
+      panel: panelServer,
+      queued: isQueued,
+      message: isQueued ? 'Node is currently full or offline. Your server has been added to the queue and will be created automatically when resources become available.' : 'Server created successfully.'
+    });
 
   } finally {
     // ALWAYS release the lock, even if an error or early return occurred above

@@ -10,7 +10,6 @@ const SettingsSchema = new mongoose.Schema(
       customCodeMinInvites: { type: Number, default: 10 },
     },
     earn: {
-      enabled: { type: Boolean, default: false },
       ads: {
         enabled: { type: Boolean, default: false },
         coins: { type: Number, default: 10 },

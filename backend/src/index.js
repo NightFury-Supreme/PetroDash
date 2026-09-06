@@ -60,6 +60,15 @@ app.use(session({
     }
 }));
 
+app.use((err, req, res, next) => {
+    if (err && err.message && err.message.includes('Connection is closed')) {
+        console.warn('[Session] Redis connection closed, ignoring error for request:', req.url);
+        req.session = { save: (cb) => cb && cb(), destroy: (cb) => cb && cb(), touch: () => {} }; // mock session
+        return next();
+    }
+    next(err);
+});
+
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
@@ -163,6 +172,10 @@ app.use('/api/user/plans', require('./routes/userPlans'));
 app.use('/api/referrals', require('./routes/referrals'));
 app.use('/api/earn', earnRoutes);
 app.use('/api/oauth', oauthRoutes);
+app.use('/api/activity', require('./routes/activity'));
+app.use('/api/status', require('./routes/status'));
+app.use('/api/coupons', require('./routes/coupons'));
+app.use('/api/subscriptions', require('./routes/subscriptions'));
 
 const port = process.env.PORT || 4000;
 
@@ -175,6 +188,18 @@ connectToDatabase()
         // Start background ping worker
         const { startPingWorker } = require('./services/pingWorker');
         startPingWorker();
+        // Start background pending user sync job
+        const { startSyncJob } = require('./jobs/syncPendingUsers');
+        startSyncJob();
+        // Start background pending deletions sync job
+        const { startDeletionSyncJob } = require('./jobs/syncPendingDeletions');
+        startDeletionSyncJob();
+        // Start background pending updates sync job
+        const { startUpdateSyncJob } = require('./jobs/syncPendingUpdates');
+        startUpdateSyncJob();
+        // Start background queued servers job
+        const { startQueuedServersJob } = require('./jobs/syncQueuedServers');
+        startQueuedServersJob();
         app.listen(port, () => {
             console.log(`[PteroDash] Server running on port ${port} (${process.env.NODE_ENV || 'development'})`);
         });

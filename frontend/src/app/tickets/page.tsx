@@ -1,164 +1,184 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import TicketsHeader from "@/components/tickets/TicketsHeader";
-import TicketList from "@/components/tickets/TicketList";
-import TicketCreateModal from "@/components/tickets/TicketCreateModal";
-import TicketListSkeleton from "@/components/skeletons/tickets/TicketListSkeleton";
-import Sidebar from "@/components/Sidebar";
-import { useSidebarPadding } from "@/hooks/useSidebarPadding";
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-type Ticket = {
-  _id: string;
-  title: string;
-  status: string;
-  priority: string;
-  category?: string;
-  updatedAt: string;
-};
+import { useTickets } from '@/hooks/useTickets';
+import { TicketNavSidebar } from '@/components/tickets/TicketNavSidebar';
+import { TicketRowItem } from '@/components/tickets/TicketRowItem';
+import { CreateTicketModal } from '@/components/tickets/CreateTicketModal';
+import { TicketEmptyState } from '@/components/tickets/TicketEmptyState';
+import { TicketsSkeleton } from '@/components/tickets/TicketsSkeleton';
+import { TicketPageHeader } from '@/components/tickets/TicketPageHeader';
+import { TicketListToolbar } from '@/components/tickets/TicketListToolbar';
+import { TicketListHeader } from '@/components/tickets/TicketListHeader';
+import { TicketAction, TicketStatus } from '@/components/tickets/types';
+import { getStatusTitle, getStatusDescription } from '@/components/tickets/utils';
 
 export default function TicketsPage() {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [title, setTitle] = useState("");
-  const [message, setMessage] = useState("");
-  const [categories, setCategories] = useState<string[]>([]);
-  const [category, setCategory] = useState<string>("general");
+  const router = useRouter();
+  const { tickets, loading, categories, fetchTickets, updateStatus, createTicket } = useTickets();
 
-  const [showCreate, setShowCreate] = useState<boolean>(false);
-  const contentPadding = useSidebarPadding();
-  const [activeTab, setActiveTab] = useState<'all'|'open'|'pending'|'resolved'|'closed'>('all');
-  
+  /* -- Filter state --------------------------------- */
+  const [activeStatus, setActiveStatus] = useState<TicketStatus | 'all'>('all');
+  const [search, setSearch] = useState('');
+
+  /* -- Row menu state ------------------------------- */
+  const [menuTicket, setMenuTicket] = useState<string | null>(null);
 
 
-  const fetchTickets = async () => {
-    try {
-      const token = localStorage.getItem('auth_token');
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/tickets/mine`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      let d: any = {}; try { d = await r.json(); } catch {}
-      if (!r.ok) throw new Error(d?.error || 'Failed to load tickets');
-      setTickets(d);
-    } catch (e: any) {
-      setError(e.message || 'Failed to load tickets');
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  useEffect(() => { fetchTickets(); }, []);
+  /* -- Create modal --------------------------------- */
+  const [showCreate, setShowCreate] = useState(false);
+  const [createTitle, setCreateTitle] = useState('');
+  const [createMessage, setCreateMessage] = useState('');
+  const [createCategory, setCreateCategory] = useState('general');
+  const [createPriority, setCreatePriority] = useState('low');
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [createSuccess, setCreateSuccess] = useState(false);
 
-  // Load categories
+  /* -- Close menu on outside click ----------------- */
   useEffect(() => {
-    (async () => {
-      try {
-        const token = localStorage.getItem('auth_token');
-        const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/tickets/categories`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        let d: any = {}; try { d = await r.json(); } catch {}
-        if (r.ok && Array.isArray(d?.categories)) {
-          setCategories(d.categories);
-          setCategory(d.categories[0] || 'general');
-        } else {
-          setCategories(['general']);
-          setCategory('general');
-        }
-      } catch {
-        setCategories(['general']);
-        setCategory('general');
-      }
-    })();
-  }, []);
+    if (!menuTicket) return;
+    const h = () => setMenuTicket(null);
+    document.addEventListener('click', h);
+    return () => document.removeEventListener('click', h);
+  }, [menuTicket]);
 
+  /* -- Counts --------------------------------------- */
+  const counts = useMemo(() => ({
+    all: tickets.length,
+    open: tickets.filter(t => t.status === 'open').length,
+    pending: tickets.filter(t => t.status === 'pending').length,
+    resolved: tickets.filter(t => t.status === 'resolved').length,
+    closed: tickets.filter(t => t.status === 'closed').length,
+  }), [tickets]);
 
-  const createTicket = async (): Promise<boolean> => {
-    setError(null);
-    try {
-      if (!message || message.trim().length < 3) {
-        setError('Message must be at least 3 characters');
-        return false;
-      }
-      const token = localStorage.getItem('auth_token');
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/tickets`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ title, message, category })
-      });
-      let d: any = {}; try { d = await r.json(); } catch {}
-      if (!r.ok) {
-        setError(d?.error || 'Failed to create ticket');
-        return false;
-      }
-      setTitle(""); setMessage("");
-      fetchTickets();
-      return true;
-    } catch (e: any) { setError(e.message || 'Failed to create ticket'); return false; }
-  };
+  /* -- Filtered list -------------------------------- */
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return tickets.filter(t => {
+      const matchStatus = activeStatus === 'all' || t.status === activeStatus;
+      const matchSearch = !q ||
+        t._id.toLowerCase().includes(q) ||
+        t.title.toLowerCase().includes(q) ||
+        (t.category || '').toLowerCase().includes(q);
+      return matchStatus && matchSearch;
+    });
+  }, [tickets, activeStatus, search]);
 
+  /* -- Handlers ------------------------------------- */
+  const handleStatus = useCallback(async (id: string, action: TicketAction) => {
+    await updateStatus(id, action);
+  }, [updateStatus]);
+
+  /* -- Create --------------------------------------- */
+  const handleCreate = useCallback(async () => {
+    setCreateError(null);
+    if (!createTitle.trim()) { setCreateError('Subject is required'); return; }
+    if (createMessage.trim().length < 3) { setCreateError('Message must be at least 3 characters'); return; }
+    setCreating(true);
+    const result = await createTicket({ title: createTitle, message: createMessage, category: createCategory, priority: createPriority });
+    if (result.ok) {
+      setCreateSuccess(true);
+      setTimeout(() => {
+        setShowCreate(false);
+        setCreateSuccess(false);
+        setCreateTitle(''); setCreateMessage(''); setCreateCategory(categories[0] || 'general'); setCreatePriority('low');
+      }, 1500);
+    } else {
+      setCreateError(result.error || 'Failed to create ticket');
+    }
+    setCreating(false);
+  }, [createTitle, createMessage, createCategory, createPriority, categories, createTicket]);
+
+  const openCreate = useCallback(() => {
+    setCreateError(null);
+    setCreateTitle(''); setCreateMessage(''); setCreateCategory(categories[0] || 'general'); setCreatePriority('low');
+    setShowCreate(true);
+  }, [categories]);
+
+  const hasFilters = !!search || activeStatus !== 'all';
+
+  if (loading && tickets.length === 0) {
+    return (
+      <TicketsSkeleton />
+    );
+  }
+
+  /* -- Render --------------------------------------- */
   return (
-    <div className="flex">
-      <Sidebar />
-      <main className="flex-1" style={{ paddingLeft: contentPadding }}>
-    <div className="p-6">
-      <TicketsHeader title="Support Tickets" subtitle="Create and view your support tickets" onNew={()=>{ setError(null); setTitle(""); setMessage(""); setCategory(categories[0] || 'general'); setShowCreate(true); }} />
+    <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen">
+      <div className="flex flex-col h-full space-y-6">
 
-      {/* Tabs */}
-      <div className="mb-4">
-        <div className="flex w-full overflow-x-auto gap-2">
-          {(['all','open','pending','resolved','closed'] as const).map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-lg border transition-all text-sm ${activeTab===tab? 'bg-[var(--surface)] text-[var(--foreground)] border-[var(--border)] shadow-sm font-medium':'bg-transparent text-[var(--muted)] border-[var(--border)] hover:bg-[var(--hover)] hover:text-[var(--foreground)]'}`}
-            >
-              {tab.charAt(0).toUpperCase()+tab.slice(1)}
-              {tab!=='all' && (
-                <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-black/20 border border-[var(--border)] text-[var(--muted)]">
-                  {tickets.filter(t=>t.status===tab).length}
-                </span>
-              )}
-            </button>
-          ))}
+      {/* -- Page header -- */}
+      <TicketPageHeader loading={loading} onRefresh={() => fetchTickets()} onCreate={openCreate} />
+
+      {/* -- Two-column layout (matches profile exactly) -- */}
+      <div className="flex flex-col lg:flex-row gap-8 items-start">
+
+        {/* -- Left nav ------------------------------------ */}
+        <TicketNavSidebar active={activeStatus} counts={counts} onSelect={setActiveStatus} />
+
+        {/* -- Content area -------------------------------- */}
+        <div className="flex-1 min-w-0 w-full">
+
+          {/* Section heading & Search */}
+          <TicketListToolbar 
+            title={getStatusTitle(activeStatus)} 
+            description={getStatusDescription(activeStatus)} 
+            search={search} 
+            onSearchChange={setSearch} 
+          />
+
+          {/* Table column headers */}
+          {filtered.length > 0 && <TicketListHeader />}
+
+          {/* List */}
+          {filtered.length === 0 ? (
+            <TicketEmptyState
+              hasFilters={hasFilters}
+              onClear={() => { setSearch(''); setActiveStatus('all'); }}
+              onCreate={openCreate}
+            />
+          ) : (
+            filtered.map(ticket => (
+              <TicketRowItem
+                key={ticket._id}
+                ticket={ticket}
+                menuOpen={menuTicket === ticket._id}
+                onOpen={() => router.push(`/tickets/${ticket._id}`)}
+                onMenu={e => { e.stopPropagation(); setMenuTicket(menuTicket === ticket._id ? null : ticket._id); }}
+                onStatus={action => handleStatus(ticket._id, action)}
+              />
+            ))
+          )}
         </div>
       </div>
 
-      <div>
-          {loading ? (
-            <TicketListSkeleton />
-          ) : tickets.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="w-24 h-24 mx-auto mb-6 bg-[#202020] rounded-full flex items-center justify-center">
-                <i className="fa-solid fa-ticket text-white text-3xl"></i>
-              </div>
-              <h3 className="text-2xl font-bold mb-3 text-white">No tickets yet</h3>
-              <p className="text-[#AAAAAA] text-lg mb-6">Create your first support ticket</p>
-              <button onClick={()=>{ setError(null); setTitle(""); setMessage(""); setCategory(categories[0] || 'general'); setShowCreate(true); }} className="px-6 py-3 rounded-md bg-white text-black border border-[var(--border)] font-semibold shadow">
-                New Ticket
-              </button>
-            </div>
-          ) : (
-            <TicketList tickets={tickets.filter(t=> activeTab==='all' ? t.status !== 'closed' : t.status===activeTab)} onRefresh={fetchTickets} />
-          )}
-        {/* Create Ticket Modal */}
-        <TicketCreateModal
-          open={showCreate}
+
+
+      {/* -- Create modal -------------------------------- */}
+      {showCreate && (
+        <CreateTicketModal
+          title={createTitle}
+          message={createMessage}
+          category={createCategory}
+          priority={createPriority}
           categories={categories}
-          title={title}
-          message={message}
-          category={category}
-          serverError={error}
-          onChange={(p)=>{ if (p.title!==undefined) setTitle(p.title); if (p.message!==undefined) setMessage(p.message); if (p.category!==undefined) setCategory(p.category); }}
-          onClose={()=>setShowCreate(false)}
-          onCreate={createTicket}
+          error={createError}
+          creating={creating}
+          success={createSuccess}
+          onTitleChange={setCreateTitle}
+          onMessageChange={setCreateMessage}
+          onCategoryChange={setCreateCategory}
+          onPriorityChange={setCreatePriority}
+          onClose={() => setShowCreate(false)}
+          onCreate={handleCreate}
         />
-      </div>
+      )}
     </div>
-      </main>
     </div>
   );
 }
-
-

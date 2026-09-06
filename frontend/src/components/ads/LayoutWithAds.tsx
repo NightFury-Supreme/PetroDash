@@ -8,6 +8,8 @@ interface LayoutWithAdsProps {
   children: React.ReactNode;
 }
 
+import Shell from '@/components/Shell';
+
 // Pages that use Shell component (don't need footer here)
 const SHELL_PAGES = [
   '/dashboard',
@@ -17,7 +19,7 @@ const SHELL_PAGES = [
   '/create',
   '/admin',
   '/server',
-  '/referals',
+  '/referrals',
   '/tickets',
   '/profile'
 ];
@@ -38,7 +40,11 @@ export default function LayoutWithAds({ children }: LayoutWithAdsProps) {
       
       {/* Main Content */}
       <main className="flex-1">
-        {children}
+        {usesShell ? (
+          <Shell>{children}</Shell>
+        ) : (
+          children
+        )}
       </main>
       
       {/* Footer Ad */}

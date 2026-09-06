@@ -1,6 +1,5 @@
 "use client";
 
-import Shell from "@/components/Shell";
 import { useEffect, useState } from "react";
 import { useModal } from "@/components/Modal";
 import { useAdminEarn } from "@/hooks/admin/earn/useAdminEarn";
@@ -48,18 +47,6 @@ export default function AdminEarnPage() {
     });
   };
 
-  const onToggleEnabled = async (nextEnabled: boolean) => {
-    try {
-      const next = await save({ enabled: nextEnabled });
-      setForm(next);
-    } catch (e: any) {
-      const msg = String(e?.message || "Failed to save");
-      setError(msg);
-      setForm((prev) => (prev ? { ...(prev as any), enabled: !nextEnabled } : prev));
-      await modal.error({ title: "Save Error", body: msg });
-    }
-  };
-
   const onSaveAds = async () => {
     try {
       if (!form) return;
@@ -88,29 +75,26 @@ export default function AdminEarnPage() {
 
   if (loading) {
     return (
-      <Shell>
-        <div className="p-6">
-          <AdminEarnSkeleton />
-        </div>
-      </Shell>
+      <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen">
+        <AdminEarnSkeleton />
+      </div>
     );
   }
 
   return (
-    <Shell>
-      <div className="p-4 sm:p-6 space-y-6" style={{ background: 'var(--background)', color: 'var(--foreground)' }}>
+    <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans">
+      <div className="flex flex-col h-full">
         <AdminEarnHeader />
         {form && (
           <AdminEarnContent
             form={form}
             saving={saving}
             onChange={setField}
-            onToggleEnabled={onToggleEnabled}
             onSaveAds={onSaveAds}
             onSaveLinkvertise={onSaveLinkvertise}
           />
         )}
       </div>
-    </Shell>
+    </div>
   );
 }

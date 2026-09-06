@@ -3,6 +3,7 @@ const { z } = require('zod');
 const { requireAuth } = require('../middleware/auth');
 const User = require('../models/User');
 const { getSettings } = require('../lib/settings');
+const { logUserActivity } = require('../middleware/userActivity');
 
 const router = express.Router();
 
@@ -55,8 +56,66 @@ router.get('/me', requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/referrals/custom-code - set a custom referral code if eligible
-router.post('/custom-code', requireAuth, async (req, res) => {
+function maskName(name) {
+  if (!name) return "";
+  const parts = name.split(" ");
+  return parts
+    .map((p) => {
+      if (p.length <= 1) return p;
+      return p[0] + "***";
+    })
+    .join(" ");
+}
+
+function maskEmail(email) {
+  if (!email || !email.includes("@")) return email;
+  const [local, domain] = email.split("@");
+  if (local.length <= 1) return email;
+  const maskedLocal = local[0] + "****";
+  const domainParts = domain.split(".");
+  const maskedDomain = domainParts[0][0] + "****" + "." + domainParts.slice(1).join(".");
+  return `${maskedLocal}@${maskedDomain}`;
+}
+
+// GET /api/referrals/list - get paginated list of referred users
+router.get('/list', requireAuth, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit) || 5));
+    const skip = (page - 1) * limit;
+
+    const [users, totalUsers] = await Promise.all([
+      User.find({ referredBy: req.user.sub })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      User.countDocuments({ referredBy: req.user.sub })
+    ]);
+
+    const s = await getSettings();
+    const referrerCoins = Number(s?.referrals?.referrerCoins ?? 50);
+
+    const referralUsers = users.map(u => {
+      const rawName = `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.username || 'Unknown User';
+      return {
+        name: maskName(rawName),
+        email: maskEmail(u.email),
+        joinedAt: new Date(u.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        reward: u.referralRewardReceived ? referrerCoins : 0,
+        status: u.referralRewardReceived ? 'Earned' : 'Pending'
+      };
+    });
+
+    return res.json({ users: referralUsers, total: totalUsers });
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  } catch (e) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/referrals/code - set a custom referral code if eligible
+router.post('/code', requireAuth, async (req, res) => {
   try {
     const schema = z.object({ code: z.string().trim().min(3).max(20).regex(/^[A-Za-z0-9_-]+$/) });
     const parsed = schema.safeParse(req.body);
@@ -75,6 +134,7 @@ router.post('/custom-code', requireAuth, async (req, res) => {
     user.referralCode = desired;
     try {
       await user.save();
+      await logUserActivity(req, 'referral.code.update', { code: desired });
       return res.json({ ok: true, code: user.referralCode });
     } catch (saveError) {
       if (saveError.code === 11000) {

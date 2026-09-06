@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useModal } from '@/components/Modal';
-import Shell from '@/components/Shell';
 import { PlanEditSkeleton } from '@/components/skeletons/admin/plan/edit/PlanEditSkeleton';
 import { usePlanEdit } from '@/hooks/admin/plan/usePlanEdit';
 import { PlanEditForm } from '@/components/admin/plan/PlanEditForm';
@@ -51,15 +50,15 @@ export default function EditPlanPage() {
 
   if (loading) {
     return (
-      <Shell>
+      
         <PlanEditSkeleton />
-      </Shell>
+      
     );
   }
 
   if (error || !plan) {
     return (
-      <Shell>
+      
         <div className="p-4 sm:p-6">
           <div className="text-center">
             <div className="text-red-500 mb-4">
@@ -75,12 +74,12 @@ export default function EditPlanPage() {
             </Link>
           </div>
         </div>
-      </Shell>
+      
     );
   }
 
   return (
-    <Shell>
+    
       <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 bg-[#0F0F0F] min-h-screen">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -108,7 +107,7 @@ export default function EditPlanPage() {
           onCancel={handleCancel}
         />
       </div>
-    </Shell>
+    
   );
 }
 

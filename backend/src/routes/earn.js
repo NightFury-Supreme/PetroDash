@@ -9,6 +9,7 @@ const { getSettings } = require('../lib/settings');
 const EarnSession = require('../models/EarnSession');
 const User = require('../models/User');
 const { writeAudit } = require('../middleware/audit');
+const { logUserActivity } = require('../middleware/userActivity');
 
 const router = express.Router();
 
@@ -226,7 +227,6 @@ function isAyetConfigured(s) {
 
 function getEarnConfig(s) {
   const earn = s?.earn || {};
-  const enabled = Boolean(earn.enabled);
 
   const normalizeMethod = (m, defaults) => {
     const obj = m || {};
@@ -245,7 +245,6 @@ function getEarnConfig(s) {
   };
 
   return {
-    enabled,
     ads: normalizeMethod(earn.ads, { coins: 10, cooldownSeconds: 3600, waitSeconds: 30, maxClaimsPerDay: 24, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '' }),
     linkvertise: normalizeMethod(earn.linkvertise, { coins: 20, cooldownSeconds: 3600, waitSeconds: 10, maxClaimsPerDay: 24, url: '', antiBypassToken: '' }),
   };
@@ -297,15 +296,17 @@ function verifyAyetClientSignature(details, apiKey) {
 
 function buildLinkvertiseUrl(template, targetUrl) {
   if (!template) return '';
+  
+  template = template.replace(/\?o=sharing/g, '').replace(/&o=sharing/g, '');
 
   const targetB64 = Buffer.from(targetUrl, 'utf8').toString('base64');
   if (template.includes('{target}')) return template.replace('{target}', encodeURIComponent(targetUrl));
-  if (template.includes('{targetB64}')) return template.replace('{targetB64}', encodeURIComponent(targetB64));
+  if (template.includes('{targetB64}')) return template.replace('{targetB64}', targetB64);
 
   if (template.includes('dynamic?r=')) {
     const parts = template.split('r=');
     const prefix = parts[0] + 'r=';
-    return prefix + encodeURIComponent(targetB64);
+    return prefix + targetB64;
   }
 
   return template;
@@ -376,7 +377,7 @@ router.get('/', requireAuth, async (req, res) => {
 
       if (method === 'ads' && !isAyetConfigured(settings)) {
         state = 'disabled';
-      } else if (!cfg.enabled || !methodCfg.enabled) {
+      } else if (!methodCfg.enabled) {
         state = 'disabled';
       } else if (Number(methodCfg.maxClaimsPerDay || 0) <= 0) {
         state = 'limit_reached';
@@ -643,7 +644,7 @@ router.post('/:method/start', requireAuth, async (req, res) => {
       return res.status(403).json({ error: 'ayeT Rewarded Video is not configured' });
     }
 
-    if (!cfg.enabled || !methodCfg.enabled) {
+    if (!methodCfg.enabled) {
       return res.status(403).json({ error: 'Earn method is disabled' });
     }
 
@@ -740,12 +741,7 @@ router.post('/:method/start', requireAuth, async (req, res) => {
       response.linkvertise = hasAntiBypass ? { url, target } : { url, target, sessionSecret: secret };
     }
 
-    await writeAudit(req, 'earn.session.start', 'earn', String(session._id), {
-      method,
-      rewardCoins: Number(session.rewardCoins || 0),
-      availableAt: session.availableAt,
-      expiresAt: session.expiresAt,
-    });
+    await logUserActivity(req, 'earn.session.start', { sessionId: session._id, method, rewardCoins: Number(session.rewardCoins || 0) });
 
     const { deleteCachePattern } = require('../lib/redis');
     await deleteCachePattern(`earn:status:${userId}`);
@@ -781,7 +777,7 @@ router.post('/:method/claim', requireAuth, async (req, res) => {
     const cfg = getEarnConfig(settings);
     const methodCfg = cfg[method];
 
-    if (!cfg.enabled || !methodCfg.enabled) {
+    if (!methodCfg.enabled) {
       return res.status(403).json({ error: 'Earn method is disabled' });
     }
 
@@ -876,6 +872,7 @@ router.post('/:method/claim', requireAuth, async (req, res) => {
         coinsAfter: Number(userAfter.coins || 0),
         sessionId: String(locked._id),
       });
+      await logUserActivity(req, 'earn.claim', { method, rewardCoins: reward });
 
       const { deleteCachePattern } = require('../lib/redis');
       await deleteCachePattern(`earn:status:${userId}`);
@@ -944,6 +941,7 @@ router.post('/:method/claim', requireAuth, async (req, res) => {
       coinsAfter: result.coinsAfter,
       sessionId: result.sessionId,
     });
+    await logUserActivity(req, 'earn.claim', { method, rewardCoins: result.rewardCoins });
 
     const { deleteCachePattern } = require('../lib/redis');
     await deleteCachePattern(`earn:status:${userId}`);

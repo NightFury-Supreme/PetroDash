@@ -200,6 +200,8 @@ class UserCreationService {
       if (panelUser?.id) {
         user.pterodactylUserId = panelUser.id;
         await user.save();
+        const { deleteCache } = require('../lib/redis');
+        await deleteCache(`user:${user._id.toString()}:profile`);
       }
     } catch (error) {
       console.error('Failed to create Pterodactyl user:', error);

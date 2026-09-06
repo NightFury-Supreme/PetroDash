@@ -1,161 +1,331 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState, useRef, useCallback } from "react";
-import { useParams } from "next/navigation";
-import Sidebar from "@/components/Sidebar";
-import TicketDetailSkeleton from "@/components/skeletons/tickets/TicketDetailSkeleton";
-import TicketHeaderSkeleton from "@/components/skeletons/tickets/TicketHeaderSkeleton";
-import TicketInputSkeleton from "@/components/skeletons/tickets/TicketInputSkeleton";
-import TicketDetailHeader from "@/components/tickets/TicketDetailHeader";
-import TicketMessages from "@/components/tickets/TicketMessages";
-import TicketInputBar from "@/components/tickets/TicketInputBar";
-import { useSidebarPadding } from "@/hooks/useSidebarPadding";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useParams }                              from "next/navigation";
+import { notFound }                                          from 'next/navigation';
 
-const POLL_INTERVAL = 15000; // 15 seconds
+import {
+  TicketDetailConversation,
+  TicketDetailComposer,
+  TicketDetailPanel,
+  TicketDetailSkeleton,
+} from '@/components/tickets/detail';
+import { EditServerDrawer } from '@/components/server/EditServerDrawer';
+
+import { Priority, SupportTicket, TicketMessage } from '@/components/tickets/types';
+import { API_BASE, getToken, shortId } from '@/components/tickets/utils';
+
+const POLL_MS = 15_000;
 
 export default function TicketDetailPage() {
-  const params = useParams();
-  const id = (params as any)?.id as string;
-  const [ticket, setTicket] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [sendError, setSendError] = useState<string | null>(null);
-  const [statusUpdating, setStatusUpdating] = useState(false);
-  const contentPadding = useSidebarPadding();
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const { id } = useParams() as { id: string };
 
-  const api = process.env.NEXT_PUBLIC_API_BASE;
-  const token = () => typeof window !== "undefined" ? (localStorage.getItem("auth_token") || "") : "";
+  /* -- Remote data --------------------------------------- */
+  const [ticket, setTicket]     = useState<SupportTicket | null>(null);
+  const [messages, setMessages] = useState<TicketMessage[]>([]);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState<string | null>(null);
+  const pollRef                 = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  /* -- Local UI state ------------------------------------ */
+  const [replyText, setReplyText]         = useState('');
+  const [replying, setReplying]           = useState(false);
+  const [statusBusy, setStatusBusy]       = useState(false);
+  const [statusDone, setStatusDone]       = useState<'resolved' | 'reopen' | null>(null);
+  const [priority, setPriority]           = useState<Priority>('Normal');
+  const [priorityOpen, setPriorityOpen]   = useState(false);
+  const [actionsOpen, setActionsOpen]     = useState(false);
+  const [detailsOpen]                     = useState(true);
+  const [copied, setCopied]               = useState(false);
+  const [hasMore, setHasMore]             = useState(false);
+  const [loadingMore, setLoadingMore]     = useState(false);
+  const [editServerId, setEditServerId]   = useState<string | null>(null);
+  const scrollContainerRef                = useRef<HTMLDivElement>(null);
+
+  /* -- Fetch --------------------------------------------- */
   const fetchTicket = useCallback(async (silent = false) => {
     if (!id) return;
     try {
-      const r = await fetch(`${api}/api/tickets/${id}`, { headers: { Authorization: `Bearer ${token()}` } });
-      let d: any = {}; try { d = await r.json(); } catch {}
-      if (!r.ok) throw new Error(d?.error || "Failed to load ticket");
+      const r = await fetch(`${API_BASE}/api/tickets/${id}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d?.error || 'Failed to load ticket');
       setTicket(d);
-      setError(null);
+      if (d?.priority) {
+        const p = String(d.priority);
+        setPriority((p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()) as Priority);
+      }
+      if (!silent) setError(null);
     } catch (e: any) {
-      if (!silent) setError(e.message || "Failed to load ticket");
-    } finally {
-      setLoading(false);
+      if (!silent) setError(e.message || 'Failed to load ticket');
     }
   }, [id]);
 
-  useEffect(() => {
-    fetchTicket();
-    // Start polling
-    pollRef.current = setInterval(() => fetchTicket(true), POLL_INTERVAL);
-    return () => { if (pollRef.current) clearInterval(pollRef.current); };
-  }, [fetchTicket]);
+  const scrollToBottom = useCallback((force = false) => {
+    if (!scrollContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+    // Auto-scroll if forced (e.g. initial load, sending message) OR if user is already near bottom
+    if (force || scrollHeight - scrollTop - clientHeight < 150) {
+      scrollContainerRef.current.scrollTop = scrollHeight;
+    }
+  }, []);
 
-  const sendMessage = async (text: string) => {
-    setSendError(null);
-    // Optimistic update
-    const optimisticMsg = { _id: `opt-${Date.now()}`, body: text, authorRole: "user", createdAt: new Date().toISOString(), author: { username: "You" } };
-    setTicket((prev: any) => prev ? { ...prev, messages: [...(prev.messages || []), optimisticMsg] } : prev);
-
+  const fetchInitialMessages = useCallback(async (isPoll = false) => {
+    if (!id) return;
     try {
-      const r = await fetch(`${api}/api/tickets/${id}/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token()}` },
-        body: JSON.stringify({ body: text }),
+      const r = await fetch(`${API_BASE}/api/tickets/${id}/messages?limit=50`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
       });
-      let d: any = {}; try { d = await r.json(); } catch {}
-      if (!r.ok) {
-        // Roll back optimistic message
-        setTicket((prev: any) => prev ? { ...prev, messages: (prev.messages || []).filter((m: any) => m._id !== optimisticMsg._id) } : prev);
-        throw new Error(d?.error || "Failed to send");
+      const d = await r.json().catch(() => ({}));
+      if (r.ok) {
+        setMessages(d.messages || []);
+        setHasMore(!!d.hasMore);
+        // Force scroll on initial load, otherwise only if near bottom
+        setTimeout(() => scrollToBottom(!isPoll), 0);
       }
-      // Sync with server version
-      fetchTicket(true);
-    } catch (e: any) {
-      setSendError(e.message || "Failed to send");
-    }
-  };
+    } catch {}
+  }, [id, scrollToBottom]);
 
-  const updateStatus = async (action: "close" | "reopen") => {
-    setStatusUpdating(true);
+  const loadMoreMessages = async () => {
+    if (!id || loadingMore || !hasMore || messages.length === 0) return;
+    setLoadingMore(true);
+    const oldestId = messages[0]._id;
+    
+    // Record scroll state before loading
+    const container = scrollContainerRef.current;
+    const previousScrollHeight = container ? container.scrollHeight : 0;
+    const previousScrollTop = container ? container.scrollTop : 0;
+
     try {
-      const r = await fetch(`${api}/api/tickets/${id}/status`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token()}` },
-        body: JSON.stringify({ action }),
+      const r = await fetch(`${API_BASE}/api/tickets/${id}/messages?limit=50&before=${oldestId}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
       });
-      let d: any = {}; try { d = await r.json(); } catch {}
-      if (!r.ok) throw new Error(d?.error || "Failed to update");
-      await fetchTicket(true);
-    } catch (e: any) {
-      setSendError(e.message || "Failed to update status");
-    } finally {
-      setStatusUpdating(false);
-    }
+      const d = await r.json().catch(() => ({}));
+      if (r.ok && d.messages) {
+        setMessages(prev => [...d.messages, ...prev]);
+        setHasMore(!!d.hasMore);
+        
+        // Restore scroll position after React renders
+        setTimeout(() => {
+          if (container) {
+            const newScrollHeight = container.scrollHeight;
+            container.scrollTop = previousScrollTop + (newScrollHeight - previousScrollHeight);
+          }
+        }, 0);
+      }
+    } catch {}
+    setLoadingMore(false);
   };
 
-  const isClosed = ticket?.status === "closed";
-  const isResolved = ticket?.status === "resolved";
-  const canSend = !isClosed;
+  useEffect(() => {
+    const init = async () => {
+      await Promise.all([fetchTicket(), fetchInitialMessages()]);
+      setLoading(false);
+    };
+    init();
+    
+    // Polling only refreshes the ticket status and latest messages
+    pollRef.current = setInterval(() => {
+      fetchTicket(true);
+      // Only refresh messages if we haven't loaded older history to avoid wiping it
+      setMessages(prev => {
+        if (prev.length <= 50) {
+          fetchInitialMessages(true);
+        }
+        return prev;
+      });
+    }, POLL_MS);
+    
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, [fetchTicket, fetchInitialMessages]);
 
-  if (loading) return (
-    <div className="flex">
-      <Sidebar />
-      <main className="flex-1 relative h-screen overflow-hidden" style={{ paddingLeft: contentPadding }}>
-        <TicketHeaderSkeleton contentPadding={contentPadding} />
-        <div className="pt-24 px-6"><TicketDetailSkeleton /></div>
-        <TicketInputSkeleton contentPadding={contentPadding} />
-      </main>
-    </div>
-  );
+  // Instantly pin scroll to bottom before painting when loading completes
+  React.useLayoutEffect(() => {
+    if (!loading && scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  }, [loading]);
 
-  if (error || !ticket) return (
-    <div className="flex">
-      <Sidebar />
-      <main className="flex-1 flex flex-col items-center justify-center h-screen" style={{ paddingLeft: contentPadding }}>
-        <div className="text-center px-6 max-w-md mx-auto">
-          <div className="w-24 h-24 mx-auto mb-6 bg-[#202020] rounded-full flex items-center justify-center">
-            <i className={`fa-solid fa-triangle-exclamation text-white text-3xl`}></i>
-          </div>
-          <h3 className="text-2xl font-bold mb-3 text-white">
-            Oops! Something went wrong
-          </h3>
-          <p className="text-[#AAAAAA] text-lg mb-6">
-            {error || 'The ticket you are looking for does not exist or you do not have permission to view it.'}
-          </p>
-          <button
-            onClick={() => window.location.href = '/tickets'}
-            className="px-6 py-3 rounded-md bg-white text-black border border-[var(--border)] font-semibold shadow inline-flex items-center gap-2"
-          >
-            <i className="fas fa-arrow-left"></i> Back to Tickets
-          </button>
-        </div>
-      </main>
-    </div>
-  );
+  useEffect(() => {
+    if (!loading && scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  }, [loading]);
+
+  /* -- Close dropdowns on outside click ----------------- */
+  useEffect(() => {
+    if (!actionsOpen && !priorityOpen) return;
+    const close = () => { setActionsOpen(false); setPriorityOpen(false); };
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [actionsOpen, priorityOpen]);
+
+  /* -- Send reply ---------------------------------------- */
+  const sendReply = async () => {
+    const value = replyText.trim();
+    if (!value || replying) return;
+    setReplying(true);
+    try {
+      const r = await fetch(`${API_BASE}/api/tickets/${id}/messages`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+        body:    JSON.stringify({ body: value }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (r.ok) { 
+        setReplyText(''); 
+        await fetchTicket(true); 
+        if (d.message) {
+          setMessages(prev => [...prev, d.message]);
+          setTimeout(() => scrollToBottom(true), 0);
+        }
+      }
+    } catch {}
+    setReplying(false);
+  };
+
+  /* -- Status update ------------------------------------- */
+  const updateStatus = async (action: 'resolved' | 'reopen') => {
+    setStatusBusy(true);
+    setStatusDone(null);
+    setActionsOpen(false);
+    try {
+      const r = await fetch(`${API_BASE}/api/tickets/${id}/status`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+        body:    JSON.stringify({ action }),
+      });
+      if (r.ok) {
+        await fetchTicket(true);
+        setStatusDone(action);
+        setTimeout(() => setStatusDone(null), 2000);
+      }
+    } catch {}
+    setStatusBusy(false);
+  };
+
+  /* -- Copy ID ------------------------------------------- */
+  const copyId = async () => {
+    try {
+      await navigator.clipboard.writeText(shortId(id));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {}
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void sendReply(); }
+  };
+
+  /* -- Guards -------------------------------------------- */
+  if (loading) return <TicketDetailSkeleton />;
+  if (error)   throw new Error(error);
+  if (!ticket) notFound();
+
+  /* -- Derived values ------------------------------------ */
+  const status       = ticket.status;
+  const replyAllowed = status === 'open' || status === 'pending';
+  const username     = ticket.user?.username || ticket.user?.email || 'You';
+  const createdDate  = new Date(ticket.createdAt).toLocaleDateString('en-GB', {
+    day: 'numeric', month: 'short', year: 'numeric',
+  });
+
+  const adminsInvolved = Array.from(new Set(
+    messages
+      .filter(m => (m.authorRole === 'admin' || (m as any).isAdmin))
+      .map(m => {
+        const authorObj = m.author || (typeof m.userId === 'object' ? m.userId : null);
+        return authorObj?.username || authorObj?.email || "Support Staff";
+      })
+  ));
+  const adminsText = adminsInvolved.length > 0 ? adminsInvolved.join(", ") : "None yet";
 
   return (
-    <div className="flex">
-      <Sidebar />
-      <main className="flex-1 relative h-screen overflow-hidden" style={{ paddingLeft: contentPadding }}>
-        <TicketDetailHeader ticket={ticket} contentPadding={contentPadding} onAction={(a) => updateStatus(a)} />
-        <div className="pb-24 pt-24 px-6">
-          {sendError && (
-            <div className="mb-3 px-4 py-2 bg-red-600/10 border border-red-600/30 rounded-lg text-red-400 text-sm">
-              {sendError}
-              <button onClick={() => setSendError(null)} className="ml-2 text-red-300 hover:text-white"><i className="fas fa-times" /></button>
+    <div className="flex-1 relative bg-[#0F0F0F]">
+      <div className="absolute inset-0 pt-4 sm:pt-6 px-4 sm:px-6 flex flex-col overflow-hidden">
+        <div className="flex flex-col h-full space-y-6 min-h-0">
+          
+          {/* Standard Page Header */}
+          <header className="border-b border-white/[0.06] pb-6 shrink-0 flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-[#FF5722] tracking-tight">{ticket.title}</h1>
+              <p className="text-[#888888] mt-1 text-sm">Ticket #{shortId(ticket._id)}</p>
+            </div>
+          </header>
+
+          {/* Two-column layout (matches profile/tickets) */}
+          <div className="flex flex-col lg:flex-row gap-8 items-stretch flex-1 min-h-0">
+          
+          {/* Left Column (Chat Area) */}
+          <div className="flex-1 min-w-0 w-full flex flex-col min-h-0">
+            {/* Content area */}
+            <div className="w-full flex flex-col flex-1 overflow-hidden min-h-0">
+              
+              {/* Chat Messages */}
+              <div 
+                ref={scrollContainerRef} 
+                className="p-6 flex-1 overflow-y-auto min-h-0"
+                style={{ opacity: loading ? 0 : 1, transition: 'opacity 0.2s' }}
+              >
+                <TicketDetailConversation
+                  messages={messages}
+                  username={username}
+                  hasMore={hasMore}
+                  isLoadingMore={loadingMore}
+                  onLoadMore={loadMoreMessages}
+                  onServerMentionClick={(id) => setEditServerId(id)}
+                />
+              </div>
+              
+              {/* Composer */}
+              <div className="w-full shrink-0 px-6 pb-2 pt-0">
+                <TicketDetailComposer
+                  status={status}
+                  replyText={replyText}
+                  replying={replying}
+                  statusBusy={statusBusy}
+                  onTextChange={setReplyText}
+                  onSend={() => void sendReply()}
+                  onKeyDown={handleKeyDown}
+                  onReopen={() => updateStatus('reopen')}
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Right Column (Sidebar) */}
+          {detailsOpen && (
+            <div className="w-full lg:w-[380px] shrink-0 overflow-y-auto min-h-0 pr-2">
+              <TicketDetailPanel
+                ticketId={shortId(ticket._id)}
+                status={status}
+                category={ticket.category || 'General'}
+                priority={priority}
+                createdDate={createdDate}
+                updatedAt={ticket.updatedAt}
+                replyAllowed={replyAllowed}
+                statusBusy={statusBusy}
+                statusDone={statusDone}
+                copied={copied}
+                adminsInvolved={adminsText}
+                onResolve={() => updateStatus('resolved')}
+                onReopen={() => updateStatus('reopen')}
+                onCopyId={copyId}
+              />
             </div>
           )}
-          <TicketMessages ticket={ticket} />
-          <TicketInputBar
-            contentPadding={contentPadding}
-            disabled={!canSend}
-            isClosed={isClosed}
-            isResolved={isResolved}
-            statusUpdating={statusUpdating}
-            onReopen={() => updateStatus("reopen")}
-            onSend={sendMessage}
-          />
         </div>
-      </main>
+
+      </div>
+
+      {editServerId && (
+        <EditServerDrawer
+          serverId={editServerId}
+          onClose={() => setEditServerId(null)}
+        />
+      )}
+    </div>
     </div>
   );
 }

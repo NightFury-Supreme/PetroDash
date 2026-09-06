@@ -6,6 +6,7 @@ const User = require('../models/User');
 const Plan = require('../models/Plan');
 const UserPlan = require('../models/UserPlan');
 const { requireAuth } = require('../middleware/auth');
+const { logUserActivity } = require('../middleware/userActivity');
 
 const router = express.Router();
 
@@ -18,6 +19,8 @@ router.post('/create', requireAuth, async (req, res) => {
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
     // additional per-route throttling removed
     const { coins, maxRedemptions = 1, expiresInDays = 30, description } = req.body || {};
+    if (description && description.length > 100) return res.status(400).json({ error: 'Description must be under 100 characters' });
+
     const coinsNum = Math.floor(Number(coins || 0));
     if (!coinsNum || coinsNum <= 0) return res.status(400).json({ error: 'Coins must be > 0' });
     if (coinsNum > 1_000_000) return res.status(400).json({ error: 'Coins exceed maximum allowed' });
@@ -63,8 +66,9 @@ router.post('/create', requireAuth, async (req, res) => {
     });
 
     const { deleteCachePattern } = require('../lib/redis');
-    await deleteCachePattern(`gifts:mine:${userId}`);
+    await deleteCachePattern(`gifts:mine:${userId}*`);
 
+    await logUserActivity(req, 'gift.create', { coins: coinsNum, maxRedemptions: maxRed });
     return res.status(201).json({ code: gift.code, coins: coinsNum, maxRedemptions: gift.maxRedemptions, validUntil });
   } catch (error) {
     console.error('Create gift error:', error);
@@ -79,13 +83,65 @@ router.get('/mine', requireAuth, async (req, res) => {
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
     
     const { getCache, setCache } = require('../lib/redis');
-    const cacheKey = `gifts:mine:${userId}`;
+    const isPaginated = req.query.paginate === 'true';
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const pageSize = Math.max(1, Math.min(100, parseInt(req.query.pageSize) || 10));
+    const statusFilter = req.query.status; // 'active' or 'inactive'
+
+    const cacheKey = isPaginated ? `gifts:mine:${userId}:${page}:${pageSize}:${statusFilter || 'all'}` : `gifts:mine:${userId}`;
     const cached = await getCache(cacheKey);
     if (cached) return res.json(cached);
 
-    const gifts = await Gift.find({ createdBy: userId }).sort({ createdAt: -1 }).lean();
-    await setCache(cacheKey, gifts, 30);
-    res.json(gifts);
+    const now = new Date();
+    
+    // Base query for this user
+    const baseQuery = { createdBy: userId };
+    
+    // Condition for active codes
+    const activeCondition = {
+      $and: [
+        { enabled: true },
+        { $or: [ { validUntil: { $exists: false } }, { validUntil: null }, { validUntil: { $gt: now } } ] },
+        { $or: [
+            { maxRedemptions: { $exists: false } },
+            { maxRedemptions: null },
+            { maxRedemptions: { $lte: 0 } },
+            { $expr: { $lt: [{ $ifNull: ["$redeemedCount", 0] }, "$maxRedemptions"] } }
+          ]
+        }
+      ]
+    };
+    
+    // Condition for inactive codes
+    const inactiveCondition = {
+      $nor: [ activeCondition ]
+    };
+
+    let query = { ...baseQuery };
+    if (statusFilter === 'active') {
+      query = { $and: [baseQuery, activeCondition] };
+    } else if (statusFilter === 'inactive') {
+      query = { $and: [baseQuery, inactiveCondition] };
+    }
+
+    if (isPaginated) {
+      const skip = (page - 1) * pageSize;
+      const [gifts, total, activeCount, totalCount] = await Promise.all([
+        Gift.find(query).sort({ createdAt: -1 }).skip(skip).limit(pageSize).lean(),
+        Gift.countDocuments(query),
+        Gift.countDocuments({ $and: [baseQuery, activeCondition] }),
+        Gift.countDocuments(baseQuery)
+      ]);
+      
+      const inactiveCount = totalCount - activeCount;
+      const result = { data: gifts, meta: { total, page, pageSize, activeCount, inactiveCount } };
+      await setCache(cacheKey, result, 30);
+      return res.json(result);
+    } else {
+      const gifts = await Gift.find(query).sort({ createdAt: -1 }).lean();
+      await setCache(cacheKey, gifts, 30);
+      return res.json(gifts);
+    }
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch your gifts' });
@@ -215,6 +271,17 @@ router.post('/redeem', requireAuth, async (req, res) => {
         updatedUser = await User.findByIdAndUpdate(user._id, { $inc: incQuery }, { new: true }) || user;
       }
       
+      const metadata = { code: codeUpper };
+      if (coinsToAdd) metadata.coins = coinsToAdd;
+      if (diskToAdd) metadata.diskMb = diskToAdd;
+      if (memToAdd) metadata.memoryMb = memToAdd;
+      if (cpuToAdd) metadata.cpuPercent = cpuToAdd;
+      if (backupsToAdd) metadata.backups = backupsToAdd;
+      if (dbsToAdd) metadata.databases = dbsToAdd;
+      if (allocsToAdd) metadata.allocations = allocsToAdd;
+      if (slotsToAdd) metadata.serverSlots = slotsToAdd;
+      
+      await logUserActivity(req, 'gift.claim', metadata);
       return res.json({ message: 'Gift redeemed successfully', description: claimedGift.description, rewards: claimedGift.rewards, appliedPlans, user: { coins: updatedUser.coins, resources: updatedUser.resources } });
     }
 
@@ -298,6 +365,19 @@ router.post('/redeem', requireAuth, async (req, res) => {
       result = { description: gift.description, rewards: gift.rewards, user: { coins: user.coins, resources: user.resources }, appliedPlans };
     });
     await session.endSession();
+    const metadata = { code: codeUpper };
+    if (result && result.rewards) {
+      if (result.rewards.coins) metadata.coins = result.rewards.coins;
+      const r = result.rewards.resources || {};
+      if (r.diskMb) metadata.diskMb = r.diskMb;
+      if (r.memoryMb) metadata.memoryMb = r.memoryMb;
+      if (r.cpuPercent) metadata.cpuPercent = r.cpuPercent;
+      if (r.backups) metadata.backups = r.backups;
+      if (r.databases) metadata.databases = r.databases;
+      if (r.allocations) metadata.allocations = r.allocations;
+      if (r.serverSlots) metadata.serverSlots = r.serverSlots;
+    }
+    await logUserActivity(req, 'gift.claim', metadata);
     return res.json({ message: 'Gift redeemed successfully', ...result });
   } catch (error) {
     console.error('Redeem error:', error);

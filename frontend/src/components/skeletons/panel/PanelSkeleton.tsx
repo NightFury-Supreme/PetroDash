@@ -1,46 +1,55 @@
+import React from "react";
+
+export function CredentialRowSkeleton() {
+  return (
+    <div className="grid grid-cols-[minmax(250px,1fr)_1fr_120px] items-center gap-4 px-5 py-4">
+      {/* Column 1 */}
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/[0.04] animate-pulse" />
+        <div>
+          <div className="h-3 w-24 rounded-sm bg-white/[0.04] animate-pulse" />
+          <div className="mt-1 h-2 w-32 rounded-sm bg-white/[0.02] animate-pulse" />
+        </div>
+      </div>
+
+      {/* Column 2 */}
+      <div className="flex items-center min-w-0">
+        <div className="h-3 w-32 rounded-sm bg-white/[0.04] animate-pulse" />
+      </div>
+
+      {/* Column 3 */}
+      <div className="flex items-center justify-end">
+        <div className="h-8 w-20 rounded-md bg-white/[0.04] animate-pulse" />
+      </div>
+    </div>
+  );
+}
+
 export function PanelSkeleton() {
   return (
-    <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 bg-[#0F0F0F] min-h-screen">
-      {/* Header skeleton */}
-      <div className="space-y-4">
-        <div className="h-8 bg-[#202020] rounded w-64"></div>
-        <div className="h-5 bg-[#202020] rounded w-96"></div>
-      </div>
-
-      {/* Main card skeleton */}
-      <div className="bg-[#181818] border border-[#303030] rounded-xl overflow-hidden">
-        {/* Card header skeleton */}
-        <div className="p-6 border-b border-[#303030]">
-          <div className="flex items-center gap-3">
-            <div className="w-6 h-6 bg-[#202020] rounded"></div>
-            <div className="h-6 bg-[#202020] rounded w-48"></div>
+    <div className="flex flex-col h-full space-y-6">
+      <section>
+        <div className="mb-5 flex items-end justify-between">
+          <div>
+            <div className="h-8 w-40 bg-[#1a1a1a] animate-pulse rounded mb-2" />
+            <div className="h-4 w-64 bg-[#1a1a1a] animate-pulse rounded" />
           </div>
         </div>
 
-        {/* Card content skeleton */}
-        <div className="p-6 space-y-6">
-          {/* Description skeleton */}
-          <div className="h-4 bg-[#202020] rounded w-80"></div>
-          
-          {/* Credentials skeleton */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="h-4 bg-[#202020] rounded w-16"></div>
-              <div className="h-4 bg-[#202020] rounded w-48"></div>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="h-4 bg-[#202020] rounded w-20"></div>
-              <div className="h-4 bg-[#202020] rounded w-64"></div>
-            </div>
-          </div>
-
-          {/* Buttons skeleton */}
-          <div className="flex items-center gap-3 pt-4">
-            <div className="h-10 bg-[#202020] rounded-lg w-32"></div>
-            <div className="h-10 bg-[#202020] rounded-lg w-36"></div>
+        <div className="hidden grid-cols-[minmax(250px,1fr)_1fr_120px] items-center border-b border-white/[0.06] px-5 pb-3 md:grid">
+          <div className="h-3 w-16 bg-[#1a1a1a] animate-pulse rounded" />
+          <div className="h-3 w-16 bg-[#1a1a1a] animate-pulse rounded" />
+          <div className="flex justify-end">
+            <div className="h-3 w-12 bg-[#1a1a1a] animate-pulse rounded" />
           </div>
         </div>
-      </div>
+
+        <div className="divide-y divide-white/[0.06]">
+          <CredentialRowSkeleton />
+          <CredentialRowSkeleton />
+          <CredentialRowSkeleton />
+        </div>
+      </section>
     </div>
   );
 }

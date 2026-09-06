@@ -1,12 +1,11 @@
+"use client";
+
 export function AdminEarnHeader() {
   return (
-    <div className="flex items-center gap-3">
-      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#202020] rounded-2xl flex items-center justify-center shadow-lg">
-        <i className="fas fa-coins text-white text-lg sm:text-2xl"></i>
-      </div>
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Earn Manager</h1>
-        <p className="text-[#AAAAAA] text-base sm:text-lg">Configure earning methods and rewards</p>
+        <h1 className="text-2xl font-bold text-white tracking-tight">Earn <span className="text-[#FF5722]">Manager</span></h1>
+        <p className="text-[#888888] mt-1 text-sm">Configure coin earning methods and rewards.</p>
       </div>
     </div>
   );

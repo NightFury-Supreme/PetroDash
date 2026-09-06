@@ -162,7 +162,9 @@ router.post('/create-order', requireAuth, createRateLimiter(10, 60 * 1000), asyn
           billingCycle,
           couponCode: couponCode || null,
           discountAmount,
-          isLifetime: billingCycle === 'lifetime' || Boolean(plan.billingOptions?.lifetime)
+          isLifetime: billingCycle === 'lifetime' || Boolean(plan.billingOptions?.lifetime),
+          ip: req.ip,
+          userAgent: req.get('User-Agent')
         }
       });
       
@@ -221,7 +223,9 @@ router.post('/create-order', requireAuth, createRateLimiter(10, 60 * 1000), asyn
         billingCycle,
         couponCode: couponCode || null,
         discountAmount,
-        isLifetime: billingCycle === 'lifetime' || Boolean(plan.billingOptions?.lifetime)
+        isLifetime: billingCycle === 'lifetime' || Boolean(plan.billingOptions?.lifetime),
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
       }
     });
 
@@ -232,7 +236,28 @@ router.post('/create-order', requireAuth, createRateLimiter(10, 60 * 1000), asyn
   }
 });
 
-// POST /api/paypal/capture-order
+// POST /api/paypal/cancel-order
+router.post('/cancel-order', requireAuth, createRateLimiter(20, 60 * 1000), async (req, res) => {
+  try {
+    const userId = String(req.user?.sub || '');
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const { orderId } = req.body || {};
+    if (!orderId) return res.status(400).json({ error: 'orderId is required' });
+
+    const payment = await Payment.findOne({ providerOrderId: orderId, userId, status: 'CREATED' });
+    if (payment) {
+      payment.status = 'VOIDED';
+      await payment.save();
+    }
+    
+    return res.json({ success: true });
+  } catch (e) {
+    console.error('[PayPal] cancel-order error:', e.message);
+    return res.status(500).json({ error: 'Failed to cancel order' });
+  }
+});
+
 router.post('/capture-order', requireAuth, createRateLimiter(10, 60 * 1000), async (req, res) => {
   try {
     const userId = String(req.user?.sub || '');

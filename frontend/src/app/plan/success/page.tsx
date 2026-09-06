@@ -3,10 +3,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useModal } from '@/components/Modal';
-import Shell from '@/components/Shell';
+import { Check, LayoutDashboard } from 'lucide-react';
 
-// Avoid prerendering this page; it's a post-payment client flow
-// Mark as dynamic using runtime to avoid server invoking client-only APIs
 export const runtime = 'edge';
 
 export default function PlanSuccessPage() {
@@ -25,62 +23,41 @@ export default function PlanSuccessPage() {
     const handlePaymentSuccess = async () => {
       try {
         const token = localStorage.getItem('auth_token');
-        if (!token) {
-          router.push('/login');
-          return;
-        }
+        if (!token) { router.push('/login'); return; }
 
         const orderId = searchParams.get('token');
-        if (!orderId) {
-          throw new Error('No order ID found');
-        }
+        if (!orderId) throw new Error('No order ID found');
 
-        // Capture the PayPal order
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/paypal/capture-order`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/paypal/capture-order`, {
           method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json', 
-            Authorization: `Bearer ${token}` 
-          },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ orderId })
         });
 
         let data: any = {}; try { data = await response.json(); } catch {}
-        if (!response.ok) {
-          throw new Error(data?.error || 'Failed to capture payment');
-        }
+        if (!response.ok) throw new Error(data?.error || 'Failed to capture payment');
 
-        setSuccess(true);
-        await modal.success({ 
-          title: 'Payment Successful!', 
-          body: 'Your plan has been activated successfully. You can now access your new resources.' 
-        });
-
-        // Redirect to dashboard after a short delay
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 2000);
-
-      } catch (error: any) {
-        console.error('Payment capture error:', error);
-        
-        // Handle case where user refreshed the page after successful payment
-        if (error.message?.includes('already captured') || error.message?.includes('ORDER_ALREADY_CAPTURED')) {
-          setSuccess(true);
-          await modal.success({ 
-            title: 'Payment Successful!', 
-            body: 'Your plan has been activated successfully. You can now access your new resources.' 
-          });
-          setTimeout(() => {
-            router.push('/dashboard');
-          }, 2000);
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage({ type: 'PAYPAL_SUCCESS' }, '*');
+          window.close();
           return;
         }
 
-        await modal.error({ 
-          title: 'Payment Error', 
-          body: error.message || 'Failed to process payment. Please contact support.' 
-        });
+        setSuccess(true);
+        setTimeout(() => router.push('/dashboard'), 4000);
+
+      } catch (error: any) {
+        if (error.message?.includes('already captured') || error.message?.includes('ORDER_ALREADY_CAPTURED')) {
+          if (window.opener && !window.opener.closed) {
+            window.opener.postMessage({ type: 'PAYPAL_SUCCESS' }, '*');
+            window.close();
+            return;
+          }
+          setSuccess(true);
+          setTimeout(() => router.push('/dashboard'), 4000);
+          return;
+        }
+        await modal.error({ title: 'Payment Error', body: error.message || 'Failed to process payment.' });
         router.push('/shop');
       } finally {
         setLoading(false);
@@ -92,53 +69,56 @@ export default function PlanSuccessPage() {
 
   if (loading) {
     return (
-      <Shell>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-            <h2 className="text-xl font-semibold text-white mb-2">Processing Payment...</h2>
-            <p className="text-[#AAAAAA]">Please wait while we confirm your payment.</p>
+      <div className="flex flex-col items-center justify-center w-full flex-1 bg-[#0F0F0F] min-h-screen text-sans">
+        <section className="text-center w-full max-w-[620px] px-4">
+          <div className="mx-auto mb-[24px] flex items-center justify-center gap-3 h-[64px] sm:h-[80px]">
+            <span className="w-3.5 h-3.5 rounded-full bg-[#FF5722] animate-bounce [animation-delay:-0.3s]" />
+            <span className="w-3.5 h-3.5 rounded-full bg-[#FF5722] animate-bounce [animation-delay:-0.15s]" />
+            <span className="w-3.5 h-3.5 rounded-full bg-[#FF5722] animate-bounce" />
           </div>
-        </div>
-      </Shell>
+          <p className="m-0 mb-2.5 text-[#FF5722] text-[10px] font-semibold tracking-[0.12em] uppercase">
+            Processing
+          </p>
+          <h1 className="m-0 text-[#ededed] text-[clamp(28px,4vw,38px)] leading-[1.15] font-semibold tracking-[-0.04em]">
+            Confirming Payment
+          </h1>
+          <p className="max-w-[500px] mx-auto mt-3.5 text-[#888888] text-[12px] sm:text-[13px] leading-[1.7]">
+            Please wait while we securely confirm your transaction. Do not close this window.
+          </p>
+        </section>
+      </div>
     );
   }
 
   if (success) {
     return (
-      <Shell>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-              <i className="fas fa-check text-white text-2xl"></i>
-            </div>
-            <h1 className="text-3xl font-bold text-white mb-4">Payment Successful!</h1>
-            <p className="text-[#AAAAAA] text-lg mb-6">
-              Your plan has been activated successfully. You can now access your new resources.
-            </p>
-            <div className="space-y-4">
-              <div className="bg-[#181818] border border-[#303030] rounded-lg p-4">
-                <h3 className="text-white font-semibold mb-2">What's Next?</h3>
-                <ul className="text-[#AAAAAA] text-sm space-y-1">
-                  <li>• Your resources have been added to your account</li>
-                  <li>• You can now create servers with your new limits</li>
-                  <li>• Check your dashboard to see your updated resources</li>
-                </ul>
-              </div>
-              <button
-                onClick={() => router.push('/dashboard')}
-                className="bg-white hover:bg-gray-100 text-black px-6 py-3 rounded-lg font-semibold transition-colors"
-              >
-                Go to Dashboard
-              </button>
-            </div>
+      <div className="flex flex-col items-center justify-center w-full flex-1 bg-[#0F0F0F] min-h-screen text-sans">
+        <section className="text-center w-full max-w-[620px] px-4">
+          <div className="mx-auto mb-[24px] flex items-center justify-center text-emerald-500">
+            <Check className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" strokeWidth={1.5} />
           </div>
-        </div>
-      </Shell>
+          <p className="m-0 mb-2.5 text-emerald-500 text-[10px] font-semibold tracking-[0.12em] uppercase">
+            Success
+          </p>
+          <h1 className="m-0 text-[#ededed] text-[clamp(28px,4vw,38px)] leading-[1.15] font-semibold tracking-[-0.04em]">
+            Payment Completed
+          </h1>
+          <p className="max-w-[500px] mx-auto mt-3.5 text-[#888888] text-[12px] sm:text-[13px] leading-[1.7]">
+            Your plan has been activated. You will be redirected to the dashboard in a few seconds.
+          </p>
+          <div className="mt-[29px] flex justify-center gap-3">
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="flex items-center gap-2 bg-[#1A0F0C] border border-[#FF5722]/30 text-[#FF5722] hover:bg-[#FF5722]/10 px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
+            >
+              <LayoutDashboard className="w-[14px] h-[14px]" />
+              Go to Dashboard
+            </button>
+          </div>
+        </section>
+      </div>
     );
   }
 
   return null;
 }
-
-

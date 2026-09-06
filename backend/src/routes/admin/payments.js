@@ -36,6 +36,8 @@ router.get('/ledger', requireAdmin, async (req, res) => {
       .sort({ createdAt: -1 })
       .skip((pageNum - 1) * limitNum)
       .limit(limitNum)
+      .populate('userId', 'username email profilePicture')
+      .populate('planId', 'name')
       .lean();
       
     const result = {
@@ -74,6 +76,36 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     res.json({ ok: true, payment: p });
   } catch (e) { 
     res.status(400).json({ error: e.message }); 
+  }
+});
+
+// GET /api/admin/payments/:id/invoice - PDF invoice download for admin
+router.get('/:id/invoice', requireAdmin, async (req, res) => {
+  try {
+    const p = await Payment.findOne({ _id: String(req.params.id), status: 'completed' }).lean() 
+            || await Payment.findOne({ _id: String(req.params.id), status: 'COMPLETED' }).lean(); // Try both cases
+    if (!p) return res.status(404).json({ error: 'Invoice not found or not completed' });
+    const Plan = require('../../models/Plan');
+    const User = require('../../models/User');
+    const plan = await Plan.findById(p.planId).lean();
+    const user = await User.findById(p.userId).lean();
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="invoice-${p._id}.pdf"`);
+
+    const { getSettings } = require('../../lib/settings');
+    const settings = await getSettings();
+    const { generateInvoicePdfBuffer } = require('../../lib/invoicePdf');
+    
+    let frontendHost = process.env.FRONTEND_URL || req.get('host');
+    const protocol = req.protocol || 'https';
+    
+    const pdfBuffer = await generateInvoicePdfBuffer(p, plan, user, settings, frontendHost, protocol);
+    
+    res.send(pdfBuffer);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 

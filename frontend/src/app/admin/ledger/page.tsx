@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Shell from "@/components/Shell";
 import { AdminLedgerSkeleton } from "@/components/skeletons/admin/ledger";
 import { AdminLedgerHeader, AdminLedgerContent } from "@/components/admin/ledger";
 import { useModal } from "@/components/Modal";
@@ -39,7 +38,7 @@ export default function AdminLedgerPage() {
       params.set('page', pageToLoad.toString());
       params.set('limit', '10');
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/payments/ledger?${params.toString()}`, { 
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/payments/ledger?${params.toString()}`, { 
         headers: { Authorization: `Bearer ${token}` } 
       });
       
@@ -89,7 +88,7 @@ export default function AdminLedgerPage() {
         return;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/payments/${id}/refund`, { 
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/payments/${id}/refund`, { 
         method: 'POST', 
         headers: { Authorization: `Bearer ${token}` } 
       });
@@ -133,7 +132,7 @@ export default function AdminLedgerPage() {
         return;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/payments/${id}/void`, { 
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/payments/${id}/void`, { 
         method: 'POST', 
         headers: { Authorization: `Bearer ${token}` } 
       });
@@ -161,16 +160,16 @@ export default function AdminLedgerPage() {
 
   if (loading && items.length === 0) {
     return (
-      <Shell>
+      
         <div className="p-6">
           <AdminLedgerSkeleton />
         </div>
-      </Shell>
+      
     );
   }
 
   return (
-    <Shell>
+    
       <div className="p-6 space-y-6">
         {/* Header */}
         <AdminLedgerHeader />
@@ -219,7 +218,7 @@ export default function AdminLedgerPage() {
           </div>
         )}
       </div>
-    </Shell>
+    
   );
 }
 

@@ -19,7 +19,6 @@ export interface EarnMethodSettings {
 }
 
 export interface AdminEarnSettings {
-  enabled: boolean;
   ads: EarnMethodSettings;
   linkvertise: EarnMethodSettings;
 }
@@ -38,7 +37,7 @@ export function useAdminEarn() {
       const token = localStorage.getItem("auth_token");
       if (!token) throw new Error("No auth token");
 
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/earn`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/earn`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -61,7 +60,7 @@ export function useAdminEarn() {
       const token = localStorage.getItem("auth_token");
       if (!token) throw new Error("No auth token");
 
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/earn`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/earn`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

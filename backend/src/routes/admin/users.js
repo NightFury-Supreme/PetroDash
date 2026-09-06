@@ -5,16 +5,17 @@ const User = require('../../models/User');
 const Server = require('../../models/Server');
 const UserPlan = require('../../models/UserPlan');
 const Plan = require('../../models/Plan');
-const { deleteServer: deletePanelServer, updateServerBuild, getServer: getPanelServer, updateServerDetails, deletePanelUser } = require('../../services/pterodactyl');
+const { deleteServer: deletePanelServer, updateServerBuild, getServer: getPanelServer, updateServerDetails, deletePanelUser, checkUserExists, updatePanelUser } = require('../../services/pterodactyl');
+const PendingUpdate = require('../../models/PendingUpdate');
 
 const router = express.Router();
 
 // GET /api/admin/users - list users
 router.get('/', requireAdmin, async (req, res) => {
   try {
-    const { search, page = '1', limit = '10' } = req.query;
+    const { search, page = '1', limit = '10', pageSize } = req.query;
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
-    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
+    const limitNum = Math.min(100, Math.max(1, parseInt(pageSize || limit, 10) || 10));
     
     const { getCache, setCache } = require('../../lib/redis');
     const cacheKey = `admin:users:${search || ''}:${pageNum}:${limitNum}`;
@@ -51,11 +52,13 @@ router.get('/', requireAdmin, async (req, res) => {
     const list = users.map((u) => ({ ...u, serverCount: idToCount[String(u._id)] || 0 }));
     
     const result = {
-      users: list,
-      total,
-      page: pageNum,
-      limit: limitNum,
-      totalPages: Math.ceil(total / limitNum)
+      data: list,
+      meta: {
+        total,
+        currentPage: pageNum,
+        pageSize: limitNum,
+        totalPages: Math.ceil(total / limitNum)
+      }
     };
 
     await setCache(cacheKey, result, 30);
@@ -77,10 +80,26 @@ router.get('/:id', requireAdmin, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const servers = await Server.find({ owner: user._id })
+    const serversRaw = await Server.find({ owner: user._id })
       .populate('eggId', 'name icon')
-      .populate('locationId', 'name')
+      .populate('locationId', 'name flag')
       .lean();
+
+    let base = process.env.PTERO_BASE_URL || process.env.PTERODACTYL_URL || '';
+    if (base.endsWith('/')) base = base.slice(0, -1);
+
+    const servers = await Promise.all(serversRaw.map(async (s) => {
+      let clientUrl = base;
+      if (s.panelServerId) {
+        try {
+          const panel = await getPanelServer(s.panelServerId);
+          const identifier = panel?.attributes?.identifier || panel?.attributes?.uuid || panel?.identifier || panel?.uuid || null;
+          if (identifier) clientUrl = `${base}/server/${identifier}`;
+          // eslint-disable-next-line unused-imports/no-unused-vars
+  } catch (_) {}
+      }
+      return { ...s, clientUrl };
+    }));
 
     const usage = servers.reduce((acc, s) => {
       const l = s.limits || {};
@@ -99,9 +118,16 @@ router.get('/:id', requireAdmin, async (req, res) => {
       .lean();
 
     // Referral data
+    const referralPage = parseInt(req.query.referralPage) || 1;
+    const referralPageSize = parseInt(req.query.referralPageSize) || 5;
+
+    const totalReferred = await User.countDocuments({ referredBy: user._id });
     const referredUsers = await User.find({ referredBy: user._id }, { passwordHash: 0 })
       .select('username email createdAt')
+      .skip((referralPage - 1) * referralPageSize)
+      .limit(referralPageSize)
       .lean();
+      
     const referralStats = user.referralStats || { referredCount: 0, coinsEarned: 0 };
 
     // Determine login method
@@ -121,7 +147,13 @@ router.get('/:id', requireAdmin, async (req, res) => {
         code: user.referralCode || null,
         referredCount: Number(referralStats.referredCount || 0),
         coinsEarned: Number(referralStats.coinsEarned || 0),
-        referredUsers
+        referredUsers,
+        meta: {
+          total: totalReferred,
+          currentPage: referralPage,
+          pageSize: referralPageSize,
+          totalPages: Math.ceil(totalReferred / referralPageSize)
+        }
       }
     });
   } catch (e) {
@@ -180,8 +212,33 @@ router.patch('/:id', requireAdmin, async (req, res) => {
   if (typeof coins === 'number') user.coins = coins;
   // Direct resource editing: update user.resources directly
   if (resources) user.resources = { ...(user.resources || {}), ...resources };
-  if (email) user.email = email;
-  if (username) user.username = username;
+  const oldEmail = user.email;
+  const oldUsername = user.username;
+  
+  const emailChanged = email && email !== oldEmail;
+  const usernameChanged = username && username !== oldUsername;
+
+  if (emailChanged) {
+    const existing = await User.findOne({ email }).lean();
+    if (existing) return res.status(409).json({ error: 'Email already in use by another user.' });
+  }
+  
+  if (usernameChanged) {
+    const existing = await User.findOne({ username }).lean();
+    if (existing) return res.status(409).json({ error: 'Username already in use by another user.' });
+  }
+
+  // If email or username was changed, check Pterodactyl uniqueness
+  if (emailChanged || usernameChanged) {
+    const checkEmail = email || oldEmail;
+    const checkUsername = username || oldUsername;
+    const pterodactylCheck = await checkUserExists(checkEmail, checkUsername, user.pterodactylUserId);
+    if (pterodactylCheck.emailExists) return res.status(409).json({ error: 'Email already exists in Pterodactyl panel.' });
+    if (pterodactylCheck.usernameExists) return res.status(409).json({ error: 'Username already exists in Pterodactyl panel.' });
+  }
+
+  if (emailChanged) user.email = email;
+  if (usernameChanged) user.username = username;
   if (firstName) user.firstName = firstName;
   if (lastName) user.lastName = lastName;
   if (profilePicture !== undefined) user.profilePicture = profilePicture;
@@ -202,6 +259,25 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     user.ban.by = req.user?.sub || req.user?.userId || user.ban.by || null;
   }
   await user.save();
+
+  // Sync profile details to Pterodactyl if applicable
+  if (user.pterodactylUserId) {
+    const payload = {
+      email: user.email,
+      username: user.username,
+      first_name: user.firstName,
+      last_name: user.lastName
+    };
+    try {
+      await updatePanelUser(user.pterodactylUserId, payload);
+    } catch {
+      try {
+        await PendingUpdate.create({ pterodactylUserId: user.pterodactylUserId, payload: JSON.stringify(payload) });
+      } catch (queueErr) {
+        console.error('Failed to queue admin Pterodactyl update:', queueErr.message);
+      }
+    }
+  }
   // Notify user on ban/unban (non-blocking)
   try {
     const { sendMailTemplate } = require('../../lib/mail');
@@ -210,7 +286,11 @@ router.patch('/:id', requireAdmin, async (req, res) => {
       await sendMailTemplate({
         to: user.email,
         templateKey,
-        data: { reason: user.ban?.reason || '', until: user.ban?.until ? new Date(user.ban.until).toISOString() : 'lifetime' }
+        data: { 
+          username: user.username,
+          reason: user.ban?.reason || '', 
+          until: user.ban?.until ? new Date(user.ban.until).toISOString() : 'lifetime' 
+        }
       });
     }
   // eslint-disable-next-line unused-imports/no-unused-vars
