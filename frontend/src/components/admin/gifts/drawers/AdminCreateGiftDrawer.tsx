@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Drawer } from "@/components/ui/Drawer";
 import { Loader2, Plus } from "lucide-react";
-import { useCurrency } from "@/hooks/useCurrency";
 
 export function AdminCreateGiftDrawer({
   isOpen,
@@ -12,7 +11,6 @@ export function AdminCreateGiftDrawer({
   onClose: () => void;
   onSuccess: () => void;
 }) {
-  const { currency } = useCurrency();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -129,7 +127,7 @@ export function AdminCreateGiftDrawer({
           <div className="col-span-2">
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Description</label>
             <input 
-              value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} disabled={saving} placeholder="Optional internal note"
+              value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} disabled={saving} placeholder="Short description of the gift"
               className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" 
             />
           </div>
@@ -164,7 +162,7 @@ export function AdminCreateGiftDrawer({
           <h3 className="text-sm font-semibold text-white mb-4">Rewards</h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">{currency}</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Coins</label>
               <input type="number" min="0" value={form.coins} onChange={(e) => setForm({ ...form, coins: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
             </div>
             <div>

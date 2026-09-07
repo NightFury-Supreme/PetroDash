@@ -1,5 +1,4 @@
 import { Edit2, Trash2 } from "lucide-react";
-import { useCurrency } from "@/hooks/useCurrency";
 
 export function AdminGiftTableRow({
   gift,
@@ -12,11 +11,9 @@ export function AdminGiftTableRow({
   onDelete: (id: string) => void;
   cols: string;
 }) {
-  const { currency } = useCurrency();
-
   const getRewardsText = () => {
     const parts = [];
-    if (gift.rewards?.coins) parts.push(`${gift.rewards.coins} ${currency}`);
+    if (gift.rewards?.coins) parts.push(`${gift.rewards.coins} coins`);
     if (gift.rewards?.resources?.cpuPercent) parts.push(`${gift.rewards.resources.cpuPercent}% CPU`);
     if (gift.rewards?.resources?.memoryMb) parts.push(`${gift.rewards.resources.memoryMb}MB RAM`);
     if (gift.rewards?.resources?.diskMb) parts.push(`${gift.rewards.resources.diskMb}MB Disk`);
