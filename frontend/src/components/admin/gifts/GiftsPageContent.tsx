@@ -195,10 +195,10 @@ export default function GiftsPageContent() {
       />
 
       <AdminEditGiftDrawer
+        isOpen={!!editingGiftId}
         giftId={editingGiftId}
         onClose={() => setEditingGiftId(null)}
         onSuccess={fetchGifts}
-        onDelete={handleDelete}
       />
 
       <AdminGiftRedemptionsDrawer
