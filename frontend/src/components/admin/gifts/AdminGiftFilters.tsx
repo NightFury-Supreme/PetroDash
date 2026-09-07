@@ -100,13 +100,13 @@ export function AdminGiftFilters({
       </button>
 
       {filtersOpen && (
-        <div className="absolute z-50 top-[calc(100%+8px)] left-0 sm:left-auto sm:right-0 w-[200px] border border-[#222] rounded-md bg-[#151515] p-1 shadow-xl max-w-[calc(100vw-36px)] sm:max-w-none">
+        <div className="absolute z-50 top-[calc(100%+8px)] right-0 w-[350px] border border-[#222] rounded-md bg-[#151515] p-1 shadow-xl max-w-[calc(100vw-36px)] sm:max-w-none">
           <div className="min-h-[50px] flex flex-col justify-center px-3 pt-1 border-b border-[#222] pb-3">
             <strong className="text-[#ddd] text-[11px] mb-[2px]">Filters</strong>
             <span className="text-[#555] text-[9px]">Narrow down your gifts</span>
           </div>
           
-          <div className="flex flex-col gap-[15px] p-[13px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[15px] p-[13px]">
             <div className="flex flex-col gap-[7px]">
               <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">Status</label>
               <CustomDropdown
