@@ -1,29 +1,29 @@
 import { useState, useEffect } from "react";
 import { Drawer } from "@/components/ui/Drawer";
-import { Loader2, Edit2, Tag, FileText, Infinity, Coins, Cpu, MemoryStick, HardDrive, Server, Trash2 } from "lucide-react";
+import { Loader2, Edit2, Tag, FileText, Infinity, Coins, Cpu, MemoryStick, HardDrive, Server } from "lucide-react";
 
 export function AdminEditGiftDrawer({
-  giftId,
+  isOpen,
   onClose,
   onSuccess,
-  onDelete,
+  giftId,
 }: {
-  giftId: string | null;
+  isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  onDelete: (id: string) => void;
+  giftId: string | null;
 }) {
-  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     code: "",
     description: "",
-    enabled: true,
     maxRedemptions: 0,
     validFrom: "",
     validUntil: "",
+    enabled: true,
     coins: 0,
     cpuPercent: 0,
     memoryMb: 0,
@@ -31,49 +31,19 @@ export function AdminEditGiftDrawer({
     serverSlots: 0,
   });
 
-  useEffect(() => {
-    if (giftId) {
-      loadGift();
-    }
-  }, [giftId]);
+  const formatDateForInput = (dateStr: string | null | undefined) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  };
 
-  const loadGift = async () => {
-    try {
+  useEffect(() => {
+    if (isOpen && giftId) {
       setLoading(true);
       setError(null);
       const token = localStorage.getItem("auth_token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/gifts/${giftId}`, {
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/gifts/${giftId}`, {
         headers: { Authorization: `Bearer ${token}` }
-      });
-      if (!res.ok) throw new Error("Failed to load gift details");
-      const data = await res.json();
-      
-      const formatDateTime = (isoString?: string) => {
-        if (!isoString) return "";
-        return new Date(isoString).toISOString().slice(0, 16);
-      };
-
-      setForm({
-        code: data.code || "",
-        description: data.description || "",
-        enabled: data.enabled ?? true,
-        maxRedemptions: data.maxRedemptions || 0,
-        validFrom: formatDateTime(data.validFrom),
-        validUntil: formatDateTime(data.validUntil),
-        coins: data.rewards?.coins || 0,
-        cpuPercent: data.rewards?.resources?.cpuPercent || 0,
-        memoryMb: data.rewards?.resources?.memoryMb || 0,
-        diskMb: data.rewards?.resources?.diskMb || 0,
-        serverSlots: data.rewards?.resources?.serverSlots || 0,
-      });
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSave = async () => {
       })
       .then(r => r.json())
       .then(data => {
@@ -190,6 +160,7 @@ export function AdminEditGiftDrawer({
                 className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50 uppercase" 
               />
             </div>
+
             <div className="col-span-2">
               <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><FileText size={12} /> Description</label>
               <input 
@@ -199,7 +170,7 @@ export function AdminEditGiftDrawer({
             </div>
 
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Infinity size={12} /> Max Uses</label>
+              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Infinity size={12} /> Max Uses (0 = ∞)</label>
               <input type="number" min="0" value={form.maxRedemptions} onChange={(e) => setForm({ ...form, maxRedemptions: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
             </div>
 
