@@ -106,7 +106,7 @@ export function AdminGiftFilters({
             <span className="text-[#555] text-[9px]">Narrow down your gifts</span>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[15px] p-[13px]">
+          <div className="flex flex-col gap-[15px] p-[13px]">
             <div className="flex flex-col gap-[7px]">
               <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">Status</label>
               <CustomDropdown
