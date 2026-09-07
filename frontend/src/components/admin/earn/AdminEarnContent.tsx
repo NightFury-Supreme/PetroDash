@@ -104,7 +104,7 @@ export function AdminEarnContent({
   const setField = (path: string, value: any) => onChange(path, value);
 
   return (
-    <div className="mt-8 max-w-5xl">
+    <div className="mt-8">
       <div className="mb-6">
         <h3 className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1">
           Earning Methods
