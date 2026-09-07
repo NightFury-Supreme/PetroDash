@@ -2,7 +2,7 @@ export function AdminGiftsSkeleton() {
   const cols = "lg:grid-cols-[1.5fr_2fr_1fr_1fr_100px_100px]";
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mt-8">
       {/* Header */}
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -13,12 +13,14 @@ export function AdminGiftsSkeleton() {
       </div>
 
       {/* Content */}
-      <div className="rounded-xl border border-white/[0.06] bg-[#0A0A0A] shadow-2xl overflow-hidden">
+      <div className="w-full">
         
         {/* Filters */}
-        <div className="flex flex-col gap-4 border-b border-white/[0.06] p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="h-10 w-full sm:w-64 bg-white/5 rounded-lg animate-pulse" />
-          <div className="h-10 w-48 bg-white/5 rounded-lg animate-pulse" />
+        <div className="flex flex-col space-y-4 mb-6">
+          <div className="flex flex-col sm:flex-row items-center gap-[10px]">
+            <div className="h-[42px] w-full bg-white/5 rounded-[7px] animate-pulse" />
+            <div className="h-[42px] w-[150px] bg-white/5 rounded-[7px] animate-pulse" />
+          </div>
         </div>
 
         {/* Table */}

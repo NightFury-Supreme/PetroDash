@@ -84,19 +84,19 @@ export default function GiftsPageContent() {
   if (loading && gifts.length === 0) return <AdminGiftsSkeleton />;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mt-8">
       {/* Header */}
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Gift Manager</h1>
-          <p className="text-sm text-[#888] mt-1">Create and manage coupon codes for your users.</p>
+          <h1 className="text-2xl font-bold text-[#FF5722] tracking-tight">Gift Manager</h1>
+          <p className="text-[#888888] mt-1 text-sm">Create and manage coupon codes for your users.</p>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsCreateOpen(true)}
-            className="flex items-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E]"
+            className="flex items-center gap-2 rounded-[7px] bg-[#FF5722] px-4 py-[11px] text-[11px] font-bold text-white transition-colors hover:bg-[#F4511E] tracking-widest uppercase"
           >
-            <Plus size={16} />
+            <Plus size={14} />
             Create Gift
           </button>
         </div>
@@ -113,35 +113,31 @@ export default function GiftsPageContent() {
       )}
 
       {/* Content */}
-      <div className="rounded-xl border border-white/[0.06] bg-[#0A0A0A] shadow-2xl overflow-hidden">
-        
+      <div className="w-full">
         {/* Filters */}
-        <div className="flex flex-col gap-4 border-b border-white/[0.06] p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#555]" />
+        <div className="flex flex-col space-y-4 mb-6">
+          <div className="flex flex-col sm:flex-row items-center gap-[10px]">
+            <div className="relative flex-1 h-[42px] flex items-center gap-[10px] px-[13px] border border-[#282828] rounded-[7px] bg-[#121212] text-[#5e5e5e] focus-within:border-[#454545] focus-within:bg-[#151515] transition-colors w-full">
+              <Search size={15} />
               <input
                 type="text"
+                placeholder="Search codes..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search codes..."
-                className="w-full sm:w-64 rounded-lg border border-white/[0.06] bg-[#111] py-2 pl-9 pr-4 text-sm text-white placeholder:text-[#555] focus:border-[#FF5722]/50 focus:outline-none"
+                className="w-full min-w-0 border-0 outline-none bg-transparent text-[#d5d5d5] text-[11px] placeholder:text-[#505050]"
               />
             </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Filter size={14} className="text-[#555]" />
-            <div className="flex rounded-lg border border-white/[0.06] bg-[#111] p-1">
+            
+            <div className="flex items-center h-[42px] rounded-[7px] border border-[#282828] bg-[#121212] p-1">
               {(['all', 'active', 'inactive'] as const).map((t) => (
                 <button
                   key={t}
                   onClick={() => setTab(t)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                    tab === t ? 'bg-[#222] text-white' : 'text-[#888] hover:text-[#CCC]'
+                  className={`px-3 h-full text-[11px] font-bold tracking-widest uppercase rounded-[5px] transition-colors ${
+                    tab === t ? 'bg-[#222] text-[#d5d5d5]' : 'text-[#5e5e5e] hover:text-[#d5d5d5]'
                   }`}
                 >
-                  {t.charAt(0).toUpperCase() + t.slice(1)}
+                  {t}
                 </button>
               ))}
             </div>
@@ -165,7 +161,7 @@ export default function GiftsPageContent() {
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-white/[0.06] px-5 py-4 bg-[#0A0A0A]">
+          <div className="flex items-center justify-between border-t border-white/[0.06] pt-4 mt-4">
             <span className="text-xs text-[#555]">
               Showing page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
             </span>
