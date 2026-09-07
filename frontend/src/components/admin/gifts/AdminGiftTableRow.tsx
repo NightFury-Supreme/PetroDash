@@ -1,14 +1,16 @@
-import { Edit2, Trash2 } from "lucide-react";
+import { Edit2, Trash2, Users } from "lucide-react";
 
 export function AdminGiftTableRow({
   gift,
   onEdit,
   onDelete,
+  onRedemptions,
   cols,
 }: {
   gift: any;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  onRedemptions: (id: string) => void;
   cols: string;
 }) {
   const getRewardsText = () => {
@@ -67,6 +69,13 @@ export function AdminGiftTableRow({
       {/* Actions */}
       <div className="min-w-0 lg:text-right mt-2 lg:mt-0">
         <div className="flex lg:justify-end gap-2">
+          <button
+            onClick={() => onRedemptions(gift._id)}
+            title="View redemptions"
+            className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#888] hover:text-[#FF5722] hover:bg-[#FF5722]/10 transition-colors"
+          >
+            <Users size={14} />
+          </button>
           <button
             onClick={() => onEdit(gift._id)}
             title="Edit gift"

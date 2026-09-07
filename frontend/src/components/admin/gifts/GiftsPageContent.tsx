@@ -7,6 +7,7 @@ import { AdminGiftsSkeleton } from '@/components/skeletons/admin/gifts/AdminGift
 import { AdminGiftsTable } from './AdminGiftsTable';
 import { AdminCreateGiftDrawer } from './drawers/AdminCreateGiftDrawer';
 import { AdminEditGiftDrawer } from './drawers/AdminEditGiftDrawer';
+import { AdminGiftRedemptionsDrawer } from './drawers/AdminGiftRedemptionsDrawer';
 
 export default function GiftsPageContent() {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function GiftsPageContent() {
   // Drawers
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingGiftId, setEditingGiftId] = useState<string | null>(null);
+  const [viewingRedemptionsId, setViewingRedemptionsId] = useState<string | null>(null);
 
   const fetchGifts = useCallback(async () => {
     setLoading(true);
@@ -156,6 +158,7 @@ export default function GiftsPageContent() {
             gifts={gifts}
             onEdit={setEditingGiftId}
             onDelete={handleDelete}
+            onRedemptions={setViewingRedemptionsId}
           />
         </div>
 
@@ -196,6 +199,11 @@ export default function GiftsPageContent() {
         onClose={() => setEditingGiftId(null)}
         onSuccess={fetchGifts}
         onDelete={handleDelete}
+      />
+
+      <AdminGiftRedemptionsDrawer
+        giftId={viewingRedemptionsId}
+        onClose={() => setViewingRedemptionsId(null)}
       />
     </div>
   );

@@ -5,10 +5,12 @@ export function AdminGiftsTable({
   gifts,
   onEdit,
   onDelete,
+  onRedemptions,
 }: {
   gifts: any[];
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  onRedemptions: (id: string) => void;
 }) {
   const cols = "lg:grid-cols-[1.5fr_2fr_1fr_1fr_100px_100px]";
 
@@ -46,6 +48,7 @@ export function AdminGiftsTable({
             gift={gift}
             onEdit={onEdit}
             onDelete={onDelete}
+            onRedemptions={onRedemptions}
             cols={cols}
           />
         ))}
