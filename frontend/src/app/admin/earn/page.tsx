@@ -46,10 +46,10 @@ export default function AdminEarnPage() {
     });
   };
 
-  const onSaveAds = async () => {
+  const onSaveAds = async (override?: Partial<AdminEarnSettings['ads']>) => {
     try {
       if (!form) return;
-      const next = await save({ ads: form.ads });
+      const next = await save({ ads: { ...form.ads, ...override } });
       setForm(next);
     } catch (e: any) {
       const msg = String(e?.message || "Failed to save");
@@ -58,10 +58,10 @@ export default function AdminEarnPage() {
     }
   };
 
-  const onSaveLinkvertise = async () => {
+  const onSaveLinkvertise = async (override?: Partial<AdminEarnSettings['linkvertise']>) => {
     try {
       if (!form) return;
-      const next = await save({ linkvertise: form.linkvertise });
+      const next = await save({ linkvertise: { ...form.linkvertise, ...override } });
       setForm(next);
     } catch (e: any) {
       const msg = String(e?.message || "Failed to save");

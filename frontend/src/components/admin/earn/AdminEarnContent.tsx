@@ -37,7 +37,15 @@ function FieldHint({ children }: { children: React.ReactNode }) {
   );
 }
 
-function SaveButton({ onClick, loading, label }: { onClick: () => Promise<void>; loading: boolean; label: string }) {
+function ActionButton({ 
+  onClick, loading, label, variant = "primary", className = ""
+}: { 
+  onClick: () => Promise<void>; 
+  loading: boolean; 
+  label: string;
+  variant?: "primary" | "danger";
+  className?: string;
+}) {
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
 
   const handleClick = async () => {
@@ -45,24 +53,26 @@ function SaveButton({ onClick, loading, label }: { onClick: () => Promise<void>;
       await onClick();
       setStatus("success");
       setTimeout(() => setStatus("idle"), 2000);
-    } catch (_) {
+    } catch {
       setStatus("error");
       setTimeout(() => setStatus("idle"), 3000);
     }
   };
 
-  const bg = status === "success" ? "bg-emerald-500 border-emerald-500 hover:bg-emerald-600" 
-           : status === "error" ? "bg-red-500 border-red-500 hover:bg-red-600" 
-           : "bg-[#FF5722] border-[#FF5722] hover:bg-[#FF5722]/90";
+  let bg = "";
+  if (status === "success") bg = "bg-emerald-500 border-emerald-500 hover:bg-emerald-600 text-white";
+  else if (status === "error") bg = "bg-red-500 border-red-500 hover:bg-red-600 text-white";
+  else if (variant === "danger") bg = "bg-transparent border-red-500/20 text-red-400 hover:bg-red-500/10";
+  else bg = "bg-[#FF5722] border-[#FF5722] hover:bg-[#FF5722]/90 text-white";
 
   return (
     <button
       onClick={handleClick} disabled={loading || status !== "idle"}
-      className={`flex w-full items-center justify-center gap-2 border px-4 py-2 rounded-lg text-sm font-medium transition-colors text-white disabled:opacity-50 disabled:cursor-not-allowed h-11 ${bg}`}
+      className={`flex items-center justify-center gap-2 border px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed h-11 ${bg} ${className}`}
     >
       {loading ? <><RefreshCw size={15} className="animate-spin" />Saving...</> 
        : status === "success" ? "Saved!" 
-       : status === "error" ? "Failed to Save" 
+       : status === "error" ? "Failed" 
        : label}
     </button>
   );
@@ -211,28 +221,19 @@ export function AdminEarnContent({
         subtitle="Proof-based rewarded video via ayeT callbacks."
         icon={<PlayCircle size={20} />}
         footer={
-          <div className="w-full">
-            <SaveButton onClick={async () => { await onSaveAds(); setEditing(null); }} loading={saving} label="Save Changes" />
+          <div className="flex items-center gap-3 w-full">
+            {form.ads.enabled ? (
+              <>
+                <ActionButton onClick={async () => { await onSaveAds({ enabled: false }); setEditing(null); }} loading={saving} label="Disable" variant="danger" className="flex-1" />
+                <ActionButton onClick={async () => { await onSaveAds(); setEditing(null); }} loading={saving} label="Save Changes" className="flex-1" />
+              </>
+            ) : (
+              <ActionButton onClick={async () => { await onSaveAds({ enabled: true }); setEditing(null); }} loading={saving} label="Enable Method" className="w-full" />
+            )}
           </div>
         }
       >
         <div className="space-y-6">
-          <label className="flex items-center gap-3 cursor-pointer p-4 rounded-xl border border-white/[0.06] bg-[#141414] hover:bg-[#1A1A1A] transition-colors">
-            <div className={`w-10 h-5 rounded-full p-1 transition-colors ${form.ads.enabled ? 'bg-[#FF5722]' : 'bg-white/10'}`}>
-              <div className={`w-3 h-3 rounded-full bg-white transition-transform ${form.ads.enabled ? 'translate-x-5' : 'translate-x-0'}`} />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-white/90">Enable Method</p>
-              <p className="text-[11px] text-white/40 mt-0.5">Allow users to earn coins via Watch Ads.</p>
-            </div>
-            <input 
-              type="checkbox" 
-              className="hidden" 
-              checked={form.ads.enabled} 
-              onChange={(e) => sf("ads.enabled", e.target.checked)} 
-              disabled={saving}
-            />
-          </label>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <FieldLabel>Coins per claim</FieldLabel>
@@ -278,28 +279,19 @@ export function AdminEarnContent({
         subtitle="Link tasks with anti-bypass protection."
         icon={<Link2 size={20} />}
         footer={
-          <div className="w-full">
-            <SaveButton onClick={async () => { await onSaveLinkvertise(); setEditing(null); }} loading={saving} label="Save Changes" />
+          <div className="flex items-center gap-3 w-full">
+            {form.linkvertise.enabled ? (
+              <>
+                <ActionButton onClick={async () => { await onSaveLinkvertise({ enabled: false }); setEditing(null); }} loading={saving} label="Disable" variant="danger" className="flex-1" />
+                <ActionButton onClick={async () => { await onSaveLinkvertise(); setEditing(null); }} loading={saving} label="Save Changes" className="flex-1" />
+              </>
+            ) : (
+              <ActionButton onClick={async () => { await onSaveLinkvertise({ enabled: true }); setEditing(null); }} loading={saving} label="Enable Method" className="w-full" />
+            )}
           </div>
         }
       >
         <div className="space-y-6">
-          <label className="flex items-center gap-3 cursor-pointer p-4 rounded-xl border border-white/[0.06] bg-[#141414] hover:bg-[#1A1A1A] transition-colors">
-            <div className={`w-10 h-5 rounded-full p-1 transition-colors ${form.linkvertise.enabled ? 'bg-[#FF5722]' : 'bg-white/10'}`}>
-              <div className={`w-3 h-3 rounded-full bg-white transition-transform ${form.linkvertise.enabled ? 'translate-x-5' : 'translate-x-0'}`} />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-white/90">Enable Method</p>
-              <p className="text-[11px] text-white/40 mt-0.5">Allow users to earn coins via Linkvertise.</p>
-            </div>
-            <input 
-              type="checkbox" 
-              className="hidden" 
-              checked={form.linkvertise.enabled} 
-              onChange={(e) => sf("linkvertise.enabled", e.target.checked)} 
-              disabled={saving}
-            />
-          </label>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <FieldLabel>Coins per claim</FieldLabel>
