@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Gift, Search, Plus, Filter, AlertCircle } from 'lucide-react';
+import { Gift, Search, Plus, Filter, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AdminGiftsSkeleton } from '@/components/skeletons/admin/gifts/AdminGiftsSkeleton';
 import { AdminGiftsTable } from './AdminGiftsTable';
 import { AdminCreateGiftDrawer } from './drawers/AdminCreateGiftDrawer';
@@ -164,24 +164,48 @@ export default function GiftsPageContent() {
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-white/[0.06] pt-4 mt-4">
-            <span className="text-xs text-[#555]">
-              Showing page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
-            </span>
-            <div className="flex items-center gap-2">
+          <div className="mt-5 flex items-center justify-between border-t border-white/[0.06] pt-5">
+            <p className="text-[11px] text-white/20">
+              Showing {gifts.length > 0 ? (pagination.page - 1) * 10 + 1 : 0}
+              {"-"}
+              {Math.min(pagination.page * 10, pagination.total)} of {pagination.total} gifts
+            </p>
+
+            <div className="flex items-center gap-1">
               <button
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                type="button"
                 disabled={currentPage === 1 || loading}
-                className="rounded-md border border-white/[0.06] bg-[#111] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#222] disabled:opacity-50"
+                onClick={() => setCurrentPage((current) => Math.max(1, current - 1))}
+                className="flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.07] text-white/30 transition hover:bg-white/[0.04] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+                aria-label="Previous page"
               >
-                Previous
+                <ChevronLeft size={14} />
               </button>
+
+              {Array.from({ length: pagination.totalPages }, (_, index) => index + 1).map((pageNumber) => (
+                <button
+                  key={pageNumber}
+                  type="button"
+                  onClick={() => setCurrentPage(pageNumber)}
+                  disabled={loading}
+                  className={`flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-xs transition ${
+                    currentPage === pageNumber
+                      ? "bg-[#FF5722] text-white font-medium"
+                      : "text-white/30 hover:bg-white/[0.04] hover:text-white disabled:opacity-50"
+                  }`}
+                >
+                  {pageNumber}
+                </button>
+              ))}
+
               <button
-                onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))}
+                type="button"
                 disabled={currentPage === pagination.totalPages || loading}
-                className="rounded-md border border-white/[0.06] bg-[#111] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#222] disabled:opacity-50"
+                onClick={() => setCurrentPage((current) => Math.min(pagination.totalPages, current + 1))}
+                className="flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.07] text-white/30 transition hover:bg-white/[0.04] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+                aria-label="Next page"
               >
-                Next
+                <ChevronRight size={14} />
               </button>
             </div>
           </div>
