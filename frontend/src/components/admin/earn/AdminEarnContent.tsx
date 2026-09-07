@@ -126,9 +126,6 @@ export function AdminEarnContent({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-[15px] font-medium text-white/90">Watch Ads</span>
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase bg-[#FF5722]/10 text-[#FF5722] border border-[#FF5722]/20">
-                AYET
-              </span>
             </div>
             <p className="text-[13px] text-white/40 truncate">
               Reward users for completing advertisements.
@@ -226,19 +223,19 @@ export function AdminEarnContent({
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <FieldLabel>Coins / claim</FieldLabel>
+              <FieldLabel>Coins per claim</FieldLabel>
               <FieldInput type="number" min="0" step="1" value={(form.ads as any).coins ?? 0} onChange={(v) => setField("ads.coins", Number(v))} disabled={saving} />
             </div>
             <div>
-              <FieldLabel>Max / day</FieldLabel>
+              <FieldLabel>Max claims per day</FieldLabel>
               <FieldInput type="number" min="0" step="1" value={(form.ads as any).maxClaimsPerDay ?? 0} onChange={(v) => setField("ads.maxClaimsPerDay", Number(v))} disabled={saving} />
             </div>
             <div>
-              <FieldLabel>Cooldown (s)</FieldLabel>
+              <FieldLabel>Cooldown (seconds)</FieldLabel>
               <FieldInput type="number" min="0" step="1" value={(form.ads as any).cooldownSeconds ?? 0} onChange={(v) => setField("ads.cooldownSeconds", Number(v))} disabled={saving} />
             </div>
             <div>
-              <FieldLabel>Wait (s)</FieldLabel>
+              <FieldLabel>Wait time (seconds)</FieldLabel>
               <FieldInput type="number" min="0" step="1" value={(form.ads as any).waitSeconds ?? 0} onChange={(v) => setField("ads.waitSeconds", Number(v))} disabled={saving} />
             </div>
           </div>
@@ -288,19 +285,19 @@ export function AdminEarnContent({
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <FieldLabel>Coins / claim</FieldLabel>
+              <FieldLabel>Coins per claim</FieldLabel>
               <FieldInput type="number" min="0" step="1" value={(form.linkvertise as any).coins ?? 0} onChange={(v) => setField("linkvertise.coins", Number(v))} disabled={saving} />
             </div>
             <div>
-              <FieldLabel>Max / day</FieldLabel>
+              <FieldLabel>Max claims per day</FieldLabel>
               <FieldInput type="number" min="0" step="1" value={(form.linkvertise as any).maxClaimsPerDay ?? 0} onChange={(v) => setField("linkvertise.maxClaimsPerDay", Number(v))} disabled={saving} />
             </div>
             <div>
-              <FieldLabel>Cooldown (s)</FieldLabel>
+              <FieldLabel>Cooldown (seconds)</FieldLabel>
               <FieldInput type="number" min="0" step="1" value={(form.linkvertise as any).cooldownSeconds ?? 0} onChange={(v) => setField("linkvertise.cooldownSeconds", Number(v))} disabled={saving} />
             </div>
             <div>
-              <FieldLabel>Wait (s)</FieldLabel>
+              <FieldLabel>Wait time (seconds)</FieldLabel>
               <FieldInput type="number" min="0" step="1" value={(form.linkvertise as any).waitSeconds ?? 0} onChange={(v) => setField("linkvertise.waitSeconds", Number(v))} disabled={saving} />
             </div>
           </div>
