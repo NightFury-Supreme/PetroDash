@@ -103,7 +103,7 @@ export function AdminGiftRedemptionsDrawer({
                       )}
                     </div>
                     <div>
-                      <span className={`block truncate text-sm text-[#DDDDDD] ${r.user?._id ? "group-hover/user:text-white transition-colors" : ""}`}>
+                      <span className={`block truncate text-sm text-[#DDDDDD] ${r.user?._id ? "group-hover/user:text-[#FF5722] transition-colors" : ""}`}>
                         {r.user?.username || 'Unknown'}
                       </span>
                       <span className="block truncate font-mono text-[10px] text-[#666] mt-0.5">

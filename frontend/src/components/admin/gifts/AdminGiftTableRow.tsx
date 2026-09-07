@@ -64,7 +64,7 @@ export function AdminGiftTableRow({
             )}
           </div>
           <div>
-            <span className={`block truncate text-sm text-[#AAAAAA] ${gift.createdBy?._id ? "group-hover/creator:text-white transition-colors" : ""}`}>
+            <span className={`block truncate text-sm text-[#AAAAAA] ${gift.createdBy?._id ? "group-hover/creator:text-[#FF5722] transition-colors" : ""}`}>
               {gift.createdBy ? gift.createdBy.username : "System"}
             </span>
             <span className="block truncate font-mono text-[10px] text-[#666] mt-0.5">
