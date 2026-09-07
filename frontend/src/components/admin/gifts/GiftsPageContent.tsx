@@ -82,22 +82,20 @@ export default function GiftsPageContent() {
   if (loading && gifts.length === 0) return <AdminGiftsSkeleton />;
 
   return (
-    <div className="mt-8">
+    <div className="flex flex-col space-y-6">
       {/* Header */}
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#FF5722] tracking-tight">Gift Manager</h1>
           <p className="text-[#888888] mt-1 text-sm">Create and manage coupon codes for your users.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsCreateOpen(true)}
-            className="flex items-center gap-2 rounded-[7px] bg-[#FF5722] px-4 py-[11px] text-[11px] font-bold text-white transition-colors hover:bg-[#F4511E] tracking-widest uppercase"
-          >
-            <Plus size={14} />
-            Create Gift
-          </button>
-        </div>
+        <button
+          onClick={() => setIsCreateOpen(true)}
+          className="flex items-center gap-2 border px-3 py-1.5 rounded-md text-xs font-medium transition-colors bg-[#1A0F0C] border-[#FF5722]/30 text-[#FF5722] hover:bg-[#FF5722]/10"
+        >
+          <Plus size={12} />
+          Create Gift
+        </button>
       </div>
 
       {error && (
@@ -111,7 +109,7 @@ export default function GiftsPageContent() {
       )}
 
       {/* Content */}
-      <div className="w-full">
+      <section className="mt-[25px]">
         {/* Filters */}
         <div className="flex flex-col sm:flex-row items-center gap-[10px] mb-6">
           <div className="relative flex-1 h-[42px] flex items-center gap-[10px] px-[13px] border border-[#282828] rounded-[7px] bg-[#121212] text-[#5e5e5e] focus-within:border-[#454545] focus-within:bg-[#151515] transition-colors w-full">
@@ -245,6 +243,7 @@ export default function GiftsPageContent() {
         giftId={deletingGift?.id || null}
         giftCode={deletingGift?.code || null}
       />
+      </section>
     </div>
   );
 }
