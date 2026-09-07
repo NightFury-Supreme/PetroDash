@@ -13,14 +13,25 @@ export function AdminGiftTableRow({
   onRedemptions: (id: string) => void;
   cols: string;
 }) {
-  const getRewardsText = () => {
-    const parts = [];
-    if (gift.rewards?.coins) parts.push(`${gift.rewards.coins} coins`);
-    if (gift.rewards?.resources?.cpuPercent) parts.push(`${gift.rewards.resources.cpuPercent}% CPU`);
-    if (gift.rewards?.resources?.memoryMb) parts.push(`${gift.rewards.resources.memoryMb}MB RAM`);
-    if (gift.rewards?.resources?.diskMb) parts.push(`${gift.rewards.resources.diskMb}MB Disk`);
-    if (gift.rewards?.resources?.serverSlots) parts.push(`${gift.rewards.resources.serverSlots} Slots`);
-    return parts.join(", ") || "No rewards";
+  const renderRewards = () => {
+    const badges = [];
+    if (gift.rewards?.coins) badges.push(`${gift.rewards.coins} Coin${gift.rewards.coins === 1 ? '' : 's'}`);
+    if (gift.rewards?.resources?.cpuPercent) badges.push(`${gift.rewards.resources.cpuPercent}% CPU`);
+    if (gift.rewards?.resources?.memoryMb) badges.push(`${gift.rewards.resources.memoryMb}MB RAM`);
+    if (gift.rewards?.resources?.diskMb) badges.push(`${gift.rewards.resources.diskMb}MB Disk`);
+    if (gift.rewards?.resources?.serverSlots) badges.push(`${gift.rewards.resources.serverSlots} Slot${gift.rewards.resources.serverSlots === 1 ? '' : 's'}`);
+    
+    if (badges.length === 0) return <span className="text-sm text-[#555]">No rewards</span>;
+
+    return (
+      <div className="flex flex-wrap gap-1.5">
+        {badges.map((b, i) => (
+          <span key={i} className="inline-flex items-center px-2 py-0.5 rounded bg-[#222] text-[#AAA] text-[10px] font-medium tracking-wide uppercase border border-[#333]">
+            {b}
+          </span>
+        ))}
+      </div>
+    );
   };
 
   const isExpired = gift.validUntil && new Date(gift.validUntil) < new Date();
@@ -37,7 +48,7 @@ export function AdminGiftTableRow({
       {/* Rewards */}
       <div className="min-w-0">
         <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Rewards</p>
-        <span className="truncate text-sm text-[#AAAAAA]">{getRewardsText()}</span>
+        {renderRewards()}
       </div>
 
       {/* Uses */}
