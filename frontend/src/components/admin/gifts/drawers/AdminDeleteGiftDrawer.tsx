@@ -1,5 +1,4 @@
 import { DeleteDrawer } from "@/components/ui/DeleteDrawer";
-import { Gift } from "lucide-react";
 import { useState } from "react";
 
 export function AdminDeleteGiftDrawer({
@@ -48,7 +47,6 @@ export function AdminDeleteGiftDrawer({
         entityType="Gift"
         entityName={giftCode || "unknown"}
         entitySubText="This gift code and its settings will be deleted."
-        icon={<Gift size={32} strokeWidth={1.5} />}
         warningPoints={[
           "Any users who have already redeemed this code will keep their rewards.",
           "The code will no longer be available for future redemptions."
