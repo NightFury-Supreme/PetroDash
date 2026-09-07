@@ -126,15 +126,17 @@ export function AdminEarnContent({
             {/* Method Name */}
             <div className="min-w-0">
               <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Method</p>
-              <div className="flex items-center gap-2 text-[#DDDDDD] text-sm font-mono">
-                <PlayCircle size={14} className="text-[#888]" />
-                <span className="truncate block">Watch Ads</span>
-              </div>
+              <span className="block truncate font-mono text-sm text-[#DDDDDD]">
+                Watch Ads
+              </span>
+              <span className="block truncate font-mono text-[10px] text-[#666] mt-0.5">
+                ayeT Studios
+              </span>
             </div>
 
             {/* Description */}
             <div className="min-w-0 hidden lg:block">
-              <p className="text-xs text-[#888] truncate">Proof-based rewarded video via ayeT callbacks.</p>
+              <span className="truncate text-sm text-[#AAAAAA]">Proof-based rewarded video via ayeT callbacks.</span>
             </div>
 
             {/* Reward */}
@@ -178,15 +180,17 @@ export function AdminEarnContent({
             {/* Method Name */}
             <div className="min-w-0">
               <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Method</p>
-              <div className="flex items-center gap-2 text-[#DDDDDD] text-sm font-mono">
-                <Link2 size={14} className="text-[#888]" />
-                <span className="truncate block">Linkvertise</span>
-              </div>
+              <span className="block truncate font-mono text-sm text-[#DDDDDD]">
+                Linkvertise
+              </span>
+              <span className="block truncate font-mono text-[10px] text-[#666] mt-0.5">
+                Shortlinks
+              </span>
             </div>
 
             {/* Description */}
             <div className="min-w-0 hidden lg:block">
-              <p className="text-xs text-[#888] truncate">Link tasks with anti-bypass protection.</p>
+              <span className="truncate text-sm text-[#AAAAAA]">Link tasks with anti-bypass protection.</span>
             </div>
 
             {/* Reward */}
