@@ -1,4 +1,5 @@
-import { Edit2, Trash2, Users, Coins, Cpu, MemoryStick, HardDrive, Server } from "lucide-react";
+import { Edit2, Trash2, Users, Coins, Cpu, MemoryStick, HardDrive, Server, User } from "lucide-react";
+import Link from "next/link";
 
 export function AdminGiftTableRow({
   gift,
@@ -49,14 +50,28 @@ export function AdminGiftTableRow({
       </div>
 
       {/* Creator */}
-      <div className="min-w-0">
+      <div className="min-w-0 flex flex-col items-start justify-center">
         <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Creator</p>
-        <span className="block truncate text-sm text-[#AAAAAA]">
-          {gift.createdBy ? gift.createdBy.username : "System"}
-        </span>
-        <span className="block truncate font-mono text-[10px] text-[#666] mt-0.5">
-          {gift.source === "user" ? "User Generated" : "Admin Generated"}
-        </span>
+        <Link 
+          href={gift.createdBy?._id ? `/admin/users/${gift.createdBy._id}` : "#"}
+          className={`flex items-center gap-2 group/creator ${gift.createdBy?._id ? "cursor-pointer" : "cursor-default pointer-events-none"}`}
+        >
+          <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0 bg-white/[0.05] flex items-center justify-center border border-white/[0.05]">
+            {gift.createdBy?.profilePicture ? (
+              <img src={gift.createdBy.profilePicture} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              <User size={12} className="text-[#888]" />
+            )}
+          </div>
+          <div>
+            <span className={`block truncate text-sm text-[#AAAAAA] ${gift.createdBy?._id ? "group-hover/creator:text-white transition-colors" : ""}`}>
+              {gift.createdBy ? gift.createdBy.username : "System"}
+            </span>
+            <span className="block truncate font-mono text-[10px] text-[#666] mt-0.5">
+              {gift.createdBy?._id || "System"}
+            </span>
+          </div>
+        </Link>
       </div>
 
       {/* Rewards */}

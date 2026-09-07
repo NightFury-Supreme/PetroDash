@@ -40,8 +40,8 @@ router.get('/', requireAdmin, async (req, res) => {
       .sort({ createdAt: -1 })
       .skip((pageNum - 1) * limitNum)
       .limit(limitNum)
-      .populate('createdBy', 'username email')
-      .populate('redemptions.user', 'username email')
+      .populate('createdBy', 'username email profilePicture')
+      .populate('redemptions.user', 'username email profilePicture')
       .lean();
 
     res.json({
@@ -62,7 +62,7 @@ router.get('/:id', requireAdmin, async (req, res) => {
   try {
     const gift = await Gift.findById(String(req.params.id))
       .select('-redemptions')
-      .populate('createdBy', 'username email')
+      .populate('createdBy', 'username email profilePicture')
       .lean();
     if (!gift) return res.status(404).json({ error: 'Gift not found' });
     res.json(gift);
@@ -85,7 +85,7 @@ router.get('/:id/redemptions', requireAdmin, async (req, res) => {
     const giftRedemptions = await Gift.findById(String(req.params.id))
       .select('redemptions')
       .slice('redemptions', [(pageNum - 1) * limitNum, limitNum])
-      .populate('redemptions.user', 'username email')
+      .populate('redemptions.user', 'username email profilePicture')
       .lean();
 
     res.json({

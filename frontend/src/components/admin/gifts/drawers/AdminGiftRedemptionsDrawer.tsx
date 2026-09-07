@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Drawer } from "@/components/ui/Drawer";
-import { Loader2, Users, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, Users, ChevronLeft, ChevronRight, User } from "lucide-react";
+import Link from "next/link";
 
 export function AdminGiftRedemptionsDrawer({
   giftId,
@@ -90,7 +91,26 @@ export function AdminGiftRedemptionsDrawer({
               <div key={i} className="group grid grid-cols-1 gap-4 px-6 sm:px-8 py-4 transition hover:bg-white/[0.015] md:grid-cols-[1.5fr_1.5fr_1fr] md:items-center">
                 <div className="min-w-0">
                   <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Username</p>
-                  <span className="block truncate font-mono text-sm text-[#DDDDDD]">{r.user?.username || 'Unknown'}</span>
+                  <Link 
+                    href={r.user?._id ? `/admin/users/${r.user._id}` : "#"}
+                    className={`flex items-center gap-2 group/user ${r.user?._id ? "cursor-pointer" : "cursor-default pointer-events-none"}`}
+                  >
+                    <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0 bg-white/[0.05] flex items-center justify-center border border-white/[0.05]">
+                      {r.user?.profilePicture ? (
+                        <img src={r.user.profilePicture} alt="Avatar" className="w-full h-full object-cover" />
+                      ) : (
+                        <User size={12} className="text-[#888]" />
+                      )}
+                    </div>
+                    <div>
+                      <span className={`block truncate text-sm text-[#DDDDDD] ${r.user?._id ? "group-hover/user:text-white transition-colors" : ""}`}>
+                        {r.user?.username || 'Unknown'}
+                      </span>
+                      <span className="block truncate font-mono text-[10px] text-[#666] mt-0.5">
+                        {r.user?._id || "Unknown"}
+                      </span>
+                    </div>
+                  </Link>
                 </div>
                 <div className="min-w-0">
                   <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Email</p>
