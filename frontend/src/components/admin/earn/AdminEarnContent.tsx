@@ -37,13 +37,33 @@ function FieldHint({ children }: { children: React.ReactNode }) {
   );
 }
 
-function SaveButton({ onClick, loading, label }: { onClick: () => void; loading: boolean; label: string }) {
+function SaveButton({ onClick, loading, label }: { onClick: () => Promise<void>; loading: boolean; label: string }) {
+  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+
+  const handleClick = async () => {
+    try {
+      await onClick();
+      setStatus("success");
+      setTimeout(() => setStatus("idle"), 2000);
+    } catch (_) {
+      setStatus("error");
+      setTimeout(() => setStatus("idle"), 3000);
+    }
+  };
+
+  const bg = status === "success" ? "bg-emerald-500 border-emerald-500 hover:bg-emerald-600" 
+           : status === "error" ? "bg-red-500 border-red-500 hover:bg-red-600" 
+           : "bg-[#FF5722] border-[#FF5722] hover:bg-[#FF5722]/90";
+
   return (
     <button
-      onClick={onClick} disabled={loading}
-      className="flex w-full items-center justify-center gap-2 border px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-[#FF5722] border-[#FF5722] text-white hover:bg-[#FF5722]/90 disabled:opacity-50 disabled:cursor-not-allowed h-11"
+      onClick={handleClick} disabled={loading || status !== "idle"}
+      className={`flex w-full items-center justify-center gap-2 border px-4 py-2 rounded-lg text-sm font-medium transition-colors text-white disabled:opacity-50 disabled:cursor-not-allowed h-11 ${bg}`}
     >
-      {loading ? <><RefreshCw size={15} className="animate-spin" />Saving...</> : label}
+      {loading ? <><RefreshCw size={15} className="animate-spin" />Saving...</> 
+       : status === "success" ? "Saved!" 
+       : status === "error" ? "Failed to Save" 
+       : label}
     </button>
   );
 }
@@ -55,7 +75,7 @@ export function AdminEarnContent({
 }: {
   form: AdminEarnSettings; saving: boolean;
   onChange: (path: string, value: any) => void;
-  onSaveAds: () => void; onSaveLinkvertise: () => void;
+  onSaveAds: () => Promise<void>; onSaveLinkvertise: () => Promise<void>;
 }) {
   const [editing, setEditing] = useState<"ads" | "linkvertise" | null>(null);
   const sf = (path: string, value: any) => onChange(path, value);

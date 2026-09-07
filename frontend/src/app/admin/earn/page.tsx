@@ -51,11 +51,10 @@ export default function AdminEarnPage() {
       if (!form) return;
       const next = await save({ ads: form.ads });
       setForm(next);
-      await modal.success({ title: "Saved", body: "Watch Ads settings updated." });
     } catch (e: any) {
       const msg = String(e?.message || "Failed to save");
       setError(msg);
-      await modal.error({ title: "Save Error", body: msg });
+      throw e;
     }
   };
 
@@ -64,11 +63,10 @@ export default function AdminEarnPage() {
       if (!form) return;
       const next = await save({ linkvertise: form.linkvertise });
       setForm(next);
-      await modal.success({ title: "Saved", body: "Linkvertise settings updated." });
     } catch (e: any) {
       const msg = String(e?.message || "Failed to save");
       setError(msg);
-      await modal.error({ title: "Save Error", body: msg });
+      throw e;
     }
   };
 
