@@ -63,10 +63,10 @@ export function AdminEarnContent({
   const cols = "lg:grid-cols-[1.5fr_2fr_100px_100px_100px_80px]";
 
   return (
-    <div className="mt-8 bg-[#121212] border border-[#222] rounded-xl overflow-hidden">
+    <div className="mt-8">
       <div className="w-full">
         {/* TABLE HEADER (Desktop) */}
-        <div className={`hidden gap-4 lg:grid ${cols} border-b border-[#222] bg-[#161616] px-5 py-3 text-[9px] uppercase tracking-[0.13em] text-white/30`}>
+        <div className={`hidden gap-4 lg:grid ${cols} border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30`}>
           <span>Method</span>
           <span>Description</span>
           <span>Reward</span>
@@ -77,15 +77,15 @@ export function AdminEarnContent({
 
         {/* TABLE LIST */}
         <div className="divide-y divide-[#222]">
-
           {/* Watch Ads Row */}
-          <div className={`grid grid-cols-1 lg:grid ${cols} items-center gap-4 py-4 px-5 hover:bg-white/[0.01] transition-colors group`}>
+          <div className={`group grid grid-cols-1 gap-4 px-5 py-5 transition hover:bg-white/[0.015] ${cols} lg:items-center`}>
             {/* Method Name */}
-            <div className="min-w-0 flex items-center gap-3">
-              <div className="flex items-center justify-center w-8 h-8 rounded bg-[#1A1A1A] border border-[#2A2A2A] text-white/50 shrink-0">
-                <PlayCircle size={14} />
+            <div className="min-w-0">
+              <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Method</p>
+              <div className="flex items-center gap-2 text-[#DDDDDD] text-sm font-mono">
+                <PlayCircle size={14} className="text-[#888]" />
+                <span className="truncate block">Watch Ads</span>
               </div>
-              <span className="text-sm font-medium text-[#D4D4D4] truncate">Watch Ads</span>
             </div>
 
             {/* Description */}
@@ -130,13 +130,14 @@ export function AdminEarnContent({
           </div>
 
           {/* Linkvertise Row */}
-          <div className={`grid grid-cols-1 lg:grid ${cols} items-center gap-4 py-4 px-5 hover:bg-white/[0.01] transition-colors group`}>
+          <div className={`group grid grid-cols-1 gap-4 px-5 py-5 transition hover:bg-white/[0.015] ${cols} lg:items-center`}>
             {/* Method Name */}
-            <div className="min-w-0 flex items-center gap-3">
-              <div className="flex items-center justify-center w-8 h-8 rounded bg-[#1A1A1A] border border-[#2A2A2A] text-white/50 shrink-0">
-                <Link2 size={14} />
+            <div className="min-w-0">
+              <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Method</p>
+              <div className="flex items-center gap-2 text-[#DDDDDD] text-sm font-mono">
+                <Link2 size={14} className="text-[#888]" />
+                <span className="truncate block">Linkvertise</span>
               </div>
-              <span className="text-sm font-medium text-[#D4D4D4] truncate">Linkvertise</span>
             </div>
 
             {/* Description */}
