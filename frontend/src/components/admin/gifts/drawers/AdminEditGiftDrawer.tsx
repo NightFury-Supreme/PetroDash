@@ -1,0 +1,245 @@
+import { useState, useEffect } from "react";
+import { Drawer } from "@/components/ui/Drawer";
+import { Loader2, Edit2, Trash2 } from "lucide-react";
+import { useCurrency } from "@/hooks/useCurrency";
+
+export function AdminEditGiftDrawer({
+  giftId,
+  onClose,
+  onSuccess,
+  onDelete,
+}: {
+  giftId: string | null;
+  onClose: () => void;
+  onSuccess: () => void;
+  onDelete: (id: string) => void;
+}) {
+  const { currency } = useCurrency();
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [form, setForm] = useState({
+    code: "",
+    description: "",
+    enabled: true,
+    maxRedemptions: 0,
+    validFrom: "",
+    validUntil: "",
+    coins: 0,
+    cpuPercent: 0,
+    memoryMb: 0,
+    diskMb: 0,
+    serverSlots: 0,
+  });
+
+  useEffect(() => {
+    if (giftId) {
+      loadGift();
+    }
+  }, [giftId]);
+
+  const loadGift = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/gifts/${giftId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error("Failed to load gift details");
+      const data = await res.json();
+      
+      const formatDateTime = (isoString?: string) => {
+        if (!isoString) return "";
+        return new Date(isoString).toISOString().slice(0, 16);
+      };
+
+      setForm({
+        code: data.code || "",
+        description: data.description || "",
+        enabled: data.enabled ?? true,
+        maxRedemptions: data.maxRedemptions || 0,
+        validFrom: formatDateTime(data.validFrom),
+        validUntil: formatDateTime(data.validUntil),
+        coins: data.rewards?.coins || 0,
+        cpuPercent: data.rewards?.resources?.cpuPercent || 0,
+        memoryMb: data.rewards?.resources?.memoryMb || 0,
+        diskMb: data.rewards?.resources?.diskMb || 0,
+        serverSlots: data.rewards?.resources?.serverSlots || 0,
+      });
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      setError(null);
+      const token = localStorage.getItem("auth_token");
+      
+      const payload = {
+        code: form.code.toUpperCase(),
+        description: form.description,
+        enabled: form.enabled,
+        maxRedemptions: Number(form.maxRedemptions),
+        validFrom: form.validFrom ? new Date(form.validFrom).toISOString() : undefined,
+        validUntil: form.validUntil ? new Date(form.validUntil).toISOString() : undefined,
+        rewards: {
+          coins: Number(form.coins),
+          resources: {
+            cpuPercent: Number(form.cpuPercent),
+            memoryMb: Number(form.memoryMb),
+            diskMb: Number(form.diskMb),
+            serverSlots: Number(form.serverSlots),
+          }
+        }
+      };
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/gifts/${giftId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.error || "Failed to save gift");
+      }
+
+      onSuccess();
+      onClose();
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const isFormValid = form.code.trim().length > 0;
+
+  return (
+    <Drawer
+      isOpen={!!giftId}
+      onClose={onClose}
+      title="Edit Gift Code"
+      subtitle="Modify rewards and limits."
+      icon={<Edit2 size={20} />}
+      footer={
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                if (giftId) onDelete(giftId);
+                onClose();
+              }}
+              className="flex items-center justify-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-500 transition-colors hover:bg-red-500/20"
+            >
+              <Trash2 size={15} /> Delete
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={onClose} className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]">Cancel</button>
+            <button
+              onClick={handleSave}
+              disabled={saving || !isFormValid || loading}
+              className={`flex items-center justify-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-all ${
+                saving || !isFormValid || loading
+                  ? "bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed"
+                  : "bg-[#FF5722] border border-[#FF5722] text-white hover:bg-[#F4511E]"
+              }`}
+            >
+              {saving ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : "Save Changes"}
+            </button>
+          </div>
+        </div>
+      }
+    >
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 size={32} className="animate-spin text-[#888]" />
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {error && (
+            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Code *</label>
+              <input 
+                value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} disabled={saving} placeholder="SUMMER2026"
+                className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50 uppercase" 
+              />
+            </div>
+
+            <div className="col-span-2">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Description</label>
+              <input 
+                value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} disabled={saving} placeholder="Optional internal note"
+                className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" 
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Max Uses (0 = ∞)</label>
+              <input type="number" min="0" value={form.maxRedemptions} onChange={(e) => setForm({ ...form, maxRedemptions: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Enabled</label>
+              <select value={form.enabled ? "true" : "false"} onChange={(e) => setForm({ ...form, enabled: e.target.value === "true" })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50 appearance-none">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Valid From</label>
+              <input type="datetime-local" value={form.validFrom} onChange={(e) => setForm({ ...form, validFrom: e.target.value })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-[#888] focus:text-white focus:outline-none focus:border-[#FF5722]/50" />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Valid Until</label>
+              <input type="datetime-local" value={form.validUntil} onChange={(e) => setForm({ ...form, validUntil: e.target.value })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-[#888] focus:text-white focus:outline-none focus:border-[#FF5722]/50" />
+            </div>
+          </div>
+
+          <hr className="border-white/[0.06]" />
+
+          <div>
+            <h3 className="text-sm font-semibold text-white mb-4">Rewards</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">{currency}</label>
+                <input type="number" min="0" value={form.coins} onChange={(e) => setForm({ ...form, coins: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">CPU (%)</label>
+                <input type="number" min="0" value={form.cpuPercent} onChange={(e) => setForm({ ...form, cpuPercent: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">RAM (MB)</label>
+                <input type="number" min="0" value={form.memoryMb} onChange={(e) => setForm({ ...form, memoryMb: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Disk (MB)</label>
+                <input type="number" min="0" value={form.diskMb} onChange={(e) => setForm({ ...form, diskMb: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Slots</label>
+                <input type="number" min="0" value={form.serverSlots} onChange={(e) => setForm({ ...form, serverSlots: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </Drawer>
+  );
+}
