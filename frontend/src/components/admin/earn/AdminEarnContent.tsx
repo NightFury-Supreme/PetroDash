@@ -55,35 +55,7 @@ function FieldHint({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Toggle({
-  checked,
-  onChange,
-  disabled,
-}: {
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      disabled={disabled}
-      onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed ${
-        checked ? "bg-[#FF5722]" : "bg-[#333]"
-      }`}
-    >
-      <span
-        aria-hidden="true"
-        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-          checked ? "translate-x-2" : "-translate-x-2"
-        }`}
-      />
-    </button>
-  );
-}
+
 
 function SaveButton({
   onClick,
@@ -239,12 +211,13 @@ export function AdminEarnContent({
         icon={<PlayCircle size={20} />}
         headerExtra={
           <div className="flex items-center gap-3 bg-white/[0.03] px-3 py-1.5 rounded-lg border border-white/[0.05]">
-            <span className="text-xs font-medium text-white/60">Enabled</span>
-            <Toggle
-              checked={!!form.ads.enabled}
-              onChange={(v) => setField("ads.enabled", v)}
-              disabled={saving}
-            />
+            <span className="text-xs font-medium text-white/60">
+              {form.ads.enabled ? (
+                <span className="text-emerald-400 font-medium">Auto-Enabled</span>
+              ) : (
+                <span className="text-red-400 font-medium">Missing config</span>
+              )}
+            </span>
           </div>
         }
         footer={
@@ -260,7 +233,7 @@ export function AdminEarnContent({
           </div>
         }
       >
-        <div className={`space-y-6 ${(!form.ads.enabled) ? 'opacity-40 pointer-events-none' : ''}`}>
+        <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <FieldLabel>Coins / claim</FieldLabel>
@@ -310,12 +283,13 @@ export function AdminEarnContent({
         icon={<Link2 size={20} />}
         headerExtra={
           <div className="flex items-center gap-3 bg-white/[0.03] px-3 py-1.5 rounded-lg border border-white/[0.05]">
-            <span className="text-xs font-medium text-white/60">Enabled</span>
-            <Toggle
-              checked={!!form.linkvertise.enabled}
-              onChange={(v) => setField("linkvertise.enabled", v)}
-              disabled={saving}
-            />
+            <span className="text-xs font-medium text-white/60">
+              {form.linkvertise.enabled ? (
+                <span className="text-emerald-400 font-medium">Auto-Enabled</span>
+              ) : (
+                <span className="text-red-400 font-medium">Missing config</span>
+              )}
+            </span>
           </div>
         }
         footer={
@@ -331,7 +305,7 @@ export function AdminEarnContent({
           </div>
         }
       >
-        <div className={`space-y-6 ${(!form.linkvertise.enabled) ? 'opacity-40 pointer-events-none' : ''}`}>
+        <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <FieldLabel>Coins / claim</FieldLabel>

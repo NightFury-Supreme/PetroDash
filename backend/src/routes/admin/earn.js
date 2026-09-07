@@ -107,8 +107,13 @@ router.patch('/', requireAdmin, async (req, res) => {
       && Boolean(String(settings?.earn?.ads?.ayetAdslotName || '').trim())
       && Boolean(String(settings?.earn?.ads?.ayetApiKey || '').trim());
 
-    if (settings?.earn?.ads?.enabled && !ayetConfigured) {
-      return res.status(400).json({ error: 'Configure ayeT Rewarded Video (Placement ID, AdSlot name, API Key) before enabling Watch Ads' });
+    if (settings.earn.ads) {
+      settings.earn.ads.enabled = ayetConfigured;
+    }
+
+    const lvConfigured = Boolean(String(settings?.earn?.linkvertise?.url || '').trim());
+    if (settings.earn.linkvertise) {
+      settings.earn.linkvertise.enabled = lvConfigured;
     }
 
     await settings.save();
