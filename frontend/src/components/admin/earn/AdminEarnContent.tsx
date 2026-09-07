@@ -209,17 +209,7 @@ export function AdminEarnContent({
         title="Configure Watch Ads"
         subtitle="Proof-based rewarded video via ayeT callbacks."
         icon={<PlayCircle size={20} />}
-        headerExtra={
-          <div className="flex items-center gap-3 bg-white/[0.03] px-3 py-1.5 rounded-lg border border-white/[0.05]">
-            <span className="text-xs font-medium text-white/60">
-              {form.ads.enabled ? (
-                <span className="text-emerald-400 font-medium">Auto-Enabled</span>
-              ) : (
-                <span className="text-red-400 font-medium">Missing config</span>
-              )}
-            </span>
-          </div>
-        }
+
         footer={
           <div className="w-full">
             <SaveButton
@@ -258,16 +248,16 @@ export function AdminEarnContent({
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <FieldLabel>ayeT Placement ID</FieldLabel>
+                <FieldLabel>ayeT Placement ID <span className="text-[#FF5722]">*</span></FieldLabel>
                 <FieldInput type="number" min="0" step="1" value={Number((form.ads as any).ayetPlacementId ?? 0)} onChange={(v) => setField("ads.ayetPlacementId", Number(v))} disabled={saving} />
               </div>
               <div>
-                <FieldLabel>ayeT AdSlot Name</FieldLabel>
+                <FieldLabel>ayeT AdSlot Name <span className="text-[#FF5722]">*</span></FieldLabel>
                 <FieldInput value={String((form.ads as any).ayetAdslotName ?? "")} onChange={(v) => setField("ads.ayetAdslotName", v)} disabled={saving} placeholder="{your_adslot_name}" />
               </div>
             </div>
             <div>
-              <FieldLabel>ayeT API Key</FieldLabel>
+              <FieldLabel>ayeT API Key <span className="text-[#FF5722]">*</span></FieldLabel>
               <FieldInput value={String((form.ads as any).ayetApiKey ?? "")} onChange={(v) => setField("ads.ayetApiKey", v)} disabled={saving} placeholder="Paste from ayeT dashboard" />
               <FieldHint>Callback URL: {String(process.env.NEXT_PUBLIC_API_BASE || "")}/api/earn/ads/ayet/callback</FieldHint>
             </div>
@@ -281,17 +271,7 @@ export function AdminEarnContent({
         title="Configure Linkvertise"
         subtitle="Link tasks with anti-bypass protection."
         icon={<Link2 size={20} />}
-        headerExtra={
-          <div className="flex items-center gap-3 bg-white/[0.03] px-3 py-1.5 rounded-lg border border-white/[0.05]">
-            <span className="text-xs font-medium text-white/60">
-              {form.linkvertise.enabled ? (
-                <span className="text-emerald-400 font-medium">Auto-Enabled</span>
-              ) : (
-                <span className="text-red-400 font-medium">Missing config</span>
-              )}
-            </span>
-          </div>
-        }
+
         footer={
           <div className="w-full">
             <SaveButton
@@ -329,7 +309,7 @@ export function AdminEarnContent({
 
           <div className="space-y-4">
             <div>
-              <FieldLabel>Linkvertise URL Template</FieldLabel>
+              <FieldLabel>Linkvertise URL Template <span className="text-[#FF5722]">*</span></FieldLabel>
               <FieldInput value={(form.linkvertise as any).url ?? ""} onChange={(v) => setField("linkvertise.url", v)} disabled={saving} placeholder="https://link-to.net/.../dynamic?r={targetB64}" />
               <FieldHint>Use {"{target}"} or {"{targetB64}"} placeholders in the URL.</FieldHint>
             </div>
