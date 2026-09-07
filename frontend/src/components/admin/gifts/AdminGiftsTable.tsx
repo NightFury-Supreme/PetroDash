@@ -12,7 +12,7 @@ export function AdminGiftsTable({
   onDelete: (id: string) => void;
   onRedemptions: (id: string) => void;
 }) {
-  const cols = "lg:grid-cols-[1.5fr_2fr_1fr_1fr_100px_100px]";
+  const cols = "lg:grid-cols-[1.2fr_1fr_1.8fr_80px_100px_80px_100px]";
 
   if (!gifts?.length) {
     return (
@@ -33,6 +33,7 @@ export function AdminGiftsTable({
       {/* TABLE HEADER (Desktop) */}
       <div className={`hidden gap-4 lg:grid ${cols} border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30`}>
         <span>Code</span>
+        <span>Creator</span>
         <span>Rewards</span>
         <span>Uses</span>
         <span>Expires</span>

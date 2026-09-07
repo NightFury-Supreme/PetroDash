@@ -46,8 +46,16 @@ export function AdminGiftTableRow({
       <div className="min-w-0">
         <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Code</p>
         <span className="block truncate font-mono text-sm text-[#DDDDDD]">{gift.code}</span>
+      </div>
+
+      {/* Creator */}
+      <div className="min-w-0">
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Creator</p>
+        <span className="block truncate text-sm text-[#AAAAAA]">
+          {gift.createdBy ? gift.createdBy.username : "System"}
+        </span>
         <span className="block truncate font-mono text-[10px] text-[#666] mt-0.5">
-          {gift.createdBy ? `Created by ${gift.createdBy.username}` : (gift.source === "user" ? "User Generated" : "System Gift")}
+          {gift.source === "user" ? "User Generated" : "Admin Generated"}
         </span>
       </div>
 
