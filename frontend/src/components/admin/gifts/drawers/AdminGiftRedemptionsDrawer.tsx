@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Drawer } from "@/components/ui/Drawer";
-import { Loader2, Users } from "lucide-react";
+import { Loader2, Users, ChevronLeft, ChevronRight } from "lucide-react";
 
 export function AdminGiftRedemptionsDrawer({
   giftId,
@@ -14,18 +14,16 @@ export function AdminGiftRedemptionsDrawer({
   const [redemptions, setRedemptions] = useState<any[]>([]);
   const [giftCode, setGiftCode] = useState<string>("");
 
-  useEffect(() => {
-    if (giftId) {
-      loadGiftRedemptions();
-    }
-  }, [giftId]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
 
-  const loadGiftRedemptions = async () => {
+  const loadGiftRedemptions = useCallback(async (page: number) => {
+    if (!giftId) return;
     try {
       setLoading(true);
       setError(null);
       const token = localStorage.getItem("auth_token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/gifts/${giftId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/gifts/${giftId}?page=${page}&limit=10`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error("Failed to load redemptions");
@@ -33,12 +31,22 @@ export function AdminGiftRedemptionsDrawer({
       
       setGiftCode(data.code || "");
       setRedemptions(data.redemptions || []);
+      if (data.pagination) setPagination(data.pagination);
     } catch (e: any) {
       setError(e.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [giftId]);
+
+  useEffect(() => {
+    if (giftId) {
+      loadGiftRedemptions(currentPage);
+    } else {
+      setRedemptions([]);
+      setCurrentPage(1);
+    }
+  }, [giftId, currentPage, loadGiftRedemptions]);
 
   return (
     <Drawer
@@ -55,7 +63,7 @@ export function AdminGiftRedemptionsDrawer({
         </div>
       }
     >
-      {loading ? (
+      {loading && redemptions.length === 0 ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 size={32} className="animate-spin text-[#888]" />
         </div>
@@ -95,6 +103,55 @@ export function AdminGiftRedemptionsDrawer({
               </div>
             ))}
           </div>
+
+          {/* PAGINATION */}
+          {pagination.totalPages > 1 && (
+            <div className="mt-5 flex items-center justify-between border-t border-white/[0.06] pt-5 px-6 sm:px-8">
+              <p className="text-[11px] text-white/20">
+                Showing {redemptions.length > 0 ? (pagination.page - 1) * 10 + 1 : 0}
+                {"-"}
+                {Math.min(pagination.page * 10, pagination.total)} of {pagination.total} redemptions
+              </p>
+
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  disabled={currentPage === 1 || loading}
+                  onClick={() => setCurrentPage((current) => Math.max(1, current - 1))}
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.07] text-white/30 transition hover:bg-white/[0.04] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+
+                {Array.from({ length: pagination.totalPages }, (_, index) => index + 1).map((pageNumber) => (
+                  <button
+                    key={pageNumber}
+                    type="button"
+                    onClick={() => setCurrentPage(pageNumber)}
+                    disabled={loading}
+                    className={`flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-xs transition ${
+                      currentPage === pageNumber
+                        ? "bg-[#FF5722] text-white font-medium"
+                        : "text-white/30 hover:bg-white/[0.04] hover:text-white disabled:opacity-50"
+                    }`}
+                  >
+                    {pageNumber}
+                  </button>
+                ))}
+
+                <button
+                  type="button"
+                  disabled={currentPage === pagination.totalPages || loading}
+                  onClick={() => setCurrentPage((current) => Math.min(pagination.totalPages, current + 1))}
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.07] text-white/30 transition hover:bg-white/[0.04] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+                  aria-label="Next page"
+                >
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </Drawer>

@@ -60,12 +60,31 @@ router.get('/', requireAdmin, async (req, res) => {
 // GET /api/admin/gifts/:id
 router.get('/:id', requireAdmin, async (req, res) => {
   try {
-    const gift = await Gift.findById(String(req.params.id))
+    const { page = '1', limit = '10' } = req.query;
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
+
+    const giftMeta = await Gift.findById(String(req.params.id))
+      .select('-redemptions')
       .populate('createdBy', 'username email')
+      .lean();
+    if (!giftMeta) return res.status(404).json({ error: 'Gift not found' });
+
+    const giftRedemptions = await Gift.findById(String(req.params.id))
+      .select('redemptions')
+      .slice('redemptions', [(pageNum - 1) * limitNum, limitNum])
       .populate('redemptions.user', 'username email')
       .lean();
-    if (!gift) return res.status(404).json({ error: 'Gift not found' });
-    res.json(gift);
+
+    giftMeta.redemptions = giftRedemptions ? giftRedemptions.redemptions : [];
+    giftMeta.pagination = {
+      page: pageNum,
+      limit: limitNum,
+      total: giftMeta.redeemedCount || 0,
+      totalPages: Math.ceil((giftMeta.redeemedCount || 0) / limitNum) || 1
+    };
+
+    res.json(giftMeta);
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch gift' });
