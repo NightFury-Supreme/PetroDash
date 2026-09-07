@@ -213,7 +213,7 @@ export default function GiftsPageContent() {
             </div>
           </div>
         )}
-      </div>
+      </section>
 
       <AdminCreateGiftDrawer
         isOpen={isCreateOpen}
@@ -243,7 +243,6 @@ export default function GiftsPageContent() {
         giftId={deletingGift?.id || null}
         giftCode={deletingGift?.code || null}
       />
-      </section>
     </div>
   );
 }
