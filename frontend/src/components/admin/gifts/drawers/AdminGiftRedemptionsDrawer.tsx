@@ -68,9 +68,9 @@ export function AdminGiftRedemptionsDrawer({
           No users have redeemed this gift yet.
         </div>
       ) : (
-        <div className="w-full -mx-6 sm:-mx-8">
+        <div className="-mx-6 sm:-mx-8">
           {/* TABLE HEADER */}
-          <div className="hidden gap-4 grid-cols-[1.5fr_1.5fr_1.5fr] border-b border-white/[0.06] px-6 sm:px-8 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30 md:grid">
+          <div className="hidden gap-4 grid-cols-[1.5fr_1.5fr_1fr] border-b border-white/[0.06] px-6 sm:px-8 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30 md:grid pt-4">
             <span>Username</span>
             <span>Email</span>
             <span className="text-right">Redeemed At</span>
@@ -79,7 +79,7 @@ export function AdminGiftRedemptionsDrawer({
           {/* TABLE LIST */}
           <div className="divide-y divide-white/[0.06]">
             {redemptions.map((r, i) => (
-              <div key={i} className="group grid grid-cols-1 gap-4 px-6 sm:px-8 py-4 transition hover:bg-white/[0.015] md:grid-cols-[1.5fr_1.5fr_1.5fr] md:items-center">
+              <div key={i} className="group grid grid-cols-1 gap-4 px-6 sm:px-8 py-4 transition hover:bg-white/[0.015] md:grid-cols-[1.5fr_1.5fr_1fr] md:items-center">
                 <div className="min-w-0">
                   <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Username</p>
                   <span className="block truncate font-mono text-sm text-[#DDDDDD]">{r.user?.username || 'Unknown'}</span>
