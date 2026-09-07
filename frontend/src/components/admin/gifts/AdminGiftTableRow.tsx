@@ -1,4 +1,4 @@
-import { Edit2, Trash2, Users } from "lucide-react";
+import { Edit2, Trash2, Users, Coins, Cpu, MemoryStick, HardDrive, Server } from "lucide-react";
 
 export function AdminGiftTableRow({
   gift,
@@ -15,21 +15,25 @@ export function AdminGiftTableRow({
 }) {
   const renderRewards = () => {
     const badges = [];
-    if (gift.rewards?.coins) badges.push(`${gift.rewards.coins} Coin${gift.rewards.coins === 1 ? '' : 's'}`);
-    if (gift.rewards?.resources?.cpuPercent) badges.push(`${gift.rewards.resources.cpuPercent}% CPU`);
-    if (gift.rewards?.resources?.memoryMb) badges.push(`${gift.rewards.resources.memoryMb}MB RAM`);
-    if (gift.rewards?.resources?.diskMb) badges.push(`${gift.rewards.resources.diskMb}MB Disk`);
-    if (gift.rewards?.resources?.serverSlots) badges.push(`${gift.rewards.resources.serverSlots} Slot${gift.rewards.resources.serverSlots === 1 ? '' : 's'}`);
+    if (gift.rewards?.coins) badges.push({ text: `${gift.rewards.coins} Coin${gift.rewards.coins === 1 ? '' : 's'}`, icon: Coins });
+    if (gift.rewards?.resources?.cpuPercent) badges.push({ text: `${gift.rewards.resources.cpuPercent}% CPU`, icon: Cpu });
+    if (gift.rewards?.resources?.memoryMb) badges.push({ text: `${gift.rewards.resources.memoryMb}MB RAM`, icon: MemoryStick });
+    if (gift.rewards?.resources?.diskMb) badges.push({ text: `${gift.rewards.resources.diskMb}MB Disk`, icon: HardDrive });
+    if (gift.rewards?.resources?.serverSlots) badges.push({ text: `${gift.rewards.resources.serverSlots} Slot${gift.rewards.resources.serverSlots === 1 ? '' : 's'}`, icon: Server });
     
     if (badges.length === 0) return <span className="text-sm text-[#555]">No rewards</span>;
 
     return (
       <div className="flex flex-wrap gap-1.5">
-        {badges.map((b, i) => (
-          <span key={i} className="inline-flex items-center px-2 py-0.5 rounded bg-[#222] text-[#AAA] text-[10px] font-medium tracking-wide uppercase border border-[#333]">
-            {b}
-          </span>
-        ))}
+        {badges.map((b, i) => {
+          const Icon = b.icon;
+          return (
+            <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#222] text-[#AAA] text-[10px] font-medium tracking-wide uppercase border border-[#333]">
+              <Icon size={10} className="text-[#888]" />
+              {b.text}
+            </span>
+          );
+        })}
       </div>
     );
   };

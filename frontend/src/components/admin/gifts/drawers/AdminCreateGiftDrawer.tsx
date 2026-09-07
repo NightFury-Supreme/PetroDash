@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Drawer } from "@/components/ui/Drawer";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, Coins, Cpu, MemoryStick, HardDrive, Server, Tag, FileText, Infinity } from "lucide-react";
 
 export function AdminCreateGiftDrawer({
   isOpen,
@@ -17,10 +17,10 @@ export function AdminCreateGiftDrawer({
   const [form, setForm] = useState({
     code: "",
     description: "",
-    enabled: true,
     maxRedemptions: 0,
     validFrom: "",
     validUntil: "",
+    enabled: true,
     coins: 0,
     cpuPercent: 0,
     memoryMb: 0,
@@ -31,8 +31,17 @@ export function AdminCreateGiftDrawer({
   useEffect(() => {
     if (isOpen) {
       setForm({
-        code: "", description: "", enabled: true, maxRedemptions: 0,
-        validFrom: "", validUntil: "", coins: 0, cpuPercent: 0, memoryMb: 0, diskMb: 0, serverSlots: 0,
+        code: "",
+        description: "",
+        maxRedemptions: 0,
+        validFrom: "",
+        validUntil: "",
+        enabled: true,
+        coins: 0,
+        cpuPercent: 0,
+        memoryMb: 0,
+        diskMb: 0,
+        serverSlots: 0,
       });
       setError(null);
     }
@@ -44,13 +53,13 @@ export function AdminCreateGiftDrawer({
       setError(null);
       const token = localStorage.getItem("auth_token");
       
-      const payload = {
+      const body = {
         code: form.code.toUpperCase(),
         description: form.description,
         enabled: form.enabled,
         maxRedemptions: Number(form.maxRedemptions),
-        validFrom: form.validFrom ? new Date(form.validFrom).toISOString() : undefined,
-        validUntil: form.validUntil ? new Date(form.validUntil).toISOString() : undefined,
+        validFrom: form.validFrom ? new Date(form.validFrom).toISOString() : null,
+        validUntil: form.validUntil ? new Date(form.validUntil).toISOString() : null,
         rewards: {
           coins: Number(form.coins),
           resources: {
@@ -65,7 +74,7 @@ export function AdminCreateGiftDrawer({
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/gifts`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(body)
       });
 
       if (!res.ok) {
@@ -88,8 +97,8 @@ export function AdminCreateGiftDrawer({
     <Drawer
       isOpen={isOpen}
       onClose={onClose}
-      title="Create Gift Code"
-      subtitle="Issue a new system gift for users to redeem."
+      title="Create Gift"
+      subtitle="Generate a new redeemable coupon code"
       icon={<Plus size={20} />}
       footer={
         <div className="flex items-center justify-end w-full gap-2">
@@ -117,7 +126,7 @@ export function AdminCreateGiftDrawer({
         
         <div className="grid grid-cols-2 gap-4">
           <div className="col-span-2">
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Code *</label>
+            <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Tag size={12} /> Code *</label>
             <input 
               value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} disabled={saving} placeholder="SUMMER2026"
               className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50 uppercase" 
@@ -125,7 +134,7 @@ export function AdminCreateGiftDrawer({
           </div>
 
           <div className="col-span-2">
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Description</label>
+            <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><FileText size={12} /> Description</label>
             <input 
               value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} disabled={saving} placeholder="Short description of the gift"
               className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" 
@@ -133,7 +142,7 @@ export function AdminCreateGiftDrawer({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Max Uses (0 = ∞)</label>
+            <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Infinity size={12} /> Max Uses (0 = ∞)</label>
             <input type="number" min="0" value={form.maxRedemptions} onChange={(e) => setForm({ ...form, maxRedemptions: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
           </div>
 
@@ -148,11 +157,13 @@ export function AdminCreateGiftDrawer({
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Valid From</label>
             <input type="datetime-local" value={form.validFrom} onChange={(e) => setForm({ ...form, validFrom: e.target.value })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-[#888] focus:text-white focus:outline-none focus:border-[#FF5722]/50" />
+            <p className="text-[10px] text-[#555] mt-1">Leave blank to start immediately</p>
           </div>
 
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Valid Until</label>
             <input type="datetime-local" value={form.validUntil} onChange={(e) => setForm({ ...form, validUntil: e.target.value })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-[#888] focus:text-white focus:outline-none focus:border-[#FF5722]/50" />
+            <p className="text-[10px] text-[#555] mt-1">Leave blank to never expire</p>
           </div>
         </div>
 
@@ -162,23 +173,23 @@ export function AdminCreateGiftDrawer({
           <h3 className="text-sm font-semibold text-white mb-4">Rewards</h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Coins</label>
+              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Coins size={12} className="text-[#666]" /> Coins</label>
               <input type="number" min="0" value={form.coins} onChange={(e) => setForm({ ...form, coins: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
             </div>
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">CPU (%)</label>
+              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Cpu size={12} className="text-[#666]" /> CPU (%)</label>
               <input type="number" min="0" value={form.cpuPercent} onChange={(e) => setForm({ ...form, cpuPercent: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
             </div>
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">RAM (MB)</label>
+              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><MemoryStick size={12} className="text-[#666]" /> RAM (MB)</label>
               <input type="number" min="0" value={form.memoryMb} onChange={(e) => setForm({ ...form, memoryMb: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
             </div>
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Disk (MB)</label>
+              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><HardDrive size={12} className="text-[#666]" /> Disk (MB)</label>
               <input type="number" min="0" value={form.diskMb} onChange={(e) => setForm({ ...form, diskMb: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
             </div>
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Slots</label>
+              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Server size={12} className="text-[#666]" /> Slots</label>
               <input type="number" min="0" value={form.serverSlots} onChange={(e) => setForm({ ...form, serverSlots: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
             </div>
           </div>
