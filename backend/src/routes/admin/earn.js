@@ -107,13 +107,17 @@ router.patch('/', requireAdmin, async (req, res) => {
       && Boolean(String(settings?.earn?.ads?.ayetAdslotName || '').trim())
       && Boolean(String(settings?.earn?.ads?.ayetApiKey || '').trim());
 
-    if (settings.earn.ads) {
-      settings.earn.ads.enabled = ayetConfigured;
+    if (settings.earn.ads && settings.earn.ads.enabled) {
+      if (!ayetConfigured) {
+        return res.status(400).json({ error: 'Cannot enable Watch Ads: missing required configuration fields.' });
+      }
     }
 
     const lvConfigured = Boolean(String(settings?.earn?.linkvertise?.url || '').trim());
-    if (settings.earn.linkvertise) {
-      settings.earn.linkvertise.enabled = lvConfigured;
+    if (settings.earn.linkvertise && settings.earn.linkvertise.enabled) {
+      if (!lvConfigured) {
+        return res.status(400).json({ error: 'Cannot enable Linkvertise: missing required URL template.' });
+      }
     }
 
     await settings.save();

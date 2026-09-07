@@ -217,6 +217,22 @@ export function AdminEarnContent({
         }
       >
         <div className="space-y-6">
+          <label className="flex items-center gap-3 cursor-pointer p-4 rounded-xl border border-white/[0.06] bg-[#141414] hover:bg-[#1A1A1A] transition-colors">
+            <div className={`w-10 h-5 rounded-full p-1 transition-colors ${form.ads.enabled ? 'bg-[#FF5722]' : 'bg-white/10'}`}>
+              <div className={`w-3 h-3 rounded-full bg-white transition-transform ${form.ads.enabled ? 'translate-x-5' : 'translate-x-0'}`} />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-white/90">Enable Method</p>
+              <p className="text-[11px] text-white/40 mt-0.5">Allow users to earn coins via Watch Ads.</p>
+            </div>
+            <input 
+              type="checkbox" 
+              className="hidden" 
+              checked={form.ads.enabled} 
+              onChange={(e) => sf("ads.enabled", e.target.checked)} 
+              disabled={saving}
+            />
+          </label>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <FieldLabel>Coins per claim</FieldLabel>
@@ -268,6 +284,22 @@ export function AdminEarnContent({
         }
       >
         <div className="space-y-6">
+          <label className="flex items-center gap-3 cursor-pointer p-4 rounded-xl border border-white/[0.06] bg-[#141414] hover:bg-[#1A1A1A] transition-colors">
+            <div className={`w-10 h-5 rounded-full p-1 transition-colors ${form.linkvertise.enabled ? 'bg-[#FF5722]' : 'bg-white/10'}`}>
+              <div className={`w-3 h-3 rounded-full bg-white transition-transform ${form.linkvertise.enabled ? 'translate-x-5' : 'translate-x-0'}`} />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-white/90">Enable Method</p>
+              <p className="text-[11px] text-white/40 mt-0.5">Allow users to earn coins via Linkvertise.</p>
+            </div>
+            <input 
+              type="checkbox" 
+              className="hidden" 
+              checked={form.linkvertise.enabled} 
+              onChange={(e) => sf("linkvertise.enabled", e.target.checked)} 
+              disabled={saving}
+            />
+          </label>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <FieldLabel>Coins per claim</FieldLabel>
