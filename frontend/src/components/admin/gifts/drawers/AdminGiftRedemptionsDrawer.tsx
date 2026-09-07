@@ -60,7 +60,7 @@ export function AdminGiftRedemptionsDrawer({
           <Loader2 size={32} className="animate-spin text-[#888]" />
         </div>
       ) : error ? (
-        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+        <div className="p-3 m-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
           {error}
         </div>
       ) : redemptions.length === 0 ? (
@@ -68,21 +68,33 @@ export function AdminGiftRedemptionsDrawer({
           No users have redeemed this gift yet.
         </div>
       ) : (
-        <div className="space-y-3">
-          {redemptions.map((r, i) => (
-            <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A]">
-              <div>
-                <p className="text-sm font-medium text-white">{r.user?.username || 'Unknown User'}</p>
-                <p className="text-xs text-[#888] mt-0.5">{r.user?.email || 'N/A'}</p>
+        <div className="w-full -mx-6 sm:-mx-8">
+          {/* TABLE HEADER */}
+          <div className="hidden gap-4 grid-cols-[1.5fr_1.5fr_1.5fr] border-b border-white/[0.06] px-6 sm:px-8 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30 md:grid">
+            <span>Username</span>
+            <span>Email</span>
+            <span className="text-right">Redeemed At</span>
+          </div>
+
+          {/* TABLE LIST */}
+          <div className="divide-y divide-white/[0.06]">
+            {redemptions.map((r, i) => (
+              <div key={i} className="group grid grid-cols-1 gap-4 px-6 sm:px-8 py-4 transition hover:bg-white/[0.015] md:grid-cols-[1.5fr_1.5fr_1.5fr] md:items-center">
+                <div className="min-w-0">
+                  <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Username</p>
+                  <span className="block truncate font-mono text-sm text-[#DDDDDD]">{r.user?.username || 'Unknown'}</span>
+                </div>
+                <div className="min-w-0">
+                  <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Email</p>
+                  <span className="block truncate text-xs text-[#888888]">{r.user?.email || 'N/A'}</span>
+                </div>
+                <div className="min-w-0 md:text-right">
+                  <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Redeemed At</p>
+                  <span className="block truncate text-xs text-[#888888]">{new Date(r.redeemedAt).toLocaleString()}</span>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-xs text-[#888]">Redeemed At</p>
-                <p className="text-xs text-[#AAA] mt-0.5">
-                  {new Date(r.redeemedAt).toLocaleString()}
-                </p>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
     </Drawer>
