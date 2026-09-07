@@ -68,5 +68,6 @@ export function AdminEarnSkeleton() {
         </div>
       </div>
     </div>
+    </div>
   );
 }
