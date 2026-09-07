@@ -8,6 +8,7 @@ import { AdminGiftsTable } from './AdminGiftsTable';
 import { AdminCreateGiftDrawer } from './drawers/AdminCreateGiftDrawer';
 import { AdminEditGiftDrawer } from './drawers/AdminEditGiftDrawer';
 import { AdminGiftRedemptionsDrawer } from './drawers/AdminGiftRedemptionsDrawer';
+import { AdminDeleteGiftDrawer } from './drawers/AdminDeleteGiftDrawer';
 
 export default function GiftsPageContent() {
   const router = useRouter();
@@ -23,6 +24,7 @@ export default function GiftsPageContent() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingGiftId, setEditingGiftId] = useState<string | null>(null);
   const [viewingRedemptionsId, setViewingRedemptionsId] = useState<string | null>(null);
+  const [deletingGift, setDeletingGift] = useState<{ id: string; code: string } | null>(null);
 
   const fetchGifts = useCallback(async () => {
     setLoading(true);
@@ -65,21 +67,10 @@ export default function GiftsPageContent() {
     fetchGifts();
   }, [fetchGifts]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this gift?')) return;
-    try {
-      const token = localStorage.getItem('auth_token');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/gifts/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        fetchGifts();
-      } else {
-        alert('Failed to delete gift');
-      }
-    } catch (e) {
-      alert('Error deleting gift');
+  const handleDelete = (id: string) => {
+    const gift = gifts.find(g => g._id === id);
+    if (gift) {
+      setDeletingGift({ id: gift._id, code: gift.code });
     }
   };
 
@@ -228,6 +219,17 @@ export default function GiftsPageContent() {
       <AdminGiftRedemptionsDrawer
         giftId={viewingRedemptionsId}
         onClose={() => setViewingRedemptionsId(null)}
+      />
+
+      <AdminDeleteGiftDrawer
+        isOpen={!!deletingGift}
+        onClose={() => setDeletingGift(null)}
+        onSuccess={() => {
+          setDeletingGift(null);
+          fetchGifts();
+        }}
+        giftId={deletingGift?.id || null}
+        giftCode={deletingGift?.code || null}
       />
     </div>
   );
