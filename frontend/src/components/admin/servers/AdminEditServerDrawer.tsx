@@ -346,35 +346,15 @@ export function AdminEditServerDrawer({
       footer={
         !loading && server ? (
           <div className="flex items-center justify-between w-full">
+            {/* Left side actions */}
             <div className="flex items-center gap-2">
-                {!isUnreachable && server.clientUrl ? (
-                  <a
-                    href={server.clientUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-2 rounded-lg border border-[#222] bg-[#161616] px-4 py-2.5 text-sm font-medium text-[#D4D4D4] transition-colors hover:bg-[#1A1A1A] hover:text-white"
-                    title="Open server in Pterodactyl"
-                  >
-                  <ExternalLink size={15} />
-                  <span className="hidden sm:inline">Open Panel</span>
-                </a>
-              ) : (
-                <button
-                  disabled
-                  className="flex items-center gap-2 rounded-lg border border-[#222] bg-[#161616] px-4 py-2.5 text-sm font-medium text-[#555] cursor-not-allowed"
-                  title="Cannot open unreachable server"
-                >
-                  <ExternalLink size={15} />
-                  <span className="hidden sm:inline">Open Panel</span>
-                </button>
-              )}
               <button
                 onClick={() => setShowDeleteDrawer(true)}
                 disabled={isDeleting || isSuspended || server?.status?.toLowerCase() === "creating"}
-                className={`flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
                   isDeleting || isSuspended || server?.status?.toLowerCase() === "creating"
                     ? "border-[#222] bg-[#161616] text-[#555] cursor-not-allowed"
-                    : "border-red-500/30 bg-red-500/10 text-red-500 hover:bg-red-500/20"
+                    : "border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20"
                 }`}
                 title={isSuspended ? "Cannot delete suspended server" : "Delete server"}
               >
@@ -385,32 +365,66 @@ export function AdminEditServerDrawer({
                 )}
                 <span className="hidden sm:inline">Delete</span>
               </button>
+              
+              {!isUnreachable && server.clientUrl ? (
+                <a
+                  href={server.clientUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
+                  title="Open server in Pterodactyl"
+                >
+                  <ExternalLink size={15} />
+                  <span className="hidden sm:inline">Open Panel</span>
+                </a>
+              ) : (
+                <button
+                  disabled
+                  className="flex items-center gap-2 rounded-lg border border-[#222] bg-[#161616] px-4 py-2 text-sm font-medium text-[#555] cursor-not-allowed"
+                  title="Cannot open unreachable server"
+                >
+                  <ExternalLink size={15} />
+                  <span className="hidden sm:inline">Open Panel</span>
+                </button>
+              )}
             </div>
-            {canEdit && (
+
+            {/* Right side actions */}
+            <div className="flex items-center gap-2">
               <button
-                onClick={handleSave}
-                disabled={saving || saved || failed || !name.trim() || server?.status?.toLowerCase() === "creating"}
-                className={`flex min-w-[140px] items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-all ${
-                  saved
-                    ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 cursor-default"
-                    : failed
-                    ? "bg-red-500/10 border border-red-500/30 text-red-500 cursor-default"
-                    : saving || !name.trim()
-                    ? "bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed"
-                    : "bg-[#1A0F0C] border border-[#FF5722]/30 text-[#FF5722] hover:bg-[#FF5722]/10"
-                }`}
+                type="button"
+                onClick={onClose}
+                disabled={saving || saved || failed}
+                className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50"
               >
-                {saving ? (
-                  <><Loader2 size={15} className="animate-spin" />Saving…</>
-                ) : saved ? (
-                  <><Check size={15} />Saved!</>
-                ) : failed ? (
-                  <><AlertTriangle size={15} className="shrink-0" /><span className="truncate">{errorMsg || "Failed"}</span></>
-                ) : (
-                  <><Save size={15} />Save Changes</>
-                )}
+                Cancel
               </button>
-            )}
+              {canEdit && (
+                <button
+                  onClick={handleSave}
+                  disabled={saving || saved || failed || !name.trim() || server?.status?.toLowerCase() === "creating"}
+                  className={`flex min-w-[140px] items-center justify-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-all ${
+                    saved
+                      ? "bg-emerald-500 border border-emerald-500 text-white cursor-default"
+                      : failed
+                      ? "bg-red-500 border border-red-500 text-white cursor-default"
+                      : saving || !name.trim() || server?.status?.toLowerCase() === "creating"
+                      ? "bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed"
+                      : "bg-[#FF5722] border border-[#FF5722] text-white hover:bg-[#F4511E]"
+                  }`}
+                >
+                  {saving ? (
+                    <><Loader2 size={16} className="animate-spin" /> Saving...</>
+                  ) : saved ? (
+                    "Saved!"
+                  ) : failed ? (
+                    "Failed to Save"
+                  ) : (
+                    "Save Changes"
+                  )}
+                </button>
+              )}
+            </div>
           </div>
         ) : null
       }

@@ -88,7 +88,15 @@ export function EditServerDrawer({ serverId, onClose, onUpdate }: EditServerDraw
       icon={<Server className="text-[#D4D4D4]" size={22} />}
       headerExtra={headerExtra}
       footer={
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-end gap-2 w-full">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving || saved || failed}
+            className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50"
+          >
+            Cancel
+          </button>
           <button
             onClick={async (e) => {
               setFailed(false);
@@ -105,36 +113,24 @@ export function EditServerDrawer({ serverId, onClose, onUpdate }: EditServerDraw
               }
             }}
             disabled={saving || saved || failed || !isFormValid || server?.suspended || server?.status?.toLowerCase() === 'creating'}
-            className={`flex w-auto min-w-[160px] max-w-[300px] items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-all ${
+            className={`flex min-w-[140px] max-w-[300px] items-center justify-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-all ${
                 saved
-                  ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 cursor-default'
+                  ? "bg-emerald-500 border border-emerald-500 text-white cursor-default"
                   : failed
-                  ? 'bg-red-500/10 border border-red-500/30 text-red-500 cursor-default'
+                  ? "bg-red-500 border border-red-500 text-white cursor-default"
                   : saving || !isFormValid || server?.suspended || server?.status?.toLowerCase() === 'creating'
-                  ? 'bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed'
-                  : 'bg-[#1A0F0C] border border-[#FF5722]/30 text-[#FF5722] hover:bg-[#FF5722]/10'
+                  ? "bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed"
+                  : "bg-[#FF5722] border border-[#FF5722] text-white hover:bg-[#F4511E]"
             }`}
           >
             {saving ? (
-              <>
-                <Loader2 size={15} className="animate-spin" />
-                Saving...
-              </>
+              <><Loader2 size={16} className="animate-spin" /> Saving...</>
             ) : saved ? (
-              <>
-                <Check size={15} />
-                Saved!
-              </>
+              "Saved!"
             ) : failed ? (
-              <>
-                <AlertTriangle size={15} className="shrink-0" />
-                <span className="truncate">{error || 'Failed'}</span>
-              </>
+              "Failed to Save"
             ) : (
-              <>
-                <Save size={15} />
-                Save Changes
-              </>
+              "Save Changes"
             )}
           </button>
         </div>

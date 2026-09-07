@@ -129,41 +129,47 @@ export function CreateLocationDrawer({ onClose, onSuccess }: CreateLocationDrawe
       title="New Location"
       subtitle="Add a deployment location"
       icon={<Globe className="text-[#D4D4D4]" size={22} />}
-              footer={
-          <div className="flex items-center justify-between w-full">
-            {currentStepIndex > 0 ? (
-              <button
-                type="button"
-                onClick={() => setCurrentStepIndex(i => i - 1)}
-                className="px-4 py-2 text-sm font-medium text-[#888] hover:text-white transition-colors"
-              >
-                Back
-              </button>
-            ) : (
-              <div></div>
-            )}
-            
-            {currentStepIndex < STEPS.length - 1 ? (
-              <button
-                type="button"
-                onClick={() => setCurrentStepIndex(i => i + 1)}
-                disabled={!canGoNext()}
-                className="flex items-center justify-center gap-2 rounded-lg bg-[#FF5722] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={loading || uploadingFlag}
-                className="flex items-center justify-center gap-2 rounded-lg bg-[#FF5722] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {(loading || uploadingFlag) ? <><Loader2 size={15} className="animate-spin shrink-0" /> Creating...</> : <><Globe size={15} /> Create Location</>}
-              </button>
-            )}
-          </div>
-        }
+      footer={
+        <div className="flex items-center justify-end gap-2 w-full">
+          {currentStepIndex > 0 ? (
+            <button
+              type="button"
+              onClick={() => setCurrentStepIndex(i => i - 1)}
+              className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
+            >
+              Back
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
+            >
+              Cancel
+            </button>
+          )}
+          
+          {currentStepIndex < STEPS.length - 1 ? (
+            <button
+              type="button"
+              onClick={() => setCurrentStepIndex(i => i + 1)}
+              disabled={!canGoNext()}
+              className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next Step
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={loading || uploadingFlag}
+              className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {(loading || uploadingFlag) ? <><Loader2 size={16} className="animate-spin" /> Creating...</> : "Create Location"}
+            </button>
+          )}
+        </div>
+      }
       >
         <div className="flex flex-col min-h-[300px]">
           {/* Horizontal Step Indicator */}

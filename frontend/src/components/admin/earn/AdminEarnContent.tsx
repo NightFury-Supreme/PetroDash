@@ -38,13 +38,14 @@ function FieldHint({ children }: { children: React.ReactNode }) {
 }
 
 function ActionButton({ 
-  onClick, loading, label, variant = "primary", className = ""
+  onClick, loading, label, variant = "primary", className = "", icon
 }: { 
   onClick: () => Promise<void>; 
   loading: boolean; 
   label: string;
   variant?: "primary" | "danger";
   className?: string;
+  icon?: React.ReactNode;
 }) {
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
 
@@ -53,27 +54,40 @@ function ActionButton({
       await onClick();
       setStatus("success");
       setTimeout(() => setStatus("idle"), 2000);
-    } catch {
+    } catch (e: any) {
       setStatus("error");
       setTimeout(() => setStatus("idle"), 3000);
     }
   };
 
-  let bg = "";
-  if (status === "success") bg = "bg-emerald-500 border-emerald-500 hover:bg-emerald-600 text-white";
-  else if (status === "error") bg = "bg-red-500 border-red-500 hover:bg-red-600 text-white";
-  else if (variant === "danger") bg = "bg-transparent border-red-500/20 text-red-400 hover:bg-red-500/10";
-  else bg = "bg-[#FF5722] border-[#FF5722] hover:bg-[#FF5722]/90 text-white";
-
   return (
     <button
-      onClick={handleClick} disabled={loading || status !== "idle"}
-      className={`flex items-center justify-center gap-2 border px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed h-11 ${bg} ${className}`}
+      onClick={handleClick}
+      disabled={loading || status !== "idle"}
+      className={`flex items-center justify-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-all ${
+        status === "success"
+          ? "bg-emerald-500 border border-emerald-500 text-white cursor-default"
+          : status === "error"
+          ? "bg-red-500 border border-red-500 text-white cursor-default"
+          : loading
+          ? "bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed"
+          : variant === "danger"
+          ? "border border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20"
+          : "bg-[#FF5722] border border-[#FF5722] text-white hover:bg-[#F4511E]"
+      } ${className}`}
     >
-      {loading ? <><RefreshCw size={15} className="animate-spin" />Saving...</> 
-       : status === "success" ? "Saved!" 
-       : status === "error" ? "Failed" 
-       : label}
+      {loading ? (
+        <><Loader2 size={16} className="animate-spin" /> Saving...</>
+      ) : status === "success" ? (
+        "Saved!"
+      ) : status === "error" ? (
+        "Failed"
+      ) : (
+        <>
+          {icon}
+          {label}
+        </>
+      )}
     </button>
   );
 }
@@ -221,14 +235,22 @@ export function AdminEarnContent({
         subtitle="Proof-based rewarded video via ayeT callbacks."
         icon={<PlayCircle size={20} />}
         footer={
-          <div className="flex items-center gap-3 w-full">
+          <div className="flex items-center justify-between w-full">
             {form.ads.enabled ? (
               <>
-                <ActionButton onClick={async () => { await onSaveAds({ enabled: false }); setTimeout(() => setEditing(null), 1000); }} loading={saving} label="Disable" variant="danger" className="flex-1" />
-                <ActionButton onClick={async () => { await onSaveAds(); setTimeout(() => setEditing(null), 1000); }} loading={saving} label="Save Changes" className="flex-1" />
+                <div className="flex items-center gap-2">
+                  <ActionButton onClick={async () => { await onSaveAds({ enabled: false }); setTimeout(() => setEditing(null), 1000); }} loading={saving} label="Disable" variant="danger" icon={<Trash2 size={15} />} />
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setEditing(null)} className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]">Cancel</button>
+                  <ActionButton onClick={async () => { await onSaveAds(); setTimeout(() => setEditing(null), 1000); }} loading={saving} label="Save Changes" />
+                </div>
               </>
             ) : (
-              <ActionButton onClick={async () => { await onSaveAds({ enabled: true }); setTimeout(() => setEditing(null), 1000); }} loading={saving} label="Enable Method" className="w-full" />
+              <div className="flex items-center justify-end w-full gap-2">
+                <button onClick={() => setEditing(null)} className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]">Cancel</button>
+                <ActionButton onClick={async () => { await onSaveAds({ enabled: true }); setTimeout(() => setEditing(null), 1000); }} loading={saving} label="Enable Method" />
+              </div>
             )}
           </div>
         }
@@ -279,14 +301,22 @@ export function AdminEarnContent({
         subtitle="Link tasks with anti-bypass protection."
         icon={<Link2 size={20} />}
         footer={
-          <div className="flex items-center gap-3 w-full">
+          <div className="flex items-center justify-between w-full">
             {form.linkvertise.enabled ? (
               <>
-                <ActionButton onClick={async () => { await onSaveLinkvertise({ enabled: false }); setTimeout(() => setEditing(null), 1000); }} loading={saving} label="Disable" variant="danger" className="flex-1" />
-                <ActionButton onClick={async () => { await onSaveLinkvertise(); setTimeout(() => setEditing(null), 1000); }} loading={saving} label="Save Changes" className="flex-1" />
+                <div className="flex items-center gap-2">
+                  <ActionButton onClick={async () => { await onSaveLinkvertise({ enabled: false }); setTimeout(() => setEditing(null), 1000); }} loading={saving} label="Disable" variant="danger" icon={<Trash2 size={15} />} />
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setEditing(null)} className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]">Cancel</button>
+                  <ActionButton onClick={async () => { await onSaveLinkvertise(); setTimeout(() => setEditing(null), 1000); }} loading={saving} label="Save Changes" />
+                </div>
               </>
             ) : (
-              <ActionButton onClick={async () => { await onSaveLinkvertise({ enabled: true }); setTimeout(() => setEditing(null), 1000); }} loading={saving} label="Enable Method" className="w-full" />
+              <div className="flex items-center justify-end w-full gap-2">
+                <button onClick={() => setEditing(null)} className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]">Cancel</button>
+                <ActionButton onClick={async () => { await onSaveLinkvertise({ enabled: true }); setTimeout(() => setEditing(null), 1000); }} loading={saving} label="Enable Method" />
+              </div>
             )}
           </div>
         }

@@ -172,16 +172,21 @@ export function CreateEggDrawer({ onClose, onSuccess }: CreateEggDrawerProps) {
       subtitle="Deploy a new server template"
       icon={<Egg className="text-[#D4D4D4]" size={22} />}
       footer={
-        <div className="flex items-center justify-between w-full">
+        <div className="flex items-center justify-end gap-2 w-full">
           {currentStepIndex > 0 ? (
             <button
               onClick={() => setCurrentStepIndex(i => i - 1)}
-              className="px-4 py-2 text-sm font-medium text-[#888] hover:text-white transition-colors"
+              className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
             >
               Back
             </button>
           ) : (
-            <div></div>
+            <button
+              onClick={onClose}
+              className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
+            >
+              Cancel
+            </button>
           )}
           
           {currentStepIndex < STEPS.length - 1 ? (
@@ -191,44 +196,32 @@ export function CreateEggDrawer({ onClose, onSuccess }: CreateEggDrawerProps) {
                 (currentStep === 'basic' && (!form.name.trim() || !form.category.trim() || !form.icon || !form.description.trim())) ||
                 (currentStep === 'panel' && (!form.pterodactylEggId || !form.pterodactylNestId))
               }
-              className="flex w-[120px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] hover:bg-[#F4511E] px-5 py-2.5 text-sm font-medium text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Next
+              Next Step
             </button>
           ) : (
             <button
               onClick={submit}
               disabled={loading || saved || failed || !isFormValid}
-              className={`flex w-auto min-w-[160px] max-w-[300px] items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-all ${
+              className={`flex min-w-[140px] items-center justify-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-all ${
                 saved
-                  ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 cursor-default'
+                  ? 'bg-emerald-500 border border-emerald-500 text-white cursor-default'
                   : failed
-                  ? 'bg-red-500/10 border border-red-500/30 text-red-500 cursor-default'
+                  ? 'bg-red-500 border border-red-500 text-white cursor-default'
                   : loading || !isFormValid
-                  ? 'bg-white/[0.02] text-[#888] border border-white/[0.06] cursor-not-allowed'
-                  : 'bg-[#1A0F0C] border border-[#FF5722]/30 text-[#FF5722] hover:bg-[#FF5722]/10'
+                  ? 'bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed'
+                  : 'bg-[#FF5722] border border-[#FF5722] text-white hover:bg-[#F4511E]'
               }`}
             >
               {loading ? (
-                <>
-                  <Loader2 size={15} className="animate-spin" />
-                  Creating...
-                </>
+                <><Loader2 size={16} className="animate-spin" /> Creating...</>
               ) : saved ? (
-                <>
-                  <Check size={15} />
-                  Created!
-                </>
+                "Created!"
               ) : failed ? (
-                <>
-                  <AlertTriangle size={15} className="shrink-0" />
-                  <span className="truncate">{error || 'Failed'}</span>
-                </>
+                "Failed to Create"
               ) : (
-                <>
-                  <Save size={15} />
-                  Create Egg
-                </>
+                "Create Egg"
               )}
             </button>
           )}

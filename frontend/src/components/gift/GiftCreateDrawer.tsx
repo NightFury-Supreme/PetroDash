@@ -262,29 +262,33 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
   );
 
   /* ---- Footer ---- */
-  const footer = createdCode ? (
-    <div className="flex items-center justify-end w-full">
-      <button type="button" onClick={handleDone}
-        className="flex w-[120px] items-center justify-center rounded-lg bg-[#FF5722] hover:bg-[#F4511E] px-5 py-2.5 text-sm font-medium text-white transition-all"
-      >
-        Done
-      </button>
-    </div>
-  ) : (
-    <div className="flex items-center justify-between w-full">
-      <div></div>
-      <div className="flex gap-4">
-        <button type="button" onClick={handleClose}
-          className="px-4 py-2 text-sm font-medium text-[#888] hover:text-white transition-colors"
+  const footer = (
+    <div className="flex items-center justify-end gap-2 w-full">
+      {createdCode ? (
+        <button
+          onClick={onClose}
+          className="flex w-full items-center justify-center rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E]"
         >
-          Cancel
+          Close
         </button>
-        <button form="gift-create-form" type="submit" disabled={!canCreate || creating}
-          className="flex w-[120px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] hover:bg-[#F4511E] px-5 py-2.5 text-sm font-medium text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {creating ? "Creating…" : "Create"}
-        </button>
-      </div>
+      ) : (
+        <>
+          <button
+            onClick={onClose}
+            className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
+          >
+            Cancel
+          </button>
+          <button
+            form="gift-create-form"
+            type="submit"
+            disabled={creating}
+            className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {creating ? "Creating..." : "Create Gift"}
+          </button>
+        </>
+      )}
     </div>
   );
 

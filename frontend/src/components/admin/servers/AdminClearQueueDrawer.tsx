@@ -88,29 +88,27 @@ export function AdminClearQueueDrawer({
       title="Clear Queue"
       subtitle="Remove servers from the queue based on the criteria below."
       footer={
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-end gap-2 w-full">
           <button
             onClick={onClose}
-            className="flex items-center gap-2 rounded-lg border border-[#222] bg-transparent px-5 py-2.5 text-sm font-medium text-[#888] transition-colors hover:border-[#333] hover:text-white"
+            className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
           >
             Cancel
           </button>
-          
           <button
             onClick={handleConfirm}
             disabled={isConfirmDisabled || isClearing}
-            className={`flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition-all ${
+            className={`flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-all ${
               isConfirmDisabled || isClearing
-                ? "bg-[#111] text-[#555] cursor-not-allowed"
-                : "bg-red-500 text-white hover:bg-red-600 shadow-sm"
+                ? "bg-[#161616] border border-[#222] text-[#888] cursor-not-allowed"
+                : "bg-red-500 border border-red-500 text-white hover:bg-red-600"
             }`}
           >
             {isClearing ? (
-              <Loader2 size={16} className="animate-spin" />
+              <><Loader2 size={16} className="animate-spin" /> Clearing...</>
             ) : (
-              <X size={16} />
+              <><X size={16} /> Clear Queue</>
             )}
-            Clear Queue
           </button>
         </div>
       }
