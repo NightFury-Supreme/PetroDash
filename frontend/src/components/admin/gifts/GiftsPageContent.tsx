@@ -151,10 +151,6 @@ export default function GiftsPageContent() {
               setSortBy={(val) => { setLoading(true); setSortBy(val); setCurrentPage(1); }}
             />
           </div>
-          
-          <div className="text-[11px] font-medium uppercase tracking-wider text-[#555] shrink-0">
-            Total Gifts: <span className="text-white/70">{pagination.total}</span>
-          </div>
         </div>
 
         {/* Table */}
