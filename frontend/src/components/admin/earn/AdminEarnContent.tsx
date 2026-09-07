@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PlayCircle, Link2, Info, RefreshCw, ChevronRight } from "lucide-react";
+import { PlayCircle, Link2, Info, RefreshCw, Edit2 } from "lucide-react";
 import type { AdminEarnSettings } from "@/hooks/admin/earn/useAdminEarn";
 import { Drawer } from "@/components/ui/Drawer";
 
@@ -60,78 +60,125 @@ export function AdminEarnContent({
   const [editing, setEditing] = useState<"ads" | "linkvertise" | null>(null);
   const sf = (path: string, value: any) => onChange(path, value);
 
+  const cols = "lg:grid-cols-[1.5fr_2fr_100px_100px_100px_80px]";
+
   return (
-    <div className="mt-8">
-      {/* Section heading */}
-      <div className="mb-6">
-        <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1">Earning Methods</p>
-        <h2 className="text-xl font-semibold text-white tracking-tight">Available methods</h2>
-        <p className="text-[13px] text-white/50 mt-1">Select a method to configure its earning behavior.</p>
-      </div>
-
-      {/* Method rows */}
-      <div className="border-t border-white/[0.06] divide-y divide-white/[0.06]">
-
-        {/* Watch Ads */}
-        <div className="flex items-center gap-6 py-6">
-          <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white/50 shrink-0">
-            <PlayCircle size={20} strokeWidth={1.5} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <span className="text-[15px] font-medium text-white/90 block mb-1">Watch Ads</span>
-            <p className="text-[13px] text-white/40 truncate">Reward users for completing advertisements.</p>
-          </div>
-          <div className="w-28 shrink-0 hidden md:block">
-            <span className="block text-[9px] font-bold text-white/30 uppercase tracking-wider mb-1">Reward</span>
-            <span className="text-[13px] text-white/70">{form.ads.coins} coins</span>
-          </div>
-          <div className="w-28 shrink-0 hidden md:block">
-            <span className="block text-[9px] font-bold text-white/30 uppercase tracking-wider mb-1">Daily Limit</span>
-            <span className="text-[13px] text-white/70">{form.ads.maxClaimsPerDay}</span>
-          </div>
-          <div className="w-24 shrink-0 hidden sm:block">
-            <span className="block text-[9px] font-bold text-white/30 uppercase tracking-wider mb-1">Status</span>
-            {form.ads.enabled
-              ? <span className="text-[13px] text-emerald-400 font-medium">Enabled</span>
-              : <span className="text-[13px] text-white/40 font-medium">Disabled</span>}
-          </div>
-          <button
-            type="button" onClick={() => setEditing("ads")}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/[0.1] text-[13px] font-medium text-white/70 hover:bg-white/[0.05] hover:text-white transition-colors shrink-0"
-          >
-            Configure <ChevronRight size={14} className="text-white/40" />
-          </button>
+    <div className="mt-8 bg-[#121212] border border-[#222] rounded-xl overflow-hidden">
+      <div className="w-full">
+        {/* TABLE HEADER (Desktop) */}
+        <div className={`hidden gap-4 lg:grid ${cols} border-b border-[#222] bg-[#161616] px-5 py-3 text-[9px] uppercase tracking-[0.13em] text-white/30`}>
+          <span>Method</span>
+          <span>Description</span>
+          <span>Reward</span>
+          <span>Daily Limit</span>
+          <span>Status</span>
+          <span className="text-right">Actions</span>
         </div>
 
-        {/* Linkvertise */}
-        <div className="flex items-center gap-6 py-6">
-          <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white/50 shrink-0">
-            <Link2 size={20} strokeWidth={1.5} />
+        {/* TABLE LIST */}
+        <div className="divide-y divide-[#222]">
+
+          {/* Watch Ads Row */}
+          <div className={`grid grid-cols-1 lg:grid ${cols} items-center gap-4 py-4 px-5 hover:bg-white/[0.01] transition-colors group`}>
+            {/* Method Name */}
+            <div className="min-w-0 flex items-center gap-3">
+              <div className="flex items-center justify-center w-8 h-8 rounded bg-[#1A1A1A] border border-[#2A2A2A] text-white/50 shrink-0">
+                <PlayCircle size={14} />
+              </div>
+              <span className="text-sm font-medium text-[#D4D4D4] truncate">Watch Ads</span>
+            </div>
+
+            {/* Description */}
+            <div className="min-w-0 hidden lg:block">
+              <p className="text-xs text-[#888] truncate">Proof-based rewarded video via ayeT callbacks.</p>
+            </div>
+
+            {/* Reward */}
+            <div className="min-w-0">
+              <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Reward</p>
+              <span className="text-sm text-[#AAAAAA]">{form.ads.coins} coins</span>
+            </div>
+
+            {/* Limit */}
+            <div className="min-w-0">
+              <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Daily Limit</p>
+              <span className="text-sm text-[#AAAAAA]">{form.ads.maxClaimsPerDay} claims</span>
+            </div>
+
+            {/* Status */}
+            <div className="min-w-0">
+              <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Status</p>
+              {form.ads.enabled ? (
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">Enabled</span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">Disabled</span>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="min-w-0 lg:text-right mt-2 lg:mt-0">
+              <div className="flex lg:justify-end gap-2">
+                <button
+                  onClick={() => setEditing("ads")}
+                  title="Configure method"
+                  className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#888] hover:text-white transition-colors"
+                >
+                  <Edit2 size={14} />
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <span className="text-[15px] font-medium text-white/90 block mb-1">Linkvertise</span>
-            <p className="text-[13px] text-white/40 truncate">Link tasks with anti-bypass protection.</p>
+
+          {/* Linkvertise Row */}
+          <div className={`grid grid-cols-1 lg:grid ${cols} items-center gap-4 py-4 px-5 hover:bg-white/[0.01] transition-colors group`}>
+            {/* Method Name */}
+            <div className="min-w-0 flex items-center gap-3">
+              <div className="flex items-center justify-center w-8 h-8 rounded bg-[#1A1A1A] border border-[#2A2A2A] text-white/50 shrink-0">
+                <Link2 size={14} />
+              </div>
+              <span className="text-sm font-medium text-[#D4D4D4] truncate">Linkvertise</span>
+            </div>
+
+            {/* Description */}
+            <div className="min-w-0 hidden lg:block">
+              <p className="text-xs text-[#888] truncate">Link tasks with anti-bypass protection.</p>
+            </div>
+
+            {/* Reward */}
+            <div className="min-w-0">
+              <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Reward</p>
+              <span className="text-sm text-[#AAAAAA]">{form.linkvertise.coins} coins</span>
+            </div>
+
+            {/* Limit */}
+            <div className="min-w-0">
+              <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Daily Limit</p>
+              <span className="text-sm text-[#AAAAAA]">{form.linkvertise.maxClaimsPerDay} claims</span>
+            </div>
+
+            {/* Status */}
+            <div className="min-w-0">
+              <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Status</p>
+              {form.linkvertise.enabled ? (
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">Enabled</span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">Disabled</span>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="min-w-0 lg:text-right mt-2 lg:mt-0">
+              <div className="flex lg:justify-end gap-2">
+                <button
+                  onClick={() => setEditing("linkvertise")}
+                  title="Configure method"
+                  className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#888] hover:text-white transition-colors"
+                >
+                  <Edit2 size={14} />
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="w-28 shrink-0 hidden md:block">
-            <span className="block text-[9px] font-bold text-white/30 uppercase tracking-wider mb-1">Reward</span>
-            <span className="text-[13px] text-white/70">{form.linkvertise.coins} coins</span>
-          </div>
-          <div className="w-28 shrink-0 hidden md:block">
-            <span className="block text-[9px] font-bold text-white/30 uppercase tracking-wider mb-1">Daily Limit</span>
-            <span className="text-[13px] text-white/70">{form.linkvertise.maxClaimsPerDay}</span>
-          </div>
-          <div className="w-24 shrink-0 hidden sm:block">
-            <span className="block text-[9px] font-bold text-white/30 uppercase tracking-wider mb-1">Status</span>
-            {form.linkvertise.enabled
-              ? <span className="text-[13px] text-emerald-400 font-medium">Enabled</span>
-              : <span className="text-[13px] text-white/40 font-medium">Disabled</span>}
-          </div>
-          <button
-            type="button" onClick={() => setEditing("linkvertise")}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/[0.1] text-[13px] font-medium text-white/70 hover:bg-white/[0.05] hover:text-white transition-colors shrink-0"
-          >
-            Configure <ChevronRight size={14} className="text-white/40" />
-          </button>
         </div>
       </div>
 
