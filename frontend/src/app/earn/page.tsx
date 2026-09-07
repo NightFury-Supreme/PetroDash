@@ -29,12 +29,12 @@ function EarnContent() {
 
   const lvUrlKey = (sessionId: string) => `earn_lv_url_${sessionId}`;
 
-  const canShow = useMemo(() => {
-    return Boolean(data?.config?.enabled);
-  }, [data?.config?.enabled]);
-
   const showAds = Boolean(data?.config?.ads?.enabled);
   const showLinkvertise = Boolean(data?.config?.linkvertise?.enabled);
+
+  const canShow = useMemo(() => {
+    return showAds || showLinkvertise;
+  }, [showAds, showLinkvertise]);
 
   useEffect(() => {
     if (!error) return;
