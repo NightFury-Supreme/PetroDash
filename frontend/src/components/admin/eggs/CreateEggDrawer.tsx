@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Egg, Save, Loader2, Check, AlertTriangle, Upload, Trash2, Plus } from "lucide-react";
+import { Egg, Loader2, Check, Upload, Trash2, Plus } from "lucide-react";
 import { Drawer } from "@/components/ui/Drawer";
 
 type Step = 'basic' | 'panel' | 'permissions';
