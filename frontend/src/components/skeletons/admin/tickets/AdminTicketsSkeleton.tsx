@@ -8,7 +8,7 @@ export default function AdminTicketsSkeleton() {
       <div className="flex flex-col h-full space-y-6">
         
         {/* -- Page header -- */}
-        <header className="border-b border-white/[0.06] pb-6">
+        <header>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <div className="h-8 w-44 rounded bg-[#202020] animate-pulse" />
@@ -39,11 +39,13 @@ export default function AdminTicketsSkeleton() {
                   ].map((item, idx) => (
                     <div
                       key={idx}
-                      className={`flex w-full items-center gap-3 rounded-lg py-2 px-2.5 ${idx === 0 ? 'bg-white/10' : ''}`}
+                      className={`flex w-full items-center justify-between rounded-md py-2 px-3 ${idx === 0 ? 'bg-white/10' : ''}`}
                     >
-                      <div className="h-4 w-4 shrink-0 rounded bg-[#202020] animate-pulse" />
-                      <div className={`h-3.5 ${item.w} rounded bg-[#202020] animate-pulse`} />
-                      <div className={`ml-auto h-3 ${item.count} rounded bg-[#1A1A1A] animate-pulse`} />
+                      <div className="flex items-center gap-3">
+                        <div className="h-4 w-4 shrink-0 rounded bg-[#202020] animate-pulse" />
+                        <div className={`h-3.5 ${item.w} rounded bg-[#202020] animate-pulse`} />
+                      </div>
+                      <div className={`h-3 ${item.count} rounded bg-[#1A1A1A] animate-pulse`} />
                     </div>
                   ))}
                 </nav>
@@ -52,9 +54,11 @@ export default function AdminTicketsSkeleton() {
               <div>
                 <p className="mb-3 text-[11px] font-medium uppercase tracking-widest text-[#555]">Management</p>
                 <nav className="space-y-0.5 pr-1">
-                  <div className="flex w-full items-center gap-3 rounded-lg py-2 px-2.5">
-                    <div className="h-4 w-4 shrink-0 rounded bg-[#202020] animate-pulse" />
-                    <div className="h-3.5 w-16 rounded bg-[#202020] animate-pulse" />
+                  <div className="flex w-full items-center justify-between rounded-md py-2 px-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-4 w-4 shrink-0 rounded bg-[#202020] animate-pulse" />
+                      <div className="h-3.5 w-16 rounded bg-[#202020] animate-pulse" />
+                    </div>
                   </div>
                 </nav>
               </div>
@@ -129,6 +133,7 @@ export default function AdminTicketsSkeleton() {
                     {/* User - desktop */}
                     <div className="hidden md:block">
                       <div className="h-3.5 w-20 rounded bg-[#202020] animate-pulse" />
+                      <div className="mt-1 h-2.5 w-24 rounded bg-[#1A1A1A] animate-pulse" />
                     </div>
 
                     {/* Category - desktop */}
@@ -159,6 +164,18 @@ export default function AdminTicketsSkeleton() {
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Pagination */}
+            <div className="mt-5 flex items-center justify-between border-t border-white/[0.06] pt-5">
+              <div className="h-3 w-32 rounded bg-[#1A1A1A] animate-pulse" />
+              <div className="flex items-center gap-1">
+                <div className="h-8 w-8 rounded-md border border-white/[0.07] bg-[#161616] animate-pulse" />
+                <div className="h-8 min-w-[32px] rounded-md bg-[#202020] animate-pulse" />
+                <div className="h-8 min-w-[32px] rounded-md bg-[#161616] animate-pulse" />
+                <div className="h-8 min-w-[32px] rounded-md bg-[#161616] animate-pulse" />
+                <div className="h-8 w-8 rounded-md border border-white/[0.07] bg-[#161616] animate-pulse" />
+              </div>
             </div>
 
           </div>
