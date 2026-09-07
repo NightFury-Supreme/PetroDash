@@ -113,30 +113,28 @@ export default function GiftsPageContent() {
       {/* Content */}
       <div className="w-full">
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-[10px] flex-1">
-            <div className="relative flex-1 h-[42px] flex items-center gap-[10px] px-[13px] border border-[#282828] rounded-[7px] bg-[#121212] text-[#5e5e5e] focus-within:border-[#454545] focus-within:bg-[#151515] transition-colors w-full max-w-md">
-              <Search size={15} />
-              <input
-                value={query}
-                onChange={(e) => { 
-                  setLoading(true); 
-                  setQuery(e.target.value); 
-                  setCurrentPage(1);
-                }}
-                placeholder="Search codes, rewards, descriptions..."
-                className="w-full min-w-0 border-0 outline-none bg-transparent text-[#d5d5d5] text-[11px] placeholder:text-[#505050]"
-              />
-              {query && (
-                <button
-                  onClick={() => { setLoading(true); setQuery(""); setCurrentPage(1); }}
-                  className="w-[23px] h-[23px] flex-shrink-0 flex items-center justify-center rounded-[5px] text-[#666] hover:bg-[#222] hover:text-[#ddd] transition-colors"
-                  aria-label="Clear search"
-                >
-                  <X size={13} />
-                </button>
-              )}
-            </div>
+        <div className="flex flex-col sm:flex-row items-center gap-[10px] mb-6">
+          <div className="relative flex-1 h-[42px] flex items-center gap-[10px] px-[13px] border border-[#282828] rounded-[7px] bg-[#121212] text-[#5e5e5e] focus-within:border-[#454545] focus-within:bg-[#151515] transition-colors w-full">
+            <Search size={15} />
+            <input
+              value={query}
+              onChange={(e) => { 
+                setLoading(true); 
+                setQuery(e.target.value); 
+                setCurrentPage(1);
+              }}
+              placeholder="Search codes, rewards, descriptions..."
+              className="w-full min-w-0 border-0 outline-none bg-transparent text-[#d5d5d5] text-[11px] placeholder:text-[#505050]"
+            />
+            {query && (
+              <button
+                onClick={() => { setLoading(true); setQuery(""); setCurrentPage(1); }}
+                className="w-[23px] h-[23px] flex-shrink-0 flex items-center justify-center rounded-[5px] text-[#666] hover:bg-[#222] hover:text-[#ddd] transition-colors"
+                aria-label="Clear search"
+              >
+                <X size={13} />
+              </button>
+            )}
           </div>
           
           <div className="flex items-center gap-[7px] w-full sm:w-auto">
