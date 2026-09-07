@@ -224,11 +224,11 @@ export function AdminEarnContent({
           <div className="flex items-center gap-3 w-full">
             {form.ads.enabled ? (
               <>
-                <ActionButton onClick={async () => { await onSaveAds({ enabled: false }); setEditing(null); }} loading={saving} label="Disable" variant="danger" className="flex-1" />
-                <ActionButton onClick={async () => { await onSaveAds(); setEditing(null); }} loading={saving} label="Save Changes" className="flex-1" />
+                <ActionButton onClick={async () => { await onSaveAds({ enabled: false }); setTimeout(() => setEditing(null), 1000); }} loading={saving} label="Disable" variant="danger" className="flex-1" />
+                <ActionButton onClick={async () => { await onSaveAds(); setTimeout(() => setEditing(null), 1000); }} loading={saving} label="Save Changes" className="flex-1" />
               </>
             ) : (
-              <ActionButton onClick={async () => { await onSaveAds({ enabled: true }); setEditing(null); }} loading={saving} label="Enable Method" className="w-full" />
+              <ActionButton onClick={async () => { await onSaveAds({ enabled: true }); setTimeout(() => setEditing(null), 1000); }} loading={saving} label="Enable Method" className="w-full" />
             )}
           </div>
         }
@@ -282,11 +282,11 @@ export function AdminEarnContent({
           <div className="flex items-center gap-3 w-full">
             {form.linkvertise.enabled ? (
               <>
-                <ActionButton onClick={async () => { await onSaveLinkvertise({ enabled: false }); setEditing(null); }} loading={saving} label="Disable" variant="danger" className="flex-1" />
-                <ActionButton onClick={async () => { await onSaveLinkvertise(); setEditing(null); }} loading={saving} label="Save Changes" className="flex-1" />
+                <ActionButton onClick={async () => { await onSaveLinkvertise({ enabled: false }); setTimeout(() => setEditing(null), 1000); }} loading={saving} label="Disable" variant="danger" className="flex-1" />
+                <ActionButton onClick={async () => { await onSaveLinkvertise(); setTimeout(() => setEditing(null), 1000); }} loading={saving} label="Save Changes" className="flex-1" />
               </>
             ) : (
-              <ActionButton onClick={async () => { await onSaveLinkvertise({ enabled: true }); setEditing(null); }} loading={saving} label="Enable Method" className="w-full" />
+              <ActionButton onClick={async () => { await onSaveLinkvertise({ enabled: true }); setTimeout(() => setEditing(null), 1000); }} loading={saving} label="Enable Method" className="w-full" />
             )}
           </div>
         }
