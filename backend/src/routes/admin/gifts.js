@@ -8,7 +8,7 @@ const router = express.Router();
 // GET /api/admin/gifts
 router.get('/', requireAdmin, async (req, res) => {
   try {
-    const { search = '', tab = 'all', page = '1', limit = '10' } = req.query;
+    const { search = '', tab = 'all', page = '1', limit = '10', sort = 'newest' } = req.query;
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
 
@@ -28,16 +28,15 @@ router.get('/', requireAdmin, async (req, res) => {
         { validUntil: { $lte: new Date() } }
       ];
     }
-    // We cannot easily filter by (redeemedCount < maxRedemptions) in Mongoose when redeemedCount is dynamic/virtual,
-    // but assuming maxRedemptions is checked on usage, active/inactive base on dates/enabled is fine.
-    
-    // Fallback: If maxRedemptions exist and redemptions array size >= maxRedemptions, it's inactive
-    // Mongoose doesn't easily let us compare array size to a document field in a simple query without aggregate,
-    // so we'll do the simpler tab logic (enabled + dates).
+
+    let sortObj = { createdAt: -1 };
+    if (sort === 'oldest') {
+      sortObj = { createdAt: 1 };
+    }
 
     const total = await Gift.countDocuments(filter);
     const gifts = await Gift.find(filter)
-      .sort({ createdAt: -1 })
+      .sort(sortObj)
       .skip((pageNum - 1) * limitNum)
       .limit(limitNum)
       .populate('createdBy', 'username email profilePicture')

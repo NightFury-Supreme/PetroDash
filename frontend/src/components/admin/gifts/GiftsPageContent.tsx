@@ -16,6 +16,8 @@ export default function GiftsPageContent() {
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
+  const [tab, setTab] = useState('all');
+  const [sortBy, setSortBy] = useState('newest');
   const [currentPage, setCurrentPage] = useState(1);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,6 +37,8 @@ export default function GiftsPageContent() {
       const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/gifts`);
       url.searchParams.set('page', currentPage.toString());
       url.searchParams.set('limit', '10');
+      url.searchParams.set('tab', tab);
+      url.searchParams.set('sort', sortBy);
       if (query.trim()) url.searchParams.set('search', query.trim());
 
       const res = await fetch(url.toString(), { headers: { Authorization: `Bearer ${token}` } });
@@ -59,7 +63,7 @@ export default function GiftsPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, query, router]);
+  }, [currentPage, query, tab, sortBy, router]);
 
   useEffect(() => {
     fetchGifts();
@@ -107,18 +111,49 @@ export default function GiftsPageContent() {
       <div className="w-full">
         {/* Filters */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <input
-            value={query}
-            onChange={(e) => { 
-              setLoading(true); 
-              setQuery(e.target.value); 
-              setCurrentPage(1);
-            }}
-            placeholder="Search codes, rewards, descriptions..."
-            className="w-full sm:max-w-md px-4 py-2.5 rounded-lg border border-white/[0.06] bg-white/[0.02] text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/[0.1] focus:bg-white/[0.03] transition-colors"
-          />
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
+            <input
+              value={query}
+              onChange={(e) => { 
+                setLoading(true); 
+                setQuery(e.target.value); 
+                setCurrentPage(1);
+              }}
+              placeholder="Search codes, rewards, descriptions..."
+              className="w-full sm:max-w-md px-4 py-2.5 rounded-lg border border-white/[0.06] bg-white/[0.02] text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/[0.1] focus:bg-white/[0.03] transition-colors"
+            />
+
+            <select
+              value={tab}
+              onChange={(e) => {
+                setLoading(true);
+                setTab(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="px-4 py-2.5 rounded-lg border border-white/[0.06] bg-[#0F0F0F] text-sm text-white/70 focus:outline-none focus:border-white/[0.1] transition-colors appearance-none cursor-pointer hover:bg-white/[0.02]"
+              style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.7rem top 50%', backgroundSize: '0.65rem auto', paddingRight: '2.5rem' }}
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+
+            <select
+              value={sortBy}
+              onChange={(e) => {
+                setLoading(true);
+                setSortBy(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="px-4 py-2.5 rounded-lg border border-white/[0.06] bg-[#0F0F0F] text-sm text-white/70 focus:outline-none focus:border-white/[0.1] transition-colors appearance-none cursor-pointer hover:bg-white/[0.02]"
+              style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.7rem top 50%', backgroundSize: '0.65rem auto', paddingRight: '2.5rem' }}
+            >
+              <option value="newest">Sort: Newest</option>
+              <option value="oldest">Sort: Oldest</option>
+            </select>
+          </div>
           
-          <div className="text-[11px] font-medium uppercase tracking-wider text-[#555]">
+          <div className="text-[11px] font-medium uppercase tracking-wider text-[#555] shrink-0">
             Total Gifts: <span className="text-white/70">{pagination.total}</span>
           </div>
         </div>
