@@ -15,7 +15,6 @@ export default function GiftsPageContent() {
   const [gifts, setGifts] = useState<any[]>([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<'active'|'inactive'|'all'>('all');
   const [query, setQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +35,6 @@ export default function GiftsPageContent() {
       const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/gifts`);
       url.searchParams.set('page', currentPage.toString());
       url.searchParams.set('limit', '10');
-      url.searchParams.set('tab', tab);
       if (query.trim()) url.searchParams.set('search', query.trim());
 
       const res = await fetch(url.toString(), { headers: { Authorization: `Bearer ${token}` } });
@@ -61,7 +59,7 @@ export default function GiftsPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, tab, query, router]);
+  }, [currentPage, query, router]);
 
   useEffect(() => {
     fetchGifts();
@@ -108,32 +106,20 @@ export default function GiftsPageContent() {
       {/* Content */}
       <div className="w-full">
         {/* Filters */}
-        <div className="flex flex-col space-y-4 mb-6">
-          <div className="flex flex-col sm:flex-row items-center gap-[10px]">
-            <div className="relative flex-1 h-[42px] flex items-center gap-[10px] px-[13px] border border-[#282828] rounded-[7px] bg-[#121212] text-[#5e5e5e] focus-within:border-[#454545] focus-within:bg-[#151515] transition-colors w-full">
-              <Search size={15} />
-              <input
-                type="text"
-                placeholder="Search codes..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="w-full min-w-0 border-0 outline-none bg-transparent text-[#d5d5d5] text-[11px] placeholder:text-[#505050]"
-              />
-            </div>
-            
-            <div className="flex items-center h-[42px] rounded-[7px] border border-[#282828] bg-[#121212] p-1">
-              {(['all', 'active', 'inactive'] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTab(t)}
-                  className={`px-3 h-full text-[11px] font-bold tracking-widest uppercase rounded-[5px] transition-colors ${
-                    tab === t ? 'bg-[#222] text-[#d5d5d5]' : 'text-[#5e5e5e] hover:text-[#d5d5d5]'
-                  }`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <input
+            value={query}
+            onChange={(e) => { 
+              setLoading(true); 
+              setQuery(e.target.value); 
+              setCurrentPage(1);
+            }}
+            placeholder="Search codes, rewards, descriptions..."
+            className="w-full sm:max-w-md px-4 py-2.5 rounded-lg border border-white/[0.06] bg-white/[0.02] text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/[0.1] focus:bg-white/[0.03] transition-colors"
+          />
+          
+          <div className="text-[11px] font-medium uppercase tracking-wider text-[#555]">
+            Total Gifts: <span className="text-white/70">{pagination.total}</span>
           </div>
         </div>
 
