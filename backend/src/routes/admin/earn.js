@@ -138,6 +138,7 @@ router.patch('/', requireAdmin, async (req, res) => {
       }
     }
 
+    settings.markModified('earn');
     await settings.save();
     clearSettingsCache();
 
