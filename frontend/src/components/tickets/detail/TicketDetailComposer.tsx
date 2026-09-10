@@ -143,7 +143,7 @@ export function TicketDetailComposer({
         <button
           onClick={onReopen}
           disabled={statusBusy}
-          className="ml-auto flex items-center gap-1.5 rounded-lg border border-white/[0.07] px-4 py-2 text-sm text-white/50 transition-colors hover:border-[#FF5722]/30 hover:text-[#FF5722] disabled:opacity-40"
+          className="ml-auto flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-colors bg-[#FF5722] text-white hover:bg-[#ff6939] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <RotateCcw size={14} /> Reopen ticket
         </button>

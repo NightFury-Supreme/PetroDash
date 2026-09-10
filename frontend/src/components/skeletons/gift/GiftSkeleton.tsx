@@ -8,7 +8,7 @@ export function GiftHeaderSkeleton() {
         <div className="h-4 bg-[#222] rounded w-64 animate-pulse"></div>
       </div>
       <div className="flex items-center gap-4">
-        <div className="w-[110px] h-[34px] bg-[#1A0F0C] border border-[#FF5722]/30 rounded-md animate-pulse"></div>
+        <div className="w-[110px] h-[34px] bg-[#FF5722]/50 rounded-md animate-pulse"></div>
       </div>
     </div>
   );
@@ -32,7 +32,7 @@ export function GiftRedeemSkeleton() {
           <div className="relative flex-1">
             <div className="h-10 bg-[#151515] rounded-lg w-full animate-pulse border border-white/[0.06]"></div>
           </div>
-          <div className="h-10 bg-[#1A0F0C] border border-[#FF5722]/30 rounded-lg w-24 animate-pulse"></div>
+          <div className="h-10 bg-[#FF5722]/50 rounded-lg w-24 animate-pulse"></div>
         </div>
       </div>
       

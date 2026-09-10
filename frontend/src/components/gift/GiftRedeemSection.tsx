@@ -86,7 +86,7 @@ export function GiftRedeemSection() {
             type="button"
             onClick={handleRedeem}
             disabled={!redeemCode.trim() || submitting}
-            className="flex items-center gap-2 rounded-lg border border-[#FF5722]/30 bg-[#1A0F0C] px-4 text-xs font-medium text-[#FF5722] transition hover:bg-[#FF5722]/10 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex items-center gap-2 rounded-lg px-4 text-xs font-medium transition bg-[#FF5722] text-white hover:bg-[#ff6939] disabled:cursor-not-allowed disabled:opacity-40"
           >
             {submitting ? "Redeeming." : "Redeem"}
           </button>

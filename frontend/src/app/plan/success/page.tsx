@@ -109,7 +109,7 @@ export default function PlanSuccessPage() {
           <div className="mt-[29px] flex justify-center gap-3">
             <button
               onClick={() => router.push('/dashboard')}
-              className="flex items-center gap-2 bg-[#1A0F0C] border border-[#FF5722]/30 text-[#FF5722] hover:bg-[#FF5722]/10 px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
+              className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
             >
               <LayoutDashboard className="w-[14px] h-[14px]" />
               Go to Dashboard

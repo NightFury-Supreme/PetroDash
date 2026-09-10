@@ -72,7 +72,7 @@ export default function LocationsPage() {
           </div>
           <button
             onClick={() => setIsDrawerOpen(true)}
-            className="flex items-center gap-2 border px-3 py-1.5 rounded-md text-xs font-medium transition-colors bg-[#1A0F0C] border-[#FF5722]/30 text-[#FF5722] hover:bg-[#FF5722]/10"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-colors bg-[#FF5722] text-white hover:bg-[#ff6939]"
           >
             <Plus size={12} /> New Location
           </button>

@@ -189,7 +189,7 @@ export default function EggForm({ form, setForm, env, setEnv, onSubmit, submitti
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingIcon}
-                className={`flex items-center justify-between w-full rounded-lg border px-4 h-[44px] text-sm text-[#888] transition-colors outline-none ${isDragging ? 'bg-[#FF5722]/10 border-[#FF5722] text-[#FF5722]' : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.1]'}`}
+                className={`flex items-center justify-between w-full rounded-lg px-4 h-[44px] text-sm text-[#888] transition-colors outline-none ${isDragging ? 'bg-[#FF5722]/10 border-[#FF5722] text-[#FF5722]' : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.1]'}`}
               >
                 <span className="truncate">
                   {uploadingIcon ? 'Uploading...' : form.icon ? 'Change icon (or drop/paste)' : 'Upload icon (or drop/paste)'}
@@ -406,7 +406,7 @@ export default function EggForm({ form, setForm, env, setEnv, onSubmit, submitti
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#1A0F0C] border border-[#FF5722]/30 text-[#FF5722] hover:bg-[#FF5722]/10 transition-all text-sm font-medium disabled:opacity-50"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#FF5722] text-white hover:bg-[#ff6939] transition-all text-sm font-medium disabled:opacity-50"
           >
             {isSubmitting ? <><Loader2 size={15} className="animate-spin" /> Saving...</> : <><Check size={15} /> {submitLabel}</>}
           </button>

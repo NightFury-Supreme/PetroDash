@@ -49,7 +49,7 @@ export default function GiftCodesPage() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => setDrawerOpen(true)}
-              className="flex items-center gap-2 bg-[#1A0F0C] border border-[#FF5722]/30 text-[#FF5722] hover:bg-[#FF5722]/10 px-3 py-1.5 rounded-md text-xs font-medium transition-colors"
+              className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-3 py-1.5 rounded-md text-xs font-medium transition-colors"
             >
               <Plus size={12} />
               Create Code
