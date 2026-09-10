@@ -295,7 +295,6 @@ function verifyAyetClientSignature(details, apiKey) {
 }
 
 function buildLinkvertiseUrl(template, targetUrl) {
-  console.log('[Linkvertise] buildLinkvertiseUrl called with template:', template, 'targetUrl:', targetUrl);
   if (!template) return '';
   
   let url = template
@@ -314,10 +313,7 @@ function buildLinkvertiseUrl(template, targetUrl) {
   // Linkvertise servers will automatically append ?o=sharing to links.
   // Because our link already has ?r=..., appending ?o=sharing breaks the URL.
   // By pre-appending &o=sharing, we prevent Linkvertise from appending the broken one.
-  const finalUrl = url + '/dynamic?r=' + encodedTargetB64 + '&o=sharing';
-  console.log('[Linkvertise] Generated final URL:', finalUrl);
-
-  return finalUrl;
+  return url + '/dynamic?r=' + encodedTargetB64 + '&o=sharing';
 }
 
 async function getLatestSession(userId, method) {
