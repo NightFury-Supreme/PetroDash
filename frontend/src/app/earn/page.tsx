@@ -232,6 +232,8 @@ function EarnContent() {
     }
   };
 
+  const cols = "lg:grid-cols-[2fr_100px_100px_120px_150px]";
+
   if (loading) {
     return (
       <div className="p-4 sm:p-6 bg-[#0f0f0f] min-h-screen text-white">
@@ -262,8 +264,6 @@ function EarnContent() {
       </div>
     );
   }
-
-  const cols = "lg:grid-cols-[2fr_100px_100px_120px_150px]";
 
   return (
     
