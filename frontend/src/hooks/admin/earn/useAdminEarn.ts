@@ -11,7 +11,7 @@ export interface EarnMethodSettings {
   cooldownSeconds: number;
   waitSeconds: number;
   maxClaimsPerDay: number;
-  url?: string;
+  publisherId?: string;
   antiBypassToken?: string;
   ayetPlacementId?: number;
   ayetAdslotName?: string;

@@ -236,17 +236,17 @@ function getEarnConfig(s) {
       cooldownSeconds: clampInt(obj.cooldownSeconds, 0, 86400, defaults.cooldownSeconds),
       waitSeconds: clampInt(obj.waitSeconds, 0, 3600, defaults.waitSeconds),
       maxClaimsPerDay: clampInt(obj.maxClaimsPerDay, 0, 1000, defaults.maxClaimsPerDay),
-      url: typeof obj.url === 'string' ? obj.url : defaults.url,
+      publisherId: typeof obj.publisherId === 'string' ? obj.publisherId : defaults.publisherId,
       antiBypassToken: typeof obj.antiBypassToken === 'string' ? obj.antiBypassToken : defaults.antiBypassToken,
-      ayetPlacementId: clampInt(obj.ayetPlacementId, 0, 1000000000, defaults.ayetPlacementId),
+      ayetPlacementId: clampInt(obj.ayetPlacementId, 0, 99999999, defaults.ayetPlacementId),
       ayetAdslotName: typeof obj.ayetAdslotName === 'string' ? obj.ayetAdslotName : defaults.ayetAdslotName,
       ayetApiKey: typeof obj.ayetApiKey === 'string' ? obj.ayetApiKey : defaults.ayetApiKey,
     };
   };
 
   return {
-    ads: normalizeMethod(earn.ads, { coins: 10, cooldownSeconds: 3600, waitSeconds: 30, maxClaimsPerDay: 24, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '' }),
-    linkvertise: normalizeMethod(earn.linkvertise, { coins: 20, cooldownSeconds: 3600, waitSeconds: 10, maxClaimsPerDay: 24, url: '', antiBypassToken: '' }),
+    ads: normalizeMethod(earn.ads, { coins: 10, cooldownSeconds: 3600, waitSeconds: 30, maxClaimsPerDay: 24, publisherId: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '' }),
+    linkvertise: normalizeMethod(earn.linkvertise, { coins: 20, cooldownSeconds: 3600, waitSeconds: 10, maxClaimsPerDay: 24, publisherId: '', antiBypassToken: '' }),
   };
 }
 
@@ -294,22 +294,10 @@ function verifyAyetClientSignature(details, apiKey) {
   return { ok: computed === provided, computedLen: computed.length };
 }
 
-function buildLinkvertiseUrl(template, targetUrl) {
-  if (!template) return '';
-  
-  template = template.replace(/\?o=sharing/g, '').replace(/&o=sharing/g, '');
-
+function buildLinkvertiseUrl(publisherId, targetUrl) {
+  if (!publisherId) return '';
   const targetB64 = Buffer.from(targetUrl, 'utf8').toString('base64');
-  if (template.includes('{target}')) return template.replace('{target}', encodeURIComponent(targetUrl));
-  if (template.includes('{targetB64}')) return template.replace('{targetB64}', targetB64);
-
-  if (template.includes('dynamic?r=')) {
-    const parts = template.split('r=');
-    const prefix = parts[0] + 'r=';
-    return prefix + targetB64;
-  }
-
-  return template;
+  return `https://link-to.net/${publisherId}/dynamic?r=${targetB64}`;
 }
 
 async function getLatestSession(userId, method) {
@@ -677,7 +665,7 @@ router.post('/:method/start', requireAuth, async (req, res) => {
         if (method === 'linkvertise') {
           const base = (process.env.FRONTEND_URL || '').replace(/\/$/, '');
           const target = `${base}/earn?lvSid=${encodeURIComponent(String(latest._id))}`;
-          const url = buildLinkvertiseUrl(String(methodCfg.url || ''), target);
+          const url = buildLinkvertiseUrl(String(methodCfg.publisherId || ''), target);
           const hasAntiBypass = Boolean(String(cfg?.linkvertise?.antiBypassToken || '').trim());
           resumed.linkvertise = hasAntiBypass ? { url, target } : { url, target, sessionSecret: String(latest.secret || '') };
         }
@@ -715,7 +703,7 @@ router.post('/:method/start', requireAuth, async (req, res) => {
       expiresAt: adsExpiresAt,
       secret,
       meta: {
-        linkvertiseTemplate: method === 'linkvertise' ? String(methodCfg.url || '') : undefined,
+        linkvertiseTemplate: method === 'linkvertise' ? String(methodCfg.publisherId || '') : undefined,
       },
     });
 
@@ -736,7 +724,7 @@ router.post('/:method/start', requireAuth, async (req, res) => {
     if (method === 'linkvertise') {
       const base = (process.env.FRONTEND_URL || '').replace(/\/$/, '');
       const target = `${base}/earn?lvSid=${encodeURIComponent(String(session._id))}`;
-      const url = buildLinkvertiseUrl(String(methodCfg.url || ''), target);
+      const url = buildLinkvertiseUrl(String(methodCfg.publisherId || ''), target);
       const hasAntiBypass = Boolean(String(cfg?.linkvertise?.antiBypassToken || '').trim());
       response.linkvertise = hasAntiBypass ? { url, target } : { url, target, sessionSecret: secret };
     }
