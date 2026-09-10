@@ -297,18 +297,18 @@ function verifyAyetClientSignature(details, apiKey) {
 function buildLinkvertiseUrl(template, targetUrl) {
   if (!template) return '';
   
-  let url = template.replace(/\?o=sharing/g, '').replace(/&o=sharing/g, '').replace(/\/+$/, '');
+  let url = template
+    .replace(/\?o=sharing/g, '')
+    .replace(/&o=sharing/g, '')
+    .replace(/\/+$/, '');
+    
+  // If they accidentally pasted the full dynamic path, strip it back to the base post URL
+  if (url.includes('/dynamic')) {
+    url = url.split('/dynamic')[0];
+  }
   
   const targetB64 = Buffer.from(targetUrl, 'utf8').toString('base64');
   const encodedTargetB64 = encodeURIComponent(targetB64);
-  
-  if (url.includes('{target}')) return url.replace('{target}', encodeURIComponent(targetUrl));
-  if (url.includes('{targetB64}')) return url.replace('{targetB64}', encodedTargetB64);
-
-  if (url.includes('dynamic?r=')) {
-    const parts = url.split('dynamic?r=');
-    return parts[0] + 'dynamic?r=' + encodedTargetB64 + (parts[1].includes('&') ? '&' + parts[1].split('&').slice(1).join('&') : '');
-  }
 
   return url + '/dynamic?r=' + encodedTargetB64;
 }
