@@ -74,9 +74,9 @@ export function LinkvertiseConfigDrawer({
         </div>
         <hr className="border-white/[0.06]" />
         <div>
-          <FieldLabel>URL Template <span className="text-[#FF5722]">*</span></FieldLabel>
-          <FieldInput value={(form.linkvertise as any).url ?? ""} onChange={(v) => sf("linkvertise.url", v)} disabled={saving} placeholder="https://linkvertise.com/.../dynamic?r={targetB64}" />
-          <FieldHint>Enter your Linkvertise URL. You can use {"{targetB64}"} as a placeholder to append the target automatically.</FieldHint>
+          <FieldLabel>Linkvertise Link <span className="text-[#FF5722]">*</span></FieldLabel>
+          <FieldInput value={(form.linkvertise as any).url ?? ""} onChange={(v) => sf("linkvertise.url", v)} disabled={saving} placeholder="https://linkvertise.com/1412952/something" />
+          <FieldHint>Just paste the standard Linkvertise URL you created. The dynamic callback URL will be automatically appended for you.</FieldHint>
         </div>
         <div>
           <FieldLabel>Anti-Bypass Token</FieldLabel>
