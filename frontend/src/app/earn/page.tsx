@@ -17,7 +17,7 @@ function EarnContent() {
   const didAutoClaim = useRef(false);
   const didAutoAdsClaim = useRef(false);
 
-  const { data, loading, error, setError, refresh, start, claim, starting, claiming } = useEarn();
+  const { data, loading, error, setError, refresh, start, claim, starting } = useEarn();
   const [lastLvUrl, setLastLvUrl] = useState<string | null>(null);
   const [pendingLvSid, setPendingLvSid] = useState<string | null>(null);
 
@@ -186,7 +186,10 @@ function EarnContent() {
       if (method === "linkvertise") {
         const st = data?.status?.linkvertise;
         const sid = st?.sessionId;
-        const canContinue = (st?.state === "waiting" || st?.state === "claimable") && Boolean(sid);
+        if (st?.state === "claimable" && sid) {
+          await onClaim("linkvertise");
+          return;
+        }
         // We intentionally do NOT use localStorage here anymore, so that we always get
         // the freshest generated URL from the backend when resuming the session.
       }
@@ -302,9 +305,7 @@ function EarnContent() {
                 config={data.config.ads}
                 status={data.status.ads}
                 starting={starting === "ads"}
-                claiming={claiming === "ads"}
                 onStart={() => onStart("ads")}
-                onClaim={() => onClaim("ads")}
                 cols={cols}
               />
             )}
@@ -317,9 +318,7 @@ function EarnContent() {
                 config={data.config.linkvertise}
                 status={data.status.linkvertise}
                 starting={starting === "linkvertise"}
-                claiming={claiming === "linkvertise"}
                 onStart={() => onStart("linkvertise")}
-                onClaim={() => onClaim("linkvertise")}
                 cols={cols}
               />
             )}
@@ -332,9 +331,7 @@ function EarnContent() {
                 config={data.config.offerwall}
                 status={data.status.offerwall}
                 starting={starting === "offerwall"}
-                claiming={claiming === "offerwall"}
                 onStart={() => onStart("offerwall")}
-                onClaim={() => onClaim("offerwall")}
                 cols={cols}
               />
             )}
@@ -347,9 +344,7 @@ function EarnContent() {
                 config={data.config.surveywall}
                 status={data.status.surveywall}
                 starting={starting === "surveywall"}
-                claiming={claiming === "surveywall"}
                 onStart={() => onStart("surveywall")}
-                onClaim={() => onClaim("surveywall")}
                 cols={cols}
               />
             )}

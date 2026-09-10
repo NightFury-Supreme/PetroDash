@@ -22,9 +22,7 @@ export function EarnMethodCard({
   config,
   status,
   onStart,
-  onClaim,
   starting,
-  claiming,
   extraAction,
   cols,
 }: {
@@ -34,9 +32,7 @@ export function EarnMethodCard({
   config: EarnMethodConfig;
   status: EarnMethodStatus;
   onStart: () => void;
-  onClaim: () => void;
   starting: boolean;
-  claiming: boolean;
   extraAction?: ReactNode;
   cols: string;
 }) {
@@ -47,19 +43,7 @@ export function EarnMethodCard({
   const maxClaims = Number(status.maxClaimsPerDay || config.maxClaimsPerDay);
   const retryAfter = Number(status.retryAfterSeconds || 0);
 
-  const showStart =
-    status.state === "ready" ||
-    status.state === "expired" ||
-    status.state === "limit_reached" ||
-    status.state === "cooldown" ||
-    (method === "linkvertise" && status.state === "waiting") ||
-    (method === "ads" && status.state === "waiting");
-
-  const showClaim =
-    status.state === "claimable" ||
-    status.state === "verifying" ||
-    (method === "linkvertise" && status.state === "waiting") ||
-    (method === "ads" && status.state === "waiting");
+  const showActionBtn = true; // Always show the button, we handle disabled states in `actionDisabled`
 
   const subtitleForState = () => {
     if (status.state === "ready") return "Ready";
@@ -86,9 +70,7 @@ export function EarnMethodCard({
     if (status.state === "cooldown") return `Cooldown (${formatSeconds(retryAfter)})`;
     if (status.state === "limit_reached") return "Limit reached";
     if (status.state === "verifying") return "Verifying...";
-    if (method === "linkvertise" && (status.state === "waiting" || status.state === "claimable")) return "Continue";
-    if (method === "ads" && status.state === "waiting") return "Continue";
-    if (method === "ads" && status.state === "claimable") return "Claim";
+    if (status.state === "waiting" || status.state === "claimable") return "Continue";
     return "Start";
   };
 
@@ -137,22 +119,13 @@ export function EarnMethodCard({
         ) : (
           <div className="flex flex-wrap lg:justify-end gap-2">
             {extraAction}
-            {showStart && (
+            {showActionBtn && (
               <button
                 onClick={onStart}
                 disabled={actionDisabled}
                 className="flex items-center gap-2 border px-4 py-1.5 rounded-md text-xs font-medium transition-colors bg-[#1A0F0C] border-[#FF5722]/30 text-[#FF5722] hover:bg-[#FF5722]/10 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#1A0F0C]"
               >
                 {actionLabel()}
-              </button>
-            )}
-            {showClaim && (
-              <button
-                onClick={onClaim}
-                disabled={claiming}
-                className="flex items-center gap-2 border px-4 py-1.5 rounded-md text-xs font-medium transition-colors bg-emerald-500/10 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-emerald-500/10"
-              >
-                {claiming ? "Claiming..." : "Claim"}
               </button>
             )}
           </div>
