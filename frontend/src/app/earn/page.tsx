@@ -31,10 +31,12 @@ function EarnContent() {
 
   const showAds = Boolean(data?.config?.ads?.enabled);
   const showLinkvertise = Boolean(data?.config?.linkvertise?.enabled);
+  const showOfferwall = Boolean(data?.config?.offerwall?.enabled);
+  const showSurveywall = Boolean(data?.config?.surveywall?.enabled);
 
   const canShow = useMemo(() => {
-    return showAds || showLinkvertise;
-  }, [showAds, showLinkvertise]);
+    return showAds || showLinkvertise || showOfferwall || showSurveywall;
+  }, [showAds, showLinkvertise, showOfferwall, showSurveywall]);
 
   useEffect(() => {
     if (!error) return;
@@ -240,7 +242,7 @@ function EarnContent() {
     })();
   }, [data?.status?.ads, claim, modal]);
 
-  const onStart = async (method: "ads" | "linkvertise") => {
+  const onStart = async (method: "ads" | "linkvertise" | "offerwall" | "surveywall") => {
     try {
       if (!canShow) {
         await modal.error({ title: "Earn Disabled", body: "Earn is currently disabled." });
@@ -252,6 +254,24 @@ function EarnContent() {
       }
       if (method === "linkvertise" && !showLinkvertise) {
         await modal.error({ title: "Disabled", body: "Linkvertise is currently disabled." });
+        return;
+      }
+      if (method === "offerwall" && !showOfferwall) {
+        await modal.error({ title: "Disabled", body: "Offerwall is currently disabled." });
+        return;
+      }
+      if (method === "surveywall" && !showSurveywall) {
+        await modal.error({ title: "Disabled", body: "Surveywall is currently disabled." });
+        return;
+      }
+
+      if (method === "offerwall" && data?.config?.offerwall?.adslotId) {
+        window.open(`https://offerwall.ayet.io/offers?adSlot=${data.config.offerwall.adslotId}&externalIdentifier=${decodedUserId}`, "_blank");
+        return;
+      }
+
+      if (method === "surveywall" && data?.config?.surveywall?.adslotId) {
+        window.open(`https://surveys.ayet.io/surveys?adSlot=${data.config.surveywall.adslotId}&external_identifier=${decodedUserId}`, "_blank");
         return;
       }
 
@@ -311,7 +331,7 @@ function EarnContent() {
     }
   };
 
-  const onClaim = async (method: "ads" | "linkvertise") => {
+  const onClaim = async (method: "ads" | "linkvertise" | "offerwall" | "surveywall") => {
     try {
       const sessionId = data?.status?.[method]?.sessionId;
       if (!sessionId) throw new Error("No active session");
@@ -443,7 +463,7 @@ function EarnContent() {
 
         {canShow && data?.config && data?.status && (
           <div className="space-y-6">
-            {!showAds && !showLinkvertise && (
+            {!showAds && !showLinkvertise && !showOfferwall && !showSurveywall && (
               <div className="bg-[#181818] border border-[#2a2a2a] rounded-2xl p-6">
                 <div className="text-white font-semibold">No earning methods enabled</div>
                 <div className="text-[#AAAAAA] text-sm mt-1">Ask an admin to enable at least one earning method.</div>
@@ -475,6 +495,34 @@ function EarnContent() {
                 claiming={claiming === "linkvertise"}
                 onStart={() => onStart("linkvertise")}
                 onClaim={() => onClaim("linkvertise")}
+              />
+            )}
+
+            {showOfferwall && (
+              <EarnMethodCard
+                method="offerwall"
+                title="Offerwall Tasks"
+                icon="fa-tasks"
+                config={data.config.offerwall}
+                status={data.status.offerwall}
+                starting={starting === "offerwall"}
+                claiming={claiming === "offerwall"}
+                onStart={() => onStart("offerwall")}
+                onClaim={() => onClaim("offerwall")}
+              />
+            )}
+
+            {showSurveywall && (
+              <EarnMethodCard
+                method="surveywall"
+                title="Surveys"
+                icon="fa-clipboard-list"
+                config={data.config.surveywall}
+                status={data.status.surveywall}
+                starting={starting === "surveywall"}
+                claiming={claiming === "surveywall"}
+                onStart={() => onStart("surveywall")}
+                onClaim={() => onClaim("surveywall")}
               />
             )}
           </div>

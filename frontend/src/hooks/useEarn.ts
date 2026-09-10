@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
-export type EarnMethod = "ads" | "linkvertise";
+export type EarnMethod = "ads" | "linkvertise" | "offerwall" | "surveywall";
 
 export interface EarnMethodConfig {
   enabled: boolean;
@@ -20,6 +20,8 @@ export interface EarnConfig {
   enabled: boolean;
   ads: EarnMethodConfig;
   linkvertise: EarnMethodConfig;
+  offerwall: EarnMethodConfig;
+  surveywall: EarnMethodConfig;
 }
 
 export interface EarnMethodStatus {

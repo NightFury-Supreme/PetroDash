@@ -70,27 +70,54 @@ export default function AdminEarnPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans">
-        <AdminEarnSkeleton />
-      </div>
-    );
-  }
+  const onSaveOfferwall = async (override?: Partial<AdminEarnSettings['offerwall']>) => {
+    try {
+      if (!form) return;
+      const next = await save({ offerwall: { ...form.offerwall, ...override } });
+      setForm(next);
+    } catch (e: any) {
+      const msg = String(e?.message || "Failed to save");
+      setError(msg);
+      throw e;
+    }
+  };
 
-  if (error) throw new Error(error);
+  const onSaveSurveywall = async (override?: Partial<AdminEarnSettings['surveywall']>) => {
+    try {
+      if (!form) return;
+      const next = await save({ surveywall: { ...form.surveywall, ...override } });
+      setForm(next);
+    } catch (e: any) {
+      const msg = String(e?.message || "Failed to save");
+      setError(msg);
+      throw e;
+    }
+  };
 
   return (
-    <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans">
+    <div className="mx-auto w-full max-w-[1200px] p-4 sm:p-6 lg:p-8">
       <AdminEarnHeader />
-      {form && (
-        <AdminEarnContent
-          form={form}
-          saving={saving}
-          onChange={setField}
-          onSaveAds={onSaveAds}
-          onSaveLinkvertise={onSaveLinkvertise}
-        />
+
+      {error && (
+        <div className="mt-4 rounded-md bg-red-500/10 p-4 border border-red-500/20">
+          <p className="text-sm text-red-500">{error}</p>
+        </div>
+      )}
+
+      {loading && !form ? (
+        <AdminEarnSkeleton />
+      ) : (
+        form && (
+          <AdminEarnContent 
+            form={form} 
+            saving={saving} 
+            onChange={setField}
+            onSaveAds={onSaveAds}
+            onSaveLinkvertise={onSaveLinkvertise}
+            onSaveOfferwall={onSaveOfferwall}
+            onSaveSurveywall={onSaveSurveywall}
+          />
+        )
       )}
     </div>
   );

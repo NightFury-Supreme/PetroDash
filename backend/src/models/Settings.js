@@ -29,6 +29,16 @@ const SettingsSchema = new mongoose.Schema(
         url: { type: String, default: '' },
         antiBypassToken: { type: String, default: '' },
       },
+      offerwall: {
+        enabled: { type: Boolean, default: false },
+        adslotId: { type: String, default: '' },
+        apiKey: { type: String, default: '' },
+      },
+      surveywall: {
+        enabled: { type: Boolean, default: false },
+        adslotId: { type: String, default: '' },
+        apiKey: { type: String, default: '' },
+      },
     },
     auth: {
       emailLogin: { type: Boolean, default: true },
