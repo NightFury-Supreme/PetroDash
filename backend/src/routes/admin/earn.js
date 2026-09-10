@@ -32,12 +32,16 @@ function sanitizeEarn(earn) {
       ayetPlacementId: Number.isFinite(Number(obj.ayetPlacementId)) ? Number(obj.ayetPlacementId) : defaults.ayetPlacementId,
       ayetAdslotName: typeof obj.ayetAdslotName === 'string' ? obj.ayetAdslotName : defaults.ayetAdslotName,
       ayetApiKey: typeof obj.ayetApiKey === 'string' ? obj.ayetApiKey : defaults.ayetApiKey,
+      adslotId: typeof obj.adslotId === 'string' ? obj.adslotId : defaults.adslotId,
+      apiKey: typeof obj.apiKey === 'string' ? obj.apiKey : defaults.apiKey,
     };
   };
 
   return {
-    ads: normalizeMethod(e.ads, { coins: 10, cooldownSeconds: 3600, waitSeconds: 30, maxClaimsPerDay: 24, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '' }),
-    linkvertise: normalizeMethod(e.linkvertise, { coins: 20, cooldownSeconds: 3600, waitSeconds: 10, maxClaimsPerDay: 24, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '' }),
+    ads: normalizeMethod(e.ads, { coins: 10, cooldownSeconds: 3600, waitSeconds: 30, maxClaimsPerDay: 24, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '', adslotId: '', apiKey: '' }),
+    linkvertise: normalizeMethod(e.linkvertise, { coins: 20, cooldownSeconds: 3600, waitSeconds: 10, maxClaimsPerDay: 24, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '', adslotId: '', apiKey: '' }),
+    offerwall: normalizeMethod(e.offerwall, { coins: 0, cooldownSeconds: 0, waitSeconds: 0, maxClaimsPerDay: 0, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '', adslotId: '', apiKey: '' }),
+    surveywall: normalizeMethod(e.surveywall, { coins: 0, cooldownSeconds: 0, waitSeconds: 0, maxClaimsPerDay: 0, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '', adslotId: '', apiKey: '' }),
   };
 }
 
