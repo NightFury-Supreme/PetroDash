@@ -165,7 +165,7 @@ function EarnContent() {
   }, [data?.status?.linkvertise?.sessionId]);
 
   useEffect(() => {
-    const sid = lvSid;
+    const sid = lvSid || data?.status?.linkvertise?.sessionId;
     const hash = lvHash;
     if (!sid || !hash) return;
     if (didAuto.current) return;

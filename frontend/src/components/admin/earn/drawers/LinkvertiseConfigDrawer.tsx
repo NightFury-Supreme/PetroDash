@@ -74,9 +74,9 @@ export function LinkvertiseConfigDrawer({
         </div>
         <hr className="border-white/[0.06]" />
         <div>
-          <FieldLabel>URL Template <span className="text-[#FF5722]">*</span></FieldLabel>
-          <FieldInput value={(form.linkvertise as any).url ?? ""} onChange={(v) => sf("linkvertise.url", v)} disabled={saving} placeholder="https://link-to.net/.../dynamic?r={targetB64}" />
-          <FieldHint>Use {"{target}"} or {"{targetB64}"} placeholders in the URL.</FieldHint>
+          <FieldLabel>Linkvertise Link <span className="text-[#FF5722]">*</span></FieldLabel>
+          <FieldInput value={(form.linkvertise as any).url ?? ""} onChange={(v) => sf("linkvertise.url", v)} disabled={saving} placeholder="https://link-center.net/..." />
+          <FieldHint>Create a link in Linkvertise targeted to: <b>https://dashboard.auto-manager.tk/earn</b> and paste the generated Linkvertise URL here.</FieldHint>
         </div>
         <div>
           <FieldLabel>Anti-Bypass Token</FieldLabel>
