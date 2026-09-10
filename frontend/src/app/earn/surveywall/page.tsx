@@ -23,11 +23,11 @@ export default function SurveywallPage() {
     }
   }, []);
 
-  const adslotId = data?.config?.surveywall?.adslotId;
+  const adslotName = data?.config?.surveywall?.ayetAdslotName;
   const url = useMemo(() => {
-    if (!adslotId || !decodedUserId) return null;
-    return `https://surveys.ayet.io/surveys?adSlot=${adslotId}&external_identifier=${decodedUserId}`;
-  }, [adslotId, decodedUserId]);
+    if (!adslotName || !decodedUserId) return null;
+    return `https://surveys.ayet.io/surveys?adSlot=${adslotName}&external_identifier=${decodedUserId}`;
+  }, [adslotName, decodedUserId]);
 
   if (loading) {
     return <div className="p-8 text-center text-white/50"><i className="fas fa-spinner fa-spin text-3xl"></i></div>;

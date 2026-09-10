@@ -162,12 +162,12 @@ function EarnContent() {
         return;
       }
 
-      if (method === "offerwall" && data?.config?.offerwall?.adslotId) {
+      if (method === "offerwall") {
         router.push("/earn/offerwall");
         return;
       }
 
-      if (method === "surveywall" && data?.config?.surveywall?.adslotId) {
+      if (method === "surveywall") {
         router.push("/earn/surveywall");
         return;
       }
@@ -179,18 +179,8 @@ function EarnContent() {
           await onClaim("ads");
           return;
         }
-        const canContinue = (st?.state === "waiting" || st?.state === "claimable") && Boolean(sid);
-        if (canContinue && sid) {
-          setAdsSessionId(sid);
-          setAdsProvider({
-            placementId: Number(data?.config?.ads?.ayetPlacementId || 0),
-            adslotName: String(data?.config?.ads?.ayetAdslotName || ""),
-          });
-          setAdsOpen(true);
-          setAdsStep("idle");
-          setAdsStepMessage("");
-          return;
-        }
+        router.push("/earn/ads");
+        return;
       }
 
       if (method === "linkvertise") {
