@@ -26,6 +26,7 @@ export function EarnMethodCard({
   starting,
   claiming,
   extraAction,
+  cols,
 }: {
   method: EarnMethod;
   title: string;
@@ -37,6 +38,7 @@ export function EarnMethodCard({
   starting: boolean;
   claiming: boolean;
   extraAction?: ReactNode;
+  cols: string;
 }) {
   const disabled = !config.enabled;
 
