@@ -138,6 +138,22 @@ router.patch('/', requireAdmin, async (req, res) => {
       }
     }
 
+    const offerwallConfigured = Boolean(String(settings?.earn?.offerwall?.adslotId || '').trim())
+      && Boolean(String(settings?.earn?.offerwall?.apiKey || '').trim());
+    if (settings.earn.offerwall && settings.earn.offerwall.enabled) {
+      if (!offerwallConfigured) {
+        return res.status(400).json({ error: 'Cannot enable Offerwall: missing Adslot ID or API Key.' });
+      }
+    }
+
+    const surveywallConfigured = Boolean(String(settings?.earn?.surveywall?.adslotId || '').trim())
+      && Boolean(String(settings?.earn?.surveywall?.apiKey || '').trim());
+    if (settings.earn.surveywall && settings.earn.surveywall.enabled) {
+      if (!surveywallConfigured) {
+        return res.status(400).json({ error: 'Cannot enable Surveywall: missing Adslot ID or API Key.' });
+      }
+    }
+
     settings.markModified('earn');
     await settings.save();
     clearSettingsCache();
