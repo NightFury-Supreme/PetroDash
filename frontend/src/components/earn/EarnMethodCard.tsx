@@ -101,10 +101,10 @@ export function EarnMethodCard({
         </div>
         <div className="min-w-0">
           <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Method</p>
-          <span className="block truncate font-mono text-sm text-[#DDDDDD] font-semibold tracking-tight">
+          <span className="block truncate text-sm text-[#DDDDDD] font-medium tracking-tight">
             {title}
           </span>
-          <span className="block truncate font-mono text-[10px] text-[#888] mt-0.5">
+          <span className="block truncate text-[10px] text-[#888] mt-0.5">
             {subtitle || "Ready"}
           </span>
         </div>
