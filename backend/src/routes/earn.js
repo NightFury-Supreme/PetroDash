@@ -241,12 +241,16 @@ function getEarnConfig(s) {
       ayetPlacementId: clampInt(obj.ayetPlacementId, 0, 1000000000, defaults.ayetPlacementId),
       ayetAdslotName: typeof obj.ayetAdslotName === 'string' ? obj.ayetAdslotName : defaults.ayetAdslotName,
       ayetApiKey: typeof obj.ayetApiKey === 'string' ? obj.ayetApiKey : defaults.ayetApiKey,
+      adslotId: typeof obj.adslotId === 'string' ? obj.adslotId : defaults.adslotId,
+      apiKey: typeof obj.apiKey === 'string' ? obj.apiKey : defaults.apiKey,
     };
   };
 
   return {
     ads: normalizeMethod(earn.ads, { coins: 10, cooldownSeconds: 3600, waitSeconds: 30, maxClaimsPerDay: 24, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '' }),
     linkvertise: normalizeMethod(earn.linkvertise, { coins: 20, cooldownSeconds: 3600, waitSeconds: 10, maxClaimsPerDay: 24, url: '', antiBypassToken: '' }),
+    offerwall: normalizeMethod(earn.offerwall, { coins: 0, cooldownSeconds: 0, waitSeconds: 0, maxClaimsPerDay: 0, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '', adslotId: '', apiKey: '' }),
+    surveywall: normalizeMethod(earn.surveywall, { coins: 0, cooldownSeconds: 0, waitSeconds: 0, maxClaimsPerDay: 0, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '', adslotId: '', apiKey: '' }),
   };
 }
 
