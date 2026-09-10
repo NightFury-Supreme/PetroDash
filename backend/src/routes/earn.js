@@ -297,7 +297,6 @@ function verifyAyetClientSignature(details, apiKey) {
 function buildLinkvertiseUrl(template, targetUrl) {
   if (!template) return '';
   
-  const hasSharing = template.includes('o=sharing');
   let url = template
     .replace(/\?o=sharing/g, '')
     .replace(/&o=sharing/g, '')
@@ -311,7 +310,7 @@ function buildLinkvertiseUrl(template, targetUrl) {
   const targetB64 = Buffer.from(targetUrl, 'utf8').toString('base64');
   const encodedTargetB64 = encodeURIComponent(targetB64);
 
-  return url + '/dynamic?r=' + encodedTargetB64 + (hasSharing ? '&o=sharing' : '');
+  return url + '/dynamic?r=' + encodedTargetB64;
 }
 
 async function getLatestSession(userId, method) {
