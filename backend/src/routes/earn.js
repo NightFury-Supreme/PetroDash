@@ -297,16 +297,15 @@ function verifyAyetClientSignature(details, apiKey) {
 function buildLinkvertiseUrl(template, targetUrl) {
   if (!template) return '';
   
-  template = template.replace(/\?o=sharing/g, '').replace(/&o=sharing/g, '');
-
   const targetB64 = Buffer.from(targetUrl, 'utf8').toString('base64');
+  const encodedTargetB64 = encodeURIComponent(targetB64);
+  
   if (template.includes('{target}')) return template.replace('{target}', encodeURIComponent(targetUrl));
-  if (template.includes('{targetB64}')) return template.replace('{targetB64}', targetB64);
+  if (template.includes('{targetB64}')) return template.replace('{targetB64}', encodedTargetB64);
 
   if (template.includes('dynamic?r=')) {
-    const parts = template.split('r=');
-    const prefix = parts[0] + 'r=';
-    return prefix + targetB64;
+    const parts = template.split('dynamic?r=');
+    return parts[0] + 'dynamic?r=' + encodedTargetB64 + (parts[1].includes('&') ? '&' + parts[1].split('&').slice(1).join('&') : '');
   }
 
   return template;
