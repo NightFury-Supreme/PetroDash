@@ -125,7 +125,7 @@ export function EarnMethodCard({
               <button
                 onClick={onStart}
                 disabled={actionDisabled}
-                className="flex items-center gap-2 border px-4 py-1.5 rounded-md text-xs font-medium transition-colors bg-[#1A0F0C] border-[#FF5722]/30 text-[#FF5722] hover:bg-[#FF5722]/10 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#1A0F0C]"
+                className="flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-medium transition-colors bg-[#FF5722] text-white hover:bg-[#ff6939] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {actionLabel()}
               </button>
