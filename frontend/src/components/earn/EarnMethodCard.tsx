@@ -91,63 +91,71 @@ export function EarnMethodCard({
   };
 
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-[#121212] p-4 sm:p-6 transition-all hover:border-white/[0.1] hover:bg-[#151515]">
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-        <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500 border border-orange-500/20 shadow-sm">
-            {icon}
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-white tracking-tight">{title}</h3>
-            <p className="text-sm text-[#888] mt-1">{subtitle}</p>
-          </div>
+    <div className={`group grid grid-cols-1 gap-4 px-5 py-5 transition hover:bg-white/[0.015] ${cols} lg:items-center`}>
+      {/* Method Name & Icon */}
+      <div className="min-w-0 flex items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-500 border border-orange-500/20 shadow-sm">
+          {icon}
         </div>
-        
-        <div className="flex flex-wrap items-center gap-2 mt-4 sm:mt-0">
-          {extraAction}
-          {showStart && (
-            <button
-              onClick={onStart}
-              disabled={actionDisabled}
-              className="flex items-center gap-2 border px-4 py-2 rounded-md text-sm font-medium transition-colors bg-[#1A0F0C] border-[#FF5722]/30 text-[#FF5722] hover:bg-[#FF5722]/10 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#1A0F0C]"
-            >
-              {actionLabel()}
-            </button>
-          )}
-          {showClaim && (
-            <button
-              onClick={onClaim}
-              disabled={claiming}
-              className="flex items-center gap-2 border px-4 py-2 rounded-md text-sm font-medium transition-colors bg-[#1A0F0C] border-[#FF5722]/30 text-[#FF5722] hover:bg-[#FF5722]/10 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#1A0F0C]"
-            >
-              {claiming ? "Claiming..." : "Claim"}
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-6 border-t border-white/[0.06]">
-        <div className="flex flex-col">
-          <span className="text-[11px] uppercase tracking-widest text-[#555] font-medium mb-1">Reward</span>
-          <span className="text-sm font-medium text-white">{rewardCoins || "Variable"}{rewardCoins ? " coins" : ""}</span>
-        </div>
-        <div className="flex flex-col">
-          <span className="text-[11px] uppercase tracking-widest text-[#555] font-medium mb-1">Daily Limit</span>
-          <span className="text-sm font-medium text-white">{todayClaims} / {maxClaims || "Unlimited"}</span>
-        </div>
-        <div className="flex flex-col">
-          <span className="text-[11px] uppercase tracking-widest text-[#555] font-medium mb-1">Cooldown</span>
-          <span className="text-sm font-medium text-white">
-            {status.state === "cooldown" ? formatSeconds(retryAfter) : formatSeconds(Number(config.cooldownSeconds || 0))}
+        <div className="min-w-0">
+          <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Method</p>
+          <span className="block truncate font-mono text-sm text-[#DDDDDD] font-semibold tracking-tight">
+            {title}
+          </span>
+          <span className="block truncate font-mono text-[10px] text-[#888] mt-0.5">
+            {subtitle || "Ready"}
           </span>
         </div>
       </div>
 
-      {!config.enabled && (
-        <div className="mt-4 text-xs text-[#888888] bg-white/[0.02] p-3 rounded-lg border border-white/[0.04]">
-          Ask an admin to enable this earning method.
-        </div>
-      )}
+      {/* Reward */}
+      <div className="min-w-0">
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Reward</p>
+        <span className="text-sm text-[#AAAAAA]">{rewardCoins || "Variable"}{rewardCoins ? " coins" : ""}</span>
+      </div>
+
+      {/* Limit */}
+      <div className="min-w-0">
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Daily Limit</p>
+        <span className="text-sm text-[#AAAAAA]">{todayClaims} / {maxClaims || "Unlimited"}</span>
+      </div>
+
+      {/* Cooldown */}
+      <div className="min-w-0">
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Cooldown</p>
+        <span className="text-sm text-[#AAAAAA]">
+          {status.state === "cooldown" ? formatSeconds(retryAfter) : formatSeconds(Number(config.cooldownSeconds || 0))}
+        </span>
+      </div>
+
+      {/* Action */}
+      <div className="min-w-0 lg:text-right mt-2 lg:mt-0">
+        {!config.enabled ? (
+          <span className="text-xs text-[#555]">Disabled</span>
+        ) : (
+          <div className="flex flex-wrap lg:justify-end gap-2">
+            {extraAction}
+            {showStart && (
+              <button
+                onClick={onStart}
+                disabled={actionDisabled}
+                className="flex items-center gap-2 border px-4 py-1.5 rounded-md text-xs font-medium transition-colors bg-[#1A0F0C] border-[#FF5722]/30 text-[#FF5722] hover:bg-[#FF5722]/10 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#1A0F0C]"
+              >
+                {actionLabel()}
+              </button>
+            )}
+            {showClaim && (
+              <button
+                onClick={onClaim}
+                disabled={claiming}
+                className="flex items-center gap-2 border px-4 py-1.5 rounded-md text-xs font-medium transition-colors bg-emerald-500/10 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-emerald-500/10"
+              >
+                {claiming ? "Claiming..." : "Claim"}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

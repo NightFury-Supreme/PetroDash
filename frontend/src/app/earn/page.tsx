@@ -244,15 +244,26 @@ function EarnContent() {
               </div>
             </div>
           </header>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-48 rounded-xl border border-white/[0.06] bg-[#121212] animate-pulse" />
-            ))}
+          <div className="w-full mt-6">
+            <div className={`hidden gap-4 lg:grid ${cols} border-b border-white/[0.06] px-5 pb-3`}>
+              <div className="h-3 w-16 bg-white/5 rounded animate-pulse" />
+              <div className="h-3 w-16 bg-white/5 rounded animate-pulse" />
+              <div className="h-3 w-16 bg-white/5 rounded animate-pulse" />
+              <div className="h-3 w-16 bg-white/5 rounded animate-pulse" />
+              <div className="h-3 w-16 bg-white/5 rounded animate-pulse justify-self-end" />
+            </div>
+            <div className="divide-y divide-white/[0.06]">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-20 bg-white/[0.02] animate-pulse" />
+              ))}
+            </div>
           </div>
         </div>
       </div>
     );
   }
+
+  const cols = "lg:grid-cols-[2fr_100px_100px_120px_150px]";
 
   return (
     
@@ -277,9 +288,20 @@ function EarnContent() {
         )}
 
         {canShow && data?.config && data?.status && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="w-full">
+            {/* TABLE HEADER (Desktop) */}
+            <div className={`hidden gap-4 lg:grid ${cols} border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30`}>
+              <span>Method</span>
+              <span>Reward</span>
+              <span>Daily Limit</span>
+              <span>Cooldown</span>
+              <span className="text-right">Action</span>
+            </div>
+
+            {/* TABLE LIST */}
+            <div className="divide-y divide-white/[0.06]">
             {!showAds && !showLinkvertise && !showOfferwall && !showSurveywall && (
-              <div className="bg-[#181818] border border-[#2a2a2a] rounded-2xl p-6">
+              <div className="py-12 text-center">
                 <div className="text-white font-semibold">No earning methods enabled</div>
                 <div className="text-[#AAAAAA] text-sm mt-1">Ask an admin to enable at least one earning method.</div>
               </div>
@@ -296,6 +318,7 @@ function EarnContent() {
                 claiming={claiming === "ads"}
                 onStart={() => onStart("ads")}
                 onClaim={() => onClaim("ads")}
+                cols={cols}
               />
             )}
 
@@ -310,6 +333,7 @@ function EarnContent() {
                 claiming={claiming === "linkvertise"}
                 onStart={() => onStart("linkvertise")}
                 onClaim={() => onClaim("linkvertise")}
+                cols={cols}
               />
             )}
 
@@ -324,6 +348,7 @@ function EarnContent() {
                 claiming={claiming === "offerwall"}
                 onStart={() => onStart("offerwall")}
                 onClaim={() => onClaim("offerwall")}
+                cols={cols}
               />
             )}
 
@@ -338,6 +363,7 @@ function EarnContent() {
                 claiming={claiming === "surveywall"}
                 onStart={() => onStart("surveywall")}
                 onClaim={() => onClaim("surveywall")}
+                cols={cols}
               />
             )}
           </div>
