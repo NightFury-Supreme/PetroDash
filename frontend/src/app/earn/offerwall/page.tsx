@@ -43,22 +43,24 @@ export default function OfferwallPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)] w-full rounded-2xl overflow-hidden border border-[#2a2a2a] bg-white mt-6">
-      <div className="bg-[#181818] border-b border-[#2a2a2a] p-4 flex items-center justify-between shrink-0">
-        <Link href="/earn" className="flex items-center gap-2 text-[#AAAAAA] hover:text-white transition-colors">
-          <ChevronLeft size={18} />
-          <span className="text-sm font-semibold">Back to Earn</span>
-        </Link>
-        <div className="text-white font-bold text-sm">Offerwall Tasks</div>
-        <div className="w-[100px]"></div>
-      </div>
-      <div className="flex-1 w-full relative">
-        <iframe
-          src={url}
-          className="absolute inset-0 w-full h-full border-0"
-          title="Offerwall"
-          allow="fullscreen"
-        />
+    <div className="p-4 sm:p-6 bg-[#0f0f0f] min-h-screen text-white">
+      <div className="flex flex-col h-[calc(100vh-80px)] w-full rounded-2xl overflow-hidden border border-white/[0.06] bg-white">
+        <div className="bg-[#121212] border-b border-white/[0.06] p-4 flex items-center justify-between shrink-0">
+          <Link href="/earn" className="flex items-center gap-2 text-white/40 hover:text-white transition-colors">
+            <ChevronLeft size={16} />
+            <span className="text-sm font-medium">Back to Earn</span>
+          </Link>
+          <div className="text-white font-bold tracking-tight">Offerwall Tasks</div>
+          <div className="w-[100px]"></div>
+        </div>
+        <div className="flex-1 w-full relative">
+          <iframe
+            src={url}
+            className="absolute inset-0 w-full h-full border-0"
+            title="Offerwall"
+            allow="fullscreen"
+          />
+        </div>
       </div>
     </div>
   );

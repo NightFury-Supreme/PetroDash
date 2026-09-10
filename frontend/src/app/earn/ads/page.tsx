@@ -169,56 +169,60 @@ export default function EarnAdsPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4 sm:p-6 mt-8">
-      <Link href="/earn" className="flex items-center gap-2 text-[#AAAAAA] hover:text-white transition-colors mb-6">
-        <ChevronLeft size={18} />
-        <span className="text-sm font-semibold">Back to Earn</span>
-      </Link>
+    <div className="p-4 sm:p-6 bg-[#0f0f0f] min-h-screen text-white">
+      <div className="max-w-2xl mx-auto mt-8">
+        <Link href="/earn" className="flex items-center gap-2 text-white/40 hover:text-white transition-colors mb-6 font-medium text-sm">
+          <ChevronLeft size={16} />
+          Back to Earn
+        </Link>
 
-      <div className="bg-[#181818] border border-[#2a2a2a] rounded-2xl overflow-hidden shadow-2xl">
-        <div className="p-6 border-b border-[#2a2a2a] flex items-center gap-3">
-          <div className="w-10 h-10 bg-[#202020] rounded-xl flex items-center justify-center shadow">
-            <i className="fas fa-rectangle-ad text-blue-300"></i>
-          </div>
-          <h1 className="text-xl font-bold text-white">Watch Rewarded Video</h1>
-        </div>
-        
-        <div className="p-6 space-y-6">
-          <div className="rounded-xl border border-[#303030] bg-[#0F0F0F] p-5 space-y-3">
-            <div className="text-white font-semibold flex items-center gap-2">
-              <i className="fas fa-info-circle text-[#AAAAAA]"></i> How it works
+        <div className="bg-[#121212] border border-white/[0.06] rounded-2xl overflow-hidden shadow-2xl">
+          <div className="p-6 border-b border-white/[0.06] flex items-center gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500 border border-orange-500/20 shadow-sm">
+              <i className="fas fa-rectangle-ad text-lg"></i>
             </div>
-            <div className="text-[#AAAAAA] text-sm leading-relaxed">
-              You will see a rewarded video. After completion, your reward is verified server-side and coins are credited automatically.
-            </div>
-            <div className="text-xs text-[#666666] bg-[#1a1a1a] p-2 rounded-lg border border-[#2a2a2a]">
-              Proof-based: reward requires a verified callback and cannot be claimed without it.
+            <div>
+              <h1 className="text-xl font-bold text-white tracking-tight">Watch Rewarded Video</h1>
             </div>
           </div>
-
-          <div className="rounded-xl border border-[#303030] bg-[#0F0F0F] p-3">
-            <div id="ayet_video_container" className="w-full" />
-          </div>
-
-          <div className="flex flex-col items-center gap-3 pt-4">
-            <button
-              className="w-full sm:w-auto px-8 py-3 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={adsStep === "loading" || adsStep === "requesting" || adsStep === "playing" || adsStep === "verifying" || adsStep === "claiming"}
-              onClick={handleStart}
-            >
-              {adsStep === "loading" ? "Preparing..." : 
-               adsStep === "requesting" ? "Loading..." : 
-               adsStep === "playing" ? "Playing..." : 
-               adsStep === "verifying" ? "Verifying..." : 
-               adsStep === "claiming" ? "Claiming..." : 
-               "Watch Video"}
-            </button>
-            {adsStep !== "idle" && adsStep !== "ready" && (
-              <div className="text-sm text-[#AAAAAA] flex items-center gap-2 animate-pulse">
-                {adsStep !== "error" && <i className="fas fa-spinner fa-spin"></i>}
-                {adsStepMessage}
+          
+          <div className="p-6 space-y-6">
+            <div className="rounded-xl border border-white/[0.04] bg-white/[0.02] p-5 space-y-3">
+              <div className="text-white font-medium flex items-center gap-2 text-sm">
+                <i className="fas fa-info-circle text-orange-500"></i> How it works
               </div>
-            )}
+              <div className="text-[#888] text-sm leading-relaxed">
+                You will see a rewarded video. After completion, your reward is verified server-side and coins are credited automatically.
+              </div>
+              <div className="text-xs text-[#555] bg-black/20 p-2 rounded-lg border border-white/[0.04] font-medium tracking-wide uppercase">
+                Proof-based reward
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-white/[0.06] bg-black/40 p-3 min-h-[50px] flex items-center justify-center">
+              <div id="ayet_video_container" className="w-full" />
+            </div>
+
+            <div className="flex flex-col items-center gap-3 pt-4">
+              <button
+                className="w-full sm:w-auto px-8 py-3 bg-white text-black font-semibold rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={adsStep === "loading" || adsStep === "requesting" || adsStep === "playing" || adsStep === "verifying" || adsStep === "claiming"}
+                onClick={handleStart}
+              >
+                {adsStep === "loading" ? "Preparing..." : 
+                 adsStep === "requesting" ? "Loading..." : 
+                 adsStep === "playing" ? "Playing..." : 
+                 adsStep === "verifying" ? "Verifying..." : 
+                 adsStep === "claiming" ? "Claiming..." : 
+                 "Watch Video"}
+              </button>
+              {adsStep !== "idle" && adsStep !== "ready" && (
+                <div className="text-sm text-[#888] flex items-center gap-2 animate-pulse mt-2">
+                  {adsStep !== "error" && <i className="fas fa-spinner fa-spin"></i>}
+                  {adsStepMessage}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

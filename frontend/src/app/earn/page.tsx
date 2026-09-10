@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useModal } from "@/components/Modal";
 import { useEarn } from "@/hooks/useEarn";
 import { EarnMethodCard } from "@/components/earn";
+import { PlaySquare, Link as LinkIcon, ListTodo, ClipboardList } from "lucide-react";
 
 function EarnContent() {
   const router = useRouter();
@@ -233,33 +234,40 @@ function EarnContent() {
 
   if (loading) {
     return (
-      
-        <div className="p-6 space-y-6">
-          <div className="h-12 w-64 bg-[#202020] rounded-lg animate-pulse" />
-          <div className="space-y-6">
-            {[...Array(2)].map((_, i) => (
-              <div key={i} className="h-52 bg-[#181818] border border-[#2a2a2a] rounded-2xl animate-pulse" />
+      <div className="p-4 sm:p-6 bg-[#0f0f0f] min-h-screen text-white">
+        <div className="flex flex-col h-full space-y-6">
+          <header>
+            <div className="flex items-start justify-between gap-6">
+              <div>
+                <div className="h-8 w-32 bg-white/5 rounded-md animate-pulse mb-2" />
+                <div className="h-4 w-64 bg-white/5 rounded-md animate-pulse" />
+              </div>
+            </div>
+          </header>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-48 rounded-xl border border-white/[0.06] bg-[#121212] animate-pulse" />
             ))}
           </div>
         </div>
-      
+      </div>
     );
   }
 
   return (
     
-      <div className="p-4 sm:p-6 space-y-6 bg-[#0F0F0F] min-h-screen text-white">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-[#202020] rounded-2xl flex items-center justify-center shadow-lg">
-              <i className="fas fa-coins text-white text-lg" />
+      <div className="p-4 sm:p-6 bg-[#0f0f0f] min-h-screen text-white">
+        <div className="flex flex-col h-full space-y-6">
+          <header>
+            <div className="flex items-start justify-between gap-6">
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight text-white">Earn</h1>
+                <p className="mt-1 text-sm text-white/40">
+                  Watch rewarded videos and complete tasks to earn coins.
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold">Earn</h1>
-              <p className="text-[#AAAAAA]">Watch rewarded videos and complete tasks to earn coins.</p>
-            </div>
-          </div>
-        </div>
+          </header>
 
         {!canShow && (
           <div className="bg-[#181818] border border-[#2a2a2a] rounded-2xl p-6">
@@ -269,7 +277,7 @@ function EarnContent() {
         )}
 
         {canShow && data?.config && data?.status && (
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {!showAds && !showLinkvertise && !showOfferwall && !showSurveywall && (
               <div className="bg-[#181818] border border-[#2a2a2a] rounded-2xl p-6">
                 <div className="text-white font-semibold">No earning methods enabled</div>
@@ -281,7 +289,7 @@ function EarnContent() {
               <EarnMethodCard
                 method="ads"
                 title="Watch Rewarded Video"
-                icon="fa-rectangle-ad"
+                icon={<PlaySquare size={20} />}
                 config={data.config.ads}
                 status={data.status.ads}
                 starting={starting === "ads"}
@@ -295,7 +303,7 @@ function EarnContent() {
               <EarnMethodCard
                 method="linkvertise"
                 title="Linkvertise"
-                icon="fa-link"
+                icon={<LinkIcon size={20} />}
                 config={data.config.linkvertise}
                 status={data.status.linkvertise}
                 starting={starting === "linkvertise"}
@@ -309,7 +317,7 @@ function EarnContent() {
               <EarnMethodCard
                 method="offerwall"
                 title="Offerwall Tasks"
-                icon="fa-tasks"
+                icon={<ListTodo size={20} />}
                 config={data.config.offerwall}
                 status={data.status.offerwall}
                 starting={starting === "offerwall"}
@@ -323,7 +331,7 @@ function EarnContent() {
               <EarnMethodCard
                 method="surveywall"
                 title="Surveys"
-                icon="fa-clipboard-list"
+                icon={<ClipboardList size={20} />}
                 config={data.config.surveywall}
                 status={data.status.surveywall}
                 starting={starting === "surveywall"}
@@ -334,6 +342,7 @@ function EarnContent() {
             )}
           </div>
         )}
+        </div>
       </div>
     
   );

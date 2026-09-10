@@ -29,7 +29,7 @@ export function EarnMethodCard({
 }: {
   method: EarnMethod;
   title: string;
-  icon: string;
+  icon: ReactNode;
   config: EarnMethodConfig;
   status: EarnMethodStatus;
   onStart: () => void;
@@ -48,16 +48,21 @@ export function EarnMethodCard({
   const showStart =
     status.state === "ready" ||
     status.state === "expired" ||
-    ((method === "linkvertise" || method === "ads") && (status.state === "waiting" || status.state === "claimable"));
-  const showClaim = false;
+    status.state === "limit_reached" ||
+    status.state === "cooldown" ||
+    (method === "linkvertise" && status.state === "waiting") ||
+    (method === "ads" && status.state === "waiting");
+
+  const showClaim =
+    status.state === "claimable" ||
+    status.state === "verifying" ||
+    (method === "linkvertise" && status.state === "waiting") ||
+    (method === "ads" && status.state === "waiting");
 
   const subtitleForState = () => {
-    if (disabled) return "Disabled";
-    if (status.state === "waiting") {
-      if (method === "ads" && Number(status.retryAfterSeconds || 0) <= 0) return "Complete a rewarded video to unlock";
-      return `Waiting: ${formatSeconds(status.retryAfterSeconds || 0)}`;
-    }
-    if (status.state === "claimable") return "Ready";
+    if (status.state === "ready") return "Ready";
+    if (status.state === "waiting") return "Waiting for completion...";
+    if (status.state === "claimable") return "Ready to claim!";
     if (status.state === "verifying") return "Verifying...";
     if (status.state === "cooldown") return `Cooldown: ${formatSeconds(status.retryAfterSeconds || 0)}`;
     if (status.state === "expired") return "Expired";
@@ -86,49 +91,25 @@ export function EarnMethodCard({
   };
 
   return (
-    <div className="bg-[#181818] border border-[#2a2a2a] rounded-2xl overflow-hidden">
-      <div className="p-6 space-y-5">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-[#202020] rounded-xl flex items-center justify-center shadow">
-              <i className={`fas ${icon} text-white`} />
-            </div>
-            <div>
-              <div className="text-lg font-bold text-white">{title}</div>
-              <div className="text-sm text-[#AAAAAA]">{subtitle}</div>
-            </div>
+    <div className="rounded-xl border border-white/[0.06] bg-[#121212] p-4 sm:p-6 transition-all hover:border-white/[0.1] hover:bg-[#151515]">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500 border border-orange-500/20 shadow-sm">
+            {icon}
           </div>
-          <div className="text-right">
-            <div className="text-xs text-[#AAAAAA]">Reward</div>
-            <div className="text-white font-extrabold text-lg">{rewardCoins || "Variable"}{rewardCoins ? " coins" : ""}</div>
-            <div className="text-xs text-[#AAAAAA] mt-1">{todayClaims}/{maxClaims || "Unlimited"} today</div>
+          <div>
+            <h3 className="text-lg font-semibold text-white tracking-tight">{title}</h3>
+            <p className="text-sm text-[#888] mt-1">{subtitle}</p>
           </div>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="rounded-xl border border-[#303030] bg-[#0F0F0F] p-3">
-            <div className="text-xs text-[#AAAAAA]">Reward</div>
-            <div className="text-white font-extrabold">{rewardCoins || "Variable"}{rewardCoins ? " coins" : ""}</div>
-          </div>
-          <div className="rounded-xl border border-[#303030] bg-[#0F0F0F] p-3">
-            <div className="text-xs text-[#AAAAAA]">Daily limit</div>
-            <div className="text-white font-extrabold">{todayClaims}/{maxClaims || "Unlimited"}</div>
-          </div>
-          <div className="rounded-xl border border-[#303030] bg-[#0F0F0F] p-3">
-            <div className="text-xs text-[#AAAAAA]">Cooldown</div>
-            <div className="text-white font-extrabold">
-              {status.state === "cooldown" ? formatSeconds(retryAfter) : formatSeconds(Number(config.cooldownSeconds || 0))}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-2 justify-end">
+        
+        <div className="flex flex-wrap items-center gap-2 mt-4 sm:mt-0">
           {extraAction}
           {showStart && (
             <button
               onClick={onStart}
               disabled={actionDisabled}
-              className="px-4 py-2 rounded-lg bg-white text-black hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 border px-4 py-2 rounded-md text-sm font-medium transition-colors bg-[#1A0F0C] border-[#FF5722]/30 text-[#FF5722] hover:bg-[#FF5722]/10 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#1A0F0C]"
             >
               {actionLabel()}
             </button>
@@ -137,17 +118,36 @@ export function EarnMethodCard({
             <button
               onClick={onClaim}
               disabled={claiming}
-              className="px-4 py-2 rounded-lg bg-white text-black hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 border px-4 py-2 rounded-md text-sm font-medium transition-colors bg-[#1A0F0C] border-[#FF5722]/30 text-[#FF5722] hover:bg-[#FF5722]/10 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#1A0F0C]"
             >
               {claiming ? "Claiming..." : "Claim"}
             </button>
           )}
         </div>
-
-        {!config.enabled && (
-          <div className="text-xs text-[#888888]">Ask an admin to enable this earning method.</div>
-        )}
       </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-6 border-t border-white/[0.06]">
+        <div className="flex flex-col">
+          <span className="text-[11px] uppercase tracking-widest text-[#555] font-medium mb-1">Reward</span>
+          <span className="text-sm font-medium text-white">{rewardCoins || "Variable"}{rewardCoins ? " coins" : ""}</span>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-[11px] uppercase tracking-widest text-[#555] font-medium mb-1">Daily Limit</span>
+          <span className="text-sm font-medium text-white">{todayClaims} / {maxClaims || "Unlimited"}</span>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-[11px] uppercase tracking-widest text-[#555] font-medium mb-1">Cooldown</span>
+          <span className="text-sm font-medium text-white">
+            {status.state === "cooldown" ? formatSeconds(retryAfter) : formatSeconds(Number(config.cooldownSeconds || 0))}
+          </span>
+        </div>
+      </div>
+
+      {!config.enabled && (
+        <div className="mt-4 text-xs text-[#888888] bg-white/[0.02] p-3 rounded-lg border border-white/[0.04]">
+          Ask an admin to enable this earning method.
+        </div>
+      )}
     </div>
   );
 }
