@@ -231,7 +231,7 @@ function EarnContent() {
 
             {/* TABLE LIST */}
             <div className="divide-y divide-white/[0.06]">
-            {!showAds && !showLinkvertise && !showOfferwall && !showSurveywall && (
+            {!showLinkvertise && (
               <div className="py-12 text-center">
                 <div className="text-white font-semibold">No earning methods enabled</div>
                 <div className="text-[#AAAAAA] text-sm mt-1">Ask an admin to enable at least one earning method.</div>
