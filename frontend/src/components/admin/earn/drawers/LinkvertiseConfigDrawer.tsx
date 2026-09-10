@@ -74,9 +74,9 @@ export function LinkvertiseConfigDrawer({
         </div>
         <hr className="border-white/[0.06]" />
         <div>
-          <FieldLabel>Publisher ID <span className="text-[#FF5722]">*</span></FieldLabel>
-          <FieldInput value={(form.linkvertise as any).publisherId ?? ""} onChange={(v) => sf("linkvertise.publisherId", v)} disabled={saving} placeholder="e.g. 1412952" />
-          <FieldHint>Your Linkvertise Publisher ID. Links are generated automatically via the Full Script API approach.</FieldHint>
+          <FieldLabel>URL Template <span className="text-[#FF5722]">*</span></FieldLabel>
+          <FieldInput value={(form.linkvertise as any).url ?? ""} onChange={(v) => sf("linkvertise.url", v)} disabled={saving} placeholder="https://link-to.net/.../dynamic?r={targetB64}" />
+          <FieldHint>Use {"{target}"} or {"{targetB64}"} placeholders in the URL.</FieldHint>
         </div>
         <div>
           <FieldLabel>Anti-Bypass Token</FieldLabel>
