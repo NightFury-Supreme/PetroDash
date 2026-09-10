@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/components/ui/ToastProvider";
 
 function safeTime(val: any): string {
   if (!val) return "";
@@ -118,12 +119,12 @@ export default function AdminTicketMessages({
                 </div>
 
                 {/* Bubble */}
-                <div className={`rounded-2xl px-4 py-3 text-[14px] leading-relaxed text-white/90 min-w-0 max-w-full relative ${
+                <div className={`rounded-2xl px-4 py-3 text-[14px] leading-relaxed text-[#d5d5d5] min-w-0 max-w-full relative ${
                   isRight
                     ? m.internal
                       ? "rounded-tr-sm bg-yellow-950/40 border border-yellow-700/30"
-                      : "rounded-tr-sm bg-[#1e1e1e]"
-                    : "rounded-tl-sm bg-[#3f3f3f]"
+                      : "rounded-tr-sm bg-[#151515] border border-[#282828]"
+                    : "rounded-tl-sm bg-[#121212] border border-[#282828]"
                 }`}>
                   <div className="pb-4"><RichText text={m.body} viewerRole="admin" /></div>
                   {timeStr && (
@@ -174,6 +175,7 @@ function RichText({ text, viewerRole }: { text: string; viewerRole: 'admin' | 'u
 
 function MentionPill({ type, id, name, viewerRole }: { type: 'server'|'invoice'; id: string; name: string; viewerRole: 'admin'|'user' }) {
   const [downloading, setDownloading] = React.useState(false);
+  const { showError } = useToast();
 
   const handleClick = async () => {
     if (type === 'server') {
@@ -203,7 +205,7 @@ function MentionPill({ type, id, name, viewerRole }: { type: 'server'|'invoice';
         window.URL.revokeObjectURL(url);
       } catch (e) {
         console.error(e);
-        alert("Failed to download invoice.");
+        showError("Failed to download invoice.");
       } finally {
         setDownloading(false);
       }
@@ -219,10 +221,10 @@ function MentionPill({ type, id, name, viewerRole }: { type: 'server'|'invoice';
   return (
     <span 
       onClick={handleClick}
-      className={`inline-flex items-center cursor-pointer align-middle font-medium rounded px-1.5 py-0.5 mx-0.5 transition-colors ${
+      className={`inline-flex items-center cursor-pointer align-middle font-medium mx-0.5 transition-colors ${
         type === 'server' 
-          ? 'bg-[#FF5722]/10 text-[#FF5722] hover:bg-[#FF5722]/20' 
-          : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
+          ? 'text-[#FF5722] hover:text-[#ff7448]' 
+          : 'text-emerald-400 hover:text-emerald-300'
       } ${downloading ? 'opacity-50 pointer-events-none' : ''}`}
     >
       {downloading ? <Loader2 size={14} className="animate-spin mr-1" /> : Icon}

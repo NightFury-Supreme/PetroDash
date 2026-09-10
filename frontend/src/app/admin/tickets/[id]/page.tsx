@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, notFound }   from "next/navigation";
+import { useToast } from "@/components/ui/ToastProvider";
 
 import { TicketDetailConversation } from "@/components/tickets/detail/TicketDetailConversation";
 import { AdminTicketComposer }      from "@/components/admin/tickets/AdminTicketComposer";
@@ -13,6 +14,7 @@ import { shortId, getToken, API_BASE } from "@/components/tickets/utils";
 const POLL_MS = 15_000;
 
 export default function AdminTicketDetailPage() {
+  const { showError, showSuccess } = useToast();
   const { id } = useParams() as { id: string };
 
   /* -- Remote data --------------------------------------- */
@@ -27,7 +29,7 @@ export default function AdminTicketDetailPage() {
   const [replyText,  setReplyText]  = useState("");
   const [internal,   setInternal]   = useState(false);
   const [replying,   setReplying]   = useState(false);
-  const [sendError,  setSendError]  = useState<string | null>(null);
+  
   const [editServerId, setEditServerId] = useState<string | null>(null);
   const [actionBusy, setActionBusy] = useState<string | null>(null);
   const [actionDone, setActionDone] = useState<string | null>(null);
@@ -135,7 +137,7 @@ export default function AdminTicketDetailPage() {
   const sendReply = async () => {
     if (!replyText.trim() || replying) return;
     setReplying(true);
-    setSendError(null);
+    
     const sentText   = replyText.trim();
     const isInternal = internal;
 
@@ -165,6 +167,7 @@ export default function AdminTicketDetailPage() {
       }
       if (d.message) {
         setMessages(prev => prev.map(m => m._id === optimistic._id ? d.message : m));
+        showSuccess("Message sent.");
       }
       if (d.status) {
         setTicket((prev: any) => prev ? { ...prev, status: d.status } : prev);
@@ -172,7 +175,7 @@ export default function AdminTicketDetailPage() {
         fetchTicket(true);
       }
     } catch (e: any) {
-      setSendError(e.message || "Failed to send");
+      showError(e.message || "Failed to send");
     }
     setReplying(false);
   };
@@ -191,11 +194,12 @@ export default function AdminTicketDetailPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
         body:    JSON.stringify({ status }),
       });
-      if (!r.ok) { let d: any = {}; try { d = await r.json(); } catch {} throw new Error(d?.error || "Failed"); }
+      if (!r.ok) { let d: any = {}; try { d = await r.json(); } catch {} throw new Error(d?.error || `Failed to mark ticket as ${status}`); }
       setTicket((prev: any) => prev ? { ...prev, status } : prev);
+      showSuccess(`Ticket marked as ${status}`);
       setActionDone(actionKey);
       setTimeout(() => setActionDone(null), 2000);
-    } catch (e: any) { setSendError(e.message); }
+    } catch (e: any) { showError(e.message || `Failed to mark ticket as ${status}`); }
     setActionBusy(null);
   };
 
@@ -208,11 +212,12 @@ export default function AdminTicketDetailPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
         body:    JSON.stringify({ priority }),
       });
-      if (!r.ok) { let d: any = {}; try { d = await r.json(); } catch {} throw new Error(d?.error || "Failed"); }
+      if (!r.ok) { let d: any = {}; try { d = await r.json(); } catch {} throw new Error(d?.error || `Failed to set priority to ${priority}`); }
       setTicket((prev: any) => prev ? { ...prev, priority } : prev);
+      showSuccess(`Ticket priority set to ${priority}`);
       setActionDone("priority");
       setTimeout(() => setActionDone(null), 2000);
-    } catch (e: any) { setSendError(e.message); }
+    } catch (e: any) { showError(e.message || `Failed to set priority to ${priority}`); }
     setActionBusy(null);
   };
 
@@ -236,14 +241,27 @@ export default function AdminTicketDetailPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
         body:    JSON.stringify({ deletedByUser: false }),
       });
-      if (r.ok) { fetchTicket(true); setActionDone("restore"); setTimeout(() => setActionDone(null), 2000); }
+      if (r.ok) { fetchTicket(true); showSuccess("Ticket restored.");
+      setActionDone("restore"); setTimeout(() => setActionDone(null), 2000); }
       setActionBusy(null);
     }
   };
 
   /* -- Guards -------------------------------------------- */
+  useEffect(() => {
+    if (error) showError(error);
+  }, [error, showError]);
+
   if (loading) return <AdminTicketDetailSkeleton />;
-  if (error) throw new Error(error);
+  
+  if (error) {
+    return (
+      <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans flex items-center justify-center">
+        <p className="text-[#888]">Failed to load content. Please try again later.</p>
+      </div>
+    );
+  }
+  
   if (!ticket) notFound();
 
   /* -- Derived ------------------------------------------- */
@@ -279,14 +297,7 @@ export default function AdminTicketDetailPage() {
             </p>
           </header>
 
-          {sendError && (
-            <div className="shrink-0 px-4 py-2 bg-[#FF3333]/10 border border-[#FF3333]/30 rounded-lg text-[#FF3333] text-sm flex items-center justify-between">
-              <span>{sendError}</span>
-              <button onClick={() => setSendError(null)} className="ml-2 text-[#FF3333] hover:text-white">
-                <i className="fas fa-times" />
-              </button>
-            </div>
-          )}
+          
 
           <div className="flex flex-col lg:flex-row gap-8 items-stretch flex-1 min-h-0">
             {/* Left — Chat */}

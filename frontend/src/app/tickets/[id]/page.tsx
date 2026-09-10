@@ -2,7 +2,8 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useParams }                              from "next/navigation";
-import { notFound }                                          from 'next/navigation';
+import { notFound } from 'next/navigation';
+import { useToast } from '@/components/ui/ToastProvider';
 
 import {
   TicketDetailConversation,
@@ -18,6 +19,7 @@ import { API_BASE, getToken, shortId } from '@/components/tickets/utils';
 const POLL_MS = 15_000;
 
 export default function TicketDetailPage() {
+  const { showError, showSuccess } = useToast();
   const { id } = useParams() as { id: string };
 
   /* -- Remote data --------------------------------------- */
@@ -190,18 +192,28 @@ export default function TicketDetailPage() {
     setStatusBusy(true);
     setStatusDone(null);
     setActionsOpen(false);
-    try {
-      const r = await fetch(`${API_BASE}/api/tickets/${id}/status`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-        body:    JSON.stringify({ action }),
-      });
-      if (r.ok) {
-        await fetchTicket(true);
-        setStatusDone(action);
-        setTimeout(() => setStatusDone(null), 2000);
+      try {
+        const r = await fetch(`${API_BASE}/api/tickets/${id}/status`, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+          body:    JSON.stringify({ action }),
+        });
+        if (r.ok) {
+          await fetchTicket(true);
+          const successMsg = action === 'resolved' ? "Ticket marked as resolved" : "Ticket reopened";
+          showSuccess(successMsg);
+          setStatusDone(action);
+          setTimeout(() => setStatusDone(null), 2000);
+        } else {
+          const d = await r.json().catch(() => ({}));
+          const errorMsg = action === 'resolved' ? "Failed to mark as resolved" : "Failed to reopen ticket";
+          throw new Error(d.error || errorMsg);
+        }
+      } catch (e: any) {
+        setStatusBusy(false);
+        const errorMsg = action === 'resolved' ? "Failed to mark as resolved" : "Failed to reopen ticket";
+        showError(e.message || errorMsg);
       }
-    } catch {}
     setStatusBusy(false);
   };
 
@@ -219,8 +231,20 @@ export default function TicketDetailPage() {
   };
 
   /* -- Guards -------------------------------------------- */
+  useEffect(() => {
+    if (error) showError(error);
+  }, [error, showError]);
+
   if (loading) return <TicketDetailSkeleton />;
-  if (error)   throw new Error(error);
+  
+  if (error) {
+    return (
+      <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans flex items-center justify-center">
+        <p className="text-[#888]">Failed to load content. Please try again later.</p>
+      </div>
+    );
+  }
+  
   if (!ticket) notFound();
 
   /* -- Derived values ------------------------------------ */

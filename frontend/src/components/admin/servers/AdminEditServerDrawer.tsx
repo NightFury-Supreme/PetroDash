@@ -5,7 +5,6 @@ import {
   Server,
   Save,
   Loader2,
-  AlertTriangle,
   ChevronUp,
   ChevronDown,
   Cpu,
@@ -233,7 +232,10 @@ export function AdminEditServerDrawer({
         `${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/servers/${serverId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      if (!res.ok) throw new Error("Failed to load server");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to load server");
+      }
       const data: AdminServer = await res.json();
       setServer(data);
       setLimits({ ...data.limits });
@@ -425,21 +427,15 @@ export function AdminEditServerDrawer({
               )}
             </div>
           </div>
-        ) : null
+) : null
       }
     >
       {loading ? (
         <DrawerSkeleton />
       ) : errorMsg && !server ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-            <AlertTriangle size={24} className="text-red-400" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-[#D4D4D4]">Failed to load server</p>
-            <p className="text-xs text-[#888] mt-1">{errorMsg}</p>
-          </div>
-          <button onClick={loadServer} className="text-xs text-[#FF5722] hover:underline">
+        <div className="flex flex-col items-center justify-center py-16 text-center gap-2">
+          <p className="text-sm font-medium text-[#D4D4D4]">{errorMsg}</p>
+          <button onClick={loadServer} className="text-xs text-[#FF5722] hover:underline mt-2">
             Try again
           </button>
         </div>

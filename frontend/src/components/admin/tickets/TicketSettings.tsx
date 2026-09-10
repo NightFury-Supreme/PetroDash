@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { Check, Plus, Save, Settings, X, Loader2 } from "lucide-react";
+import { Plus, Save, Settings, X, Loader2 } from "lucide-react";
 import { Drawer } from "@/components/ui/Drawer";
+import { useToast } from "@/components/ui/ToastProvider";
 
 interface Category {
   id: string;
@@ -13,14 +14,12 @@ interface TicketSettingsProps {
 }
 
 export default function TicketSettings({ onClose }: TicketSettingsProps) {
+  const { showError, showSuccess } = useToast();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [newCategory, setNewCategory] = useState("");
-  const [saved, setSaved] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-
+      const [saving, setSaving] = useState(false);
+  
   const load = async () => {
     try {
       const token = localStorage.getItem("auth_token");
@@ -47,7 +46,7 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
         setCategories(loadedCategories);
       }
     } catch {
-      setError("Failed to load categories");
+      showError("Failed to load categories");
     } finally {
       setLoading(false);
     }
@@ -79,9 +78,7 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
     ]);
 
     setNewCategory("");
-    setSaved(false);
-    setError("");
-  };
+          };
 
   const removeCategory = (id: string) => {
     const category = categories.find((item) => item.id === id);
@@ -89,15 +86,11 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
     if (category.ticketCount > 0) return;
 
     setCategories((current) => current.filter((item) => item.id !== id));
-    setSaved(false);
-    setError("");
-  };
+          };
 
   const handleSave = async () => {
     setSaving(true);
-    setError("");
-    setFailed(false);
-    
+            
     try {
       const token = localStorage.getItem("auth_token");
       const categoryNames = categories.map((c) => c.name);
@@ -115,23 +108,18 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
       try { d = await r.json(); } catch {}
       
       if (r.ok) {
-        setSaved(true);
-        await load(); // Refresh counts just in case
-        setTimeout(() => {
-          setSaved(false);
-        }, 2000);
+        showSuccess("Settings saved successfully.");
+        await load();
       } else {
-        setFailed(true);
-        setError(d?.error || "Failed to save");
+                showError(d?.error || "Failed to save");
         if (Array.isArray(d?.inUse) && d.inUse.length) {
-          setError(`${d.error}: ${d.inUse.join(", ")}`);
+          showError(`${d.error}: ${d.inUse.join(", ")}`);
         }
-        setTimeout(() => setFailed(false), 3000);
+        
       }
     } catch {
-      setFailed(true);
-      setError("An unexpected error occurred while saving.");
-      setTimeout(() => setFailed(false), 3000);
+            showError("An unexpected error occurred while saving.");
+      
     } finally {
       setSaving(false);
     }
@@ -148,28 +136,12 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
         <div className="flex items-center justify-end w-full">
           <button
             onClick={handleSave}
-            disabled={saving || saved || failed || loading}
-            className={`flex w-full sm:w-auto min-w-[145px] items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-[11px] font-semibold transition-all ${
-              saved
-                ? "bg-emerald-500/10 text-emerald-500 cursor-default"
-                : failed
-                ? "bg-red-500/10 text-red-500 cursor-default"
-                : saving || loading
-                ? "bg-[#161616] text-[#888] cursor-not-allowed"
-                : "bg-[#FF5722] text-white hover:bg-[#FF6B32] hover:-translate-y-[1px]"
-            }`}
+            disabled={saving || loading}
+            className={`flex w-full sm:w-auto min-w-[145px] items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-[11px] font-semibold transition-all ${saving || loading ? "bg-[#161616] text-[#888] cursor-not-allowed" : "bg-[#FF5722] text-white hover:bg-[#FF6B32] hover:-translate-y-[1px]"}`}
           >
-            {saving ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : saved ? (
-              <Check size={14} />
-            ) : failed ? (
-              <X size={14} />
-            ) : (
-              <Save size={14} />
-            )}
+            {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
             <span>
-              {saving ? "Saving..." : saved ? "Saved!" : failed ? "Failed" : "Save Changes"}
+              {saving ? "Saving..." : "Save Changes"}
             </span>
           </button>
         </div>
@@ -181,11 +153,7 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
         </div>
       ) : (
         <div className="flex flex-col min-h-0 space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
-          {error && (
-            <div className="p-3 bg-red-500/10 rounded-lg border border-red-500/20 text-sm text-red-400">
-              {error}
-            </div>
-          )}
+          
 
           {/* ADD CATEGORY */}
           <section>

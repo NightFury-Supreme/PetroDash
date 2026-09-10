@@ -15,6 +15,7 @@ export default function EggsListPage() {
   const router = useRouter();
   const [eggs, setEggs] = useState<Array<{ _id: string; name: string; description: string; pterodactylEggId: string; pterodactylNestId: string; recommended: boolean; allowedPlans: string[], category?: string, serversCount?: number }>>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -29,11 +30,12 @@ export default function EggsListPage() {
     fetch(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/eggs`, {
       headers: { Authorization: `Bearer ${token}` }
     })
-      .then(res => res.json())
-      .then(data => {
+      .then(async res => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Failed to fetch eggs');
         if (Array.isArray(data)) setEggs(data);
       })
-      .catch(console.error)
+      .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   }, [router]);
 
@@ -82,6 +84,8 @@ export default function EggsListPage() {
     }
     fetchEggs();
   };
+
+  if (error) throw new Error(error);
 
   if (loading) {
     return <AdminEggsSkeleton />;

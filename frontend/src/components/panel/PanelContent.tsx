@@ -1,20 +1,20 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Check, Copy, ExternalLink, KeyRound, Link2, Mail, RefreshCw } from "lucide-react";
+import { Copy, ExternalLink, KeyRound, Link2, Mail, RefreshCw } from "lucide-react";
 import { useModal } from "@/components/Modal";
+import { useToast } from "@/components/ui/ToastProvider";
 import { CredentialRow } from "./CredentialRow";
 import { PanelSkeleton } from "@/components/skeletons";
 
 export function PanelContent() {
-  const [copiedEmail, setCopiedEmail] = useState(false);
-  const [copiedPassword, setCopiedPassword] = useState(false);
   const [panelData, setPanelData] = useState<{ email: string; panelUrl: string } | null>(null);
   const [password, setPassword] = useState("••••••••••••••••");
   const [loading, setLoading] = useState(true);
   const [resetting, setResetting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const modal = useModal();
+  const { showSuccess, showError } = useToast();
 
   useEffect(() => {
     const fetchPanelData = async () => {
@@ -37,26 +37,27 @@ export function PanelContent() {
         setPanelData(data);
       } catch (err: any) {
         setError(err.message);
+        if (!err.message?.toLowerCase().includes("pending")) {
+          showError(err.message || "Failed to fetch panel data");
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchPanelData();
-  }, []);
+  }, [showError]);
 
   const copyText = async (text: string, type: "email" | "password") => {
     try {
       await navigator.clipboard.writeText(text);
       if (type === "email") {
-        setCopiedEmail(true);
-        window.setTimeout(() => setCopiedEmail(false), 1800);
+        showSuccess("Email copied to clipboard.");
       } else {
-        setCopiedPassword(true);
-        window.setTimeout(() => setCopiedPassword(false), 1800);
+        showSuccess("Password copied to clipboard.");
       }
     } catch {
-      // Clipboard unavailable.
+      showError("Failed to copy to clipboard.");
     }
   };
 
@@ -95,8 +96,9 @@ export function PanelContent() {
 
       const data = await res.json();
       setPassword(data.password);
+      showSuccess("Password reset successfully!");
     } catch (err: any) {
-      alert(err.message);
+      showError(err.message || 'Failed to reset password.');
     } finally {
       setResetting(false);
     }
@@ -163,17 +165,8 @@ export function PanelContent() {
                         hover:text-[#E0E0E0]
                       "
                   >
-                    {copiedEmail ? (
-                      <>
-                        <Check className="h-3.5 w-3.5 text-[#10b981]" />
-                        Copied
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-3.5 w-3.5" />
-                        Copy
-                      </>
-                    )}
+                    <Copy className="h-3.5 w-3.5" />
+                    Copy
                   </button>
                 }
               />
@@ -204,11 +197,7 @@ export function PanelContent() {
                             hover:text-[#E0E0E0]
                           "
                       >
-                        {copiedPassword ? (
-                          <Check className="h-3.5 w-3.5 text-[#10b981]" />
-                        ) : (
-                          <Copy className="h-3.5 w-3.5" />
-                        )}
+                        <Copy className="h-3.5 w-3.5" />
                         Copy
                       </button>
                     )}

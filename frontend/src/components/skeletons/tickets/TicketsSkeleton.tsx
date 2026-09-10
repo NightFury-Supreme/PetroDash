@@ -1,12 +1,20 @@
 "use client";
 
-export default function AdminTicketsSkeleton() {
+export default function TicketsSkeleton({ isAdmin = false }: { isAdmin?: boolean }) {
+  const headerGridClass = isAdmin 
+    ? 'grid-cols-[1fr_130px_100px_90px_80px_60px_36px]' 
+    : 'grid-cols-[1fr_100px_90px_80px_60px_36px]';
+    
+  const rowGridClass = isAdmin
+    ? 'md:grid-cols-[1fr_130px_100px_90px_80px_60px_36px]'
+    : 'md:grid-cols-[1fr_100px_90px_80px_60px_36px]';
+
   return (
     <div className="border-0 p-0 w-full">
       {/* Table column headers */}
-      <div className="hidden grid-cols-[1fr_130px_100px_90px_80px_60px_36px] gap-4 border-b border-white/[0.06] pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30 md:grid">
+      <div className={`hidden ${headerGridClass} gap-4 border-b border-white/[0.06] pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30 md:grid`}>
         <span>Ticket</span>
-        <span>User</span>
+        {isAdmin && <span>User</span>}
         <span>Category</span>
         <span>Updated</span>
         <span>Status</span>
@@ -18,7 +26,7 @@ export default function AdminTicketsSkeleton() {
       <div className="flex flex-col divide-y divide-white/[0.06]">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="relative">
-            <div className="grid grid-cols-[1fr_auto] items-center gap-3 py-4 md:grid-cols-[1fr_130px_100px_90px_80px_60px_36px] md:gap-4">
+            <div className={`grid grid-cols-[1fr_auto] items-center gap-3 py-4 md:gap-4 ${rowGridClass}`}>
               {/* Subject + ID */}
               <div className="min-w-0 text-left">
                 <div className="flex items-center gap-2.5">
@@ -29,8 +37,12 @@ export default function AdminTicketsSkeleton() {
                     </div>
                     {/* Mobile meta */}
                     <div className="mt-1 flex items-center gap-1.5 md:hidden">
-                      <div className="h-3 w-12 rounded bg-[#1A1A1A] animate-pulse" />
-                      <span className="text-white/10">&middot;</span>
+                      {isAdmin && (
+                        <>
+                          <div className="h-3 w-12 rounded bg-[#1A1A1A] animate-pulse" />
+                          <span className="text-white/10">&middot;</span>
+                        </>
+                      )}
                       <div className="h-3 w-16 rounded bg-[#1A1A1A] animate-pulse" />
                     </div>
                   </div>
@@ -38,10 +50,12 @@ export default function AdminTicketsSkeleton() {
               </div>
 
               {/* User - desktop */}
-              <div className="hidden md:block">
-                <div className="h-3.5 w-20 rounded bg-[#202020] animate-pulse" />
-                <div className="mt-1 h-2.5 w-24 rounded bg-[#1A1A1A] animate-pulse" />
-              </div>
+              {isAdmin && (
+                <div className="hidden md:block">
+                  <div className="h-3.5 w-20 rounded bg-[#202020] animate-pulse" />
+                  <div className="mt-1 h-2.5 w-24 rounded bg-[#1A1A1A] animate-pulse" />
+                </div>
+              )}
 
               {/* Category - desktop */}
               <div className="hidden md:block">

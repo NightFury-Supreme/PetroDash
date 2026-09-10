@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Ticket, ChevronLeft, ChevronRight } from "lucide-react";
 import { GiftCodeRow } from "./GiftCodeRow";
 import { GiftCodesTableSkeleton } from "@/components/Skeleton";
+import { useToast } from "@/components/ui/ToastProvider";
 
 type TabStatus = "Active" | "Inactive";
 
@@ -18,18 +19,18 @@ function rewardLabel(g: any): string {
   if (r.diskMb > 0) parts.push(`${r.diskMb} MB Disk`);
   if (r.memoryMb > 0) parts.push(`${r.memoryMb} MB RAM`);
   if (r.cpuPercent > 0) parts.push(`${r.cpuPercent}% CPU`);
+  if (r.allocations > 0) parts.push(`${r.allocations} Ports`);
   if (r.backups > 0) parts.push(`${r.backups} Backups`);
-  if (r.databases > 0) parts.push(`${r.databases} Databases`);
-  if (r.allocations > 0) parts.push(`${r.allocations} Allocations`);
+  if (r.databases > 0) parts.push(`${r.databases} DBs`);
   if (r.serverSlots > 0) parts.push(`${r.serverSlots} Slots`);
   return parts.length ? parts.join(" · ") : "No rewards";
 }
 
 export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
+  const { showError, showSuccess } = useToast();
   const [codes, setCodes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabStatus>("Active");
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -57,7 +58,11 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
         setInactiveCount(d.meta?.inactiveCount || 0);
       } else if (Array.isArray(d)) {
         setCodes(d);
+      } else if (!res.ok) {
+        throw new Error(d.error || "Failed to load gift codes");
       }
+    } catch (err: any) { 
+      showError(err.message || "Failed to load gift codes");
     } finally {
       setLoading(false);
     }
@@ -78,10 +83,20 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
   const copyCode = async (code: string) => {
     try {
       await navigator.clipboard.writeText(code);
-      setCopiedCode(code);
-      setTimeout(() => setCopiedCode(null), 1500);
-    } catch {}
+      showSuccess("Gift code copied to clipboard!");
+    } catch {
+      showError("Failed to copy code.");
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        <div className="h-[42px] w-full animate-pulse rounded-lg bg-[#151515]" />
+        <div className="h-[42px] w-full animate-pulse rounded-lg bg-[#151515]" />
+      </div>
+    );
+  }
 
   return (
     <section>
@@ -159,7 +174,6 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
                       expires={g.validUntil ? new Date(g.validUntil).toLocaleDateString() : "—"}
                       uses={`${g.redeemedCount || 0}${g.maxRedemptions ? ` / ${g.maxRedemptions}` : ""}`}
                       status={activeTab}
-                      copied={copiedCode === g.code}
                       onCopy={() => copyCode(g.code)}
                     />
                   ))}

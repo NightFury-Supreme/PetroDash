@@ -6,14 +6,14 @@ import { DashboardSkeleton } from "@/components/Skeleton";
 import { DashboardContent } from "../../components/dashboard/DashboardContent";
 import { useDashboard } from "../../hooks/useDashboard";
 import { ContentAd } from "@/components/ads/AdSense";
-import { useModal } from "@/components/Modal";
+import { useToast } from "@/components/ui/ToastProvider";
 
 function DashboardContentWrapper() {
   const [mounted, setMounted] = useState(false);
   const [minLoadingTime, setMinLoadingTime] = useState(true);
   const { loading, error } = useDashboard();
   const searchParams = useSearchParams();
-  const modal = useModal();
+  const { showError, showSuccess } = useToast();
 
   // Initialize
   useEffect(() => {
@@ -35,13 +35,16 @@ function DashboardContentWrapper() {
       url.searchParams.delete('verified');
       window.history.replaceState({}, '', url.toString());
       
-      // Show success modal
-      modal.success({
-        title: 'Email Verified!',
-        body: 'Your email address has been successfully verified. You now have full access to all features.'
-      });
+      showSuccess("Email address successfully verified! You now have full access.");
     }
-  }, [searchParams, modal]);
+  }, [searchParams, showSuccess]);
+
+  // Handle error toast
+  useEffect(() => {
+    if (error) {
+      showError(error);
+    }
+  }, [error, showError]);
 
   // Show full page skeleton while loading to prevent layout shift
   if (!mounted || loading || minLoadingTime) {
@@ -54,7 +57,11 @@ function DashboardContentWrapper() {
 
   // Error state
   if (error) {
-    throw new Error(error);
+    return (
+      <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans flex items-center justify-center">
+        <p className="text-[#888]">Failed to load dashboard. Please try again later.</p>
+      </div>
+    );
   }
 
   return (

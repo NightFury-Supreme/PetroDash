@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import {
   Server,
   Loader2,
@@ -21,6 +21,8 @@ import { CreateServerDrawerSkeleton } from "./CreateServerDrawerSkeleton";
 import { useServerCreate, CreateFormData } from "@/hooks/useServerCreate";
 import { RESOURCE_FIELDS, ResourceInputCard } from "./ResourceInputCard";
 
+import { useToast } from "@/components/ui/ToastProvider";
+
 type Step = 'resources' | 'software' | 'location' | 'summary';
 
 const STEPS: { id: Step; label: string }[] = [
@@ -30,16 +32,13 @@ const STEPS: { id: Step; label: string }[] = [
   { id: 'summary', label: 'Summary' },
 ];
 
-
-
 interface CreateServerDrawerProps {
   onClose: () => void;
   onUpdate?: () => void;
 }
 
 export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProps) {
-  const [saved, setSaved] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const { showError, showSuccess } = useToast();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   const currentStep = STEPS[currentStepIndex].id;
@@ -58,6 +57,12 @@ export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProp
     isFormValid,
     handleSave
   } = useServerCreate();
+
+  useEffect(() => {
+    if (error) {
+      showError(error);
+    }
+  }, [error, showError]);
 
   const updateValue = useCallback((key: keyof CreateFormData, v: number | string) => {
     setForm((prev) => ({ ...prev, [key]: v }));
@@ -113,36 +118,25 @@ export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProp
           ) : (
             <button
               onClick={async (e) => {
-                setFailed(false);
                 const success = await handleSave(e);
                 if (success) {
-                  setSaved(true);
-                  setTimeout(() => {
-                    if (onUpdate) onUpdate();
-                    onClose();
-                  }, 1000);
+                  showSuccess("Server created successfully!");
+                  if (onUpdate) onUpdate();
+                  onClose();
                 } else {
-                  setFailed(true);
-                  setTimeout(() => setFailed(false), 3000);
+                  // error is handled by useServerCreate and our useEffect will catch it, or it will be in the `error` state.
+                  // Wait, useServerCreate sets its own `error` state. We just added a useEffect to watch `error`.
                 }
               }}
-              disabled={saving || saved || failed || !isFormValid}
+              disabled={saving || !isFormValid}
               className={`flex min-w-[140px] items-center justify-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-all ${
-                  saved
-                    ? "bg-emerald-500 border border-emerald-500 text-white cursor-default"
-                    : failed
-                    ? "bg-red-500 border border-red-500 text-white cursor-default"
-                    : saving || !isFormValid
+                  saving || !isFormValid
                     ? "bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed"
                     : "bg-[#FF5722] border border-[#FF5722] text-white hover:bg-[#F4511E]"
               }`}
             >
               {saving ? (
                 <><Loader2 size={16} className="animate-spin" /> Deploying...</>
-              ) : saved ? (
-                "Created!"
-              ) : failed ? (
-                "Failed to Create"
               ) : (
                 "Create Server"
               )}

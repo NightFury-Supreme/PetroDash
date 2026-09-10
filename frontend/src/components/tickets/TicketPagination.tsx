@@ -1,19 +1,19 @@
 import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-interface AdminTicketPaginationProps {
+interface TicketPaginationProps {
   page: number;
   pageSize: number;
   totalItems: number;
   onPageChange: (page: number) => void;
 }
 
-export function AdminTicketPagination({
+export function TicketPagination({
   page,
   pageSize,
   totalItems,
   onPageChange,
-}: AdminTicketPaginationProps) {
+}: TicketPaginationProps) {
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   if (totalPages <= 1) return null;
 

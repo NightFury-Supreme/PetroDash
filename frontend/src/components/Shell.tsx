@@ -13,8 +13,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
     const handleStorageChange = () => {
       const collapsed = localStorage.getItem('sidebar_collapsed') === 'true';
       
-      // Update CSS custom property on the document root
-      document.documentElement.style.setProperty('--sidebar-width', collapsed ? '5rem' : '18rem');
+      document.documentElement.style.setProperty('--sidebar-width', collapsed ? '5rem' : '16rem');
     };
 
     // Check initial state
@@ -36,7 +35,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
       <div 
         className="flex-1 flex flex-col transition-all duration-300 ease-in-out"
         style={{
-          marginLeft: 'var(--sidebar-width, 18rem)'
+          marginLeft: 'var(--sidebar-width, 16rem)'
         }}
       >
         <main className="flex-1 flex flex-col">

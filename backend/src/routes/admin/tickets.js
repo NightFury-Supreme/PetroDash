@@ -15,7 +15,7 @@ function extractAdminId(req) {
 // GET /api/admin/tickets — list with server-side search + pagination
 router.get('/', requireAdmin, async (req, res) => {
   try {
-    const { q, status, priority, deleted, page = '1', limit = '25' } = req.query;
+    const { q, status, priority, category, deleted, sort = 'updated_desc', page = '1', limit = '25' } = req.query;
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 25));
 
@@ -31,8 +31,10 @@ router.get('/', requireAdmin, async (req, res) => {
     if (priority && ['low', 'medium', 'high'].includes(priority)) {
       query.priority = { $eq: priority };
     }
+    if (category && typeof category === 'string' && category.trim()) {
+      query.category = { $regex: category.trim(), $options: 'i' };
+    }
     if (q && typeof q === 'string' && q.trim()) {
-      // Escape regex special chars to prevent injection
       const escaped = q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       query.$or = [
         { title: { $regex: escaped, $options: 'i' } },
@@ -41,7 +43,18 @@ router.get('/', requireAdmin, async (req, res) => {
       ];
     }
 
-    const cacheKey = `tickets:admin:list:${q || ''}:${status || ''}:${priority || ''}:${deleted || ''}:${pageNum}:${limitNum}`;
+    // Sort mapping
+    let sortObj = {};
+    switch (sort) {
+      case 'updated_asc':  sortObj = { updatedAt: 1 };  break;
+      case 'created_desc': sortObj = { createdAt: -1 }; break;
+      case 'created_asc':  sortObj = { createdAt: 1 };  break;
+      case 'priority_desc': sortObj = { priority: -1, updatedAt: -1 }; break;
+      case 'priority_asc':  sortObj = { priority: 1,  updatedAt: -1 }; break;
+      default: sortObj = { updatedAt: -1 }; // updated_desc
+    }
+
+    const cacheKey = `tickets:admin:list:${q||''}:${status||''}:${priority||''}:${category||''}:${deleted||''}:${sort}:${pageNum}:${limitNum}`;
     const cachedTickets = await getCache(cacheKey);
     if (cachedTickets) {
       return res.json(cachedTickets);
@@ -49,15 +62,15 @@ router.get('/', requireAdmin, async (req, res) => {
 
     const total = await Ticket.countDocuments(query);
     const tickets = await Ticket.find(query)
-      .select('-messages') // exclude messages in list view for performance
-      .sort({ updatedAt: -1 })
+      .select('-messages')
+      .sort(sortObj)
       .skip((pageNum - 1) * limitNum)
       .limit(limitNum)
       .populate('user', 'username email')
       .lean();
 
     const responseData = { tickets, total, page: pageNum, pages: Math.ceil(total / limitNum) };
-    await setCache(cacheKey, responseData, 30); // Cache for 30 seconds
+    await setCache(cacheKey, responseData, 30);
 
     res.json(responseData);
   // eslint-disable-next-line unused-imports/no-unused-vars

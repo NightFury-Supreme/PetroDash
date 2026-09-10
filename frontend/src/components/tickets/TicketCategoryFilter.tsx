@@ -1,6 +1,6 @@
 import React from "react";
 
-interface AdminTicketCategoryFilterProps {
+interface TicketCategoryFilterProps {
   categories: string[];
   activeTab: string;
   catFilter: string;
@@ -9,14 +9,14 @@ interface AdminTicketCategoryFilterProps {
   onSelect: (cat: string) => void;
 }
 
-export function AdminTicketCategoryFilter({
+export function TicketCategoryFilter({
   categories,
   activeTab,
   catFilter,
   tickets,
   loading,
   onSelect,
-}: AdminTicketCategoryFilterProps) {
+}: TicketCategoryFilterProps) {
   const catCounts = categories.reduce((acc, cat) => {
     acc[cat] = tickets.filter((t) => {
       if (activeTab === "deleted") return !!t.deletedByUser && t.category === cat;

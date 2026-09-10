@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Coins, Minus, Plus, Loader2, Check, AlertTriangle, AlertCircle } from "lucide-react";
+import { Coins, Minus, Plus, Loader2 } from "lucide-react";
 import { Drawer } from "@/components/ui/Drawer";
 import { getShopIcon, getTotalAmount, MAX_QUANTITY, SummaryRow } from "./shopUtils";
 
@@ -15,7 +15,7 @@ interface PurchaseDrawerProps {
   onIncrease: () => void;
   onQuantityChange: (v: number) => void;
   onConfirm: () => Promise<boolean>;
-  checkoutError?: string | null;
+  
 }
 
 function CheckoutSectionTitle({ children }: { children: React.ReactNode }) {
@@ -36,12 +36,9 @@ export function PurchaseDrawer({
   onIncrease,
   onQuantityChange,
   onConfirm,
-  checkoutError = null,
-}: PurchaseDrawerProps) {
-  const [saved, setSaved] = useState(false);
-  const [failed, setFailed] = useState(false);
   
-  // Track last item so the drawer doesn't instantly empty out during slide-out animation
+}: PurchaseDrawerProps) {
+    // Track last item so the drawer doesn't instantly empty out during slide-out animation
   const [lastItem, setLastItem] = useState<any | null>(null);
   
   if (item && item !== lastItem) {
@@ -59,9 +56,47 @@ export function PurchaseDrawer({
       onClose={onClose}
       title="Checkout"
       subtitle="Complete your purchase"
+      icon={<Coins className="text-[#D4D4D4]" size={22} />}
+      footer={
+        <div className="flex items-center justify-end gap-2 w-full">
+          <button
+            onClick={onClose}
+            className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              const success = await onConfirm();
+              if (success) {
+                onClose();
+              }
+            }}
+            disabled={buying || !displayItem}
+            className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                buying || !displayItem
+                ? "bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed"
+                : "bg-[#FF5722] text-white hover:bg-[#E64D1F] border border-transparent"
+            }`}
+          >
+            {buying ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Processing…
+              </>
+            ) : (
+              <>
+                <Coins size={16} className="h-4 w-4" />
+                Purchase · {total} coins
+              </>
+            )}
+          </button>
+        </div>
+      }
     >
       {displayItem && (
-        <div className="flex flex-col gap-9 pb-10 font-sans">
+        <div className="flex flex-col gap-9 pb-0 font-sans">
           
           {/* ==========================================================
               LEFT SIDE (ITEM DETAILS & QUANTITY)
@@ -145,71 +180,18 @@ export function PurchaseDrawer({
               </div>
             </div>
 
-            <div className="border-t border-[#222] pt-5">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-white">Total</span>
-                <span className="text-xl font-bold tracking-tight text-white">{total} coins</span>
+            <div className="rounded-lg border border-[#2A2A2A] bg-[#161616] p-4">
+              <div className="flex items-end justify-between">
+                <div>
+                  <p className="text-[9px] uppercase tracking-[0.08em] text-[#555]">Total</p>
+                  <p className="mt-1 text-2xl font-semibold tracking-tight text-white">
+                    {total}
+                  </p>
+                </div>
+                <span className="mb-1 text-[11px] text-[#555]">coins</span>
               </div>
             </div>
 
-            <div className="flex flex-col gap-3">
-              <button
-              type="button"
-              onClick={async () => {
-                setFailed(false);
-                const success = await onConfirm();
-                if (success) {
-                  setSaved(true);
-                  setTimeout(() => {
-                    setSaved(false);
-                    onClose();
-                  }, 1000);
-                } else {
-                  setFailed(true);
-                  setTimeout(() => setFailed(false), 3000);
-                }
-              }}
-              disabled={buying || saved || failed || !displayItem || !!checkoutError}
-              className={`flex h-11 w-full items-center justify-center gap-2 rounded-md text-[13px] font-bold transition-all px-4 ${
-                checkoutError 
-                  ? "bg-red-500/10 border border-red-500/30 text-red-500"
-                  : saved
-                  ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 cursor-default"
-                  : failed
-                  ? "bg-red-500/10 border border-red-500/30 text-red-500 cursor-default"
-                  : buying || !displayItem
-                  ? "bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed"
-                  : "bg-[#FF5722] text-white hover:bg-[#E64D1F]"
-              }`}
-            >
-              {checkoutError ? (
-                <>
-                  <AlertCircle size={16} className="shrink-0" />
-                  <span className="truncate text-xs">{checkoutError}</span>
-                </>
-              ) : buying ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" />
-                  Processing…
-                </>
-              ) : saved ? (
-                <>
-                  <Check size={16} />
-                  Purchased!
-                </>
-              ) : failed ? (
-                <>
-                  <AlertTriangle size={16} className="shrink-0" />
-                  Failed
-                </>
-              ) : (
-                <>
-                  <Coins size={16} className="h-4 w-4" />
-                  Purchase · {total} coins
-                </>
-              )}
-            </button>
-          </div>
           </div>
         </div>
       )}

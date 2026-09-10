@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useToast } from "@/components/ui/ToastProvider";
 import { TicketMessage } from '../types';
 import { formatRelative } from '../utils';
 import { Loader2 } from 'lucide-react';
@@ -151,8 +152,8 @@ function MessageBubble({
           isInternal
             ? 'rounded-tr-sm bg-yellow-900/30 border border-yellow-700/30 text-yellow-100'
             : isMine
-              ? 'rounded-tr-sm bg-[#1e1e1e] text-white/90'
-              : 'rounded-tl-sm bg-[#3f3f3f] text-white/90'
+              ? 'rounded-tr-sm bg-[#151515] border border-[#282828] text-[#d5d5d5]'
+              : 'rounded-tl-sm bg-[#121212] border border-[#282828] text-[#d5d5d5]'
         }`}>
           <div className={`text-sm leading-[1.6] ${isInternal ? 'text-yellow-100/90' : 'text-white/80'}`}>
             <RichText text={text} viewerRole={viewerRole} onServerMentionClick={onServerMentionClick} />
@@ -200,6 +201,7 @@ function RichText({ text, viewerRole, onServerMentionClick }: { text: string; vi
 
 function MentionPill({ type, id, name, viewerRole, onServerMentionClick }: { type: 'server'|'invoice'; id: string; name: string; viewerRole: 'admin'|'user'; onServerMentionClick?: (serverId: string) => void; }) {
   const [downloading, setDownloading] = React.useState(false);
+  const { showError } = useToast();
 
   const handleClick = async () => {
     if (type === 'server') {
@@ -233,7 +235,7 @@ function MentionPill({ type, id, name, viewerRole, onServerMentionClick }: { typ
         window.URL.revokeObjectURL(url);
       } catch (e) {
         console.error(e);
-        alert("Failed to download invoice.");
+        showError("Failed to download invoice.");
       } finally {
         setDownloading(false);
       }
@@ -249,9 +251,11 @@ function MentionPill({ type, id, name, viewerRole, onServerMentionClick }: { typ
   return (
     <span 
       onClick={handleClick}
-      className={`inline-flex items-center cursor-pointer align-middle font-medium rounded-md px-2 py-0.5 mx-0.5 transition-all bg-black/20 hover:bg-black/30 text-white border border-transparent shadow-sm ${
-        downloading ? 'opacity-50 cursor-wait' : ''
-      }`}
+      className={`inline-flex items-center cursor-pointer align-middle font-medium mx-0.5 transition-colors ${
+        type === 'server' 
+          ? 'text-[#FF5722] hover:text-[#ff7448]' 
+          : 'text-emerald-400 hover:text-emerald-300'
+      } ${downloading ? 'opacity-50 cursor-wait' : ''}`}
       title={type === 'server' ? 'View Server' : 'Download Invoice'}
     >
       {downloading ? (

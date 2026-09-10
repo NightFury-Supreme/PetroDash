@@ -11,16 +11,16 @@ import {
   MemoryStick, 
   Server, 
   ShieldCheck, 
-  Loader2, 
-  AlertCircle,
+  Loader2,
   Network,
   Flame,
-  Check,
   Package,
   Clock
 } from 'lucide-react';
 import { Drawer } from "@/components/ui/Drawer";
 import { useCurrency } from "@/hooks/useCurrency";
+
+import { useToast } from "@/components/ui/ToastProvider";
 
 /* ==========================================================================
    CHECKOUT SECTION TITLE
@@ -77,8 +77,6 @@ interface CouponDrawerProps {
   plan?: any;
   loading?: boolean;
   isPopupProcessing?: boolean;
-  popupSuccess?: boolean;
-  checkoutError?: string | null;
 }
 
 export function CouponDrawer({
@@ -88,14 +86,12 @@ export function CouponDrawer({
   plan,
   loading = false,
   isPopupProcessing = false,
-  popupSuccess = false,
-  checkoutError = null
 }: CouponDrawerProps) {
   const { currency } = useCurrency();
+  const { showError, showSuccess } = useToast();
   const [couponCode, setCouponCode] = useState('');
   const [validating, setValidating] = useState(false);
   const [discountAmount, setDiscountAmount] = useState(0);
-  const [couponError, setCouponError] = useState<string | null>(null);
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
 
   const planName = plan?.name || "";
@@ -114,7 +110,6 @@ export function CouponDrawer({
   const validateCoupon = async () => {
     if (!couponCode) return;
     setValidating(true);
-    setCouponError(null);
     try {
       const token = localStorage.getItem("auth_token");
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/coupons/validate`, {
@@ -127,8 +122,9 @@ export function CouponDrawer({
       
       setDiscountAmount(data.discountAmount);
       setAppliedCoupon(couponCode);
+      showSuccess("Coupon applied successfully!");
     } catch (e: any) {
-      setCouponError(e.message);
+      showError(e.message);
       setDiscountAmount(0);
       setAppliedCoupon(null);
     } finally {
@@ -157,6 +153,39 @@ export function CouponDrawer({
       onClose={onClose}
       title="Checkout"
       subtitle="Complete your plan purchase"
+      icon={<Package className="text-[#D4D4D4]" size={22} />}
+      footer={
+        <div className="flex items-center justify-end gap-2 w-full">
+          <button
+            onClick={onClose}
+            className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => handleConfirm()}
+            disabled={loading || isPopupProcessing}
+            className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              loading || isPopupProcessing
+                ? "bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed"
+                : "bg-[#FF5722] text-white hover:bg-[#E64D1F] border border-transparent"
+            }`}
+          >
+            {loading || isPopupProcessing ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                {isPopupProcessing ? "Processing Payment..." : "Processing..."}
+              </>
+            ) : (
+              <>
+                {redirectionLink ? 'Proceed to Checkout' : 'Pay with PayPal'}
+                <ArrowRight className="h-4 w-4" />
+              </>
+            )}
+          </button>
+        </div>
+      }
     >
       <div className="flex flex-col gap-9 pb-0 font-sans">
         
@@ -164,20 +193,6 @@ export function CouponDrawer({
             LEFT SIDE (PLAN DETAILS & RESOURCES)
         =========================================================== */}
         <div>
-          {/* PAGE TITLE */}
-          <div className="mb-8 hidden">
-            {/* Kept hidden to match sidebar flow while retaining structure */}
-            <p className="text-[9px] font-medium uppercase tracking-[0.12em] text-orange-500">
-              Plan Purchase
-            </p>
-            <h1 className="mt-2 text-[25px] font-semibold tracking-[-0.035em] text-zinc-100">
-              {planName}
-            </h1>
-            <p className="mt-2 max-w-[520px] text-[11px] leading-5 text-zinc-600">
-              {typeof plan?.description === 'string' ? plan.description.replace(/<[^>]+>/g, " ").trim() : "Everything you need to run your server."}
-            </p>
-          </div>
-
           <section>
             <div className="border-b border-white/[0.07]">
               <div className="flex flex-col gap-5 pb-5 sm:flex-row sm:items-center">
@@ -271,7 +286,7 @@ export function CouponDrawer({
               <span className="text-[10px] text-[#444]">Optional</span>
             </div>
             <div className={`flex h-11 overflow-hidden rounded-lg border bg-[#161616] ${
-              couponError ? 'border-red-500/50' : appliedCoupon ? 'border-emerald-500/50' : 'border-[#2A2A2A]'
+              appliedCoupon ? 'border-emerald-500/50' : 'border-[#2A2A2A]'
             }`}>
               <input
                 id="coupon"
@@ -280,7 +295,6 @@ export function CouponDrawer({
                   setCouponCode(e.target.value);
                   setAppliedCoupon(null);
                   setDiscountAmount(0);
-                  setCouponError(null);
                 }}
                 onKeyDown={handleKeyDown}
                 placeholder="Enter coupon code"
@@ -296,12 +310,6 @@ export function CouponDrawer({
                 {validating ? <Loader2 size={14} className="animate-spin" /> : appliedCoupon ? "Applied" : "Apply"}
               </button>
             </div>
-            {couponError && (
-              <div className="flex items-center gap-1.5 text-[11px] text-red-400 mt-2">
-                <AlertCircle size={12} />
-                <span>{couponError}</span>
-              </div>
-            )}
           </div>
 
           <div className="rounded-lg border border-[#2A2A2A] bg-[#161616] p-4">
@@ -316,52 +324,13 @@ export function CouponDrawer({
             </div>
           </div>
 
-          <div className="flex flex-col gap-3">
-            <button
-              type="button"
-              onClick={() => handleConfirm()}
-              disabled={loading || isPopupProcessing || popupSuccess}
-              className={`flex h-11 w-full items-center justify-center gap-2 rounded-lg font-medium transition-all px-4 ${
-                checkoutError 
-                  ? "bg-red-500/10 border border-red-500/30 text-red-500"
-                  : popupSuccess
-                  ? "bg-emerald-500 text-white hover:bg-emerald-600"
-                  : loading || isPopupProcessing
-                    ? "bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed"
-                    : "bg-[#FF5722] text-white hover:bg-[#E64D1F]"
-              }`}
-            >
-              {checkoutError ? (
-                <>
-                  <AlertCircle size={16} className="shrink-0" />
-                  <span className="truncate text-xs">{checkoutError}</span>
-                </>
-              ) : popupSuccess ? (
-                <>
-                  <Check size={16} />
-                  Payment Successful!
-                </>
-              ) : loading || isPopupProcessing ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" />
-                  {isPopupProcessing ? "Processing Payment..." : "Processing..."}
-                </>
-              ) : (
-                <>
-                  {redirectionLink ? 'Proceed to Checkout' : 'Pay with PayPal'}
-                  <ArrowRight className="h-4 w-4" />
-                </>
-              )}
-            </button>
-            
-            <div className="mt-4 flex items-start gap-2 text-[#555]">
-              <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-              <p className="text-[10px] leading-relaxed">
-                {redirectionLink 
-                  ? "You'll be securely redirected to our checkout page to complete your payment." 
-                  : "You'll be securely redirected to PayPal to complete your payment. Your payment details are handled by PayPal."}
-              </p>
-            </div>
+          <div className="mt-4 flex items-start gap-2 text-[#555]">
+            <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <p className="text-[10px] leading-relaxed">
+              {redirectionLink 
+                ? "You'll be securely redirected to our checkout page to complete your payment." 
+                : "You'll be securely redirected to PayPal to complete your payment. Your payment details are handled by PayPal."}
+            </p>
           </div>
         </div>
 

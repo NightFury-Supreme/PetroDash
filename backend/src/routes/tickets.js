@@ -365,6 +365,16 @@ router.post('/:id/status', requireAuth, async (req, res) => {
       }
       t.status = 'resolved';
     } else if (action === 'reopen') {
+      const activeTicketsCount = await Ticket.countDocuments({
+        user: userId,
+        status: { $in: ['open', 'pending'] },
+        deletedByUser: { $ne: true }
+      });
+      
+      if (activeTicketsCount >= 3) {
+        return res.status(429).json({ error: 'You have reached the maximum limit of 3 active tickets. Cannot reopen.' });
+      }
+
       t.status = 'open';
       t.closedAt = null;
     } else {

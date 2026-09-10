@@ -78,6 +78,8 @@ export default function AdminEarnPage() {
     );
   }
 
+  if (error) throw new Error(error);
+
   return (
     <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans">
       <AdminEarnHeader />

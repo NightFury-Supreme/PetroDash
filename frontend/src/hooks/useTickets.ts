@@ -5,27 +5,36 @@ import { API_BASE, getToken } from '@/components/tickets/utils';
 interface UseTicketsReturn {
   tickets: SupportTicket[];
   loading: boolean;
+  error: string | null;
   categories: string[];
   fetchTickets: () => Promise<void>;
-  updateStatus: (id: string, action: TicketAction) => Promise<void>;
+  updateStatus: (id: string, action: TicketAction) => Promise<{ ok: boolean; error?: string }>;
   createTicket: (data: { title: string; message: string; category: string; priority?: string }) => Promise<{ ok: boolean; error?: string }>;
 }
 
 export function useTickets(): UseTicketsReturn {
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>(['general']);
 
   const fetchTickets = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       const r = await fetch(`${API_BASE}/api/tickets/mine`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
-      const d = await r.json().catch(() => []);
-      if (r.ok) setTickets(Array.isArray(d) ? d : []);
-    } catch {}
-    setLoading(false);
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        throw new Error(d?.error || 'Failed to load tickets');
+      }
+      setTickets(Array.isArray(d?.tickets || d) ? (d?.tickets || d) : []);
+    } catch (e: any) {
+      setError(e.message || 'Failed to load tickets');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -46,22 +55,35 @@ export function useTickets(): UseTicketsReturn {
     })();
   }, []);
 
-  /* -- Update status (optimistic) ------------------- */
+  /* -- Update status (optimistic with revert) ------ */
   const updateStatus = useCallback(async (id: string, action: TicketAction) => {
     const statusMap: Record<string, TicketStatus> = {
       reopen: 'open', resolved: 'resolved',
     };
     const newStatus = statusMap[action];
     
+    // Optimistic update
+    const prevTickets = [...tickets];
     setTickets(cur => cur.map(t => t._id === id ? { ...t, status: newStatus } : t));
+    
     try {
-      await fetch(`${API_BASE}/api/tickets/${id}/status`, {
+      const res = await fetch(`${API_BASE}/api/tickets/${id}/status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
         body: JSON.stringify({ action }),
       });
-    } catch {}
-  }, []);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        // Revert
+        setTickets(prevTickets);
+        return { ok: false, error: data.error || 'Failed to update ticket status' };
+      }
+      return { ok: true };
+    } catch (err: any) {
+      setTickets(prevTickets);
+      return { ok: false, error: err.message || 'Network error' };
+    }
+  }, [tickets]);
 
   /* -- Create --------------------------------------- */
   const createTicket = useCallback(async (data: { title: string; message: string; category: string; priority?: string }) => {
@@ -80,5 +102,5 @@ export function useTickets(): UseTicketsReturn {
     }
   }, [fetchTickets]);
 
-  return { tickets, loading, categories, fetchTickets, updateStatus, createTicket };
+  return { tickets, loading, error, categories, fetchTickets, updateStatus, createTicket };
 }

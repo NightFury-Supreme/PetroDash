@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import {
   Server,
   Loader2,
@@ -9,10 +9,7 @@ import { EditServerDrawerSkeleton } from "./EditServerDrawerSkeleton";
 import { useServerEdit } from "@/hooks/useServerEdit";
 import { Drawer } from "@/components/ui/Drawer";
 import { RESOURCE_FIELDS, ResourceInputCard, ResourceKey } from "./ResourceInputCard";
-
-
-
-
+import { useToast } from "@/components/ui/ToastProvider";
 
 interface EditServerDrawerProps {
   serverId: string;
@@ -21,8 +18,7 @@ interface EditServerDrawerProps {
 }
 
 export function EditServerDrawer({ serverId, onClose, onUpdate }: EditServerDrawerProps) {
-  const [saved, setSaved] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const { showError, showSuccess } = useToast();
 
   const {
     loading,
@@ -37,6 +33,12 @@ export function EditServerDrawer({ serverId, onClose, onUpdate }: EditServerDraw
     isFormValid,
     error,
   } = useServerEdit(serverId);
+
+  useEffect(() => {
+    if (error) {
+      showError(error);
+    }
+  }, [error, showError]);
 
   const updateValue = useCallback((key: ResourceKey, v: number) => {
     setForm((prev) => ({ ...prev, [key]: v }));
@@ -53,28 +55,28 @@ export function EditServerDrawer({ serverId, onClose, onUpdate }: EditServerDraw
               ? server.locationFlag 
               : `${process.env.NEXT_PUBLIC_API_BASE || ''}${server.locationFlag.startsWith('/') ? '' : '/'}${server.locationFlag}`}
             alt="Node flag" 
-            className="w-3.5 h-3 object-cover rounded-[2px]"
+            className="w-4 h-3 object-cover rounded-sm opacity-80"
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
         )}
-        {server.location || 'Unknown Node'}
+        <span className="truncate max-w-[120px]">{server.location || 'Unknown'}</span>
       </span>
-
-      <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#222] bg-[#161616] px-2.5 py-1 text-xs text-[#888]">
-        {server.eggIcon && (
+      {server.eggIcon && (
+        <span className="inline-flex items-center justify-center w-6 h-6 rounded-md border border-[#222] bg-[#161616]">
           <img 
             src={server.eggIcon.startsWith('http') 
               ? server.eggIcon 
               : `${process.env.NEXT_PUBLIC_API_BASE || ''}${server.eggIcon.startsWith('/') ? '' : '/'}${server.eggIcon}`}
-            alt="Egg icon" 
-            className="w-3.5 h-3.5 object-contain"
+            alt="Egg" 
+            className="w-3.5 h-3.5 object-contain opacity-80"
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
-        )}
-        {server.eggName || 'Unknown Egg'}
-      </span>
+        </span>
+      )}
     </div>
   ) : null;
+
+  if (loading) return <EditServerDrawerSkeleton />;
 
   return (
     <Drawer
@@ -89,43 +91,29 @@ export function EditServerDrawer({ serverId, onClose, onUpdate }: EditServerDraw
           <button
             type="button"
             onClick={onClose}
-            disabled={saving || saved || failed}
+            disabled={saving}
             className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={async (e) => {
-              setFailed(false);
               const success = await handleSave(e);
               if (success) {
-                setSaved(true);
-                setTimeout(() => {
-                  if (onUpdate) onUpdate();
-                  onClose();
-                }, 1000);
-              } else {
-                setFailed(true);
-                setTimeout(() => setFailed(false), 3000);
+                showSuccess("Server updated successfully!");
+                if (onUpdate) onUpdate();
+                onClose();
               }
             }}
-            disabled={saving || saved || failed || !isFormValid || server?.suspended || server?.status?.toLowerCase() === 'creating'}
+            disabled={saving || !isFormValid || server?.suspended || server?.status?.toLowerCase() === 'creating'}
             className={`flex min-w-[140px] max-w-[300px] items-center justify-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-all ${
-                saved
-                  ? "bg-emerald-500 border border-emerald-500 text-white cursor-default"
-                  : failed
-                  ? "bg-red-500 border border-red-500 text-white cursor-default"
-                  : saving || !isFormValid || server?.suspended || server?.status?.toLowerCase() === 'creating'
+                saving || !isFormValid || server?.suspended || server?.status?.toLowerCase() === 'creating'
                   ? "bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed"
                   : "bg-[#FF5722] border border-[#FF5722] text-white hover:bg-[#F4511E]"
             }`}
           >
             {saving ? (
               <><Loader2 size={16} className="animate-spin" /> Saving...</>
-            ) : saved ? (
-              "Saved!"
-            ) : failed ? (
-              "Failed to Save"
             ) : (
               "Save Changes"
             )}

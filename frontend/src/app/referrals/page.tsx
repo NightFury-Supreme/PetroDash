@@ -20,6 +20,7 @@ import { SummaryItem } from "@/components/referrals/SummaryItem";
 import { ReferralRow } from "@/components/referrals/ReferralRow";
 import ReferralsSkeleton from "@/components/skeletons/referrals/ReferralsSkeleton";
 import { ReferralUser } from "@/components/referrals/types";
+import { useToast } from "@/components/ui/ToastProvider";
 
 const USERS_PER_PAGE = 5;
 
@@ -47,7 +48,7 @@ export default function ReferralsPage() {
   const [editingCode, setEditingCode] = React.useState(false);
   const [draftCode, setDraftCode] = React.useState("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [errorMessage, setErrorMessage] = useState("");
+  const { showError, showSuccess } = useToast();
 
   // Fetch stats and user settings
   const fetchMe = async () => {
@@ -112,18 +113,11 @@ export default function ReferralsPage() {
      COPY
   ------------------------------------------------------------------------ */
 
-  async function handleCopy() {
-    try {
-      await navigator.clipboard.writeText(referralLink);
-
-      setCopied(true);
-
-      window.setTimeout(() => {
-        setCopied(false);
-      }, 1800);
-    } catch {
-      setCopied(false);
-    }
+  function handleCopy() {
+    navigator.clipboard.writeText(referralLink);
+    setCopied(true);
+    showSuccess("Copied to clipboard!");
+    setTimeout(() => setCopied(false), 2000);
   }
 
 
@@ -145,7 +139,6 @@ export default function ReferralsPage() {
     setDraftCode(referralCode);
     setEditingCode(false);
     setSaveStatus("idle");
-    setErrorMessage("");
   }
 
 
@@ -155,12 +148,9 @@ export default function ReferralsPage() {
       .toUpperCase()
       .replace(/[^A-Z0-9-_]/g, "");
 
-    if (!normalized) {
-      return;
-    }
+    if (!normalized) return;
 
     setSaveStatus("loading");
-    setErrorMessage("");
     try {
       const token = localStorage.getItem("auth_token");
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/referrals/code`, {
@@ -176,13 +166,9 @@ export default function ReferralsPage() {
         setReferralCode(data.code);
         setDraftCode(data.code);
         setReferralLink(referralLink.replace(/[^/]+$/, data.code));
-        setSaveStatus("success");
-        setTimeout(() => {
-          setEditingCode(false);
-          setSaveStatus("idle");
-        }, 1500);
+        showSuccess("Referral code updated successfully!");
+        setEditingCode(false);
       } else {
-        setSaveStatus("error");
         let errorMsg = data.error || "Failed to update code";
         if (data.details && data.details.fieldErrors) {
           const fields = Object.keys(data.details.fieldErrors);
@@ -190,12 +176,13 @@ export default function ReferralsPage() {
             errorMsg = data.details.fieldErrors[fields[0]][0];
           }
         }
-        setErrorMessage(errorMsg);
+        showError(errorMsg);
       }
     } catch (err) {
       console.error(err);
-      setSaveStatus("error");
-      setErrorMessage("An unexpected error occurred. Please try again.");
+      showError("An unexpected error occurred. Please try again.");
+    } finally {
+      setSaveStatus("idle");
     }
   }
 
@@ -398,28 +385,12 @@ export default function ReferralsPage() {
                     type="button"
                     onClick={saveReferralCode}
                     disabled={saveStatus === "loading"}
-                    className={`flex h-10 items-center gap-2 rounded-md px-4 text-xs font-medium text-white transition-all disabled:opacity-50 disabled:bg-[#161616] disabled:text-[#888] disabled:border disabled:border-[#222] ${
-                      saveStatus === "success"
-                        ? "bg-emerald-500 hover:bg-emerald-600"
-                        : saveStatus === "error"
-                        ? "bg-red-500 hover:bg-red-600"
-                        : "bg-[#FF5722] hover:bg-[#E64D1F]"
-                    }`}
+                    className="flex h-10 items-center gap-2 rounded-md px-4 text-xs font-medium text-white transition-all disabled:opacity-50 disabled:bg-[#161616] disabled:text-[#888] disabled:border disabled:border-[#222] bg-[#FF5722] hover:bg-[#E64D1F]"
                   >
                     {saveStatus === "loading" ? (
                       <>
                         <Loader2 size={13} className="animate-spin" />
                         Saving...
-                      </>
-                    ) : saveStatus === "success" ? (
-                      <>
-                        <Check size={13} />
-                        Saved!
-                      </>
-                    ) : saveStatus === "error" ? (
-                      <>
-                        <X size={13} />
-                        Failed
                       </>
                     ) : (
                       <>
@@ -430,11 +401,6 @@ export default function ReferralsPage() {
                   </button>
                 </div>
               </div>
-              {errorMessage && (
-                <div className="mt-3 rounded-md bg-red-500/[0.08] p-2 px-3 text-[11px] font-medium text-red-400">
-                  {errorMessage}
-                </div>
-              )}
               <p className="mt-3 text-[10px] text-white/20">
                 Your referral link will automatically use the new code.
               </p>

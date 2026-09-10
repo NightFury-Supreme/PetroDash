@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useProfile } from '@/hooks/useProfile';
 import ProfileSkeleton from '@/components/skeletons/profile/ProfileSkeleton';
-import { useModal } from '@/components/Modal';
+import { useToast } from '@/components/ui/ToastProvider';
 import { 
   EmailVerificationDrawer,
   PasswordDrawer, 
@@ -34,9 +34,9 @@ import {
 type Section = "overview" | "security" | "sessions" | "activity" | "invoices";
 
 export default function ProfilePage() {
-  const { form, setForm, loading, saveProfile, updatePassword, updateProfilePicture, sessions, revokeSession, resendVerification, verifyEmailCode } = useProfile();
+  const { form, setForm, loading, error, saveProfile, updatePassword, updateProfilePicture, sessions, revokeSession, resendVerification, verifyEmailCode } = useProfile();
 
-  const modal = useModal();
+  const { showError, showSuccess } = useToast();
   const router = useRouter();
 
   const [section, setSection] = useState<Section>("overview");
@@ -94,7 +94,7 @@ export default function ProfilePage() {
     if (editing === "username") {
       const trimmed = (draft || '').trim();
       if (trimmed.length < 3) {
-        modal.error({ title: 'Validation Error', body: 'Username must be at least 3 characters.' });
+        showError('Username must be at least 3 characters.');
         return false;
       }
       updates = { username: trimmed };
@@ -105,7 +105,7 @@ export default function ProfilePage() {
       const lastName = (draft?.last || '').trim();
       // Backend requires min 1 char for each field when provided
       if (!firstName) {
-        modal.error({ title: 'Validation Error', body: 'First name cannot be empty.' });
+        showError('First name cannot be empty.');
         return false;
       }
       // Only send lastName if it's non-empty (backend min(1) validation)
@@ -115,9 +115,10 @@ export default function ProfilePage() {
 
     try {
       await saveProfile(updates);
+      showSuccess("Profile updated successfully.");
       return true;
     } catch (e: any) {
-      modal.error({ title: 'Update Failed', body: e.message || 'Failed to save profile. Please try again.' });
+      showError(e.message || 'Failed to save profile. Please try again.');
       return false;
     }
   };
@@ -203,10 +204,12 @@ export default function ProfilePage() {
         setResendRateLimit(e.retryAfter);
         localStorage.setItem('email_verify_rate_limited_until', (Date.now() + e.retryAfter * 1000).toString());
       } else {
-        modal.error({ title: 'Verification Failed', body: e.message || 'Failed to send verification email. Please try again.' });
+        showError(e.message || 'Failed to send verification email. Please try again.');
       }
     }
   };
+
+  if (error) throw new Error(error);
 
   if (loading) return <ProfileSkeleton />;
 
@@ -219,14 +222,14 @@ export default function ProfilePage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        modal.error({ title: 'Setup Failed', body: data.error || 'Failed to setup 2FA' });
+        showError(data.error || 'Failed to setup 2FA');
         return;
       }
       setTfaSetupData(data);
       setTfaBackupCodes(null);
       setShow2FASetupModal(true);
     } catch {
-      modal.error({ title: 'Network Error', body: 'Could not connect to the server. Please try again.' });
+      showError('Could not connect to the server. Please try again.');
     }
   };
 
@@ -344,8 +347,10 @@ export default function ProfilePage() {
             {section === "overview" && <Overview form={form} editing={editing} draft={draft} onEdit={beginEdit} onCancel={cancelEdit} onSave={saveEdit} onDraft={setDraft} onSaveAvatar={async (url) => {
                   try {
                     await updateProfilePicture(url || '');
-                    
-                  } catch {}
+                    showSuccess("Profile picture updated.");
+                  } catch (e: any) {
+                    showError(e.message || "Failed to update profile picture.");
+                  }
                 }} onChangeEmail={() => setShowChangeEmailDrawer(true)} setForm={setForm} />}
             {section === "security" && (
               <Security 
@@ -423,5 +428,6 @@ export default function ProfilePage() {
     </div>
   );
 }
+
 
 

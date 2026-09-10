@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { AlertCircle, ShoppingCart, CreditCard } from "lucide-react";
+import { ShoppingCart, CreditCard } from "lucide-react";
 import ShopSkeleton from "@/components/skeletons/shop/ShopSkeleton";
+import { useToast } from "@/components/ui/ToastProvider";
 import { useShop } from "@/hooks/useShop";
 import { StoreHeader } from "@/components/shop/StoreHeader";
 import { ShopItemsView } from "@/components/shop/ShopItemsView";
@@ -24,9 +25,8 @@ export default function StorePage() {
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [purchaseLoading, setPurchaseLoading] = useState(false);
   const [isPopupProcessing, setIsPopupProcessing] = useState(false);
-  const [popupSuccess, setPopupSuccess] = useState(false);
-  const [planPurchaseError, setPlanPurchaseError] = useState<string | null>(null);
-  const [itemPurchaseError, setItemPurchaseError] = useState<string | null>(null);
+  const { showError, showSuccess } = useToast();
+  
 
   const {
     activeTab, setActiveTab,
@@ -36,25 +36,28 @@ export default function StorePage() {
     activePlans,
     bootstrapDone, currency,
   } = useShop();
+  // Handle page load errors
+  useEffect(() => {
+    if (error) {
+      showError(error);
+    }
+  }, [error, showError]);
+
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       // In production you might want to verify event.origin
       if (event.data?.type === "PAYPAL_SUCCESS") {
         setIsPopupProcessing(false);
-        setPopupSuccess(true);
-        setTimeout(() => {
-          setShowCouponModal(false);
-          setSelectedPlan(null);
-          setPopupSuccess(false);
-          // Reload page to fetch new plans/payments if necessary, or just rely on state
-          window.location.reload(); 
-        }, 2000);
+        showSuccess("Payment processed successfully!");
+        setShowCouponModal(false);
+        setSelectedPlan(null);
+        window.location.reload();
       }
     };
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, []);
+  }, [showSuccess]);
 
   /* -- Item purchase (via drawer) --------------- */
   const buyItem = async (): Promise<boolean> => {
@@ -63,7 +66,7 @@ export default function StorePage() {
     const quantity = drawerQty;
 
     setBuying(key);
-    setItemPurchaseError(null);
+    
     try {
       const token = localStorage.getItem("auth_token");
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/shop/purchase`, {
@@ -96,10 +99,11 @@ export default function StorePage() {
         // Ignored error
       }
 
+      showSuccess(`Successfully purchased ${quantity}x ${purchaseItem.name}`);
       return true;
     } catch (e: any) {
       const msg = String(e?.message || "Purchase failed");
-      setItemPurchaseError(msg);
+      showError(msg);
       return false;
     } finally {
       setBuying(null);
@@ -110,7 +114,7 @@ export default function StorePage() {
   const handlePlanPurchase = async (couponCode: string) => {
     if (!selectedPlan) return;
     setPurchaseLoading(true);
-    setPlanPurchaseError(null);
+    
     try {
       const token = localStorage.getItem("auth_token");
       if (!token) throw new Error("Not authenticated");
@@ -163,7 +167,7 @@ export default function StorePage() {
                 clearInterval(checkClosed);
                 setIsPopupProcessing((prev) => {
                   if (prev) { // If still processing when closed, it was cancelled
-                    setPlanPurchaseError("Payment was cancelled.");
+                    showError("Payment was cancelled.");
                     // Notify backend to mark order as VOIDED
                     fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/paypal/cancel-order`, {
                       method: "POST",
@@ -191,7 +195,7 @@ export default function StorePage() {
       }
       throw new Error("PayPal redirect link not found");
     } catch (e: any) {
-      setPlanPurchaseError(e.message || "Failed to process payment.");
+      showError(e.message || "Failed to process payment.");
       setPurchaseLoading(false);
     }
   };
@@ -207,6 +211,13 @@ export default function StorePage() {
   };
 
   if (!bootstrapDone) return <ShopSkeleton />;
+  if (error) {
+    return (
+      <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans flex items-center justify-center">
+        <p className="text-[#888]">Failed to load store. Please try again later.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen">
@@ -256,13 +267,6 @@ export default function StorePage() {
 
           {/* Main Content */}
           <div className="flex-1 min-w-0 w-full">
-            {error && (
-              <div className="mb-6 rounded-lg border border-[#FF4444]/20 bg-[#FF4444]/[0.05] px-4 py-3 text-sm text-[#FF4444] flex items-start gap-2">
-                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                <span>{error}</span>
-              </div>
-            )}
-
             {activeTab === "items" && (
               <ShopItemsView
                 items={items}
@@ -289,23 +293,22 @@ export default function StorePage() {
         quantity={drawerQty}
         total={purchaseItem ? Number(purchaseItem.pricePerUnit || 0) * drawerQty : 0}
         buying={buying === purchaseItem?.key}
-        onClose={() => { setPurchaseItem(null); setItemPurchaseError(null); }}
+        onClose={() => { setPurchaseItem(null);  }}
         onDecrease={() => setDrawerQty((q) => Math.max(1, q - 1))}
         onIncrease={() => setDrawerQty((q) => Math.min(maxQty, q + 1))}
         onQuantityChange={(v) => setDrawerQty(Math.max(1, Math.min(maxQty, Math.floor(v))))}
         onConfirm={buyItem}
-        checkoutError={itemPurchaseError}
+        
       />
 
       <CouponDrawer
         isOpen={showCouponModal}
-        onClose={() => { setShowCouponModal(false); setSelectedPlan(null); setPlanPurchaseError(null); }}
+        onClose={() => { setShowCouponModal(false); setSelectedPlan(null);  }}
         onConfirm={handlePlanPurchase}
         plan={selectedPlan}
         loading={purchaseLoading}
         isPopupProcessing={isPopupProcessing}
-        popupSuccess={popupSuccess}
-        checkoutError={planPurchaseError}
+        
       />
     </div>
   );

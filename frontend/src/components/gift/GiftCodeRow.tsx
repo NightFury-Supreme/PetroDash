@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, Check } from "lucide-react";
+import { Copy } from "lucide-react";
 
 type TabStatus = "Active" | "Inactive";
 
@@ -11,12 +11,11 @@ interface GiftCodeRowProps {
   expires: string;
   uses: string;
   status: TabStatus;
-  copied: boolean;
   onCopy: () => void;
 }
 
 export function GiftCodeRow({
-  code, description, reward, expires, uses, status, copied, onCopy,
+  code, description, reward, expires, uses, status, onCopy,
 }: GiftCodeRowProps) {
   const active = status === "Active";
 
@@ -46,8 +45,8 @@ export function GiftCodeRow({
             onClick={onCopy}
             className="inline-flex items-center gap-1.5 text-xs text-white/30 transition-colors hover:text-white"
           >
-            {copied ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
-            {copied ? "Copied" : "Copy"}
+            <Copy className="h-3 w-3" />
+            Copy
           </button>
         </div>
       </div>
@@ -78,8 +77,8 @@ export function GiftCodeRow({
           onClick={onCopy}
           className="mt-3 flex h-8 w-full items-center justify-center gap-1.5 rounded border border-white/[0.06] bg-white/[0.02] text-xs text-white/50 transition hover:text-white"
         >
-          {copied ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
-          {copied ? "Copied" : "Copy Code"}
+          <Copy className="h-3 w-3" />
+          Copy Code
         </button>
       </div>
     </div>

@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useDashboard } from '../../hooks/useDashboard';
 import { useProfile } from '../../hooks/useProfile';
+import { useToast } from '@/components/ui/ToastProvider';
 import { MetricCard } from './MetricCard';
 import { DashboardStatus } from './DashboardStatus';
 import { ResourceUsagePanel } from './ResourceUsagePanel';
@@ -12,6 +13,7 @@ import { EditServerDrawer } from '../server/EditServerDrawer';
 import { Plus, RefreshCw, Server, Cpu, HardDrive, Database } from 'lucide-react';
 
 export function DashboardContent() {
+  const { showError, showSuccess } = useToast();
   const { servers, usage, resources, removeServer, loadDashboardData } = useDashboard();
   const { form } = useProfile();
   const [showCreateDrawer, setShowCreateDrawer] = useState(false);
@@ -31,21 +33,28 @@ export function DashboardContent() {
 
   const handleDelete = useCallback(async (serverId: string, serverName: string) => {
     const token = localStorage.getItem('auth_token');
-    if (!token) throw new Error('Authentication required');
-
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers/${serverId}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` }
-    });
-
-    if (!response.ok) {
-      let errorData: any = {}; try { errorData = await response.json(); } catch {}
-      throw new Error(errorData?.error || 'Failed to delete server');
+    if (!token) {
+      showError('Authentication required');
+      return;
     }
 
-    removeServer(serverId);
-    void serverName;
-  }, [removeServer]);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers/${serverId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!response.ok) {
+        let errorData: any = {}; try { errorData = await response.json(); } catch {}
+        throw new Error(errorData?.error || 'Failed to delete server');
+      }
+
+      removeServer(serverId);
+      showSuccess(`Server "${serverName}" deleted successfully`);
+    } catch (e: any) {
+      throw e; // DeleteDrawer will catch this and call showError
+    }
+  }, [removeServer, showError, showSuccess]);
 
   return (
     <div className="flex flex-col h-full">

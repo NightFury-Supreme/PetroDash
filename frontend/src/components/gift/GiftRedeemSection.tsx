@@ -1,28 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { Gift, Ticket, Check } from "lucide-react";
-import { useModal } from "@/components/Modal";
+import { Gift, Ticket } from "lucide-react";
+import { useToast } from "@/components/ui/ToastProvider";
 
 export function GiftRedeemSection() {
-  const modal = useModal();
   const [redeemCode, setRedeemCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const { showError, showSuccess } = useToast();
 
   const handleRedeem = async () => {
     const normalized = redeemCode.trim().toUpperCase();
-    setError("");
-    setSuccess("");
-
-    if (!normalized) { setError("Enter a gift code to continue."); return; }
-    if (!/^[A-Z0-9\-]{4,32}$/.test(normalized)) { setError("Invalid code format."); return; }
+    
+    if (!normalized) { showError("Enter a gift code to continue."); return; }
+    if (!/^[A-Z0-9\-]{4,32}$/.test(normalized)) { showError("Invalid code format."); return; }
 
     try {
       setSubmitting(true);
       const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-      if (!token) { setError("Please login to redeem a gift."); return; }
+      if (!token) { showError("Please login to redeem a gift."); return; }
 
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/gifts/redeem`, {
         method: "POST",
@@ -34,23 +30,29 @@ export function GiftRedeemSection() {
       if (!r.ok) throw new Error(d?.error || "Redeem failed");
 
       const rewards = d?.rewards || {};
-      const parts: string[] = ["Your rewards have been applied."];
-      if (d?.description) parts.push(`\nNote: "${d.description}"\n`);
-      if (typeof rewards.coins === "number" && rewards.coins > 0) parts.push(`+${rewards.coins} coins`);
+      const parts: string[] = ["Gift redeemed: "];
+      const items: string[] = [];
+      if (typeof rewards.coins === "number" && rewards.coins > 0) items.push(`+${rewards.coins} coins`);
+      
       const res = rewards.resources || {};
-      if (res.diskMb > 0) parts.push(`+${res.diskMb} MB Disk`);
-      if (res.memoryMb > 0) parts.push(`+${res.memoryMb} MB RAM`);
-      if (res.cpuPercent > 0) parts.push(`+${res.cpuPercent}% CPU`);
-      if (res.backups > 0) parts.push(`+${res.backups} Backups`);
-      if (res.databases > 0) parts.push(`+${res.databases} Databases`);
-      if (res.allocations > 0) parts.push(`+${res.allocations} Allocations`);
-      if (res.serverSlots > 0) parts.push(`+${res.serverSlots} Slots`);
+      if (res.diskMb > 0) items.push(`+${res.diskMb} MB Disk`);
+      if (res.memoryMb > 0) items.push(`+${res.memoryMb} MB RAM`);
+      if (res.cpuPercent > 0) items.push(`+${res.cpuPercent}% CPU`);
+      if (res.backups > 0) items.push(`+${res.backups} Backups`);
+      if (res.databases > 0) items.push(`+${res.databases} DBs`);
+      if (res.allocations > 0) items.push(`+${res.allocations} Ports`);
+      if (res.serverSlots > 0) items.push(`+${res.serverSlots} Slots`);
 
-      setSuccess(parts.join(" · "));
+      if (items.length > 0) {
+        parts.push(items.join(", "));
+      } else {
+        parts.push("No specific resources.");
+      }
+      
       setRedeemCode("");
-      await modal.success({ title: "Gift Redeemed", body: parts.join("\n") });
+      showSuccess(parts.join(""));
     } catch (e: any) {
-      setError(e?.message || "Redeem failed");
+      showError(e?.message || "Redeem failed");
     } finally {
       setSubmitting(false);
     }
@@ -74,7 +76,7 @@ export function GiftRedeemSection() {
             <Ticket className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#555]" />
             <input
               value={redeemCode}
-              onChange={(e) => { setRedeemCode(e.target.value.toUpperCase()); setError(""); setSuccess(""); }}
+              onChange={(e) => { setRedeemCode(e.target.value.toUpperCase()); }}
               onKeyDown={(e) => { if (e.key === "Enter") handleRedeem(); }}
               placeholder="XXXX-XXXX-XXXX"
               className="h-10 w-full rounded-lg border border-white/[0.06] bg-[#151515] pl-9 pr-3 text-sm font-medium tracking-widest text-[#D4D4D4] outline-none placeholder:text-[#444] transition focus:border-[#FF5722]/50"
@@ -86,22 +88,9 @@ export function GiftRedeemSection() {
             disabled={!redeemCode.trim() || submitting}
             className="flex items-center gap-2 rounded-lg border border-[#FF5722]/30 bg-[#1A0F0C] px-4 text-xs font-medium text-[#FF5722] transition hover:bg-[#FF5722]/10 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {submitting ? "Redeeming…" : "Redeem"}
+            {submitting ? "Redeeming." : "Redeem"}
           </button>
         </div>
-
-        {error && (
-          <div className="mt-3 flex items-center gap-2 rounded-lg border border-[#FF4444]/20 bg-[#FF4444]/5 px-3 py-2.5 text-xs text-[#FF4444]">
-            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[#FF4444]/10 text-xs font-bold">!</span>
-            {error}
-          </div>
-        )}
-        {success && (
-          <div className="mt-3 flex items-center gap-2 rounded-lg border border-[#00FF88]/20 bg-[#00FF88]/5 px-3 py-2.5 text-xs text-[#00FF88]">
-            <Check className="h-3.5 w-3.5 shrink-0" />
-            {success}
-          </div>
-        )}
       </div>
       
       <div className="flex flex-col justify-center p-6 bg-white/[0.01]">

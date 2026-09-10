@@ -158,6 +158,8 @@ export default function AdminSettingsPage() {
     throw new Error(error || 'Unable to load system settings.');
   }
 
+  if (error) throw new Error(error);
+
   return (
     
       <div className="p-6 space-y-6">

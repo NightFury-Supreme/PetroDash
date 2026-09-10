@@ -1,5 +1,4 @@
 import { AdminGiftTableRow } from "./AdminGiftTableRow";
-import { Gift } from "lucide-react";
 
 export function AdminGiftsTable({
   gifts,
@@ -17,9 +16,6 @@ export function AdminGiftsTable({
   if (!gifts?.length) {
     return (
       <div className="flex flex-col items-center justify-center py-24 px-4 text-center border-t border-white/[0.06]">
-        <div className="w-16 h-16 rounded-full bg-white/[0.02] border border-white/[0.05] flex items-center justify-center mb-4">
-          <Gift size={24} className="text-[#555]" />
-        </div>
         <h3 className="text-lg font-medium text-white mb-1">No gifts found</h3>
         <p className="text-sm text-[#888] max-w-sm">
           No gift codes match your search criteria. Create one to get started.

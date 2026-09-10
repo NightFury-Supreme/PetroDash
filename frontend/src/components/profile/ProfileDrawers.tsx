@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Drawer } from "@/components/ui/Drawer";
 import { Mail, KeyRound, ShieldCheck, AlertTriangle, AlertCircle, Copy, Trash2, Check, ArrowRight } from "lucide-react";
+import { useToast } from "@/components/ui/ToastProvider";
 
 // Inline validation message — same pattern as the reference UsernameSetting component
 function ValidationMsg({ touched, valid, message, hideSuccess }: { touched: boolean; valid: boolean; message: string; hideSuccess?: boolean }) {
@@ -31,20 +32,17 @@ export function EmailDrawer({
   const [emailPassword, setEmailPassword] = useState('');
   const [emailTfaCode, setEmailTfaCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isSaved, setIsSaved] = useState(false);
   const [touchedEmail, setTouchedEmail] = useState(false);
   const [touchedPw, setTouchedPw] = useState(false);
   const [touchedTfa, setTouchedTfa] = useState(false);
   const [useBackupCode, setUseBackupCode] = useState(false);
+  const { showError, showSuccess } = useToast();
 
   const handleClose = () => {
     onClose();
     setEmailDraft('');
     setEmailPassword('');
     setEmailTfaCode('');
-    setError(null);
-    setIsSaved(false);
   };
 
   const emailValidation = useMemo(() => {
@@ -76,13 +74,13 @@ export function EmailDrawer({
     setTouchedTfa(true);
     if (!isValid) return;
     setIsLoading(true);
-    setError(null);
     try {
       await updateEmail(emailDraft, emailPassword, emailTfaCode);
-      setIsSaved(true);
-      setTimeout(() => { setIsSaved(false); onClose(); }, 1000);
+      showSuccess("Email updated successfully.");
+      handleClose();
     } catch (e: any) {
-      setError(e.message || 'An error occurred while updating.');
+      showError(e.message || 'An error occurred while updating.');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -90,12 +88,6 @@ export function EmailDrawer({
   return (
     <Drawer isOpen={isOpen} onClose={handleClose} title="Change Email" subtitle="Update your account email address" icon={<Mail className="text-[#FF5722]" size={20} />}>
       <div className="grid gap-6 mt-2">
-        {error && (
-          <div className="flex items-start gap-3 rounded-lg bg-red-500/10 p-3 border border-red-500/20 text-red-400">
-            <AlertTriangle size={16} className="shrink-0 mt-0.5" />
-            <p className="text-[12px] leading-relaxed">{error}</p>
-          </div>
-        )}
         <div>
           <label className="block text-[11px] uppercase tracking-wider text-[#888] mb-2 font-medium">New Email</label>
           <input
@@ -146,10 +138,9 @@ export function EmailDrawer({
           </div>
         )}
         <div className="mt-4 flex justify-end gap-3">
-          <button onClick={handleClose} disabled={isLoading || isSaved} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-white transition-colors disabled:opacity-50">Cancel</button>
-          <button onClick={handleUpdate} disabled={isLoading || isSaved || !isValid} className={`flex h-11 items-center justify-center rounded-lg px-6 text-[13px] font-medium transition-colors disabled:cursor-not-allowed gap-2 ${isSaved ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : (isLoading || !isValid) ? 'bg-[#333] text-[#888]' : 'bg-[#FF5722] hover:bg-[#F4511E] text-white'}`}>
-            {isLoading && !isSaved ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : isSaved ? <Check size={16} /> : null}
-            {isSaved ? "Saved" : "Update Email"}
+          <button onClick={handleClose} disabled={isLoading} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-white transition-colors disabled:opacity-50">Cancel</button>
+          <button onClick={handleUpdate} disabled={isLoading || !isValid} className={`flex h-11 items-center justify-center rounded-lg px-6 text-[13px] font-medium transition-colors gap-2 ${(!isValid) ? 'bg-[#333] text-[#888] cursor-not-allowed' : 'bg-[#FF5722] hover:bg-[#F4511E] text-white disabled:opacity-50'}`}>
+            {isLoading ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : "Update Email"}
           </button>
         </div>
       </div>
@@ -174,11 +165,10 @@ export function PasswordDrawer({
   const [passwordTfaCode, setPasswordTfaCode] = useState('');
   const [useBackupCode, setUseBackupCode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isSaved, setIsSaved] = useState(false);
   const [touchedCurrent, setTouchedCurrent] = useState(false);
   const [touchedNew, setTouchedNew] = useState(false);
   const [touchedTfa, setTouchedTfa] = useState(false);
+  const { showError, showSuccess } = useToast();
 
   const currentValidation = useMemo(() => {
     if (!currentPassword) return { valid: false, message: 'Current password is required.' };
@@ -203,44 +193,33 @@ export function PasswordDrawer({
 
   const isValid = currentValidation.valid && newValidation.valid && tfaValidation.valid;
 
+  const handleUpdate = async () => {
+    setTouchedCurrent(true);
+    setTouchedNew(true);
+    setTouchedTfa(true);
+    if (!isValid) return;
+    setIsLoading(true);
+    try {
+      await updatePassword(currentPassword, newPassword, passwordTfaCode);
+      showSuccess("Password updated successfully.");
+      handleClose();
+    } catch (e: any) {
+      showError(e.message || 'An error occurred while updating.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleClose = () => {
     onClose();
     setCurrentPassword('');
     setNewPassword('');
     setPasswordTfaCode('');
-    setError(null);
-    setIsSaved(false);
-  };
-
-  const handleUpdate = async () => {
-    setTouchedCurrent(true);
-    setTouchedNew(true);
-    setTouchedTfa(true);
-    if (!isValid) {
-      setError('Please fill in all required fields correctly.');
-      return;
-    }
-    setIsLoading(true);
-    setError(null);
-    try {
-      await updatePassword(currentPassword, newPassword, passwordTfaCode);
-      setIsSaved(true);
-      setTimeout(() => { setIsSaved(false); onClose(); }, 1000);
-    } catch (e: any) {
-      setError(e.message || 'An error occurred while updating.');
-      setIsLoading(false);
-    }
   };
 
   return (
     <Drawer isOpen={isOpen} onClose={handleClose} title="Change Password" subtitle="Update your account password" icon={<KeyRound className="text-[#FF5722]" size={20} />}>
       <div className="grid gap-6 mt-2">
-        {error && (
-          <div className="flex items-start gap-3 rounded-lg bg-red-500/10 p-3 border border-red-500/20 text-red-400">
-            <AlertTriangle size={16} className="shrink-0 mt-0.5" />
-            <p className="text-[12px] leading-relaxed">{error}</p>
-          </div>
-        )}
         <div>
           <label className="block text-[11px] uppercase tracking-wider text-[#888] mb-2 font-medium">Current Password</label>
           <input
@@ -265,7 +244,7 @@ export function PasswordDrawer({
             className={`w-full h-11 rounded-lg border bg-[#161616] px-4 text-[13px] text-white outline-none focus:border-[#FF5722] transition-colors disabled:opacity-50 ${touchedNew && !newValidation.valid ? 'border-red-400/30' : 'border-[#222]'}`}
             placeholder="Minimum 8 characters"
           />
-          <ValidationMsg touched={touchedNew} valid={newValidation.valid} message={newValidation.message} hideSuccess={true} />
+          <ValidationMsg touched={touchedNew} valid={newValidation.valid} message={newValidation.message} />
         </div>
         {tfaEnabled && (
           <div>
@@ -289,10 +268,9 @@ export function PasswordDrawer({
           </div>
         )}
         <div className="mt-4 flex justify-end gap-3">
-          <button onClick={handleClose} disabled={isLoading || isSaved} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-white transition-colors disabled:opacity-50">Cancel</button>
-          <button onClick={handleUpdate} disabled={isLoading || isSaved || !isValid} className={`flex h-11 items-center justify-center rounded-lg px-6 text-[13px] font-medium transition-colors disabled:cursor-not-allowed gap-2 ${isSaved ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : (isLoading || !isValid) ? 'bg-[#333] text-[#888]' : 'bg-[#FF5722] hover:bg-[#F4511E] text-white'}`}>
-            {isLoading && !isSaved ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : isSaved ? <Check size={16} /> : null}
-            {isSaved ? "Saved" : "Update Password"}
+          <button onClick={handleClose} disabled={isLoading} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-white transition-colors disabled:opacity-50">Cancel</button>
+          <button onClick={handleUpdate} disabled={isLoading || !isValid} className={`flex h-11 items-center justify-center rounded-lg px-6 text-[13px] font-medium transition-colors gap-2 ${(!isValid) ? 'bg-[#333] text-[#888] cursor-not-allowed' : 'bg-[#FF5722] hover:bg-[#F4511E] text-white disabled:opacity-50'}`}>
+            {isLoading ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : "Update Password"}
           </button>
         </div>
       </div>
@@ -321,13 +299,12 @@ export function ChangeEmailDrawer({
   const [useBackupCode, setUseBackupCode] = useState(false);
   
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isSaved, setIsSaved] = useState(false);
   
   const [touchedEmail, setTouchedEmail] = useState(false);
   const [touchedCurrent, setTouchedCurrent] = useState(false);
   const [touchedTfa, setTouchedTfa] = useState(false);
   const [touchedVerify, setTouchedVerify] = useState(false);
+  const { showError, showSuccess } = useToast();
 
   // Reset state when drawer closes/opens
   useEffect(() => {
@@ -339,8 +316,6 @@ export function ChangeEmailDrawer({
         setTfaCode('');
         setVerifyCode('');
         setUseBackupCode(false);
-        setError(null);
-        setIsSaved(false);
         setTouchedEmail(false);
         setTouchedCurrent(false);
         setTouchedTfa(false);
@@ -383,8 +358,6 @@ export function ChangeEmailDrawer({
     setCurrentPassword('');
     setTfaCode('');
     setVerifyCode('');
-    setError(null);
-    setIsSaved(false);
     setStep(1);
   };
 
@@ -392,22 +365,18 @@ export function ChangeEmailDrawer({
     setTouchedEmail(true);
     setTouchedCurrent(true);
     setTouchedTfa(true);
-    if (!isStep1Valid) {
-      setError('Please fill in all required fields correctly.');
-      return;
-    }
+    if (!isStep1Valid) return;
     setIsLoading(true);
-    setError(null);
     try {
       const result = await changeEmail(newEmail, currentPassword, tfaCode);
       if (result && result.requiresVerification) {
         setStep(2);
       } else {
-        setIsSaved(true);
-        setTimeout(() => { onClose(); }, 1000);
+        showSuccess("Email updated successfully.");
+        handleClose();
       }
     } catch (e: any) {
-      setError(e.message || 'An error occurred while updating email.');
+      showError(e.message || 'An error occurred while updating email.');
     } finally {
       setIsLoading(false);
     }
@@ -415,33 +384,22 @@ export function ChangeEmailDrawer({
   
   const handleVerify = async () => {
     setTouchedVerify(true);
-    if (!isStep2Valid || !verifyEmailChange) {
-      setError('Please enter the 8-digit verification code.');
-      return;
-    }
+    if (!isStep2Valid || !verifyEmailChange) return;
     setIsLoading(true);
-    setError(null);
     try {
       await verifyEmailChange(newEmail, verifyCode);
-      setIsSaved(true);
-      setTimeout(() => { onClose(); }, 1000);
+      showSuccess("Email verified successfully.");
+      handleClose();
     } catch (e: any) {
-      setError(e.message || 'An error occurred while verifying the code.');
+      showError(e.message || 'An error occurred while verifying the code.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <Drawer isOpen={isOpen} onClose={onClose} title="Change Email" subtitle={step === 1 ? "Update your account email address" : "Verify your new email address"} icon={<Mail className="text-[#FF5722]" size={20} />}>
+    <Drawer isOpen={isOpen} onClose={handleClose} title="Change Email" subtitle={step === 1 ? "Update your account email address" : "Verify your new email address"} icon={<Mail className="text-[#FF5722]" size={20} />}>
       <div className="grid gap-6 mt-2">
-        {error && (
-          <div className="flex items-start gap-3 rounded-lg bg-red-500/10 p-3 border border-red-500/20 text-red-400">
-            <AlertTriangle size={16} className="shrink-0 mt-0.5" />
-            <p className="text-[12px] leading-relaxed">{error}</p>
-          </div>
-        )}
-        
         {step === 1 ? (
           <>
             <div>
@@ -492,39 +450,36 @@ export function ChangeEmailDrawer({
               </div>
             )}
             <div className="mt-4 flex justify-end gap-3">
-              <button onClick={handleClose} disabled={isLoading || isSaved} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-white transition-colors disabled:opacity-50">Cancel</button>
-              <button onClick={handleUpdate} disabled={isLoading || isSaved || !isStep1Valid} className={`flex h-11 items-center justify-center rounded-lg px-6 text-[13px] font-medium transition-colors disabled:cursor-not-allowed gap-2 ${isSaved ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : (isLoading || !isStep1Valid) ? 'bg-[#333] text-[#888]' : 'bg-[#FF5722] hover:bg-[#F4511E] text-white'}`}>
-                {isLoading && !isSaved ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : isSaved ? <Check size={16} /> : null}
-                {isSaved ? "Saved" : "Change Email"}
+              <button onClick={handleClose} disabled={isLoading} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-white transition-colors disabled:opacity-50">Cancel</button>
+              <button onClick={handleUpdate} disabled={isLoading || !isStep1Valid} className={`flex h-11 items-center justify-center rounded-lg px-6 text-[13px] font-medium transition-colors gap-2 ${(!isStep1Valid) ? 'bg-[#333] text-[#888] cursor-not-allowed' : 'bg-[#FF5722] hover:bg-[#F4511E] text-white disabled:opacity-50'}`}>
+                {isLoading ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : "Change Email"}
               </button>
             </div>
           </>
         ) : (
           <>
             <div>
-              <p className="text-sm text-[#888] mb-6">
-                We've sent an 8-character verification code to <span className="text-white font-medium">{newEmail}</span>.
-                Please enter it below to confirm your new email address.
+              <p className="text-sm text-[#888] mb-4 leading-relaxed">
+                We've sent an 8-digit verification code to <span className="text-white font-medium">{newEmail}</span>. Please enter it below to confirm your new email address.
               </p>
               <label className="block text-[11px] uppercase tracking-wider text-[#888] mb-2 font-medium">Verification Code</label>
               <input
                 type="text"
                 maxLength={8}
                 value={verifyCode}
-                onChange={(e) => { setVerifyCode(e.target.value.toUpperCase()); setTouchedVerify(true); }}
+                onChange={(e) => { setVerifyCode(e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase()); setTouchedVerify(true); }}
                 onBlur={() => setTouchedVerify(true)}
                 disabled={isLoading}
                 className={`w-full h-11 rounded-lg border bg-[#161616] px-4 text-[14px] text-white outline-none focus:border-[#FF5722] transition-colors tracking-[0.2em] font-mono text-center disabled:opacity-50 ${touchedVerify && !verifyValidation.valid ? 'border-red-400/30' : 'border-[#222]'}`}
                 placeholder="A1B2C3D4"
               />
-              <ValidationMsg touched={touchedVerify} valid={verifyValidation.valid} message={verifyValidation.message} hideSuccess={true} />
+              <ValidationMsg touched={touchedVerify} valid={verifyValidation.valid} message={verifyValidation.message} />
             </div>
             
             <div className="mt-4 flex justify-end gap-3">
-              <button onClick={() => setStep(1)} disabled={isLoading || isSaved} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-white transition-colors disabled:opacity-50">Back</button>
-              <button onClick={handleVerify} disabled={isLoading || isSaved || !isStep2Valid} className={`flex h-11 items-center justify-center rounded-lg px-6 text-[13px] font-medium transition-colors disabled:cursor-not-allowed gap-2 ${isSaved ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : (isLoading || !isStep2Valid) ? 'bg-[#333] text-[#888]' : 'bg-[#FF5722] hover:bg-[#F4511E] text-white'}`}>
-                {isLoading && !isSaved ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : isSaved ? <Check size={16} /> : null}
-                {isSaved ? "Verified" : "Verify"}
+              <button onClick={() => setStep(1)} disabled={isLoading} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-white transition-colors disabled:opacity-50">Back</button>
+              <button onClick={handleVerify} disabled={isLoading || !isStep2Valid} className={`flex h-11 items-center justify-center rounded-lg px-6 text-[13px] font-medium transition-colors gap-2 ${(!isStep2Valid) ? 'bg-[#333] text-[#888] cursor-not-allowed' : 'bg-[#FF5722] hover:bg-[#F4511E] text-white disabled:opacity-50'}`}>
+                {isLoading ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : "Verify & Save"}
               </button>
             </div>
           </>
@@ -551,9 +506,9 @@ export function Setup2FADrawer({
 }) {
   const [tfaVerifyCode, setTfaVerifyCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [touchedCode, setTouchedCode] = useState(false);
+  const { showError, showSuccess } = useToast();
 
   const codeValidation = useMemo(() => {
     if (!tfaVerifyCode) return { valid: false, message: 'Verification code is required.' };
@@ -565,7 +520,6 @@ export function Setup2FADrawer({
     onClose();
     setTfaBackupCodes(null);
     setTfaVerifyCode('');
-    setError(null);
     setTouchedCode(false);
   };
 
@@ -573,11 +527,11 @@ export function Setup2FADrawer({
     setTouchedCode(true);
     if (!codeValidation.valid) return;
     setIsLoading(true);
-    setError(null);
     try {
       await verifyAndEnable2FA(tfaVerifyCode);
+      showSuccess("2FA enabled successfully.");
     } catch (e: any) {
-      setError(e.message || 'Invalid verification code. Please try again.');
+      showError(e.message || 'Invalid verification code. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -587,6 +541,7 @@ export function Setup2FADrawer({
     if (!tfaBackupCodes) return;
     navigator.clipboard.writeText(tfaBackupCodes.join('\n'));
     setCopied(true);
+    showSuccess("Backup codes copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -614,6 +569,7 @@ export function Setup2FADrawer({
                       <button onClick={() => { 
                         navigator.clipboard.writeText(tfaSetupData.secret); 
                         setCopied(true);
+                        showSuccess("Secret copied to clipboard");
                         setTimeout(() => setCopied(false), 2000);
                       }} className="flex h-9 w-10 shrink-0 items-center justify-center border-l border-[#292929] text-[#666] hover:bg-[#1c1c1c] hover:text-white transition">
                         {copied ? <Check size={14} className="text-[#ff6b1a]" /> : <Copy size={14} />}
@@ -632,7 +588,7 @@ export function Setup2FADrawer({
                 <input
                   id="two-factor-code"
                   value={tfaVerifyCode}
-                  onChange={(e) => { setTfaVerifyCode(e.target.value.replace(/\D/g, "").slice(0, 6)); setTouchedCode(true); setError(null); }}
+                  onChange={(e) => { setTfaVerifyCode(e.target.value.replace(/\D/g, "").slice(0, 6)); setTouchedCode(true); }}
                   onKeyDown={(e) => { if (e.key === 'Enter' && codeValidation.valid && !isLoading) handleVerify(); }}
                   disabled={isLoading}
                   inputMode="numeric"
@@ -654,12 +610,6 @@ export function Setup2FADrawer({
                 Enter the 6-digit code currently displayed in your authenticator application.
               </p>
               <ValidationMsg touched={touchedCode} valid={codeValidation.valid} message={codeValidation.message} hideSuccess={true} />
-              {error && (
-                <div className="mt-3 flex items-start gap-3 rounded-lg bg-red-500/10 p-3 border border-red-500/20 text-red-400">
-                  <AlertTriangle size={16} className="shrink-0 mt-0.5" />
-                  <p className="text-[12px] leading-relaxed">{error}</p>
-                </div>
-              )}
             </div>
           </>
         ) : (
@@ -704,10 +654,9 @@ export function Disable2FADrawer({
   const [tfaVerifyCode, setTfaVerifyCode] = useState('');
   const [useBackupCode, setUseBackupCode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isDone, setIsDone] = useState(false);
   const [touchedPw, setTouchedPw] = useState(false);
   const [touchedCode, setTouchedCode] = useState(false);
+  const { showError, showSuccess } = useToast();
 
   const pwValidation = useMemo(() => {
     if (!tfaPassword) return { valid: false, message: 'Password is required.' };
@@ -726,8 +675,6 @@ export function Disable2FADrawer({
     onClose();
     setTfaPassword('');
     setTfaVerifyCode('');
-    setError(null);
-    setIsDone(false);
     setTouchedPw(false);
     setTouchedCode(false);
   };
@@ -737,13 +684,12 @@ export function Disable2FADrawer({
     setTouchedCode(true);
     if (!pwValidation.valid || !codeValidation.valid) return;
     setIsLoading(true);
-    setError(null);
     try {
       await disable2FA(tfaPassword, tfaVerifyCode);
-      setIsDone(true);
-      setTimeout(() => { setIsDone(false); onClose(); }, 1000);
+      showSuccess("2FA disabled successfully.");
+      handleClose();
     } catch (e: any) {
-      setError(e.message || 'Failed to disable 2FA. Please check your password and code.');
+      showError(e.message || 'Failed to disable 2FA. Please check your password and code.');
     } finally {
       setIsLoading(false);
     }
@@ -758,18 +704,12 @@ export function Disable2FADrawer({
             Disabling 2FA will make your account less secure. Please confirm your password and enter a 2FA code to continue.
           </p>
         </div>
-        {error && (
-          <div className="flex items-start gap-3 rounded-lg bg-red-500/10 p-3 border border-red-500/20 text-red-400">
-            <AlertTriangle size={16} className="shrink-0 mt-0.5" />
-            <p className="text-[12px] leading-relaxed">{error}</p>
-          </div>
-        )}
         <div>
           <label className="block text-[11px] uppercase tracking-wider text-[#888] mb-2 font-medium">Password</label>
           <input
             type="password"
             value={tfaPassword}
-            onChange={(e) => { setTfaPassword(e.target.value); setTouchedPw(true); setError(null); }}
+            onChange={(e) => { setTfaPassword(e.target.value); setTouchedPw(true); }}
             onBlur={() => setTouchedPw(true)}
             disabled={isLoading}
             className={`w-full h-11 rounded-lg border bg-[#161616] px-4 text-[13px] text-white outline-none focus:border-red-500/50 transition-colors disabled:opacity-50 ${touchedPw && !pwValidation.valid ? 'border-red-400/30' : 'border-[#222]'}`}
@@ -788,7 +728,7 @@ export function Disable2FADrawer({
             type="text"
             maxLength={useBackupCode ? 8 : 6}
             value={tfaVerifyCode}
-            onChange={(e) => { setTfaVerifyCode(e.target.value.replace(useBackupCode ? /[^0-9a-fA-F]/g : /\D/g, '')); setTouchedCode(true); setError(null); }}
+            onChange={(e) => { setTfaVerifyCode(e.target.value.replace(useBackupCode ? /[^0-9a-fA-F]/g : /\D/g, '')); setTouchedCode(true); }}
             onBlur={() => setTouchedCode(true)}
             disabled={isLoading}
             className={`w-full h-11 rounded-lg border bg-[#161616] px-4 text-[14px] text-white outline-none focus:border-red-500/50 transition-colors tracking-[0.2em] font-mono text-center disabled:opacity-50 ${touchedCode && !codeValidation.valid ? 'border-red-400/30' : 'border-[#222]'}`}
@@ -797,10 +737,9 @@ export function Disable2FADrawer({
           <ValidationMsg touched={touchedCode} valid={codeValidation.valid} message={codeValidation.message} hideSuccess={true} />
         </div>
         <div className="mt-4 flex justify-end gap-3">
-          <button onClick={handleClose} disabled={isLoading || isDone} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-white transition-colors disabled:opacity-50">Cancel</button>
-          <button onClick={handleDisable} disabled={isLoading || isDone || !codeValidation.valid} className={`flex h-11 items-center justify-center gap-2 rounded-lg px-6 text-[13px] font-medium transition-colors disabled:cursor-not-allowed ${isDone ? 'bg-emerald-500 text-white' : (isLoading || !codeValidation.valid) ? 'bg-[#333] text-[#888]' : 'bg-red-500 hover:bg-red-600 text-white'}`}>
-            {isLoading && !isDone ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : isDone ? <Check size={16} /> : null}
-            {isDone ? 'Disabled' : 'Confirm Disable'}
+          <button onClick={handleClose} disabled={isLoading} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-white transition-colors disabled:opacity-50">Cancel</button>
+          <button onClick={handleDisable} disabled={isLoading || !codeValidation.valid} className={`flex h-11 items-center justify-center gap-2 rounded-lg px-6 text-[13px] font-medium transition-colors disabled:cursor-not-allowed ${(isLoading || !codeValidation.valid) ? 'bg-[#333] text-[#888]' : 'bg-red-500 hover:bg-red-600 text-white'}`}>
+            {isLoading ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : "Confirm Disable"}
           </button>
         </div>
       </div>
@@ -827,27 +766,23 @@ export function DeleteAccountDrawer({
   const [confirmPhrase, setConfirmPhrase] = useState('');
   const [useBackupCode, setUseBackupCode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isSaved, setIsSaved] = useState(false);
+  const { showError, showSuccess } = useToast();
 
   const handleClose = () => {
     onClose();
     setPassword('');
     setTfaCode('');
     setConfirmPhrase('');
-    setError(null);
-    setIsSaved(false);
   };
 
   const handleDelete = async () => {
     setIsLoading(true);
-    setError(null);
     try {
       await onConfirm(password, tfaCode);
-      setIsSaved(true);
+      showSuccess("Account deleted successfully.");
       // Wait for redirect to happen in page.tsx
     } catch (e: any) {
-      setError(e.message || 'An error occurred while deleting your account.');
+      showError(e.message || 'An error occurred while deleting your account.');
       setIsLoading(false);
     }
   };
@@ -855,12 +790,6 @@ export function DeleteAccountDrawer({
   return (
     <Drawer isOpen={isOpen} onClose={handleClose} title="Delete account" subtitle="This action is permanent and cannot be undone." icon={<AlertTriangle className="text-red-500" size={20} />}>
       <div className="grid gap-6 mt-2">
-        {error && (
-          <div className="flex items-start gap-3 rounded-lg bg-red-500/10 p-3 border border-red-500/20 text-red-400">
-            <AlertTriangle size={16} className="shrink-0 mt-0.5" />
-            <p className="text-[12px] leading-relaxed">{error}</p>
-          </div>
-        )}
         <div className="space-y-4 text-[13px] text-[#A0A0A0] leading-relaxed">
           <p>
             We will <strong className="text-[#EAEAEA] font-medium">delete all of your servers</strong>, along with all of your databases, backups, activity, and all other resources belonging to your account.
@@ -924,19 +853,18 @@ export function DeleteAccountDrawer({
         </div>
 
         <div className="mt-4 flex justify-end gap-3">
-          <button type="button" onClick={handleClose} disabled={isLoading || isSaved} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-white transition-colors disabled:opacity-50">Cancel</button>
+          <button type="button" onClick={handleClose} disabled={isLoading} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-white transition-colors disabled:opacity-50">Cancel</button>
           <button 
             type="button" 
             onClick={handleDelete} 
-            disabled={isLoading || isSaved || confirmPhrase.toLowerCase() !== 'delete my account' || (loginMethod === 'email' && !password) || (tfaEnabled && (useBackupCode ? tfaCode.length !== 8 : tfaCode.length !== 6))}
+            disabled={isLoading || confirmPhrase.toLowerCase() !== 'delete my account' || (loginMethod === 'email' && !password) || (tfaEnabled && (useBackupCode ? tfaCode.length !== 8 : tfaCode.length !== 6))}
             className={`flex h-11 items-center justify-center gap-2 rounded-lg px-6 text-[13px] font-medium transition-colors disabled:cursor-not-allowed ${
-              isSaved ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 
               (isLoading || confirmPhrase.toLowerCase() !== 'delete my account' || (loginMethod === 'email' && !password) || (tfaEnabled && (useBackupCode ? tfaCode.length !== 8 : tfaCode.length !== 6))) ? 'bg-[#333] text-[#888]' : 
               'bg-red-500 hover:bg-red-600 text-white'
             }`}
           >
-            {isLoading && !isSaved ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : isSaved ? <Check size={16} /> : <Trash2 size={15} />}
-            {isSaved ? "Deleted" : "Delete account"}
+            {isLoading ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : <Trash2 size={15} />}
+            Delete account
           </button>
         </div>
       </div>
@@ -966,25 +894,17 @@ export function EmailVerificationDrawer({
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isSaved, setIsSaved] = useState(false);
-
-
+  const { showError, showSuccess } = useToast();
 
   const handleVerify = async () => {
     if (code.length !== 8) return;
     setIsLoading(true);
-    setError(null);
     try {
       await onVerify(code);
-      setIsSaved(true);
-      setTimeout(() => {
-        setIsSaved(false);
-        setCode('');
-        onClose();
-      }, 1000);
+      showSuccess("Email verified successfully.");
+      handleClose();
     } catch (e: any) {
-      setError(e.message);
+      showError(e.message || 'Verification failed.');
     } finally {
       setIsLoading(false);
     }
@@ -993,7 +913,6 @@ export function EmailVerificationDrawer({
   const handleClose = () => {
     onClose();
     setCode('');
-    setError(null);
   };
 
   return (
@@ -1021,29 +940,28 @@ export function EmailVerificationDrawer({
             maxLength={8} 
             value={code} 
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} 
-            disabled={isLoading || isSaved}
-            className={`w-full h-11 rounded-lg border bg-[#161616] px-4 text-[14px] text-white outline-none focus:border-[#FF5722] transition-colors tracking-[0.2em] font-mono text-center disabled:opacity-50 ${error ? 'border-red-400/30' : 'border-[#222]'}`} 
+            disabled={isLoading}
+            className={`w-full h-11 rounded-lg border bg-[#161616] px-4 text-[14px] text-white outline-none focus:border-[#FF5722] transition-colors tracking-[0.2em] font-mono text-center disabled:opacity-50 border-[#222]`} 
             placeholder="12345678" 
           />
-          <div className="mt-2 flex items-center justify-between">
-            {error ? <div className="text-[11px] text-red-400/70">{error}</div> : <div />}
+          <div className="mt-2 flex items-center justify-end">
             <button 
               type="button" 
               onClick={async () => {
                 if (resendLoading || rateLimit > 0) return;
                 setResendLoading(true);
-                setError(null);
                 try {
                   await onResend();
                   onRateLimitChange(60);
+                  showSuccess("Verification code resent.");
                 } catch (e: any) {
                   if (e.retryAfter) onRateLimitChange(e.retryAfter);
-                  else setError(e.message);
+                  else showError(e.message || 'Failed to resend code.');
                 } finally {
                   setResendLoading(false);
                 }
               }}
-              disabled={resendLoading || rateLimit > 0 || isSaved}
+              disabled={resendLoading || rateLimit > 0}
               className="text-[11px] text-[#FF5722] hover:text-[#F4511E] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
               {resendLoading ? 'Sending...' : rateLimit > 0 ? `Resend in ${Math.floor(rateLimit / 60) > 0 ? `${Math.floor(rateLimit / 60)}m ` : ''}${rateLimit % 60}s` : 'Resend Code'}
@@ -1052,10 +970,9 @@ export function EmailVerificationDrawer({
         </div>
 
         <div className="mt-4 flex justify-end gap-3">
-          <button type="button" onClick={handleClose} disabled={isLoading || isSaved} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-white transition-colors disabled:opacity-50">Cancel</button>
-          <button type="button" onClick={handleVerify} disabled={isLoading || isSaved || code.length !== 8} className={`flex h-11 items-center justify-center gap-2 rounded-lg px-6 text-[13px] font-medium transition-colors disabled:cursor-not-allowed ${isSaved ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : (isLoading || code.length !== 8) ? 'bg-[#333] text-[#888]' : 'bg-[#FF5722] hover:bg-[#F4511E] text-white'}`}>
-            {isLoading && !isSaved ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : isSaved ? <Check size={16} /> : null}
-            {isSaved ? "Verified" : "Verify"}
+          <button type="button" onClick={handleClose} disabled={isLoading} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-white transition-colors disabled:opacity-50">Cancel</button>
+          <button type="button" onClick={handleVerify} disabled={isLoading || code.length !== 8} className={`flex h-11 items-center justify-center gap-2 rounded-lg px-6 text-[13px] font-medium transition-colors disabled:cursor-not-allowed ${(isLoading || code.length !== 8) ? 'bg-[#333] text-[#888]' : 'bg-[#FF5722] hover:bg-[#F4511E] text-white'}`}>
+            {isLoading ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : "Verify"}
           </button>
         </div>
       </div>

@@ -18,11 +18,13 @@ export function AdminTicketNavSidebar({
   activeStatus,
   onStatusChange,
   counts,
+  loading,
   onOpenSettings,
 }: {
   activeStatus: string;
   onStatusChange: (v: string) => void;
   counts: Counts;
+  loading?: boolean;
   onOpenSettings?: () => void;
 }) {
 
@@ -32,12 +34,12 @@ export function AdminTicketNavSidebar({
         <div>
           <p className="mb-3 text-[11px] font-medium uppercase tracking-widest text-[#555]">Tickets</p>
           <nav className="space-y-0.5 pr-1">
-            <NavItem icon={Inbox} label="All tickets" count={counts.all} active={activeStatus === 'all'} onClick={() => onStatusChange('all')} />
-            <NavItem icon={MailOpen} label="Open" count={counts.open} active={activeStatus === 'open'} onClick={() => onStatusChange('open')} />
-            <NavItem icon={Clock3} label="Pending" count={counts.pending} active={activeStatus === 'pending'} onClick={() => onStatusChange('pending')} />
-            <NavItem icon={CheckCircle2} label="Resolved" count={counts.resolved} active={activeStatus === 'resolved'} onClick={() => onStatusChange('resolved')} />
-            <NavItem icon={Ticket} label="Closed" count={counts.closed} active={activeStatus === 'closed'} onClick={() => onStatusChange('closed')} />
-            <NavItem icon={Trash2} label="Deleted" count={counts.deleted} active={activeStatus === 'deleted'} onClick={() => onStatusChange('deleted')} />
+            <NavItem icon={Inbox} label="All tickets" count={counts.all} active={activeStatus === 'all'} loading={loading} onClick={() => onStatusChange('all')} />
+            <NavItem icon={MailOpen} label="Open" count={counts.open} active={activeStatus === 'open'} loading={loading} onClick={() => onStatusChange('open')} />
+            <NavItem icon={Clock3} label="Pending" count={counts.pending} active={activeStatus === 'pending'} loading={loading} onClick={() => onStatusChange('pending')} />
+            <NavItem icon={CheckCircle2} label="Resolved" count={counts.resolved} active={activeStatus === 'resolved'} loading={loading} onClick={() => onStatusChange('resolved')} />
+            <NavItem icon={Ticket} label="Closed" count={counts.closed} active={activeStatus === 'closed'} loading={loading} onClick={() => onStatusChange('closed')} />
+            <NavItem icon={Trash2} label="Deleted" count={counts.deleted} active={activeStatus === 'deleted'} loading={loading} onClick={() => onStatusChange('deleted')} />
           </nav>
         </div>
 
@@ -50,6 +52,7 @@ export function AdminTicketNavSidebar({
                 label="Settings" 
                 count={null} 
                 active={false} 
+                loading={false}
                 onClick={onOpenSettings} 
               />
             </nav>
@@ -62,8 +65,8 @@ export function AdminTicketNavSidebar({
 
 
 
-export function NavItem({ icon: Icon, label, count, active, onClick }: {
-  icon: any; label: string; count: number | null; active: boolean; onClick: () => void;
+export function NavItem({ icon: Icon, label, count, active, loading, onClick }: {
+  icon: any; label: string; count: number | null; active: boolean; loading?: boolean; onClick: () => void;
 }) {
   return (
     <button
@@ -81,7 +84,11 @@ export function NavItem({ icon: Icon, label, count, active, onClick }: {
       }
       <span className="flex-1 truncate">{label}</span>
       {count !== null && (
-        <span className={`text-[11px] font-mono ${active ? 'text-white/50' : 'text-[#444]'}`}>{count}</span>
+        loading ? (
+          <span className="w-3.5 h-3.5 bg-white/10 rounded animate-pulse" />
+        ) : (
+          <span className={`text-[11px] font-mono ${active ? 'text-white/50' : 'text-[#444]'}`}>{count}</span>
+        )
       )}
     </button>
   );

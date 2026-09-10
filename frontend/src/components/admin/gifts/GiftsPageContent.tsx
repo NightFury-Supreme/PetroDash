@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AdminGiftsSkeleton } from '@/components/skeletons/admin/gifts/AdminGiftsSkeleton';
 import { AdminGiftsTable } from './AdminGiftsTable';
 import { AdminCreateGiftDrawer } from './drawers/AdminCreateGiftDrawer';
@@ -62,7 +62,7 @@ export default function GiftsPageContent() {
         throw new Error("Failed to fetch gifts");
       }
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Failed to fetch gifts');
     } finally {
       setLoading(false);
     }
@@ -81,6 +81,8 @@ export default function GiftsPageContent() {
 
   if (loading && gifts.length === 0) return <AdminGiftsSkeleton />;
 
+  if (error) throw new Error(error);
+
   return (
     <div className="flex flex-col space-y-6">
       {/* Header */}
@@ -97,16 +99,6 @@ export default function GiftsPageContent() {
           Create Gift
         </button>
       </div>
-
-      {error && (
-        <div className="mb-6 rounded-lg bg-red-500/10 border border-red-500/20 p-4 flex items-start gap-3">
-          <AlertCircle className="text-red-400 mt-0.5" size={18} />
-          <div>
-            <h3 className="text-sm font-medium text-red-400">Error loading gifts</h3>
-            <p className="text-xs text-red-400/70 mt-1">{error}</p>
-          </div>
-        </div>
-      )}
 
       {/* Content */}
       <section className="mt-[25px]">

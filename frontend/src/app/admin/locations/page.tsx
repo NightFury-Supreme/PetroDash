@@ -12,6 +12,7 @@ export default function LocationsPage() {
   const router = useRouter();
   const [locations, setLocations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [editingLocationId, setEditingLocationId] = useState<string | null>(null);
@@ -24,9 +25,12 @@ export default function LocationsPage() {
     fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then(res => res.json())
-      .then(data => { if (Array.isArray(data)) setLocations(data); })
-      .catch(console.error)
+      .then(async res => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Failed to fetch locations');
+        if (Array.isArray(data)) setLocations(data);
+      })
+      .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   }, [router]);
 
@@ -50,6 +54,8 @@ export default function LocationsPage() {
     }
     fetchLocations();
   };
+
+  if (error) throw new Error(error);
 
   if (loading) return <AdminLocationsSkeleton />;
 

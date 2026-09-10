@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { CheckCircle2, Inbox, MoreHorizontal, ShieldOff, RotateCcw, XCircle } from 'lucide-react';
+import { CheckCircle2, Inbox, MoreHorizontal, ShieldOff, RotateCcw, XCircle, Loader2 } from 'lucide-react';
 import { TicketStatusBadge } from "@/components/tickets/TicketStatusBadge";
 import { formatRelative, shortId } from "@/components/tickets/utils";
+import { useToast } from "@/components/ui/ToastProvider";
 
 type Ticket = { 
   _id: string; 
@@ -16,16 +17,41 @@ type Ticket = {
   user?: { username?: string; email?: string } 
 };
 
-export default function AdminTicketItem({ t, onAction }:{ t: Ticket; onAction: (action: 'close'|'resolve'|'delete'|'restore'|'reopen', id: string)=>Promise<void> }){
+export default function TicketItem({ t, onAction, isAdmin = true }:{ t: Ticket; onAction: (action: 'close'|'resolve'|'delete'|'restore'|'reopen', id: string)=>Promise<void>, isAdmin?: boolean }){
   const [opening, setOpening] = useState(false);
   const [menu, setMenu] = useState(false);
+  const [actionStatus, setActionStatus] = useState<'idle' | 'loading'>('idle');
+  const { showError, showSuccess } = useToast();
+
+  const handleContextAction = async (action: 'close'|'resolve'|'delete'|'restore'|'reopen') => {
+    setActionStatus('loading');
+    setMenu(false);
+    try {
+      await onAction(action, t._id);
+      const actionMsg = {
+        close: 'Ticket closed',
+        resolve: 'Ticket marked as resolved',
+        delete: 'Ticket deleted',
+        restore: 'Ticket restored',
+        reopen: 'Ticket reopened'
+      }[action] || 'Ticket updated';
+      showSuccess(actionMsg);
+    } catch (e: any) {
+      const msg = e?.message || 'Something went wrong';
+      showError(msg);
+    } finally {
+      setActionStatus('idle');
+    }
+  };
+
+  const isBusy = actionStatus === 'loading' || opening;
 
   return (
-    <div className={`relative transition-colors hover:bg-white/[0.015] ${opening ? 'opacity-70' : ''}`}>
-      <div className="grid grid-cols-[1fr_auto] items-center gap-3 py-4 md:grid-cols-[1fr_130px_100px_90px_80px_60px_36px] md:gap-4">
+    <div className={`relative transition-opacity ${isBusy ? 'opacity-60' : 'opacity-100'}`}>
+      <div className={`grid grid-cols-[1fr_auto] items-center gap-3 py-4 md:gap-4 ${isAdmin ? 'md:grid-cols-[1fr_130px_100px_90px_80px_60px_36px]' : 'md:grid-cols-[1fr_100px_90px_80px_60px_36px]'}`}>
         
         {/* Subject + ID */}
-        <button type="button" onClick={()=>{ setOpening(true); window.location.href=`/admin/tickets/${t._id}`; }} className="min-w-0 text-left">
+        <button type="button" onClick={()=>{ setOpening(true); window.location.href=isAdmin ? `/admin/tickets/${t._id}` : `/tickets/${t._id}`; }} className="min-w-0 text-left">
           <div className="flex items-center gap-2.5">
             <div className="min-w-0">
               <div className="flex items-center gap-2">
@@ -38,30 +64,36 @@ export default function AdminTicketItem({ t, onAction }:{ t: Ticket; onAction: (
               </div>
               {/* Mobile meta */}
               <div className="mt-0.5 flex items-center gap-1.5 md:hidden">
-                <span className="text-[11px] capitalize text-[#888]">{t.user?.username || t.user?.email || 'User'}</span>
-                <span className="text-white/20">&middot;</span>
+                {isAdmin && (
+                  <>
+                    <span className="text-[11px] capitalize text-[#888]">{t.user?.username || t.user?.email || 'User'}</span>
+                    <span className="text-white/20">&middot;</span>
+                  </>
+                )}
                 <span className="text-[11px] text-[#666]">{formatRelative(t.updatedAt)}</span>
               </div>
             </div>
           </div>
         </button>
 
-        {/* User — desktop */}
-        <div className="hidden md:block" title={t.user?.email || t.user?.username}>
-          <span className="block truncate text-xs text-[#D4D4D4]">
-            {t.user?.username || t.user?.email || 'User'}
-          </span>
-          <span className="block truncate text-[10px] text-[#555] mt-0.5">
-            {t.user?.email !== t.user?.username ? t.user?.email || '' : ''}
-          </span>
-        </div>
+        {/* User - desktop */}
+        {isAdmin && (
+          <div className="hidden md:block" title={t.user?.email || t.user?.username}>
+            <span className="block truncate text-xs text-[#D4D4D4]">
+              {t.user?.username || t.user?.email || 'User'}
+            </span>
+            <span className="block truncate text-[10px] text-[#555] mt-0.5">
+              {t.user?.email !== t.user?.username ? t.user?.email || '' : ''}
+            </span>
+          </div>
+        )}
 
-        {/* Category — desktop */}
+        {/* Category - desktop */}
         <span className="hidden text-xs capitalize text-[#888] md:block">
           {t.category || 'general'}
         </span>
 
-        {/* Updated — desktop */}
+        {/* Updated - desktop */}
         <span className="hidden text-xs text-[#666] md:block">
           {formatRelative(t.updatedAt)}
         </span>
@@ -86,17 +118,27 @@ export default function AdminTicketItem({ t, onAction }:{ t: Ticket; onAction: (
         <div className="relative flex justify-end">
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); setMenu(!menu); }}
-            className="flex h-7 w-7 items-center justify-center rounded-md border border-[#2A2A2A] bg-[#161616] text-[#666] transition-colors hover:border-[#3A3A3A] hover:text-[#ddd]"
+            disabled={actionStatus === 'loading'}
+            onClick={(e) => { e.stopPropagation(); if (actionStatus === 'idle') setMenu(!menu); }}
+            className={`flex h-7 w-7 items-center justify-center rounded-md border transition-colors
+              ${actionStatus === 'loading'
+                ? 'border-[#2A2A2A] bg-[#161616] text-[#555] cursor-not-allowed'
+                : 'border-[#2A2A2A] bg-[#161616] text-[#666] hover:border-[#3A3A3A] hover:text-[#ddd]'
+              }`}
           >
-            <MoreHorizontal size={13} />
+            {actionStatus === 'loading' ? (
+              <Loader2 size={12} className="animate-spin" />
+            ) : (
+              <MoreHorizontal size={13} />
+            )}
           </button>
 
-          {menu && (
-            <AdminTicketContextMenu 
+          {menu && actionStatus === 'idle' && (
+            <TicketContextMenu 
               ticket={t} 
-              onAction={async (action) => { await onAction(action, t._id); setMenu(false); }} 
+              onAction={handleContextAction} 
               onClose={() => setMenu(false)}
+              isAdmin={isAdmin}
             />
           )}
         </div>
@@ -105,10 +147,11 @@ export default function AdminTicketItem({ t, onAction }:{ t: Ticket; onAction: (
   );
 }
 
-function AdminTicketContextMenu({ ticket: t, onAction, onClose }: {
+function TicketContextMenu({ ticket: t, onAction, onClose, isAdmin }: {
   ticket: Ticket;
   onAction: (a: 'close'|'resolve'|'delete'|'restore'|'reopen') => void;
   onClose: () => void;
+  isAdmin?: boolean;
 }) {
   return (
     <>
@@ -121,17 +164,17 @@ function AdminTicketContextMenu({ ticket: t, onAction, onClose }: {
           <>
             {(t.status === 'closed' || t.status === 'resolved') ? (
               <CtxItem icon={<Inbox size={12} />} label="Reopen Ticket" onClick={() => onAction('reopen')} />
-            ) : (
-              <>
-                <CtxItem icon={<CheckCircle2 size={12} />} label="Resolve" onClick={() => onAction('resolve')} />
-                <CtxItem icon={<XCircle size={12} />} label="Close Ticket" onClick={() => onAction('close')} />
-              </>
-            )}
-            <CtxItem icon={<ShieldOff size={12} />} label="Soft Delete" danger onClick={() => onAction('delete')} />
+              ) : (
+                <>
+                  <CtxItem icon={<CheckCircle2 size={12} />} label="Resolve" onClick={() => onAction('resolve')} />
+                  {isAdmin && <CtxItem icon={<XCircle size={12} />} label="Close Ticket" onClick={() => onAction('close')} />}
+                </>
+              )}
+            {isAdmin && <CtxItem icon={<ShieldOff size={12} />} label="Soft Delete" danger onClick={() => onAction('delete')} />}
           </>
-        ) : (
+        ) : isAdmin ? (
           <CtxItem icon={<RotateCcw size={12} />} label="Restore" onClick={() => onAction('restore')} />
-        )}
+        ) : null}
       </div>
     </>
   );

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Gift, Coins, Check, Copy } from "lucide-react";
 import { Drawer } from "@/components/ui/Drawer";
 import { useProfile } from "@/hooks/useProfile";
+import { useToast } from "@/components/ui/ToastProvider";
 
 interface GiftCreateDrawerProps {
   isOpen: boolean;
@@ -13,12 +14,12 @@ interface GiftCreateDrawerProps {
 
 export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawerProps) {
   const { form: profile } = useProfile();
+  const { showError, showSuccess } = useToast();
   const [coins, setCoins] = useState("");
   const [maxRedemptions, setMaxRedemptions] = useState("1");
   const [expiresInDays, setExpiresInDays] = useState("30");
   const [description, setDescription] = useState("");
   const [creating, setCreating] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [createdCode, setCreatedCode] = useState<string | null>(null);
   const [copiedCreated, setCopiedCreated] = useState(false);
 
@@ -28,19 +29,28 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
   const canCreate = coinValue > 0 && coinValue <= 1000000 && redemptionValue >= 1 && redemptionValue <= 100 && Number(expiresInDays) >= 1 && totalCost <= (profile.coins || 0);
 
   function validate() {
-    const e: Record<string, string> = {};
-    if (!coins.trim() || coinValue <= 0) e.coins = "Enter a valid coin amount greater than 0.";
-    else if (coinValue > 1000000) e.coins = "Maximum 1,000,000 coins per redemption allowed.";
-    
-    if (!maxRedemptions.trim() || redemptionValue < 1 || redemptionValue > 100) e.maxRedemptions = "Must be between 1 and 100.";
-    if (!expiresInDays.trim() || Number(expiresInDays) < 1) e.expiresInDays = "Must be at least 1 day.";
-    
+    if (!coins.trim() || coinValue <= 0) {
+      showError("Enter a valid coin amount greater than 0.");
+      return false;
+    }
+    if (coinValue > 1000000) {
+      showError("Maximum 1,000,000 coins per redemption allowed.");
+      return false;
+    }
+    if (!maxRedemptions.trim() || redemptionValue < 1 || redemptionValue > 100) {
+      showError("Max redemptions must be between 1 and 100.");
+      return false;
+    }
+    if (!expiresInDays.trim() || Number(expiresInDays) < 1) {
+      showError("Expiration must be at least 1 day.");
+      return false;
+    }
     if (totalCost > (profile.coins || 0)) {
-      e.general = `Insufficient balance. You need ${totalCost.toLocaleString()} coins but only have ${(profile.coins || 0).toLocaleString()}.`;
+      showError(`Insufficient balance. You need ${totalCost.toLocaleString()} coins but only have ${(profile.coins || 0).toLocaleString()}.`);
+      return false;
     }
     
-    setErrors(e);
-    return Object.keys(e).length === 0;
+    return true;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,9 +58,8 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
     if (!validate()) return;
     try {
       setCreating(true);
-      setErrors({});
       const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-      if (!token) { setErrors({ general: "Please login first." }); return; }
+      if (!token) { showError("Please login first."); return; }
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/gifts/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -60,8 +69,9 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
       try { d = await res.json(); } catch {}
       if (!res.ok) throw new Error(d?.error || "Failed to create code.");
       setCreatedCode(d.code);
+      showSuccess(`Successfully created gift code for ${coinValue.toLocaleString()} coins (${redemptionValue} redemptions).`);
     } catch (err: any) {
-      setErrors({ general: err?.message || "Failed to create code." });
+      showError(err?.message || "Failed to create code.");
     } finally {
       setCreating(false);
     }
@@ -71,18 +81,19 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
     if (!createdCode) return;
     try {
       await navigator.clipboard.writeText(createdCode);
-      setCopiedCreated(true);
-      setTimeout(() => setCopiedCreated(false), 1800);
-    } catch {}
+      showSuccess("Gift code copied to clipboard!");
+    } catch {
+      showError("Failed to copy code.");
+    }
   };
 
   const reset = () => {
     setCoins(""); setMaxRedemptions("1"); setExpiresInDays("30");
-    setDescription(""); setErrors({}); setCreatedCode(null); setCopiedCreated(false);
+    setDescription(""); setCreatedCode(null);
   };
 
   const handleClose = () => { reset(); onClose(); };
-  const handleDone = () => { reset(); onCreated(); };
+  const handleDone = () => { reset(); onCreated(); onClose(); };
 
   const inputCls = "w-full rounded-lg border border-[#222] bg-[#161616] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60";
 
@@ -105,13 +116,9 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
           <button
             type="button"
             onClick={copyCreatedCode}
-            className={`inline-flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-lg px-5 text-sm font-medium transition ${
-              copiedCreated
-                ? "bg-[#00FF88]/10 text-[#00FF88]"
-                : "bg-[#1A0F0C] text-[#FF5722] hover:bg-[#FF5722]/10"
-            }`}
+            className="inline-flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-lg px-5 text-sm font-medium transition bg-[#1A0F0C] text-[#FF5722] hover:bg-[#FF5722]/10"
           >
-            {copiedCreated ? <><Check className="h-4 w-4" />Copied</> : <><Copy className="h-4 w-4" />Copy</>}
+            <Copy className="h-4 w-4" />Copy
           </button>
         </div>
       </div>
@@ -158,15 +165,9 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
             const val = e.target.value;
             if (val.length > 8) return; // Prevent absurdly long numbers breaking the UI
             setCoins(val);
-            if (Number(val) > 1000000) {
-              setErrors(c => ({ ...c, coins: "Maximum 1,000,000 coins per redemption allowed." }));
-            } else {
-              setErrors(c => ({ ...c, coins: "" }));
-            }
           }}
           placeholder="e.g. 100" className={inputCls}
         />
-        {errors.coins && <p className="mt-1.5 text-xs text-red-400">{errors.coins}</p>}
       </div>
 
       <div>
@@ -178,15 +179,9 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
             const val = e.target.value;
             if (val.length > 4) return;
             setMaxRedemptions(val); 
-            if (Number(val) > 100) {
-              setErrors(c => ({ ...c, maxRedemptions: "Maximum 100 redemptions allowed." }));
-            } else {
-              setErrors(c => ({ ...c, maxRedemptions: "" }));
-            }
           }}
           placeholder="e.g. 1" className={inputCls}
         />
-        {errors.maxRedemptions && <p className="mt-1.5 text-xs text-red-400">{errors.maxRedemptions}</p>}
       </div>
 
       <div>
@@ -198,15 +193,9 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
             const val = e.target.value;
             if (val.length > 4) return;
             setExpiresInDays(val); 
-            if (Number(val) > 180) {
-               setErrors(c => ({ ...c, expiresInDays: "Maximum 180 days allowed." }));
-            } else {
-               setErrors(c => ({ ...c, expiresInDays: "" }));
-            }
           }}
           placeholder="e.g. 30" className={inputCls}
         />
-        {errors.expiresInDays && <p className="mt-1.5 text-xs text-red-400">{errors.expiresInDays}</p>}
       </div>
 
       <div>
@@ -252,12 +241,6 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
           </span>
         </div>
       </div>
-
-      {errors.general && (
-        <div className="mt-4 rounded-lg border border-[#FF4444]/20 bg-[#FF4444]/5 px-3 py-2.5 text-xs text-[#FF4444]">
-          {errors.general}
-        </div>
-      )}
     </form>
   );
 
@@ -266,7 +249,7 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
     <div className="flex items-center justify-end gap-2 w-full">
       {createdCode ? (
         <button
-          onClick={onClose}
+          onClick={handleDone}
           className="flex w-full items-center justify-center rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E]"
         >
           Close

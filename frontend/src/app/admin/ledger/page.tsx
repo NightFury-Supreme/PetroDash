@@ -168,6 +168,8 @@ export default function AdminLedgerPage() {
     );
   }
 
+  if (error) throw new Error(error);
+
   return (
     
       <div className="p-6 space-y-6">

@@ -15,6 +15,7 @@ export interface SupportTicket {
   messageCount?: number;
   lastMessage?:  string;
   user?:         { username?: string; email?: string };
+  deletedByUser?: boolean;
 }
 
 export interface TicketMessage {

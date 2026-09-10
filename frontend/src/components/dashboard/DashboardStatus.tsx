@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Activity } from 'lucide-react';
+import { useToast } from "@/components/ui/ToastProvider";
 
 interface StatusHistory {
   date: string;
@@ -153,23 +154,29 @@ const StatusCard = ({
 export function DashboardStatus() {
   const [data, setData] = useState<StatusData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { showError } = useToast();
 
   useEffect(() => {
+    let isMounted = true;
     const fetchStatus = async () => {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/status`);
         if (!res.ok) throw new Error('Failed to fetch status');
         const jsonData = await res.json();
-        setData(jsonData);
+        if (isMounted) setData(jsonData);
       } catch (err: any) {
-        setError(err.message);
+        if (isMounted) showError(err.message || 'Failed to fetch status');
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
     fetchStatus();
-  }, []);
+    const interval = setInterval(fetchStatus, 30000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [showError]);
 
   return (
     <div className="flex flex-col h-full overflow-hidden p-6">
@@ -226,8 +233,6 @@ export function DashboardStatus() {
               </div>
             ))}
           </div>
-        ) : error ? (
-          <div className="text-red-500 text-xs flex items-center justify-center h-full">{error}</div>
         ) : data ? (
           <>
             <StatusCard 

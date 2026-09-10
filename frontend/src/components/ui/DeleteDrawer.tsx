@@ -16,6 +16,8 @@ interface DeleteDrawerProps {
   requireConfirmText?: boolean;
 }
 
+import { useToast } from "@/components/ui/ToastProvider";
+
 export function DeleteDrawer({
   isOpen,
   onClose,
@@ -29,6 +31,7 @@ export function DeleteDrawer({
 }: DeleteDrawerProps) {
   const [confirmText, setConfirmText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const { showError } = useToast();
 
   useEffect(() => {
     if (isOpen) {
@@ -43,8 +46,9 @@ export function DeleteDrawer({
     try {
       await onConfirm();
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      showError(err.message || `Failed to delete ${entityType.toLowerCase()}`);
       setIsDeleting(false);
     }
   };
