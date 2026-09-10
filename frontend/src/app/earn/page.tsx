@@ -366,11 +366,11 @@ function EarnContent() {
                 cols={cols}
               />
             )}
+            </div>
           </div>
         )}
-        </div>
       </div>
-    
+    </div>
   );
 }
 
