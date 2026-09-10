@@ -1,4 +1,5 @@
 import { Edit2 } from "lucide-react";
+import type { ReactNode } from "react";
 
 export interface EarnMethodRowProps {
   methodName: string;
@@ -9,6 +10,7 @@ export interface EarnMethodRowProps {
   enabled: boolean;
   cols: string;
   onEdit: () => void;
+  icon?: ReactNode;
 }
 
 export function EarnMethodRow({
@@ -20,18 +22,26 @@ export function EarnMethodRow({
   enabled,
   cols,
   onEdit,
+  icon,
 }: EarnMethodRowProps) {
   return (
     <div className={`group grid grid-cols-1 gap-4 px-5 py-5 transition hover:bg-white/[0.015] ${cols} lg:items-center`}>
-      {/* Method Name */}
-      <div className="min-w-0">
-        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Method</p>
-        <span className="block truncate font-mono text-sm text-[#DDDDDD]">
-          {methodName}
-        </span>
-        <span className="block truncate font-mono text-[10px] text-[#666] mt-0.5">
-          {methodSubtitle}
-        </span>
+      {/* Method Name & Icon */}
+      <div className="min-w-0 flex items-center gap-3">
+        {icon && (
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/[0.03] text-[#888] border border-white/[0.08] shadow-sm">
+            {icon}
+          </div>
+        )}
+        <div className="min-w-0">
+          <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Method</p>
+          <span className="block truncate font-mono text-sm text-[#DDDDDD]">
+            {methodName}
+          </span>
+          <span className="block truncate font-mono text-[10px] text-[#666] mt-0.5">
+            {methodSubtitle}
+          </span>
+        </div>
       </div>
 
       {/* Description */}

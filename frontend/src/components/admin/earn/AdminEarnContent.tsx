@@ -5,6 +5,8 @@ import type { AdminEarnSettings } from "@/hooks/admin/earn/useAdminEarn";
 import { EarnMethodRow } from "./EarnMethodRow";
 import { LinkvertiseConfigDrawer } from "./drawers/LinkvertiseConfigDrawer";
 
+import { Link as LinkIcon } from "lucide-react";
+
 export function AdminEarnContent({
   form, saving, onChange, onSaveLinkvertise
 }: {
@@ -33,6 +35,7 @@ export function AdminEarnContent({
           <EarnMethodRow
             methodName="Linkvertise"
             methodSubtitle="Shortlinks"
+            icon={<LinkIcon size={18} />}
             description="Link tasks with anti-bypass protection."
             rewardStr={`${form.linkvertise?.coins || 0} coins`}
             limitStr={`${form.linkvertise?.maxClaimsPerDay || 0} claims`}
