@@ -191,10 +191,7 @@ function EarnContent() {
         // the freshest generated URL from the backend when resuming the session.
       }
 
-      if (method === "ads") {
-        router.push("/earn/ads");
-        return;
-      }
+
 
       const r = await start(method);
       if (method === "linkvertise" && r?.linkvertise?.url) {
