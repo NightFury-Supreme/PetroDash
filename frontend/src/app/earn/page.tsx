@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useModal } from "@/components/Modal";
 import { useEarn } from "@/hooks/useEarn";
 import { EarnMethodCard } from "@/components/earn";
 
 function EarnContent() {
+  const router = useRouter();
   const modal = useModal();
   const searchParams = useSearchParams();
   const lvSid = searchParams.get("lvSid");
@@ -266,12 +267,12 @@ function EarnContent() {
       }
 
       if (method === "offerwall" && data?.config?.offerwall?.adslotId) {
-        window.open(`https://offerwall.ayet.io/offers?adSlot=${data.config.offerwall.adslotId}&externalIdentifier=${decodedUserId}`, "_blank");
+        router.push("/earn/offerwall");
         return;
       }
 
       if (method === "surveywall" && data?.config?.surveywall?.adslotId) {
-        window.open(`https://surveys.ayet.io/surveys?adSlot=${data.config.surveywall.adslotId}&external_identifier=${decodedUserId}`, "_blank");
+        router.push("/earn/surveywall");
         return;
       }
 
