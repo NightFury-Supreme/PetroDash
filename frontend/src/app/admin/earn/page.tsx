@@ -95,7 +95,7 @@ export default function AdminEarnPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-[1200px] p-4 sm:p-6 lg:p-8">
+    <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans">
       <AdminEarnHeader />
 
       {error && (

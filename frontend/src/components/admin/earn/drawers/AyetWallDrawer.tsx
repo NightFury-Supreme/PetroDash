@@ -63,7 +63,7 @@ export function AyetWallDrawer({
           <FieldInput
             type="text"
             value={data?.adslotId || ""}
-            onChange={(e) => sf(`${type}.adslotId`, e.target.value)}
+            onChange={(v) => sf(`${type}.adslotId`, v)}
             placeholder={`e.g. 12345`}
           />
           <FieldHint>Find this in your ayeT-Studios Publisher dashboard.</FieldHint>
@@ -73,7 +73,7 @@ export function AyetWallDrawer({
           <FieldInput
             type="text"
             value={data?.apiKey || ""}
-            onChange={(e) => sf(`${type}.apiKey`, e.target.value)}
+            onChange={(v) => sf(`${type}.apiKey`, v)}
             placeholder="e.g. xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
           />
           <FieldHint>Used to securely verify S2S callbacks using HMAC-SHA256.</FieldHint>
