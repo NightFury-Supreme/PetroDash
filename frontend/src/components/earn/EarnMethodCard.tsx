@@ -46,18 +46,17 @@ export function EarnMethodCard({
 
   const showActionBtn = true; // Always show the button, we handle disabled states in `actionDisabled`
 
-  const subtitleForState = () => {
-    if (status.state === "ready") return "Ready";
-    if (status.state === "waiting") return "Waiting for completion...";
-    if (status.state === "claimable") return "Ready to claim!";
-    if (status.state === "verifying") return "Verifying...";
-    if (status.state === "cooldown") return `Cooldown: ${formatSeconds(status.retryAfterSeconds || 0)}`;
-    if (status.state === "expired") return "Expired";
-    if (status.state === "limit_reached") return "Daily limit reached";
-    return "";
+  const descriptionForMethod = () => {
+    switch (method) {
+      case "ads": return "Watch short videos to earn coins";
+      case "linkvertise": return "View articles to earn coins";
+      case "offerwall": return "Complete tasks and download apps";
+      case "surveywall": return "Share your opinion to earn coins";
+      default: return "Earn coins";
+    }
   };
 
-  const subtitle = subtitleForState();
+  const subtitle = descriptionForMethod();
 
   const actionDisabled =
     disabled ||
