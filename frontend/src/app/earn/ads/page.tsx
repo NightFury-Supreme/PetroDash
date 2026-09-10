@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useEarn } from "@/hooks/useEarn";
 import { useModal } from "@/components/Modal";
