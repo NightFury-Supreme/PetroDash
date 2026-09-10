@@ -391,10 +391,10 @@ router.get('/', requireAuth, async (req, res) => {
         state = 'disabled';
       } else if (!methodCfg.enabled) {
         state = 'disabled';
-      } else if (Number(methodCfg.maxClaimsPerDay || 0) <= 0) {
+      } else if (methodCfg.maxClaimsPerDay <= 0 && !((method === 'offerwall' || method === 'surveywall') && methodCfg.maxClaimsPerDay === 0)) {
         state = 'limit_reached';
         remainingToday = 0;
-      } else if (todayClaims >= Number(methodCfg.maxClaimsPerDay || 0)) {
+      } else if (todayClaims >= methodCfg.maxClaimsPerDay && !((method === 'offerwall' || method === 'surveywall') && methodCfg.maxClaimsPerDay === 0)) {
         state = 'limit_reached';
         remainingToday = 0;
       } else if (session && session.status === 'started') {

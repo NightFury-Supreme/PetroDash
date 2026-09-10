@@ -100,19 +100,19 @@ export function EarnMethodCard({
           </div>
           <div className="text-right">
             <div className="text-xs text-[#AAAAAA]">Reward</div>
-            <div className="text-white font-extrabold text-lg">{rewardCoins} coins</div>
-            <div className="text-xs text-[#AAAAAA] mt-1">{todayClaims}/{maxClaims} today</div>
+            <div className="text-white font-extrabold text-lg">{rewardCoins || "Variable"}{rewardCoins ? " coins" : ""}</div>
+            <div className="text-xs text-[#AAAAAA] mt-1">{todayClaims}/{maxClaims || "Unlimited"} today</div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="rounded-xl border border-[#303030] bg-[#0F0F0F] p-3">
             <div className="text-xs text-[#AAAAAA]">Reward</div>
-            <div className="text-white font-extrabold">{rewardCoins} coins</div>
+            <div className="text-white font-extrabold">{rewardCoins || "Variable"}{rewardCoins ? " coins" : ""}</div>
           </div>
           <div className="rounded-xl border border-[#303030] bg-[#0F0F0F] p-3">
             <div className="text-xs text-[#AAAAAA]">Daily limit</div>
-            <div className="text-white font-extrabold">{todayClaims}/{maxClaims}</div>
+            <div className="text-white font-extrabold">{todayClaims}/{maxClaims || "Unlimited"}</div>
           </div>
           <div className="rounded-xl border border-[#303030] bg-[#0F0F0F] p-3">
             <div className="text-xs text-[#AAAAAA]">Cooldown</div>
