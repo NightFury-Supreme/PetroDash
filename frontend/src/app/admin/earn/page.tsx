@@ -46,17 +46,7 @@ export default function AdminEarnPage() {
     });
   };
 
-  const onSaveAds = async (override?: Partial<AdminEarnSettings['ads']>) => {
-    try {
-      if (!form) return;
-      const next = await save({ ads: { ...form.ads, ...override } });
-      setForm(next);
-    } catch (e: any) {
-      const msg = String(e?.message || "Failed to save");
-      setError(msg);
-      throw e;
-    }
-  };
+
 
   const onSaveLinkvertise = async (override?: Partial<AdminEarnSettings['linkvertise']>) => {
     try {
@@ -70,29 +60,7 @@ export default function AdminEarnPage() {
     }
   };
 
-  const onSaveOfferwall = async (override?: Partial<AdminEarnSettings['offerwall']>) => {
-    try {
-      if (!form) return;
-      const next = await save({ offerwall: { ...form.offerwall, ...override } });
-      setForm(next);
-    } catch (e: any) {
-      const msg = String(e?.message || "Failed to save");
-      setError(msg);
-      throw e;
-    }
-  };
 
-  const onSaveSurveywall = async (override?: Partial<AdminEarnSettings['surveywall']>) => {
-    try {
-      if (!form) return;
-      const next = await save({ surveywall: { ...form.surveywall, ...override } });
-      setForm(next);
-    } catch (e: any) {
-      const msg = String(e?.message || "Failed to save");
-      setError(msg);
-      throw e;
-    }
-  };
 
   return (
     <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans">
@@ -112,10 +80,7 @@ export default function AdminEarnPage() {
             form={form} 
             saving={saving} 
             onChange={setField}
-            onSaveAds={onSaveAds}
             onSaveLinkvertise={onSaveLinkvertise}
-            onSaveOfferwall={onSaveOfferwall}
-            onSaveSurveywall={onSaveSurveywall}
           />
         )
       )}

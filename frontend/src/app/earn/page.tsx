@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useModal } from "@/components/Modal";
 import { useEarn } from "@/hooks/useEarn";
 import { EarnMethodCard } from "@/components/earn";
-import { PlaySquare, Link as LinkIcon, ListTodo, ClipboardList } from "lucide-react";
+import { Link as LinkIcon } from "lucide-react";
 
 function EarnContent() {
   const router = useRouter();
@@ -15,7 +15,6 @@ function EarnContent() {
   const lvHash = searchParams.get("hash");
   const didAuto = useRef(false);
   const didAutoClaim = useRef(false);
-  const didAutoAdsClaim = useRef(false);
 
   const { data, loading, error, setError, refresh, start, claim, starting } = useEarn();
   const [lastLvUrl, setLastLvUrl] = useState<string | null>(null);
@@ -23,14 +22,11 @@ function EarnContent() {
 
   const lvUrlKey = (sessionId: string) => `earn_lv_url_${sessionId}`;
 
-  const showAds = Boolean(data?.config?.ads?.enabled);
   const showLinkvertise = Boolean(data?.config?.linkvertise?.enabled);
-  const showOfferwall = Boolean(data?.config?.offerwall?.enabled);
-  const showSurveywall = Boolean(data?.config?.surveywall?.enabled);
 
   const canShow = useMemo(() => {
-    return showAds || showLinkvertise || showOfferwall || showSurveywall;
-  }, [showAds, showLinkvertise, showOfferwall, showSurveywall]);
+    return showLinkvertise;
+  }, [showLinkvertise]);
 
   useEffect(() => {
     if (!error) return;
@@ -115,29 +111,7 @@ function EarnContent() {
     })();
   }, [pendingLvSid, data?.status?.linkvertise, claim, modal, setError]);
 
-  useEffect(() => {
-    const st = data?.status?.ads;
-    const sid = st?.sessionId;
-    if (!sid) {
-      didAutoAdsClaim.current = false;
-      return;
-    }
-    if (st?.state !== "claimable") {
-      didAutoAdsClaim.current = false;
-      return;
-    }
-    if (didAutoAdsClaim.current) return;
-    didAutoAdsClaim.current = true;
-    (async () => {
-      try {
-        const r = await claim("ads", sid);
-        await modal.success({ title: "Reward Claimed", body: `You earned ${r.rewardCoins} coins.` });
-      } catch (e: any) {
-        didAutoAdsClaim.current = false;
-        await modal.error({ title: "Claim Error", body: String(e?.message || "Failed to claim") });
-      }
-    })();
-  }, [data?.status?.ads, claim, modal]);
+
 
   const onStart = async (method: "ads" | "linkvertise" | "offerwall" | "surveywall") => {
     try {
@@ -145,41 +119,8 @@ function EarnContent() {
         await modal.error({ title: "Earn Disabled", body: "Earn is currently disabled." });
         return;
       }
-      if (method === "ads" && !showAds) {
-        await modal.error({ title: "Disabled", body: "Watch Ads is currently disabled." });
-        return;
-      }
       if (method === "linkvertise" && !showLinkvertise) {
         await modal.error({ title: "Disabled", body: "Linkvertise is currently disabled." });
-        return;
-      }
-      if (method === "offerwall" && !showOfferwall) {
-        await modal.error({ title: "Disabled", body: "Offerwall is currently disabled." });
-        return;
-      }
-      if (method === "surveywall" && !showSurveywall) {
-        await modal.error({ title: "Disabled", body: "Surveywall is currently disabled." });
-        return;
-      }
-
-      if (method === "offerwall") {
-        router.push("/earn/offerwall");
-        return;
-      }
-
-      if (method === "surveywall") {
-        router.push("/earn/surveywall");
-        return;
-      }
-
-      if (method === "ads") {
-        const st = data?.status?.ads;
-        const sid = st?.sessionId;
-        if (st?.state === "claimable" && sid) {
-          await onClaim("ads");
-          return;
-        }
-        router.push("/earn/ads");
         return;
       }
 
@@ -297,19 +238,6 @@ function EarnContent() {
               </div>
             )}
 
-            {showAds && (
-              <EarnMethodCard
-                method="ads"
-                title="Watch Rewarded Video"
-                icon={<PlaySquare size={20} />}
-                config={data.config.ads}
-                status={data.status.ads}
-                starting={starting === "ads"}
-                onStart={() => onStart("ads")}
-                cols={cols}
-              />
-            )}
-
             {showLinkvertise && (
               <EarnMethodCard
                 method="linkvertise"
@@ -319,32 +247,6 @@ function EarnContent() {
                 status={data.status.linkvertise}
                 starting={starting === "linkvertise"}
                 onStart={() => onStart("linkvertise")}
-                cols={cols}
-              />
-            )}
-
-            {showOfferwall && (
-              <EarnMethodCard
-                method="offerwall"
-                title="Offerwall Tasks"
-                icon={<ListTodo size={20} />}
-                config={data.config.offerwall}
-                status={data.status.offerwall}
-                starting={starting === "offerwall"}
-                onStart={() => onStart("offerwall")}
-                cols={cols}
-              />
-            )}
-
-            {showSurveywall && (
-              <EarnMethodCard
-                method="surveywall"
-                title="Surveys"
-                icon={<ClipboardList size={20} />}
-                config={data.config.surveywall}
-                status={data.status.surveywall}
-                starting={starting === "surveywall"}
-                onStart={() => onStart("surveywall")}
                 cols={cols}
               />
             )}
