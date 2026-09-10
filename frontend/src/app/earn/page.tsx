@@ -280,13 +280,8 @@ function EarnContent() {
         const st = data?.status?.linkvertise;
         const sid = st?.sessionId;
         const canContinue = (st?.state === "waiting" || st?.state === "claimable") && Boolean(sid);
-        if (canContinue && sid) {
-          const url = lastLvUrl || localStorage.getItem(lvUrlKey(sid));
-          if (url) {
-            window.location.assign(url);
-            return;
-          }
-        }
+        // We intentionally do NOT use localStorage here anymore, so that we always get
+        // the freshest generated URL from the backend when resuming the session.
       }
 
       const r = await start(method);
