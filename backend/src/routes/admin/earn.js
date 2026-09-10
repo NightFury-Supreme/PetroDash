@@ -76,6 +76,16 @@ const earnPatchSchema = z.object({
     url: z.string().max(2048).optional().or(z.literal('')),
     antiBypassToken: z.string().max(2048).optional().or(z.literal('')),
   }).optional(),
+  offerwall: z.object({
+    enabled: z.coerce.boolean().optional(),
+    adslotId: z.string().max(256).optional().or(z.literal('')),
+    apiKey: z.string().max(2048).optional().or(z.literal('')),
+  }).optional(),
+  surveywall: z.object({
+    enabled: z.coerce.boolean().optional(),
+    adslotId: z.string().max(256).optional().or(z.literal('')),
+    apiKey: z.string().max(2048).optional().or(z.literal('')),
+  }).optional(),
 });
 
 router.patch('/', requireAdmin, async (req, res) => {
@@ -102,10 +112,14 @@ router.patch('/', requireAdmin, async (req, res) => {
       if (key === 'ads' && src.ayetApiKey !== undefined) settings.earn[key].ayetApiKey = src.ayetApiKey;
       if (key === 'linkvertise' && src.url !== undefined) settings.earn[key].url = src.url;
       if (key === 'linkvertise' && src.antiBypassToken !== undefined) settings.earn[key].antiBypassToken = src.antiBypassToken;
+      if ((key === 'offerwall' || key === 'surveywall') && src.adslotId !== undefined) settings.earn[key].adslotId = src.adslotId;
+      if ((key === 'offerwall' || key === 'surveywall') && src.apiKey !== undefined) settings.earn[key].apiKey = src.apiKey;
     };
 
     applyMethod('ads');
     applyMethod('linkvertise');
+    applyMethod('offerwall');
+    applyMethod('surveywall');
 
     const ayetConfigured = Boolean(Number(settings?.earn?.ads?.ayetPlacementId || 0) > 0)
       && Boolean(String(settings?.earn?.ads?.ayetAdslotName || '').trim())
