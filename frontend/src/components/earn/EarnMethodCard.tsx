@@ -2,6 +2,7 @@
 
 import { EarnMethod, EarnMethodStatus, EarnMethodConfig } from "@/hooks/useEarn";
 import type { ReactNode } from "react";
+import { Infinity } from "lucide-react";
 
 function formatSeconds(s: number) {
   if (!Number.isFinite(s) || s <= 0) return "0s";
@@ -101,7 +102,9 @@ export function EarnMethodCard({
       {/* Limit */}
       <div className="min-w-0">
         <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Daily Limit</p>
-        <span className="text-sm text-[#AAAAAA]">{todayClaims} / {maxClaims || "Unlimited"}</span>
+        <span className="text-sm text-[#AAAAAA] flex items-center gap-1">
+          {todayClaims} / {maxClaims || <Infinity size={14} className="inline-block opacity-70" />}
+        </span>
       </div>
 
       {/* Cooldown */}
