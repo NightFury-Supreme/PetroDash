@@ -381,7 +381,15 @@ router.post('/redeem', requireAuth, async (req, res) => {
     return res.json({ message: 'Gift redeemed successfully', ...result });
   } catch (error) {
     console.error('Redeem error:', error);
-    const map = {
+    const msgMap = {
+      INVALID: 'The gift code you entered is invalid or disabled.',
+      NOT_ACTIVE: 'This gift code is not active yet.',
+      EXPIRED: 'This gift code has expired.',
+      LIMIT: 'This gift code has reached its maximum redemption limit.',
+      DUP: 'You have already redeemed this gift code.',
+      NOUSER: 'Your user account could not be found.',
+    };
+    const statusMap = {
       INVALID: 404,
       NOT_ACTIVE: 400,
       EXPIRED: 400,
@@ -390,11 +398,10 @@ router.post('/redeem', requireAuth, async (req, res) => {
       NOUSER: 404,
     };
     const key = error && error.message || '';
-    const status = map[key] || 500;
-    res.status(status).json({ error: status === 500 ? 'Failed to redeem gift' : key });
+    const status = statusMap[key] || 500;
+    const detail = msgMap[key] || 'Failed to redeem gift.';
+    res.status(status).json({ error: detail });
   }
 });
 
 module.exports = router;
-
-
