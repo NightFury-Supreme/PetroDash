@@ -132,31 +132,54 @@ router.post('/:id/refund', requireAdmin, async (req, res) => {
     await axios.post(`${baseUrl}/v2/payments/captures/${captureId}/refund`, {}, { headers: { Authorization: `Bearer ${token}` } });
     
     // Deduct resources and coins if payment was COMPLETED
+    const changes = { status: { old: p.status, new: 'REFUNDED' } };
+    
     if (p.status === 'COMPLETED') {
       const Plan = require('../../models/Plan');
       const User = require('../../models/User');
       const UserPlan = require('../../models/UserPlan');
 
       const plan = await Plan.findById(p.planId);
-      if (plan) {
+      const user = await User.findById(p.userId);
+      if (plan && user) {
         if (plan.type === 'coins') {
-          await User.findByIdAndUpdate(p.userId, { $inc: { coins: -(Number(plan.coinsAmount) || 0) } });
+          const coinAmount = Number(plan.coinsAmount) || 0;
+          if (coinAmount > 0) {
+            changes.coins = { old: user.coins, new: Math.max(0, user.coins - coinAmount) };
+            await User.findByIdAndUpdate(p.userId, { coins: changes.coins.new });
+          }
         } else {
           const pc = plan.productContent || {};
           const rr = pc.recurrentResources || {};
           const decQuery = {
             coins: -(Number(pc.coins || 0)),
-            'resources.diskMb': -(Number(rr.diskMb || 0)),
-            'resources.memoryMb': -(Number(rr.memoryMb || 0)),
-            'resources.cpuPercent': -(Number(rr.cpuPercent || 0)),
-            'resources.backups': -(Number(pc.backups || 0)),
-            'resources.databases': -(Number(pc.databases || 0)),
-            'resources.allocations': -(Number(pc.additionalAllocations || 0)),
-            'resources.serverSlots': -(Number(pc.serverLimit || 0)),
+            diskMb: -(Number(rr.diskMb || 0)),
+            memoryMb: -(Number(rr.memoryMb || 0)),
+            cpuPercent: -(Number(rr.cpuPercent || 0)),
+            backups: -(Number(pc.backups || 0)),
+            databases: -(Number(pc.databases || 0)),
+            allocations: -(Number(pc.additionalAllocations || 0)),
+            serverSlots: -(Number(pc.serverLimit || 0)),
           };
-          Object.keys(decQuery).forEach(k => { if (decQuery[k] === 0) delete decQuery[k]; });
-          if (Object.keys(decQuery).length > 0) {
-            await User.findByIdAndUpdate(p.userId, { $inc: decQuery });
+          
+          let updatePayload = { $inc: {} };
+          Object.keys(decQuery).forEach(k => { 
+            if (decQuery[k] !== 0) {
+              const uR = user.resources || {};
+              const oldVal = k === 'coins' ? user.coins : (uR[k] || 0);
+              const newVal = Math.max(0, oldVal + decQuery[k]);
+              const dbKey = k === 'coins' ? 'coins' : `resources.${k}`;
+              
+              changes[dbKey] = { old: oldVal, new: newVal };
+              
+              // Rather than strict $inc which could go negative, we $set it to min 0
+              if (!updatePayload.$set) updatePayload.$set = {};
+              updatePayload.$set[dbKey] = newVal;
+            }
+          });
+          
+          if (updatePayload.$set) {
+            await User.findByIdAndUpdate(p.userId, updatePayload);
           }
         }
       }
@@ -176,7 +199,14 @@ router.post('/:id/refund', requireAdmin, async (req, res) => {
     await deleteCachePattern('admin:ledger');
 
     const { writeAudit } = require('../../middleware/audit');
-    await writeAudit(req, 'admin.payment.refund', 'payment', p._id.toString(), { providerCaptureId: p.providerCaptureId });
+    await writeAudit(req, 'admin.payment.refund', 'payment', p._id.toString(), { providerCaptureId: p.providerCaptureId, changes });
+
+    const { logUserActivity } = require('../../middleware/userActivity');
+    await logUserActivity(null, 'admin.payment.refund', { 
+      paymentId: p._id.toString(), 
+      planId: p.planId, 
+      changes 
+    }, p.userId.toString());
 
     res.json({ ok: true });
   } catch (e) { res.status(400).json({ error: e.message }); }
@@ -190,6 +220,8 @@ router.post('/:id/void', requireAdmin, async (req, res) => {
     if (p.provider !== 'paypal') return res.status(400).json({ error: 'Only PayPal supported' });
     // Voiding an order depends on status; in practice, treat as refund for captured, else mark voided
     if (p.status === 'COMPLETED') return res.status(400).json({ error: 'Use refund for completed payments' });
+    
+    const changes = { status: { old: p.status, new: 'VOIDED' } };
     p.status = 'VOIDED';
     await p.save();
 
@@ -197,7 +229,14 @@ router.post('/:id/void', requireAdmin, async (req, res) => {
     await deleteCachePattern('admin:ledger');
 
     const { writeAudit } = require('../../middleware/audit');
-    await writeAudit(req, 'admin.payment.void', 'payment', p._id.toString(), {});
+    await writeAudit(req, 'admin.payment.void', 'payment', p._id.toString(), { changes });
+
+    const { logUserActivity } = require('../../middleware/userActivity');
+    await logUserActivity(null, 'admin.payment.void', { 
+      paymentId: p._id.toString(), 
+      planId: p.planId, 
+      changes 
+    }, p.userId.toString());
 
     res.json({ ok: true });
   } catch (e) { res.status(400).json({ error: e.message }); }
