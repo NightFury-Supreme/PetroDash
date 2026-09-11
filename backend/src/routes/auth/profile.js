@@ -59,13 +59,13 @@ router.patch('/profile', requireAuth, async (req, res) => {
     }
     
     const changes = {};
-    if (oldValues.username !== user.username) changes.username = `${oldValues.username || 'None'} to ${user.username || 'None'}`;
-    if (oldValues.firstName !== user.firstName) changes.firstName = `${oldValues.firstName || 'None'} to ${user.firstName || 'None'}`;
-    if (oldValues.lastName !== user.lastName) changes.lastName = `${oldValues.lastName || 'None'} to ${user.lastName || 'None'}`;
+    if (oldValues.username !== user.username) changes.username = { old: oldValues.username || 'None', new: user.username || 'None' };
+    if (oldValues.firstName !== user.firstName) changes.firstName = { old: oldValues.firstName || 'None', new: user.firstName || 'None' };
+    if (oldValues.lastName !== user.lastName) changes.lastName = { old: oldValues.lastName || 'None', new: user.lastName || 'None' };
     
     if (Object.keys(changes).length > 0) {
-      await logUserActivity(req, 'auth.account.update', changes);
-      await writeAudit(req, 'auth.account.update', 'user_profile', req.user ? (req.user.sub || req.user._id) : null, changes);
+      await logUserActivity(req, 'auth.account.update', { changes });
+      await writeAudit(req, 'auth.account.update', 'user_profile', req.user ? (req.user.sub || req.user._id) : null, { changes });
     }
     
     return res.json({ id: user._id, email: user.email, username: user.username, firstName: user.firstName, lastName: user.lastName, role: user.role, coins: Number(user.coins || 0), pterodactylUserId: user.pterodactylUserId || null, resources: user.resources });

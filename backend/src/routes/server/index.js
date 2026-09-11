@@ -242,7 +242,7 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
         }
         
         server.name = newName;
-        changes.name = newName;
+        changes.name = { old: server.name, new: newName };
       }
     }
 
@@ -321,7 +321,7 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
       const diffs = {};
       for (const [key, value] of Object.entries(newLimits)) {
         if (server.limits[key] !== value) {
-          diffs[key] = `${server.limits[key] || 0} -> ${value}`;
+          diffs[key] = { old: server.limits[key] || 0, new: value };
         }
       }
 
@@ -387,7 +387,7 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
     // Log audit trail
     const { writeAudit } = require('../../middleware/audit');
     writeAudit(req, 'server.update', 'server', server._id.toString(), { 
-      changed: changes,
+      changes,
       serverId: server._id,
       serverName: server.name,
       userId: user._id
