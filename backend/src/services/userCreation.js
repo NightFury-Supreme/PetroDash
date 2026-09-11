@@ -175,16 +175,24 @@ class UserCreationService {
       );
 
       const { writeAudit } = require('../middleware/audit');
+      const { logUserActivity } = require('../middleware/userActivity');
+
+      const referredChanges = { coins: { old: user.coins - referredCoins, new: user.coins } };
       await writeAudit(user._id.toString(), 'referral.reward.referred', 'referral', referrer._id.toString(), {
         referrerId: referrer._id.toString(),
         coinsAdded: referredCoins,
-        changes: { coins: { old: user.coins - referredCoins, new: user.coins } }
+        changes: referredChanges
       });
+      await logUserActivity(null, 'referral.reward.referred', { referrerId: referrer._id.toString(), coinsAdded: referredCoins, changes: referredChanges }, user._id.toString());
+
+      const referrerChanges = { coins: { old: referrer.coins || 0, new: (referrer.coins || 0) + referrerCoins } };
       await writeAudit(referrer._id.toString(), 'referral.reward.referrer', 'referral', user._id.toString(), {
         referredUserId: user._id.toString(),
+        referredUsername: user.username,
         coinsAdded: referrerCoins,
-        changes: { coins: { old: referrer.coins || 0, new: (referrer.coins || 0) + referrerCoins } }
+        changes: referrerChanges
       });
+      await logUserActivity(null, 'referral.reward.referrer', { referredUserId: user._id.toString(), referredUsername: user.username, coinsAdded: referrerCoins, changes: referrerChanges }, referrer._id.toString());
     } catch (error) {
       console.error('Failed to grant referral rewards:', error);
     }

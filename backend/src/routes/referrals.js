@@ -131,13 +131,16 @@ router.post('/code', requireAuth, async (req, res) => {
     const exists = await User.findOne({ referralCode: desired }).lean();
     if (exists && String(exists._id) !== String(user._id)) return res.status(409).json({ error: 'Code already in use' });
     
+    const oldCode = user.referralCode;
     user.referralCode = desired;
     try {
       await user.save();
-      await logUserActivity(req, 'referral.code.update', { code: desired });
+      const changes = { code: { old: oldCode, new: desired } };
+      await logUserActivity(req, 'referral.code.update', { code: desired, changes });
       const { writeAudit } = require('../middleware/audit');
       await writeAudit(req, 'referral.code.update', 'referral', user._id.toString(), {
-        code: desired
+        code: desired,
+        changes
       });
       return res.json({ ok: true, code: user.referralCode });
     } catch (saveError) {
