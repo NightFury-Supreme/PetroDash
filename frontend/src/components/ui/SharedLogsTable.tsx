@@ -63,12 +63,12 @@ function RecursiveDiffViewer({ data, prefix = '' }: { data: any; prefix?: string
         if (value && typeof value === 'object' && ('old' in value || 'new' in value)) {
           return (
             <div key={fullKey} className="flex flex-col sm:flex-row sm:items-center gap-2 py-2 border-b border-white/[0.04] last:border-0">
-              <span className="font-mono text-[10px] text-white/30 sm:w-40 shrink-0 truncate">{fullKey}</span>
+              <span className="font-mono text-[10px] text-white/55 sm:w-40 shrink-0 truncate">{fullKey}</span>
               <div className="flex items-center gap-2 flex-wrap min-w-0">
                 <span className="font-mono text-[11px] text-red-400/80 bg-red-500/[0.06] px-2 py-0.5 rounded">
                   {String(value.old ?? 'null')}
                 </span>
-                <span className="text-white/20 text-[10px]">→</span>
+                <span className="text-white/40 text-[10px]">→</span>
                 <span className="font-mono text-[11px] text-emerald-400/80 bg-emerald-500/[0.06] px-2 py-0.5 rounded">
                   {String(value.new ?? 'null')}
                 </span>
@@ -81,10 +81,10 @@ function RecursiveDiffViewer({ data, prefix = '' }: { data: any; prefix?: string
           const [oldV, newV] = value.split('->').map(s => s.trim());
           return (
             <div key={fullKey} className="flex flex-col sm:flex-row sm:items-center gap-2 py-2 border-b border-white/[0.04] last:border-0">
-              <span className="font-mono text-[10px] text-white/30 sm:w-40 shrink-0 truncate">{fullKey}</span>
+              <span className="font-mono text-[10px] text-white/55 sm:w-40 shrink-0 truncate">{fullKey}</span>
               <div className="flex items-center gap-2 flex-wrap min-w-0">
                 <span className="font-mono text-[11px] text-red-400/80 bg-red-500/[0.06] px-2 py-0.5 rounded">{oldV}</span>
-                <span className="text-white/20 text-[10px]">→</span>
+                <span className="text-white/40 text-[10px]">→</span>
                 <span className="font-mono text-[11px] text-emerald-400/80 bg-emerald-500/[0.06] px-2 py-0.5 rounded">{newV}</span>
               </div>
             </div>
@@ -97,8 +97,8 @@ function RecursiveDiffViewer({ data, prefix = '' }: { data: any; prefix?: string
 
         return (
           <div key={fullKey} className="flex flex-col sm:flex-row sm:items-center gap-2 py-2 border-b border-white/[0.04] last:border-0">
-            <span className="font-mono text-[10px] text-white/25 sm:w-40 shrink-0 truncate">{fullKey}</span>
-            <span className="font-mono text-[11px] text-white/45 break-all">{typeof value === 'string' ? value : JSON.stringify(value)}</span>
+            <span className="font-mono text-[10px] text-white/50 sm:w-40 shrink-0 truncate">{fullKey}</span>
+            <span className="font-mono text-[11px] text-white/65 break-all">{typeof value === 'string' ? value : JSON.stringify(value)}</span>
           </div>
         );
       })}
@@ -117,7 +117,7 @@ function CreatedViewer({ created }: { created: any }) {
     <>
       {Object.entries(created).map(([key, value]) => (
         <div key={key} className="flex flex-col sm:flex-row sm:items-center gap-2 py-2 border-b border-white/[0.04] last:border-0">
-          <span className="font-mono text-[10px] text-white/25 sm:w-40 shrink-0 truncate">{key}</span>
+          <span className="font-mono text-[10px] text-white/50 sm:w-40 shrink-0 truncate">{key}</span>
           <span className="font-mono text-[11px] text-emerald-400/70 break-all">{JSON.stringify(value)}</span>
         </div>
       ))}
@@ -129,8 +129,8 @@ function InfoRow({ label, value, mono = false, muted = false }: { label: string;
   if (!value) return null;
   return (
     <div className="flex justify-between items-start gap-4 py-[7px] border-b border-white/[0.04] last:border-0">
-      <span className="text-[9px] uppercase tracking-[0.1em] text-white/25 shrink-0 pt-px">{label}</span>
-      <span className={`text-right break-all ${mono ? 'font-mono' : ''} text-[11px] ${muted ? 'text-white/30' : 'text-white/50'}`}>{value}</span>
+      <span className="text-[9px] uppercase tracking-[0.1em] text-white/45 shrink-0 pt-px">{label}</span>
+      <span className={`text-right break-all ${mono ? 'font-mono' : ''} text-[11px] ${muted ? 'text-white/50' : 'text-white/70'}`}>{value}</span>
     </div>
   );
 }
@@ -157,7 +157,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
   return (
     <div className="w-full">
       {/* Column Headers */}
-      <div className="hidden md:grid grid-cols-[2fr_1.5fr_110px_140px_44px] gap-4 px-5 pb-3 border-b border-white/[0.06] text-[9px] uppercase tracking-[0.13em] text-white/20">
+      <div className="hidden md:grid grid-cols-[2fr_1.5fr_110px_140px_44px] gap-4 px-5 pb-3 border-b border-white/[0.06] text-[9px] uppercase tracking-[0.13em] text-white/40">
         <span>Action</span>
         <span>Device / Browser</span>
         <span>Status</span>
@@ -176,7 +176,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
             ))}
           </>
         ) : logs.length === 0 ? (
-          <div className="py-16 flex flex-col items-center justify-center gap-3 text-white/20">
+          <div className="py-16 flex flex-col items-center justify-center gap-3 text-white/40">
             <span className="text-2xl opacity-50">📋</span>
             <p className="text-xs">No activity logs yet</p>
           </div>
@@ -203,13 +203,13 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
               <React.Fragment key={log._id}>
                 {/* Row */}
                 <div
-                  className="group grid grid-cols-1 md:grid-cols-[2fr_1.5fr_110px_140px_44px] gap-4 px-5 py-5 items-center transition hover:bg-white/[0.015] cursor-pointer"
+                  className="group grid grid-cols-1 md:grid-cols-[2fr_1.5fr_110px_140px_44px] gap-4 px-5 py-5 items-center transition hover:bg-white/[0.02] cursor-pointer"
                   onClick={() => toggleRow(log._id)}
                 >
                   {/* Action */}
                   <div className="min-w-0">
-                    <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Action</p>
-                    <div className="text-sm font-medium text-white/75 truncate">{formatActionText(log.action)}</div>
+                    <p className="mb-1 text-[9px] uppercase tracking-wider text-white/30 md:hidden">Action</p>
+                    <div className="text-sm font-semibold text-white truncate">{formatActionText(log.action)}</div>
                     {variant === 'admin' && (
                       <div className="mt-1 flex items-center gap-1.5">
                         {(() => {
@@ -218,20 +218,19 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
                           return actorId ? (
                             <Link
                               href={`/admin/users/${actorId}`}
-                              className="text-[10px] text-white/30 hover:text-[#ff5722] transition-colors truncate"
+                              className="text-[10px] text-white/50 hover:text-[#ff5722] transition-colors truncate"
                               onClick={(e) => e.stopPropagation()}
                             >
                               {actorName}
                             </Link>
-                          ) : <span className="text-[10px] text-white/20">System</span>;
+                          ) : <span className="text-[10px] text-white/35">System</span>;
                         })()}
-                        <span className="text-[8px] text-white/20 uppercase tracking-wider border border-white/[0.08] rounded px-1 py-px">
+                        <span className="text-[8px] text-white/35 uppercase tracking-wider border border-white/[0.12] rounded px-1 py-px">
                           {log.actorRole || 'system'}
                         </span>
                       </div>
                     )}
                     {variant === 'user' && (() => {
-                      // Pick the most relevant context label from metadata
                       const ctx =
                         actualMeta?.serverName
                           ? `Server: ${actualMeta.serverName}`
@@ -245,28 +244,28 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
                           ? `Code: ${actualMeta.code}`
                           : log.action;
                       return (
-                        <div className="mt-0.5 text-[10px] text-white/25 truncate">{ctx}</div>
+                        <div className="mt-0.5 text-[10px] text-white/45 truncate">{ctx}</div>
                       );
                     })()}
                   </div>
 
                   {/* Device */}
                   <div className="min-w-0">
-                    <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Device / Browser</p>
-                    <div className="text-[11px] text-white/45 font-mono truncate">{(log.ip || actualMeta?.ip) || '—'}</div>
-                    <div className="mt-0.5 text-[10px] text-white/25">{parseUserAgent(log.userAgent || actualMeta?.userAgent)}</div>
+                    <p className="mb-1 text-[9px] uppercase tracking-wider text-white/30 md:hidden">Device / Browser</p>
+                    <div className="text-[11px] text-white/65 font-mono truncate">{(log.ip || actualMeta?.ip) || '—'}</div>
+                    <div className="mt-0.5 text-[10px] text-white/40">{parseUserAgent(log.userAgent || actualMeta?.userAgent)}</div>
                   </div>
 
                   {/* Status */}
                   <div className="min-w-0">
-                    <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Status</p>
+                    <p className="mb-1 text-[9px] uppercase tracking-wider text-white/30 md:hidden">Status</p>
                     <StatusBadge log={log} />
                   </div>
 
                   {/* Date */}
                   <div className="min-w-0">
-                    <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Date</p>
-                    <div className="text-[11px] text-white/30">
+                    <p className="mb-1 text-[9px] uppercase tracking-wider text-white/30 md:hidden">Date</p>
+                    <div className="text-[11px] text-white/55">
                       {new Date(log.createdAt).toLocaleString('en-GB', {
                         day: '2-digit', month: '2-digit', year: 'numeric',
                         hour: '2-digit', minute: '2-digit', second: '2-digit'
@@ -277,7 +276,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
                   {/* Toggle */}
                   <div className="flex md:justify-end">
                     <button
-                      className="w-6 h-6 inline-flex items-center justify-center rounded border border-white/[0.07] text-white/25 hover:text-white/50 hover:border-white/[0.12] transition-colors focus:outline-none"
+                      className="w-6 h-6 inline-flex items-center justify-center rounded border border-white/[0.12] text-white/40 hover:text-white/70 hover:border-white/[0.2] transition-colors focus:outline-none"
                       onClick={(e) => { e.stopPropagation(); toggleRow(log._id); }}
                     >
                       <i className={`fas fa-chevron-${isExpanded ? 'up' : 'down'} text-[8px]`} />
@@ -292,7 +291,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
 
                       {/* Request Info */}
                       <div>
-                        <p className="mb-3 text-[9px] uppercase tracking-[0.13em] text-white/20">Request Information</p>
+                        <p className="mb-3 text-[9px] uppercase tracking-[0.13em] text-white/40">Request Information</p>
                         <InfoRow label="Request ID" value={log._id} mono muted />
                         <InfoRow label="Session ID" value={log.sessionId || actualMeta?.sessionId} mono muted />
                         <InfoRow label="IP Address" value={(log.ip || actualMeta?.ip) || '—'} mono />
@@ -304,8 +303,8 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
                         {(log.path || actualMeta?.path) && <InfoRow label="Path" value={log.path || actualMeta?.path} mono muted />}
                         {(log.statusCode || actualMeta?.statusCode) && (
                           <div className="flex justify-between items-start gap-4 py-[7px] border-b border-white/[0.04] last:border-0">
-                            <span className="text-[9px] uppercase tracking-[0.1em] text-white/25 shrink-0">Status Code</span>
-                            <span className={`font-mono text-[11px] ${(log.statusCode || actualMeta?.statusCode || 0) >= 400 ? 'text-red-400/80' : 'text-emerald-400/70'}`}>
+                            <span className="text-[9px] uppercase tracking-[0.1em] text-white/45 shrink-0">Status Code</span>
+                            <span className={`font-mono text-[11px] ${(log.statusCode || actualMeta?.statusCode || 0) >= 400 ? 'text-red-400' : 'text-emerald-400'}`}>
                               {log.statusCode || actualMeta?.statusCode}
                             </span>
                           </div>
@@ -316,22 +315,22 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
                       <div className="space-y-5 min-w-0">
                         {hasChanges && (
                           <div>
-                            <p className="mb-3 text-[9px] uppercase tracking-[0.13em] text-white/20">Value Changes</p>
+                            <p className="mb-3 text-[9px] uppercase tracking-[0.13em] text-white/40">Value Changes</p>
                             <DiffViewer changes={actualMeta.changes} />
                           </div>
                         )}
 
                         {hasCreated && (
                           <div>
-                            <p className="mb-3 text-[9px] uppercase tracking-[0.13em] text-white/20">Created</p>
+                            <p className="mb-3 text-[9px] uppercase tracking-[0.13em] text-white/40">Created</p>
                             <CreatedViewer created={actualMeta.created} />
                           </div>
                         )}
 
                         {variant === 'admin' && Object.keys(rawMeta).length > 0 && (
                           <div>
-                            <p className="mb-3 text-[9px] uppercase tracking-[0.13em] text-white/20">Additional Meta</p>
-                            <pre className="text-[10px] text-white/25 font-mono whitespace-pre-wrap break-all overflow-y-auto max-h-36 leading-relaxed">
+                            <p className="mb-3 text-[9px] uppercase tracking-[0.13em] text-white/40">Additional Meta</p>
+                            <pre className="text-[10px] text-white/45 font-mono whitespace-pre-wrap break-all overflow-y-auto max-h-36 leading-relaxed">
                               {JSON.stringify(rawMeta, null, 2)}
                             </pre>
                           </div>
