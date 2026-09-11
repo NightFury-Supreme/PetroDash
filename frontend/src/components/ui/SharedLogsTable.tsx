@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 
-export interface SharedLog {
+interface LogEntry {
   _id: string;
   action: string;
+  category?: string;
   createdAt: string;
   
   // Generic fields
@@ -18,160 +19,180 @@ export interface SharedLog {
   actorId?: string;
   actorRole?: string;
   actorUsername?: string;
-  targetUserId?: string;
-  resourceType?: string;
   resourceId?: string;
-  category?: string;
-  requestId?: string;
-  sessionId?: string;
+  resourceType?: string;
+  
+  // Network/Auth fields
   method?: string;
   path?: string;
   statusCode?: number;
   durationMs?: number;
-  responsePreview?: string;
+  sessionId?: string;
+  targetUserId?: string;
 }
 
 interface SharedLogsTableProps {
-  logs: SharedLog[];
+  logs: LogEntry[];
   loading: boolean;
-  variant: 'admin' | 'user';
+  variant: 'user' | 'admin';
 }
 
-const parseUserAgent = (ua?: string) => {
-  if (!ua || ua === 'unknown') return 'Unknown Device';
-  
-  let os = 'Unknown OS';
-  if (ua.includes('Win')) os = 'Windows';
-  else if (ua.includes('Mac')) os = 'macOS';
-  else if (ua.includes('Android')) os = 'Android';
-  else if (ua.includes('iOS') || ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
-  else if (ua.includes('Linux')) os = 'Linux';
+function parseUserAgent(ua?: string) {
+  if (!ua) return 'Unknown Device';
   
   let browser = 'Unknown Browser';
-  if (ua.includes('Chrome') && !ua.includes('Edg')) browser = 'Chrome';
-  else if (ua.includes('Safari') && !ua.includes('Chrome')) browser = 'Safari';
-  else if (ua.includes('Firefox')) browser = 'Firefox';
-  else if (ua.includes('Edg')) browser = 'Edge';
+  let os = 'Unknown OS';
+  
+  if (ua.includes('Firefox')) browser = 'Firefox';
+  else if (ua.includes('Chrome')) browser = 'Chrome';
+  else if (ua.includes('Safari')) browser = 'Safari';
+  else if (ua.includes('Edge')) browser = 'Edge';
+  
+  if (ua.includes('Windows')) os = 'Windows';
+  else if (ua.includes('Mac OS')) os = 'macOS';
+  else if (ua.includes('Linux')) os = 'Linux';
+  else if (ua.includes('Android')) os = 'Android';
+  else if (ua.includes('iOS')) os = 'iOS';
   
   return `${os} • ${browser}`;
-};
+}
 
-const formatActionText = (action: string) => {
-  const actionMap: Record<string, string> = {
-    'auth.login.success': 'Successfully logged in',
-    'auth.login.failed': 'Failed login attempt',
-    'auth.register.success': 'Registered account',
-    'auth.account.delete': 'Deleted account',
-    'auth.account.update': 'Updated account profile',
-    'auth.session.revoke': 'Revoked session',
-    'auth.2fa.enable': 'Enabled Two-Factor Authentication',
-    'auth.2fa.disable': 'Disabled Two-Factor Authentication',
-    'auth.email.update': 'Updated email address',
-    'auth.email.verified': 'Verified email address',
-    'auth.password.update': 'Changed password',
-    'auth.password.reset.success': 'Reset password',
-    'panel.password.reset': 'Reset panel password',
-    'server.create': 'Created a new server',
-    'server.delete': 'Deleted a server',
-    'server.update': 'Updated server settings',
-    'earn.claim': 'Claimed AFK coins',
-    'earn.session.start': 'Started AFK session',
-    'shop.purchase': 'Purchased an item from the shop',
-    'shop.purchase.completed': 'Purchased an item from the shop',
-    'payment.purchase.completed': 'Added funds / Purchased plan',
-    'ticket.create': 'Created a support ticket',
-    'ticket.reply': 'Replied to a support ticket',
-    'ticket.status_change': 'Updated support ticket status',
-    'gift.create': 'Created a gift code',
-    'gift.claim': 'Claimed a gift code',
-    'referral.code.update': 'Set custom referral code',
-    'admin.user.update': 'Profile updated by admin',
-    'admin.user.ban': 'Account suspended',
-    'admin.user.unban': 'Account suspension lifted',
-  };
-  return actionMap[action] || action;
-};
+function formatDuration(ms?: number) {
+  if (ms === undefined || ms === null) return '—';
+  if (ms < 1000) return `${ms}ms`;
+  return `${(ms / 1000).toFixed(2)}s`;
+}
+
+function formatActionText(action: string) {
+  return action.split('.').map(part => 
+    part.charAt(0).toUpperCase() + part.slice(1)
+  ).join(' ');
+}
+
+function DiffViewer({ changes }: { changes: any }) {
+  if (!changes || typeof changes !== 'object') return null;
+  return (
+    <div className="flex flex-col gap-2 mt-2">
+      {Object.entries(changes).map(([key, value]: [string, any]) => {
+        if (!value || typeof value !== 'object' || (!('old' in value) && !('new' in value))) {
+          return (
+            <div key={key} className="flex items-start gap-4 p-2 bg-white/[0.02] rounded border border-white/[0.05]">
+              <span className="text-white/40 font-mono text-[10px] w-24 shrink-0 truncate">{key}</span>
+              <span className="text-white/70 font-mono text-xs">{JSON.stringify(value)}</span>
+            </div>
+          );
+        }
+        
+        return (
+          <div key={key} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-2 bg-[#0F0F0F] rounded border border-[#222]">
+            <span className="text-white/50 font-mono text-[10px] sm:w-32 shrink-0 truncate">{key}</span>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full min-w-0">
+              <span className="bg-red-500/10 text-red-400 font-mono text-[10px] px-1.5 py-0.5 rounded break-all">
+                {JSON.stringify(value.old) ?? 'null'}
+              </span>
+              <span className="text-white/20 hidden sm:inline">→</span>
+              <span className="bg-green-500/10 text-green-400 font-mono text-[10px] px-1.5 py-0.5 rounded break-all">
+                {JSON.stringify(value.new) ?? 'null'}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function CreatedViewer({ created }: { created: any }) {
+  if (!created || typeof created !== 'object') return null;
+  return (
+    <div className="flex flex-col gap-2 mt-2">
+      {Object.entries(created).map(([key, value]) => (
+        <div key={key} className="flex items-start gap-4 p-2 bg-[#0F0F0F] rounded border border-[#222]">
+          <span className="text-white/50 font-mono text-[10px] w-32 shrink-0 truncate">{key}</span>
+          <span className="text-green-400 font-mono text-[10px] break-all">{JSON.stringify(value)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps) {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
-  const getSeverityBadge = (log: SharedLog) => {
-    // If we only have success flag (like UserActivity)
-    if (log.severity === undefined && log.success !== undefined) {
-      if (log.success !== false) {
-        return <span className="inline-flex px-2 py-0.5 rounded-[4px] border border-green-500/20 bg-green-500/10 text-green-500 text-[10px] font-bold tracking-wider uppercase">Success</span>;
+  const getSeverityBadge = (log: LogEntry) => {
+    if (log.success !== undefined) {
+      if (log.success) {
+        return <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-green-500/10 text-green-400 text-[10px] font-medium border border-green-500/20"><span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>SUCCESS</span>;
+      } else {
+        return <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium border border-red-500/20"><span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>FAILED</span>;
       }
-      return <span className="inline-flex px-2 py-0.5 rounded-[4px] border border-red-500/20 bg-red-500/10 text-red-500 text-[10px] font-bold tracking-wider uppercase">Failed</span>;
     }
 
-    const sev = log.severity || 'INFO';
-    if (sev === 'INFO') {
-      return <span className="inline-flex px-2 py-0.5 rounded-[4px] border border-green-500/20 bg-green-500/10 text-green-500 text-[10px] font-bold tracking-wider uppercase">Success</span>;
+    switch (log.severity) {
+      case 'CRITICAL':
+        return <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium border border-red-500/20"><span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>CRITICAL</span>;
+      case 'ERROR':
+        return <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-orange-500/10 text-orange-400 text-[10px] font-medium border border-orange-500/20"><span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>ERROR</span>;
+      case 'WARNING':
+        return <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-yellow-500/10 text-yellow-400 text-[10px] font-medium border border-yellow-500/20"><span className="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>WARN</span>;
+      case 'INFO':
+      default:
+        return <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-blue-500/10 text-blue-400 text-[10px] font-medium border border-blue-500/20"><span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>INFO</span>;
     }
-    if (sev === 'WARNING') {
-      return <span className="inline-flex px-2 py-0.5 rounded-[4px] border border-yellow-500/20 bg-yellow-500/10 text-yellow-500 text-[10px] font-bold tracking-wider uppercase">Warning</span>;
-    }
-    if (sev === 'ERROR' || sev === 'CRITICAL') {
-      return <span className="inline-flex px-2 py-0.5 rounded-[4px] border border-red-500/20 bg-red-500/10 text-red-500 text-[10px] font-bold tracking-wider uppercase">Failed</span>;
-    }
-    
-    return <span className="inline-flex px-2 py-0.5 rounded-[4px] border border-white/20 bg-white/10 text-white text-[10px] font-bold tracking-wider uppercase">{sev}</span>;
   };
 
-  const formatDuration = (ms?: number) => {
-    if (!ms) return '-';
-    if (ms < 1000) return `${ms}ms`;
-    return `${(ms / 1000).toFixed(2)}s`;
+  const toggleRow = (id: string) => {
+    setExpandedRow(expandedRow === id ? null : id);
   };
-
-  if (logs.length === 0 && !loading) {
-    return (
-      <div className="border border-[#222] bg-[#111] rounded-xl p-8 text-center mt-6">
-        <div className="text-white font-semibold">No logs found</div>
-        <div className="text-[#AAAAAA] text-sm mt-1">Try adjusting your filters or check back later.</div>
-      </div>
-    );
-  }
 
   return (
-    <div className="w-full mt-6">
-      {/* TABLE HEADER */}
-      <div className="hidden md:grid grid-cols-[2fr_1.5fr_100px_130px_50px] gap-4 px-5 pb-3 border-b border-white/[0.06] text-[9px] uppercase tracking-[0.13em] text-white/20">
-        <span>Action</span>
-        <span>Device / Browser</span>
-        <span>Status</span>
-        <span>Date</span>
-        <span></span>
+    <div className="w-full">
+      <div className="hidden md:grid grid-cols-[2fr_1.5fr_100px_130px_50px] gap-4 px-5 py-3 border-b border-[#222] bg-[#121212]/50 text-[10px] font-semibold text-[#888] uppercase tracking-wider rounded-t-lg">
+        <div>Action</div>
+        <div>Device / Browser</div>
+        <div>Status</div>
+        <div>Date</div>
+        <div className="text-right">More</div>
       </div>
-
-      {/* TABLE LIST */}
-      <div className="divide-y divide-white/[0.06]">
-        {loading && logs.length === 0 ? (
+      
+      <div className="divide-y divide-[#1A1A1A]">
+        {loading ? (
           <>
-            {[...Array(5)].map((_, i) => (
-              <div key={`sk-${i}`} className="grid grid-cols-[2fr_1.5fr_100px_130px_50px] gap-4 px-5 py-5 items-center">
-                <div><div className="h-4 w-32 rounded bg-white/[0.04] animate-pulse" /></div>
-                <div>
-                  <div className="space-y-2">
-                    <div className="h-3 w-24 rounded bg-white/[0.04] animate-pulse" />
-                    <div className="h-2 w-32 rounded bg-white/[0.04] animate-pulse" />
-                  </div>
-                </div>
-                <div><div className="h-5 w-16 rounded bg-white/[0.04] animate-pulse" /></div>
-                <div><div className="h-3 w-24 rounded bg-white/[0.04] animate-pulse" /></div>
-                <div></div>
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="animate-pulse flex items-center h-[72px] px-5 bg-white/[0.02]">
+                <div className="h-4 bg-white/5 rounded w-1/4"></div>
               </div>
             ))}
           </>
+        ) : logs.length === 0 ? (
+          <div className="py-12 flex flex-col items-center justify-center text-[#666]">
+            <i className="fas fa-inbox text-3xl mb-3 opacity-20"></i>
+            <p className="text-sm">No logs found</p>
+          </div>
         ) : (
           logs.map((log) => {
             const actualMeta = log.meta || log.metadata || {};
+            const hasChanges = actualMeta?.changes && Object.keys(actualMeta.changes).length > 0;
+            const hasCreated = actualMeta?.created && Object.keys(actualMeta.created).length > 0;
             
+            // For the JSON fallback, exclude 'changes' and 'created' from raw display
+            const rawMeta = { ...actualMeta };
+            delete rawMeta.changes;
+            delete rawMeta.created;
+            delete rawMeta.sessionId;
+            delete rawMeta.ip;
+            delete rawMeta.userAgent;
+            delete rawMeta.method;
+            delete rawMeta.path;
+            delete rawMeta.status;
+            delete rawMeta.statusCode;
+            delete rawMeta.durationMs;
+
             return (
             <React.Fragment key={log._id}>
               <div 
                 className="grid grid-cols-1 md:grid-cols-[2fr_1.5fr_100px_130px_50px] gap-4 px-5 py-4 items-center hover:bg-white/[0.02] transition-colors cursor-pointer"
-                onClick={() => setExpandedRow(expandedRow === log._id ? null : log._id)}
+                onClick={() => toggleRow(log._id)}
               >
                 {/* ACTION COLUMN */}
                 <div className="min-w-0 flex flex-col justify-center h-full">
@@ -235,18 +256,17 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
               
               {/* Expanded Row Details */}
               {expandedRow === log._id && (
-                <div className="px-5 py-6 bg-[#111111] border-t border-white/[0.06]">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-                    {/* Basic Info */}
+                <div className="px-5 py-4 bg-[#111] border-y border-[#222]">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    
+                    {/* Request Information */}
                     <div className="space-y-4">
                       <h4 className="text-[10px] uppercase tracking-widest text-white/40 font-semibold">Request Information</h4>
-                        <div className="space-y-3 text-sm">
-                          {log.requestId && (
-                            <div className="flex justify-between items-center border-b border-white/[0.04] pb-2">
-                              <span className="text-white/40 text-xs">Request ID</span>
-                              <span className="text-white/70 font-mono bg-white/[0.02] px-2 py-0.5 rounded text-[10px]">{log.requestId}</span>
-                            </div>
-                          )}
+                      <div className="bg-[#0a0a0a] border border-white/[0.04] rounded-lg p-4 space-y-3">
+                          <div className="flex justify-between items-center border-b border-white/[0.04] pb-2">
+                            <span className="text-white/40 text-xs">Request ID</span>
+                            <span className="text-white/70 font-mono text-[10px]">{log._id}</span>
+                          </div>
                           {log.category && (
                             <div className="flex justify-between items-center border-b border-white/[0.04] pb-2">
                               <span className="text-white/40 text-xs">Category</span>
@@ -300,13 +320,36 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
 
                     {/* Meta Data */}
                     <div className="space-y-4">
-                      <h4 className="text-[10px] uppercase tracking-widest text-white/40 font-semibold">Additional Meta</h4>
-                      <div className="bg-[#0a0a0a] border border-white/[0.04] rounded-lg p-3">
-                        <pre className="text-xs text-white/50 whitespace-pre-wrap break-all overflow-y-auto max-h-48 font-mono">
-                          {JSON.stringify(actualMeta, null, 2)}
-                        </pre>
-                      </div>
+                      {hasChanges && (
+                        <div className="mb-4">
+                          <h4 className="text-[10px] uppercase tracking-widest text-white/40 font-semibold mb-2">Value Changes</h4>
+                          <div className="bg-[#0a0a0a] border border-white/[0.04] rounded-lg p-3">
+                            <DiffViewer changes={actualMeta.changes} />
+                          </div>
+                        </div>
+                      )}
+
+                      {hasCreated && (
+                        <div className="mb-4">
+                          <h4 className="text-[10px] uppercase tracking-widest text-white/40 font-semibold mb-2">Created Data</h4>
+                          <div className="bg-[#0a0a0a] border border-white/[0.04] rounded-lg p-3">
+                            <CreatedViewer created={actualMeta.created} />
+                          </div>
+                        </div>
+                      )}
+
+                      {Object.keys(rawMeta).length > 0 && (
+                        <div>
+                          <h4 className="text-[10px] uppercase tracking-widest text-white/40 font-semibold mb-2">Additional Meta</h4>
+                          <div className="bg-[#0a0a0a] border border-white/[0.04] rounded-lg p-3">
+                            <pre className="text-xs text-white/50 whitespace-pre-wrap break-all overflow-y-auto max-h-48 font-mono">
+                              {JSON.stringify(rawMeta, null, 2)}
+                            </pre>
+                          </div>
+                        </div>
+                      )}
                     </div>
+
                   </div>
                 </div>
               )}
