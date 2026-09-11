@@ -118,37 +118,46 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     } = req.body;
 
     const coupon = await Coupon.findById(String(req.params.id));
-    if (!coupon) return res.status(404).json({ error: 'Coupon not found' });
-
+    if (!coupon) {
+      return res.status(404).json({ error: 'Coupon not found' });
+    }
     const originalCoupon = coupon.toObject();
 
-    const {
-      code, type, value, maxUses, expiresAt,
-      appliesToCoins, appliesToResources, appliesToShop, appliesToPlans,
-      resourceLimits, enabled
-    } = req.body;
-
-    if (code) coupon.code = code.trim().toUpperCase();
-    if (type) coupon.type = type;
-    if (typeof value === 'number') coupon.value = value;
-    if (typeof maxUses === 'number') coupon.maxUses = maxUses;
-    if (expiresAt !== undefined) coupon.expiresAt = expiresAt ? new Date(expiresAt) : null;
-    if (typeof appliesToCoins === 'boolean') coupon.appliesToCoins = appliesToCoins;
-    if (typeof appliesToResources === 'boolean') coupon.appliesToResources = appliesToResources;
-    if (typeof appliesToShop === 'boolean') coupon.appliesToShop = appliesToShop;
-    if (typeof appliesToPlans === 'boolean') coupon.appliesToPlans = appliesToPlans;
-    if (resourceLimits) {
-      if (typeof resourceLimits.cpuPercent === 'number') coupon.resourceLimits.cpuPercent = resourceLimits.cpuPercent;
-      if (typeof resourceLimits.memoryMb === 'number') coupon.resourceLimits.memoryMb = resourceLimits.memoryMb;
-      if (typeof resourceLimits.diskMb === 'number') coupon.resourceLimits.diskMb = resourceLimits.diskMb;
-      if (typeof resourceLimits.allocations === 'number') coupon.resourceLimits.allocations = resourceLimits.allocations;
-      if (typeof resourceLimits.backups === 'number') coupon.resourceLimits.backups = resourceLimits.backups;
-      if (typeof resourceLimits.databases === 'number') coupon.resourceLimits.databases = resourceLimits.databases;
+    // Validate type if provided
+    if (type && !['percentage', 'fixed'].includes(type)) {
+      return res.status(400).json({ error: 'Type must be percentage or fixed' });
     }
-    if (typeof enabled === 'boolean') coupon.enabled = enabled;
+
+    // Validate value if provided
+    if (value !== undefined) {
+      if (value <= 0) {
+        return res.status(400).json({ error: 'Value must be greater than 0' });
+      }
+      if (type === 'percentage' && value > 100) {
+        return res.status(400).json({ error: 'Percentage cannot exceed 100' });
+      }
+    }
+
+    // Check if code already exists (if changing code)
+    if (code && code !== coupon.code) {
+      const existingCoupon = await Coupon.findOne({ code: code.toUpperCase() });
+      if (existingCoupon) {
+        return res.status(400).json({ error: 'Coupon code already exists' });
+      }
+    }
+
+    // Update fields
+    if (code !== undefined) coupon.code = code.toUpperCase();
+    if (type !== undefined) coupon.type = type;
+    if (value !== undefined) coupon.value = value;
+    if (validFrom !== undefined) coupon.validFrom = validFrom ? new Date(validFrom) : undefined;
+    if (validUntil !== undefined) coupon.validUntil = validUntil ? new Date(validUntil) : undefined;
+    if (maxRedemptions !== undefined) coupon.maxRedemptions = maxRedemptions ? parseInt(maxRedemptions) : undefined;
+    if (appliesToPlanIds !== undefined) coupon.appliesToPlanIds = appliesToPlanIds;
+    if (enabled !== undefined) coupon.enabled = enabled;
 
     await coupon.save();
-
+    
     const changes = {};
     for (const [k, v] of Object.entries(req.body)) {
       if (JSON.stringify(originalCoupon[k]) !== JSON.stringify(v)) {
