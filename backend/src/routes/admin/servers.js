@@ -499,6 +499,10 @@ router.patch('/:id', requireAdmin, async (req, res) => {
       });
     }
     
+    // Capture old values for diffs
+    const oldName = server.name;
+    const oldLimits = { ...server.limits };
+
     // Update server limits in panel
     try {
       if (name && name !== server.name) {
@@ -536,11 +540,14 @@ router.patch('/:id', requireAdmin, async (req, res) => {
       });
     }
     
-    // Calculate diff for logging
-    const diffs = {};
+    // Calculate exact diffs for logging
+    const changes = {};
+    if (server.name !== oldName) {
+      changes.name = { old: oldName, new: server.name };
+    }
     for (const [key, value] of Object.entries(limits)) {
-      if (server.limits[key] !== value) {
-        diffs[key] = `${server.limits[key] || 0} -> ${value}`;
+      if (oldLimits[key] !== value) {
+        changes[key] = { old: oldLimits[key] || 0, new: value };
       }
     }
 
@@ -553,8 +560,17 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     await writeAudit(req, 'admin.server.update', 'server', server._id.toString(), { 
       serverId: server._id.toString(), 
       serverName: server.name,
-      changes: Object.keys(diffs).length > 0 ? { limits: diffs } : undefined
+      changes: Object.keys(changes).length > 0 ? changes : undefined
     });
+
+    // Notify user
+    const { logUserActivity } = require('../../middleware/userActivity');
+    await logUserActivity(null, 'admin.server.update', {
+      serverId: server._id.toString(),
+      serverName: server.name,
+      updatedByAdmin: true,
+      changes: Object.keys(changes).length > 0 ? changes : undefined
+    }, server.owner.toString());
     
     // Invalidate caches
     await deleteCachePattern('api:admin:servers:*');
