@@ -206,6 +206,9 @@ router.patch('/:id', requireAdmin, async (req, res) => {
   if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
   const user = await User.findById(String(req.params.id));
   if (!user) return res.status(404).json({ error: 'User not found' });
+  
+  // Capture original state for detailed audit logging
+  const originalUser = user.toObject();
 
   const { role, resources, coins, email, username, firstName, lastName, referralCode, ban, profilePicture } = parsed.data;
   if (role) user.role = role;
@@ -296,7 +299,40 @@ router.patch('/:id', requireAdmin, async (req, res) => {
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (_) {}
   const { writeAudit } = require('../../middleware/audit');
-  await writeAudit(req, 'admin.user.update', 'user', user._id.toString(), { role, resources, coins, email, username, firstName, lastName, ban });
+  
+  // Calculate detailed changes for the audit log
+  const changes = {};
+  if (role && role !== originalUser.role) changes.role = { old: originalUser.role, new: role };
+  if (typeof coins === 'number' && coins !== originalUser.coins) changes.coins = { old: originalUser.coins, new: coins };
+  if (emailChanged) changes.email = { old: originalUser.email, new: email };
+  if (usernameChanged) changes.username = { old: originalUser.username, new: username };
+  if (firstName && firstName !== originalUser.firstName) changes.firstName = { old: originalUser.firstName, new: firstName };
+  if (lastName && lastName !== originalUser.lastName) changes.lastName = { old: originalUser.lastName, new: lastName };
+  if (profilePicture !== undefined && profilePicture !== originalUser.profilePicture) changes.profilePicture = { old: originalUser.profilePicture, new: profilePicture };
+  if (typeof referralCode === 'string' && user.referralCode !== originalUser.referralCode) changes.referralCode = { old: originalUser.referralCode, new: user.referralCode };
+  
+  if (resources) {
+    const resourceChanges = {};
+    for (const [k, v] of Object.entries(resources)) {
+      const oldVal = (originalUser.resources || {})[k] || 0;
+      if (v !== oldVal) resourceChanges[k] = { old: oldVal, new: v };
+    }
+    if (Object.keys(resourceChanges).length > 0) changes.resources = resourceChanges;
+  }
+  
+  if (ban) {
+    const banChanges = {};
+    if (ban.isBanned !== undefined && ban.isBanned !== (originalUser.ban?.isBanned || false)) banChanges.isBanned = { old: originalUser.ban?.isBanned || false, new: ban.isBanned };
+    if (ban.reason !== undefined && ban.reason !== (originalUser.ban?.reason || '')) banChanges.reason = { old: originalUser.ban?.reason || '', new: ban.reason };
+    if (ban.until !== undefined) {
+      const oldTime = originalUser.ban?.until ? new Date(originalUser.ban.until).getTime() : null;
+      const newTime = user.ban?.until ? new Date(user.ban.until).getTime() : null;
+      if (oldTime !== newTime) banChanges.until = { old: originalUser.ban?.until || null, new: user.ban?.until };
+    }
+    if (Object.keys(banChanges).length > 0) changes.ban = banChanges;
+  }
+
+  await writeAudit(req, 'admin.user.update', 'user', user._id.toString(), { changes });
 
   const { deleteCachePattern } = require('../../lib/redis');
   await deleteCachePattern('admin:users');
@@ -755,3 +791,4 @@ router.delete('/:id/plans/instance/:instanceId', requireAdmin, async (req, res) 
 
 
 module.exports = router;
+
