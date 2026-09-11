@@ -166,49 +166,7 @@ function EarnContent() {
   const cols = "lg:grid-cols-[2fr_100px_100px_120px_150px]";
 
   if (loading) {
-    return (
-      <div className="p-4 sm:p-6 bg-[#0f0f0f] min-h-screen text-white">
-        <div className="flex flex-col h-full space-y-6">
-          <header>
-            <div className="flex items-start justify-between gap-6">
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight text-[#FF5722]">Earn</h1>
-                <p className="mt-1 text-sm text-white/40">
-                  Watch rewarded videos and complete tasks to earn coins.
-                </p>
-              </div>
-            </div>
-          </header>
-          <div className="w-full mt-6">
-            {/* TABLE HEADER (Actual Text) */}
-            <div className={`hidden gap-4 lg:grid ${cols} border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30`}>
-              <span>Method</span>
-              <span>Reward</span>
-              <span>Daily Limit</span>
-              <span>Cooldown</span>
-              <span className="text-right">Action</span>
-            </div>
-            <div className="divide-y divide-white/[0.06]">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className={`grid grid-cols-1 gap-4 px-5 py-5 lg:grid-cols-[2fr_100px_100px_120px_150px] lg:items-center`}>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-white/5 animate-pulse shrink-0" />
-                    <div className="flex flex-col gap-2">
-                      <div className="h-4 w-32 bg-white/5 rounded animate-pulse" />
-                      <div className="h-3 w-48 bg-white/5 rounded animate-pulse" />
-                    </div>
-                  </div>
-                  <div className="hidden lg:block h-4 w-16 bg-white/5 rounded animate-pulse" />
-                  <div className="hidden lg:block h-4 w-12 bg-white/5 rounded animate-pulse" />
-                  <div className="hidden lg:block h-4 w-16 bg-white/5 rounded animate-pulse" />
-                  <div className="hidden lg:flex justify-end"><div className="h-8 w-24 bg-white/5 rounded-md animate-pulse" /></div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <EarnSkeleton />;
   }
 
   return (
@@ -273,9 +231,55 @@ function EarnContent() {
   );
 }
 
+export function EarnSkeleton() {
+  const cols = "lg:grid-cols-[2fr_100px_100px_120px_150px]";
+  return (
+    <div className="p-4 sm:p-6 bg-[#0f0f0f] min-h-screen text-white">
+      <div className="flex flex-col h-full space-y-6">
+        <header>
+          <div className="flex items-start justify-between gap-6">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-[#FF5722]">Earn</h1>
+              <p className="mt-1 text-sm text-white/40">
+                Watch rewarded videos and complete tasks to earn coins.
+              </p>
+            </div>
+          </div>
+        </header>
+        <div className="w-full mt-6">
+          <div className={`hidden gap-4 lg:grid ${cols} border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30`}>
+            <span>Method</span>
+            <span>Reward</span>
+            <span>Daily Limit</span>
+            <span>Cooldown</span>
+            <span className="text-right">Action</span>
+          </div>
+          <div className="divide-y divide-white/[0.06]">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className={`grid grid-cols-1 gap-4 px-5 py-5 lg:grid-cols-[2fr_100px_100px_120px_150px] lg:items-center`}>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-white/5 animate-pulse shrink-0" />
+                  <div className="flex flex-col gap-2">
+                    <div className="h-4 w-32 bg-white/5 rounded animate-pulse" />
+                    <div className="h-3 w-48 bg-white/5 rounded animate-pulse" />
+                  </div>
+                </div>
+                <div className="hidden lg:block h-4 w-16 bg-white/5 rounded animate-pulse" />
+                <div className="hidden lg:block h-4 w-12 bg-white/5 rounded animate-pulse" />
+                <div className="hidden lg:block h-4 w-16 bg-white/5 rounded animate-pulse" />
+                <div className="hidden lg:flex justify-end"><div className="h-8 w-24 bg-white/5 rounded-md animate-pulse" /></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function EarnPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-white/50"><i className="fas fa-spinner fa-spin text-3xl"></i></div>}>
+    <Suspense fallback={<EarnSkeleton />}>
       <EarnContent />
     </Suspense>
   );
