@@ -11,6 +11,7 @@ const { generateSecret, generateURI, verifySync } = require('otplib');
 const qrcode = require('qrcode');
 const crypto = require('crypto');
 const { logUserActivity } = require('../../middleware/userActivity');
+const { writeAudit } = require('../../middleware/audit');
 const PendingUpdate = require('../../models/PendingUpdate');
 
 const router = express.Router();
@@ -64,6 +65,7 @@ router.patch('/profile', requireAuth, async (req, res) => {
     
     if (Object.keys(changes).length > 0) {
       await logUserActivity(req, 'auth.account.update', changes);
+      await writeAudit(req, 'auth.account.update', 'user_profile', req.user ? (req.user.sub || req.user._id) : null, changes);
     }
     
     return res.json({ id: user._id, email: user.email, username: user.username, firstName: user.firstName, lastName: user.lastName, role: user.role, coins: Number(user.coins || 0), pterodactylUserId: user.pterodactylUserId || null, resources: user.resources });
@@ -156,6 +158,7 @@ router.delete('/profile', requireAuth, async (req, res) => {
     await User.deleteOne({ _id: user._id });
     
     await logUserActivity(req, 'auth.account.delete');
+    await writeAudit(req, 'auth.account.delete', 'user_profile', req.user ? (req.user.sub || req.user._id) : null, {});
 
     // Return success since the pending deletions are queued in the background
     return res.json({ 
@@ -207,6 +210,7 @@ router.delete('/sessions/:id', requireAuth, async (req, res) => {
     await deleteCache(`session:valid:${sessionId}`);
     
     await logUserActivity(req, 'auth.session.revoke', { revokedSessionId: sessionId });
+    await writeAudit(req, 'auth.session.revoke', 'user_profile', req.user ? (req.user.sub || req.user._id) : null, { revokedSessionId: sessionId });
     
     return res.json({ success: true });
   } catch (e) {
@@ -269,6 +273,7 @@ router.post('/2fa/enable', requireAuth, async (req, res) => {
     }).catch(e => console.error('Failed to send 2FA enabled email:', e));
 
     await logUserActivity(req, 'auth.2fa.enable');
+    await writeAudit(req, 'auth.2fa.enable', 'user_profile', req.user ? (req.user.sub || req.user._id) : null, {});
     return res.json({ success: true, backupCodes });
   } catch (e) {
     console.error('2FA enable error:', e);
@@ -308,6 +313,7 @@ router.post('/2fa/disable', requireAuth, async (req, res) => {
     }).catch(e => console.error('Failed to send 2FA disabled email:', e));
 
     await logUserActivity(req, 'auth.2fa.disable');
+    await writeAudit(req, 'auth.2fa.disable', 'user_profile', req.user ? (req.user.sub || req.user._id) : null, {});
     return res.json({ success: true });
   } catch (e) {
     console.error('2FA disable error:', e);
@@ -411,6 +417,7 @@ router.patch('/profile/email', requireAuth, async (req, res) => {
       }
       
       await logUserActivity(req, 'auth.email.update', { email });
+      await writeAudit(req, 'auth.email.update', 'user_profile', req.user ? (req.user.sub || req.user._id) : null, { email });
       return res.json({ ok: true, email: user.email });
     }
   } catch {
@@ -500,6 +507,7 @@ router.post('/profile/email/verify', requireAuth, async (req, res) => {
     }
     
     await logUserActivity(req, 'auth.email.update', { email });
+    await writeAudit(req, 'auth.email.update', 'user_profile', req.user ? (req.user.sub || req.user._id) : null, { email });
     return res.json({ ok: true, email: user.email });
   } catch (e) {
     console.error('Error verifying email change:', e);
@@ -550,6 +558,7 @@ router.patch('/profile/password', requireAuth, async (req, res) => {
     }).catch(e => console.error('Failed to send passwordChanged email:', e));
     
     await logUserActivity(req, 'auth.password.update');
+    await writeAudit(req, 'auth.password.update', 'user_profile', req.user ? (req.user.sub || req.user._id) : null, {});
     return res.json({ ok: true });
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {

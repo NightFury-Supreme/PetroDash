@@ -111,7 +111,9 @@ router.post('/', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) 
     // Invalidate user's ticket cache
     await deleteCachePattern(`tickets:mine:${userId}:*`);
 
+    const { writeAudit } = require('../middleware/audit');
     await logUserActivity(req, 'ticket.create', { ticketId: ticket._id });
+    await writeAudit(req, 'ticket.create', 'ticket', ticket._id.toString(), { subject: ticket.subject, category: ticket.category });
     res.status(201).json(ticket);
   } catch (err) {
     console.error('Create ticket error:', err);
@@ -339,7 +341,9 @@ router.post('/:id/messages', requireAuth, createRateLimiter(10, 60 * 1000), asyn
     await deleteCachePattern(`tickets:mine:${userId}:*`);
     await deleteCachePattern(`tickets:detail:${req.params.id}`);
     
+    const { writeAudit } = require('../middleware/audit');
     await logUserActivity(req, 'ticket.reply', { ticketId: t._id });
+    await writeAudit(req, 'ticket.reply', 'ticket', t._id.toString(), { messagePreview: message.substring(0, 50) });
     res.json({ ok: true, message: savedMsg, status: t.status });
   } catch (err) {
     console.error('Send message error:', err);
@@ -388,7 +392,9 @@ router.post('/:id/status', requireAuth, async (req, res) => {
     await deleteCachePattern(`tickets:mine:${userId}:*`);
     await deleteCachePattern(`tickets:detail:${req.params.id}`);
     
+    const { writeAudit } = require('../middleware/audit');
     await logUserActivity(req, 'ticket.status_change', { ticketId: t._id, action });
+    await writeAudit(req, 'ticket.status_change', 'ticket', t._id.toString(), { newStatus: action });
     res.json({ ok: true, status: t.status });
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (err) {

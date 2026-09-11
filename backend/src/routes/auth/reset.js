@@ -87,6 +87,8 @@ router.post('/reset', verificationRateLimit, async (req, res) => {
     });
 
     await logUserActivity(req, 'auth.password.reset.success', {}, user._id.toString());
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'auth.password.reset.success', 'auth', user._id.toString(), {});
     return res.json({ ok: true });
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {

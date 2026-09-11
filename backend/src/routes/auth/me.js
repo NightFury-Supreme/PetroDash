@@ -131,6 +131,10 @@ router.patch('/me/profile-picture', requireAuth, async (req, res) => {
       await logUserActivity(req, 'auth.account.update', { 
         profilePicture: `${oldPicture || 'none'} to ${user.profilePicture || 'none'}` 
       });
+      const { writeAudit } = require('../../middleware/audit');
+      await writeAudit(req, 'auth.account.update', 'user_profile', user._id.toString(), { 
+        profilePicture: `${oldPicture || 'none'} to ${user.profilePicture || 'none'}` 
+      });
     }
     
     // Invalidate profile cache

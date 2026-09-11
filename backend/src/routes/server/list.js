@@ -106,6 +106,8 @@ router.get('/', requireAuth, async (req, res) => {
           deletedCount += 1;
           await Server.deleteOne({ _id: s._id });
           writeAudit(req, 'server.delete', 'server', s._id.toString(), {
+            serverName: s.name,
+            limits: s.limits,
             reason: 'panel_not_found',
             panelServerId: s.panelServerId,
             panelStatus,

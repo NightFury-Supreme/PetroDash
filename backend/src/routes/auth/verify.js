@@ -45,6 +45,8 @@ router.get('/verify', async (req, res) => {
     await UserCreationService.grantReferralRewards(user);
     
     await logUserActivity(req, 'auth.email.verified', { method: 'link' }, user._id.toString());
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'auth.email.verified', 'auth', user._id.toString(), { method: 'link' });
     const redirect = (process.env.FRONTEND_URL || 'http://localhost:3000') + '/dashboard?verified=1';
     const wantsRedirect = String(req.query.redirect || '1') !== '0';
     
@@ -203,6 +205,8 @@ router.post('/verify/code', verificationRateLimit, async (req, res) => {
     await UserCreationService.grantReferralRewards(user);
     
     await logUserActivity(req, 'auth.email.verified', { method: 'code' }, user._id.toString());
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'auth.email.verified', 'auth', user._id.toString(), { method: 'code' });
     return res.json({ ok: true });
     
   // eslint-disable-next-line unused-imports/no-unused-vars

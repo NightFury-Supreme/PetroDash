@@ -281,7 +281,9 @@ router.post('/redeem', requireAuth, async (req, res) => {
       if (allocsToAdd) metadata.allocations = allocsToAdd;
       if (slotsToAdd) metadata.serverSlots = slotsToAdd;
       
-      await logUserActivity(req, 'gift.claim', metadata);
+      const { writeAudit } = require('../middleware/audit');
+      await logUserActivity(req, 'gift.redeem', metadata);
+      await writeAudit(req, 'gift.redeem', 'gift', null, metadata);
       return res.json({ message: 'Gift redeemed successfully', description: claimedGift.description, rewards: claimedGift.rewards, appliedPlans, user: { coins: updatedUser.coins, resources: updatedUser.resources } });
     }
 
@@ -377,7 +379,9 @@ router.post('/redeem', requireAuth, async (req, res) => {
       if (r.allocations) metadata.allocations = r.allocations;
       if (r.serverSlots) metadata.serverSlots = r.serverSlots;
     }
-    await logUserActivity(req, 'gift.claim', metadata);
+    const { writeAudit } = require('../middleware/audit');
+    await logUserActivity(req, 'gift.redeem', metadata);
+    await writeAudit(req, 'gift.redeem', 'gift', null, metadata);
     return res.json({ message: 'Gift redeemed successfully', ...result });
   } catch (error) {
     console.error('Redeem error:', error);
