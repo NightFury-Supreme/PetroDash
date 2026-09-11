@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import Link from 'next/link';
 
 interface LogEntry {
@@ -6,23 +5,17 @@ interface LogEntry {
   action: string;
   category?: string;
   createdAt: string;
-  
-  // Generic fields
   ip?: string;
   userAgent?: string;
   success?: boolean;
   severity?: 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL';
   meta?: any;
   metadata?: any;
-  
-  // Admin fields
   actorId?: string;
   actorRole?: string;
   actorUsername?: string;
   resourceId?: string;
   resourceType?: string;
-  
-  // Network/Auth fields
   method?: string;
   path?: string;
   statusCode?: number;
@@ -38,91 +31,73 @@ interface SharedLogsTableProps {
 }
 
 function parseUserAgent(ua?: string) {
-  if (!ua) return 'Unknown Device';
-  
-  let browser = 'Unknown Browser';
-  let os = 'Unknown OS';
-  
+  if (!ua) return 'Unknown';
+  let browser = 'Unknown';
+  let os = 'Unknown';
   if (ua.includes('Firefox')) browser = 'Firefox';
   else if (ua.includes('Chrome')) browser = 'Chrome';
   else if (ua.includes('Safari')) browser = 'Safari';
   else if (ua.includes('Edge')) browser = 'Edge';
-  
   if (ua.includes('Windows')) os = 'Windows';
   else if (ua.includes('Mac OS')) os = 'macOS';
   else if (ua.includes('Linux')) os = 'Linux';
   else if (ua.includes('Android')) os = 'Android';
   else if (ua.includes('iOS')) os = 'iOS';
-  
-  return `${os} • ${browser}`;
-}
-
-function formatDuration(ms?: number) {
-  if (ms === undefined || ms === null) return '—';
-  if (ms < 1000) return `${ms}ms`;
-  return `${(ms / 1000).toFixed(2)}s`;
+  return `${os} · ${browser}`;
 }
 
 function formatActionText(action: string) {
-  return action.split('.').map(part => 
+  return action.split('.').map(part =>
     part.charAt(0).toUpperCase() + part.slice(1)
   ).join(' ');
 }
 
-function RecursiveDiffViewer({ data, prefix = '' }: { data: any, prefix?: string }) {
+function RecursiveDiffViewer({ data, prefix = '' }: { data: any; prefix?: string }) {
   if (!data || typeof data !== 'object') return null;
-
   return (
     <>
       {Object.entries(data).map(([key, value]: [string, any]) => {
         const fullKey = prefix ? `${prefix}.${key}` : key;
-        
-        // If it's a diff object { old, new }
+
         if (value && typeof value === 'object' && ('old' in value || 'new' in value)) {
           return (
-            <div key={fullKey} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-2 bg-[#0F0F0F] rounded border border-[#222]">
-              <span className="text-white/50 font-mono text-[10px] sm:w-32 shrink-0 truncate">{fullKey}</span>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full min-w-0">
-                <span className="bg-red-500/10 text-red-400 font-mono text-[10px] px-1.5 py-0.5 rounded break-all">
-                  {JSON.stringify(value.old) ?? 'null'}
+            <div key={fullKey} className="flex flex-col sm:flex-row sm:items-center gap-2 py-2 border-b border-white/[0.04] last:border-0">
+              <span className="font-mono text-[10px] text-white/30 sm:w-40 shrink-0 truncate">{fullKey}</span>
+              <div className="flex items-center gap-2 flex-wrap min-w-0">
+                <span className="font-mono text-[11px] text-red-400/80 bg-red-500/[0.06] px-2 py-0.5 rounded">
+                  {String(value.old ?? 'null')}
                 </span>
-                <span className="text-white/20 hidden sm:inline">➔</span>
-                <span className="bg-green-500/10 text-green-400 font-mono text-[10px] px-1.5 py-0.5 rounded break-all">
-                  {JSON.stringify(value.new) ?? 'null'}
+                <span className="text-white/20 text-[10px]">→</span>
+                <span className="font-mono text-[11px] text-emerald-400/80 bg-emerald-500/[0.06] px-2 py-0.5 rounded">
+                  {String(value.new ?? 'null')}
                 </span>
               </div>
             </div>
           );
         }
 
-        // Handle legacy strings formatted as "A -> B"
         if (value && typeof value === 'string' && value.includes('->')) {
-           const [oldV, newV] = value.split('->').map(s => s.trim());
-           return (
-            <div key={fullKey} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-2 bg-[#0F0F0F] rounded border border-[#222]">
-              <span className="text-white/50 font-mono text-[10px] sm:w-32 shrink-0 truncate">{fullKey}</span>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full min-w-0">
-                <span className="bg-red-500/10 text-red-400 font-mono text-[10px] px-1.5 py-0.5 rounded break-all">
-                  {oldV}
-                </span>
-                <span className="text-white/20 hidden sm:inline">➔</span>
-                <span className="bg-green-500/10 text-green-400 font-mono text-[10px] px-1.5 py-0.5 rounded break-all">
-                  {newV}
-                </span>
+          const [oldV, newV] = value.split('->').map(s => s.trim());
+          return (
+            <div key={fullKey} className="flex flex-col sm:flex-row sm:items-center gap-2 py-2 border-b border-white/[0.04] last:border-0">
+              <span className="font-mono text-[10px] text-white/30 sm:w-40 shrink-0 truncate">{fullKey}</span>
+              <div className="flex items-center gap-2 flex-wrap min-w-0">
+                <span className="font-mono text-[11px] text-red-400/80 bg-red-500/[0.06] px-2 py-0.5 rounded">{oldV}</span>
+                <span className="text-white/20 text-[10px]">→</span>
+                <span className="font-mono text-[11px] text-emerald-400/80 bg-emerald-500/[0.06] px-2 py-0.5 rounded">{newV}</span>
               </div>
             </div>
           );
         }
 
         if (value && typeof value === 'object' && !Array.isArray(value)) {
-           return <RecursiveDiffViewer key={fullKey} data={value} prefix={fullKey} />;
+          return <RecursiveDiffViewer key={fullKey} data={value} prefix={fullKey} />;
         }
 
-        // Plain value fallback
         return (
-          <div key={fullKey} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-2 bg-white/[0.02] rounded border border-white/[0.05]">
-            <span className="text-white/40 font-mono text-[10px] sm:w-32 shrink-0 truncate">{fullKey}</span>
-            <span className="text-white/70 font-mono text-[10px] break-all">{typeof value === 'string' ? value : JSON.stringify(value)}</span>
+          <div key={fullKey} className="flex flex-col sm:flex-row sm:items-center gap-2 py-2 border-b border-white/[0.04] last:border-0">
+            <span className="font-mono text-[10px] text-white/25 sm:w-40 shrink-0 truncate">{fullKey}</span>
+            <span className="font-mono text-[11px] text-white/45 break-all">{typeof value === 'string' ? value : JSON.stringify(value)}</span>
           </div>
         );
       })}
@@ -132,87 +107,85 @@ function RecursiveDiffViewer({ data, prefix = '' }: { data: any, prefix?: string
 
 function DiffViewer({ changes }: { changes: any }) {
   if (!changes || typeof changes !== 'object') return null;
-  return (
-    <div className="flex flex-col gap-2 mt-2">
-      <RecursiveDiffViewer data={changes} />
-    </div>
-  );
+  return <RecursiveDiffViewer data={changes} />;
 }
 
 function CreatedViewer({ created }: { created: any }) {
   if (!created || typeof created !== 'object') return null;
   return (
-    <div className="flex flex-col gap-2 mt-2">
+    <>
       {Object.entries(created).map(([key, value]) => (
-        <div key={key} className="flex items-start gap-4 p-2 bg-[#0F0F0F] rounded border border-[#222]">
-          <span className="text-white/50 font-mono text-[10px] w-32 shrink-0 truncate">{key}</span>
-          <span className="text-green-400 font-mono text-[10px] break-all">{JSON.stringify(value)}</span>
+        <div key={key} className="flex flex-col sm:flex-row sm:items-center gap-2 py-2 border-b border-white/[0.04] last:border-0">
+          <span className="font-mono text-[10px] text-white/25 sm:w-40 shrink-0 truncate">{key}</span>
+          <span className="font-mono text-[11px] text-emerald-400/70 break-all">{JSON.stringify(value)}</span>
         </div>
       ))}
+    </>
+  );
+}
+
+function InfoRow({ label, value, mono = false, muted = false }: { label: string; value?: string | null; mono?: boolean; muted?: boolean }) {
+  if (!value) return null;
+  return (
+    <div className="flex justify-between items-start gap-4 py-[7px] border-b border-white/[0.04] last:border-0">
+      <span className="text-[9px] uppercase tracking-[0.1em] text-white/25 shrink-0 pt-px">{label}</span>
+      <span className={`text-right break-all ${mono ? 'font-mono' : ''} text-[11px] ${muted ? 'text-white/30' : 'text-white/50'}`}>{value}</span>
     </div>
   );
+}
+
+function StatusBadge({ log }: { log: LogEntry }) {
+  if (log.success !== undefined) {
+    return log.success
+      ? <span className="inline-flex items-center gap-1.5 px-2 py-[3px] rounded border border-emerald-500/20 bg-emerald-500/[0.06] text-emerald-400 text-[9px] font-semibold tracking-wider uppercase"><span className="w-1 h-1 rounded-full bg-emerald-500" />SUCCESS</span>
+      : <span className="inline-flex items-center gap-1.5 px-2 py-[3px] rounded border border-red-500/20 bg-red-500/[0.06] text-red-400 text-[9px] font-semibold tracking-wider uppercase"><span className="w-1 h-1 rounded-full bg-red-500" />FAILED</span>;
+  }
+  switch (log.severity) {
+    case 'CRITICAL': return <span className="inline-flex items-center gap-1.5 px-2 py-[3px] rounded border border-red-500/20 bg-red-500/[0.06] text-red-400 text-[9px] font-semibold tracking-wider uppercase"><span className="w-1 h-1 rounded-full bg-red-500 animate-pulse" />CRITICAL</span>;
+    case 'ERROR':    return <span className="inline-flex items-center gap-1.5 px-2 py-[3px] rounded border border-orange-500/20 bg-orange-500/[0.06] text-orange-400 text-[9px] font-semibold tracking-wider uppercase"><span className="w-1 h-1 rounded-full bg-orange-500" />ERROR</span>;
+    case 'WARNING':  return <span className="inline-flex items-center gap-1.5 px-2 py-[3px] rounded border border-yellow-500/20 bg-yellow-500/[0.06] text-yellow-400 text-[9px] font-semibold tracking-wider uppercase"><span className="w-1 h-1 rounded-full bg-yellow-500" />WARN</span>;
+    default:         return <span className="inline-flex items-center gap-1.5 px-2 py-[3px] rounded border border-white/[0.07] bg-white/[0.03] text-white/35 text-[9px] font-semibold tracking-wider uppercase"><span className="w-1 h-1 rounded-full bg-white/25" />INFO</span>;
+  }
 }
 
 export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps) {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
-  const getSeverityBadge = (log: LogEntry) => {
-    if (log.success !== undefined) {
-      if (log.success) {
-        return <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-green-500/10 text-green-400 text-[10px] font-medium border border-green-500/20"><span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>SUCCESS</span>;
-      } else {
-        return <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium border border-red-500/20"><span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>FAILED</span>;
-      }
-    }
-
-    switch (log.severity) {
-      case 'CRITICAL':
-        return <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium border border-red-500/20"><span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>CRITICAL</span>;
-      case 'ERROR':
-        return <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-orange-500/10 text-orange-400 text-[10px] font-medium border border-orange-500/20"><span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>ERROR</span>;
-      case 'WARNING':
-        return <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-yellow-500/10 text-yellow-400 text-[10px] font-medium border border-yellow-500/20"><span className="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>WARN</span>;
-      case 'INFO':
-      default:
-        return <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-blue-500/10 text-blue-400 text-[10px] font-medium border border-blue-500/20"><span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>INFO</span>;
-    }
-  };
-
-  const toggleRow = (id: string) => {
-    setExpandedRow(expandedRow === id ? null : id);
-  };
+  const toggleRow = (id: string) => setExpandedRow(expandedRow === id ? null : id);
 
   return (
     <div className="w-full">
-      <div className="hidden md:grid grid-cols-[2fr_1.5fr_100px_130px_50px] gap-4 px-5 py-3 border-b border-[#222] bg-[#121212]/50 text-[10px] font-semibold text-[#888] uppercase tracking-wider rounded-t-lg">
-        <div>Action</div>
-        <div>Device / Browser</div>
-        <div>Status</div>
-        <div>Date</div>
-        <div className="text-right">More</div>
+      {/* Column Headers */}
+      <div className="hidden md:grid grid-cols-[2fr_1.5fr_110px_140px_44px] gap-4 px-5 pb-3 border-b border-white/[0.06] text-[9px] uppercase tracking-[0.13em] text-white/20">
+        <span>Action</span>
+        <span>Device / Browser</span>
+        <span>Status</span>
+        <span>Date</span>
+        <span />
       </div>
-      
-      <div className="divide-y divide-[#1A1A1A]">
+
+      <div className="divide-y divide-white/[0.05]">
         {loading ? (
           <>
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="animate-pulse flex items-center h-[72px] px-5 bg-white/[0.02]">
-                <div className="h-4 bg-white/5 rounded w-1/4"></div>
+              <div key={i} className="flex items-center gap-4 px-5 py-5">
+                <div className="h-3 w-36 rounded bg-white/[0.04] animate-pulse" />
+                <div className="h-3 w-24 rounded bg-white/[0.03] animate-pulse ml-auto" />
               </div>
             ))}
           </>
         ) : logs.length === 0 ? (
-          <div className="py-12 flex flex-col items-center justify-center text-[#666]">
-            <i className="fas fa-inbox text-3xl mb-3 opacity-20"></i>
-            <p className="text-sm">No logs found</p>
+          <div className="py-16 flex flex-col items-center justify-center gap-3 text-white/20">
+            <span className="text-2xl opacity-50">📋</span>
+            <p className="text-xs">No activity logs yet</p>
           </div>
         ) : (
           logs.map((log) => {
             const actualMeta = log.meta || log.metadata || {};
             const hasChanges = actualMeta?.changes && Object.keys(actualMeta.changes).length > 0;
             const hasCreated = actualMeta?.created && Object.keys(actualMeta.created).length > 0;
-            
-            // For the JSON fallback, exclude 'changes' and 'created' from raw display
+            const isExpanded = expandedRow === log._id;
+
             const rawMeta = { ...actualMeta };
             delete rawMeta.changes;
             delete rawMeta.created;
@@ -226,175 +199,137 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
             delete rawMeta.durationMs;
 
             return (
-            <React.Fragment key={log._id}>
-              <div 
-                className="grid grid-cols-1 md:grid-cols-[2fr_1.5fr_100px_130px_50px] gap-4 px-5 py-4 items-center hover:bg-white/[0.02] transition-colors cursor-pointer"
-                onClick={() => toggleRow(log._id)}
-              >
-                {/* ACTION COLUMN */}
-                <div className="min-w-0 flex flex-col justify-center h-full">
-                  <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Action</p>
-                  <div className="text-[13px] font-medium text-white/90 truncate">{formatActionText(log.action)}</div>
-                  {variant === 'admin' && (
-                    <div className="text-[10px] text-white/40 mt-1 flex items-center gap-1.5 truncate">
-                      {(() => {
-                        const displayActorId = log.actorId || log.targetUserId || actualMeta?.userId;
-                        const displayActorName = log.actorUsername || actualMeta?.username || displayActorId;
-                        return displayActorId ? (
-                          <Link 
-                            href={`/admin/users/${displayActorId}`}
-                            className="text-white/40 hover:text-[#ff5722] hover:underline transition-colors"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {displayActorName}
-                          </Link>
-                        ) : (
-                          <span>System</span>
-                        );
-                      })()}
-                      <span className="px-1 py-[1px] bg-white/5 border border-white/10 rounded uppercase text-[8px] tracking-wider text-white/30">
-                        {log.actorRole || 'System'}
-                      </span>
+              <React.Fragment key={log._id}>
+                {/* Row */}
+                <div
+                  className="group grid grid-cols-1 md:grid-cols-[2fr_1.5fr_110px_140px_44px] gap-4 px-5 py-5 items-center transition hover:bg-white/[0.015] cursor-pointer"
+                  onClick={() => toggleRow(log._id)}
+                >
+                  {/* Action */}
+                  <div className="min-w-0">
+                    <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Action</p>
+                    <div className="text-sm font-medium text-white/75 truncate">{formatActionText(log.action)}</div>
+                    {variant === 'admin' && (
+                      <div className="mt-1 flex items-center gap-1.5">
+                        {(() => {
+                          const actorId = log.actorId || log.targetUserId || actualMeta?.userId;
+                          const actorName = log.actorUsername || actualMeta?.username || actorId;
+                          return actorId ? (
+                            <Link
+                              href={`/admin/users/${actorId}`}
+                              className="text-[10px] text-white/30 hover:text-[#ff5722] transition-colors truncate"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {actorName}
+                            </Link>
+                          ) : <span className="text-[10px] text-white/20">System</span>;
+                        })()}
+                        <span className="text-[8px] text-white/20 uppercase tracking-wider border border-white/[0.08] rounded px-1 py-px">
+                          {log.actorRole || 'system'}
+                        </span>
+                      </div>
+                    )}
+                    {variant === 'user' && (
+                      <div className="mt-0.5 text-[10px] text-white/20 truncate">{log.action}</div>
+                    )}
+                  </div>
+
+                  {/* Device */}
+                  <div className="min-w-0">
+                    <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Device / Browser</p>
+                    <div className="text-[11px] text-white/45 font-mono truncate">{(log.ip || actualMeta?.ip) || '—'}</div>
+                    <div className="mt-0.5 text-[10px] text-white/25">{parseUserAgent(log.userAgent || actualMeta?.userAgent)}</div>
+                  </div>
+
+                  {/* Status */}
+                  <div className="min-w-0">
+                    <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Status</p>
+                    <StatusBadge log={log} />
+                  </div>
+
+                  {/* Date */}
+                  <div className="min-w-0">
+                    <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Date</p>
+                    <div className="text-[11px] text-white/30">
+                      {new Date(log.createdAt).toLocaleString('en-GB', {
+                        day: '2-digit', month: '2-digit', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit', second: '2-digit'
+                      })}
                     </div>
-                  )}
-                  {variant === 'user' && (
-                     <div className="text-[10px] text-white/30 mt-1 truncate">{log.action}</div>
-                  )}
-                </div>
+                  </div>
 
-                {/* DEVICE / BROWSER COLUMN */}
-                <div className="min-w-0 flex flex-col justify-center h-full">
-                  <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Device / Browser</p>
-                  <div className="text-[11px] text-white/60 font-mono">{(log.ip || actualMeta?.ip) || '-'}</div>
-                  <div className="text-[10px] text-white/30 mt-1">{parseUserAgent(log.userAgent || actualMeta?.userAgent)}</div>
-                </div>
-
-                {/* STATUS COLUMN */}
-                <div className="min-w-0 flex flex-col justify-center h-full">
-                  <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Status</p>
-                  <div>{getSeverityBadge(log)}</div>
-                </div>
-
-                {/* DATE COLUMN */}
-                <div className="min-w-0 flex flex-col justify-center h-full">
-                  <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Date</p>
-                  <div className="text-[11px] text-white/40">
-                    {new Date(log.createdAt).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                  {/* Toggle */}
+                  <div className="flex md:justify-end">
+                    <button
+                      className="w-6 h-6 inline-flex items-center justify-center rounded border border-white/[0.07] text-white/25 hover:text-white/50 hover:border-white/[0.12] transition-colors focus:outline-none"
+                      onClick={(e) => { e.stopPropagation(); toggleRow(log._id); }}
+                    >
+                      <i className={`fas fa-chevron-${isExpanded ? 'up' : 'down'} text-[8px]`} />
+                    </button>
                   </div>
                 </div>
 
-                {/* DETAILS DROPDOWN TOGGLE */}
-                <div className="min-w-0 flex flex-col justify-center h-full md:items-end">
-                  <button className="w-7 h-7 inline-flex items-center justify-center rounded border border-[#282828] bg-[#121212] text-[#666] hover:bg-[#222] hover:text-[#ddd] transition-colors focus:outline-none">
-                    <i className={`fas fa-chevron-${expandedRow === log._id ? 'up' : 'down'} text-xs`}></i>
-                  </button>
-                </div>
-              </div>
-              
-              {/* Expanded Row Details */}
-              {expandedRow === log._id && (
-                <div className="px-5 py-4 bg-[#111] border-y border-[#222] overflow-hidden text-white">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full min-w-0">
-                    
-                    {/* Request Information */}
-                    <div className="space-y-4">
-                      <h4 className="text-[10px] uppercase tracking-widest text-white/40 font-semibold">Request Information</h4>
-                      <div className="bg-[#0a0a0a] border border-white/[0.04] rounded-lg p-4 space-y-3">
-                          <div className="flex justify-between items-center border-b border-white/[0.04] pb-2">
-                            <span className="text-white/40 text-xs">Request ID</span>
-                            <span className="text-white/70 font-mono text-[10px]">{log._id}</span>
-                          </div>
-                          {log.category && (
-                            <div className="flex justify-between items-center border-b border-white/[0.04] pb-2">
-                              <span className="text-white/40 text-xs">Category</span>
-                              <span className="text-white/70 text-xs uppercase tracking-wider">{log.category}</span>
-                            </div>
-                          )}
-                          {(log.sessionId || actualMeta?.sessionId) && (
-                            <div className="flex justify-between items-center border-b border-white/[0.04] pb-2">
-                              <span className="text-white/40 text-xs">Session ID</span>
-                              <span className="text-white/70 font-mono text-[10px]">{log.sessionId || actualMeta?.sessionId}</span>
-                            </div>
-                          )}
-                          {variant === 'admin' && log.resourceType && (
-                            <div className="flex justify-between items-center border-b border-white/[0.04] pb-2">
-                              <span className="text-white/40 text-xs">Resource</span>
-                              <span className="text-white/70 font-mono text-xs">{log.resourceType} {log.resourceId}</span>
-                            </div>
-                          )}
-                          <div className="flex justify-between items-center border-b border-white/[0.04] pb-2">
-                            <span className="text-white/40 text-xs">IP Address</span>
-                            <span className="text-white/70 font-mono bg-white/[0.02] px-2 py-0.5 rounded text-xs">{(log.ip || actualMeta?.ip) || '-'}</span>
-                          </div>
-                          {(log.method || actualMeta?.method) && (
-                            <div className="flex justify-between items-center border-b border-white/[0.04] pb-2">
-                              <span className="text-white/40 text-xs">Method</span>
-                              <span className="text-white/70 text-xs">{log.method || actualMeta?.method}</span>
-                            </div>
-                          )}
-                          {(log.path || actualMeta?.path) && (
-                            <div className="flex justify-between items-center border-b border-white/[0.04] pb-2">
-                              <span className="text-white/40 text-xs">Path</span>
-                              <span className="text-white/70 font-mono text-xs truncate max-w-[250px]">{log.path || actualMeta?.path}</span>
-                            </div>
-                          )}
-                          {(log.statusCode || actualMeta?.status || actualMeta?.statusCode) && (
-                            <div className="flex justify-between items-center border-b border-white/[0.04] pb-2">
-                              <span className="text-white/40 text-xs">Status Code</span>
-                              <span className={`font-medium text-xs ${(log.statusCode || actualMeta?.status || actualMeta?.statusCode) >= 400 ? 'text-red-400' : 'text-green-400'}`}>
-                                {log.statusCode || actualMeta?.status || actualMeta?.statusCode}
-                              </span>
-                            </div>
-                          )}
-                          {(log.durationMs || actualMeta?.durationMs) && (
-                            <div className="flex justify-between items-center border-b border-white/[0.04] pb-2">
-                              <span className="text-white/40 text-xs">Duration</span>
-                              <span className="text-white/70 text-xs">{formatDuration(log.durationMs || actualMeta?.durationMs)}</span>
-                            </div>
-                          )}
-                      </div>
-                    </div>
+                {/* Expanded Panel */}
+                {isExpanded && (
+                  <div className="px-5 pt-3 pb-7 border-b border-white/[0.05] overflow-hidden">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-14 gap-y-6 w-full min-w-0">
 
-                    {/* Meta Data */}
-                    <div className="space-y-4 min-w-0">
-                      {hasChanges && (
-                        <div className="mb-4">
-                          <h4 className="text-[10px] uppercase tracking-widest text-white/40 font-semibold mb-2">Value Changes</h4>
-                          <div className="bg-[#0a0a0a] border border-white/[0.04] rounded-lg p-3 overflow-hidden">
+                      {/* Request Info */}
+                      <div>
+                        <p className="mb-3 text-[9px] uppercase tracking-[0.13em] text-white/20">Request Information</p>
+                        <InfoRow label="Request ID" value={log._id} mono muted />
+                        <InfoRow label="Session ID" value={log.sessionId || actualMeta?.sessionId} mono muted />
+                        <InfoRow label="IP Address" value={(log.ip || actualMeta?.ip) || '—'} mono />
+                        {log.category && <InfoRow label="Category" value={log.category} />}
+                        {variant === 'admin' && log.resourceType && (
+                          <InfoRow label="Resource" value={`${log.resourceType}${log.resourceId ? ` · ${log.resourceId}` : ''}`} mono muted />
+                        )}
+                        {(log.method || actualMeta?.method) && <InfoRow label="Method" value={log.method || actualMeta?.method} />}
+                        {(log.path || actualMeta?.path) && <InfoRow label="Path" value={log.path || actualMeta?.path} mono muted />}
+                        {(log.statusCode || actualMeta?.statusCode) && (
+                          <div className="flex justify-between items-start gap-4 py-[7px] border-b border-white/[0.04] last:border-0">
+                            <span className="text-[9px] uppercase tracking-[0.1em] text-white/25 shrink-0">Status Code</span>
+                            <span className={`font-mono text-[11px] ${(log.statusCode || actualMeta?.statusCode || 0) >= 400 ? 'text-red-400/80' : 'text-emerald-400/70'}`}>
+                              {log.statusCode || actualMeta?.statusCode}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Changes / Created / Meta */}
+                      <div className="space-y-5 min-w-0">
+                        {hasChanges && (
+                          <div>
+                            <p className="mb-3 text-[9px] uppercase tracking-[0.13em] text-white/20">Value Changes</p>
                             <DiffViewer changes={actualMeta.changes} />
                           </div>
-                        </div>
-                      )}
+                        )}
 
-                      {hasCreated && (
-                        <div className="mb-4">
-                          <h4 className="text-[10px] uppercase tracking-widest text-white/40 font-semibold mb-2">Created Data</h4>
-                          <div className="bg-[#0a0a0a] border border-white/[0.04] rounded-lg p-3">
+                        {hasCreated && (
+                          <div>
+                            <p className="mb-3 text-[9px] uppercase tracking-[0.13em] text-white/20">Created</p>
                             <CreatedViewer created={actualMeta.created} />
                           </div>
-                        </div>
-                      )}
+                        )}
 
-                      {variant === 'admin' && Object.keys(rawMeta).length > 0 && (
-                        <div>
-                          <h4 className="text-[10px] uppercase tracking-widest text-white/40 font-semibold mb-2">Additional Meta</h4>
-                          <div className="bg-[#0a0a0a] border border-white/[0.04] rounded-lg p-3">
-                            <pre className="text-xs text-white/50 whitespace-pre-wrap break-all overflow-y-auto max-h-48 font-mono">
+                        {variant === 'admin' && Object.keys(rawMeta).length > 0 && (
+                          <div>
+                            <p className="mb-3 text-[9px] uppercase tracking-[0.13em] text-white/20">Additional Meta</p>
+                            <pre className="text-[10px] text-white/25 font-mono whitespace-pre-wrap break-all overflow-y-auto max-h-36 leading-relaxed">
                               {JSON.stringify(rawMeta, null, 2)}
                             </pre>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
-
                   </div>
-                </div>
-              )}
-            </React.Fragment>
-          );
+                )}
+              </React.Fragment>
+            );
           })
         )}
       </div>
     </div>
   );
 }
+
