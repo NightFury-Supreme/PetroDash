@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Copy, ExternalLink, KeyRound, Link2, Mail, RefreshCw } from "lucide-react";
+import { ErrorState, DashboardButton } from "@/components/ui/ErrorState";
 import { useModal } from "@/components/Modal";
 import { useToast } from "@/components/ui/ToastProvider";
 import { CredentialRow } from "./CredentialRow";
@@ -106,6 +107,41 @@ export function PanelContent() {
 
   if (loading) return <PanelSkeleton />;
 
+  if (error) {
+    return (
+      <ErrorState
+        icon={
+          (error.includes("Pending") || error.includes("pending")) ? (
+            <RefreshCw strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px] animate-spin" />
+          ) : (
+            <KeyRound strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />
+          )
+        }
+        kicker={(error.includes("Pending") || error.includes("pending")) ? "Provisioning" : "Failed to Fetch"}
+        title={error}
+        description={
+          <p>
+            {(error.includes("Pending") || error.includes("pending")) 
+              ? "If you just registered, your account may still be provisioning. Please wait a moment and try refreshing the page."
+              : "There was an issue retrieving your panel credentials. Please check your connection or contact support if the problem persists."}
+          </p>
+        }
+        buttons={
+          <>
+            <button
+              onClick={() => window.location.reload()}
+              className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
+            >
+              <RefreshCw className="w-[14px] h-[14px]" />
+              Refresh
+            </button>
+            <DashboardButton variant="secondary" />
+          </>
+        }
+      />
+    );
+  }
+
   return (
     <div className="flex flex-col h-full space-y-6">
       <section>
@@ -125,22 +161,6 @@ export function PanelContent() {
         </div>
 
         <div className="divide-y divide-white/[0.06]">
-          {error ? (
-            <div className="p-12 text-center flex flex-col items-center justify-center space-y-3">
-              {error.includes("Pending") || error.includes("pending") ? (
-                <RefreshCw className="h-8 w-8 text-orange-500 animate-spin opacity-80" />
-              ) : (
-                <KeyRound className="h-8 w-8 text-[#ef4444] opacity-80" />
-              )}
-              <h3 className={`text-sm font-medium ${error.includes("Pending") || error.includes("pending") ? "text-orange-400" : "text-[#ef4444]"}`}>
-                {error}
-              </h3>
-              <p className="text-xs text-[#888888] max-w-sm">
-                If you just registered, your account may still be provisioning. Please wait a moment and try refreshing the page.
-              </p>
-            </div>
-          ) : (
-            <>
               {/* EMAIL */}
               <CredentialRow
                 icon={<Mail className="h-4 w-4" />}
@@ -262,8 +282,6 @@ export function PanelContent() {
                   </button>
                 }
               />
-            </>
-          )}
         </div>
       </section>
     </div>

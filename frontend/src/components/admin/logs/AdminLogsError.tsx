@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useModal } from "@/components/Modal";
+import { useToast } from "@/components/ui/ToastProvider";
 
 interface AdminLogsErrorProps {
   error: string | null;
 }
 
 export function AdminLogsError({ error }: AdminLogsErrorProps) {
-  const modal = useModal();
+    const { showSuccess, showError } = useToast();
   const last = useRef<string | null>(null);
 
   useEffect(() => {
@@ -17,11 +17,11 @@ export function AdminLogsError({ error }: AdminLogsErrorProps) {
     last.current = error;
     (async () => {
       try {
-        await modal.error({ title: "Error", body: error });
+        showError(error);
       // eslint-disable-next-line unused-imports/no-unused-vars
       } catch (_) {}
     })();
-  }, [error, modal]);
+  }, [error]);
 
   return null;
 }

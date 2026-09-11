@@ -14,7 +14,20 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success'; id: number } | null>(null);
 
   const showError = useCallback((message: string) => {
-    setToast({ message, type: 'error', id: Date.now() });
+    let expandedMessage = message;
+    const e = message.toLowerCase();
+    
+    if (e === 'forbidden' || e === 'unauthorized' || e === 'access denied') {
+      expandedMessage = 'You do not have permission to perform this action. Please contact an administrator if you believe this is a mistake.';
+    } else if (e === 'not found') {
+      expandedMessage = 'The requested resource could not be found. It may have been deleted.';
+    } else if (e.includes('failed to fetch') || e.includes('network error')) {
+      expandedMessage = 'Unable to connect to the server. Please try again in a few moments.';
+    } else if (e.includes('too many requests') || e.includes('rate limit')) {
+      expandedMessage = 'You are making requests too quickly. Please wait a moment and try again.';
+    }
+
+    setToast({ message: expandedMessage, type: 'error', id: Date.now() });
   }, []);
 
   const showSuccess = useCallback((message: string) => {

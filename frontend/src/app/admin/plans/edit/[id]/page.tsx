@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect } from 'react';
+import { useToast } from "@/components/ui/ToastProvider";
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { useModal } from '@/components/Modal';
 import { PlanEditSkeleton } from '@/components/skeletons/admin/plan/edit/PlanEditSkeleton';
 import { usePlanEdit } from '@/hooks/admin/plan/usePlanEdit';
 import { PlanEditForm } from '@/components/admin/plan/PlanEditForm';
@@ -12,7 +12,7 @@ export default function EditPlanPage() {
   const router = useRouter();
   const params = useParams();
   const planId = params.id as string;
-  const modal = useModal();
+    const { showSuccess, showError } = useToast();
   
   const {
     loading,
@@ -38,13 +38,10 @@ export default function EditPlanPage() {
   const handleFormSubmit = async () => {
     try {
       await handleSubmit();
-      await modal.success({
-        title: 'Plan Updated',
-        body: `Plan "${plan?.name}" has been updated successfully.`
-      });
+      showSuccess(`Plan "${plan?.name}" has been updated successfully.`);
       router.push('/admin/plans');
     } catch (err: unknown) {
-      await modal.error({ title: 'Error', body: err instanceof Error ? err.message : 'Failed to update plan' });
+      showError(err instanceof Error ? err.message : 'Failed to update plan');
     }
   };
 

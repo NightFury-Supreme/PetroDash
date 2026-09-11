@@ -1,9 +1,9 @@
 import React from "react";
-import { useModal } from "@/components/Modal";
+import { useToast } from "@/components/ui/ToastProvider";
 import { Download, ChevronLeft, ChevronRight } from "lucide-react";
 
 export function InvoicesTab({ invoices, invoicePage, invoiceTotalPages, invoiceTotal, setInvoicePage }: any) {
-  const modal = useModal();
+    const { showSuccess, showError } = useToast();
   const downloadInvoice = async (id: string) => {
     try {
       const token = localStorage.getItem("auth_token");
@@ -15,7 +15,7 @@ export function InvoicesTab({ invoices, invoicePage, invoiceTotalPages, invoiceT
       a.href = url; a.download = `invoice-${id}.pdf`;
       document.body.appendChild(a); a.click(); a.remove(); window.URL.revokeObjectURL(url);
     } catch (e: any) {
-      await modal.error({ title: "Error", body: e.message || "Failed" });
+      showError(e.message || "Failed");
     }
   };
 

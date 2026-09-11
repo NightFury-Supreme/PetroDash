@@ -1,6 +1,9 @@
 "use client";
 
 import Link from 'next/link';
+import { CreditCard, RefreshCw } from 'lucide-react';
+import { ErrorState, DashboardButton, ErrorDescription } from '@/components/ui/ErrorState';
+import { useToast } from "@/components/ui/ToastProvider";
 import { useModal } from '@/components/Modal';
 import { PlansListSkeleton } from '@/components/skeletons/admin/plan/list/PlansListSkeleton';
 import { usePlansList } from '@/hooks/admin/plan/usePlansList';
@@ -8,6 +11,7 @@ import { PlansList } from '@/components/admin/plan/PlansList';
 
 export default function AdminPlansPage() {
   const modal = useModal();
+  const { showSuccess, showError } = useToast();
   
   const {
     plans,
@@ -31,65 +35,63 @@ export default function AdminPlansPage() {
 
     try {
       const result = await deletePlan(planId, planName);
-      await modal.success({
-        title: 'Plan Deleted',
-        body: result.message
-      });
+      showSuccess(result.message);
     } catch (err: any) {
-      await modal.error({
-        title: 'Error',
-        body: err.message
-      });
+      showError(err.message);
     }
   };
 
   const handleToggleEnabled = async (plan: any) => {
     try {
       const result = await toggleEnabled(plan);
-      await modal.success({
-        title: 'Plan Updated',
-        body: result.message
-      });
+      showSuccess(result.message);
     } catch (err: any) {
-      await modal.error({
-        title: 'Error',
-        body: err.message
-      });
+      showError(err.message);
     }
   };
 
   const handleMakeUnlisted = async (plan: any) => {
     try {
       const result = await makeUnlisted(plan);
-      await modal.success({
-        title: 'Plan Updated',
-        body: result.message
-      });
+      showSuccess(result.message);
     } catch (err: any) {
-      await modal.error({
-        title: 'Error',
-        body: err.message
-      });
+      showError(err.message);
     }
   };
 
   const handleMakePublic = async (plan: any) => {
     try {
       const result = await makePublic(plan);
-      await modal.success({
-        title: 'Plan Updated',
-        body: result.message
-      });
+      showSuccess(result.message);
     } catch (err: any) {
-      await modal.error({
-        title: 'Error',
-        body: err.message
-      });
+      showError(err.message);
     }
   };
 
   if (error) {
-    throw new Error(error);
+    return (
+      <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
+        <ErrorState
+          icon={<CreditCard strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
+          kicker="Load Error"
+          title="Failed to Load Plans"
+          errorString={error}
+          description={<ErrorDescription error={error} topic="Plans" />}
+          buttons={
+            <>
+              <button
+                onClick={() => window.location.reload()}
+                className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
+              >
+                <RefreshCw className="w-[14px] h-[14px]" />
+                Retry
+              </button>
+              <DashboardButton variant="secondary" />
+            </>
+          }
+        />
+      </div>
+    );
   }
 
   // Show skeleton while loading

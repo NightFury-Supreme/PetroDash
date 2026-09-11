@@ -1,12 +1,12 @@
 import React, { useState } from "react";
+import { useToast } from "@/components/ui/ToastProvider";
 import { InfoRow } from "@/components/admin/users/AdminInfoRow";
-import { useModal } from "@/components/Modal";
 import { Cpu, HardDrive, Database, Server, Network, Layers } from "lucide-react";
 
 export function ResourcesTab({ resources, setResources, userId, onRefresh: _onRefresh }: any) {
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState<any>(null);
-  const modal = useModal();
+    const { showSuccess, showError } = useToast();
 
   const beginEdit = (field: string) => {
     setEditing(field);
@@ -31,7 +31,7 @@ export function ResourcesTab({ resources, setResources, userId, onRefresh: _onRe
       setEditing(null);
       return true;
     } catch (e: any) {
-      modal.error({ title: 'Error', body: e.message || 'Failed to save' });
+      showError(e.message || 'Failed to save');
       return false;
     }
   };

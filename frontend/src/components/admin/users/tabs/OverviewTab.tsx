@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useToast } from "@/components/ui/ToastProvider";
 import { InfoRow } from "@/components/admin/users/AdminInfoRow";
-import { useModal } from "@/components/Modal";
 import { 
   User, ShieldCheck, Coins, Camera, Mail, Check, Loader2, ChevronDown
 } from "lucide-react";
@@ -8,7 +8,7 @@ import {
 export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefresh }: any) {
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState<any>("");
-  const modal = useModal();
+    const { showSuccess, showError } = useToast();
   
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
   const roleDropdownRef = useRef<HTMLDivElement>(null);
@@ -71,7 +71,7 @@ export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefre
       setEditing(null);
       return true;
     } catch (e: any) {
-      modal.error({ title: 'Error', body: e.message || 'Failed to save' });
+      showError(e.message || 'Failed to save');
       return false;
     }
   };
@@ -94,7 +94,7 @@ export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefre
       setRoleSaved(true);
       setTimeout(() => setRoleSaved(false), 2000);
     } catch {
-      modal.error({ title: 'Error', body: 'Failed to update role' });
+      showError('Failed to update role');
     } finally {
       setRoleLoading(false);
     }

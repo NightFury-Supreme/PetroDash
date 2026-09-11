@@ -73,6 +73,9 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:ledger');
 
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.payment.update', 'payment', p._id.toString(), { status, amount, currency });
+
     res.json({ ok: true, payment: p });
   } catch (e) { 
     res.status(400).json({ error: e.message }); 
@@ -165,6 +168,9 @@ router.post('/:id/refund', requireAdmin, async (req, res) => {
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:ledger');
 
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.payment.refund', 'payment', p._id.toString(), { providerCaptureId: p.providerCaptureId });
+
     res.json({ ok: true });
   } catch (e) { res.status(400).json({ error: e.message }); }
 });
@@ -182,6 +188,9 @@ router.post('/:id/void', requireAdmin, async (req, res) => {
 
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:ledger');
+
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.payment.void', 'payment', p._id.toString(), {});
 
     res.json({ ok: true });
   } catch (e) { res.status(400).json({ error: e.message }); }

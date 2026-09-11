@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useToast } from "@/components/ui/ToastProvider";
 import { useParams, useRouter } from "next/navigation";
 import { AdminSideItem as SideItem } from "@/components/admin/users/AdminSideItem";
 import { useModal } from "@/components/Modal";
@@ -14,6 +15,7 @@ export default function AdminUserPage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
   const modal = useModal();
+  const { showSuccess, showError } = useToast();
   
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
@@ -107,10 +109,10 @@ export default function AdminUserPage() {
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || 'Failed to save referral code');
-      await modal.success({ title: 'Saved', body: 'Referral code updated.' });
+      showSuccess('Referral code updated.');
       loadUser(referralPage);
     } catch (e: any) {
-      modal.error({ title: 'Error', body: e.message || 'Failed' });
+      showError(e.message || 'Failed');
     } finally {
       setSaving(false);
     }
@@ -129,13 +131,10 @@ export default function AdminUserPage() {
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/users/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
       const d = await r.json();
       if (!r.ok) throw new Error(d?.error || 'Failed to delete user');
-      await modal.success({ 
-        title: 'User Deleted', 
-        body: d.message || `User deleted successfully.`
-      });
+      showSuccess(d.message || `User deleted successfully.`);
       router.push('/admin/users');
     } catch (e: any) { 
-      await modal.error({ title: 'Deletion Failed', body: e.message });
+      showError(e.message);
     }
   };
 

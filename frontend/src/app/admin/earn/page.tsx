@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useModal } from "@/components/Modal";
+import { Coins, RefreshCw } from "lucide-react";
+import { useToast } from "@/components/ui/ToastProvider";
 import { useAdminEarn } from "@/hooks/admin/earn/useAdminEarn";
 import { AdminEarnHeader } from "@/components/admin/earn/AdminEarnHeader";
 import { AdminEarnContent } from "@/components/admin/earn/AdminEarnContent";
 import { AdminEarnSkeleton } from "@/components/skeletons/admin/earn/AdminEarnSkeleton";
+import { ErrorState, DashboardButton, ErrorDescription } from "@/components/ui/ErrorState";
 import type { AdminEarnSettings } from "@/hooks/admin/earn/useAdminEarn";
 
 export default function AdminEarnPage() {
-  const modal = useModal();
+  const { showError } = useToast();
   const { settings, loading, saving, error, setError, save } = useAdminEarn();
   const [form, setForm] = useState<AdminEarnSettings | null>(null);
 
@@ -21,14 +23,14 @@ export default function AdminEarnPage() {
     if (!error) return;
     (async () => {
       try {
-        await modal.error({ title: "Error", body: error });
+        showError(error);
       // eslint-disable-next-line unused-imports/no-unused-vars
       } catch (_) {
       } finally {
         setError(null);
       }
     })();
-  }, [error, modal, setError]);
+  }, [error, showError, setError]);
 
   const setField = (path: string, value: any) => {
     setForm((prev) => {
@@ -62,15 +64,35 @@ export default function AdminEarnPage() {
 
 
 
+  if (error) {
+    return (
+      <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
+        <ErrorState
+          icon={<Coins strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
+          kicker="Load Error"
+          title="Failed to Load Earn Settings"
+          errorString={error}
+          description={<ErrorDescription error={error} topic="Earn Settings" />}
+          buttons={
+            <>
+              <button
+                onClick={() => window.location.reload()}
+                className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
+              >
+                <RefreshCw className="w-[14px] h-[14px]" />
+                Retry
+              </button>
+              <DashboardButton variant="secondary" />
+            </>
+          }
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans">
       <AdminEarnHeader />
-
-      {error && (
-        <div className="mt-4 rounded-md bg-red-500/10 p-4 border border-red-500/20">
-          <p className="text-sm text-red-500">{error}</p>
-        </div>
-      )}
 
       {loading && !form ? (
         <AdminEarnSkeleton />

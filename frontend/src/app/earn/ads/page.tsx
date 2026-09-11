@@ -3,13 +3,13 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useEarn } from "@/hooks/useEarn";
-import { useModal } from "@/components/Modal";
+import { useToast } from "@/components/ui/ToastProvider";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
 export default function EarnAdsPage() {
   const router = useRouter();
-  const modal = useModal();
+  const { showSuccess, showError } = useToast();
   const { data, loading, start, claim, refresh } = useEarn();
 
   const [adsSessionId, setAdsSessionId] = useState<string | null>(null);
@@ -98,13 +98,13 @@ export default function EarnAdsPage() {
         setAdsStep("claiming");
         setAdsStepMessage("Claiming coins...");
         const cr = await claim("ads", sessionId);
-        await modal.success({ title: "Reward Claimed", body: `You earned ${cr.rewardCoins} coins.` });
+        showSuccess(`You earned ${cr.rewardCoins} coins.`);
         router.push("/earn");
       } catch (e: any) {
         setAdsStep("error");
         setAdsStepMessage(String(e?.message || "Failed"));
         try {
-          await modal.error({ title: "Reward Error", body: String(e?.message || "Failed") });
+          showError(String(e?.message || "Failed"));
         // eslint-disable-next-line unused-imports/no-unused-vars
         } catch (_) {}
       } finally {
@@ -160,7 +160,7 @@ export default function EarnAdsPage() {
     } catch (e: any) {
       setAdsStep("error");
       setAdsStepMessage(String(e?.message || "Failed"));
-      await modal.error({ title: "Ad Error", body: String(e?.message || "Failed") });
+      showError(String(e?.message || "Failed"));
     }
   };
 

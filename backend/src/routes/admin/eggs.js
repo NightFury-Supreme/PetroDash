@@ -64,6 +64,9 @@ router.post('/', requireAdmin, async (req, res) => {
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:eggs*');
 
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.egg.create', 'egg', egg._id.toString(), { name: egg.name });
+
     res.status(201).json(egg);
 });
 
@@ -121,6 +124,10 @@ router.post('/categories', requireAdmin, async (req, res) => {
         const cat = await EggCategory.create({ name: name.trim() });
         const { deleteCachePattern } = require('../../lib/redis');
         await deleteCachePattern('admin:eggs:categories');
+        
+        const { writeAudit } = require('../../middleware/audit');
+        await writeAudit(req, 'admin.egg_category.create', 'egg_category', cat._id.toString(), { name: cat.name });
+        
         res.json({ id: cat._id.toString(), name: cat.name, eggCount: 0 });
     } catch (e) {
         if (e.code === 11000) return res.status(400).json({ error: 'Category already exists' });
@@ -141,6 +148,10 @@ router.put('/categories/:id', requireAdmin, async (req, res) => {
 
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:eggs*');
+
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.egg_category.update', 'egg_category', cat._id.toString(), { name: cat.name });
+
     res.json({ id: cat._id.toString(), name: cat.name });
 });
 
@@ -155,6 +166,10 @@ router.delete('/categories/:id', requireAdmin, async (req, res) => {
     await cat.deleteOne();
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:eggs:categories');
+
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.egg_category.delete', 'egg_category', cat._id.toString(), { name: cat.name });
+
     res.json({ success: true });
 });
 
@@ -193,6 +208,9 @@ router.put('/:id', requireAdmin, async (req, res) => {
     await deleteCachePattern('admin:eggs*');
     await deleteCachePattern(`admin:egg:${req.params.id}`);
 
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.egg.update', 'egg', egg._id.toString(), { name: egg.name });
+
     res.json(egg);
 });
 
@@ -209,6 +227,10 @@ router.delete('/:id', requireAdmin, async (req, res) => {
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:eggs*');
     await deleteCachePattern(`admin:egg:${req.params.id}`);
+
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.egg.delete', 'egg', egg._id.toString(), { name: egg.name });
+
     res.json({ success: true });
 });
 

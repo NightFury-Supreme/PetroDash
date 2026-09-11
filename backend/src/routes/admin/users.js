@@ -296,7 +296,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (_) {}
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, 'admin.user.update', 'user', user._id.toString(), { role, resources, coins, email, username, firstName, lastName, ban });
+  await writeAudit(req, 'admin.user.update', 'user', user._id.toString(), { role, resources, coins, email, username, firstName, lastName, ban });
 
   const { deleteCachePattern } = require('../../lib/redis');
   await deleteCachePattern('admin:users');
@@ -361,7 +361,7 @@ router.post('/:id/ban', requireAdmin, async (req, res) => {
   }
   await user.save();
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, isBanned ? 'admin.user.ban' : 'admin.user.unban', 'user', user._id.toString(), { reason: user.ban.reason, until: user.ban.until });
+  await writeAudit(req, isBanned ? 'admin.user.ban' : 'admin.user.unban', 'user', user._id.toString(), { reason: user.ban.reason, until: user.ban.until });
 
   const { deleteCachePattern } = require('../../lib/redis');
   await deleteCachePattern('admin:users');
@@ -410,7 +410,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
     await User.deleteOne({ _id: user._id });
     
     const { writeAudit } = require('../../middleware/audit');
-    writeAudit(req, 'admin.user.delete', 'user', user._id.toString(), { 
+    await writeAudit(req, 'admin.user.delete', 'user', user._id.toString(), { 
       serversDeleted: deletedServers, 
       serverErrors: serverErrors.length,
       pterodactylError: !!pterodactylError 
@@ -445,7 +445,7 @@ router.delete('/:id/servers/:serverId', requireAdmin, async (req, res) => {
   }
   await Server.deleteOne({ _id: server._id });
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, 'admin.user.server.delete', 'server', server._id.toString(), { owner: req.params.id });
+  await writeAudit(req, 'admin.user.server.delete', 'server', server._id.toString(), { owner: req.params.id });
 
   const { deleteCachePattern } = require('../../lib/redis');
   await deleteCachePattern('admin:users');
@@ -577,7 +577,7 @@ router.patch('/:id/servers/:serverId', requireAdmin, async (req, res) => {
 
   await server.save();
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, 'admin.user.server.update', 'server', server._id.toString(), { owner: req.params.id, changed: desired });
+  await writeAudit(req, 'admin.user.server.update', 'server', server._id.toString(), { owner: req.params.id, changed: desired });
   return res.json({ server });
 });
 
@@ -659,7 +659,7 @@ router.post('/:id/plans', requireAdmin, async (req, res) => {
   }
 
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, 'admin.user.plan.add', 'user_plan', sub._id.toString(), { plan: plan.name, months });
+  await writeAudit(req, 'admin.user.plan.add', 'user_plan', sub._id.toString(), { plan: plan.name, months });
   
   const { deleteCachePattern } = require('../../lib/redis');
   await deleteCachePattern('admin:users');
@@ -704,7 +704,7 @@ router.delete('/:id/plans/:planId', requireAdmin, async (req, res) => {
   }
   
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, 'admin.user.plan.cancel', 'user_plan', req.params.planId, { userId: req.params.id, planId: req.params.planId, instancesCancelled: subs.length });
+  await writeAudit(req, 'admin.user.plan.cancel', 'user_plan', req.params.planId, { userId: req.params.id, planId: req.params.planId, instancesCancelled: subs.length });
 
   const { deleteCachePattern } = require('../../lib/redis');
   await deleteCachePattern('admin:users');
@@ -744,7 +744,7 @@ router.delete('/:id/plans/instance/:instanceId', requireAdmin, async (req, res) 
   }
   
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, 'admin.user.plan.instance.cancel', 'user_plan', sub._id.toString(), { userId: req.params.id, planId: sub.planId });
+  await writeAudit(req, 'admin.user.plan.instance.cancel', 'user_plan', sub._id.toString(), { userId: req.params.id, planId: sub.planId });
 
   const { deleteCachePattern } = require('../../lib/redis');
   await deleteCachePattern('admin:users');

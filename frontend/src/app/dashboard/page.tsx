@@ -7,6 +7,8 @@ import { DashboardContent } from "../../components/dashboard/DashboardContent";
 import { useDashboard } from "../../hooks/useDashboard";
 import { ContentAd } from "@/components/ads/AdSense";
 import { useToast } from "@/components/ui/ToastProvider";
+import { ErrorState, DashboardButton, ErrorDescription } from "@/components/ui/ErrorState";
+import { RefreshCw, LayoutDashboard } from "lucide-react";
 
 function DashboardContentWrapper() {
   const [mounted, setMounted] = useState(false);
@@ -58,8 +60,26 @@ function DashboardContentWrapper() {
   // Error state
   if (error) {
     return (
-      <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans flex items-center justify-center">
-        <p className="text-[#888]">Failed to load dashboard. Please try again later.</p>
+      <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
+        <ErrorState
+          icon={<LayoutDashboard strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
+          kicker="Load Error"
+          title="Failed to Load Dashboard"
+          errorString={error}
+          description={<ErrorDescription error={error} topic="Dashboard" />}
+          buttons={
+            <>
+              <button
+                onClick={() => window.location.reload()}
+                className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
+              >
+                <RefreshCw className="w-[14px] h-[14px]" />
+                Retry
+              </button>
+              <DashboardButton variant="secondary" />
+            </>
+          }
+        />
       </div>
     );
   }

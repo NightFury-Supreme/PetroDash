@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, useRef } from 'react';
+import { useToast } from "@/components/ui/ToastProvider";
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useModal } from '@/components/Modal';
 import { Check, LayoutDashboard } from 'lucide-react';
 
 export const runtime = 'edge';
@@ -10,7 +10,7 @@ export const runtime = 'edge';
 export default function PlanSuccessPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const modal = useModal();
+    const { showSuccess, showError } = useToast();
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(false);
 
@@ -57,7 +57,7 @@ export default function PlanSuccessPage() {
           setTimeout(() => router.push('/dashboard'), 4000);
           return;
         }
-        await modal.error({ title: 'Payment Error', body: error.message || 'Failed to process payment.' });
+        showError(error.message || 'Failed to process payment.');
         router.push('/shop');
       } finally {
         setLoading(false);
@@ -65,7 +65,7 @@ export default function PlanSuccessPage() {
     };
 
     handlePaymentSuccess();
-  }, [searchParams, router, modal]);
+  }, [searchParams, router]);
 
   if (loading) {
     return (

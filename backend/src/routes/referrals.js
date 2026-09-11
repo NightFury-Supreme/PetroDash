@@ -135,6 +135,10 @@ router.post('/code', requireAuth, async (req, res) => {
     try {
       await user.save();
       await logUserActivity(req, 'referral.code.update', { code: desired });
+      const { writeAudit } = require('../middleware/audit');
+      await writeAudit(req, 'referral.code.update', 'referral', user._id.toString(), {
+        code: desired
+      });
       return res.json({ ok: true, code: user.referralCode });
     } catch (saveError) {
       if (saveError.code === 11000) {

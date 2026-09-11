@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState, useCallback } from 'react';
+import { useToast } from "@/components/ui/ToastProvider";
+import { Settings, RefreshCw } from 'lucide-react';
+import { ErrorState, DashboardButton, ErrorDescription } from '@/components/ui/ErrorState';
 import { AdminSettingsHeader, AdminSettingsContent } from '@/components/admin/settings';
 import { AdminSettingsSkeleton } from '@/components/skeletons/admin/settings';
-import { useModal } from '@/components/Modal';
 
 interface Settings {
   siteName: string;
@@ -75,7 +77,7 @@ export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const modal = useModal();
+    const { showSuccess, showError } = useToast();
 
   const loadSettings = useCallback(async () => {
     setError(null);
@@ -101,14 +103,11 @@ export default function AdminSettingsPage() {
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : 'Failed to load settings';
       setError(errorMessage);
-      await modal.error({
-        title: "Failed to Load Settings",
-        body: errorMessage || 'An error occurred while loading the settings.'
-      });
+      showError(errorMessage || 'An error occurred while loading the settings.');
     } finally {
       setLoading(false);
     }
-  }, [modal]);
+  }, []);
 
   const saveSettings = useCallback(async (newSettings: Partial<Settings>) => {
     try {
@@ -155,10 +154,30 @@ export default function AdminSettingsPage() {
   }
 
   if (error || !settings) {
-    throw new Error(error || 'Unable to load system settings.');
+    return (
+      <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
+        <ErrorState
+          icon={<Settings strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
+          kicker="Load Error"
+          title="Failed to Load Settings"
+          errorString={error}
+          description={<ErrorDescription error={error || 'Unable to load system settings.'} topic="Settings" />}
+          buttons={
+            <>
+              <button
+                onClick={() => window.location.reload()}
+                className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
+              >
+                <RefreshCw className="w-[14px] h-[14px]" />
+                Retry
+              </button>
+              <DashboardButton variant="secondary" />
+            </>
+          }
+        />
+      </div>
+    );
   }
-
-  if (error) throw new Error(error);
 
   return (
     

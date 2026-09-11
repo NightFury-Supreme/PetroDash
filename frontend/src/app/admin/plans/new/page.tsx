@@ -1,14 +1,14 @@
 "use client";
 import { useRouter } from 'next/navigation';
+import { useToast } from "@/components/ui/ToastProvider";
 import Link from 'next/link';
-import { useModal } from '@/components/Modal';
 import { PlanSkeleton } from '@/components/skeletons/admin/plan/new/PlanSkeleton';
 import { usePlanForm } from '@/hooks/admin/plan/usePlanForm';
 import { PlanForm } from '@/components/admin/plan/PlanForm';
 
 export default function NewPlanPage() {
   const router = useRouter();
-  const modal = useModal();
+    const { showSuccess, showError } = useToast();
   
   const {
     loading,
@@ -26,16 +26,10 @@ export default function NewPlanPage() {
   const handleFormSubmit = async () => {
     try {
       await handleSubmit();
-      await modal.success({ 
-        title: 'Success', 
-        body: 'Plan created successfully!' 
-      });
+      showSuccess('Plan created successfully!');
       router.push('/admin/plans');
     } catch (err: any) {
-      await modal.error({ 
-        title: 'Error', 
-        body: err.message || 'Failed to create plan' 
-      });
+      showError(err.message || 'Failed to create plan');
     }
   };
 

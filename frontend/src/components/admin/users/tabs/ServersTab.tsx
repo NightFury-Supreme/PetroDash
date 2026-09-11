@@ -1,11 +1,13 @@
+import { useModal } from '@/components/Modal';
 import React, { useState } from "react";
-import { useModal } from "@/components/Modal";
+import { useToast } from "@/components/ui/ToastProvider";
 import AdminServersTable from "@/components/admin/servers/AdminServersTable";
 import { AdminEditServerDrawer } from "@/components/admin/servers/AdminEditServerDrawer";
 
 export function ServersTab({ user, servers, onRefresh }: any) {
   const [editingServer, setEditingServer] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+    const { showSuccess, showError } = useToast();
   const modal = useModal();
 
   const formattedServers = servers.map((s: any) => ({
@@ -34,7 +36,7 @@ export function ServersTab({ user, servers, onRefresh }: any) {
 
     if (!inputValue || inputValue.toLowerCase() !== 'delete') {
       if (inputValue !== null) {
-        modal.error({ title: "Error", body: 'You must type "delete" to confirm.' });
+        showError('You must type "delete" to confirm.');
       }
       return;
     }
@@ -52,7 +54,7 @@ export function ServersTab({ user, servers, onRefresh }: any) {
       }
       onRefresh();
     } catch (e: any) {
-      modal.error({ title: 'Error', body: e.message });
+      showError(e.message);
     } finally {
       setDeleting(null);
     }

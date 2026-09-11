@@ -17,7 +17,8 @@ export function ChartTooltip({ active, payload, label, currency }: any) {
           displayVal = `${displayVal} ${currency}`;
         } else if (item.name === "First response" || item.name === "Resolution") {
           const val = Number(item.value);
-          if (val >= 60) displayVal = `${(val / 60).toFixed(1)}h`;
+          if (val >= 1440) displayVal = `${(val / 1440).toFixed(1)}d`; // 1440 mins = 24h
+          else if (val >= 60) displayVal = `${(val / 60).toFixed(1)}h`;
           else displayVal = `${val}m`;
         }
         return (

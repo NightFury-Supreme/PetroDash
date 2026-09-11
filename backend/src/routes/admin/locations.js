@@ -63,6 +63,9 @@ router.post('/', requireAdmin, async (req, res) => {
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:locations');
 
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.location.create', 'location', created._id.toString(), { name: created.name });
+
     res.status(201).json(created);
 });
 
@@ -83,6 +86,9 @@ router.put('/:id', requireAdmin, async (req, res) => {
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:locations');
 
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.location.update', 'location', updated._id.toString(), { name: updated.name });
+
     res.json(updated);
 });
 
@@ -97,6 +103,9 @@ router.delete('/:id', requireAdmin, async (req, res) => {
 
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:locations');
+
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.location.delete', 'location', deleted._id.toString(), { name: deleted.name });
 
     res.json({ success: true });
 });

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { useToast } from "@/components/ui/ToastProvider";
 import { Download, Loader2 } from "lucide-react";
-import { useModal } from "@/components/Modal";
 import { Pagination } from "@/components/Pagination";
 
 export function InvoicesTab({ currency = "USD" }: { currency?: string }) {
-  const modal = useModal();
+    const { showSuccess, showError } = useToast();
   
   const downloadInvoice = async (id: string) => {
     try {
@@ -27,7 +27,7 @@ export function InvoicesTab({ currency = "USD" }: { currency?: string }) {
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (e: any) {
-      await modal.error({ title: "Download Error", body: String(e?.message || "Failed") });
+      showError(String(e?.message || "Failed"));
     }
   };
 

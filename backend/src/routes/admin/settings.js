@@ -300,6 +300,11 @@ router.patch('/', requireAdmin, async (req, res) => {
     const response = settings.toObject();
     delete response.__v;
     
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.settings.update', 'settings', settings._id.toString(), {
+      updatedSections: Object.keys(parsed.data || {})
+    });
+    
     return res.json(response);
 
   } catch (error) {

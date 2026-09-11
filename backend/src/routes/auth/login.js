@@ -79,6 +79,7 @@ router.post('/login', loginRateLimit, async (req, res) => {
     }
 
     const { token, session } = await SessionService.createSessionAndJwt(user, req);
+    req.user = user;
     
     // Log successful login
     await writeAudit(req, 'auth.login.success', 'auth', user._id.toString(), {
@@ -197,6 +198,7 @@ router.post('/login/2fa', loginRateLimit, async (req, res) => {
     
     // Complete login
     const { token, session } = await SessionService.createSessionAndJwt(user, req);
+    req.user = user;
     
     // Log successful 2FA login
     await writeAudit(req, 'auth.login.success', 'auth', user._id.toString(), {
@@ -269,6 +271,8 @@ router.post('/logout', async (req, res) => {
       } catch {
         // Invalid token during logout - logged silently
       }
+      
+      req.user = user;
     }
     
     // Log logout attempt

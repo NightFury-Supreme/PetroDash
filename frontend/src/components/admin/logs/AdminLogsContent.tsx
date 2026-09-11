@@ -36,10 +36,13 @@ interface AdminLogsContentProps {
     action: string;
     actorId: string;
     resourceType: string;
+    requestId: string;
+    severity: string;
   };
   sortBy: string;
   onPageChange: (page: number) => void;
-  onFilterChange: (key: 'action' | 'actorId' | 'resourceType', value: string) => void;
+  onFilterChange: (key: 'action' | 'actorId' | 'resourceType' | 'requestId' | 'severity', value: string) => void;
+  onSearchChange: (value: string) => void;
   onClearFilters: () => void;
   onSortChange: (sort: string) => void;
 }
@@ -55,6 +58,7 @@ export function AdminLogsContent({
   sortBy,
   onPageChange,
   onFilterChange,
+  onSearchChange,
   onClearFilters,
   onSortChange
 }: AdminLogsContentProps) {
@@ -68,6 +72,7 @@ export function AdminLogsContent({
           <AdminLogsFilters
             filters={filters}
             onFilterChange={onFilterChange}
+            onSearchChange={onSearchChange}
             onClearFilters={onClearFilters}
             loading={loading}
           />

@@ -507,6 +507,8 @@ router.get('/ads/ayet/callback', async (req, res) => {
       return res.status(200).send('ok');
     }
 
+    const { writeAudit } = require('../middleware/audit');
+    await writeAudit(updated.userId, 'earn.ad.verified', 'earn', sessionId, { provider: 'ayet', txId });
     return res.status(200).send('ok');
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
@@ -574,6 +576,8 @@ router.post('/ads/ayet/rewarded', requireAuth, async (req, res) => {
       return res.status(409).json({ error: 'Already verified' });
     }
 
+    const { writeAudit } = require('../middleware/audit');
+    await writeAudit(userId, 'earn.ad.verified', 'earn', sessionId, { provider: 'ayet', txId: conversionId });
     return res.json({ ok: true });
   } catch (e) {
     if (e && e.code === 11000) {
@@ -628,6 +632,8 @@ router.get('/ads/admob/ssv', async (req, res) => {
       return res.status(409).send('conflict');
     }
 
+    const { writeAudit } = require('../middleware/audit');
+    await writeAudit(updated.userId, 'earn.ad.verified', 'earn', sessionId, { provider: 'admob', txId });
     return res.status(200).send('ok');
   } catch (e) {
     if (e && e.code === 11000) {
@@ -1040,10 +1046,11 @@ router.get('/ayet/callback', async (req, res) => {
         adjustment = Math.abs(amount);
       }
 
-      user.coins = Number(user.coins || 0) + adjustment;
+      const coinsBefore = Number(user.coins || 0);
+      user.coins = coinsBefore + adjustment;
       await user.save({ session });
 
-      await EarnSession.create([{
+      const [createdSession] = await EarnSession.create([{
         userId,
         method,
         status: 'completed',
@@ -1058,11 +1065,25 @@ router.get('/ayet/callback', async (req, res) => {
         meta: { payout_usd, ...params }
       }], { session });
 
-      result = true;
+      result = {
+        sessionId: String(createdSession._id),
+        adjustment,
+        coinsBefore,
+        coinsAfter: Number(user.coins || 0)
+      };
     });
     session.endSession();
 
-    if (result) {
+    if (result && typeof result === 'object') {
+      req.user = { sub: userId, role: 'user', username: 'callback' };
+      await writeAudit(req, 'earn.callback.claim', 'earn', String(result.sessionId), {
+        method,
+        rewardCoins: result.adjustment,
+        coinsBefore: result.coinsBefore,
+        coinsAfter: result.coinsAfter,
+        txId: transaction_id,
+      });
+
       const { deleteCachePattern } = require('../lib/redis');
       await deleteCachePattern(`earn:status:${userId}`);
       await deleteCachePattern(`user:${userId}:profile`);

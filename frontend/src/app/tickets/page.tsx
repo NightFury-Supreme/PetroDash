@@ -12,8 +12,9 @@ import { TicketSort } from "@/components/tickets/TicketSort";
 import { useToast } from "@/components/ui/ToastProvider";
 import { CreateTicketDrawer } from "@/components/tickets/CreateTicketDrawer";
 import { useTickets } from "@/hooks/useTickets";
-import { Search, X } from "lucide-react";
+import { Search, X, MessageSquare, RefreshCw } from "lucide-react";
 import { TicketAction } from "@/components/tickets/types";
+import { ErrorState, DashboardButton, ErrorDescription } from "@/components/ui/ErrorState";
 
 const PAGE_SIZE = 25;
 
@@ -153,8 +154,26 @@ export default function TicketsPage() {
 
   if (error) {
     return (
-      <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans flex items-center justify-center">
-        <p className="text-[#888]">Failed to load content. Please try again later.</p>
+      <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
+        <ErrorState
+          icon={<MessageSquare strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
+          kicker="Load Error"
+          title="Failed to Load Tickets"
+          errorString={error}
+          description={<ErrorDescription error={error} topic="Tickets" />}
+          buttons={
+            <>
+              <button
+                onClick={() => window.location.reload()}
+                className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
+              >
+                <RefreshCw className="w-[14px] h-[14px]" />
+                Retry
+              </button>
+              <DashboardButton variant="secondary" />
+            </>
+          }
+        />
       </div>
     );
   }

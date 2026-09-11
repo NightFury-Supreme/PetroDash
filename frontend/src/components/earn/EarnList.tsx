@@ -1,6 +1,7 @@
 import React from 'react';
 import { EarnMethodCard } from "./EarnMethodCard";
-import { Link as LinkIcon } from "lucide-react";
+import { Link as LinkIcon, Coins } from "lucide-react";
+import { ErrorState, DashboardButton, GoBackButton } from "@/components/ui/ErrorState";
 
 interface EarnListProps {
   canShow: boolean;
@@ -15,14 +16,29 @@ export function EarnList({ canShow, data, showLinkvertise, starting, onStart }: 
 
   if (!canShow) {
     return (
-      <div className="bg-[#181818] border border-[#2a2a2a] rounded-2xl p-6">
-        <div className="text-white font-semibold">Earn is currently disabled</div>
-        <div className="text-[#AAAAAA] text-sm mt-1">Ask an admin to enable earning methods.</div>
-      </div>
+      <ErrorState
+        icon={<Coins strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
+        kicker="Not Available"
+        title="Earn is Disabled"
+        description={<p>Earning methods are currently disabled globally. Ask an administrator to enable earning methods to start collecting coins.</p>}
+        buttons={<><DashboardButton /><GoBackButton /></>}
+      />
     );
   }
 
   if (canShow && data?.config && data?.status) {
+    if (!showLinkvertise) {
+      return (
+        <ErrorState
+          icon={<Coins strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
+          kicker="Empty"
+          title="No Methods Available"
+          description={<p>There are currently no active earning methods enabled on the platform. Please check back later.</p>}
+          buttons={<><DashboardButton /><GoBackButton /></>}
+        />
+      );
+    }
+
     return (
       <div className="w-full">
         {/* TABLE HEADER (Desktop) */}
@@ -36,13 +52,6 @@ export function EarnList({ canShow, data, showLinkvertise, starting, onStart }: 
 
         {/* TABLE LIST */}
         <div className="divide-y divide-white/[0.06]">
-          {!showLinkvertise && (
-            <div className="py-12 text-center">
-              <div className="text-white font-semibold">No earning methods enabled</div>
-              <div className="text-[#AAAAAA] text-sm mt-1">Ask an admin to enable at least one earning method.</div>
-            </div>
-          )}
-
           {showLinkvertise && (
             <EarnMethodCard
               method="linkvertise"

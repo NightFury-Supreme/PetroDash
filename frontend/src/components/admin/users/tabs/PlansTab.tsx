@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useToast } from "@/components/ui/ToastProvider";
 
 import { useModal } from "@/components/Modal";
 import { ChevronDown, Check, Plus, Loader2 } from "lucide-react";
@@ -9,6 +10,7 @@ export function PlansTab({ plans, allPlans, userId, onRefresh }: any) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const modal = useModal();
+  const { showSuccess, showError } = useToast();
   const [activeActions, setActiveActions] = useState<Record<string, { type: 'add' | 'remove' | 'removeAll', status: 'loading' | 'done' }>>({});
 
   const setActionState = (planId: string, type: 'add' | 'remove' | 'removeAll', status: 'loading' | 'done' | null) => {
@@ -44,11 +46,11 @@ export function PlansTab({ plans, allPlans, userId, onRefresh }: any) {
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || 'Failed to add plan');
-      await modal.success({ title: 'Plan Added', body: 'The plan has been successfully added to the user.' });
+      showSuccess('The plan has been successfully added to the user.');
       setNewPlanId('');
       onRefresh();
     } catch (e: any) {
-      modal.error({ title: 'Error', body: e.message || 'Failed' });
+      showError(e.message || 'Failed');
     } finally {
       setLoading(false);
     }
@@ -70,7 +72,7 @@ export function PlansTab({ plans, allPlans, userId, onRefresh }: any) {
       setTimeout(() => setActionState(planId, 'removeAll', null), 2000);
     } catch (e: any) {
       setActionState(planId, 'removeAll', null);
-      modal.error({ title: 'Error', body: e.message });
+      showError(e.message);
     }
   };
 
@@ -88,7 +90,7 @@ export function PlansTab({ plans, allPlans, userId, onRefresh }: any) {
       setTimeout(() => setActionState(pid, 'add', null), 2000);
     } catch (e: any) {
       setActionState(pid, 'add', null);
-      modal.error({ title: 'Error', body: e.message || 'Failed to add' });
+      showError(e.message || 'Failed to add');
     }
   };
 
@@ -105,7 +107,7 @@ export function PlansTab({ plans, allPlans, userId, onRefresh }: any) {
       setTimeout(() => setActionState(planId, 'remove', null), 2000);
     } catch (e: any) {
       setActionState(planId, 'remove', null);
-      modal.error({ title: 'Error', body: e.message });
+      showError(e.message);
     }
   };
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useToast } from "@/components/ui/ToastProvider";
 import { useModal } from '@/components/Modal';
 import { UpdateSystem } from '../updates';
 
@@ -86,6 +87,7 @@ export function AdminSettingsContent({
   const [iconFile, setIconFile] = useState<File | null>(null);
   const [iconPreview, setIconPreview] = useState<string | null>(null);
   const modal = useModal();
+  const { showSuccess, showError } = useToast();
 
   useEffect(() => {
     setFormData(settings);
@@ -116,15 +118,9 @@ export function AdminSettingsContent({
     try {
       const next = await onSave(cleanPatch(patch));
       setFormData(next);
-      await modal.success({
-        title: "Saved",
-        body: successBody
-      });
+      showSuccess(successBody);
     } catch (error) {
-      await modal.error({
-        title: "Save Failed",
-        body: error instanceof Error ? error.message : "Failed to save settings. Please try again."
-      });
+      showError(error instanceof Error ? error.message : "Failed to save settings. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -133,15 +129,9 @@ export function AdminSettingsContent({
   const handleReload = async () => {
     try {
       onReload();
-      await modal.success({
-        title: "Settings Reloaded",
-        body: "Settings have been reloaded from the server."
-      });
+      showSuccess("Settings have been reloaded from the server.");
     } catch (error) {
-      await modal.error({
-        title: "Reload Failed",
-        body: error instanceof Error ? error.message : "Failed to reload settings. Please try again."
-      });
+      showError(error instanceof Error ? error.message : "Failed to reload settings. Please try again.");
     }
   };
 
@@ -322,10 +312,7 @@ export function AdminSettingsContent({
                 await saveSection({ siteName: formData.siteName, siteIcon: finalSiteIcon }, "Brand settings updated.");
               } catch (err) {
                 console.error('Upload error:', err);
-                await modal.error({
-                  title: "Upload Failed",
-                  body: err instanceof Error ? err.message : "Failed to upload new site icon. Please try again."
-                });
+                showError(err instanceof Error ? err.message : "Failed to upload new site icon. Please try again.");
                 setSaving(false);
               }
             }}

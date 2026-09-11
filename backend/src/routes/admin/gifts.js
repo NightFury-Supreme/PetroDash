@@ -146,7 +146,7 @@ router.post('/', requireAdmin, async (req, res) => {
     });
 
     await gift.save();
-    writeAudit(req, 'admin.gifts.create', 'gift', gift._id.toString(), { code: gift.code });
+    await writeAudit(req, 'admin.gift.create', 'gift', gift._id.toString(), { code: gift.code });
     res.status(201).json(gift);
   } catch (error) {
     console.error('Gift creation error:', error);
@@ -185,7 +185,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     if (enabled !== undefined) gift.enabled = !!enabled;
 
     await gift.save();
-    writeAudit(req, 'admin.gifts.update', 'gift', gift._id.toString(), { code: gift.code });
+    await writeAudit(req, 'admin.gift.update', 'gift', gift._id.toString(), { code: gift.code });
     res.json(gift);
   } catch (error) {
     console.error('Gift update error:', error);
@@ -199,7 +199,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
     const gift = await Gift.findById(String(req.params.id));
     if (!gift) return res.status(404).json({ error: 'Gift not found' });
     await Gift.findByIdAndDelete(String(req.params.id));
-    writeAudit(req, 'admin.gifts.delete', 'gift', req.params.id, { code: gift.code });
+    await writeAudit(req, 'admin.gift.delete', 'gift', req.params.id, { code: gift.code });
     res.json({ message: 'Gift deleted' });
   } catch (error) {
     console.error('Gift delete error:', error);

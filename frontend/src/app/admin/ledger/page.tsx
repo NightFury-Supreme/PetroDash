@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useToast } from "@/components/ui/ToastProvider";
+import { BookOpen, RefreshCw } from "lucide-react";
+import { ErrorState, DashboardButton, ErrorDescription } from "@/components/ui/ErrorState";
 import { AdminLedgerSkeleton } from "@/components/skeletons/admin/ledger";
 import { AdminLedgerHeader, AdminLedgerContent } from "@/components/admin/ledger";
 import { Pagination } from "@/components/Pagination";
@@ -21,6 +24,7 @@ export default function AdminLedgerPage() {
   const [voiding, setVoiding] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const modal = useModal();
+  const { showSuccess, showError } = useToast();
 
   const load = async (pageToLoad = currentPage) => {
     setError(null);
@@ -99,17 +103,11 @@ export default function AdminLedgerPage() {
         throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`);
       }
       
-      await modal.success({
-        title: "Refund Successful",
-        body: "The payment has been successfully refunded."
-      });
+      showSuccess("The payment has been successfully refunded.");
       
       await load(); // Reload the data
     } catch (e: unknown) {
-      await modal.error({
-        title: "Refund Failed",
-        body: e instanceof Error ? e.message : 'Failed to refund payment'
-      });
+      showError(e instanceof Error ? e.message : 'Failed to refund payment');
     } finally {
       setRefunding(null);
     }
@@ -143,17 +141,11 @@ export default function AdminLedgerPage() {
         throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`);
       }
       
-      await modal.success({
-        title: "Void Successful",
-        body: "The payment has been successfully voided."
-      });
+      showSuccess("The payment has been successfully voided.");
       
       await load(); // Reload the data
     } catch (e: unknown) {
-      await modal.error({
-        title: "Void Failed",
-        body: e instanceof Error ? e.message : 'Failed to void payment'
-      });
+      showError(e instanceof Error ? e.message : 'Failed to void payment');
     } finally {
       setVoiding(null);
     }
@@ -169,7 +161,31 @@ export default function AdminLedgerPage() {
     );
   }
 
-  if (error) throw new Error(error);
+  if (error) {
+    return (
+      <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
+        <ErrorState
+          icon={<BookOpen strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
+          kicker="Load Error"
+          title="Failed to Load Ledger"
+          errorString={error}
+          description={<ErrorDescription error={error} topic="Ledger" />}
+          buttons={
+            <>
+              <button
+                onClick={() => window.location.reload()}
+                className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
+              >
+                <RefreshCw className="w-[14px] h-[14px]" />
+                Retry
+              </button>
+              <DashboardButton variant="secondary" />
+            </>
+          }
+        />
+      </div>
+    );
+  }
 
   return (
     

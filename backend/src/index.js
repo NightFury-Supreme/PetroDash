@@ -32,8 +32,10 @@ app.set('trust proxy', 1);
 const { ensureShopPresets } = require('./lib/shopPresets');
 const { sanitize } = require('./middleware/sanitize');
 const { auditAuto } = require('./middleware/auditAuto');
+const requestIdMiddleware = require('./middleware/requestId');
 
 // Use security headers from security middleware (includes proper CSP)
+app.use(requestIdMiddleware);
 app.use(securityHeaders());
 app.use(express.json({ limit: '1mb' }));
 app.use(compression());
@@ -200,6 +202,10 @@ connectToDatabase()
         // Start background queued servers job
         const { startQueuedServersJob } = require('./jobs/syncQueuedServers');
         startQueuedServersJob();
+        // Start background audit logs pruning job
+        const { startPruneLogsJob } = require('./jobs/pruneAuditLogs');
+        startPruneLogsJob();
+
         app.listen(port, () => {
             console.log(`[PteroDash] Server running on port ${port} (${process.env.NODE_ENV || 'development'})`);
         });

@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useModal } from '@/components/Modal';
+import { useToast } from "@/components/ui/ToastProvider";
 import ServersHeader from '@/components/admin/servers/ServersHeader';
 import AdminServersTable from '@/components/admin/servers/AdminServersTable';
 import { AdminEditServerDrawer } from '@/components/admin/servers/AdminEditServerDrawer';
 import AdminServersSkeleton from '@/components/skeletons/admin/servers/AdminServersSkeleton';
 import { DeleteDrawer } from '@/components/ui/DeleteDrawer';
-import { Search, X, Server, Clock } from 'lucide-react';
+import { Search, X, Server, Clock, RefreshCw } from 'lucide-react';
+import { ErrorState, DashboardButton, ErrorDescription } from '@/components/ui/ErrorState';
 import { AdminServerActiveFilters } from '@/components/admin/servers/AdminServerActiveFilters';
 import { AdminServerFilters } from '@/components/admin/servers/AdminServerFilters';
 import { AdminServerSort } from '@/components/admin/servers/AdminServerSort';
@@ -116,7 +117,7 @@ export default function AdminServersPage() {
   const [totalQueuePages, setTotalQueuePages] = useState(1);
   const [totalQueueServers, setTotalQueueServers] = useState(0);
 
-  const modal = useModal();
+    const { showSuccess, showError } = useToast();
 
   // ── Fetch filter options ──────────────────────────────────────────
   useEffect(() => {
@@ -251,11 +252,11 @@ export default function AdminServersPage() {
         try { errData = await response.json(); } catch {}
         throw new Error(errData.error || 'Failed to delete server');
       }
-      await modal.success({ title: 'Server Deleted', body: `Server "${deletingServerDrawer.name}" has been deleted successfully.` });
+      showSuccess(`Server "${deletingServerDrawer.name}" has been deleted successfully.`);
       loadServers();
       setDeletingServerDrawer(null);
     } catch (err: any) {
-      await modal.error({ title: 'Error', body: err.message });
+      showError(err.message);
       throw err;
     } finally {
       setDeleting(null);
@@ -281,7 +282,7 @@ export default function AdminServersPage() {
       loadQueue();
       setDeletingQueueServer(null);
     } catch (err: any) {
-      await modal.error({ title: 'Error', body: err.message });
+      showError(err.message);
       throw err;
     } finally {
       setIsDeletingQueue(null);
@@ -310,12 +311,36 @@ export default function AdminServersPage() {
         loadQueue();
         setConfirmingClearQueue(false);
       } catch (err: any) {
-        await modal.error({ title: 'Error', body: err.message });
+        showError(err.message);
         throw err;
       }
     };
 
-    if (error) throw new Error(error);
+    if (error) {
+      return (
+        <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
+          <ErrorState
+            icon={<Server strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
+            kicker="Load Error"
+            title="Failed to Load Servers"
+            errorString={error}
+          description={<ErrorDescription error={error} topic="Servers" />}
+            buttons={
+              <>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
+                >
+                  <RefreshCw className="w-[14px] h-[14px]" />
+                  Retry
+                </button>
+                <DashboardButton variant="secondary" />
+              </>
+            }
+          />
+        </div>
+      );
+    }
 
   const activeFilterCount = [locationFilter !== 'all', eggFilter !== 'all'].filter(Boolean).length;
   const clearFilters = () => { setLocationFilter('all'); setEggFilter('all'); };

@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import { useToast } from "@/components/ui/ToastProvider";
 import { useModal } from "@/components/Modal";
 import { ShieldAlert } from "lucide-react";
 
 export function SecurityTab({ ban, userId, onRefresh }: any) {
   const modal = useModal();
+  const { showSuccess, showError } = useToast();
   const [showBanModal, setShowBanModal] = useState(false);
   const [banForm, setBanForm] = useState({ reason: '', durationMinutes: undefined as number | undefined });
   const [banning, setBanning] = useState(false);
@@ -24,7 +26,7 @@ export function SecurityTab({ ban, userId, onRefresh }: any) {
       setShowBanModal(false);
       onRefresh();
     } catch {
-      modal.error({ title: 'Failed', body: 'Failed to ban user' });
+      showError('Failed to ban user');
     } finally {
       setBanning(false);
     }
@@ -43,7 +45,7 @@ export function SecurityTab({ ban, userId, onRefresh }: any) {
       if (!r.ok) throw new Error('Failed');
       onRefresh();
     } catch {
-      modal.error({ title: 'Failed', body: 'Failed to unban user' });
+      showError('Failed to unban user');
     } finally {
       setBanning(false);
     }

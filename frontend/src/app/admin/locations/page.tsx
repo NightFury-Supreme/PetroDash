@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, X, Globe, Plus } from 'lucide-react';
+import { Search, X, Globe, Plus, MapPin, RefreshCw } from 'lucide-react';
+import { ErrorState, DashboardButton, ErrorDescription } from '@/components/ui/ErrorState';
 import LocationList from '@/components/admin/locations/LocationList';
 import { CreateLocationDrawer } from '@/components/admin/locations/CreateLocationDrawer';
 import { EditLocationDrawer } from '@/components/admin/locations/EditLocationDrawer';
@@ -55,7 +56,31 @@ export default function LocationsPage() {
     fetchLocations();
   };
 
-  if (error) throw new Error(error);
+  if (error) {
+    return (
+      <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
+        <ErrorState
+          icon={<MapPin strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
+          kicker="Load Error"
+          title="Failed to Load Locations"
+          errorString={error}
+          description={<ErrorDescription error={error} topic="Locations" />}
+          buttons={
+            <>
+              <button
+                onClick={() => window.location.reload()}
+                className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
+              >
+                <RefreshCw className="w-[14px] h-[14px]" />
+                Retry
+              </button>
+              <DashboardButton variant="secondary" />
+            </>
+          }
+        />
+      </div>
+    );
+  }
 
   if (loading) return <AdminLocationsSkeleton />;
 

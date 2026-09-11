@@ -42,6 +42,10 @@ export function SupportTab({ stats, currency }: any) {
           <PanelHeader kicker="CURRENT STATE" title="Ticket distribution" description="Current status breakdown." />
           <div className="flex flex-col sm:flex-row items-center gap-8 mt-4">
             <div className="relative h-40 w-40 shrink-0">
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-[#888] text-xs">
+                <strong className="text-2xl font-semibold text-[#eee] leading-none mb-1">{stats.metrics?.totalTickets || 0}</strong>
+                tickets
+              </div>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie data={stats.ticketLifecycle || []} dataKey="value" innerRadius={58} outerRadius={80} paddingAngle={3} stroke="none">
@@ -52,10 +56,6 @@ export function SupportTab({ stats, currency }: any) {
                   <Tooltip content={<ChartTooltip currency={currency} />} />
                 </PieChart>
               </ResponsiveContainer>
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <strong className="text-2xl font-semibold text-[#eee]">{stats.metrics?.totalTickets || 0}</strong>
-                <span>tickets</span>
-              </div>
             </div>
             <div className="flex w-full flex-col gap-4">
               {(stats.ticketLifecycle || []).map((item: any) => (
@@ -79,7 +79,11 @@ export function SupportTab({ stats, currency }: any) {
               <LineChart data={stats.responseData || []}>
                 <CartesianGrid stroke="#1b1b1b" vertical={false} />
                 <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: "#555", fontSize: 9 }} />
-                <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: "#555", fontSize: 9 }} tickFormatter={(v: number) => v >= 60 ? `${(v / 60).toFixed(0)}h` : `${v}m`} />
+                <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: "#555", fontSize: 9 }} tickFormatter={(v: number) => {
+                  if (v >= 1440) return `${(v / 1440).toFixed(0)}d`;
+                  if (v >= 60) return `${(v / 60).toFixed(0)}h`;
+                  return `${v}m`;
+                }} />
                 <Tooltip content={<ChartTooltip currency={currency} />} />
                 <Line type="monotone" dataKey="response" name="First response" stroke={COLORS.primary} strokeWidth={2} dot={false} />
                 <Line type="monotone" dataKey="resolution" name="Resolution" stroke={COLORS.blue} strokeWidth={2} dot={false} />

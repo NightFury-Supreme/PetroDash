@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const { requireAdmin } = require('../../middleware/auth');
 const Server = require('../../models/Server');
 const User = require('../../models/User');
-const { writeAudit } = require('../../middleware/audit');
 const { z } = require('zod');
 const { updateServerBuild, getServer, updateServerDetails } = require('../../services/pterodactyl');
 const { hasServerLimitsChanged } = require('../../utils/security');
@@ -322,6 +321,9 @@ router.delete('/queue/clear', requireAdmin, async (req, res) => {
     await deleteCachePattern('api:admin:servers:*');
     await deleteCache('eggs:counts');
 
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.server.queue.clear', 'server', null, { deletedCount: result.deletedCount });
+
     res.json({ success: true, count: result.deletedCount, message: `Successfully cleared ${result.deletedCount} servers from the queue.` });
   } catch (error) {
     console.error('Failed to clear queue:', error);
@@ -547,7 +549,8 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     await server.save();
     
     // Audit log
-    writeAudit(req, 'admin.servers:update', 'server', server._id.toString(), { 
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.server.update', 'server', server._id.toString(), { 
       serverId: server._id.toString(), 
       serverName: server.name,
       changes: Object.keys(diffs).length > 0 ? { limits: diffs } : undefined
@@ -622,7 +625,8 @@ router.delete('/:id', requireAdmin, async (req, res) => {
     await Server.findByIdAndDelete(String(req.params.id));
 
     // Audit log
-    writeAudit(req, 'admin.servers:delete', 'server', server._id.toString(), {
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.server.delete', 'server', server._id.toString(), {
       serverId: server._id.toString(),
       serverName: server.name,
       ownerId: server.owner?.toString(),

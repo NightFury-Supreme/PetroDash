@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ShoppingCart, CreditCard } from "lucide-react";
+import { ShoppingCart, CreditCard, ShoppingBag, RefreshCw } from "lucide-react";
+import { ErrorState, DashboardButton, ErrorDescription } from "@/components/ui/ErrorState";
 import ShopSkeleton from "@/components/skeletons/shop/ShopSkeleton";
 import { useToast } from "@/components/ui/ToastProvider";
 import { useShop } from "@/hooks/useShop";
@@ -213,8 +214,26 @@ export default function StorePage() {
   if (!bootstrapDone) return <ShopSkeleton />;
   if (error) {
     return (
-      <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans flex items-center justify-center">
-        <p className="text-[#888]">Failed to load store. Please try again later.</p>
+      <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
+        <ErrorState
+          icon={<ShoppingBag strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
+          kicker="Load Error"
+          title="Failed to Load Shop"
+          errorString={error}
+          description={<ErrorDescription error={error} topic="Shop" />}
+          buttons={
+            <>
+              <button
+                onClick={() => window.location.reload()}
+                className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
+              >
+                <RefreshCw className="w-[14px] h-[14px]" />
+                Retry
+              </button>
+              <DashboardButton variant="secondary" />
+            </>
+          }
+        />
       </div>
     );
   }

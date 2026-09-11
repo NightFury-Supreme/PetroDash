@@ -11,7 +11,8 @@ import { TicketPagination } from "@/components/tickets/TicketPagination";
 import { TicketCategoryFilter } from "@/components/tickets/TicketCategoryFilter";
 import { TicketSort } from "@/components/tickets/TicketSort";
 import { API_BASE, getToken } from "@/components/tickets/utils";
-import { Search, X } from "lucide-react";
+import { Search, X, MessageSquare, RefreshCw } from "lucide-react";
+import { ErrorState, DashboardButton, ErrorDescription } from "@/components/ui/ErrorState";
 
 const PAGE_SIZE = 25;
 
@@ -139,8 +140,26 @@ export default function AdminTicketsPage() {
 
   if (error) {
     return (
-      <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans flex items-center justify-center">
-        <p className="text-[#888]">Failed to load content. Please try again later.</p>
+      <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
+        <ErrorState
+          icon={<MessageSquare strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
+          kicker="Load Error"
+          title="Failed to Load Tickets"
+          errorString={error}
+          description={<ErrorDescription error={error} topic="Tickets" />}
+          buttons={
+            <>
+              <button
+                onClick={() => window.location.reload()}
+                className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
+              >
+                <RefreshCw className="w-[14px] h-[14px]" />
+                Retry
+              </button>
+              <DashboardButton variant="secondary" />
+            </>
+          }
+        />
       </div>
     );
   }

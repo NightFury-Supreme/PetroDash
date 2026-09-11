@@ -34,6 +34,22 @@ async function logUserActivity(req, action, metadata = {}, explicitUserId = null
       userAgent,
       metadata: safeMetadata
     });
+
+    // Also mirror this user activity directly into the global Admin AuditLog 
+    // so admins can see all user actions seamlessly! (Skip if already logged manually)
+    if (req && req.res) {
+      // Attach to the end of the request to perfectly deduplicate with manual writeAudits
+      req.res.on('finish', () => {
+        if (req._auditLogged) return;
+        try {
+          const { writeAudit } = require('./audit');
+          const resourceType = action.split('.')[0] || 'user';
+          // Mark to prevent auditAuto from logging a duplicate
+          req._auditLogged = true;
+          writeAudit(req, action, resourceType, metadata?.resourceId || userId, safeMetadata).catch(() => {});
+        } catch (auditErr) {}
+      });
+    }
   } catch (error) {
     // Fail silently in production to avoid crashing the request
     console.error('Error logging user activity:', error);

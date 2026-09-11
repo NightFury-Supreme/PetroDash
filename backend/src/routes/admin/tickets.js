@@ -218,6 +218,10 @@ router.post('/:id/messages', requireAdmin, async (req, res) => {
     await deleteCachePattern(`tickets:admin:detail:${req.params.id}`);
 
     await savedMsg.populate('author', 'username email profilePicture');
+
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.ticket.reply', 'ticket', t._id.toString(), { isInternal, messagePreview: body.substring(0, 50) });
+
     res.json({ ok: true, message: savedMsg, status: t.status });
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (err) {
@@ -294,6 +298,9 @@ router.patch('/:id', requireAdmin, async (req, res) => {
       await deleteCachePattern('tickets:admin:list:*');
       await deleteCachePattern(`tickets:mine:${t.user}:*`);
       await deleteCachePattern(`tickets:admin:detail:${req.params.id}`);
+
+      const { writeAudit } = require('../../middleware/audit');
+      await writeAudit(req, 'admin.ticket.update', 'ticket', t._id.toString(), { status, priority, assignee, deletedByUser });
     }
 
     res.json({ ok: true, status: t.status, priority: t.priority });
@@ -316,6 +323,9 @@ router.delete('/:id', requireAdmin, async (req, res) => {
     if (result.user) await deleteCachePattern(`tickets:mine:${result.user}:*`);
     await deleteCachePattern(`tickets:admin:detail:${req.params.id}`);
     
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.ticket.delete', 'ticket', result._id.toString(), { title: result.title });
+
     res.json({ ok: true });
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (err) {

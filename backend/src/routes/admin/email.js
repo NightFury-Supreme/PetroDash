@@ -92,6 +92,9 @@ router.patch('/', requireAdmin, async (req, res) => {
     await deleteCachePattern('email:settings');
     await deleteCachePattern('api:email:settings');
     
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.email_settings.update', 'settings', emailSettings._id.toString(), {});
+    
     return res.json(serialize(emailSettings, settingsDoc));
   } catch (e) {
     console.error('PATCH /api/admin/email failed:', e);

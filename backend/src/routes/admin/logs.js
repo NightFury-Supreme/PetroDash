@@ -17,6 +17,8 @@ const logsQuerySchema = z.object({
   action: z.string().optional(),
   actorId: z.string().optional(),
   resourceType: z.string().optional(),
+  requestId: z.string().optional(),
+  severity: z.string().optional(),
   sortBy: z.enum(['newest', 'oldest']).optional()
 });
 
@@ -32,7 +34,7 @@ router.get('/', requireAdmin, async (req, res) => {
       });
     }
 
-    const { page, pageSize, action, actorId, resourceType } = parsed.data;
+    const { page, pageSize, action, actorId, resourceType, requestId, severity } = parsed.data;
 
     // Build safe query object
     const query = {};
@@ -55,13 +57,21 @@ router.get('/', requireAdmin, async (req, res) => {
       query.resourceType = { $regex: resourceType.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
     }
 
+    if (requestId && typeof requestId === 'string') {
+      query.requestId = requestId;
+    }
+
+    if (severity && typeof severity === 'string') {
+      query.severity = severity;
+    }
+
     // Calculate pagination
     const limit = pageSize;
     const skip = (page - 1) * limit;
 
     const { getCache, setCache } = require('../../lib/redis');
     const sortByParam = parsed.data.sortBy || 'newest';
-    const cacheKey = `admin:logs:${page}:${pageSize}:${action || ''}:${actorId || ''}:${resourceType || ''}:${sortByParam}`;
+    const cacheKey = `admin:logs:${page}:${pageSize}:${action || ''}:${actorId || ''}:${resourceType || ''}:${requestId || ''}:${severity || ''}:${sortByParam}`;
     const cached = await getCache(cacheKey);
     if (cached) return res.json(cached);
 

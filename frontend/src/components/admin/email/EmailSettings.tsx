@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useToast } from "@/components/ui/ToastProvider";
 import SmtpForm from '@/components/admin/email/SmtpForm';
-import { useModal } from '@/components/Modal';
 import AdminEmailSkeleton from '@/components/skeletons/admin/email/AdminEmailSkeleton';
 
 type Smtp = { host?: string; port?: number; secure?: boolean; user?: string; pass?: string; fromEmail?: string };
@@ -20,7 +20,7 @@ export default function EmailSettings() {
   const [activeTab, setActiveTab] = useState<'smtp'>('smtp');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const token = useMemo(() => (typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null), []);
-  const modal = useModal();
+    const { showSuccess, showError } = useToast();
 
   const load = useCallback(async () => {
     if (!token) return;
@@ -99,10 +99,10 @@ export default function EmailSettings() {
       let d: any = {}; try { d = await r.json(); } catch {}
       if (!r.ok) throw new Error(d?.error || 'Failed to save settings');
       setSettings(d as Settings);
-      await modal.success({ title: 'Settings Saved', body: 'Email settings have been saved successfully.' });
+      showSuccess('Email settings have been saved successfully.');
     } catch (e: any) {
       setError(e?.message || 'Failed to save settings');
-      await modal.error({ title: 'Save Failed', body: e?.message || 'Failed to save email settings.' });
+      showError(e?.message || 'Failed to save email settings.');
     } finally {
       setSaving(false);
     }

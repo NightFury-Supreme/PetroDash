@@ -158,6 +158,11 @@ router.patch('/', requireAdmin, async (req, res) => {
     await settings.save();
     clearSettingsCache();
 
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.earn.update', 'earn_settings', null, {
+      updatedMethods: Object.keys(update)
+    });
+
     return res.json(sanitizeEarn(settings.earn));
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
