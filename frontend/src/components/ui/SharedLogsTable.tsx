@@ -243,7 +243,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
                         return displayActorId ? (
                           <Link 
                             href={`/admin/users/${displayActorId}`}
-                            className="hover:text-[#ff5722] hover:underline transition-colors"
+                            className="text-white/40 hover:text-[#ff5722] hover:underline transition-colors"
                             onClick={(e) => e.stopPropagation()}
                           >
                             {displayActorName}
@@ -293,7 +293,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
               
               {/* Expanded Row Details */}
               {expandedRow === log._id && (
-                <div className="px-5 py-4 bg-[#111] border-y border-[#222] overflow-hidden">
+                <div className="px-5 py-4 bg-[#111] border-y border-[#222] overflow-hidden text-white">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full min-w-0">
                     
                     {/* Request Information */}
