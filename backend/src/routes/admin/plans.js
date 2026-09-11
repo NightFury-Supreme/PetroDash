@@ -156,10 +156,23 @@ router.put('/:id', requireAdmin, validateObjectId('id'), async (req, res) => {
     await plan.save();
     
     const changes = {};
-    for (const [k, v] of Object.entries(validatedData)) {
-      if (JSON.stringify(originalPlan[k]) !== JSON.stringify(v)) changes[k] = { old: originalPlan[k], new: v };
-    }
-    await writeAudit(req, 'admin.plan.update', 'plan', plan._id.toString(), { changes });
+    const newPlan = plan.toObject();
+    
+    const checkDiff = (target, sourceObj, origObj, newObj, prefix = '') => {
+      for (const k of Object.keys(sourceObj || {})) {
+        if (typeof sourceObj[k] === 'object' && sourceObj[k] !== null && !Array.isArray(sourceObj[k])) {
+          checkDiff(target, sourceObj[k], (origObj[k] || {}), (newObj[k] || {}), prefix ? `${prefix}.${k}` : k);
+        } else {
+          const keyName = prefix ? `${prefix}.${k}` : k;
+          if (JSON.stringify(origObj[k]) !== JSON.stringify(newObj[k])) {
+            target[keyName] = { old: origObj[k], new: newObj[k] };
+          }
+        }
+      }
+    };
+    
+    checkDiff(changes, validatedData, originalPlan, newPlan);
+    await writeAudit(req, 'admin.plan.update', 'plan', plan._id.toString(), { changes: Object.keys(changes).length > 0 ? changes : undefined });
     
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:plans');

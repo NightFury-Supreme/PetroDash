@@ -699,6 +699,9 @@ router.post('/:id/plans', requireAdmin, async (req, res) => {
   const { writeAudit } = require('../../middleware/audit');
   await writeAudit(req, 'admin.user.plan.add', 'user_plan', sub._id.toString(), { plan: plan.name, months });
   
+  const { logUserActivity } = require('../../middleware/userActivity');
+  await logUserActivity(null, 'admin.user.plan.add', { plan: plan.name, months, updatedByAdmin: true }, user._id.toString());
+
   const { deleteCachePattern } = require('../../lib/redis');
   await deleteCachePattern('admin:users');
   await deleteCachePattern(`user:${user._id}:plans`);
@@ -744,6 +747,9 @@ router.delete('/:id/plans/:planId', requireAdmin, async (req, res) => {
   const { writeAudit } = require('../../middleware/audit');
   await writeAudit(req, 'admin.user.plan.cancel', 'user_plan', req.params.planId, { userId: req.params.id, planId: req.params.planId, instancesCancelled: subs.length });
 
+  const { logUserActivity } = require('../../middleware/userActivity');
+  await logUserActivity(null, 'admin.user.plan.cancel', { planId: req.params.planId, instancesCancelled: subs.length, updatedByAdmin: true }, req.params.id);
+
   const { deleteCachePattern } = require('../../lib/redis');
   await deleteCachePattern('admin:users');
   await deleteCachePattern(`user:${req.params.id}:plans`);
@@ -783,6 +789,9 @@ router.delete('/:id/plans/instance/:instanceId', requireAdmin, async (req, res) 
   
   const { writeAudit } = require('../../middleware/audit');
   await writeAudit(req, 'admin.user.plan.instance.cancel', 'user_plan', sub._id.toString(), { userId: req.params.id, planId: sub.planId });
+
+  const { logUserActivity } = require('../../middleware/userActivity');
+  await logUserActivity(null, 'admin.user.plan.instance.cancel', { planId: sub.planId, instanceId: sub._id.toString(), updatedByAdmin: true }, req.params.id);
 
   const { deleteCachePattern } = require('../../lib/redis');
   await deleteCachePattern('admin:users');
