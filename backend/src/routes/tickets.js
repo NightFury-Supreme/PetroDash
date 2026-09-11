@@ -112,8 +112,10 @@ router.post('/', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) 
     await deleteCachePattern(`tickets:mine:${userId}:*`);
 
     const { writeAudit } = require('../middleware/audit');
-    await logUserActivity(req, 'ticket.create', { ticketId: ticket._id });
-    await writeAudit(req, 'ticket.create', 'ticket', ticket._id.toString(), { subject: ticket.subject, category: ticket.category });
+    const createdPayload = { created: { subject: ticket.subject, category: ticket.category, priority: ticket.priority } };
+    
+    await logUserActivity(req, 'ticket.create', { ticketId: ticket._id, ...createdPayload });
+    await writeAudit(req, 'ticket.create', 'ticket', ticket._id.toString(), createdPayload);
     res.status(201).json(ticket);
   } catch (err) {
     console.error('Create ticket error:', err);
@@ -351,7 +353,7 @@ router.post('/:id/messages', requireAuth, createRateLimiter(10, 60 * 1000), asyn
   }
 });
 
-// POST /api/tickets/:id/status — user resolves / reopens their ticket
+// POST /api/tickets/:id/status - user resolves / reopens their ticket
 router.post('/:id/status', requireAuth, async (req, res) => {
   try {
     const userId = extractUserId(req);
@@ -362,6 +364,8 @@ router.post('/:id/status', requireAuth, async (req, res) => {
     const t = await Ticket.findById(String(req.params.id));
     if (!t) return res.status(404).json({ error: 'Not found' });
     if (String(t.user) !== String(userId)) return res.status(403).json({ error: 'Forbidden' });
+
+    const oldStatus = t.status;
 
     if (action === 'resolved') {
       if (t.status === 'closed') {
@@ -378,7 +382,6 @@ router.post('/:id/status', requireAuth, async (req, res) => {
       if (activeTicketsCount >= 3) {
         return res.status(429).json({ error: 'You have reached the maximum limit of 3 active tickets. Cannot reopen.' });
       }
-
       t.status = 'open';
       t.closedAt = null;
     } else {
@@ -392,9 +395,11 @@ router.post('/:id/status', requireAuth, async (req, res) => {
     await deleteCachePattern(`tickets:mine:${userId}:*`);
     await deleteCachePattern(`tickets:detail:${req.params.id}`);
     
+    const changes = { status: { old: oldStatus, new: t.status } };
+
     const { writeAudit } = require('../middleware/audit');
-    await logUserActivity(req, 'ticket.status_change', { ticketId: t._id, action });
-    await writeAudit(req, 'ticket.status_change', 'ticket', t._id.toString(), { newStatus: action });
+    await logUserActivity(req, 'ticket.status_change', { ticketId: t._id, changes });
+    await writeAudit(req, 'ticket.status_change', 'ticket', t._id.toString(), { changes });
     res.json({ ok: true, status: t.status });
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (err) {
