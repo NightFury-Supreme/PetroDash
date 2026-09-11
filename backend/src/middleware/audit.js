@@ -2,7 +2,7 @@ const AuditLog = require('../models/AuditLog');
 
 async function writeAudit(reqOrActorId, action, resourceTypeOrDetails, resourceIdOrDetails, detailsOrUndefined) {
   try {
-    let actorId, actorRole, actorUsername, resourceType, resourceId, meta;
+    let actorId, actorRole, actorUsername, resourceType, resourceId, meta, ip, userAgent;
     
     // Handle both function signatures:
     // 1. writeAudit(actorId, action, details)
@@ -17,6 +17,9 @@ async function writeAudit(reqOrActorId, action, resourceTypeOrDetails, resourceI
       resourceType = resourceTypeOrDetails;
       resourceId = resourceIdOrDetails;
       meta = detailsOrUndefined || {};
+      const xForwarded = req.headers['x-forwarded-for'];
+      ip = (Array.isArray(xForwarded) ? xForwarded[0] : xForwarded?.split(',')[0]) || req.socket?.remoteAddress || req.ip;
+      userAgent = req.headers['user-agent'];
     } else {
       // Case 1: writeAudit(actorId, action, details)
       actorId = reqOrActorId;
@@ -42,7 +45,9 @@ async function writeAudit(reqOrActorId, action, resourceTypeOrDetails, resourceI
       resourceId,
       // Avoid logging tokens or raw headers
       meta: sanitizeMeta(meta),
-      success: true
+      success: true,
+      ip,
+      userAgent
     });
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
