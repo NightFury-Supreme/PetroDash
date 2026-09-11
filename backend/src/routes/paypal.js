@@ -1,11 +1,7 @@
-await logUserActivity(req, 'shop.payment.create', { orderId, planId, billingCycle, price: finalPrice });
-      await writeAudit(req, 'shop.payment.create', 'payment', orderId, { planId, billingCycle, price: finalPrice });
-      return res.json({ id: orderId, status: 'CREATED', links, discountAmount: discountAmount || 0 });const express = require('express');
+const express = require('express');
 const { createRateLimiter } = require('../middleware/rateLimit');
 const axios = require('axios');
 const { requireAuth } = require('../middleware/auth');
-const { logUserActivity } = require('../middleware/userActivity');
-const { writeAudit } = require('../middleware/audit');
 const Plan = require('../models/Plan');
  
 const UserPlan = require('../models/UserPlan');
@@ -235,6 +231,8 @@ router.post('/create-order', requireAuth, createRateLimiter(10, 60 * 1000), asyn
       }
     });
 
+    await logUserActivity(req, 'shop.payment.create', { orderId: order.id, planId: plan._id, billingCycle, price: Number(amountStr) });
+    await writeAudit(req, 'shop.payment.create', 'payment', order.id, { planId: plan._id, billingCycle, price: Number(amountStr) });
     return res.json(order);
   } catch (e) {
     console.error('[PayPal] create-order unexpected error:', e.message);
@@ -257,6 +255,8 @@ router.post('/cancel-order', requireAuth, createRateLimiter(20, 60 * 1000), asyn
       await payment.save();
     }
     
+    await logUserActivity(req, 'shop.payment.cancel', { orderId });
+    await writeAudit(req, 'shop.payment.cancel', 'payment', orderId, {});
     return res.json({ success: true });
   } catch (e) {
     console.error('[PayPal] cancel-order error:', e.message);
@@ -324,7 +324,6 @@ router.post('/capture-order', requireAuth, createRateLimiter(10, 60 * 1000), asy
 
     await logUserActivity(req, 'shop.payment.capture', { orderId: sanitizedOrderId, status: 'COMPLETED' });
     await writeAudit(req, 'shop.payment.capture', 'payment', payment._id.toString(), { orderId: sanitizedOrderId, status: 'COMPLETED' });
-
     return res.json({ ok: true, order: captureData, user: { coins: result.user.coins, resources: result.user.resources } });
   } catch (e) {
     console.error('[PayPal] capture-order unexpected error:', e.message);
