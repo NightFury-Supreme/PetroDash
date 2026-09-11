@@ -69,35 +69,72 @@ function formatActionText(action: string) {
   ).join(' ');
 }
 
+function RecursiveDiffViewer({ data, prefix = '' }: { data: any, prefix?: string }) {
+  if (!data || typeof data !== 'object') return null;
+
+  return (
+    <>
+      {Object.entries(data).map(([key, value]: [string, any]) => {
+        const fullKey = prefix ? `${prefix}.${key}` : key;
+        
+        // If it's a diff object { old, new }
+        if (value && typeof value === 'object' && ('old' in value || 'new' in value)) {
+          return (
+            <div key={fullKey} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-2 bg-[#0F0F0F] rounded border border-[#222]">
+              <span className="text-white/50 font-mono text-[10px] sm:w-32 shrink-0 truncate">{fullKey}</span>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full min-w-0">
+                <span className="bg-red-500/10 text-red-400 font-mono text-[10px] px-1.5 py-0.5 rounded break-all">
+                  {JSON.stringify(value.old) ?? 'null'}
+                </span>
+                <span className="text-white/20 hidden sm:inline">➔</span>
+                <span className="bg-green-500/10 text-green-400 font-mono text-[10px] px-1.5 py-0.5 rounded break-all">
+                  {JSON.stringify(value.new) ?? 'null'}
+                </span>
+              </div>
+            </div>
+          );
+        }
+
+        // Handle legacy strings formatted as "A -> B"
+        if (value && typeof value === 'string' && value.includes('->')) {
+           const [oldV, newV] = value.split('->').map(s => s.trim());
+           return (
+            <div key={fullKey} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-2 bg-[#0F0F0F] rounded border border-[#222]">
+              <span className="text-white/50 font-mono text-[10px] sm:w-32 shrink-0 truncate">{fullKey}</span>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full min-w-0">
+                <span className="bg-red-500/10 text-red-400 font-mono text-[10px] px-1.5 py-0.5 rounded break-all">
+                  {oldV}
+                </span>
+                <span className="text-white/20 hidden sm:inline">➔</span>
+                <span className="bg-green-500/10 text-green-400 font-mono text-[10px] px-1.5 py-0.5 rounded break-all">
+                  {newV}
+                </span>
+              </div>
+            </div>
+          );
+        }
+
+        if (value && typeof value === 'object' && !Array.isArray(value)) {
+           return <RecursiveDiffViewer key={fullKey} data={value} prefix={fullKey} />;
+        }
+
+        // Plain value fallback
+        return (
+          <div key={fullKey} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-2 bg-white/[0.02] rounded border border-white/[0.05]">
+            <span className="text-white/40 font-mono text-[10px] sm:w-32 shrink-0 truncate">{fullKey}</span>
+            <span className="text-white/70 font-mono text-[10px] break-all">{typeof value === 'string' ? value : JSON.stringify(value)}</span>
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
 function DiffViewer({ changes }: { changes: any }) {
   if (!changes || typeof changes !== 'object') return null;
   return (
     <div className="flex flex-col gap-2 mt-2">
-      {Object.entries(changes).map(([key, value]: [string, any]) => {
-        if (!value || typeof value !== 'object' || (!('old' in value) && !('new' in value))) {
-          return (
-            <div key={key} className="flex items-start gap-4 p-2 bg-white/[0.02] rounded border border-white/[0.05]">
-              <span className="text-white/40 font-mono text-[10px] w-24 shrink-0 truncate">{key}</span>
-              <span className="text-white/70 font-mono text-xs">{JSON.stringify(value)}</span>
-            </div>
-          );
-        }
-        
-        return (
-          <div key={key} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-2 bg-[#0F0F0F] rounded border border-[#222]">
-            <span className="text-white/50 font-mono text-[10px] sm:w-32 shrink-0 truncate">{key}</span>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full min-w-0">
-              <span className="bg-red-500/10 text-red-400 font-mono text-[10px] px-1.5 py-0.5 rounded break-all">
-                {JSON.stringify(value.old) ?? 'null'}
-              </span>
-              <span className="text-white/20 hidden sm:inline">→</span>
-              <span className="bg-green-500/10 text-green-400 font-mono text-[10px] px-1.5 py-0.5 rounded break-all">
-                {JSON.stringify(value.new) ?? 'null'}
-              </span>
-            </div>
-          </div>
-        );
-      })}
+      <RecursiveDiffViewer data={changes} />
     </div>
   );
 }
@@ -338,7 +375,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
                         </div>
                       )}
 
-                      {Object.keys(rawMeta).length > 0 && (
+                      {variant === 'admin' && Object.keys(rawMeta).length > 0 && (
                         <div>
                           <h4 className="text-[10px] uppercase tracking-widest text-white/40 font-semibold mb-2">Additional Meta</h4>
                           <div className="bg-[#0a0a0a] border border-white/[0.04] rounded-lg p-3">
