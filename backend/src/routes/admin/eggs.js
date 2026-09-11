@@ -143,14 +143,18 @@ router.put('/categories/:id', requireAdmin, async (req, res) => {
     const cat = await EggCategory.findById(req.params.id);
     if (!cat) return res.status(404).json({ error: 'Not found' });
 
-    cat.name = name.trim();
+    const oldName = cat.name;
+    const newName = name.trim();
+    if (oldName === newName) return res.json({ id: cat._id.toString(), name: cat.name });
+
+    cat.name = newName;
     await cat.save();
 
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:eggs*');
 
     const { writeAudit } = require('../../middleware/audit');
-    await writeAudit(req, 'admin.egg_category.update', 'egg_category', cat._id.toString(), { name: cat.name });
+    await writeAudit(req, 'admin.egg_category.update', 'egg_category', cat._id.toString(), { changes: { name: { old: oldName, new: newName } } });
 
     res.json({ id: cat._id.toString(), name: cat.name });
 });
