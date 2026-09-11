@@ -39,6 +39,7 @@ export default function AdminLogsPage() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [pageSize] = useState(50);
+  const [sortBy, setSortBy] = useState('newest');
   const [filters, setFilters] = useState({
     action: '',
     actorId: '',
@@ -46,7 +47,7 @@ export default function AdminLogsPage() {
   });
   const modal = useModal();
 
-  const loadLogs = useCallback(async (pageNum = 1, filterParams = filters) => {
+  const loadLogs = useCallback(async (pageNum = 1, filterParams = filters, sortParam = sortBy) => {
     setError(null);
     setLoading(true);
     try {
@@ -59,6 +60,7 @@ export default function AdminLogsPage() {
       const params = new URLSearchParams();
       params.set('page', pageNum.toString());
       params.set('pageSize', pageSize.toString());
+      params.set('sortBy', sortParam);
       
       if (filterParams.action) params.set('action', filterParams.action);
       if (filterParams.actorId) params.set('actorId', filterParams.actorId);
@@ -78,38 +80,38 @@ export default function AdminLogsPage() {
       setTotal(data.total || 0);
       setPage(data.page || 1);
     } catch (e: unknown) {
-      const errorMessage = e instanceof Error ? e.message : 'Failed to load logs';
-      setError(errorMessage);
-      await modal.error({
-        title: "Failed to Load Logs",
-        body: errorMessage || 'An error occurred while loading the audit logs.'
-      });
+      setError(e instanceof Error ? e.message : 'An unknown error occurred');
+      if (logs.length > 0) {
+        modal.error({ title: 'Error', body: e instanceof Error ? e.message : 'An unknown error occurred' });
+      }
     } finally {
       setLoading(false);
     }
-  }, [pageSize, filters, modal]);
+  }, [pageSize, modal, logs.length]);
 
   useEffect(() => {
-    loadLogs();
+    loadLogs(1, filters, sortBy);
   }, [loadLogs]);
 
   const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-    loadLogs(newPage);
+    loadLogs(newPage, filters, sortBy);
   };
 
-  const handleFilterChange = (key: keyof typeof filters, value: string) => {
+  const handleFilterChange = (key: 'action' | 'actorId' | 'resourceType', value: string) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
-    setPage(1); // Reset to first page when filtering
-    loadLogs(1, newFilters);
+    loadLogs(1, newFilters, sortBy);
   };
 
   const handleClearFilters = () => {
-    const clearedFilters = { action: '', actorId: '', resourceType: '' };
-    setFilters(clearedFilters);
-    setPage(1);
-    loadLogs(1, clearedFilters);
+    const emptyFilters = { action: '', actorId: '', resourceType: '' };
+    setFilters(emptyFilters);
+    loadLogs(1, emptyFilters, sortBy);
+  };
+
+  const handleSortChange = (newSort: string) => {
+    setSortBy(newSort);
+    loadLogs(1, filters, newSort);
   };
 
   if (loading && logs.length === 0) {
@@ -125,9 +127,11 @@ export default function AdminLogsPage() {
             total={0}
             pageSize={pageSize}
             filters={filters}
+            sortBy={sortBy}
             onPageChange={handlePageChange}
             onFilterChange={handleFilterChange}
             onClearFilters={handleClearFilters}
+            onSortChange={handleSortChange}
           />
         </div>
       </div>
@@ -151,9 +155,11 @@ export default function AdminLogsPage() {
           total={total}
           pageSize={pageSize}
           filters={filters}
+          sortBy={sortBy}
           onPageChange={handlePageChange}
           onFilterChange={handleFilterChange}
           onClearFilters={handleClearFilters}
+          onSortChange={handleSortChange}
         />
       </div>
     </div>

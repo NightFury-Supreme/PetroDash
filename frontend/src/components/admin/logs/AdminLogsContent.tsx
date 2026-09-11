@@ -1,4 +1,5 @@
 import { AdminLogsFilters } from './AdminLogsFilters';
+import { AdminLogsSort } from './AdminLogsSort';
 import { AdminLogsError } from './AdminLogsError';
 import { AdminLogsTable } from './AdminLogsTable';
 import { AdminLogsPagination } from './AdminLogsPagination';
@@ -36,9 +37,11 @@ interface AdminLogsContentProps {
     actorId: string;
     resourceType: string;
   };
+  sortBy: string;
   onPageChange: (page: number) => void;
   onFilterChange: (key: 'action' | 'actorId' | 'resourceType', value: string) => void;
   onClearFilters: () => void;
+  onSortChange: (sort: string) => void;
 }
 
 export function AdminLogsContent({
@@ -49,21 +52,34 @@ export function AdminLogsContent({
   total,
   pageSize,
   filters,
+  sortBy,
   onPageChange,
   onFilterChange,
-  onClearFilters
+  onClearFilters,
+  onSortChange
 }: AdminLogsContentProps) {
   const totalPages = Math.ceil(total / pageSize);
 
   return (
     <>
-      {/* Filters */}
-      <AdminLogsFilters
-        filters={filters}
-        onFilterChange={onFilterChange}
-        onClearFilters={onClearFilters}
-        loading={loading}
-      />
+      {/* Filters and Sort */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-[10px] w-full">
+        <div className="flex-1 w-full">
+          <AdminLogsFilters
+            filters={filters}
+            onFilterChange={onFilterChange}
+            onClearFilters={onClearFilters}
+            loading={loading}
+          />
+        </div>
+        <div className="mt-[25px] flex-shrink-0">
+          <AdminLogsSort 
+            sortBy={sortBy} 
+            setSortBy={onSortChange} 
+            loading={loading} 
+          />
+        </div>
+      </div>
 
       {/* Error Display */}
       <AdminLogsError error={error} />

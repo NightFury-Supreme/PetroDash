@@ -16,7 +16,8 @@ const logsQuerySchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(200).default(50),
   action: z.string().optional(),
   actorId: z.string().optional(),
-  resourceType: z.string().optional()
+  resourceType: z.string().optional(),
+  sortBy: z.enum(['newest', 'oldest']).optional()
 });
 
 // GET /api/admin/logs
@@ -59,14 +60,18 @@ router.get('/', requireAdmin, async (req, res) => {
     const skip = (page - 1) * limit;
 
     const { getCache, setCache } = require('../../lib/redis');
-    const cacheKey = `admin:logs:${page}:${pageSize}:${action || ''}:${actorId || ''}:${resourceType || ''}`;
+    const sortByParam = parsed.data.sortBy || 'newest';
+    const cacheKey = `admin:logs:${page}:${pageSize}:${action || ''}:${actorId || ''}:${resourceType || ''}:${sortByParam}`;
     const cached = await getCache(cacheKey);
     if (cached) return res.json(cached);
+
+    // Determine sort object
+    const sortObj = sortByParam === 'oldest' ? { createdAt: 1 } : { createdAt: -1 };
 
     // Execute queries with proper error handling
     const [list, total] = await Promise.all([
       AuditLog.find(query)
-        .sort({ createdAt: -1 })
+        .sort(sortObj)
         .skip(skip)
         .limit(limit)
         .lean()
