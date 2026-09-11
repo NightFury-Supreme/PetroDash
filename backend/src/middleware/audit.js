@@ -168,7 +168,7 @@ async function writeAudit(reqOrActorId, action, resourceTypeOrDetails, resourceI
     // Push to memory queue for async batching
     logQueue.push(logEntry);
     
-  } catch (error) {
+  } catch (_) {
     // Audit log error logged silently for production
   }
 }

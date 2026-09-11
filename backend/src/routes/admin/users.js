@@ -397,6 +397,9 @@ router.post('/:id/ban', requireAdmin, async (req, res) => {
   await user.save();
   const { writeAudit } = require('../../middleware/audit');
   await writeAudit(req, isBanned ? 'admin.user.ban' : 'admin.user.unban', 'user', user._id.toString(), { reason: user.ban.reason, until: user.ban.until });
+  
+  const { logUserActivity } = require('../../middleware/userActivity');
+  await logUserActivity(null, isBanned ? 'admin.user.ban' : 'admin.user.unban', { reason: user.ban.reason, until: user.ban.until }, user._id.toString());
 
   const { deleteCachePattern } = require('../../lib/redis');
   await deleteCachePattern('admin:users');

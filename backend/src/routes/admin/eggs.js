@@ -126,7 +126,7 @@ router.post('/categories', requireAdmin, async (req, res) => {
         await deleteCachePattern('admin:eggs:categories');
         
         const { writeAudit } = require('../../middleware/audit');
-        await writeAudit(req, 'admin.egg_category.create', 'egg_category', cat._id.toString(), { name: cat.name });
+        await writeAudit(req, 'admin.egg_category.create', 'egg_category', cat._id.toString(), { created: { name: cat.name } });
         
         res.json({ id: cat._id.toString(), name: cat.name, eggCount: 0 });
     } catch (e) {

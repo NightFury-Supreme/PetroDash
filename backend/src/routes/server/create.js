@@ -286,15 +286,24 @@ router.post('/', requireAuth, async (req, res) => {
       serverName: name, 
       serverId: panelServer?.id, 
       dbId: created._id.toString(),
-      ...limits 
+      created: {
+        serverName: name,
+        serverId: panelServer?.id,
+        ...limits 
+      }
     });
 
     writeAudit(req, 'server.create', 'server', created._id.toString(), {
       serverName: created.name,
       eggId: created.eggId,
       locationId: created.locationId,
-      limits: created.limits,
-      panelServerId: panelServer?.id
+      panelServerId: panelServer?.id,
+      created: {
+        serverName: created.name,
+        eggId: created.eggId,
+        locationId: created.locationId,
+        limits: created.limits
+      }
     });
 
     // 12. Send confirmation email (non-blocking, failure is not fatal)

@@ -69,7 +69,8 @@ router.post('/create', requireAuth, async (req, res) => {
     await deleteCachePattern(`gifts:mine:${userId}*`);
 
     const changes = { coins: { old: user.coins + totalCost, new: user.coins } };
-    await logUserActivity(req, 'gift.create', { coins: coinsNum, maxRedemptions: maxRed, changes });
+    const created = { code: gift.code, coins: coinsNum, maxRedemptions: maxRed, validUntil: gift.validUntil };
+    await logUserActivity(req, 'gift.create', { coins: coinsNum, maxRedemptions: maxRed, changes, created });
     return res.status(201).json({ code: gift.code, coins: coinsNum, maxRedemptions: gift.maxRedemptions, validUntil });
   } catch (error) {
     console.error('Create gift error:', error);
