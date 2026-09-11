@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, SlidersHorizontal, ChevronDown, X, Loader2 } from 'lucide-react';
+import { Search, SlidersHorizontal, ChevronDown, X,  } from 'lucide-react';
 
 function CustomDropdown({
   value,

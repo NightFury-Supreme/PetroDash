@@ -1,14 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useModal } from "@/components/Modal";
 import { useEarn } from "@/hooks/useEarn";
-import { EarnMethodCard } from "@/components/earn";
-import { Link as LinkIcon } from "lucide-react";
-
+import { EarnHeader, EarnList } from "@/components/earn";
+import { EarnSkeleton } from "@/components/skeletons/earn/EarnSkeleton";
 function EarnContent() {
-  const router = useRouter();
   const modal = useModal();
   const searchParams = useSearchParams();
   const lvSid = searchParams.get("lvSid");
@@ -17,7 +15,7 @@ function EarnContent() {
   const didAutoClaim = useRef(false);
 
   const { data, loading, error, setError, refresh, start, claim, starting } = useEarn();
-  const [lastLvUrl, setLastLvUrl] = useState<string | null>(null);
+  
   const [pendingLvSid, setPendingLvSid] = useState<string | null>(null);
 
   const lvUrlKey = (sessionId: string) => `earn_lv_url_${sessionId}`;
@@ -49,12 +47,12 @@ function EarnContent() {
   useEffect(() => {
     const sid = data?.status?.linkvertise?.sessionId;
     if (!sid) {
-      setLastLvUrl(null);
+      
       return;
     }
     try {
       const url = localStorage.getItem(lvUrlKey(sid));
-      if (url) setLastLvUrl(url);
+      
     // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_) {}
   }, [data?.status?.linkvertise?.sessionId]);
@@ -139,7 +137,7 @@ function EarnContent() {
 
       const r = await start(method);
       if (method === "linkvertise" && r?.linkvertise?.url) {
-        setLastLvUrl(r.linkvertise.url);
+        
         try {
           window.location.assign(r.linkvertise.url);
         // eslint-disable-next-line unused-imports/no-unused-vars
@@ -163,128 +161,23 @@ function EarnContent() {
     }
   };
 
-  const cols = "lg:grid-cols-[2fr_100px_100px_120px_150px]";
-
+  
   if (loading) {
     return <EarnSkeleton />;
   }
 
   return (
-    
-      <div className="p-4 sm:p-6 bg-[#0f0f0f] min-h-screen text-white">
-        <div className="flex flex-col h-full space-y-6">
-          <header>
-            <div className="flex items-start justify-between gap-6">
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight text-[#FF5722]">Earn</h1>
-                <p className="mt-1 text-sm text-white/40">
-                  Watch rewarded videos and complete tasks to earn coins.
-                </p>
-              </div>
-            </div>
-          </header>
-
-        {!canShow && (
-          <div className="bg-[#181818] border border-[#2a2a2a] rounded-2xl p-6">
-            <div className="text-white font-semibold">Earn is currently disabled</div>
-            <div className="text-[#AAAAAA] text-sm mt-1">Ask an admin to enable earning methods.</div>
-          </div>
-        )}
-
-        {canShow && data?.config && data?.status && (
-          <div className="w-full">
-            {/* TABLE HEADER (Desktop) */}
-            <div className={`hidden gap-4 lg:grid ${cols} border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30`}>
-              <span>Method</span>
-              <span>Reward</span>
-              <span>Daily Limit</span>
-              <span>Cooldown</span>
-              <span className="text-right">Action</span>
-            </div>
-
-            {/* TABLE LIST */}
-            <div className="divide-y divide-white/[0.06]">
-            {!showLinkvertise && (
-              <div className="py-12 text-center">
-                <div className="text-white font-semibold">No earning methods enabled</div>
-                <div className="text-[#AAAAAA] text-sm mt-1">Ask an admin to enable at least one earning method.</div>
-              </div>
-            )}
-
-            {showLinkvertise && (
-              <EarnMethodCard
-                method="linkvertise"
-                title="Linkvertise"
-                icon={<LinkIcon size={20} />}
-                config={data.config.linkvertise}
-                status={data.status.linkvertise}
-                starting={starting === "linkvertise"}
-                onStart={() => onStart("linkvertise")}
-                cols={cols}
-              />
-            )}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-export function EarnSkeleton() {
-  const cols = "lg:grid-cols-[2fr_100px_100px_120px_150px]";
-  return (
     <div className="p-4 sm:p-6 bg-[#0f0f0f] min-h-screen text-white">
       <div className="flex flex-col h-full space-y-6">
-        <header>
-          <div className="flex items-start justify-between gap-6">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-[#FF5722]">Earn</h1>
-              <p className="mt-1 text-sm text-white/40">
-                Watch rewarded videos and complete tasks to earn coins.
-              </p>
-            </div>
-          </div>
-        </header>
-        <div className="w-full">
-          <div className={`hidden gap-4 lg:grid ${cols} border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30`}>
-            <span>Method</span>
-            <span>Reward</span>
-            <span>Daily Limit</span>
-            <span>Cooldown</span>
-            <span className="text-right">Action</span>
-          </div>
-          <div className="divide-y divide-white/[0.06]">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className={`group grid grid-cols-1 gap-4 px-5 py-5 transition hover:bg-white/[0.015] ${cols} lg:items-center`}>
-                <div className="min-w-0 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-white/5 animate-pulse shrink-0" />
-                  <div className="flex flex-col gap-2 w-full">
-                    <div className="h-4 w-24 sm:w-32 bg-white/5 rounded animate-pulse" />
-                    <div className="h-3 w-32 sm:w-48 bg-white/5 rounded animate-pulse" />
-                  </div>
-                </div>
-                <div className="min-w-0">
-                  <p className="mb-2 h-2 w-12 bg-white/5 rounded animate-pulse lg:hidden" />
-                  <div className="h-4 w-16 bg-white/5 rounded animate-pulse" />
-                </div>
-                <div className="min-w-0">
-                  <p className="mb-2 h-2 w-16 bg-white/5 rounded animate-pulse lg:hidden" />
-                  <div className="h-4 w-12 bg-white/5 rounded animate-pulse" />
-                </div>
-                <div className="min-w-0">
-                  <p className="mb-2 h-2 w-16 bg-white/5 rounded animate-pulse lg:hidden" />
-                  <div className="h-4 w-16 bg-white/5 rounded animate-pulse" />
-                </div>
-                <div className="min-w-0 lg:text-right mt-2 lg:mt-0">
-                  <div className="flex flex-wrap lg:justify-end gap-2">
-                    <div className="h-7 w-20 bg-white/5 rounded-md animate-pulse" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <EarnHeader />
+        
+        <EarnList 
+          canShow={canShow} 
+          data={data} 
+          showLinkvertise={showLinkvertise} 
+          starting={starting} 
+          onStart={onStart} 
+        />
       </div>
     </div>
   );
