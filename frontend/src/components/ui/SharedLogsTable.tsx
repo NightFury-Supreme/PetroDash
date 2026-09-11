@@ -293,8 +293,8 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
               
               {/* Expanded Row Details */}
               {expandedRow === log._id && (
-                <div className="px-5 py-4 bg-[#111] border-y border-[#222]">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="px-5 py-4 bg-[#111] border-y border-[#222] overflow-hidden">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full min-w-0">
                     
                     {/* Request Information */}
                     <div className="space-y-4">
@@ -356,11 +356,11 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
                     </div>
 
                     {/* Meta Data */}
-                    <div className="space-y-4">
+                    <div className="space-y-4 min-w-0">
                       {hasChanges && (
                         <div className="mb-4">
                           <h4 className="text-[10px] uppercase tracking-widest text-white/40 font-semibold mb-2">Value Changes</h4>
-                          <div className="bg-[#0a0a0a] border border-white/[0.04] rounded-lg p-3">
+                          <div className="bg-[#0a0a0a] border border-white/[0.04] rounded-lg p-3 overflow-hidden">
                             <DiffViewer changes={actualMeta.changes} />
                           </div>
                         </div>

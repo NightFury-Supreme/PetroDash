@@ -17,13 +17,14 @@ router.get('/', requireAuth, async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .select('action ip userAgent createdAt metadata');
+      .select('_id action ip userAgent createdAt metadata');
 
     const total = await UserActivityLog.countDocuments(filter);
 
     res.json({
       success: true,
       data: logs.map(log => ({
+        _id: log._id.toString(),
         action: log.action,
         ip: log.ip,
         userAgent: log.userAgent,
