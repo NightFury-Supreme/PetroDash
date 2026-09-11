@@ -154,32 +154,67 @@ router.post('/', requireAdmin, async (req, res) => {
   }
 });
 
-// PATCH /api/admin/gifts/:id
-router.patch('/:id', requireAdmin, async (req, res) => {
+// PUT /api/admin/gifts/:id
+router.put('/:id', requireAdmin, async (req, res) => {
   try {
     const gift = await Gift.findById(String(req.params.id));
     if (!gift) return res.status(404).json({ error: 'Gift not found' });
     
     const originalGift = gift.toObject();
 
-    const { code, type, value, maxUses, expiresAt, enabled } = req.body;
-    if (code) gift.code = code;
-    if (type) gift.type = type;
-    if (value !== undefined) gift.value = value;
-    if (maxUses !== undefined) gift.maxUses = maxUses;
-    if (expiresAt !== undefined) gift.expiresAt = expiresAt ? new Date(expiresAt) : null;
+    const { code, description, rewards, maxRedemptions, validFrom, validUntil, enabled } = req.body;
+    if (code !== undefined) gift.code = code.toUpperCase();
+    if (description !== undefined) gift.description = description;
+    if (maxRedemptions !== undefined) gift.maxRedemptions = Math.max(0, parseInt(maxRedemptions));
+    if (validFrom !== undefined) gift.validFrom = validFrom ? new Date(validFrom) : null;
+    if (validUntil !== undefined) gift.validUntil = validUntil ? new Date(validUntil) : null;
     if (enabled !== undefined) gift.enabled = !!enabled;
+    
+    if (rewards !== undefined) {
+      if (!gift.rewards) gift.rewards = {};
+      if (rewards.coins !== undefined) gift.rewards.coins = Math.max(0, parseInt(rewards.coins));
+      if (rewards.resources) {
+        if (!gift.rewards.resources) gift.rewards.resources = {};
+        for (const [rk, rv] of Object.entries(rewards.resources)) {
+          gift.rewards.resources[rk] = Math.max(0, parseInt(rv || 0));
+        }
+      }
+      if (rewards.planIds) gift.rewards.planIds = rewards.planIds;
+    }
 
     await gift.save();
 
+    const newGift = gift.toObject();
     const changes = {};
-    for (const [k, v] of Object.entries(req.body)) {
-      if (JSON.stringify(originalGift[k]) !== JSON.stringify(v)) {
-        changes[k] = { old: originalGift[k], new: v };
-      }
-    }
 
-    await writeAudit(req, 'admin.gift.update', 'gift', gift._id.toString(), { changes });
+    const checkDiff = (target, sourceObj, origObj, newObj, prefix = '') => {
+      for (const k of Object.keys(sourceObj || {})) {
+        if (typeof sourceObj[k] === 'object' && sourceObj[k] !== null && !Array.isArray(sourceObj[k])) {
+          checkDiff(target, sourceObj[k], (origObj[k] || {}), (newObj[k] || {}), prefix ? `${prefix}.${k}` : k);
+        } else {
+          const keyName = prefix ? `${prefix}.${k}` : k;
+          if (JSON.stringify(origObj[k]) !== JSON.stringify(newObj[k])) {
+            target[keyName] = { old: origObj[k], new: newObj[k] };
+          }
+        }
+      }
+    };
+    
+    // We compare what was passed in req.body against the updated representation to build flat diffs
+    checkDiff(changes, req.body, originalGift, newGift);
+
+    await writeAudit(req, 'admin.gift.update', 'gift', gift._id.toString(), { changes: Object.keys(changes).length > 0 ? changes : undefined });
+    
+    if (gift.source === 'user' && gift.createdBy) {
+      const { logUserActivity } = require('../../middleware/userActivity');
+      await logUserActivity(null, 'admin.gift.update', {
+        giftId: gift._id.toString(),
+        code: gift.code,
+        updatedByAdmin: true,
+        changes: Object.keys(changes).length > 0 ? changes : undefined
+      }, gift.createdBy.toString());
+    }
+    
     res.json(gift);
   } catch (error) {
     console.error('Gift update error:', error);
