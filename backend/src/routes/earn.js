@@ -754,6 +754,7 @@ router.post('/:method/start', requireAuth, async (req, res) => {
     }
 
     await logUserActivity(req, 'earn.session.start', { sessionId: session._id, method, rewardCoins: Number(session.rewardCoins || 0) });
+    await writeAudit(req, 'earn.session.start', 'earn', session._id.toString(), { method, rewardCoins: Number(session.rewardCoins || 0) });
 
     const { deleteCachePattern } = require('../lib/redis');
     await deleteCachePattern(`earn:status:${userId}`);

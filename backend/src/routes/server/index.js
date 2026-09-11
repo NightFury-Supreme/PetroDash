@@ -511,6 +511,8 @@ router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10,
     // 6. Audit trail
     const { writeAudit } = require('../../middleware/audit');
     writeAudit(req, 'server.delete', 'server', server._id.toString(), {
+      serverName: server.name,
+      limits: server.limits,
       panelServerId: server.panelServerId,
       forced: isForce,
     });

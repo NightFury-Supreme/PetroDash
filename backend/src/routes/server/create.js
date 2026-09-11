@@ -290,7 +290,11 @@ router.post('/', requireAuth, async (req, res) => {
     });
 
     writeAudit(req, 'server.create', 'server', created._id.toString(), {
-      panelServerId: panelServer?.id,
+      serverName: created.name,
+      eggId: created.eggId,
+      locationId: created.locationId,
+      limits: created.limits,
+      panelServerId: panelServer?.id
     });
 
     // 12. Send confirmation email (non-blocking, failure is not fatal)

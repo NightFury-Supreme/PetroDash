@@ -14,7 +14,8 @@ async function logUserActivity(req, action, metadata = {}, explicitUserId = null
       return; // Cannot log without a user ID
     }
 
-    const ip = req?.headers?.['x-forwarded-for']?.split(',')[0] || req?.socket?.remoteAddress || 'unknown';
+    const xForwarded = req?.headers?.['x-forwarded-for'];
+    const ip = (Array.isArray(xForwarded) ? xForwarded[0] : xForwarded?.split(',')[0]) || req?.socket?.remoteAddress || 'unknown';
     const userAgent = req?.headers?.['user-agent'] || 'unknown';
 
     // Inject session ID if available

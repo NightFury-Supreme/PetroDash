@@ -32,6 +32,8 @@ function auditAuto() {
 
     res.on('finish', async () => {
       try {
+        if (req._auditLogged) return; // Skip if already explicitly logged
+        
         const status = res.statusCode;
         // Log only if request reached the server and was not a 5xx
         const resourceType = (path.split('?')[0] || '').replace(/^\/api\/?/, '').split('/').slice(0, 2).join('.') || 'api';
