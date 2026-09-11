@@ -136,7 +136,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
   return (
     <div className="w-full mt-6">
       {/* TABLE HEADER */}
-      <div className="hidden md:grid grid-cols-[1.5fr_1.5fr_2.5fr_100px_130px_50px] gap-4 px-5 py-3 border-b border-white/[0.06] text-[10px] font-semibold text-white/40 uppercase tracking-widest bg-[#1A1A1A]">
+      <div className="hidden md:grid grid-cols-[1.5fr_1.5fr_2.5fr_100px_130px_50px] gap-4 px-5 pb-3 border-b border-white/[0.06] text-[9px] uppercase tracking-[0.13em] text-white/20">
         <span>Action</span>
         <span>Device / Browser</span>
         <span>Metadata</span>
