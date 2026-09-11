@@ -68,7 +68,8 @@ router.post('/create', requireAuth, async (req, res) => {
     const { deleteCachePattern } = require('../lib/redis');
     await deleteCachePattern(`gifts:mine:${userId}*`);
 
-    await logUserActivity(req, 'gift.create', { coins: coinsNum, maxRedemptions: maxRed });
+    const changes = { coins: { old: user.coins + totalCost, new: user.coins } };
+    await logUserActivity(req, 'gift.create', { coins: coinsNum, maxRedemptions: maxRed, changes });
     return res.status(201).json({ code: gift.code, coins: coinsNum, maxRedemptions: gift.maxRedemptions, validUntil });
   } catch (error) {
     console.error('Create gift error:', error);

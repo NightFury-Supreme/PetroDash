@@ -884,14 +884,14 @@ router.post('/:method/claim', requireAuth, async (req, res) => {
       const userAfter = await User.findByIdAndUpdate(userId, { $inc: { coins: reward } }, { new: true }).lean();
       if (!userAfter) return res.status(404).json({ error: 'User not found' });
 
+      const changes = { coins: { old: coinsBefore, new: Number(userAfter.coins || 0) } };
       await writeAudit(req, 'earn.claim', 'earn', String(locked._id), {
         method,
         rewardCoins: reward,
-        coinsBefore,
-        coinsAfter: Number(userAfter.coins || 0),
+        changes,
         sessionId: String(locked._id),
       });
-      await logUserActivity(req, 'earn.claim', { method, rewardCoins: reward });
+      await logUserActivity(req, 'earn.claim', { method, rewardCoins: reward, changes });
 
       const { deleteCachePattern } = require('../lib/redis');
       await deleteCachePattern(`earn:status:${userId}`);
@@ -953,14 +953,14 @@ router.post('/:method/claim', requireAuth, async (req, res) => {
 
     if (!result) return res.status(500).json({ error: 'Internal server error' });
 
+    const changes = { coins: { old: result.coinsBefore, new: result.coinsAfter } };
     await writeAudit(req, 'earn.claim', 'earn', String(result.sessionId), {
       method,
       rewardCoins: result.rewardCoins,
-      coinsBefore: result.coinsBefore,
-      coinsAfter: result.coinsAfter,
+      changes,
       sessionId: result.sessionId,
     });
-    await logUserActivity(req, 'earn.claim', { method, rewardCoins: result.rewardCoins });
+    await logUserActivity(req, 'earn.claim', { method, rewardCoins: result.rewardCoins, changes });
 
     const { deleteCachePattern } = require('../lib/redis');
     await deleteCachePattern(`earn:status:${userId}`);

@@ -177,11 +177,13 @@ class UserCreationService {
       const { writeAudit } = require('../middleware/audit');
       await writeAudit(user._id.toString(), 'referral.reward.referred', 'referral', referrer._id.toString(), {
         referrerId: referrer._id.toString(),
-        coinsAdded: referredCoins
+        coinsAdded: referredCoins,
+        changes: { coins: { old: user.coins - referredCoins, new: user.coins } }
       });
       await writeAudit(referrer._id.toString(), 'referral.reward.referrer', 'referral', user._id.toString(), {
         referredUserId: user._id.toString(),
-        coinsAdded: referrerCoins
+        coinsAdded: referrerCoins,
+        changes: { coins: { old: referrer.coins || 0, new: (referrer.coins || 0) + referrerCoins } }
       });
     } catch (error) {
       console.error('Failed to grant referral rewards:', error);
