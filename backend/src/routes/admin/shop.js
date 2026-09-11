@@ -77,12 +77,25 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     await deleteCachePattern('admin:shop');
 
     const changes = {};
-    for (const [k, v] of Object.entries(parsed.data)) {
-        if (JSON.stringify(existingItem[k]) !== JSON.stringify(v)) changes[k] = { old: existingItem[k], new: v };
-    }
+    const originalItem = existingItem.toObject();
+    const newItem = updatedItem.toObject();
+
+    const checkDiff = (target, sourceObj, origObj, newObj, prefix = '') => {
+      for (const k of Object.keys(sourceObj || {})) {
+        if (typeof sourceObj[k] === 'object' && sourceObj[k] !== null && !Array.isArray(sourceObj[k])) {
+          checkDiff(target, sourceObj[k], (origObj[k] || {}), (newObj[k] || {}), prefix ? `${prefix}.${k}` : k);
+        } else {
+          const keyName = prefix ? `${prefix}.${k}` : k;
+          if (JSON.stringify(origObj[k]) !== JSON.stringify(newObj[k])) {
+            target[keyName] = { old: origObj[k], new: newObj[k] };
+          }
+        }
+      }
+    };
+    checkDiff(changes, parsed.data, originalItem, newItem);
 
     const { writeAudit } = require('../../middleware/audit');
-    await writeAudit(req, 'admin.shop.update', 'shop_item', existingItem._id.toString(), { changes });
+    await writeAudit(req, 'admin.shop.update', 'shop_item', existingItem._id.toString(), { changes: Object.keys(changes).length > 0 ? changes : undefined });
 
     return res.json(updatedItem);
   } catch (error) {
