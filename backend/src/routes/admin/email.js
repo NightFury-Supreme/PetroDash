@@ -64,6 +64,10 @@ router.patch('/', requireAdmin, async (req, res) => {
     let settingsDoc = await Settings.findOne({});
     if (!settingsDoc) settingsDoc = await Settings.create({});
     
+    // Capture original state for diffs
+    const originalEmail = emailSettings.toObject();
+    const originalSettings = settingsDoc.toObject();
+    
     const { payments, auth } = parsed.data;
 
     if (payments?.smtp) {
@@ -72,7 +76,6 @@ router.patch('/', requireAdmin, async (req, res) => {
         if (value !== undefined) emailSettings.smtp[key] = value;
       }
     }
-
     
     await emailSettings.save();
     
@@ -92,8 +95,33 @@ router.patch('/', requireAdmin, async (req, res) => {
     await deleteCachePattern('email:settings');
     await deleteCachePattern('api:email:settings');
     
+    // Compute flattened diffs for logging
+    const changes = {};
+    const newEmail = emailSettings.toObject();
+    const newSettings = settingsDoc.toObject();
+    
+    const checkDiff = (target, sourceObj, origObj, newObj, prefix = '') => {
+      for (const k of Object.keys(sourceObj || {})) {
+        if (typeof sourceObj[k] === 'object' && sourceObj[k] !== null && !Array.isArray(sourceObj[k])) {
+          checkDiff(target, sourceObj[k], (origObj[k] || {}), (newObj[k] || {}), prefix ? `${prefix}.${k}` : k);
+        } else {
+          const keyName = prefix ? `${prefix}.${k}` : k;
+          if (JSON.stringify(origObj[k]) !== JSON.stringify(newObj[k])) {
+            target[keyName] = { old: origObj[k], new: newObj[k] };
+          }
+        }
+      }
+    };
+
+    if (payments?.smtp) {
+      checkDiff(changes, payments.smtp, originalEmail.smtp || {}, newEmail.smtp || {}, 'smtp');
+    }
+    if (auth && auth.emailVerification !== undefined) {
+      checkDiff(changes, { emailVerification: auth.emailVerification }, originalSettings.auth || {}, newSettings.auth || {}, 'auth');
+    }
+
     const { writeAudit } = require('../../middleware/audit');
-    await writeAudit(req, 'admin.email_settings.update', 'settings', emailSettings._id.toString(), {});
+    await writeAudit(req, 'admin.email_settings.update', 'settings', emailSettings._id.toString(), { changes: Object.keys(changes).length > 0 ? changes : undefined });
     
     return res.json(serialize(emailSettings, settingsDoc));
   } catch (e) {
