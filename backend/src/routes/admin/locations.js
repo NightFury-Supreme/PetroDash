@@ -91,7 +91,7 @@ router.put('/:id', requireAdmin, async (req, res) => {
 
     const changes = {};
     for (const [k, v] of Object.entries(parsed.data)) {
-        if (original[k] !== v) changes[k] = { old: original[k], new: v };
+        if (JSON.stringify(original[k]) !== JSON.stringify(v)) changes[k] = { old: original[k], new: v };
     }
 
     const { writeAudit } = require('../../middleware/audit');
