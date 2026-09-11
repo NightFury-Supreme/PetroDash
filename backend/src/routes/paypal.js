@@ -1,7 +1,11 @@
-const express = require('express');
+await logUserActivity(req, 'shop.payment.create', { orderId, planId, billingCycle, price: finalPrice });
+      await writeAudit(req, 'shop.payment.create', 'payment', orderId, { planId, billingCycle, price: finalPrice });
+      return res.json({ id: orderId, status: 'CREATED', links, discountAmount: discountAmount || 0 });const express = require('express');
 const { createRateLimiter } = require('../middleware/rateLimit');
 const axios = require('axios');
 const { requireAuth } = require('../middleware/auth');
+const { logUserActivity } = require('../middleware/userActivity');
+const { writeAudit } = require('../middleware/audit');
 const Plan = require('../models/Plan');
  
 const UserPlan = require('../models/UserPlan');
@@ -174,6 +178,8 @@ router.post('/create-order', requireAuth, createRateLimiter(10, 60 * 1000), asyn
         return res.status(400).json({ error: result.error });
       }
       
+      await logUserActivity(req, 'shop.payment.capture', { orderId: freeOrderId, status: 'COMPLETED', bypassPaypal: true });
+      await writeAudit(req, 'shop.payment.capture', 'payment', payment._id.toString(), { orderId: freeOrderId, status: 'COMPLETED', bypassPaypal: true });
       return res.json({ id: freeOrderId, status: 'COMPLETED', bypassPaypal: true });
     }
 
@@ -315,6 +321,9 @@ router.post('/capture-order', requireAuth, createRateLimiter(10, 60 * 1000), asy
       }
       return res.status(500).json({ error: result.error });
     }
+
+    await logUserActivity(req, 'shop.payment.capture', { orderId: sanitizedOrderId, status: 'COMPLETED' });
+    await writeAudit(req, 'shop.payment.capture', 'payment', payment._id.toString(), { orderId: sanitizedOrderId, status: 'COMPLETED' });
 
     return res.json({ ok: true, order: captureData, user: { coins: result.user.coins, resources: result.user.resources } });
   } catch (e) {

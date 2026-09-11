@@ -60,7 +60,7 @@ router.post('/purchase', requireAuth, async (req, res) => {
   }
 
   const { writeAudit } = require('../middleware/audit');
-  await writeAudit(req, 'shop.purchase.completed', 'shop', item._id.toString(), {
+  await writeAudit(req, 'shop.purchase', 'shop', item._id.toString(), {
     itemKey,
     quantity,
     totalPrice,
@@ -76,7 +76,7 @@ router.post('/purchase', requireAuth, async (req, res) => {
     resourcesAfter: { ...updatedUser.resources }
   });
   
-  await logUserActivity(req, 'shop.purchase.completed', { itemName: item.name, quantity, totalPrice });
+  await logUserActivity(req, 'shop.purchase', { itemName: item.name, quantity, totalPrice });
 
   await deleteCache(`user:${updatedUser._id}:profile`);
 
