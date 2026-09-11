@@ -272,8 +272,9 @@ router.post('/2fa/enable', requireAuth, async (req, res) => {
       data: { username: user.username, siteName: (await getSettings())?.siteName || 'PteroDash' }
     }).catch(e => console.error('Failed to send 2FA enabled email:', e));
 
-    await logUserActivity(req, 'auth.2fa.enable');
-    await writeAudit(req, 'auth.2fa.enable', 'user_profile', req.user ? (req.user.sub || req.user._id) : null, {});
+    const changes = { tfaEnabled: { old: false, new: true } };
+    await logUserActivity(req, 'auth.2fa.enable', { changes });
+    await writeAudit(req, 'auth.2fa.enable', 'user_profile', req.user ? (req.user.sub || req.user._id) : null, { changes });
     return res.json({ success: true, backupCodes });
   } catch (e) {
     console.error('2FA enable error:', e);
@@ -312,8 +313,9 @@ router.post('/2fa/disable', requireAuth, async (req, res) => {
       data: { username: user.username, siteName: (await getSettings())?.siteName || 'PteroDash' }
     }).catch(e => console.error('Failed to send 2FA disabled email:', e));
 
-    await logUserActivity(req, 'auth.2fa.disable');
-    await writeAudit(req, 'auth.2fa.disable', 'user_profile', req.user ? (req.user.sub || req.user._id) : null, {});
+    const changes = { tfaEnabled: { old: true, new: false } };
+    await logUserActivity(req, 'auth.2fa.disable', { changes });
+    await writeAudit(req, 'auth.2fa.disable', 'user_profile', req.user ? (req.user.sub || req.user._id) : null, { changes });
     return res.json({ success: true });
   } catch (e) {
     console.error('2FA disable error:', e);
@@ -506,8 +508,9 @@ router.post('/profile/email/verify', requireAuth, async (req, res) => {
       }
     }
     
-    await logUserActivity(req, 'auth.email.update', { email });
-    await writeAudit(req, 'auth.email.update', 'user_profile', req.user ? (req.user.sub || req.user._id) : null, { email });
+    const changes = { email: { old: oldEmail, new: email } };
+    await logUserActivity(req, 'auth.email.update', { changes });
+    await writeAudit(req, 'auth.email.update', 'user_profile', req.user ? (req.user.sub || req.user._id) : null, { changes });
     return res.json({ ok: true, email: user.email });
   } catch (e) {
     console.error('Error verifying email change:', e);
@@ -557,8 +560,9 @@ router.patch('/profile/password', requireAuth, async (req, res) => {
       data: { username: user.username, siteName: (await getSettings())?.siteName || 'PteroDash' }
     }).catch(e => console.error('Failed to send passwordChanged email:', e));
     
-    await logUserActivity(req, 'auth.password.update');
-    await writeAudit(req, 'auth.password.update', 'user_profile', req.user ? (req.user.sub || req.user._id) : null, {});
+    const changes = { password: { old: '********', new: '********' } };
+    await logUserActivity(req, 'auth.password.update', { changes });
+    await writeAudit(req, 'auth.password.update', 'user_profile', req.user ? (req.user.sub || req.user._id) : null, { changes });
     return res.json({ ok: true });
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
