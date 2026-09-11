@@ -267,19 +267,20 @@ router.post('/redeem', requireAuth, async (req, res) => {
       if (slotsToAdd) incQuery['resources.serverSlots'] = slotsToAdd;
 
       let updatedUser = user;
+      let changes = {};
       if (Object.keys(incQuery).length > 0) {
         updatedUser = await User.findByIdAndUpdate(user._id, { $inc: incQuery }, { new: true }) || user;
+        
+        if (incQuery.coins) changes.coins = { old: user.coins, new: updatedUser.coins };
+        const diffKeys = ['diskMb', 'memoryMb', 'cpuPercent', 'backups', 'databases', 'allocations', 'serverSlots'];
+        diffKeys.forEach(k => {
+           if (incQuery[`resources.${k}`]) {
+              changes[k] = { old: user.resources[k] || 0, new: updatedUser.resources[k] || 0 };
+           }
+        });
       }
       
-      const metadata = { code: codeUpper };
-      if (coinsToAdd) metadata.coins = coinsToAdd;
-      if (diskToAdd) metadata.diskMb = diskToAdd;
-      if (memToAdd) metadata.memoryMb = memToAdd;
-      if (cpuToAdd) metadata.cpuPercent = cpuToAdd;
-      if (backupsToAdd) metadata.backups = backupsToAdd;
-      if (dbsToAdd) metadata.databases = dbsToAdd;
-      if (allocsToAdd) metadata.allocations = allocsToAdd;
-      if (slotsToAdd) metadata.serverSlots = slotsToAdd;
+      const metadata = { code: codeUpper, changes };
       
       const { writeAudit } = require('../middleware/audit');
       await logUserActivity(req, 'gift.redeem', metadata);
@@ -301,6 +302,10 @@ router.post('/redeem', requireAuth, async (req, res) => {
 
       const user = await User.findById(authUserId).session(session);
       if (!user) throw new Error('NOUSER');
+
+      let changes = {};
+      const oldCoins = user.coins || 0;
+      const oldResources = { ...(user.resources || {}) };
 
       const rewards = gift.rewards || {};
       if (typeof rewards.coins === 'number' && rewards.coins > 0) {
@@ -360,25 +365,25 @@ router.post('/redeem', requireAuth, async (req, res) => {
       }
 
       await user.save({ session });
+      
+      if (user.coins !== oldCoins) changes.coins = { old: oldCoins, new: user.coins };
+      const diffKeys = ['diskMb', 'memoryMb', 'cpuPercent', 'backups', 'databases', 'allocations', 'serverSlots'];
+      diffKeys.forEach(k => {
+         if (user.resources[k] !== oldResources[k]) {
+            changes[k] = { old: oldResources[k] || 0, new: user.resources[k] || 0 };
+         }
+      });
+      
       gift.redeemedCount = (gift.redeemedCount || 0) + 1;
       gift.redemptions = gift.redemptions || [];
       gift.redemptions.push({ user: user._id, redeemedAt: new Date() });
       await gift.save({ session });
-      result = { description: gift.description, rewards: gift.rewards, user: { coins: user.coins, resources: user.resources }, appliedPlans };
+      result = { description: gift.description, rewards: gift.rewards, user: { coins: user.coins, resources: user.resources }, appliedPlans, changes };
     });
     await session.endSession();
-    const metadata = { code: codeUpper };
-    if (result && result.rewards) {
-      if (result.rewards.coins) metadata.coins = result.rewards.coins;
-      const r = result.rewards.resources || {};
-      if (r.diskMb) metadata.diskMb = r.diskMb;
-      if (r.memoryMb) metadata.memoryMb = r.memoryMb;
-      if (r.cpuPercent) metadata.cpuPercent = r.cpuPercent;
-      if (r.backups) metadata.backups = r.backups;
-      if (r.databases) metadata.databases = r.databases;
-      if (r.allocations) metadata.allocations = r.allocations;
-      if (r.serverSlots) metadata.serverSlots = r.serverSlots;
-    }
+    
+    const metadata = { code: codeUpper, changes: result?.changes || {} };
+    
     const { writeAudit } = require('../middleware/audit');
     await logUserActivity(req, 'gift.redeem', metadata);
     await writeAudit(req, 'gift.redeem', 'gift', null, metadata);

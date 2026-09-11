@@ -76,19 +76,9 @@ async function processCapturedPayment(payment, captureData, sanitizedOrderId) {
     return { success: true, alreadyProcessed: true, order: captureData, user };
   }
 
-  // Write audit log using the userId context
+  // Hold off logging audit until we calculate exact resource diffs
   const paymentMeta = claimedPayment.meta || {};
-  await writeAudit(payment.userId.toString(), 'payment.purchase.completed', 'payment', claimedPayment._id.toString(), {
-    provider: claimedPayment.provider,
-    planId: plan._id.toString(),
-    planName: plan.name,
-    amount: claimedPayment.amount,
-    currency: claimedPayment.currency,
-    billingCycle: paymentMeta.billingCycle,
-    isLifetime: paymentMeta.isLifetime,
-    orderId: sanitizedOrderId,
-    userId: payment.userId.toString()
-  });
+  let changes = {};
   
   const mockReq = {
     ip: paymentMeta.ip || 'unknown',
@@ -96,23 +86,7 @@ async function processCapturedPayment(payment, captureData, sanitizedOrderId) {
   };
 
   const amountStr = `${claimedPayment.amount} ${claimedPayment.currency || 'USD'}`;
-  const resourcesAdded = {
-    coins: plan.productContent?.coins || 0,
-    memoryMb: plan.productContent?.recurrentResources?.memoryMb || 0,
-    diskMb: plan.productContent?.recurrentResources?.diskMb || 0,
-    cpuPercent: plan.productContent?.recurrentResources?.cpuPercent || 0,
-    databases: plan.productContent?.databases || 0,
-    backups: plan.productContent?.backups || 0,
-    allocations: plan.productContent?.additionalAllocations || 0,
-    serverSlots: plan.productContent?.serverLimit || 0
-  };
 
-  const { logUserActivity } = require('../middleware/userActivity');
-  await logUserActivity(mockReq, 'payment.purchase.completed', { 
-    planName: plan.name, 
-    amount: amountStr,
-    ...resourcesAdded
-  }, payment.userId.toString());
 
   // Apply plan benefits
   const billingCycle = paymentMeta.billingCycle || 'monthly';
@@ -187,6 +161,13 @@ async function processCapturedPayment(payment, captureData, sanitizedOrderId) {
         { new: true }
       );
       if (updatedUser) {
+        changes.coins = { old: user.coins, new: updatedUser.coins };
+        const diffKeys = ['diskMb', 'memoryMb', 'cpuPercent', 'backups', 'databases', 'allocations', 'serverSlots'];
+        diffKeys.forEach(k => {
+           if (user.resources[k] !== updatedUser.resources[k]) {
+              changes[k] = { old: user.resources[k], new: updatedUser.resources[k] };
+           }
+        });
         user.coins = updatedUser.coins;
         user.resources = updatedUser.resources;
       }
@@ -203,6 +184,27 @@ async function processCapturedPayment(payment, captureData, sanitizedOrderId) {
       );
     }
   }
+
+  // Now perform the logging!
+  await writeAudit(payment.userId.toString(), 'payment.purchase.completed', 'payment', claimedPayment._id.toString(), {
+    provider: claimedPayment.provider,
+    planId: plan._id.toString(),
+    planName: plan.name,
+    amount: claimedPayment.amount,
+    currency: claimedPayment.currency,
+    billingCycle: paymentMeta.billingCycle,
+    isLifetime: paymentMeta.isLifetime,
+    orderId: sanitizedOrderId,
+    userId: payment.userId.toString(),
+    changes
+  });
+  
+  const { logUserActivity } = require('../middleware/userActivity');
+  await logUserActivity(mockReq, 'payment.purchase.completed', { 
+    planName: plan.name, 
+    amount: amountStr,
+    changes
+  }, payment.userId.toString());
 
   // Invalidate payment and user plans cache
   const { deleteCachePattern } = require('./redis');
