@@ -3,24 +3,17 @@ export function AdminEarnSkeleton() {
 
   return (
     <div>
-      {/* HEADER SKELETON */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div className="space-y-2">
-          <div className="w-48 h-8 bg-white/5 rounded animate-pulse"></div>
-          <div className="w-64 h-4 bg-white/5 rounded animate-pulse"></div>
-        </div>
-      </div>
 
       <div className="mt-8">
       <div className="w-full">
         {/* TABLE HEADER (Desktop) */}
-        <div className={`hidden gap-4 lg:grid ${cols} border-b border-white/[0.06] px-5 pb-3`}>
-          <div className="w-12 h-2.5 bg-white/5 rounded animate-pulse"></div>
-          <div className="w-20 h-2.5 bg-white/5 rounded animate-pulse"></div>
-          <div className="w-12 h-2.5 bg-white/5 rounded animate-pulse"></div>
-          <div className="w-16 h-2.5 bg-white/5 rounded animate-pulse"></div>
-          <div className="w-10 h-2.5 bg-white/5 rounded animate-pulse"></div>
-          <div className="w-12 h-2.5 bg-white/5 rounded animate-pulse justify-self-end"></div>
+        <div className={`hidden gap-4 lg:grid ${cols} border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30`}>
+          <span>Method</span>
+          <span>Description</span>
+          <span>Reward</span>
+          <span>Daily Limit</span>
+          <span>Status</span>
+          <span className="text-right">Actions</span>
         </div>
 
         {/* TABLE LIST */}
