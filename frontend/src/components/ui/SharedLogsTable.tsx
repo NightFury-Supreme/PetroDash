@@ -230,9 +230,24 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
                         </span>
                       </div>
                     )}
-                    {variant === 'user' && (
-                      <div className="mt-0.5 text-[10px] text-white/20 truncate">{log.action}</div>
-                    )}
+                    {variant === 'user' && (() => {
+                      // Pick the most relevant context label from metadata
+                      const ctx =
+                        actualMeta?.serverName
+                          ? `Server: ${actualMeta.serverName}`
+                          : actualMeta?.planName
+                          ? `Plan: ${actualMeta.planName}`
+                          : actualMeta?.subject
+                          ? `Ticket: ${actualMeta.subject}`
+                          : actualMeta?.itemName
+                          ? `Item: ${actualMeta.itemName}`
+                          : actualMeta?.code
+                          ? `Code: ${actualMeta.code}`
+                          : log.action;
+                      return (
+                        <div className="mt-0.5 text-[10px] text-white/25 truncate">{ctx}</div>
+                      );
+                    })()}
                   </div>
 
                   {/* Device */}
