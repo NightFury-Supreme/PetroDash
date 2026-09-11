@@ -76,11 +76,13 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:shop');
 
+    const changes = {};
+    for (const [k, v] of Object.entries(parsed.data)) {
+        if (JSON.stringify(existingItem[k]) !== JSON.stringify(v)) changes[k] = { old: existingItem[k], new: v };
+    }
+
     const { writeAudit } = require('../../middleware/audit');
-    await writeAudit(req, 'admin.shop.update', 'shop_item', existingItem._id.toString(), {
-      itemKey: existingItem.key,
-      changes: parsed.data
-    });
+    await writeAudit(req, 'admin.shop.update', 'shop_item', existingItem._id.toString(), { changes });
 
     return res.json(updatedItem);
   } catch (error) {

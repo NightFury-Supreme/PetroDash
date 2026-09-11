@@ -64,7 +64,7 @@ router.post('/', requireAdmin, async (req, res) => {
     await deleteCachePattern('admin:locations');
 
     const { writeAudit } = require('../../middleware/audit');
-    await writeAudit(req, 'admin.location.create', 'location', created._id.toString(), { name: created.name });
+    await writeAudit(req, 'admin.location.create', 'location', created._id.toString(), { created: parsed.data });
 
     res.status(201).json(created);
 });
@@ -80,14 +80,22 @@ router.get('/:id', requireAdmin, async (req, res) => {
 router.put('/:id', requireAdmin, async (req, res) => {
     const parsed = schema.partial().safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
+    
+    const original = await Location.findById(String(req.params.id)).lean();
+    if (!original) return res.status(404).json({ error: 'Not found' });
+
     const updated = await Location.findByIdAndUpdate(String(req.params.id), parsed.data, { new: true }).lean();
-    if (!updated) return res.status(404).json({ error: 'Not found' });
 
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:locations');
 
+    const changes = {};
+    for (const [k, v] of Object.entries(parsed.data)) {
+        if (original[k] !== v) changes[k] = { old: original[k], new: v };
+    }
+
     const { writeAudit } = require('../../middleware/audit');
-    await writeAudit(req, 'admin.location.update', 'location', updated._id.toString(), { name: updated.name });
+    await writeAudit(req, 'admin.location.update', 'location', updated._id.toString(), { changes });
 
     res.json(updated);
 });

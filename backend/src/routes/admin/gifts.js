@@ -146,7 +146,7 @@ router.post('/', requireAdmin, async (req, res) => {
     });
 
     await gift.save();
-    await writeAudit(req, 'admin.gift.create', 'gift', gift._id.toString(), { code: gift.code });
+    await writeAudit(req, 'admin.gift.create', 'gift', gift._id.toString(), { created: req.body });
     res.status(201).json(gift);
   } catch (error) {
     console.error('Gift creation error:', error);
@@ -159,33 +159,27 @@ router.patch('/:id', requireAdmin, async (req, res) => {
   try {
     const gift = await Gift.findById(String(req.params.id));
     if (!gift) return res.status(404).json({ error: 'Gift not found' });
-    // Admins have full control over user-generated codes
+    
+    const originalGift = gift.toObject();
 
-    const { description, rewards, maxRedemptions, validFrom, validUntil, enabled } = req.body;
-    // Note: 'code' string modification is no longer allowed.
-    if (description !== undefined) gift.description = description;
-    if (rewards) {
-      gift.rewards = {
-        coins: Math.min(1_000_000, Math.max(0, parseInt(rewards.coins || 0))),
-        resources: {
-          diskMb: Math.min(1_000_000_000, Math.max(0, parseInt(rewards.resources?.diskMb || 0))),
-          memoryMb: Math.min(1_000_000_000, Math.max(0, parseInt(rewards.resources?.memoryMb || 0))),
-          cpuPercent: Math.min(1000, Math.max(0, parseInt(rewards.resources?.cpuPercent || 0))),
-          backups: Math.min(10_000, Math.max(0, parseInt(rewards.resources?.backups || 0))),
-          databases: Math.min(10_000, Math.max(0, parseInt(rewards.resources?.databases || 0))),
-          allocations: Math.min(10_000, Math.max(0, parseInt(rewards.resources?.allocations || 0))),
-          serverSlots: Math.min(10_000, Math.max(0, parseInt(rewards.resources?.serverSlots || 0))),
-        },
-        planIds: Array.isArray(rewards.planIds) ? rewards.planIds : [],
-      };
-    }
-    if (maxRedemptions !== undefined) gift.maxRedemptions = Math.max(0, Math.min(1_000_000, parseInt(maxRedemptions) || 0));
-    if (validFrom !== undefined) gift.validFrom = validFrom ? new Date(validFrom) : undefined;
-    if (validUntil !== undefined) gift.validUntil = validUntil ? new Date(validUntil) : undefined;
+    const { code, type, value, maxUses, expiresAt, enabled } = req.body;
+    if (code) gift.code = code;
+    if (type) gift.type = type;
+    if (value !== undefined) gift.value = value;
+    if (maxUses !== undefined) gift.maxUses = maxUses;
+    if (expiresAt !== undefined) gift.expiresAt = expiresAt ? new Date(expiresAt) : null;
     if (enabled !== undefined) gift.enabled = !!enabled;
 
     await gift.save();
-    await writeAudit(req, 'admin.gift.update', 'gift', gift._id.toString(), { code: gift.code });
+
+    const changes = {};
+    for (const [k, v] of Object.entries(req.body)) {
+      if (JSON.stringify(originalGift[k]) !== JSON.stringify(v)) {
+        changes[k] = { old: originalGift[k], new: v };
+      }
+    }
+
+    await writeAudit(req, 'admin.gift.update', 'gift', gift._id.toString(), { changes });
     res.json(gift);
   } catch (error) {
     console.error('Gift update error:', error);

@@ -239,6 +239,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     const t = await Ticket.findById(String(req.params.id));
     if (!t) return res.status(404).json({ error: 'Not found' });
 
+    const originalTicket = t.toObject();
     let changed = false;
     if (status !== undefined && ['open', 'pending', 'resolved', 'closed'].includes(status)) {
       if (t.status === 'closed' && status === 'resolved') {
@@ -299,8 +300,19 @@ router.patch('/:id', requireAdmin, async (req, res) => {
       await deleteCachePattern(`tickets:mine:${t.user}:*`);
       await deleteCachePattern(`tickets:admin:detail:${req.params.id}`);
 
+      const changes = {};
+      if (status !== undefined && status !== originalTicket.status) changes.status = { old: originalTicket.status, new: status };
+      if (priority !== undefined && priority !== originalTicket.priority) changes.priority = { old: originalTicket.priority, new: priority };
+      if (assignee !== undefined) {
+        const oldAssignee = originalTicket.assignee ? originalTicket.assignee.toString() : null;
+        const newAssignee = assignee ? String(assignee) : null;
+        if (oldAssignee !== newAssignee) changes.assignee = { old: oldAssignee, new: newAssignee };
+      }
+      if (Array.isArray(tags)) changes.tags = { old: originalTicket.tags || [], new: tags.slice(0, 20) };
+      if (typeof deletedByUser === 'boolean' && deletedByUser !== originalTicket.deletedByUser) changes.deletedByUser = { old: originalTicket.deletedByUser, new: deletedByUser };
+
       const { writeAudit } = require('../../middleware/audit');
-      await writeAudit(req, 'admin.ticket.update', 'ticket', t._id.toString(), { status, priority, assignee, deletedByUser });
+      await writeAudit(req, 'admin.ticket.update', 'ticket', t._id.toString(), { changes });
     }
 
     res.json({ ok: true, status: t.status, priority: t.priority });

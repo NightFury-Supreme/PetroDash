@@ -157,6 +157,7 @@ router.patch('/', requireAdmin, async (req, res) => {
     }
 
     const settings = await getOrCreate();
+    const originalSettings = settings.toObject();
     const update = { ...parsed.data };
     let authUpdated = false;
 
@@ -300,10 +301,23 @@ router.patch('/', requireAdmin, async (req, res) => {
     const response = settings.toObject();
     delete response.__v;
     
+    const changes = {};
+    const checkDiff = (target, source, original, prefix = '') => {
+      for (const k of Object.keys(source || {})) {
+        if (typeof source[k] === 'object' && source[k] !== null && !Array.isArray(source[k])) {
+          checkDiff(target, source[k], (original[k] || {}), prefix ? `${prefix}.${k}` : k);
+        } else {
+          const keyName = prefix ? `${prefix}.${k}` : k;
+          if (JSON.stringify(original[k]) !== JSON.stringify(source[k])) {
+            target[keyName] = { old: original[k], new: source[k] };
+          }
+        }
+      }
+    };
+    checkDiff(changes, parsed.data, originalSettings);
+
     const { writeAudit } = require('../../middleware/audit');
-    await writeAudit(req, 'admin.settings.update', 'settings', settings._id.toString(), {
-      updatedSections: Object.keys(parsed.data || {})
-    });
+    await writeAudit(req, 'admin.settings.update', 'settings', settings._id.toString(), { changes });
     
     return res.json(response);
 

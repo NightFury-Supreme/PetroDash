@@ -95,7 +95,7 @@ router.post('/', requireAdmin, async (req, res) => {
     const plan = new Plan(validatedData);
     await plan.save();
     
-    await writeAudit(req, 'admin.plan.create', 'plan', plan._id.toString(), { planName: plan.name });
+    await writeAudit(req, 'admin.plan.create', 'plan', plan._id.toString(), { created: validatedData });
     
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:plans');
@@ -136,14 +136,10 @@ router.put('/:id', requireAdmin, validateObjectId('id'), async (req, res) => {
     }
     
     // Deep merge to preserve nested objects and ensure changes are tracked
+    const originalPlan = plan.toObject();
     const deepMerge = (target, source) => {
       for (const key of Object.keys(source)) {
-        // Prevent prototype pollution by checking for dangerous keys
-        if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
-          console.error('Prototype pollution attempt blocked');
-          continue;
-        }
-        
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
         if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
           if (!target[key] || typeof target[key] !== 'object') target[key] = {};
           deepMerge(target[key], source[key]);
@@ -154,13 +150,16 @@ router.put('/:id', requireAdmin, validateObjectId('id'), async (req, res) => {
       return target;
     };
     deepMerge(plan, validatedData);
-    // Ensure Mongoose tracks nested changes
     if (validatedData.productContent) plan.markModified('productContent');
     if (validatedData.billingOptions) plan.markModified('billingOptions');
     if (validatedData.availableBillingCycles) plan.markModified('availableBillingCycles');
     await plan.save();
     
-    await writeAudit(req, 'admin.plan.update', 'plan', plan._id.toString(), { planName: plan.name });
+    const changes = {};
+    for (const [k, v] of Object.entries(validatedData)) {
+      if (JSON.stringify(originalPlan[k]) !== JSON.stringify(v)) changes[k] = { old: originalPlan[k], new: v };
+    }
+    await writeAudit(req, 'admin.plan.update', 'plan', plan._id.toString(), { changes });
     
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:plans');
@@ -197,13 +196,16 @@ router.patch('/:id', requireAdmin, validateObjectId('id'), async (req, res) => {
       return res.status(400).json({ error: 'No valid fields to update' });
     }
     
+    const originalPlan = plan.toObject();
     Object.assign(plan, updateData);
     await plan.save();
     
-    await writeAudit(req, 'admin.plan.update', 'plan', plan._id.toString(), { 
-      planName: plan.name, 
-      updatedFields: Object.keys(updateData) 
-    });
+    const changes = {};
+    for (const [k, v] of Object.entries(updateData)) {
+      if (originalPlan[k] !== v) changes[k] = { old: originalPlan[k], new: v };
+    }
+    
+    await writeAudit(req, 'admin.plan.update', 'plan', plan._id.toString(), { changes });
     
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:plans');

@@ -65,7 +65,7 @@ router.post('/', requireAdmin, async (req, res) => {
     await deleteCachePattern('admin:eggs*');
 
     const { writeAudit } = require('../../middleware/audit');
-    await writeAudit(req, 'admin.egg.create', 'egg', egg._id.toString(), { name: egg.name });
+    await writeAudit(req, 'admin.egg.create', 'egg', egg._id.toString(), { created: parsed.data });
 
     res.status(201).json(egg);
 });
@@ -201,15 +201,23 @@ router.put('/:id', requireAdmin, async (req, res) => {
     if (!parsed.success) {
         return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
     }
+    
+    const original = await Egg.findById(String(req.params.id)).lean();
+    if (!original) return res.status(404).json({ error: 'Not found' });
+
     const egg = await Egg.findByIdAndUpdate(String(req.params.id), parsed.data, { new: true }).lean();
-    if (!egg) return res.status(404).json({ error: 'Not found' });
 
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:eggs*');
     await deleteCachePattern(`admin:egg:${req.params.id}`);
 
+    const changes = {};
+    for (const [k, v] of Object.entries(parsed.data)) {
+        if (JSON.stringify(original[k]) !== JSON.stringify(v)) changes[k] = { old: original[k], new: v };
+    }
+
     const { writeAudit } = require('../../middleware/audit');
-    await writeAudit(req, 'admin.egg.update', 'egg', egg._id.toString(), { name: egg.name });
+    await writeAudit(req, 'admin.egg.update', 'egg', egg._id.toString(), { changes });
 
     res.json(egg);
 });

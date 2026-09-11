@@ -63,6 +63,8 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     const p = await Payment.findById(String(req.params.id));
     if (!p) return res.status(404).json({ error: 'Payment not found' });
     
+    const originalPayment = p.toObject();
+
     // Update allowed fields
     if (status !== undefined) p.status = status;
     if (amount !== undefined) p.amount = amount;
@@ -73,8 +75,13 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:ledger');
 
+    const changes = {};
+    if (status !== undefined && originalPayment.status !== status) changes.status = { old: originalPayment.status, new: status };
+    if (amount !== undefined && originalPayment.amount !== amount) changes.amount = { old: originalPayment.amount, new: amount };
+    if (currency !== undefined && originalPayment.currency !== currency) changes.currency = { old: originalPayment.currency, new: currency };
+
     const { writeAudit } = require('../../middleware/audit');
-    await writeAudit(req, 'admin.payment.update', 'payment', p._id.toString(), { status, amount, currency });
+    await writeAudit(req, 'admin.payment.update', 'payment', p._id.toString(), { changes });
 
     res.json({ ok: true, payment: p });
   } catch (e) { 

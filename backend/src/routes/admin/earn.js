@@ -154,14 +154,28 @@ router.patch('/', requireAdmin, async (req, res) => {
       }
     }
 
+    const originalEarn = JSON.parse(JSON.stringify(sanitizeEarn(settings.toObject().earn)));
+    
     settings.markModified('earn');
     await settings.save();
     clearSettingsCache();
 
+    const newEarn = sanitizeEarn(settings.toObject().earn);
+    const changes = {};
+    for (const [method, methodData] of Object.entries(update)) {
+      if (originalEarn[method]) {
+        changes[method] = {};
+        for (const k of Object.keys(methodData)) {
+          if (JSON.stringify(originalEarn[method][k]) !== JSON.stringify(newEarn[method][k])) {
+            changes[method][k] = { old: originalEarn[method][k], new: newEarn[method][k] };
+          }
+        }
+        if (Object.keys(changes[method]).length === 0) delete changes[method];
+      }
+    }
+
     const { writeAudit } = require('../../middleware/audit');
-    await writeAudit(req, 'admin.earn.update', 'earn_settings', null, {
-      updatedMethods: Object.keys(update)
-    });
+    await writeAudit(req, 'admin.earn.update', 'earn_settings', null, { changes });
 
     return res.json(sanitizeEarn(settings.earn));
   // eslint-disable-next-line unused-imports/no-unused-vars
