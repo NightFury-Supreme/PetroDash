@@ -136,10 +136,9 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
   return (
     <div className="w-full mt-6">
       {/* TABLE HEADER */}
-      <div className="hidden md:grid grid-cols-[1.5fr_1.5fr_2.5fr_100px_130px_50px] gap-4 px-5 pb-3 border-b border-white/[0.06] text-[9px] uppercase tracking-[0.13em] text-white/20">
+      <div className="hidden md:grid grid-cols-[2fr_1.5fr_100px_130px_50px] gap-4 px-5 pb-3 border-b border-white/[0.06] text-[9px] uppercase tracking-[0.13em] text-white/20">
         <span>Action</span>
         <span>Device / Browser</span>
-        <span>Metadata</span>
         <span>Status</span>
         <span>Date</span>
         <span></span>
@@ -150,7 +149,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
         {loading && logs.length === 0 ? (
           <>
             {[...Array(5)].map((_, i) => (
-              <div key={`sk-${i}`} className="grid grid-cols-[1.5fr_1.5fr_2.5fr_100px_130px_50px] gap-4 px-5 py-5 items-center">
+              <div key={`sk-${i}`} className="grid grid-cols-[2fr_1.5fr_100px_130px_50px] gap-4 px-5 py-5 items-center">
                 <div><div className="h-4 w-32 rounded bg-white/[0.04] animate-pulse" /></div>
                 <div>
                   <div className="space-y-2">
@@ -158,7 +157,6 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
                     <div className="h-2 w-32 rounded bg-white/[0.04] animate-pulse" />
                   </div>
                 </div>
-                <div><div className="h-5 w-48 rounded bg-white/[0.04] animate-pulse" /></div>
                 <div><div className="h-5 w-16 rounded bg-white/[0.04] animate-pulse" /></div>
                 <div><div className="h-3 w-24 rounded bg-white/[0.04] animate-pulse" /></div>
                 <div></div>
@@ -172,7 +170,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
             return (
             <React.Fragment key={log._id}>
               <div 
-                className="grid grid-cols-1 md:grid-cols-[1.5fr_1.5fr_2.5fr_100px_130px_50px] gap-4 px-5 py-4 items-center hover:bg-white/[0.02] transition-colors cursor-pointer"
+                className="grid grid-cols-1 md:grid-cols-[2fr_1.5fr_100px_130px_50px] gap-4 px-5 py-4 items-center hover:bg-white/[0.02] transition-colors cursor-pointer"
                 onClick={() => setExpandedRow(expandedRow === log._id ? null : log._id)}
               >
                 {/* ACTION COLUMN */}
@@ -211,47 +209,6 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
                   <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Device / Browser</p>
                   <div className="text-[11px] text-white/60 font-mono">{(log.ip || actualMeta?.ip) || '-'}</div>
                   <div className="text-[10px] text-white/30 mt-1">{parseUserAgent(log.userAgent || actualMeta?.userAgent)}</div>
-                </div>
-
-                {/* METADATA COLUMN */}
-                <div className="min-w-0 flex flex-col justify-center h-full">
-                  <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Metadata</p>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {/* Only show resource pill for admin */}
-                    {variant === 'admin' && log.resourceType && (
-                      <span className="px-2 py-1 rounded-[5px] border border-white/[0.04] bg-white/[0.02] text-white/50 text-[10px]">
-                        res: <span className="text-white/70">{log.resourceType} {log.resourceId ? log.resourceId.slice(-8) : ''}</span>
-                      </span>
-                    )}
-                    
-                    {/* Show up to 2 metadata fields */}
-                    {(() => {
-                      const hiddenKeys = ['ip', 'userAgent', 'method', 'path', 'status', 'statusCode', 'durationMs', 'requestId', 'sessionId', 'responsePreview', 'success', 'severity', 'category'];
-                      const metaEntries = Object.entries(actualMeta).filter(([k]) => !hiddenKeys.includes(k));
-                      
-                      const visibleMeta = metaEntries.slice(0, 2);
-                      const extraCount = metaEntries.length - 2;
-
-                      if (metaEntries.length === 0 && (!log.resourceType || variant === 'user')) {
-                        return <span className="text-xs text-[#555]">-</span>;
-                      }
-
-                      return (
-                        <>
-                          {visibleMeta.map(([k, v]) => (
-                            <span key={k} className="px-2 py-1 rounded-[5px] border border-white/[0.04] bg-white/[0.02] text-white/50 text-[10px] truncate max-w-[150px]">
-                              {k}: <span className="text-white/70">{typeof v === 'string' || typeof v === 'number' ? v : JSON.stringify(v)}</span>
-                            </span>
-                          ))}
-                          {extraCount > 0 && (
-                            <span className="px-2 py-1 rounded-[5px] border border-white/[0.04] bg-white/[0.05] text-white/70 text-[10px] font-medium">
-                              +{extraCount}
-                            </span>
-                          )}
-                        </>
-                      );
-                    })()}
-                  </div>
                 </div>
 
                 {/* STATUS COLUMN */}
