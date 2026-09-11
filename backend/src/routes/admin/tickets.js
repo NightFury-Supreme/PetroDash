@@ -313,6 +313,14 @@ router.patch('/:id', requireAdmin, async (req, res) => {
 
       const { writeAudit } = require('../../middleware/audit');
       await writeAudit(req, 'admin.ticket.update', 'ticket', t._id.toString(), { changes });
+      
+      const { logUserActivity } = require('../../middleware/userActivity');
+      await logUserActivity(null, 'admin.ticket.update', {
+        ticketId: t._id.toString(),
+        title: t.title,
+        updatedByAdmin: true,
+        changes: Object.keys(changes).length > 0 ? changes : undefined
+      }, t.user.toString());
     }
 
     res.json({ ok: true, status: t.status, priority: t.priority });
@@ -398,9 +406,19 @@ router.patch('/settings/categories', requireAdmin, async (req, res) => {
 
     let s = existingSettings;
     if (!s) s = await Settings.create({});
+    
+    const oldCategories = s.ticketCategories || [];
     s.ticketCategories = newSet;
     await s.save();
     clearSettingsCache();
+    
+    if (JSON.stringify(oldCategories) !== JSON.stringify(newSet)) {
+      const { writeAudit } = require('../../middleware/audit');
+      await writeAudit(req, 'admin.settings.tickets.update', 'settings', s._id.toString(), { 
+        changes: { ticketCategories: { old: oldCategories, new: newSet } } 
+      });
+    }
+
     res.json({ ok: true, categories: s.ticketCategories });
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (err) {
