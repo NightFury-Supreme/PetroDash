@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { InfoRow } from "@/components/admin/users/AdminInfoRow";
-import { Key, User, ChevronLeft, ChevronRight } from "lucide-react";
+import { Key, User } from "lucide-react";
+import { Pagination } from "@/components/Pagination";
 import Link from "next/link";
 
 export function ReferralsTab({ referral, onSaveCode, referralPage, setReferralPage, REFERRAL_PAGE_SIZE }: any) {
@@ -117,38 +118,14 @@ export function ReferralsTab({ referral, onSaveCode, referralPage, setReferralPa
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="mt-5 flex items-center justify-between border-t border-white/[0.06] pt-5">
-            <p className="text-[11px] text-white/20">
-              Showing {referredUsers.length > 0 ? (referralPage - 1) * REFERRAL_PAGE_SIZE + 1 : 0}–{Math.min(referralPage * REFERRAL_PAGE_SIZE, totalUsers)} of {totalUsers} users
-            </p>
-            <div className="flex items-center gap-1">
-              <button
-                disabled={referralPage === 1}
-                onClick={() => setReferralPage(referralPage - 1)}
-                className="flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.07] text-white/30 transition hover:bg-white/[0.04] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
-              >
-                <ChevronLeft size={14} />
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
-                <button
-                  key={pg}
-                  onClick={() => setReferralPage(pg)}
-                  className={`flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-xs transition ${referralPage === pg ? 'bg-orange-500 text-black' : 'text-white/30 hover:bg-white/[0.04] hover:text-white'}`}
-                >
-                  {pg}
-                </button>
-              ))}
-              <button
-                disabled={referralPage === totalPages}
-                onClick={() => setReferralPage(referralPage + 1)}
-                className="flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.07] text-white/30 transition hover:bg-white/[0.04] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
-              >
-                <ChevronRight size={14} />
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination
+          currentPage={referralPage}
+          totalPages={totalPages}
+          totalItems={totalUsers}
+          pageSize={REFERRAL_PAGE_SIZE}
+          onPageChange={setReferralPage}
+          itemName="users"
+        />
       </section>
     </div>
   );

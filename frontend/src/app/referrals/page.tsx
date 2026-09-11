@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { Pagination } from "@/components/Pagination";
 import {
   Users,
   Coins,
@@ -9,8 +10,6 @@ import {
   Check,
   Pencil,
   Lock,
-  ChevronLeft,
-  ChevronRight,
   CheckCircle2,
   Save,
   X,
@@ -467,53 +466,15 @@ export default function ReferralsPage() {
           {/* ==============================================================
               PAGINATION
           ============================================================== */}
-          {totalPages > 1 && (
-            <div className="mt-5 flex items-center justify-between border-t border-white/[0.06] pt-5">
-              <p className="text-[11px] text-white/20">
-                Showing {users.length > 0 ? (page - 1) * USERS_PER_PAGE + 1 : 0}
-                {"–"}
-                {Math.min(page * USERS_PER_PAGE, totalUsers)} of {totalUsers} users
-              </p>
-
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  disabled={page === 1 || loading}
-                  onClick={() => setPage((current) => Math.max(1, current - 1))}
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.07] text-white/30 transition hover:bg-white/[0.04] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
-                  aria-label="Previous page"
-                >
-                  <ChevronLeft size={14} />
-                </button>
-
-                {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
-                  <button
-                    key={pageNumber}
-                    type="button"
-                    onClick={() => setPage(pageNumber)}
-                    disabled={loading}
-                    className={`flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-xs transition ${
-                      page === pageNumber
-                        ? "bg-orange-500 text-black"
-                        : "text-white/30 hover:bg-white/[0.04] hover:text-white disabled:opacity-50"
-                    }`}
-                  >
-                    {pageNumber}
-                  </button>
-                ))}
-
-                <button
-                  type="button"
-                  disabled={page === totalPages || loading}
-                  onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.07] text-white/30 transition hover:bg-white/[0.04] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
-                  aria-label="Next page"
-                >
-                  <ChevronRight size={14} />
-                </button>
-              </div>
-            </div>
-          )}
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalItems={totalUsers}
+            pageSize={USERS_PER_PAGE}
+            onPageChange={setPage}
+            loading={loading}
+            itemName="users"
+          />
         </section>
 
       </div>

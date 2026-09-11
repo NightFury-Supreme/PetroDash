@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AdminLedgerSkeleton } from "@/components/skeletons/admin/ledger";
 import { AdminLedgerHeader, AdminLedgerContent } from "@/components/admin/ledger";
+import { Pagination } from "@/components/Pagination";
 import { useModal } from "@/components/Modal";
 
 // Use a flexible item shape to match API without strict coupling
@@ -198,27 +199,14 @@ export default function AdminLedgerPage() {
         />
 
         {/* Pagination Controls */}
-        {pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between pt-4">
-            <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={pagination.page <= 1}
-              className="px-4 py-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-sm font-medium hover:bg-[var(--hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              Previous
-            </button>
-            <div className="text-sm text-[#AAAAAA]">
-              Page {pagination.page} of {pagination.totalPages} (Total: {pagination.total})
-            </div>
-            <button
-              onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))}
-              disabled={pagination.page >= pagination.totalPages}
-              className="px-4 py-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-sm font-medium hover:bg-[var(--hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              Next
-            </button>
-          </div>
-        )}
+        <Pagination
+          currentPage={pagination.page}
+          totalPages={pagination.totalPages}
+          totalItems={pagination.total}
+          pageSize={10}
+          onPageChange={setCurrentPage}
+          itemName="payments"
+        />
       </div>
     
   );

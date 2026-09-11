@@ -5,7 +5,7 @@ import AdminUsersSkeleton from '@/components/skeletons/admin/user/AdminUsersSkel
 import UsersHeader from '@/components/admin/users/UsersHeader';
 import UsersTable from '@/components/admin/users/UsersTable';
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Pagination } from '@/components/Pagination';
 
 export default function AdminUsersListPage() {
   const router = useRouter();
@@ -78,48 +78,14 @@ export default function AdminUsersListPage() {
         <UsersTable users={users} onManageUser={(id) => router.push(`/admin/users/${id}`)} />
         
         {/* Pagination Controls */}
-          {pagination.totalPages > 1 && (
-            <div className="mt-2 flex items-center justify-between border-t border-white/[0.06] pt-4">
-              <p className="text-[10px] text-white/30">
-                Showing {(pagination.page - 1) * 10 + 1}–{Math.min(pagination.page * 10, pagination.total)} of {pagination.total} users
-              </p>
-
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => { setLoading(true); setCurrentPage(p => Math.max(1, p - 1)); }}
-                  disabled={pagination.page <= 1}
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.07] text-white/30 transition hover:bg-white/[0.04] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
-                  aria-label="Previous page"
-                >
-                  <ChevronLeft size={14} />
-                </button>
-
-                {Array.from({ length: pagination.totalPages }, (_, index) => index + 1).map((pageNumber) => (
-                  <button
-                    key={pageNumber}
-                    type="button"
-                    onClick={() => { setLoading(true); setCurrentPage(pageNumber); }}
-                    className={`flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-xs transition ${
-                      pagination.page === pageNumber
-                        ? "bg-orange-500 text-black font-medium"
-                        : "text-white/30 hover:bg-white/[0.04] hover:text-white"
-                    }`}
-                  >
-                    {pageNumber}
-                  </button>
-                ))}
-
-                <button
-                  onClick={() => { setLoading(true); setCurrentPage(p => Math.min(pagination.totalPages, p + 1)); }}
-                  disabled={pagination.page >= pagination.totalPages}
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.07] text-white/30 transition hover:bg-white/[0.04] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
-                  aria-label="Next page"
-                >
-                  <ChevronRight size={14} />
-                </button>
-              </div>
-            </div>
-          )}
+        <Pagination
+          currentPage={pagination.page}
+          totalPages={pagination.totalPages}
+          totalItems={pagination.total}
+          pageSize={10}
+          onPageChange={(p) => { setLoading(true); setCurrentPage(p); }}
+          itemName="users"
+        />
       </div>
     </div>
   );

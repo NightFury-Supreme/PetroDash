@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Session } from '@/hooks/useProfile';
+import { Pagination } from '@/components/Pagination';
 import {
   User,
   Mail,
@@ -14,8 +15,6 @@ import {
   LogOut,
   Clock3,
   Laptop,
-  ChevronLeft,
-  ChevronRight,
   AlertCircle,
 } from "lucide-react";
 
@@ -694,66 +693,15 @@ export function ActivityLogSection() {
         </div>
 
         {/* PAGINATION */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-white/[0.06] py-5">
-            <p className="text-[11px] text-[#888]">
-              Showing {logs.length > 0 ? (page - 1) * LOGS_PER_PAGE + 1 : 0}
-              {"–"}
-              {Math.min(page * LOGS_PER_PAGE, totalLogs)} of {totalLogs} events
-            </p>
-
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                disabled={page === 1 || loading}
-                onClick={() => setPage((current) => Math.max(1, current - 1))}
-                className="flex h-8 w-8 items-center justify-center rounded-md border border-[#333] text-[#888] transition hover:bg-[#222] hover:text-[#D4D4D4] disabled:cursor-not-allowed disabled:opacity-30"
-                aria-label="Previous page"
-              >
-                <ChevronLeft size={14} />
-              </button>
-
-              {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
-                let pageNumber;
-                if (totalPages <= 5) {
-                  pageNumber = index + 1;
-                } else if (page <= 3) {
-                  pageNumber = index + 1;
-                } else if (page >= totalPages - 2) {
-                  pageNumber = totalPages - 4 + index;
-                } else {
-                  pageNumber = page - 2 + index;
-                }
-                
-                return (
-                  <button
-                    key={pageNumber}
-                    type="button"
-                    onClick={() => setPage(pageNumber)}
-                    disabled={loading}
-                    className={`flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-xs transition ${
-                      page === pageNumber
-                        ? "bg-[#FF5722] text-white"
-                        : "text-[#888] hover:bg-[#222] hover:text-[#D4D4D4] disabled:opacity-50"
-                    }`}
-                  >
-                    {pageNumber}
-                  </button>
-                );
-              })}
-
-              <button
-                type="button"
-                disabled={page === totalPages || loading}
-                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
-                className="flex h-8 w-8 items-center justify-center rounded-md border border-[#333] text-[#888] transition hover:bg-[#222] hover:text-[#D4D4D4] disabled:cursor-not-allowed disabled:opacity-30"
-                aria-label="Next page"
-              >
-                <ChevronRight size={14} />
-              </button>
-            </div>
-          </div>
-        )}
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          totalItems={totalLogs}
+          pageSize={LOGS_PER_PAGE}
+          onPageChange={setPage}
+          loading={loading}
+          itemName="events"
+        />
       </section>
     </div>
   );
