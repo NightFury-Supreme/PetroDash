@@ -33,7 +33,35 @@ export default function AdminLocationsSkeleton() {
 
           <div className="divide-y divide-white/[0.06]">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="px-5 py-5 h-[72px] bg-white/[0.01] animate-pulse" />
+              <div
+                key={i}
+                className={`grid grid-cols-1 gap-4 px-5 py-5 lg:grid-cols-[2fr_120px_80px_100px] lg:items-center`}
+              >
+                {/* Location Name Skeleton */}
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded bg-white/5 animate-pulse shrink-0" />
+                  <div className="flex flex-col gap-2">
+                    <div className="h-4 w-32 bg-white/5 rounded animate-pulse" />
+                    <div className="h-3 w-48 bg-white/5 rounded animate-pulse" />
+                  </div>
+                </div>
+
+                {/* Server Limit Skeleton */}
+                <div className="hidden lg:block">
+                  <div className="h-4 w-16 bg-white/5 rounded animate-pulse" />
+                </div>
+
+                {/* Servers Skeleton */}
+                <div className="hidden lg:block">
+                  <div className="h-4 w-12 bg-white/5 rounded animate-pulse" />
+                </div>
+
+                {/* Actions Skeleton */}
+                <div className="hidden lg:flex justify-end gap-2">
+                  <div className="h-8 w-8 bg-white/5 rounded-md animate-pulse" />
+                  <div className="h-8 w-8 bg-white/5 rounded-md animate-pulse" />
+                </div>
+              </div>
             ))}
           </div>
         </div>
