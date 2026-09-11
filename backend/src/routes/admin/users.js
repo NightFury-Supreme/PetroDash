@@ -312,27 +312,26 @@ router.patch('/:id', requireAdmin, async (req, res) => {
   if (typeof referralCode === 'string' && user.referralCode !== originalUser.referralCode) changes.referralCode = { old: originalUser.referralCode, new: user.referralCode };
   
   if (resources) {
-    const resourceChanges = {};
     for (const [k, v] of Object.entries(resources)) {
       const oldVal = (originalUser.resources || {})[k] || 0;
-      if (v !== oldVal) resourceChanges[k] = { old: oldVal, new: v };
+      if (v !== oldVal) changes[k] = { old: oldVal, new: v };
     }
-    if (Object.keys(resourceChanges).length > 0) changes.resources = resourceChanges;
   }
   
   if (ban) {
-    const banChanges = {};
-    if (ban.isBanned !== undefined && ban.isBanned !== (originalUser.ban?.isBanned || false)) banChanges.isBanned = { old: originalUser.ban?.isBanned || false, new: ban.isBanned };
-    if (ban.reason !== undefined && ban.reason !== (originalUser.ban?.reason || '')) banChanges.reason = { old: originalUser.ban?.reason || '', new: ban.reason };
+    if (ban.isBanned !== undefined && ban.isBanned !== (originalUser.ban?.isBanned || false)) changes['ban.isBanned'] = { old: originalUser.ban?.isBanned || false, new: ban.isBanned };
+    if (ban.reason !== undefined && ban.reason !== (originalUser.ban?.reason || '')) changes['ban.reason'] = { old: originalUser.ban?.reason || '', new: ban.reason };
     if (ban.until !== undefined) {
       const oldTime = originalUser.ban?.until ? new Date(originalUser.ban.until).getTime() : null;
       const newTime = user.ban?.until ? new Date(user.ban.until).getTime() : null;
-      if (oldTime !== newTime) banChanges.until = { old: originalUser.ban?.until || null, new: user.ban?.until };
+      if (oldTime !== newTime) changes['ban.until'] = { old: originalUser.ban?.until || null, new: user.ban?.until };
     }
-    if (Object.keys(banChanges).length > 0) changes.ban = banChanges;
   }
 
   await writeAudit(req, 'admin.user.update', 'user', user._id.toString(), { changes });
+  
+  const { logUserActivity } = require('../../middleware/userActivity');
+  await logUserActivity(null, 'admin.user.update', { updatedByAdmin: true, changes }, user._id.toString());
 
   const { deleteCachePattern } = require('../../lib/redis');
   await deleteCachePattern('admin:users');
