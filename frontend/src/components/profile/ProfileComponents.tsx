@@ -1,3 +1,4 @@
+import { SharedLogsTable } from '@/components/ui/SharedLogsTable';
 import React, { useState, useEffect, useRef } from 'react';
 import { Session } from '@/hooks/useProfile';
 import { Pagination } from '@/components/Pagination';
@@ -543,41 +544,6 @@ export function ActivityLogSection() {
   const [totalLogs, setTotalLogs] = React.useState(0);
   const LOGS_PER_PAGE = 10;
 
-  const formatActionText = (action: string) => {
-    const actionMap: Record<string, string> = {
-      'auth.login.success': 'Successfully logged in',
-      'auth.login.failed': 'Failed login attempt',
-      'auth.register.success': 'Registered account',
-      'auth.account.delete': 'Deleted account',
-      'auth.account.update': 'Updated account profile',
-      'auth.session.revoke': 'Revoked session',
-      'auth.2fa.enable': 'Enabled Two-Factor Authentication',
-      'auth.2fa.disable': 'Disabled Two-Factor Authentication',
-      'auth.email.update': 'Updated email address',
-      'auth.email.verified': 'Verified email address',
-      'auth.password.update': 'Changed password',
-      'auth.password.reset.success': 'Reset password',
-      'panel.password.reset': 'Reset panel password',
-      'server.create': 'Created a new server',
-      'server.delete': 'Deleted a server',
-      'server.update': 'Updated server settings',
-      'earn.claim': 'Claimed AFK coins',
-      'earn.session.start': 'Started AFK session',
-      'shop.purchase.completed': 'Purchased an item from the shop',
-      'payment.purchase.completed': 'Added funds / Purchased plan',
-      'ticket.create': 'Created a support ticket',
-      'ticket.reply': 'Replied to a support ticket',
-      'ticket.status_change': 'Updated support ticket status',
-      'gift.create': 'Created a gift code',
-      'gift.claim': 'Claimed a gift code',
-      'referral.code.update': 'Set custom referral code',
-      'admin.user.update': 'Profile updated by admin',
-      'admin.user.ban': 'Account suspended',
-      'admin.user.unban': 'Account suspension lifted',
-    };
-    return actionMap[action] || action;
-  };
-
   React.useEffect(() => {
     let active = true;
     setLoading(true);
@@ -610,86 +576,9 @@ export function ActivityLogSection() {
             <p className="mt-2 text-sm text-white/35">Review recent events and actions on your account.</p>
           </div>
         </div>
-        {/* TABLE HEADER */}
-        <div className="hidden gap-4 grid-cols-[1.5fr_2fr_1.5fr_100px_150px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
-          <span>Action</span>
-          <span>Device / Browser</span>
-          <span>Metadata</span>
-          <span>Status</span>
-          <span className="text-right">Date</span>
-        </div>
-
-        {/* TABLE LIST */}
-        <div className="divide-y divide-white/[0.06]">
-          {loading ? (
-            <>
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="grid grid-cols-1 gap-4 px-5 py-5 items-center md:grid-cols-[1.5fr_2fr_1.5fr_100px_150px]">
-                  <div>
-                    <div className="h-3 w-32 rounded-sm bg-white/[0.04] animate-pulse" />
-                  </div>
-                  <div>
-                    <div className="h-3 w-40 rounded-sm bg-white/[0.04] animate-pulse" />
-                  </div>
-                  <div>
-                    <div className="h-3 w-24 rounded-sm bg-white/[0.04] animate-pulse" />
-                  </div>
-                  <div>
-                    <div className="h-4 w-16 rounded-full bg-white/[0.04] animate-pulse" />
-                  </div>
-                  <div className="flex justify-end">
-                    <div className="h-3 w-24 rounded-sm bg-white/[0.04] animate-pulse" />
-                  </div>
-                </div>
-              ))}
-            </>
-          ) : logs.length === 0 ? (
-            <div className="p-8 text-center text-sm text-[#888]">No activity found.</div>
-          ) : (
-            logs.map((log: any, idx: number) => (
-              <div key={idx} className="group grid grid-cols-1 gap-4 px-5 py-5 transition hover:bg-white/[0.015] md:grid-cols-[1.5fr_2fr_1.5fr_100px_150px] md:items-center">
-                <div className="min-w-0">
-                  <p className="mb-1 text-[9px] uppercase tracking-wider text-[#888] md:hidden">Action</p>
-                  <p className="text-sm font-medium text-[#D4D4D4]">{formatActionText(log.action)}</p>
-                </div>
-                <div className="min-w-0">
-                  <p className="mb-1 text-[9px] uppercase tracking-wider text-[#888] md:hidden">Device / Browser</p>
-                  <p className="text-xs text-[#888] truncate">{log.ip}</p>
-                  <p className="text-[10px] text-[#666] truncate mt-0.5">{parseUserAgent(log.userAgent)}</p>
-                </div>
-                <div className="min-w-0">
-                  <p className="mb-1 text-[9px] uppercase tracking-wider text-[#888] md:hidden">Metadata</p>
-                  {log.metadata && Object.keys(log.metadata).length > 0 ? (
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {Object.entries(log.metadata).slice(0, 3).map(([key, value]) => (
-                        <span key={key} className="inline-flex items-center rounded-md border border-[#333] bg-[#1A1A1A] px-2 py-0.5 text-[10px] text-[#A0A0A0] max-w-full truncate" title={String(value)}>
-                          <span className="font-medium text-[#888] mr-1.5">{key}:</span> 
-                          <span className="truncate max-w-[120px]">{typeof value === 'object' ? JSON.stringify(value) : String(value)}</span>
-                        </span>
-                      ))}
-                      {Object.keys(log.metadata).length > 3 && (
-                        <span className="inline-flex items-center rounded-md border border-[#333] bg-[#1A1A1A] px-2 py-0.5 text-[10px] text-[#A0A0A0]">
-                          +{Object.keys(log.metadata).length - 3}
-                        </span>
-                      )}
-                    </div>
-                  ) : (
-                    <span className="text-xs text-[#555]">-</span>
-                  )}
-                </div>
-                <div>
-                  <p className="mb-1 text-[9px] uppercase tracking-wider text-[#888] md:hidden">Status</p>
-                  <span className={`inline-flex items-center rounded border px-2 py-0.5 text-[10px] font-medium ${log.success !== false ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400' : 'border-red-500/20 bg-red-500/10 text-red-400'}`}>
-                    {log.success !== false ? 'SUCCESS' : 'FAILED'}
-                  </span>
-                </div>
-                <div className="md:text-right">
-                  <p className="mb-1 text-[9px] uppercase tracking-wider text-[#888] md:hidden">Date</p>
-                  <p className="text-xs text-[#888]">{new Date(log.createdAt).toLocaleString()}</p>
-                </div>
-              </div>
-            ))
-          )}
+        
+        <div className="-mt-6">
+          <SharedLogsTable logs={logs} loading={loading} variant="user" />
         </div>
 
         {/* PAGINATION */}
@@ -706,5 +595,4 @@ export function ActivityLogSection() {
     </div>
   );
 }
-
 
