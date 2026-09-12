@@ -1,0 +1,75 @@
+/**
+ * Human-readable labels for log field paths.
+ * Keys are the exact field path as stored in the database (dot-notation for nested).
+ * Add new entries here whenever a new field is logged.
+ */
+const FIELD_LABELS: Record<string, string> = {
+  // ── Server resource limits ──────────────────────────────────────
+  'limits.diskMb':       'Disk (MB)',
+  'limits.memoryMb':     'Memory (MB)',
+  'limits.cpu':          'CPU (%)',
+  'limits.databases':    'Databases',
+  'limits.allocations':  'Allocations',
+  'limits.backups':      'Backups',
+  'limits.swap':         'Swap (MB)',
+  'limits.io':           'IO Weight',
+
+  // ── Auth / account ─────────────────────────────────────────────
+  'email':               'Email Address',
+  'password':            'Password',
+  'tfaEnabled':          'Two-Factor Auth',
+  'emailVerified':       'Email Verified',
+  'username':            'Username',
+  'firstName':           'First Name',
+  'lastName':            'Last Name',
+  'role':                'Role',
+  'suspended':           'Suspended',
+  'coins':               'Coins',
+
+  // ── Ticket fields ───────────────────────────────────────────────
+  'status':              'Status',
+  'subject':             'Subject',
+  'category':            'Category',
+  'priority':            'Priority',
+  'message':             'Message',
+
+  // ── Referral / shop ────────────────────────────────────────────
+  'code':                'Referral Code',
+  'planName':            'Plan',
+  'itemName':            'Item',
+  'amount':              'Amount',
+  'price':               'Price',
+
+  // ── Meta / IDs ─────────────────────────────────────────────────
+  'serverId':            'Server ID',
+  'serverName':          'Server Name',
+  'userId':              'User ID',
+  'actorId':             'Actor ID',
+  'actorRole':           'Actor Role',
+  'actorUsername':       'Actor',
+  'targetUserId':        'Target User ID',
+  'updatedByAdmin':      'Updated By Admin',
+  'method':              'Method',
+  'path':                'Path',
+  'statusCode':          'Status Code',
+  'durationMs':          'Duration (ms)',
+  'ip':                  'IP Address',
+  'userAgent':           'User Agent',
+  'sessionId':           'Session ID',
+  'dbId':                'Database ID',
+};
+
+/**
+ * Resolve a field path to its human-readable label.
+ * Falls back to the raw key if no mapping is found.
+ */
+export function getFieldLabel(key: string): string {
+  if (FIELD_LABELS[key]) return FIELD_LABELS[key];
+
+  // Try just the last segment as a fallback
+  const leaf = key.split('.').pop() || key;
+  if (FIELD_LABELS[leaf]) return FIELD_LABELS[leaf];
+
+  // Last resort: return the raw key unchanged
+  return key;
+}

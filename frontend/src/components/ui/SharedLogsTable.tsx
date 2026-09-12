@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { getFieldLabel } from '@/config/field-labels';
 
 interface LogEntry {
   _id: string;
@@ -53,24 +54,13 @@ function formatActionText(action: string) {
   ).join(' ');
 }
 
-function formatDiffKey(fullKey: string) {
-  // Use only the last segment: "limits.diskMb" → "diskMb" → "Disk Mb"
-  const lastPart = fullKey.split('.').pop() || fullKey;
-  return lastPart
-    .replace(/([A-Z])/g, ' $1')
-    .trim()
-    .split(' ')
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
-}
-
 function RecursiveDiffViewer({ data, prefix = '' }: { data: any; prefix?: string }) {
   if (!data || typeof data !== 'object') return null;
   return (
     <>
       {Object.entries(data).map(([key, value]: [string, any]) => {
         const fullKey = prefix ? `${prefix}.${key}` : key;
-        const displayKey = formatDiffKey(fullKey);
+        const displayKey = getFieldLabel(fullKey);
 
         if (value && typeof value === 'object' && ('old' in value || 'new' in value)) {
           return (
