@@ -805,6 +805,28 @@ export function AdminSettingsContent({
         </div>
         
         <div className="divide-y divide-white/[0.06]">
+          {/* Email Login / Verification */}
+          <SettingsDrawerRow 
+            icon={<Mail />} 
+            label="Email Login & Verification" 
+            description="Allow users to register with email and require verification." 
+            enabled={formData.auth?.emailLogin ?? true} 
+            onToggle={async (enabled) => { updateFormData('auth.emailLogin', enabled); await saveSection({ auth: { ...formData.auth, emailLogin: enabled } as any }, `Email login ${enabled ? 'enabled' : 'disabled'}`); }} 
+            onSave={async () => await saveSection({ auth: formData.auth }, 'Email login settings updated.')}
+          >
+             <div className="space-y-4">
+               <div className="flex items-center justify-between">
+                 <div className="flex flex-col">
+                   <span className="text-sm font-medium text-[#D4D4D4] mb-0.5">Enable Email Verification</span>
+                   <span className="text-xs text-[#888]">Require users to verify their email before accessing the dashboard.</span>
+                 </div>
+                 <label className="relative inline-flex items-center cursor-pointer">
+                   <input type="checkbox" className="sr-only peer" checked={formData.auth?.emailVerification || false} onChange={(e) => updateFormData('auth.emailVerification', e.target.checked)} disabled={loading} />
+                   <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
+                 </label>
+               </div>
+             </div>
+          </SettingsDrawerRow>
 
   
           {/* Discord Login */}
@@ -929,29 +951,6 @@ export function AdminSettingsContent({
           </div>
           
           <div className="divide-y divide-white/[0.06]">
-            {/* Email Login / Verification */}
-            <SettingsDrawerRow 
-              icon={<Mail />} 
-              label="Email Login & Verification" 
-              description="Allow users to register with email and require verification." 
-              enabled={formData.auth?.emailLogin ?? true} 
-              onToggle={async (enabled) => { updateFormData('auth.emailLogin', enabled); await saveSection({ auth: { ...formData.auth, emailLogin: enabled } as any }, `Email login ${enabled ? 'enabled' : 'disabled'}`); }} 
-              onSave={async () => await saveSection({ auth: formData.auth }, 'Email login settings updated.')}
-            >
-               <div className="space-y-4">
-                 <div className="flex items-center justify-between">
-                   <div className="flex flex-col">
-                     <span className="text-sm font-medium text-[#D4D4D4] mb-0.5">Enable Email Verification</span>
-                     <span className="text-xs text-[#888]">Require users to verify their email before accessing the dashboard.</span>
-                   </div>
-                   <label className="relative inline-flex items-center cursor-pointer">
-                     <input type="checkbox" className="sr-only peer" checked={formData.auth?.emailVerification || false} onChange={(e) => updateFormData('auth.emailVerification', e.target.checked)} disabled={loading} />
-                     <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
-                   </label>
-                 </div>
-               </div>
-            </SettingsDrawerRow>
-
             {/* SMTP Configuration */}
             <SettingsDrawerRow 
               icon={<i className="fas fa-server"></i>} 
