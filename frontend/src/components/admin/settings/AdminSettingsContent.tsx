@@ -7,15 +7,34 @@ import { Palette, Globe, ShieldCheck, Server, Users, Megaphone, CreditCard, Refr
 function SideItem({ icon: Icon, label, active, onClick }: { icon: any; label: string; active?: boolean; onClick: () => void; }) {
   return (
     <button
+      type="button"
       onClick={onClick}
-      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
-        active 
-          ? 'bg-white/10 text-white shadow-sm'
-          : 'text-[#888] hover:bg-white/[0.04] hover:text-[#D4D4D4]'
-      }`}
+      className={`
+        group
+        relative
+        flex
+        w-full
+        items-center
+        gap-3
+        rounded-lg
+        px-2.5
+        py-2
+        text-left
+        text-sm
+        transition-colors
+        focus-visible:outline-none
+        focus-visible:ring-1
+        focus-visible:ring-white/30
+
+        ${
+          active
+            ? "bg-white/10 text-white"
+            : "text-zinc-500 hover:bg-white/5 hover:text-zinc-200"
+        }
+      `}
     >
-      <Icon size={16} className={active ? 'text-white' : 'text-[#888]'} />
-      {label}
+      {Icon && <Icon size={17} strokeWidth={1.75} className="shrink-0" />}
+      <span className="truncate">{label}</span>
     </button>
   );
 }
