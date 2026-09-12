@@ -805,11 +805,11 @@ export function AdminSettingsContent({
         </div>
         
         <div className="divide-y divide-white/[0.06]">
-          {/* Email Login / Verification */}
+          {/* Email Login */}
           <SettingsDrawerRow 
             icon={<Mail />} 
-            label="Email Login & Verification" 
-            description="Allow users to register with email and require verification." 
+            label="Email Login" 
+            description="Allow users to register and login with email and password" 
             enabled={formData.auth?.emailLogin ?? true} 
             onToggle={async (enabled) => { updateFormData('auth.emailLogin', enabled); await saveSection({ auth: { ...formData.auth, emailLogin: enabled } as any }, `Email login ${enabled ? 'enabled' : 'disabled'}`); }} 
             onSave={async () => await saveSection({ auth: formData.auth }, 'Email login settings updated.')}
@@ -951,10 +951,10 @@ export function AdminSettingsContent({
           </div>
           
           <div className="divide-y divide-white/[0.06]">
-            {/* SMTP Configuration */}
+            {/* Email Configuration */}
             <SettingsDrawerRow 
               icon={<i className="fas fa-server"></i>} 
-              label="SMTP Configuration" 
+              label="Email Configuration" 
               description="Configure your email server settings for outgoing emails." 
               onSave={async () => await saveSection({ payments: { smtp: formData.payments?.smtp } as any }, 'SMTP settings updated.')}
             >
