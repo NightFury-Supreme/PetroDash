@@ -101,6 +101,8 @@ export function Overview({
             description="Your profile picture URL."
             value={form.profilePicture ? <span className="truncate max-w-[220px] inline-block align-bottom">{form.profilePicture}</span> : 'Not set'}
             editing={editingAvatar}
+            draft={avatarDraft}
+            forceUnchanged={avatarDraft.trim() === (form.profilePicture || '')}
             field="avatar"
             onEdit={() => {
               setAvatarDraft(form.profilePicture || '');
@@ -310,7 +312,7 @@ function SessionRow({ session, onRevoke }: { session: Session; onRevoke: () => v
   );
 }
 
-export function InfoRow({ icon, label, description, value, editing, draft, field, status, action, customEdit, onEdit, onDraft, onSave, onCancel }: any) {
+export function InfoRow({ icon, label, description, value, editing, draft, field, status, action, customEdit, onEdit, onDraft, onSave, onCancel, forceUnchanged }: any) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [touched, setTouched] = useState(false);
@@ -322,7 +324,7 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
   const usernameVal = typeof draft === 'string' ? draft : '';
   const firstNameVal = draft?.first ?? '';
   const lastNameVal = draft?.last ?? '';
-  const isUnchanged = typeof draft === 'string' ? draft.trim() === (value || '') : false;
+  const isUnchanged = forceUnchanged !== undefined ? forceUnchanged : (typeof draft === 'string' ? draft.trim() === (value || '') : false);
 
   // Format-only validation (no availability)
   const formatValid: { valid: boolean; message: string } | null =
@@ -339,6 +341,16 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
           if (!firstNameVal.trim()) return { valid: false, message: 'First name is required.' };
           if (!lastNameVal.trim()) return { valid: false, message: 'Last name is required.' };
           return { valid: true, message: 'Name looks good.' };
+        })()
+      : field === 'avatar' && editing
+      ? (() => {
+          if (!usernameVal.trim()) return { valid: true, message: '' }; // empty is allowed
+          try {
+            new URL(usernameVal.trim());
+            return { valid: true, message: '' };
+          } catch {
+            return { valid: false, message: 'Invalid URL format.' };
+          }
         })()
       : null;
 
@@ -439,7 +451,7 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
                   }`}
                 />
               )}
-              {validation && (touched || usernameAvail !== 'idle') && validation.message && (
+              {validation && (touched || usernameAvail !== 'idle' || field === 'avatar') && validation.message && (
                 <div className={`mt-2 flex items-center gap-1.5 text-[11px] ${validation.valid ? 'text-emerald-400/70' : 'text-red-400/70'}`}>
                   {usernameAvail === 'checking'
                     ? <span className="h-2.5 w-2.5 rounded-full border-[1.5px] border-current border-t-transparent animate-spin" />
