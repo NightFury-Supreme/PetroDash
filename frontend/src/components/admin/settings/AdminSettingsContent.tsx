@@ -982,6 +982,17 @@ export function AdminSettingsContent({
                        <p className="mt-2 text-[11px] text-[#555]">This email address will be used as the sender for all outgoing emails.</p>
                      </div>
                    </div>
+                   
+                   <div className="flex items-center justify-between pt-4 border-t border-white/[0.06]">
+                     <div className="flex flex-col">
+                       <span className="text-sm font-medium text-[#D4D4D4] mb-0.5">Enable TLS/SSL</span>
+                       <span className="text-xs text-[#888]">Use a secure connection (typically true for port 465, false for 587)</span>
+                     </div>
+                     <label className="relative inline-flex items-center cursor-pointer">
+                       <input type="checkbox" className="sr-only peer" checked={formData.payments?.smtp?.secure || false} onChange={(e) => updateFormData('payments.smtp.secure', e.target.checked)} disabled={loading} />
+                       <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
+                     </label>
+                   </div>
                </div>
             </SettingsDrawerRow>
           </div>
