@@ -21,7 +21,6 @@ import {
   MapPin,
   List,
   Sliders,
-  Mail,
   Tag,
   ShoppingCart,
   Receipt,
