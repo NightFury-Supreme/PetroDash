@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useToast } from "@/components/ui/ToastProvider";
 import { useModal } from '@/components/Modal';
 import { UpdateSystem } from '../updates';
-import { Palette, Globe, ShieldCheck, Server, Users, Megaphone, CreditCard, RefreshCw, Upload, Trash2 } from 'lucide-react';
+import { Palette, Globe, ShieldCheck, Server, Users, Megaphone, CreditCard, RefreshCw, Upload, Trash2, LayoutTemplate, Image as ImageIcon, Coins, Clock, Gift, Mail, Key, ShieldAlert, MessageSquare, Bot, Fingerprint, BadgeDollarSign, Link as LinkIcon, Activity, Database, HardDrive, Cpu, Network } from 'lucide-react';
 
 function SideItem({ icon: Icon, label, active, onClick }: { icon: any; label: string; active?: boolean; onClick: () => void; }) {
   return (
@@ -94,6 +94,7 @@ interface AdminSettingsContentProps {
 }
 
 function SettingsRow({ 
+  icon,
   label, 
   description, 
   children, 
@@ -101,6 +102,7 @@ function SettingsRow({
   displayValue,
   onSave
 }: { 
+  icon?: React.ReactNode,
   label: string, 
   description: React.ReactNode, 
   children: React.ReactNode, 
@@ -127,9 +129,16 @@ function SettingsRow({
   return (
     <div className="px-5 py-4 transition hover:bg-white/[0.02]">
       <div className={`grid grid-cols-1 gap-4 md:grid-cols-[minmax(250px,1fr)_1fr_150px] md:items-start`}>
-        <div className="md:mt-1">
-          <p className="text-sm font-semibold text-[#D4D4D4]">{label}</p>
-          <div className="mt-0.5 text-[13px] text-[#888]">{description}</div>
+        <div className="flex items-center gap-3 md:mt-1">
+          {icon && (
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#222] border border-[#2A2A2A] text-[#D4D4D4]">
+              {React.isValidElement(icon) && typeof icon.type !== 'string' ? React.cloneElement(icon as React.ReactElement<any>, { size: 16 }) : icon}
+            </div>
+          )}
+          <div>
+            <p className="text-sm font-semibold text-[#D4D4D4]">{label}</p>
+            <div className="mt-0.5 text-[13px] text-[#888]">{description}</div>
+          </div>
         </div>
         <div className="flex flex-col w-full justify-center">
           {isEditing ? children : (displayValue !== undefined ? <div className="text-sm text-[#D4D4D4] mt-1">{displayValue}</div> : children)}
@@ -298,7 +307,7 @@ export function AdminSettingsContent({
         </div>
         
         <div className="divide-y divide-white/[0.06]">
-          <SettingsRow label="Site Name" description="The global name of your application." displayValue={formData.siteName || 'Not set'} onSave={() => saveSection({ siteName: formData.siteName }, 'Brand settings updated.')}>
+          <SettingsRow icon={<LayoutTemplate />} label="Site Name" description="The global name of your application." displayValue={formData.siteName || 'Not set'} onSave={() => saveSection({ siteName: formData.siteName }, 'Brand settings updated.')}>
             <input
               type="text"
               className="input w-full max-w-md"
@@ -309,7 +318,7 @@ export function AdminSettingsContent({
             />
           </SettingsRow>
           
-          <SettingsRow label="Site Icon" description="Upload an image (max 5MB, PNG/JPG/GIF/WEBP/SVG)." displayValue={(iconPreview || formData.siteIcon) ? <img src={safeSiteIcon} alt="Icon" className="w-8 h-8 rounded" /> : 'Not set'} onSave={async () => {
+          <SettingsRow icon={(iconPreview || formData.siteIcon) ? <img src={safeSiteIcon} alt="Icon" className="w-6 h-6 rounded" /> : <ImageIcon />} label="Site Icon" description="Upload an image (max 5MB, PNG/JPG/GIF/WEBP/SVG)." displayValue="" onSave={async () => {
                   let finalSiteIcon = formData.siteIcon;
                   if (iconFile) {
                     const token = localStorage.getItem('auth_token');
@@ -402,7 +411,7 @@ export function AdminSettingsContent({
         </div>
         
         <div className="divide-y divide-white/[0.06]">
-          <SettingsRow label="Site Currency" description="This currency is displayed on the shop and all plans." displayValue={formData.localization?.currency || 'USD'} onSave={() => saveSection({ localization: formData.localization }, 'Localization settings updated.')}>
+          <SettingsRow icon={<Coins />} label="Site Currency" description="This currency is displayed on the shop and all plans." displayValue={formData.localization?.currency || 'USD'} onSave={() => saveSection({ localization: formData.localization }, 'Localization settings updated.')}>
             <select
               className="w-full max-w-md h-12 bg-white/[0.02] border border-white/[0.06] rounded-lg px-4 text-white focus:border-[#404040] focus:outline-none transition-colors"
               value={formData.localization?.currency || 'USD'}
@@ -438,7 +447,7 @@ export function AdminSettingsContent({
             </select>
           </SettingsRow>
 
-          <SettingsRow label="Timezone" description="Global timezone for logs and timestamps." displayValue={formData.localization?.timezone || 'UTC'} onSave={() => saveSection({ localization: formData.localization }, 'Localization settings updated.')}>
+          <SettingsRow icon={<Clock />} label="Timezone" description="Global timezone for logs and timestamps." displayValue={formData.localization?.timezone || 'UTC'} onSave={() => saveSection({ localization: formData.localization }, 'Localization settings updated.')}>
             <select
               className="w-full max-w-md h-12 bg-white/[0.02] border border-white/[0.06] rounded-lg px-4 text-white focus:border-[#404040] focus:outline-none transition-colors"
               value={formData.localization?.timezone || 'UTC'}
@@ -475,7 +484,7 @@ export function AdminSettingsContent({
         </div>
 
         <div className="divide-y divide-white/[0.06]">
-          <SettingsRow label="Coins to Referrer" description="Amount of coins given to the person who invited someone." displayValue={formData.referrals?.referrerCoins} onSave={() => saveSection({ referrals: formData.referrals }, 'Referral settings updated.')}>
+          <SettingsRow icon={<Gift />} label="Coins to Referrer" description="Amount of coins given to the person who invited someone." displayValue={formData.referrals?.referrerCoins} onSave={() => saveSection({ referrals: formData.referrals }, 'Referral settings updated.')}>
             <input
               type="number"
               className="input w-full max-w-md"
@@ -486,7 +495,7 @@ export function AdminSettingsContent({
               min={0}
             />
           </SettingsRow>
-          <SettingsRow label="Coins to Referred User" description="Amount of coins given to the new user who joined using an invite." displayValue={formData.referrals?.referredCoins} onSave={() => saveSection({ referrals: formData.referrals }, 'Referral settings updated.')}>
+          <SettingsRow icon={<Gift />} label="Coins to Referred User" description="Amount of coins given to the new user who joined using an invite." displayValue={formData.referrals?.referredCoins} onSave={() => saveSection({ referrals: formData.referrals }, 'Referral settings updated.')}>
             <input
               type="number"
               className="input w-full max-w-md"
@@ -497,7 +506,7 @@ export function AdminSettingsContent({
               min={0}
             />
           </SettingsRow>
-          <SettingsRow label="Min Invites for Custom Code" description="Minimum number of invites required to set a custom referral code." displayValue={formData.referrals?.customCodeMinInvites} onSave={() => saveSection({ referrals: formData.referrals }, 'Referral settings updated.')}>
+          <SettingsRow icon={<Users />} label="Min Invites for Custom Code" description="Minimum number of invites required to set a custom referral code." displayValue={formData.referrals?.customCodeMinInvites} onSave={() => saveSection({ referrals: formData.referrals }, 'Referral settings updated.')}>
             <input
               type="number"
               className="input w-full max-w-md"
@@ -527,7 +536,7 @@ export function AdminSettingsContent({
         
         <div className="divide-y divide-white/[0.06]">
           {/* Email Login Toggle */}
-          <SettingsRow label="Enable Email Login" description="Allow users to register and login with email and password" displayValue={(formData.auth?.emailLogin ?? true) ? 'Enabled' : 'Disabled'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
+          <SettingsRow icon={<Mail />} label="Enable Email Login" description="Allow users to register and login with email and password" displayValue={(formData.auth?.emailLogin ?? true) ? 'Enabled' : 'Disabled'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
             <label className="relative inline-flex items-center cursor-pointer justify-end w-full max-w-md">
               <input
                 type="checkbox"
@@ -541,7 +550,7 @@ export function AdminSettingsContent({
           </SettingsRow>
   
           {/* Discord OAuth */}
-          <SettingsRow label="Enable Discord Login" description="Allow users to login using their Discord account" displayValue={formData.auth?.discord?.enabled ? 'Enabled' : 'Disabled'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
+          <SettingsRow icon={<Fingerprint />} label="Enable Discord Login" description="Allow users to login using their Discord account" displayValue={formData.auth?.discord?.enabled ? 'Enabled' : 'Disabled'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
             <label className="relative inline-flex items-center cursor-pointer justify-end w-full max-w-md">
               <input
                 type="checkbox"
@@ -556,7 +565,7 @@ export function AdminSettingsContent({
 
           {formData.auth?.discord?.enabled && (
             <>
-              <SettingsRow label="Discord Client ID" description="The Client ID from your Discord Developer Portal." displayValue={formData.auth?.discord?.clientId || 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
+              <SettingsRow icon={<Key />} label="Discord Client ID" description="The Client ID from your Discord Developer Portal." displayValue={formData.auth?.discord?.clientId || 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
                 <input
                   type="text"
                   className="input w-full max-w-md"
@@ -566,7 +575,7 @@ export function AdminSettingsContent({
                   disabled={loading}
                 />
               </SettingsRow>
-              <SettingsRow label="Discord Client Secret" description="The Client Secret from your Discord Developer Portal." displayValue={formData.auth?.discord?.clientSecret ? '********' : 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
+              <SettingsRow icon={<Key />} label="Discord Client Secret" description="The Client Secret from your Discord Developer Portal." displayValue={formData.auth?.discord?.clientSecret ? '********' : 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
                 <input
                   type="password"
                   className="input w-full max-w-md"
@@ -578,7 +587,7 @@ export function AdminSettingsContent({
               </SettingsRow>
               
               {/* Discord Auto-Join Toggle */}
-              <SettingsRow label="Enable Auto-Join Discord Server" description="Automatically add users to your Discord server when they login with Discord" displayValue={formData.auth?.discord?.autoJoin ? 'Enabled' : 'Disabled'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
+              <SettingsRow icon={<ShieldAlert />} label="Enable Auto-Join Discord Server" description="Automatically add users to your Discord server when they login with Discord" displayValue={formData.auth?.discord?.autoJoin ? 'Enabled' : 'Disabled'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
                 <label className="relative inline-flex items-center cursor-pointer justify-end w-full max-w-md">
                   <input
                     type="checkbox"
@@ -593,7 +602,7 @@ export function AdminSettingsContent({
 
               {formData.auth?.discord?.autoJoin && (
                 <>
-                  <SettingsRow label="Discord Guild ID" description="The Server (Guild) ID users should join." displayValue={formData.auth?.discord?.guildId || 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
+                  <SettingsRow icon={<MessageSquare />} label="Discord Guild ID" description="The Server (Guild) ID users should join." displayValue={formData.auth?.discord?.guildId || 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
                     <input
                       type="text"
                       className="input w-full max-w-md"
@@ -603,7 +612,7 @@ export function AdminSettingsContent({
                       disabled={loading}
                     />
                   </SettingsRow>
-                  <SettingsRow label="Discord Bot Token" description="Bot token used to add the user to the server." displayValue={formData.auth?.discord?.botToken ? '********' : 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
+                  <SettingsRow icon={<Bot />} label="Discord Bot Token" description="Bot token used to add the user to the server." displayValue={formData.auth?.discord?.botToken ? '********' : 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
                     <input
                       type="password"
                       className="input w-full max-w-md"
@@ -639,7 +648,7 @@ export function AdminSettingsContent({
           )}
 
         {/* Google OAuth */}
-        <SettingsRow label="Enable Google Login" description="Allow users to login using their Google account" displayValue={formData.auth?.google?.enabled ? 'Enabled' : 'Disabled'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
+        <SettingsRow icon={<Fingerprint />} label="Enable Google Login" description="Allow users to login using their Google account" displayValue={formData.auth?.google?.enabled ? 'Enabled' : 'Disabled'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
           <label className="relative inline-flex items-center cursor-pointer justify-end w-full max-w-md">
             <input
               type="checkbox"
@@ -654,7 +663,7 @@ export function AdminSettingsContent({
 
         {formData.auth?.google?.enabled && (
           <>
-            <SettingsRow label="Google Client ID" description="The Client ID from your Google Cloud Console." displayValue={formData.auth?.google?.clientId || 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
+            <SettingsRow icon={<Key />} label="Google Client ID" description="The Client ID from your Google Cloud Console." displayValue={formData.auth?.google?.clientId || 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
               <input
                 type="text"
                 className="input w-full max-w-md"
@@ -664,7 +673,7 @@ export function AdminSettingsContent({
                 disabled={loading}
               />
             </SettingsRow>
-            <SettingsRow label="Google Client Secret" description="The Client Secret from your Google Cloud Console." displayValue={formData.auth?.google?.clientSecret ? '********' : 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
+            <SettingsRow icon={<Key />} label="Google Client Secret" description="The Client Secret from your Google Cloud Console." displayValue={formData.auth?.google?.clientSecret ? '********' : 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
               <input
                 type="password"
                 className="input w-full max-w-md"
@@ -721,7 +730,7 @@ export function AdminSettingsContent({
             ['databases', 'Databases', 'Number of databases allowed'],
             ['coins', 'Coins', 'Starting coin balance']
           ] as [keyof Settings['defaults'], string, string][]).map(([key, label, tooltip]) => (
-            <SettingsRow key={key} label={label} description={tooltip} displayValue={formData.defaults?.[key]} onSave={() => saveSection({ defaults: formData.defaults }, 'Default resources updated.')}>
+            <SettingsRow key={key} icon={key === "cpu" ? <Cpu /> : key === "ram" ? <HardDrive /> : key === "disk" ? <Database /> : <Network />} label={label} description={tooltip} displayValue={formData.defaults?.[key]} onSave={() => saveSection({ defaults: formData.defaults }, 'Default resources updated.')}>
               <input
                 type="number"
                 min="0"
@@ -751,7 +760,7 @@ export function AdminSettingsContent({
         
         <div className="divide-y divide-white/[0.06]">
           {/* Enable/Disable Toggle */}
-          <SettingsRow label="Enable Google AdSense" description="Toggle to enable Google AdSense ads on your site" displayValue={formData.adsense?.enabled ? 'Enabled' : 'Disabled'} onSave={() => saveSection({ adsense: formData.adsense }, 'AdSense settings updated.')}>
+          <SettingsRow icon={<BadgeDollarSign />} label="Enable Google AdSense" description="Toggle to enable Google AdSense ads on your site" displayValue={formData.adsense?.enabled ? 'Enabled' : 'Disabled'} onSave={() => saveSection({ adsense: formData.adsense }, 'AdSense settings updated.')}>
             <label className="relative inline-flex items-center cursor-pointer justify-end w-full max-w-md">
               <input
                 type="checkbox"
@@ -767,7 +776,7 @@ export function AdminSettingsContent({
           {formData.adsense?.enabled && (
             <>
               {/* Publisher ID */}
-              <SettingsRow label="Publisher ID" description="Your Google AdSense Publisher ID (starts with ca-pub-)" displayValue={formData.adsense?.publisherId || 'Not set'} onSave={() => saveSection({ adsense: formData.adsense }, 'AdSense settings updated.')}>
+              <SettingsRow icon={<BadgeDollarSign />} label="Publisher ID" description="Your Google AdSense Publisher ID (starts with ca-pub-)" displayValue={formData.adsense?.publisherId || 'Not set'} onSave={() => saveSection({ adsense: formData.adsense }, 'AdSense settings updated.')}>
                 <input
                   type="text"
                   className="input w-full max-w-md"
@@ -873,7 +882,7 @@ export function AdminSettingsContent({
         
         <div className="divide-y divide-white/[0.06]">
           {/* Enable/Disable Toggle */}
-          <SettingsRow label="Enable PayPal Payments" description="Toggle to enable PayPal Payments for all users" displayValue={formData.payments?.paypal?.enabled ? 'Enabled' : 'Disabled'} onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
+          <SettingsRow icon={<CreditCard />} label="Enable PayPal Payments" description="Toggle to enable PayPal Payments for all users" displayValue={formData.payments?.paypal?.enabled ? 'Enabled' : 'Disabled'} onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
             <label className="relative inline-flex items-center cursor-pointer justify-end w-full max-w-md">
               <input
                 type="checkbox"
@@ -888,7 +897,7 @@ export function AdminSettingsContent({
 
           {formData.payments?.paypal?.enabled && (
             <>
-              <SettingsRow label="Mode" description="Select the environment for PayPal transactions" displayValue={formData.payments?.paypal?.mode === 'live' ? 'Live' : 'Sandbox'} onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
+              <SettingsRow icon={<Activity />} label="Mode" description="Select the environment for PayPal transactions" displayValue={formData.payments?.paypal?.mode === 'live' ? 'Live' : 'Sandbox'} onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
                 <select
                   className="w-full max-w-md h-12 bg-white/[0.02] border border-white/[0.06] rounded-lg px-4 text-white focus:border-[#404040] focus:outline-none transition-colors"
                   value={formData.payments?.paypal?.mode || 'sandbox'}
@@ -900,7 +909,7 @@ export function AdminSettingsContent({
                 </select>
               </SettingsRow>
 
-              <SettingsRow label="Client ID" description="Your PayPal Client ID" displayValue={formData.payments?.paypal?.clientId || 'Not set'} onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
+              <SettingsRow icon={<Key />} label="Client ID" description="Your PayPal Client ID" displayValue={formData.payments?.paypal?.clientId || 'Not set'} onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
                 <input
                   type="text"
                   className="input w-full max-w-md"
@@ -911,7 +920,7 @@ export function AdminSettingsContent({
                 />
               </SettingsRow>
               
-              <SettingsRow label="Client Secret" description="Your PayPal Client Secret" displayValue={formData.payments?.paypal?.clientSecret ? '********' : 'Not set'} onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
+              <SettingsRow icon={<Key />} label="Client Secret" description="Your PayPal Client Secret" displayValue={formData.payments?.paypal?.clientSecret ? '********' : 'Not set'} onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
                 <input
                   type="password"
                   className="input w-full max-w-md"
@@ -922,7 +931,7 @@ export function AdminSettingsContent({
                 />
               </SettingsRow>
               
-              <SettingsRow label="Webhook ID" description={<>Configure your PayPal Webhook to POST to <code className="bg-[#202020] px-2 py-1 rounded text-blue-400">{process.env.NEXT_PUBLIC_API_BASE}/api/paypal/webhook</code> and paste the Webhook ID here.</>} displayValue={formData.payments?.paypal?.webhookId || 'Not set'} onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
+              <SettingsRow icon={<LinkIcon />} label="Webhook ID" description={<>Configure your PayPal Webhook to POST to <code className="bg-[#202020] px-2 py-1 rounded text-blue-400">{process.env.NEXT_PUBLIC_API_BASE}/api/paypal/webhook</code> and paste the Webhook ID here.</>} displayValue={formData.payments?.paypal?.webhookId || 'Not set'} onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
                 <input
                   type="text"
                   className="input w-full max-w-md"
