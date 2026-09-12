@@ -489,7 +489,7 @@ function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: Variant
           <InfoRow label="Request ID" value={log._id}                                  mono muted />
           <InfoRow label="Session ID" value={log.sessionId ?? meta.sessionId}          mono muted />
           <InfoRow label="IP Address" value={ip ?? '—'}                                mono />
-          {log.category    && <InfoRow label="Category" value={log.category} />}
+          {log.category    && <InfoRow label="Category" value={log.category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} />}
           {log.method      && <InfoRow label="Method"   value={log.method}   />}
           {log.path        && <InfoRow label="Path"     value={log.path}     mono muted />}
           {variant === 'admin' && log.resourceType && (
