@@ -437,11 +437,15 @@ export function AdminSettingsContent({
         </div>
         
         <div className="divide-y divide-white/[0.06]">
-          <SettingsRow icon={<Coins />} label="Site Currency" description="This currency is displayed on the shop and all plans." displayValue={formData.localization?.currency || 'USD'} onSave={() => saveSection({ localization: formData.localization }, 'Localization settings updated.')}>
+          <SettingsRow icon={<Coins />} label="Site Currency" description="This currency is displayed on the shop and all plans." onSave={() => saveSection({ localization: formData.localization }, 'Localization settings updated.')}>
             <select
               className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
               value={formData.localization?.currency || 'USD'}
-              onChange={(e) => updateFormData('localization.currency', e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                updateFormData('localization.currency', val);
+                saveSection({ localization: { ...formData.localization, currency: val } }, 'Localization settings updated.');
+              }}
               disabled={loading}
             >
               <option value="USD" className="bg-[#202020] text-white">USD - US Dollar</option>
@@ -473,11 +477,15 @@ export function AdminSettingsContent({
             </select>
           </SettingsRow>
 
-          <SettingsRow icon={<Clock />} label="Timezone" description="Global timezone for logs and timestamps." displayValue={formData.localization?.timezone || 'UTC'} onSave={() => saveSection({ localization: formData.localization }, 'Localization settings updated.')}>
+          <SettingsRow icon={<Clock />} label="Timezone" description="Global timezone for logs and timestamps." onSave={() => saveSection({ localization: formData.localization }, 'Localization settings updated.')}>
             <select
               className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
               value={formData.localization?.timezone || 'UTC'}
-              onChange={(e) => updateFormData('localization.timezone', e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                updateFormData('localization.timezone', val);
+                saveSection({ localization: { ...formData.localization, timezone: val } }, 'Localization settings updated.');
+              }}
               disabled={loading}
             >
               <option value="UTC" className="bg-[#202020] text-white">UTC</option>
@@ -908,13 +916,18 @@ export function AdminSettingsContent({
         
         <div className="divide-y divide-white/[0.06]">
           {/* Enable/Disable Toggle */}
-          <SettingsRow icon={<CreditCard />} label="Enable PayPal Payments" description="Toggle to enable PayPal Payments for all users" displayValue={formData.payments?.paypal?.enabled ? 'Enabled' : 'Disabled'} onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
+          <SettingsRow icon={<CreditCard />} label="Enable PayPal Payments" description="Toggle to enable PayPal Payments for all users" onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
             <label className="relative inline-flex items-center cursor-pointer justify-end w-full max-w-md">
               <input
                 type="checkbox"
                 className="sr-only peer"
                 checked={formData.payments?.paypal?.enabled || false}
-                onChange={(e) => updateFormData('payments.paypal.enabled', e.target.checked)}
+                onChange={(e) => {
+                  const val = e.target.checked;
+                  updateFormData('payments.paypal.enabled', val);
+                  const newPaypal = { ...formData.payments?.paypal, enabled: val };
+                  saveSection({ payments: { ...formData.payments, paypal: newPaypal } }, 'PayPal settings updated.');
+                }}
                 disabled={loading}
               />
               <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
@@ -923,11 +936,16 @@ export function AdminSettingsContent({
 
           {formData.payments?.paypal?.enabled && (
             <>
-              <SettingsRow icon={<Activity />} label="Mode" description="Select the environment for PayPal transactions" displayValue={formData.payments?.paypal?.mode === 'live' ? 'Live' : 'Sandbox'} onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
+              <SettingsRow icon={<Activity />} label="Mode" description="Select the environment for PayPal transactions" onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
                 <select
                   className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
                   value={formData.payments?.paypal?.mode || 'sandbox'}
-                  onChange={(e) => updateFormData('payments.paypal.mode', e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    updateFormData('payments.paypal.mode', val);
+                    const newPaypal = { ...formData.payments?.paypal, mode: val as 'sandbox' | 'live' };
+                    saveSection({ payments: { ...formData.payments, paypal: newPaypal } }, 'PayPal settings updated.');
+                  }}
                   disabled={loading}
                 >
                   <option value="sandbox" className="bg-[#202020] text-white">Sandbox (Testing)</option>
