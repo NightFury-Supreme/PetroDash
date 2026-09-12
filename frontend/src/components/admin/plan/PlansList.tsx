@@ -139,7 +139,7 @@ export function PlansList({
                 
                 <div className="text-center p-4 bg-[#202020] rounded-xl border border-[#303030]">
                   <div className="text-2xl font-bold text-white mb-1">
-                    {plan.stock === -1 ? '❌' : plan.stock === 0 ? '∞' : plan.stock}
+                    {plan.stock === -1 ? '—' : plan.stock === 0 ? '∞' : plan.stock}
                   </div>
                   <div className="text-sm text-[#AAAAAA]">Stock</div>
                 </div>

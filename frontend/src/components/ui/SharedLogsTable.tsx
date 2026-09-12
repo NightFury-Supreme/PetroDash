@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import Link from 'next/link';
+import { ClipboardList } from 'lucide-react';
 import { RankBadge } from '@/components/ui/RankBadge';
 import { getFieldLabel, getCategoryLabel } from '@/config/field-labels';
 
@@ -578,7 +579,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
 
         {!loading && logs.length === 0 && (
           <div className="py-16 flex flex-col items-center justify-center gap-3 text-white/40">
-            <span className="text-2xl opacity-50">📋</span>
+            <ClipboardList size={24} className="opacity-50" />
             <p className="text-xs">No activity yet</p>
           </div>
         )}
