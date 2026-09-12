@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useToast } from "@/components/ui/ToastProvider";
 import { useModal } from '@/components/Modal';
+import { Drawer } from '@/components/ui/Drawer';
 import { UpdateSystem } from '../updates';
-import { Palette, Globe, ShieldCheck, Server, Users, Megaphone, CreditCard, RefreshCw, Upload, Trash2, LayoutTemplate, Image as ImageIcon, Coins, Clock, Gift, Mail, Key, ShieldAlert, MessageSquare, Bot, Fingerprint, BadgeDollarSign, Link as LinkIcon, Activity, Database, HardDrive, Cpu, Network, ChevronDown, Loader2 } from 'lucide-react';
+import { Palette, Globe, ShieldCheck, Server, Users, Megaphone, CreditCard, RefreshCw, Upload, Trash2, LayoutTemplate, Image as ImageIcon, Coins, Clock, Gift, Mail, Fingerprint, BadgeDollarSign, Database, HardDrive, Cpu, Network, ChevronDown, Loader2 } from 'lucide-react';
 
 function SideItem({ icon: Icon, label, active, onClick }: { icon: any; label: string; active?: boolean; onClick: () => void; }) {
   return (
@@ -267,7 +268,7 @@ function SettingsRow({
                   className="flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-medium transition disabled:cursor-not-allowed bg-[#FF5722] hover:bg-[#F4511E] text-white"
                   disabled={isSaving}
                 >
-                  {isSaving ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-save text-[14px]"></i>} Save
+                  {isSaving ? <Loader2 size={16} className="animate-spin" /> : <><i className="fas fa-save text-[14px]"></i> Save</>}
                 </button>
               </>
             )}
@@ -276,6 +277,106 @@ function SettingsRow({
       </div>
     </div>
   );
+}
+
+function SettingsDrawerRow({
+  icon,
+  label,
+  description,
+  enabled,
+  onToggle,
+  onSave,
+  children
+}: {
+  icon?: React.ReactNode,
+  label: string,
+  description: React.ReactNode,
+  enabled: boolean,
+  onToggle: (enabled: boolean) => Promise<void>,
+  onSave: () => Promise<void>,
+  children?: React.ReactNode
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  
+  return (
+    <div className="px-5 py-4 transition hover:bg-white/[0.02]">
+      <div className={`grid grid-cols-1 gap-4 md:grid-cols-[minmax(250px,1fr)_1fr_150px] md:items-start`}>
+         <div className="flex items-center gap-3">
+          {icon && (
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#222] border border-[#2A2A2A] text-[#D4D4D4]">
+              {React.isValidElement(icon) && typeof icon.type !== 'string' ? React.cloneElement(icon as React.ReactElement<any>, { size: 16 }) : icon}
+            </div>
+          )}
+           <div>
+             <p className="text-sm font-semibold text-[#D4D4D4]">{label}</p>
+             <div className="mt-0.5 text-[13px] text-[#888]">{description}</div>
+           </div>
+         </div>
+         <div className="flex flex-col w-full justify-center">
+            <div className="text-sm text-[#D4D4D4] flex items-center md:justify-end h-9">
+              {enabled ? (
+                 <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">Enabled</span>
+              ) : (
+                 <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">Disabled</span>
+              )}
+            </div>
+         </div>
+         <div className="flex items-center justify-end gap-2">
+            <button onClick={() => setIsOpen(true)} className="flex h-9 items-center gap-1.5 rounded-lg border border-[#222] bg-[#1A1A1A] px-3 text-xs font-medium text-[#D4D4D4] hover:bg-[#222] transition">
+              <i className="fas fa-pencil-alt text-[10px]"></i> Edit
+            </button>
+         </div>
+      </div>
+      
+      <Drawer
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        title={`Configure ${label}`}
+        subtitle={typeof description === 'string' ? description : "Update this setting"}
+        icon={icon}
+        footer={
+          <div className="flex items-center justify-between w-full">
+            {enabled ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <button onClick={async () => { setIsSaving(true); await onToggle(false); setIsSaving(false); setIsOpen(false); }} className="flex h-9 items-center justify-center gap-2 rounded-lg px-4 text-xs font-medium transition-all border border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20 disabled:opacity-50" disabled={isSaving}>
+                     {isSaving ? <Loader2 size={14} className="animate-spin" /> : <><Trash2 size={14}/> Disable</>}
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                   <button onClick={() => setIsOpen(false)} className="h-9 rounded-lg border border-[#222] bg-transparent px-4 text-xs font-medium text-[#888] hover:bg-[#161616] hover:text-[#D4D4D4]">Cancel</button>
+                   <button onClick={async () => { setIsSaving(true); await onSave(); setIsSaving(false); setIsOpen(false); }} className="flex h-9 items-center justify-center gap-2 rounded-lg px-5 text-xs font-medium bg-[#FF5722] text-white hover:bg-[#F4511E] disabled:opacity-50" disabled={isSaving}>
+                     {isSaving ? <Loader2 size={14} className="animate-spin" /> : "Save Changes"}
+                   </button>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center justify-end w-full gap-2">
+                 <button onClick={() => setIsOpen(false)} className="h-9 rounded-lg border border-[#222] bg-transparent px-4 text-xs font-medium text-[#888] hover:bg-[#161616] hover:text-[#D4D4D4]">Cancel</button>
+                 <button onClick={async () => { setIsSaving(true); await onToggle(true); setIsSaving(false); setIsOpen(false); }} className="flex h-9 items-center justify-center gap-2 rounded-lg px-5 text-xs font-medium bg-[#FF5722] text-white hover:bg-[#F4511E] disabled:opacity-50" disabled={isSaving}>
+                    {isSaving ? <Loader2 size={14} className="animate-spin" /> : "Enable Method"}
+                 </button>
+              </div>
+            )}
+          </div>
+        }
+      >
+        {children ? (
+          <div className="space-y-5 px-1 py-2">
+             {children}
+          </div>
+        ) : (
+          <div className="py-10 text-center flex flex-col items-center">
+             <div className="h-12 w-12 rounded-full bg-[#1A1A1A] border border-[#222] flex items-center justify-center text-[#555] mb-4">
+                {icon}
+             </div>
+             <p className="text-[#888] text-sm max-w-[250px] mx-auto">This setting requires no additional configuration. Simply enable or disable it below.</p>
+          </div>
+        )}
+      </Drawer>
+    </div>
+  )
 }
 
 function SiteIconDisplay({ src }: { src: string }) {
@@ -691,97 +792,61 @@ export function AdminSettingsContent({
         </div>
         
         <div className="divide-y divide-white/[0.06]">
-          {/* Email Login Toggle */}
-          <SettingsRow icon={<Mail />} label="Enable Email Login" description="Allow users to register and login with email and password" displayValue={(formData.auth?.emailLogin ?? true) ? 'Enabled' : 'Disabled'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
-            <label className="relative inline-flex items-center cursor-pointer justify-end w-full max-w-md">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={formData.auth?.emailLogin ?? true}
-                onChange={(e) => updateFormData('auth.emailLogin', e.target.checked)}
-                disabled={loading}
-              />
-              <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
-            </label>
-          </SettingsRow>
+          {/* Email Login */}
+          <SettingsDrawerRow 
+            icon={<Mail />} 
+            label="Email Login" 
+            description="Allow users to register and login with email and password" 
+            enabled={formData.auth?.emailLogin ?? true} 
+            onToggle={async (enabled) => { updateFormData('auth.emailLogin', enabled); await saveSection({ auth: { ...formData.auth, emailLogin: enabled } as any }, `Email login ${enabled ? 'enabled' : 'disabled'}`); }} 
+            onSave={async () => await saveSection({ auth: formData.auth }, 'Authentication settings updated.')}
+          />
   
-          {/* Discord OAuth */}
-          <SettingsRow icon={<Fingerprint />} label="Enable Discord Login" description="Allow users to login using their Discord account" displayValue={formData.auth?.discord?.enabled ? 'Enabled' : 'Disabled'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
-            <label className="relative inline-flex items-center cursor-pointer justify-end w-full max-w-md">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={formData.auth?.discord?.enabled || false}
-                onChange={(e) => updateFormData('auth.discord.enabled', e.target.checked)}
-                disabled={loading}
-              />
-              <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
-            </label>
-          </SettingsRow>
-
-          {formData.auth?.discord?.enabled && (
-            <>
-              <SettingsRow icon={<Key />} label="Discord Client ID" description="The Client ID from your Discord Developer Portal." displayValue={formData.auth?.discord?.clientId || 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
-                <input
-                  type="text"
-                  className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
-                  placeholder="Enter Discord Client ID"
-                  value={formData.auth?.discord?.clientId || ''}
-                  onChange={(e) => updateFormData('auth.discord.clientId', e.target.value)}
-                  disabled={loading}
-                />
-              </SettingsRow>
-              <SettingsRow icon={<Key />} label="Discord Client Secret" description="The Client Secret from your Discord Developer Portal." displayValue={formData.auth?.discord?.clientSecret ? '********' : 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
-                <input
-                  type="password"
-                  className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
-                  placeholder="Enter Discord Client Secret"
-                  value={formData.auth?.discord?.clientSecret || ''}
-                  onChange={(e) => updateFormData('auth.discord.clientSecret', e.target.value)}
-                  disabled={loading}
-                />
-              </SettingsRow>
-              
-              {/* Discord Auto-Join Toggle */}
-              <SettingsRow icon={<ShieldAlert />} label="Enable Auto-Join Discord Server" description="Automatically add users to your Discord server when they login with Discord" displayValue={formData.auth?.discord?.autoJoin ? 'Enabled' : 'Disabled'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
-                <label className="relative inline-flex items-center cursor-pointer justify-end w-full max-w-md">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    checked={formData.auth?.discord?.autoJoin || false}
-                    onChange={(e) => updateFormData('auth.discord.autoJoin', e.target.checked)}
-                    disabled={loading}
-                  />
-                  <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
-                </label>
-              </SettingsRow>
-
-              {formData.auth?.discord?.autoJoin && (
-                <>
-                  <SettingsRow icon={<MessageSquare />} label="Discord Guild ID" description="The Server (Guild) ID users should join." displayValue={formData.auth?.discord?.guildId || 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
-                    <input
-                      type="text"
-                      className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
-                      placeholder="Enter Discord Guild (Server) ID"
-                      value={formData.auth?.discord?.guildId || ''}
-                      onChange={(e) => updateFormData('auth.discord.guildId', e.target.value)}
-                      disabled={loading}
-                    />
-                  </SettingsRow>
-                  <SettingsRow icon={<Bot />} label="Discord Bot Token" description="Bot token used to add the user to the server." displayValue={formData.auth?.discord?.botToken ? '********' : 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
-                    <input
-                      type="password"
-                      className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
-                      placeholder="Enter Discord Bot Token"
-                      value={formData.auth?.discord?.botToken || ''}
-                      onChange={(e) => updateFormData('auth.discord.botToken', e.target.value)}
-                      disabled={loading}
-                    />
-                  </SettingsRow>
-                </>
-              )}
-              
-              <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-4 mt-4">
+          {/* Discord Login */}
+          <SettingsDrawerRow 
+            icon={<Fingerprint />} 
+            label="Discord Login" 
+            description="Allow users to login using their Discord account" 
+            enabled={formData.auth?.discord?.enabled || false} 
+            onToggle={async (enabled) => { updateFormData('auth.discord.enabled', enabled); await saveSection({ auth: { ...formData.auth, discord: { ...formData.auth?.discord, enabled } } as any }, `Discord login ${enabled ? 'enabled' : 'disabled'}`); }} 
+            onSave={async () => await saveSection({ auth: formData.auth }, 'Authentication settings updated.')}
+          >
+             <div className="space-y-4">
+               <div>
+                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Discord Client ID</label>
+                 <input type="text" className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50" placeholder="Enter Discord Client ID" value={formData.auth?.discord?.clientId || ''} onChange={(e) => updateFormData('auth.discord.clientId', e.target.value)} disabled={loading} />
+               </div>
+               <div>
+                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Discord Client Secret</label>
+                 <input type="password" className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50" placeholder="Enter Discord Client Secret" value={formData.auth?.discord?.clientSecret || ''} onChange={(e) => updateFormData('auth.discord.clientSecret', e.target.value)} disabled={loading} />
+               </div>
+               
+               <div className="pt-2">
+                 <div className="flex items-center justify-between mb-2">
+                   <label className="text-xs font-semibold uppercase tracking-wider text-[#888]">Auto-Join Discord Server</label>
+                   <label className="relative inline-flex items-center cursor-pointer">
+                     <input type="checkbox" className="sr-only peer" checked={formData.auth?.discord?.autoJoin || false} onChange={(e) => updateFormData('auth.discord.autoJoin', e.target.checked)} disabled={loading} />
+                     <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
+                   </label>
+                 </div>
+                 <p className="text-[11px] text-[#555] mb-3">Automatically add users to your Discord server when they login</p>
+                 
+                 {formData.auth?.discord?.autoJoin && (
+                   <div className="space-y-4 mt-3 pl-3 border-l-2 border-[#222]">
+                     <div>
+                       <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Discord Guild ID</label>
+                       <input type="text" className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50" placeholder="Enter Discord Guild (Server) ID" value={formData.auth?.discord?.guildId || ''} onChange={(e) => updateFormData('auth.discord.guildId', e.target.value)} disabled={loading} />
+                     </div>
+                     <div>
+                       <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Discord Bot Token</label>
+                       <input type="password" className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50" placeholder="Enter Discord Bot Token" value={formData.auth?.discord?.botToken || ''} onChange={(e) => updateFormData('auth.discord.botToken', e.target.value)} disabled={loading} />
+                     </div>
+                   </div>
+                 )}
+               </div>
+             </div>
+             
+             <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-4 mt-6">
                 <div className="flex items-start gap-3">
                   <i className="fab fa-discord text-white mt-1"></i>
                   <div className="text-sm text-[#AAAAAA]">
@@ -799,66 +864,47 @@ export function AdminSettingsContent({
                     </ol>
                   </div>
                 </div>
-              </div>
-            </>
-          )}
+             </div>
+          </SettingsDrawerRow>
 
-        {/* Google OAuth */}
-        <SettingsRow icon={<Fingerprint />} label="Enable Google Login" description="Allow users to login using their Google account" displayValue={formData.auth?.google?.enabled ? 'Enabled' : 'Disabled'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
-          <label className="relative inline-flex items-center cursor-pointer justify-end w-full max-w-md">
-            <input
-              type="checkbox"
-              className="sr-only peer"
-              checked={formData.auth?.google?.enabled || false}
-              onChange={(e) => updateFormData('auth.google.enabled', e.target.checked)}
-              disabled={loading}
-            />
-            <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
-          </label>
-        </SettingsRow>
-
-        {formData.auth?.google?.enabled && (
-          <>
-            <SettingsRow icon={<Key />} label="Google Client ID" description="The Client ID from your Google Cloud Console." displayValue={formData.auth?.google?.clientId || 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
-              <input
-                type="text"
-                className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
-                placeholder="Enter Google Client ID"
-                value={formData.auth?.google?.clientId || ''}
-                onChange={(e) => updateFormData('auth.google.clientId', e.target.value)}
-                disabled={loading}
-              />
-            </SettingsRow>
-            <SettingsRow icon={<Key />} label="Google Client Secret" description="The Client Secret from your Google Cloud Console." displayValue={formData.auth?.google?.clientSecret ? '********' : 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
-              <input
-                type="password"
-                className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
-                placeholder="Enter Google Client Secret"
-                value={formData.auth?.google?.clientSecret || ''}
-                onChange={(e) => updateFormData('auth.google.clientSecret', e.target.value)}
-                disabled={loading}
-              />
-            </SettingsRow>
-
-            <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-4 mt-4">
-              <div className="flex items-start gap-3">
-                <i className="fab fa-google text-white mt-1"></i>
-                <div className="text-sm text-[#AAAAAA]">
-                  <p className="font-medium text-white mb-2">Google Setup Instructions:</p>
-                  <ol className="space-y-1 list-decimal list-inside">
-                    <li>Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white hover:underline">Google Cloud Console</a></li>
-                    <li>Create a new project or select existing one</li>
-                    <li>Configure OAuth consent screen (Internal/External)</li>
-                    <li>Go to Credentials → Create Credentials → OAuth client ID</li>
-                    <li>Application type: Web application</li>
-                    <li>Authorized redirect URIs: <code className="bg-[#181818] px-2 py-1 rounded text-gray-300">{process.env.NEXT_PUBLIC_API_BASE}/api/oauth/google/callback</code></li>
-                    <li>Copy Client ID and Client Secret to the fields above</li>
-                  </ol>
+          {/* Google Login */}
+          <SettingsDrawerRow 
+            icon={<Fingerprint />} 
+            label="Google Login" 
+            description="Allow users to login using their Google account" 
+            enabled={formData.auth?.google?.enabled || false} 
+            onToggle={async (enabled) => { updateFormData('auth.google.enabled', enabled); await saveSection({ auth: { ...formData.auth, google: { ...formData.auth?.google, enabled } } as any }, `Google login ${enabled ? 'enabled' : 'disabled'}`); }} 
+            onSave={async () => await saveSection({ auth: formData.auth }, 'Authentication settings updated.')}
+          >
+             <div className="space-y-4">
+               <div>
+                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Google Client ID</label>
+                 <input type="text" className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50" placeholder="Enter Google Client ID" value={formData.auth?.google?.clientId || ''} onChange={(e) => updateFormData('auth.google.clientId', e.target.value)} disabled={loading} />
+               </div>
+               <div>
+                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Google Client Secret</label>
+                 <input type="password" className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50" placeholder="Enter Google Client Secret" value={formData.auth?.google?.clientSecret || ''} onChange={(e) => updateFormData('auth.google.clientSecret', e.target.value)} disabled={loading} />
+               </div>
+             </div>
+             
+             <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-4 mt-6">
+                <div className="flex items-start gap-3">
+                  <i className="fab fa-google text-white mt-1"></i>
+                  <div className="text-sm text-[#AAAAAA]">
+                    <p className="font-medium text-white mb-2">Google Setup Instructions:</p>
+                    <ol className="space-y-1 list-decimal list-inside">
+                      <li>Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white hover:underline">Google Cloud Console</a></li>
+                      <li>Create a new project or select existing one</li>
+                      <li>Configure OAuth consent screen (Internal/External)</li>
+                      <li>Go to Credentials → Create Credentials → OAuth client ID</li>
+                      <li>Application type: Web application</li>
+                      <li>Authorized redirect URIs: <code className="bg-[#181818] px-2 py-1 rounded text-gray-300">{process.env.NEXT_PUBLIC_API_BASE}/api/oauth/google/callback</code></li>
+                      <li>Copy Client ID and Client Secret to the fields above</li>
+                    </ol>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </>
-        )}
+             </div>
+          </SettingsDrawerRow>
         </div>
       </section>
       </div>
@@ -915,96 +961,69 @@ export function AdminSettingsContent({
         </div>
         
         <div className="divide-y divide-white/[0.06]">
-          {/* Enable/Disable Toggle */}
-          <SettingsRow icon={<BadgeDollarSign />} label="Enable Google AdSense" description="Toggle to enable Google AdSense ads on your site" displayValue={formData.adsense?.enabled ? 'Enabled' : 'Disabled'} onSave={() => saveSection({ adsense: formData.adsense }, 'AdSense settings updated.')}>
-            <label className="relative inline-flex items-center cursor-pointer justify-end w-full max-w-md">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={formData.adsense?.enabled || false}
-                onChange={(e) => updateFormData('adsense.enabled', e.target.checked)}
-                disabled={loading}
-              />
-              <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
-            </label>
-          </SettingsRow>
+          {/* AdSense Settings */}
+          <SettingsDrawerRow 
+            icon={<BadgeDollarSign />} 
+            label="Google AdSense" 
+            description="Configure Google AdSense integration and ad slots" 
+            enabled={formData.adsense?.enabled || false} 
+            onToggle={async (enabled) => { updateFormData('adsense.enabled', enabled); await saveSection({ adsense: { ...formData.adsense, enabled } as any }, `AdSense ${enabled ? 'enabled' : 'disabled'}`); }} 
+            onSave={async () => await saveSection({ adsense: formData.adsense }, 'AdSense settings updated.')}
+          >
+             <div className="space-y-6">
+               <div>
+                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Publisher ID</label>
+                 <input type="text" className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50" placeholder="ca-pub-1234567890123456" value={formData.adsense?.publisherId || ''} onChange={(e) => updateFormData('adsense.publisherId', e.target.value)} disabled={loading} />
+                 <p className="mt-1 text-[11px] text-[#555]">Your Google AdSense Publisher ID (starts with ca-pub-)</p>
+               </div>
+               
+               <div>
+                 <h4 className="text-xs font-semibold uppercase tracking-wider text-[#888] mb-3">Ad Slots</h4>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   {([
+                     ['header', 'Header Ad Slot'],
+                     ['sidebar', 'Sidebar Ad Slot'],
+                     ['footer', 'Footer Ad Slot'],
+                     ['content', 'Content Ad Slot'],
+                     ['mobile', 'Mobile Ad Slot']
+                   ] as const).map(([key, label]) => (
+                     <div key={key} className="space-y-1.5">
+                       <label className="block text-[11px] font-medium text-[#AAA]">{label}</label>
+                       <input type="text" className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50" placeholder={`${key} ad slot ID`} value={formData.adsense?.adSlots?.[key] || ''} onChange={(e) => updateFormData(`adsense.adSlots.${key}`, e.target.value)} disabled={loading} />
+                     </div>
+                   ))}
+                 </div>
+               </div>
 
-          {formData.adsense?.enabled && (
-            <>
-              {/* Publisher ID */}
-              <SettingsRow icon={<BadgeDollarSign />} label="Publisher ID" description="Your Google AdSense Publisher ID (starts with ca-pub-)" displayValue={formData.adsense?.publisherId || 'Not set'} onSave={() => saveSection({ adsense: formData.adsense }, 'AdSense settings updated.')}>
-                <input
-                  type="text"
-                  className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
-                  placeholder="ca-pub-1234567890123456"
-                  value={formData.adsense?.publisherId || ''}
-                  onChange={(e) => updateFormData('adsense.publisherId', e.target.value)}
-                  disabled={loading}
-                />
-              </SettingsRow>
-
-              {/* Ad Slots */}
-              <div>
-                <h4 className="text-sm font-semibold text-white mb-4">Ad Slots</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {([
-                    ['header', 'Header Ad Slot'],
-                    ['sidebar', 'Sidebar Ad Slot'],
-                    ['footer', 'Footer Ad Slot'],
-                    ['content', 'Content Ad Slot'],
-                    ['mobile', 'Mobile Ad Slot']
-                  ] as const).map(([key, label]) => (
-                    <div key={key} className="space-y-2">
-                      <label className="block text-sm font-medium text-[#D4D4D4]">{label}</label>
-                      <input
-                        type="text"
-                        className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
-                        placeholder={`${key} ad slot ID`}
-                        value={formData.adsense?.adSlots?.[key] || ''}
-                        onChange={(e) => updateFormData(`adsense.adSlots.${key}`, e.target.value)}
-                        disabled={loading}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Ad Types */}
-              <div>
-                <h4 className="text-sm font-semibold text-white mb-4">Ad Types</h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {([
-                    ['display', 'Display Ads'],
-                    ['text', 'Text Ads'],
-                    ['link', 'Link Ads'],
-                    ['inFeed', 'In-Feed Ads'],
-                    ['inArticle', 'In-Article Ads'],
-                    ['matchedContent', 'Matched Content']
-                  ] as const).map(([key, label]) => (
-                    <div key={key} className="flex items-center gap-3">
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          className="sr-only peer"
-                          checked={formData.adsense?.adTypes?.[key] || false}
-                          onChange={(e) => updateFormData(`adsense.adTypes.${key}`, e.target.checked)}
-                          disabled={loading}
-                        />
-                        <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
-                      </label>
-                      <span className="text-[#D4D4D4] text-sm">{label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              
-              <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-4">
+               <div>
+                 <h4 className="text-xs font-semibold uppercase tracking-wider text-[#888] mb-3">Ad Types</h4>
+                 <div className="grid grid-cols-2 gap-3 bg-white/[0.02] border border-white/[0.06] rounded-lg p-4">
+                   {([
+                     ['display', 'Display Ads'],
+                     ['text', 'Text Ads'],
+                     ['link', 'Link Ads'],
+                     ['inFeed', 'In-Feed Ads'],
+                     ['inArticle', 'In-Article Ads'],
+                     ['matchedContent', 'Matched Content']
+                   ] as const).map(([key, label]) => (
+                     <div key={key} className="flex items-center gap-3">
+                       <label className="relative inline-flex items-center cursor-pointer">
+                         <input type="checkbox" className="sr-only peer" checked={formData.adsense?.adTypes?.[key] || false} onChange={(e) => updateFormData(`adsense.adTypes.${key}`, e.target.checked)} disabled={loading} />
+                         <div className="w-9 h-5 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-white"></div>
+                       </label>
+                       <span className="text-[#D4D4D4] text-xs font-medium">{label}</span>
+                     </div>
+                   ))}
+                 </div>
+               </div>
+             </div>
+             
+             <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-4 mt-6">
                 <div className="flex items-start gap-3">
                   <i className="fab fa-google text-white mt-1"></i>
                   <div className="text-sm text-[#AAAAAA]">
                     <p className="font-medium text-white mb-2">AdSense Setup Instructions:</p>
-                    <ol className="space-y-1 list-decimal list-inside">
+                    <ol className="space-y-1 list-decimal list-inside text-xs">
                       <li>Go to <a href="https://www.google.com/adsense/" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white hover:underline">Google AdSense</a></li>
                       <li>Sign up or sign in to your AdSense account</li>
                       <li>Add your website and get approved</li>
@@ -1016,9 +1035,8 @@ export function AdminSettingsContent({
                     </ol>
                   </div>
                 </div>
-              </div>
-            </>
-          )}
+             </div>
+          </SettingsDrawerRow>
         </div>
 
       </section>
@@ -1037,93 +1055,57 @@ export function AdminSettingsContent({
         </div>
         
         <div className="divide-y divide-white/[0.06]">
-          {/* Enable/Disable Toggle */}
-          <SettingsRow icon={<CreditCard />} label="Enable PayPal Payments" description="Toggle to enable PayPal Payments for all users" onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
-            <label className="relative inline-flex items-center cursor-pointer justify-end w-full max-w-md">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={formData.payments?.paypal?.enabled || false}
-                onChange={(e) => {
-                  const val = e.target.checked;
-                  updateFormData('payments.paypal.enabled', val);
-                  const newPaypal = { ...formData.payments?.paypal, enabled: val };
-                  saveSection({ payments: { ...formData.payments, paypal: newPaypal } }, 'PayPal settings updated.');
-                }}
-                disabled={loading}
-              />
-              <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
-            </label>
-          </SettingsRow>
-
-          {formData.payments?.paypal?.enabled && (
-            <>
-              <SettingsRow icon={<Activity />} label="Mode" description="Select the environment for PayPal transactions" onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
-            <SettingsDropdown
-              value={formData.payments?.paypal?.mode || 'sandbox'}
-              onChange={async (val) => {
-                updateFormData('payments.paypal.mode', val);
-                const newPaypal = { ...formData.payments?.paypal, mode: val as 'sandbox' | 'live' };
-                await saveSection({ payments: { ...formData.payments, paypal: newPaypal } }, 'PayPal settings updated.');
-              }}
-              disabled={loading}
-              options={[
-                { value: 'sandbox', label: 'Sandbox (Testing)' },
-                { value: 'live', label: 'Live (Production)' }
-              ]}
-            />
-              </SettingsRow>
-
-              <SettingsRow icon={<Key />} label="Client ID" description="Your PayPal Client ID" displayValue={formData.payments?.paypal?.clientId || 'Not set'} onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
-                <input
-                  type="text"
-                  className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
-                  placeholder="Enter PayPal Client ID"
-                  value={formData.payments?.paypal?.clientId || ''}
-                  onChange={(e) => updateFormData('payments.paypal.clientId', e.target.value)}
-                  disabled={loading}
-                />
-              </SettingsRow>
-              
-              <SettingsRow icon={<Key />} label="Client Secret" description="Your PayPal Client Secret" displayValue={formData.payments?.paypal?.clientSecret ? '********' : 'Not set'} onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
-                <input
-                  type="password"
-                  className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
-                  placeholder="Enter PayPal Client Secret"
-                  value={formData.payments?.paypal?.clientSecret || ''}
-                  onChange={(e) => updateFormData('payments.paypal.clientSecret', e.target.value)}
-                  disabled={loading}
-                />
-              </SettingsRow>
-              
-              <SettingsRow icon={<LinkIcon />} label="Webhook ID" description={<>Configure your PayPal Webhook to POST to <code className="bg-[#202020] px-2 py-1 rounded text-blue-400">{process.env.NEXT_PUBLIC_API_BASE}/api/paypal/webhook</code> and paste the Webhook ID here.</>} displayValue={formData.payments?.paypal?.webhookId || 'Not set'} onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
-                <input
-                  type="text"
-                  className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
-                  placeholder="Enter PayPal Webhook ID"
-                  value={formData.payments?.paypal?.webhookId || ''}
-                  onChange={(e) => updateFormData('payments.paypal.webhookId', e.target.value)}
-                  disabled={loading}
-                />
-              </SettingsRow>
-            </>
-          )}
-
-          <div className="pt-5">
-            <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <i className="fas fa-info-circle text-blue-400 mt-1"></i>
-                <div className="text-sm text-[#AAAAAA]">
-                  <p className="font-medium text-white mb-1">Important Notes:</p>
-                  <ul className="space-y-1">
-                    <li>• Use sandbox credentials for testing, live credentials for production</li>
-                    <li>• Return/cancel URLs are fixed at <code className="bg-[#181818] px-2 py-1 rounded">/plan/success</code> and <code className="bg-[#181818] px-2 py-1 rounded">/plan/cancel</code></li>
-                    <li>• Ensure your PayPal app has the necessary permissions enabled</li>
-                  </ul>
+          {/* PayPal Settings */}
+          <SettingsDrawerRow 
+            icon={<CreditCard />} 
+            label="PayPal Payments" 
+            description="Configure PayPal integration for payments" 
+            enabled={formData.payments?.paypal?.enabled || false} 
+            onToggle={async (enabled) => { updateFormData('payments.paypal.enabled', enabled); await saveSection({ payments: { ...formData.payments, paypal: { ...formData.payments?.paypal, enabled } as any } }, `PayPal payments ${enabled ? 'enabled' : 'disabled'}`); }} 
+            onSave={async () => await saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}
+          >
+             <div className="space-y-4">
+               <div>
+                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Environment Mode</label>
+                 <SettingsDropdown
+                   value={formData.payments?.paypal?.mode || 'sandbox'}
+                   onChange={async (val) => updateFormData('payments.paypal.mode', val)}
+                   disabled={loading}
+                   options={[
+                     { value: 'sandbox', label: 'Sandbox (Testing)' },
+                     { value: 'live', label: 'Live (Production)' }
+                   ]}
+                 />
+               </div>
+               <div>
+                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Client ID</label>
+                 <input type="text" className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50" placeholder="Enter PayPal Client ID" value={formData.payments?.paypal?.clientId || ''} onChange={(e) => updateFormData('payments.paypal.clientId', e.target.value)} disabled={loading} />
+               </div>
+               <div>
+                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Client Secret</label>
+                 <input type="password" className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50" placeholder="Enter PayPal Client Secret" value={formData.payments?.paypal?.clientSecret || ''} onChange={(e) => updateFormData('payments.paypal.clientSecret', e.target.value)} disabled={loading} />
+               </div>
+               <div>
+                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Webhook ID</label>
+                 <input type="text" className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50" placeholder="Enter PayPal Webhook ID" value={formData.payments?.paypal?.webhookId || ''} onChange={(e) => updateFormData('payments.paypal.webhookId', e.target.value)} disabled={loading} />
+                 <p className="mt-2 text-[11px] text-[#555]">Configure your PayPal Webhook to POST to <code className="bg-[#202020] px-1.5 py-0.5 rounded text-blue-400">{process.env.NEXT_PUBLIC_API_BASE}/api/paypal/webhook</code></p>
+               </div>
+             </div>
+             
+             <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-4 mt-6">
+                <div className="flex items-start gap-3">
+                  <i className="fas fa-info-circle text-blue-400 mt-1"></i>
+                  <div className="text-sm text-[#AAAAAA]">
+                    <p className="font-medium text-white mb-2">Important Notes:</p>
+                    <ul className="space-y-1 text-xs">
+                      <li>• Use sandbox credentials for testing, live credentials for production</li>
+                      <li>• Return/cancel URLs are fixed at <code className="bg-[#181818] px-2 py-1 rounded">/plan/success</code> and <code className="bg-[#181818] px-2 py-1 rounded">/plan/cancel</code></li>
+                      <li>• Ensure your PayPal app has the necessary permissions enabled</li>
+                    </ul>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
+             </div>
+          </SettingsDrawerRow>
         </div>
 
       </section>
