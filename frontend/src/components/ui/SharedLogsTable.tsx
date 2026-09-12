@@ -435,7 +435,9 @@ function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; m
                   className="text-[10px] text-white/50 hover:text-emerald-400 transition-colors truncate"
                   onClick={e => e.stopPropagation()}
                 >
-                  {log.resourceType === 'user' ? 'User' : log.resourceType === 'server' ? 'Server' : 'Ticket'} {meta.targetName ? `(${meta.targetName})` : log.resourceId.slice(-6)}
+                  {meta.targetName 
+                    ? meta.targetName 
+                    : `${log.resourceType === 'user' ? 'User' : log.resourceType === 'server' ? 'Server' : 'Ticket'} ${log.resourceId.slice(-6)}`}
                 </Link>
                 {log.resourceType === 'user' && meta.targetRole && (
                   <RankBadge rank={meta.targetRole as string} size="sm" />
