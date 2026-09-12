@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useToast } from "@/components/ui/ToastProvider";
 import { useModal } from '@/components/Modal';
 import { UpdateSystem } from '../updates';
-import { Palette, Globe, ShieldCheck, Server, Users, Megaphone, CreditCard, RefreshCw, Upload, Trash2, LayoutTemplate, Image as ImageIcon, Coins, Clock, Gift, Mail, Key, ShieldAlert, MessageSquare, Bot, Fingerprint, BadgeDollarSign, Link as LinkIcon, Activity, Database, HardDrive, Cpu, Network } from 'lucide-react';
+import { Palette, Globe, ShieldCheck, Server, Users, Megaphone, CreditCard, RefreshCw, Upload, Trash2, LayoutTemplate, Image as ImageIcon, Coins, Clock, Gift, Mail, Key, ShieldAlert, MessageSquare, Bot, Fingerprint, BadgeDollarSign, Link as LinkIcon, Activity, Database, HardDrive, Cpu, Network, ChevronDown } from 'lucide-react';
 
 function SideItem({ icon: Icon, label, active, onClick }: { icon: any; label: string; active?: boolean; onClick: () => void; }) {
   return (
@@ -36,6 +36,65 @@ function SideItem({ icon: Icon, label, active, onClick }: { icon: any; label: st
       {Icon && <Icon size={17} strokeWidth={1.75} className="shrink-0" />}
       <span className="truncate">{label}</span>
     </button>
+  );
+}
+
+function SettingsDropdown({
+  value,
+  options,
+  onChange,
+  disabled
+}: {
+  value: string;
+  options: { label: string; value: string }[];
+  onChange: (val: string) => void;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const activeLabel = options.find((o) => o.value === value)?.label || value;
+
+  return (
+    <div className="relative w-full max-w-md" ref={ref}>
+      <button
+        onClick={() => !disabled && setOpen(!open)}
+        disabled={disabled}
+        className="flex h-9 w-full items-center justify-between gap-2 rounded-lg bg-[#101010] border border-[#222] px-3 text-sm text-[#D4D4D4] transition-colors hover:bg-[#151515] hover:border-[#333] disabled:opacity-50"
+      >
+        <span className="truncate">{activeLabel}</span>
+        <ChevronDown size={14} className="opacity-50 shrink-0" />
+      </button>
+
+      {open && (
+        <div className="absolute left-0 right-0 top-10 z-50 rounded-md border border-[#222] bg-[#151515] p-1 shadow-xl max-h-[200px] overflow-y-auto">
+          {options.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => {
+                onChange(opt.value);
+                setOpen(false);
+              }}
+              className={`flex h-8 w-full items-center rounded px-2 text-left text-sm transition-colors ${
+                opt.value === value
+                  ? "bg-white/10 text-white"
+                  : "text-[#888] hover:bg-white/5 hover:text-white"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -438,67 +497,65 @@ export function AdminSettingsContent({
         
         <div className="divide-y divide-white/[0.06]">
           <SettingsRow icon={<Coins />} label="Site Currency" description="This currency is displayed on the shop and all plans." onSave={() => saveSection({ localization: formData.localization }, 'Localization settings updated.')}>
-            <select
-              className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
+            <SettingsDropdown
               value={formData.localization?.currency || 'USD'}
-              onChange={(e) => {
-                const val = e.target.value;
+              onChange={(val) => {
                 updateFormData('localization.currency', val);
                 saveSection({ localization: { ...formData.localization, currency: val } }, 'Localization settings updated.');
               }}
               disabled={loading}
-            >
-              <option value="USD" className="bg-[#202020] text-white">USD - US Dollar</option>
-              <option value="EUR" className="bg-[#202020] text-white">EUR - Euro</option>
-              <option value="GBP" className="bg-[#202020] text-white">GBP - British Pound</option>
-              <option value="INR" className="bg-[#202020] text-white">INR - Indian Rupee</option>
-              <option value="CAD" className="bg-[#202020] text-white">CAD - Canadian Dollar</option>
-              <option value="AUD" className="bg-[#202020] text-white">AUD - Australian Dollar</option>
-              <option value="JPY" className="bg-[#202020] text-white">JPY - Japanese Yen</option>
-              <option value="CHF" className="bg-[#202020] text-white">CHF - Swiss Franc</option>
-              <option value="NZD" className="bg-[#202020] text-white">NZD - New Zealand Dollar</option>
-              <option value="SEK" className="bg-[#202020] text-white">SEK - Swedish Krona</option>
-              <option value="DKK" className="bg-[#202020] text-white">DKK - Danish Krone</option>
-              <option value="NOK" className="bg-[#202020] text-white">NOK - Norwegian Krone</option>
-              <option value="PLN" className="bg-[#202020] text-white">PLN - Polish Złoty</option>
-              <option value="CZK" className="bg-[#202020] text-white">CZK - Czech Koruna</option>
-              <option value="HUF" className="bg-[#202020] text-white">HUF - Hungarian Forint</option>
-              <option value="BRL" className="bg-[#202020] text-white">BRL - Brazilian Real</option>
-              <option value="MXN" className="bg-[#202020] text-white">MXN - Mexican Peso</option>
-              <option value="SGD" className="bg-[#202020] text-white">SGD - Singapore Dollar</option>
-              <option value="HKD" className="bg-[#202020] text-white">HKD - Hong Kong Dollar</option>
-              <option value="CNY" className="bg-[#202020] text-white">CNY - Chinese Yuan</option>
-              <option value="KRW" className="bg-[#202020] text-white">KRW - South Korean Won</option>
-              <option value="ILS" className="bg-[#202020] text-white">ILS - Israeli Shekel</option>
-              <option value="MYR" className="bg-[#202020] text-white">MYR - Malaysian Ringgit</option>
-              <option value="TWD" className="bg-[#202020] text-white">TWD - Taiwan Dollar</option>
-              <option value="PHP" className="bg-[#202020] text-white">PHP - Philippine Peso</option>
-              <option value="THB" className="bg-[#202020] text-white">THB - Thai Baht</option>
-            </select>
+              options={[
+                { value: 'USD', label: 'USD - US Dollar' },
+                { value: 'EUR', label: 'EUR - Euro' },
+                { value: 'GBP', label: 'GBP - British Pound' },
+                { value: 'INR', label: 'INR - Indian Rupee' },
+                { value: 'CAD', label: 'CAD - Canadian Dollar' },
+                { value: 'AUD', label: 'AUD - Australian Dollar' },
+                { value: 'JPY', label: 'JPY - Japanese Yen' },
+                { value: 'CHF', label: 'CHF - Swiss Franc' },
+                { value: 'NZD', label: 'NZD - New Zealand Dollar' },
+                { value: 'SEK', label: 'SEK - Swedish Krona' },
+                { value: 'DKK', label: 'DKK - Danish Krone' },
+                { value: 'NOK', label: 'NOK - Norwegian Krone' },
+                { value: 'PLN', label: 'PLN - Polish Złoty' },
+                { value: 'CZK', label: 'CZK - Czech Koruna' },
+                { value: 'HUF', label: 'HUF - Hungarian Forint' },
+                { value: 'BRL', label: 'BRL - Brazilian Real' },
+                { value: 'MXN', label: 'MXN - Mexican Peso' },
+                { value: 'SGD', label: 'SGD - Singapore Dollar' },
+                { value: 'HKD', label: 'HKD - Hong Kong Dollar' },
+                { value: 'CNY', label: 'CNY - Chinese Yuan' },
+                { value: 'KRW', label: 'KRW - South Korean Won' },
+                { value: 'ILS', label: 'ILS - Israeli Shekel' },
+                { value: 'MYR', label: 'MYR - Malaysian Ringgit' },
+                { value: 'TWD', label: 'TWD - Taiwan Dollar' },
+                { value: 'PHP', label: 'PHP - Philippine Peso' },
+                { value: 'THB', label: 'THB - Thai Baht' }
+              ]}
+            />
           </SettingsRow>
 
           <SettingsRow icon={<Clock />} label="Timezone" description="Global timezone for logs and timestamps." onSave={() => saveSection({ localization: formData.localization }, 'Localization settings updated.')}>
-            <select
-              className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
+            <SettingsDropdown
               value={formData.localization?.timezone || 'UTC'}
-              onChange={(e) => {
-                const val = e.target.value;
+              onChange={(val) => {
                 updateFormData('localization.timezone', val);
                 saveSection({ localization: { ...formData.localization, timezone: val } }, 'Localization settings updated.');
               }}
               disabled={loading}
-            >
-              <option value="UTC" className="bg-[#202020] text-white">UTC</option>
-              <option value="America/New_York" className="bg-[#202020] text-white">Eastern Time (ET)</option>
-              <option value="America/Chicago" className="bg-[#202020] text-white">Central Time (CT)</option>
-              <option value="America/Denver" className="bg-[#202020] text-white">Mountain Time (MT)</option>
-              <option value="America/Los_Angeles" className="bg-[#202020] text-white">Pacific Time (PT)</option>
-              <option value="Europe/London" className="bg-[#202020] text-white">London</option>
-              <option value="Europe/Paris" className="bg-[#202020] text-white">Paris</option>
-              <option value="Asia/Tokyo" className="bg-[#202020] text-white">Tokyo</option>
-              <option value="Asia/Shanghai" className="bg-[#202020] text-white">Shanghai</option>
-              <option value="Australia/Sydney" className="bg-[#202020] text-white">Sydney</option>
-            </select>
+              options={[
+                { value: 'UTC', label: 'UTC' },
+                { value: 'America/New_York', label: 'Eastern Time (ET)' },
+                { value: 'America/Chicago', label: 'Central Time (CT)' },
+                { value: 'America/Denver', label: 'Mountain Time (MT)' },
+                { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
+                { value: 'Europe/London', label: 'London' },
+                { value: 'Europe/Paris', label: 'Paris' },
+                { value: 'Asia/Tokyo', label: 'Tokyo' },
+                { value: 'Asia/Shanghai', label: 'Shanghai' },
+                { value: 'Australia/Sydney', label: 'Sydney' }
+              ]}
+            />
           </SettingsRow>
         </div>
 
@@ -937,20 +994,19 @@ export function AdminSettingsContent({
           {formData.payments?.paypal?.enabled && (
             <>
               <SettingsRow icon={<Activity />} label="Mode" description="Select the environment for PayPal transactions" onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
-                <select
-                  className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
-                  value={formData.payments?.paypal?.mode || 'sandbox'}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    updateFormData('payments.paypal.mode', val);
-                    const newPaypal = { ...formData.payments?.paypal, mode: val as 'sandbox' | 'live' };
-                    saveSection({ payments: { ...formData.payments, paypal: newPaypal } }, 'PayPal settings updated.');
-                  }}
-                  disabled={loading}
-                >
-                  <option value="sandbox" className="bg-[#202020] text-white">Sandbox (Testing)</option>
-                  <option value="live" className="bg-[#202020] text-white">Live (Production)</option>
-                </select>
+            <SettingsDropdown
+              value={formData.payments?.paypal?.mode || 'sandbox'}
+              onChange={(val) => {
+                updateFormData('payments.paypal.mode', val);
+                const newPaypal = { ...formData.payments?.paypal, mode: val as 'sandbox' | 'live' };
+                saveSection({ payments: { ...formData.payments, paypal: newPaypal } }, 'PayPal settings updated.');
+              }}
+              disabled={loading}
+              options={[
+                { value: 'sandbox', label: 'Sandbox (Testing)' },
+                { value: 'live', label: 'Live (Production)' }
+              ]}
+            />
               </SettingsRow>
 
               <SettingsRow icon={<Key />} label="Client ID" description="Your PayPal Client ID" displayValue={formData.payments?.paypal?.clientId || 'Not set'} onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
