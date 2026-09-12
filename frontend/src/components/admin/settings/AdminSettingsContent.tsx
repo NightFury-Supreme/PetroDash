@@ -281,11 +281,10 @@ const TIMEZONE_OPTIONS = (() => {
     return Intl.supportedValuesOf('timeZone').map(tz => {
       let label = tz.replace(/_/g, ' ');
       try {
-        const offset = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'shortOffset' })
+        const long = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'long' })
           .formatToParts(d).find(p => p.type === 'timeZoneName')?.value;
-        if (offset) {
-          const utcOffset = offset.replace('GMT', 'UTC');
-          label = `(${utcOffset}) ${label}`;
+        if (long) {
+          label = `(${long}) - ${label}`;
         }
       } catch (e) {
         // fallback to just the tz name
