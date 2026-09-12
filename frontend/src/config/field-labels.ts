@@ -4,20 +4,30 @@
  * Add new entries here whenever a new field is logged.
  */
 const FIELD_LABELS: Record<string, string> = {
-  // ── Server resource limits ──────────────────────────────────────
+  // 💻 Server & User Resources 💻
   'limits.diskMb':       'Disk (MB)',
   'limits.memoryMb':     'Memory (MB)',
   'limits.cpu':          'CPU (%)',
+  'limits.cpuPercent':   'CPU (%)',
   'limits.databases':    'Databases',
   'limits.allocations':  'Allocations',
   'limits.backups':      'Backups',
   'limits.swap':         'Swap (MB)',
   'limits.io':           'IO Weight',
+  'cpuPercent':          'CPU (%)',
+  'diskMb':              'Disk (MB)',
+  'memoryMb':            'Memory (MB)',
+  'databases':           'Databases',
+  'allocations':         'Allocations',
+  'backups':             'Backups',
+  'serverSlots':         'Server Slots',
 
-  // ── Auth / account ─────────────────────────────────────────────
+  // 👤 Auth / Account 👤
   'email':               'Email Address',
   'password':            'Password',
   'tfaEnabled':          'Two-Factor Auth',
+  'tfaSecret':           '2FA Secret',
+  'tfaBackupCodes':      '2FA Backup Codes',
   'emailVerified':       'Email Verified',
   'username':            'Username',
   'firstName':           'First Name',
@@ -25,24 +35,41 @@ const FIELD_LABELS: Record<string, string> = {
   'role':                'Role',
   'suspended':           'Suspended',
   'coins':               'Coins',
+  'profilePicture':      'Profile Picture',
+  'isBanned':            'Banned Status',
+  'reason':              'Ban Reason',
+  'until':               'Ban Until',
 
-  // ── Ticket fields ───────────────────────────────────────────────
+  // 🎫 Ticket fields 🎫
   'status':              'Status',
   'subject':             'Subject',
   'category':            'Category',
   'priority':            'Priority',
   'message':             'Message',
 
-  // ── Referral / shop ────────────────────────────────────────────
+  // 🛍️ Shop, Referrals, & Plans 🛍️
   'code':                'Referral Code',
   'planName':            'Plan',
   'itemName':            'Item',
   'amount':              'Amount',
   'price':               'Price',
+  'name':                'Name',
+  'description':         'Description',
+  'strikeThroughPrice':  'Original Price',
+  'pricePerMonth':       'Monthly Price',
+  'pricePerYear':        'Yearly Price',
+  'visibility':          'Visibility',
+  'stock':               'Stock',
+  'limitPerCustomer':    'Customer Limit',
+  'redirectionLink':     'Checkout Link',
+  'renewable':           'Renewable',
 
-  // ── Meta / IDs ─────────────────────────────────────────────────
+  // 🔧 Meta, Infrastructure & IDs 🔧
   'serverId':            'Server ID',
   'serverName':          'Server Name',
+  'panelServerId':       'Panel Server ID',
+  'eggId':               'Egg ID',
+  'locationId':          'Location ID',
   'userId':              'User ID',
   'actorId':             'Actor ID',
   'actorRole':           'Actor Role',
