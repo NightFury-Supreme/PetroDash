@@ -4,7 +4,7 @@
  * Add new entries here whenever a new field is logged.
  */
 const FIELD_LABELS: Record<string, string> = {
-  // 💻 Server & User Resources 💻
+  // --- Server & User Resources ---
   'limits.diskMb':       'Disk (MB)',
   'limits.memoryMb':     'Memory (MB)',
   'limits.cpu':          'CPU (%)',
@@ -22,7 +22,7 @@ const FIELD_LABELS: Record<string, string> = {
   'backups':             'Backups',
   'serverSlots':         'Server Slots',
 
-  // 👤 Auth / Account 👤
+  // --- Auth / Account ---
   'email':               'Email Address',
   'password':            'Password',
   'tfaEnabled':          'Two-Factor Auth',
@@ -40,14 +40,14 @@ const FIELD_LABELS: Record<string, string> = {
   'reason':              'Ban Reason',
   'until':               'Ban Until',
 
-  // 🎫 Ticket fields 🎫
+  // --- Ticket fields ---
   'status':              'Status',
   'subject':             'Subject',
   'category':            'Category',
   'priority':            'Priority',
   'message':             'Message',
 
-  // 🛍️ Shop, Referrals, & Plans 🛍️
+  // --- Shop, Referrals, & Plans ---
   'code':                'Referral Code',
   'planName':            'Plan',
   'itemName':            'Item',
@@ -64,7 +64,7 @@ const FIELD_LABELS: Record<string, string> = {
   'redirectionLink':     'Checkout Link',
   'renewable':           'Renewable',
 
-  // 🔧 Meta, Infrastructure & IDs 🔧
+  // --- Meta, Infrastructure & IDs ---
   'serverId':            'Server ID',
   'serverName':          'Server Name',
   'panelServerId':       'Panel Server ID',
