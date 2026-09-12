@@ -64,6 +64,26 @@ const FIELD_LABELS: Record<string, string> = {
   'redirectionLink':     'Checkout Link',
   'renewable':           'Renewable',
 
+  // --- Earn Settings & Integration ---
+  'earn.linkvertise':         'Linkvertise Earn',
+  'earn.ads':                 'Ads Earn',
+  'earn.offerwall':           'Offerwall Earn',
+  'earn.surveywall':          'Surveywall Earn',
+  'earn.linkvertise.enabled': 'Linkvertise Enabled',
+  'earn.linkvertise.url':     'Linkvertise URL',
+  'earn.linkvertise.antiBypassToken': 'Linkvertise Anti-Bypass Token',
+  'earn.ads.enabled':         'Ads Enabled',
+  'earn.offerwall.enabled':   'Offerwall Enabled',
+  'earn.surveywall.enabled':  'Surveywall Enabled',
+  'earn.linkvertise.coins':   'Linkvertise Coins',
+  'earn.ads.coins':           'Ads Coins',
+  'earn.offerwall.coins':     'Offerwall Coins',
+  'earn.surveywall.coins':    'Surveywall Coins',
+  'earn.linkvertise.cooldownSeconds': 'Linkvertise Cooldown',
+  'earn.ads.cooldownSeconds': 'Ads Cooldown',
+  'earn.offerwall.cooldownSeconds': 'Offerwall Cooldown',
+  'earn.surveywall.cooldownSeconds': 'Surveywall Cooldown',
+
   // --- Meta, Infrastructure & IDs ---
   'serverId':            'Server ID',
   'serverName':          'Server Name',
@@ -84,11 +104,6 @@ const FIELD_LABELS: Record<string, string> = {
   'userAgent':           'User Agent',
   'sessionId':           'Session ID',
   'dbId':                'Database ID',
-  // --- Earn Settings ---
-  'linkvertise':         'Linkvertise Settings',
-  'offerwall':           'Offerwall Settings',
-  'surveywall':          'Surveywall Settings',
-  'ads':                 'Watch Ads Settings',
 };
 
 /**
@@ -118,6 +133,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   'billing_event': 'Billing Event',
   'data_access': 'Data Access',
   'system_event': 'System Event',
+  'policy_denied': 'Policy Denied',
   'system': 'System',
   'security': 'Security',
   'billing': 'Billing',
@@ -131,4 +147,119 @@ const CATEGORY_LABELS: Record<string, string> = {
 export function getCategoryLabel(cat: string): string {
   if (!cat) return '';
   return CATEGORY_LABELS[cat] || cat;
+}
+
+/**
+ * Human-readable labels for log actions.
+ */
+const ACTION_LABELS: Record<string, string> = {
+  // Admin actions
+  'admin.coupon.create': 'Create Coupon (Admin)',
+  'admin.coupon.delete': 'Delete Coupon (Admin)',
+  'admin.coupon.update': 'Update Coupon (Admin)',
+  'admin.earn.update': 'Update Earn Settings (Admin)',
+  'admin.egg_category.create': 'Create Egg Category (Admin)',
+  'admin.egg_category.delete': 'Delete Egg Category (Admin)',
+  'admin.egg_category.update': 'Update Egg Category (Admin)',
+  'admin.egg.create': 'Create Egg (Admin)',
+  'admin.egg.delete': 'Delete Egg (Admin)',
+  'admin.egg.update': 'Update Egg (Admin)',
+  'admin.email_settings.update': 'Update Email Settings (Admin)',
+  'admin.gift.create': 'Create Gift (Admin)',
+  'admin.gift.delete': 'Delete Gift (Admin)',
+  'admin.gift.update': 'Update Gift (Admin)',
+  'admin.location.create': 'Create Location (Admin)',
+  'admin.location.delete': 'Delete Location (Admin)',
+  'admin.location.update': 'Update Location (Admin)',
+  'admin.payment.refund': 'Refund Payment (Admin)',
+  'admin.payment.update': 'Update Payment (Admin)',
+  'admin.payment.void': 'Void Payment (Admin)',
+  'admin.plan.create': 'Create Plan (Admin)',
+  'admin.plan.delete': 'Delete Plan (Admin)',
+  'admin.plan.update': 'Update Plan (Admin)',
+  'admin.server.delete': 'Delete Server (Admin)',
+  'admin.server.queue.clear': 'Clear Server Queue (Admin)',
+  'admin.server.update': 'Update Server (Admin)',
+  'admin.settings.tickets.update': 'Update Ticket Settings (Admin)',
+  'admin.settings.update': 'Update Settings (Admin)',
+  'admin.shop.update': 'Update Shop (Admin)',
+  'admin.ticket.delete': 'Delete Ticket (Admin)',
+  'admin.ticket.reply': 'Reply to Ticket (Admin)',
+  'admin.ticket.update': 'Update Ticket (Admin)',
+  'admin.user.ban': 'Ban User (Admin)',
+  'admin.user.unban': 'Unban User (Admin)',
+  'admin.user.delete': 'Delete User (Admin)',
+  'admin.user.plan.add': 'Add Plan to User (Admin)',
+  'admin.user.plan.cancel': 'Cancel User Plan (Admin)',
+  'admin.user.plan.instance.cancel': 'Cancel Plan Instance (Admin)',
+  'admin.user.server.delete': 'Delete User Server (Admin)',
+  'admin.user.server.update': 'Update User Server (Admin)',
+  'admin.user.update': 'Update User (Admin)',
+
+  // Auth actions
+  'auth.2fa.disable': 'Disable 2FA',
+  'auth.2fa.enable': 'Enable 2FA',
+  'auth.account.delete': 'Delete Account',
+  'auth.account.update': 'Update Account',
+  'auth.email.update': 'Update Email',
+  'auth.email.verified': 'Verify Email',
+  'auth.login.error': 'Login Error',
+  'auth.login.failed': 'Login Failed',
+  'auth.login.success': 'Login Success',
+  'auth.logout': 'Logout',
+  'auth.logout.error': 'Logout Error',
+  'auth.oauth.discord.error': 'Discord Auth Error',
+  'auth.oauth.discord.failed': 'Discord Auth Failed',
+  'auth.oauth.discord.initiated': 'Initiate Discord Auth',
+  'auth.oauth.discord.success': 'Discord Auth Success',
+  'auth.oauth.google.error': 'Google Auth Error',
+  'auth.oauth.google.failed': 'Google Auth Failed',
+  'auth.oauth.google.initiated': 'Initiate Google Auth',
+  'auth.oauth.google.success': 'Google Auth Success',
+  'auth.password.reset.requested': 'Password Reset Requested',
+  'auth.password.reset.success': 'Password Reset Success',
+  'auth.password.update': 'Update Password',
+  'auth.register.failed': 'Registration Failed',
+  'auth.register.success': 'Registration Success',
+  'auth.session.revoke': 'Revoke Session',
+
+  // Earn & Referral
+  'earn.ad.verified': 'Ad Verified',
+  'earn.callback.claim': 'Earn Callback Claim',
+  'earn.claim': 'Earn Claim',
+  'earn.session.start': 'Start Earn Session',
+  'earn.linkvertise': 'Earn via Linkvertise',
+  'referral.code.update': 'Update Referral Code',
+  'referral.reward.referred': 'Referred Reward Claimed',
+  'referral.reward.referrer': 'Referrer Reward Claimed',
+
+  // System & Shop
+  'gift.redeem': 'Redeem Gift',
+  'payment.purchase.completed': 'Purchase Completed',
+  'shop.payment.cancel': 'Cancel Payment',
+  'shop.payment.capture': 'Capture Payment',
+  'shop.payment.create': 'Create Payment',
+  'shop.purchase': 'Shop Purchase',
+
+  // User resources
+  'server.create': 'Create Server',
+  'server.delete': 'Delete Server',
+  'server.update': 'Update Server',
+  'ticket.create': 'Create Ticket',
+  'ticket.reply': 'Reply to Ticket',
+  'ticket.status_change': 'Change Ticket Status',
+};
+
+/**
+ * Resolve an action to its human-readable label.
+ */
+export function getActionLabel(action: string): string {
+  if (!action) return '';
+  if (ACTION_LABELS[action]) return ACTION_LABELS[action];
+  
+  // Fallback string manipulation if completely unknown
+  return action
+    .split('.')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 }

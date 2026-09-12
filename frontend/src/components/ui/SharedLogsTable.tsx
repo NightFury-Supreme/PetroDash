@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { ClipboardList } from 'lucide-react';
 import { RankBadge } from '@/components/ui/RankBadge';
-import { getFieldLabel, getCategoryLabel } from '@/config/field-labels';
+import { getFieldLabel, getCategoryLabel, getActionLabel } from '@/config/field-labels';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -95,12 +95,7 @@ const CONTEXT_LABELS: Record<string, string> = {
 // Utility helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-function formatActionText(action: string): string {
-  return action
-    .split('.')
-    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ');
-}
+
 
 function parseUserAgent(ua?: string): string {
   if (!ua) return 'Unknown';
@@ -408,7 +403,7 @@ function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; m
     return (
       <div className="min-w-0">
         <div className="text-sm font-semibold text-white truncate">
-          {formatActionText(log.action)}
+          {getActionLabel(log.action)}
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-1.5">
           {actorId ? (
@@ -460,7 +455,7 @@ function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; m
   return (
     <div className="min-w-0">
       <div className="text-sm font-semibold text-white truncate">
-        {formatActionText(log.action)}
+        {getActionLabel(log.action)}
       </div>
       <div className="mt-0.5 text-[10px] text-white/45 truncate">{ctx as string}</div>
     </div>
@@ -653,3 +648,4 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
     </div>
   );
 }
+
