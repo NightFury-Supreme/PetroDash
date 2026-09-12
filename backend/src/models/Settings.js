@@ -61,6 +61,7 @@ const SettingsSchema = new mongoose.Schema(
     },
     localization: {
       currency: { type: String, default: 'USD' },
+      timezone: { type: String, default: 'UTC' },
     },
     payments: {
       paypal: {

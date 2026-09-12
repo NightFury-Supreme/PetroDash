@@ -83,6 +83,7 @@ const settingsPayloadSchema = z.object({
   }).optional(),
   localization: z.object({
     currency: z.string().min(3, 'Currency must be at least 3 characters').max(3, 'Currency must be exactly 3 characters').optional(),
+    timezone: z.string().max(100, 'Timezone must be less than 100 characters').optional(),
   }).optional(),
   payments: z.object({
     paypal: z.object({
