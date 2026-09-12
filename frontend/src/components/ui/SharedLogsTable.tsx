@@ -397,7 +397,7 @@ function MetaViewer({ data }: { data: Record<string, unknown> }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; meta: LogMeta }) {
-  // Admin: show actor link + role badge
+  // Admin: show actor link + role badge + target
   if (variant === 'admin') {
     const actorId   = log.actorId ?? log.targetUserId ?? meta.userId;
     const actorName = log.actorUsername ?? meta.username ?? actorId;
@@ -407,7 +407,7 @@ function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; m
         <div className="text-sm font-semibold text-white truncate">
           {formatActionText(log.action)}
         </div>
-        <div className="mt-1 flex items-center gap-1.5">
+        <div className="mt-1 flex flex-wrap items-center gap-1.5">
           {actorId ? (
             <Link
               href={`/admin/users/${actorId}`}
@@ -422,6 +422,19 @@ function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; m
           <span className="text-[8px] text-white/35 uppercase tracking-wider border border-white/[0.12] rounded px-1 py-px">
             {log.actorRole ?? 'system'}
           </span>
+
+          {log.resourceId && (log.resourceType === 'user' || log.resourceType === 'server' || log.resourceType === 'ticket') && (
+            <>
+              <span className="text-[10px] text-white/30 px-1">→</span>
+              <Link
+                href={`/admin/${log.resourceType}s/${log.resourceId}`}
+                className="text-[10px] text-white/50 hover:text-emerald-400 transition-colors truncate"
+                onClick={e => e.stopPropagation()}
+              >
+                {log.resourceType === 'user' ? 'User' : log.resourceType === 'server' ? 'Server' : 'Ticket'} {log.resourceId.slice(-6)}
+              </Link>
+            </>
+          )}
         </div>
       </div>
     );
@@ -471,8 +484,8 @@ function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: Variant
           {log.path        && <InfoRow label="Path"     value={log.path}     mono muted />}
           {variant === 'admin' && log.resourceType && (
             <InfoRow
-              label="Resource"
-              value={`${log.resourceType}${log.resourceId ? ` · ${log.resourceId}` : ''}`}
+              label={log.resourceType === 'user' ? 'Target User' : log.resourceType === 'server' ? 'Target Server' : log.resourceType === 'ticket' ? 'Target Ticket' : 'Resource'}
+              value={log.resourceId ? log.resourceId : log.resourceType}
               mono
               muted
             />
