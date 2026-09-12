@@ -462,7 +462,7 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
               )}
             </>
           ) : (
-            <div className="flex min-w-0 items-center gap-2 md:mt-2">
+            <div className="flex min-w-0 items-center md:justify-end gap-2 md:mt-2">
               <span className="truncate text-sm text-[#D4D4D4]">{value}</span>
               {status && (typeof status === 'string' ? (
                 <span className="shrink-0 rounded border border-emerald-500/20 bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-emerald-400">{status}</span>

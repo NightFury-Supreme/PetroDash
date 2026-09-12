@@ -141,7 +141,7 @@ function SettingsRow({
           </div>
         </div>
         <div className="flex flex-col w-full justify-center">
-          {isEditing ? children : (displayValue !== undefined ? <div className="text-sm text-[#D4D4D4] mt-1">{displayValue}</div> : children)}
+          {isEditing ? children : (displayValue !== undefined ? <div className="text-sm text-[#D4D4D4] mt-1 md:flex md:justify-end">{displayValue}</div> : children)}
         </div>
         <div className="flex items-center justify-end gap-2">
           {displayValue !== undefined && !isEditing && (
