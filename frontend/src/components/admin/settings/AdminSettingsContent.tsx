@@ -317,7 +317,7 @@ export function AdminSettingsContent({
           <SettingsRow icon={<LayoutTemplate />} label="Site Name" description="The global name of your application." displayValue={formData.siteName || 'Not set'} onSave={() => saveSection({ siteName: formData.siteName }, 'Brand settings updated.')}>
             <input
               type="text"
-              className="input w-full max-w-md"
+              className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
               placeholder="Enter site name"
               value={formData.siteName || ''}
               onChange={(e) => updateFormData('siteName', e.target.value)}
@@ -420,7 +420,7 @@ export function AdminSettingsContent({
         <div className="divide-y divide-white/[0.06]">
           <SettingsRow icon={<Coins />} label="Site Currency" description="This currency is displayed on the shop and all plans." displayValue={formData.localization?.currency || 'USD'} onSave={() => saveSection({ localization: formData.localization }, 'Localization settings updated.')}>
             <select
-              className="w-full max-w-md h-12 bg-white/[0.02] border border-white/[0.06] rounded-lg px-4 text-white focus:border-[#404040] focus:outline-none transition-colors"
+              className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
               value={formData.localization?.currency || 'USD'}
               onChange={(e) => updateFormData('localization.currency', e.target.value)}
               disabled={loading}
@@ -456,7 +456,7 @@ export function AdminSettingsContent({
 
           <SettingsRow icon={<Clock />} label="Timezone" description="Global timezone for logs and timestamps." displayValue={formData.localization?.timezone || 'UTC'} onSave={() => saveSection({ localization: formData.localization }, 'Localization settings updated.')}>
             <select
-              className="w-full max-w-md h-12 bg-white/[0.02] border border-white/[0.06] rounded-lg px-4 text-white focus:border-[#404040] focus:outline-none transition-colors"
+              className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
               value={formData.localization?.timezone || 'UTC'}
               onChange={(e) => updateFormData('localization.timezone', e.target.value)}
               disabled={loading}
@@ -494,7 +494,7 @@ export function AdminSettingsContent({
           <SettingsRow icon={<Gift />} label="Coins to Referrer" description="Amount of coins given to the person who invited someone." displayValue={formData.referrals?.referrerCoins} onSave={() => saveSection({ referrals: formData.referrals }, 'Referral settings updated.')}>
             <input
               type="number"
-              className="input w-full max-w-md"
+              className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
               placeholder="50"
               value={Number(formData.referrals?.referrerCoins ?? 0)}
               onChange={(e) => updateFormData('referrals.referrerCoins', Number(e.target.value))}
@@ -505,7 +505,7 @@ export function AdminSettingsContent({
           <SettingsRow icon={<Gift />} label="Coins to Referred User" description="Amount of coins given to the new user who joined using an invite." displayValue={formData.referrals?.referredCoins} onSave={() => saveSection({ referrals: formData.referrals }, 'Referral settings updated.')}>
             <input
               type="number"
-              className="input w-full max-w-md"
+              className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
               placeholder="25"
               value={Number(formData.referrals?.referredCoins ?? 0)}
               onChange={(e) => updateFormData('referrals.referredCoins', Number(e.target.value))}
@@ -516,7 +516,7 @@ export function AdminSettingsContent({
           <SettingsRow icon={<Users />} label="Min Invites for Custom Code" description="Minimum number of invites required to set a custom referral code." displayValue={formData.referrals?.customCodeMinInvites} onSave={() => saveSection({ referrals: formData.referrals }, 'Referral settings updated.')}>
             <input
               type="number"
-              className="input w-full max-w-md"
+              className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
               placeholder="10"
               value={Number(formData.referrals?.customCodeMinInvites ?? 10)}
               onChange={(e) => updateFormData('referrals.customCodeMinInvites', Number(e.target.value))}
@@ -575,7 +575,7 @@ export function AdminSettingsContent({
               <SettingsRow icon={<Key />} label="Discord Client ID" description="The Client ID from your Discord Developer Portal." displayValue={formData.auth?.discord?.clientId || 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
                 <input
                   type="text"
-                  className="input w-full max-w-md"
+                  className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
                   placeholder="Enter Discord Client ID"
                   value={formData.auth?.discord?.clientId || ''}
                   onChange={(e) => updateFormData('auth.discord.clientId', e.target.value)}
@@ -585,7 +585,7 @@ export function AdminSettingsContent({
               <SettingsRow icon={<Key />} label="Discord Client Secret" description="The Client Secret from your Discord Developer Portal." displayValue={formData.auth?.discord?.clientSecret ? '********' : 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
                 <input
                   type="password"
-                  className="input w-full max-w-md"
+                  className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
                   placeholder="Enter Discord Client Secret"
                   value={formData.auth?.discord?.clientSecret || ''}
                   onChange={(e) => updateFormData('auth.discord.clientSecret', e.target.value)}
@@ -612,7 +612,7 @@ export function AdminSettingsContent({
                   <SettingsRow icon={<MessageSquare />} label="Discord Guild ID" description="The Server (Guild) ID users should join." displayValue={formData.auth?.discord?.guildId || 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
                     <input
                       type="text"
-                      className="input w-full max-w-md"
+                      className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
                       placeholder="Enter Discord Guild (Server) ID"
                       value={formData.auth?.discord?.guildId || ''}
                       onChange={(e) => updateFormData('auth.discord.guildId', e.target.value)}
@@ -622,7 +622,7 @@ export function AdminSettingsContent({
                   <SettingsRow icon={<Bot />} label="Discord Bot Token" description="Bot token used to add the user to the server." displayValue={formData.auth?.discord?.botToken ? '********' : 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
                     <input
                       type="password"
-                      className="input w-full max-w-md"
+                      className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
                       placeholder="Enter Discord Bot Token"
                       value={formData.auth?.discord?.botToken || ''}
                       onChange={(e) => updateFormData('auth.discord.botToken', e.target.value)}
@@ -673,7 +673,7 @@ export function AdminSettingsContent({
             <SettingsRow icon={<Key />} label="Google Client ID" description="The Client ID from your Google Cloud Console." displayValue={formData.auth?.google?.clientId || 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
               <input
                 type="text"
-                className="input w-full max-w-md"
+                className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
                 placeholder="Enter Google Client ID"
                 value={formData.auth?.google?.clientId || ''}
                 onChange={(e) => updateFormData('auth.google.clientId', e.target.value)}
@@ -683,7 +683,7 @@ export function AdminSettingsContent({
             <SettingsRow icon={<Key />} label="Google Client Secret" description="The Client Secret from your Google Cloud Console." displayValue={formData.auth?.google?.clientSecret ? '********' : 'Not set'} onSave={() => saveSection({ auth: formData.auth }, 'Authentication settings updated.')}>
               <input
                 type="password"
-                className="input w-full max-w-md"
+                className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
                 placeholder="Enter Google Client Secret"
                 value={formData.auth?.google?.clientSecret || ''}
                 onChange={(e) => updateFormData('auth.google.clientSecret', e.target.value)}
@@ -741,7 +741,7 @@ export function AdminSettingsContent({
               <input
                 type="number"
                 min="0"
-                className="input w-full max-w-md"
+                className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
                 value={formData.defaults?.[key] || 0}
                 onChange={(e) => updateFormData(`defaults.${key}`, Number(e.target.value))}
                 disabled={loading}
@@ -786,7 +786,7 @@ export function AdminSettingsContent({
               <SettingsRow icon={<BadgeDollarSign />} label="Publisher ID" description="Your Google AdSense Publisher ID (starts with ca-pub-)" displayValue={formData.adsense?.publisherId || 'Not set'} onSave={() => saveSection({ adsense: formData.adsense }, 'AdSense settings updated.')}>
                 <input
                   type="text"
-                  className="input w-full max-w-md"
+                  className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
                   placeholder="ca-pub-1234567890123456"
                   value={formData.adsense?.publisherId || ''}
                   onChange={(e) => updateFormData('adsense.publisherId', e.target.value)}
@@ -809,7 +809,7 @@ export function AdminSettingsContent({
                       <label className="block text-sm font-medium text-[#D4D4D4]">{label}</label>
                       <input
                         type="text"
-                        className="input"
+                        className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
                         placeholder={`${key} ad slot ID`}
                         value={formData.adsense?.adSlots?.[key] || ''}
                         onChange={(e) => updateFormData(`adsense.adSlots.${key}`, e.target.value)}
@@ -906,7 +906,7 @@ export function AdminSettingsContent({
             <>
               <SettingsRow icon={<Activity />} label="Mode" description="Select the environment for PayPal transactions" displayValue={formData.payments?.paypal?.mode === 'live' ? 'Live' : 'Sandbox'} onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
                 <select
-                  className="w-full max-w-md h-12 bg-white/[0.02] border border-white/[0.06] rounded-lg px-4 text-white focus:border-[#404040] focus:outline-none transition-colors"
+                  className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
                   value={formData.payments?.paypal?.mode || 'sandbox'}
                   onChange={(e) => updateFormData('payments.paypal.mode', e.target.value)}
                   disabled={loading}
@@ -919,7 +919,7 @@ export function AdminSettingsContent({
               <SettingsRow icon={<Key />} label="Client ID" description="Your PayPal Client ID" displayValue={formData.payments?.paypal?.clientId || 'Not set'} onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
                 <input
                   type="text"
-                  className="input w-full max-w-md"
+                  className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
                   placeholder="Enter PayPal Client ID"
                   value={formData.payments?.paypal?.clientId || ''}
                   onChange={(e) => updateFormData('payments.paypal.clientId', e.target.value)}
@@ -930,7 +930,7 @@ export function AdminSettingsContent({
               <SettingsRow icon={<Key />} label="Client Secret" description="Your PayPal Client Secret" displayValue={formData.payments?.paypal?.clientSecret ? '********' : 'Not set'} onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
                 <input
                   type="password"
-                  className="input w-full max-w-md"
+                  className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
                   placeholder="Enter PayPal Client Secret"
                   value={formData.payments?.paypal?.clientSecret || ''}
                   onChange={(e) => updateFormData('payments.paypal.clientSecret', e.target.value)}
@@ -941,7 +941,7 @@ export function AdminSettingsContent({
               <SettingsRow icon={<LinkIcon />} label="Webhook ID" description={<>Configure your PayPal Webhook to POST to <code className="bg-[#202020] px-2 py-1 rounded text-blue-400">{process.env.NEXT_PUBLIC_API_BASE}/api/paypal/webhook</code> and paste the Webhook ID here.</>} displayValue={formData.payments?.paypal?.webhookId || 'Not set'} onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
                 <input
                   type="text"
-                  className="input w-full max-w-md"
+                  className="h-9 w-full max-w-md rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50"
                   placeholder="Enter PayPal Webhook ID"
                   value={formData.payments?.paypal?.webhookId || ''}
                   onChange={(e) => updateFormData('payments.paypal.webhookId', e.target.value)}
