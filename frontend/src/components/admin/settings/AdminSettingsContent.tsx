@@ -559,7 +559,8 @@ export function AdminSettingsContent({
               disabled={loading}
               options={(() => {
                 try {
-                  return Intl.supportedValuesOf('timeZone').map(tz => ({ value: tz, label: tz.replace(/_/g, ' ') }));
+                  const zones = Intl.supportedValuesOf('timeZone').map(tz => ({ value: tz, label: tz.replace(/_/g, ' ') }));
+                  return [{ value: 'UTC', label: 'UTC' }, ...zones];
                 } catch (e) {
                   return [{ value: 'UTC', label: 'UTC' }];
                 }
