@@ -557,18 +557,13 @@ export function AdminSettingsContent({
                 await saveSection({ localization: { ...formData.localization, timezone: val } }, 'Localization settings updated.');
               }}
               disabled={loading}
-              options={[
-                { value: 'UTC', label: 'UTC' },
-                { value: 'America/New_York', label: 'Eastern Time (ET)' },
-                { value: 'America/Chicago', label: 'Central Time (CT)' },
-                { value: 'America/Denver', label: 'Mountain Time (MT)' },
-                { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
-                { value: 'Europe/London', label: 'London' },
-                { value: 'Europe/Paris', label: 'Paris' },
-                { value: 'Asia/Tokyo', label: 'Tokyo' },
-                { value: 'Asia/Shanghai', label: 'Shanghai' },
-                { value: 'Australia/Sydney', label: 'Sydney' }
-              ]}
+              options={(() => {
+                try {
+                  return Intl.supportedValuesOf('timeZone').map(tz => ({ value: tz, label: tz.replace(/_/g, ' ') }));
+                } catch (e) {
+                  return [{ value: 'UTC', label: 'UTC' }];
+                }
+              })()}
             />
           </SettingsRow>
         </div>
