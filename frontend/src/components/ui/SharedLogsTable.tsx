@@ -54,11 +54,11 @@ function formatActionText(action: string) {
 }
 
 function formatDiffKey(fullKey: string) {
-  // "limits.diskMb" → "Limits Disk Mb"
-  return fullKey
-    .split('.')
-    .map(part => part.replace(/([A-Z])/g, ' $1').trim())
-    .join(' ')
+  // Use only the last segment: "limits.diskMb" → "diskMb" → "Disk Mb"
+  const lastPart = fullKey.split('.').pop() || fullKey;
+  return lastPart
+    .replace(/([A-Z])/g, ' $1')
+    .trim()
     .split(' ')
     .map(w => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ');
