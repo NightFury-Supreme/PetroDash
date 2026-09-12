@@ -329,9 +329,11 @@ router.patch('/:id', requireAdmin, async (req, res) => {
   }
 
   await writeAudit(req, 'admin.user.update', 'user', user._id.toString(), { changes });
-  
+
   const { logUserActivity } = require('../../middleware/userActivity');
-  await logUserActivity(null, 'admin.user.update', { updatedByAdmin: true, changes }, user._id.toString());
+  if (Object.keys(changes).length > 0) {
+    await logUserActivity(null, 'admin.user.update', { changes, updatedByAdmin: true }, user._id.toString());
+  }
 
   const { deleteCachePattern } = require('../../lib/redis');
   await deleteCachePattern('admin:users');

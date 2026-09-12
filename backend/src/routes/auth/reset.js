@@ -86,9 +86,10 @@ router.post('/reset', verificationRateLimit, async (req, res) => {
       _id: { $ne: vt._id }
     });
 
-    await logUserActivity(req, 'auth.password.reset.success', {}, user._id.toString());
+    const changes = { password: { old: '********', new: '********' } };
+    await logUserActivity(req, 'auth.password.reset.success', { changes }, user._id.toString());
     const { writeAudit } = require('../../middleware/audit');
-    await writeAudit(req, 'auth.password.reset.success', 'auth', user._id.toString(), {});
+    await writeAudit(req, 'auth.password.reset.success', 'auth', user._id.toString(), { changes });
     return res.json({ ok: true });
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
