@@ -142,7 +142,7 @@ function DiffPills({ oldVal, newVal }: { oldVal: string; newVal: string }) {
       <span className="font-mono text-[11px] text-red-400/80 bg-red-500/[0.06] px-2 py-0.5 rounded">
         {oldVal}
       </span>
-      <span className="text-white/40 text-[10px]">→</span>
+        <span className="text-white/40 text-[10px]">&rarr;</span>
       <span className="font-mono text-[11px] text-emerald-400/80 bg-emerald-500/[0.06] px-2 py-0.5 rounded">
         {newVal}
       </span>
@@ -424,7 +424,7 @@ function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; m
 
           {log.resourceId && (log.resourceType === 'user' || log.resourceType === 'server' || log.resourceType === 'ticket') && (
             <>
-              <span className="text-[10px] text-white/30 px-1">→</span>
+              <span className="text-[10px] text-white/30 px-1">&rarr;</span>
               <div className="flex items-center gap-1.5">
                 <Link
                   href={`/admin/${log.resourceType}s/${log.resourceId}`}
