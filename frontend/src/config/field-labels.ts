@@ -84,6 +84,12 @@ const FIELD_LABELS: Record<string, string> = {
   'userAgent':           'User Agent',
   'sessionId':           'Session ID',
   'dbId':                'Database ID',
+  // --- Earn Settings ---
+  'earn.enabled':        'Earn Enabled',
+  'earn.linkvertise':    'Linkvertise Settings',
+  'earn.admob':          'AdMob Settings',
+  'earn.ayet':           'Ayet Studios Settings',
+  'earn.lootably':       'Lootably Settings',
 };
 
 /**
@@ -109,6 +115,11 @@ const CATEGORY_LABELS: Record<string, string> = {
   'server_management': 'Server Management',
   'user_management': 'User Management',
   'admin_activity': 'Admin Activity',
+  'user_activity': 'User Activity',
+  'billing_event': 'Billing Event',
+  'data_access': 'Data Access',
+  'system_event': 'System Event',
+  'policy_denied': 'Policy Denied',
   'system': 'System',
   'security': 'Security',
   'billing': 'Billing',
