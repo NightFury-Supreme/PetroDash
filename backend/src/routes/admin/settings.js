@@ -65,6 +65,7 @@ const settingsPayloadSchema = z.object({
   }).optional(),
   auth: z.object({
     emailLogin: z.coerce.boolean().optional(),
+    emailVerification: z.coerce.boolean().optional(),
     discord: z.object({
       enabled: z.coerce.boolean().optional(),
       autoJoin: z.coerce.boolean().optional(),
@@ -188,6 +189,9 @@ router.patch('/', requireAdmin, async (req, res) => {
       settings.auth = settings.auth || {};
       if (update.auth.emailLogin !== undefined) {
         settings.auth.emailLogin = update.auth.emailLogin;
+      }
+      if (update.auth.emailVerification !== undefined) {
+        settings.auth.emailVerification = update.auth.emailVerification;
       }
       if (update.auth.discord) {
         settings.auth.discord = { ...(settings.auth.discord || {}), ...update.auth.discord };

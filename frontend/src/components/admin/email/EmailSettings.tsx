@@ -155,26 +155,7 @@ export default function EmailSettings() {
             </div>
           </div>
           
-          <div className="p-6 border-b border-[#303030]">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-white font-medium">Enable Email System</h4>
-                <p className="text-sm text-[#AAAAAA] mt-1">If enabled, users will be required to verify their email address upon registration and email changes.</p>
-              </div>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={settings?.auth?.emailVerification || false}
-                onClick={() => updateField('auth.emailVerification', !(settings?.auth?.emailVerification || false))}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${settings?.auth?.emailVerification ? 'bg-white' : 'bg-[#333]'}`}
-              >
-                <span
-                  aria-hidden="true"
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out ${settings?.auth?.emailVerification ? 'bg-[#0f0f13] translate-x-2.5' : 'bg-white -translate-x-2.5'}`}
-                />
-              </button>
-            </div>
-          </div>
+
 
           <SmtpForm smtp={settings?.payments?.smtp || {}} auth={settings?.auth || {}} onChange={updateField} fieldErrors={fieldErrors} />
         </div>
