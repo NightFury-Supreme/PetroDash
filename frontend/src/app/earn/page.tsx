@@ -182,8 +182,8 @@ function EarnContent() {
   }
 
   return (
-    <div className="flex flex-col bg-[#0f0f0f] min-h-screen text-white">
-      <div className="flex flex-col flex-1">
+    <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white">
+      <div className="flex flex-col h-full space-y-6">
         {canShow && showLinkvertise && <EarnHeader />}
         
         <EarnList 

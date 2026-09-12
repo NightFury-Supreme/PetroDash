@@ -33,7 +33,7 @@ interface LogMeta {
   [key: string]: unknown;
 }
 
-interface LogEntry {
+export interface LogEntry {
   _id:          string;
   action:       string;
   category?:    string;
@@ -112,7 +112,7 @@ function parseUserAgent(ua?: string): string {
   const browser = browsers.find(([token]) => ua.includes(token))?.[1] ?? 'Unknown';
   const os      = oses.find(([token]) => ua.includes(token))?.[1]      ?? 'Unknown';
 
-  return `${os} · ${browser}`;
+  return `${os} • ${browser}`;
 }
 
 function isMongoId(str: string): boolean {
@@ -432,10 +432,10 @@ function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; m
                   onClick={e => e.stopPropagation()}
                 >
                   {meta.targetName 
-                    ? meta.targetName 
+                    ? String(meta.targetName) 
                     : `${log.resourceType === 'user' ? 'User' : log.resourceType === 'server' ? 'Server' : 'Ticket'} ${log.resourceId.slice(-6)}`}
                 </Link>
-                {log.resourceType === 'user' && meta.targetRole && (
+                {log.resourceType === 'user' && Boolean(meta.targetRole) && (
                   <RankBadge rank={meta.targetRole as string} size="sm" />
                 )}
               </div>
@@ -448,16 +448,14 @@ function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; m
 
   // User: show action name + context hint from metadata
   const ctxKey = CONTEXT_META_KEYS.find(k => meta[k]);
-  const ctx    = ctxKey
-    ? `${CONTEXT_LABELS[ctxKey]}: ${meta[ctxKey]}`
-    : log.action;
+  const ctx    = ctxKey ? `${CONTEXT_LABELS[ctxKey]}: ${meta[ctxKey]}` : null;
 
   return (
     <div className="min-w-0">
       <div className="text-sm font-semibold text-white truncate">
         {getActionLabel(log.action)}
       </div>
-      <div className="mt-0.5 text-[10px] text-white/45 truncate">{ctx as string}</div>
+      {ctx && <div className="mt-0.5 text-[10px] text-white/45 truncate">{ctx as string}</div>}
     </div>
   );
 }

@@ -82,39 +82,38 @@ export default function UpdateSystem() {
 
 
   return (
-    <div className="bg-[#181818] border border-[#303030] rounded-xl p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 bg-[#202020] rounded-xl flex items-center justify-center">
-          <i className="fas fa-sync-alt text-white text-lg"></i>
+    <section>
+      <div className="mb-5 flex items-end justify-between">
+          <div>
+            <h3 className="text-xl font-semibold tracking-tight text-white">System Updates</h3>
+            <p className="mt-2 text-sm text-white/35">Check current and latest versions</p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-xl font-bold text-white">System Version</h2>
-          <p className="text-[#AAAAAA] text-sm">Check current and latest versions</p>
-        </div>
-      </div>
 
       {/* Current Version Info */}
-      {updateInfo && (
-        <div className="mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div className="bg-[#202020] border border-[#303030] rounded-lg p-4">
-              <h3 className="text-white font-medium mb-2">Current Version</h3>
-              <p className="text-[#AAAAAA] text-sm">v{updateInfo.currentVersion}</p>
-            </div>
-            <div className="bg-[#202020] border border-[#303030] rounded-lg p-4">
-              <h3 className="text-white font-medium mb-2">Latest Version</h3>
-              <p className="text-[#AAAAAA] text-sm">v{updateInfo.latestVersion}</p>
+      {updateInfo ? (
+        <div className="divide-y divide-white/[0.06]">
+          <div className="px-5 py-5 transition hover:bg-white/[0.02]">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-semibold text-[#D4D4D4]">Current Version</p>
+                <div className="mt-0.5 text-[13px] text-[#888]">v{updateInfo.currentVersion}</div>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-[#D4D4D4]">Latest Version</p>
+                <div className="mt-0.5 text-[13px] text-[#888]">v{updateInfo.latestVersion}</div>
+              </div>
             </div>
           </div>
 
           {/* Update Available */}
           {updateInfo.isUpdateAvailable && (
-            <div className="bg-[#202020] border border-blue-500 rounded-lg p-4 mb-4">
+            <div className="px-5 py-5 bg-blue-500/5">
               <div className="flex items-center gap-3 mb-3">
-                <i className="fas fa-exclamation-triangle text-blue-500"></i>
+                <i className="fas fa-exclamation-triangle text-blue-400"></i>
                 <h3 className="text-white font-medium">Update Available!</h3>
               </div>
-              <p className="text-[#AAAAAA] text-sm mb-3">
+              <p className="text-[#AAAAAA] text-sm mb-4">
                 A new version (v{updateInfo.latestVersion}) is available. 
                 Published on {new Date(updateInfo.publishedAt).toLocaleDateString()}
               </p>
@@ -122,16 +121,16 @@ export default function UpdateSystem() {
               {/* Package Information */}
               {updateInfo.fullPackageName && (
                 <div className="mb-4">
-                  <h4 className="text-white font-medium mb-2">Package Information:</h4>
-                  <div className="bg-[#0f0f0f] border border-[#303030] rounded-lg p-3">
+                  <h4 className="text-white font-medium mb-2 text-sm">Package Information:</h4>
+                  <div className="bg-black/20 border border-white/[0.06] rounded-lg p-3">
                     <div className="grid grid-cols-1 gap-2 text-sm">
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="text-[#AAAAAA]">Full Package</div>
-                          <div className="text-white">{updateInfo.fullPackageName}</div>
+                          <div className="text-[#AAAAAA] text-xs">Full Package</div>
+                          <div className="text-[#D4D4D4]">{updateInfo.fullPackageName}</div>
                         </div>
                         {updateInfo.fullPackageSize && (
-                          <div className="text-[#AAAAAA]">{(updateInfo.fullPackageSize / 1024 / 1024).toFixed(2)} MB</div>
+                          <div className="text-[#AAAAAA] text-xs">{(updateInfo.fullPackageSize / 1024 / 1024).toFixed(2)} MB</div>
                         )}
                       </div>
                     </div>
@@ -142,8 +141,8 @@ export default function UpdateSystem() {
               {/* Release Notes */}
               {updateInfo.releaseNotes && (
                 <div className="mb-4">
-                  <h4 className="text-white font-medium mb-2">Release Notes:</h4>
-                  <div className="bg-[#0f0f0f] border border-[#303030] rounded-lg p-3 max-h-32 overflow-y-auto">
+                  <h4 className="text-white font-medium mb-2 text-sm">Release Notes:</h4>
+                  <div className="bg-black/20 border border-white/[0.06] rounded-lg p-3 max-h-32 overflow-y-auto">
                     <pre className="text-[#AAAAAA] text-xs whitespace-pre-wrap">{updateInfo.releaseNotes}</pre>
                   </div>
                 </div>
@@ -153,7 +152,7 @@ export default function UpdateSystem() {
                 href={updateInfo.releaseUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center px-4 py-2 bg-[#303030] text-white rounded-lg font-medium hover:bg-[#404040] transition-colors"
+                className="inline-flex items-center px-4 py-2 bg-white/[0.05] border border-white/[0.06] text-white rounded-lg text-sm font-medium hover:bg-white/[0.1] transition-colors"
               >
                 <i className="fab fa-github mr-2"></i>
                 View on GitHub
@@ -163,9 +162,9 @@ export default function UpdateSystem() {
 
           {/* No Update Available */}
           {!updateInfo.isUpdateAvailable && (
-            <div className="bg-[#202020] border border-green-500 rounded-lg p-4">
+            <div className="px-5 py-5 bg-emerald-500/5">
               <div className="flex items-center gap-3">
-                <i className="fas fa-check-circle text-green-500"></i>
+                <i className="fas fa-check-circle text-emerald-400"></i>
                 <h3 className="text-white font-medium">You're up to date!</h3>
               </div>
               <p className="text-[#AAAAAA] text-sm mt-1">
@@ -174,45 +173,44 @@ export default function UpdateSystem() {
             </div>
           )}
         </div>
+      ) : (
+        <div className="px-5 py-8 flex flex-col items-center justify-center text-center">
+          <i className="fas fa-sync-alt text-[#444] text-3xl mb-3"></i>
+          <p className="text-[#888] text-sm">Check for updates to see if a newer version is available.</p>
+        </div>
       )}
-
-      {/* Update progress removed */}
 
       {/* Error Message */}
       {error && (
-        <div className="mb-6">
-          <div className="bg-[#202020] border border-red-500 rounded-lg p-4">
-            <div className="flex items-center gap-3">
-              <i className="fas fa-exclamation-circle text-red-500"></i>
-              <h3 className="text-white font-medium">Error</h3>
-            </div>
-            <p className="text-[#AAAAAA] text-sm mt-1">{error}</p>
+        <div className="px-5 py-4 border-t border-red-500/10 bg-red-500/5">
+          <div className="flex items-center gap-3">
+            <i className="fas fa-exclamation-circle text-red-400"></i>
+            <h3 className="text-white font-medium text-sm">Error</h3>
           </div>
+          <p className="text-[#AAAAAA] text-sm mt-1">{error}</p>
         </div>
       )}
 
       {/* Actions */}
-      <div className="flex gap-3">
+      <div className="border-t border-white/[0.06] pt-5 mt-2 flex items-center justify-between">
         <button
           onClick={checkForUpdates}
           disabled={isChecking}
-          className="px-4 py-2 bg-[#303030] text-white rounded-lg font-medium hover:bg-[#404040] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-5 py-2.5 bg-white/[0.05] border border-white/[0.06] text-white rounded-lg text-sm font-medium hover:bg-white/[0.1] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {isChecking ? (
             <>
-              <i className="fas fa-spinner fa-spin mr-2"></i>
+              <i className="fas fa-spinner fa-spin"></i>
               Checking...
             </>
           ) : (
             <>
-              <i className="fas fa-sync-alt mr-2"></i>
+              <i className="fas fa-sync-alt"></i>
               Check for Updates
             </>
           )}
         </button>
       </div>
-
-      {/* Important notice removed */}
-    </div>
+    </section>
   );
 }
