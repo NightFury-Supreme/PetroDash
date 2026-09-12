@@ -850,13 +850,13 @@ export function AdminSettingsContent({
              
              <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4 mt-6">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#FF5722]/10 text-[#FF5722]">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-white">
                      <i className="fab fa-discord text-lg"></i>
                   </div>
                   <h4 className="text-sm font-semibold text-white">Setup Instructions</h4>
                 </div>
                 <ol className="space-y-2 list-decimal list-inside text-xs text-[#888]">
-                  <li>Go to <a href="https://discord.com/developers/applications" target="_blank" rel="noopener noreferrer" className="text-[#FF5722] hover:underline">discord.com/developers/applications</a></li>
+                  <li>Go to <a href="https://discord.com/developers/applications" target="_blank" rel="noopener noreferrer" className="text-white hover:underline">discord.com/developers/applications</a></li>
                   <li>Create a new application or select an existing one</li>
                   <li>Go to <strong>OAuth2</strong> → <strong>General</strong></li>
                   <li>Add this redirect URI: <code className="bg-[#181818] px-1.5 py-0.5 rounded text-[#D4D4D4]">{process.env.NEXT_PUBLIC_API_BASE}/api/oauth/discord/callback</code></li>
@@ -891,13 +891,13 @@ export function AdminSettingsContent({
              
              <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4 mt-6">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#FF5722]/10 text-[#FF5722]">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-white">
                      <i className="fab fa-google text-lg"></i>
                   </div>
                   <h4 className="text-sm font-semibold text-white">Setup Instructions</h4>
                 </div>
                 <ol className="space-y-2 list-decimal list-inside text-xs text-[#888]">
-                  <li>Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="text-[#FF5722] hover:underline">Google Cloud Console</a></li>
+                  <li>Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="text-white hover:underline">Google Cloud Console</a></li>
                   <li>Create a new project or select an existing one</li>
                   <li>Configure <strong>OAuth consent screen</strong> (Internal/External)</li>
                   <li>Go to <strong>Credentials</strong> → <strong>Create Credentials</strong> → <strong>OAuth client ID</strong></li>
@@ -1022,13 +1022,13 @@ export function AdminSettingsContent({
              
              <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4 mt-6">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#FF5722]/10 text-[#FF5722]">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-white">
                      <i className="fab fa-google text-lg"></i>
                   </div>
                   <h4 className="text-sm font-semibold text-white">Setup Instructions</h4>
                 </div>
                 <ol className="space-y-2 list-decimal list-inside text-xs text-[#888]">
-                  <li>Go to <a href="https://www.google.com/adsense/" target="_blank" rel="noopener noreferrer" className="text-[#FF5722] hover:underline">Google AdSense</a></li>
+                  <li>Go to <a href="https://www.google.com/adsense/" target="_blank" rel="noopener noreferrer" className="text-white hover:underline">Google AdSense</a></li>
                   <li>Sign up or sign in to your AdSense account</li>
                   <li>Add your website and get approved</li>
                   <li>Go to <strong>Ads</strong> → <strong>By ad unit</strong> → <strong>Display ads</strong></li>
@@ -1096,7 +1096,7 @@ export function AdminSettingsContent({
              
              <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4 mt-6">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#FF5722]/10 text-[#FF5722]">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-white">
                      <i className="fas fa-info-circle text-lg"></i>
                   </div>
                   <h4 className="text-sm font-semibold text-white">Important Notes</h4>
