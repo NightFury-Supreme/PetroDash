@@ -129,7 +129,7 @@ function SettingsRow({
   return (
     <div className="px-5 py-4 transition hover:bg-white/[0.02]">
       <div className={`grid grid-cols-1 gap-4 md:grid-cols-[minmax(250px,1fr)_1fr_150px] md:items-start`}>
-        <div className="flex items-center gap-3 md:mt-1">
+        <div className="flex items-center gap-3">
           {icon && (
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#222] border border-[#2A2A2A] text-[#D4D4D4]">
               {React.isValidElement(icon) && typeof icon.type !== 'string' ? React.cloneElement(icon as React.ReactElement<any>, { size: 16 }) : icon}
@@ -141,13 +141,13 @@ function SettingsRow({
           </div>
         </div>
         <div className="flex flex-col w-full justify-center">
-          {isEditing ? children : (displayValue !== undefined ? <div className="text-sm text-[#D4D4D4] mt-1 md:flex md:justify-end">{displayValue}</div> : children)}
+          {isEditing ? children : (displayValue !== undefined ? <div className="text-sm text-[#D4D4D4] flex items-center md:justify-end h-9">{displayValue}</div> : children)}
         </div>
         <div className="flex items-center justify-end gap-2">
           {displayValue !== undefined && !isEditing && (
             <button
               onClick={() => setIsEditing(true)}
-              className="flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.02] px-4 text-xs font-medium text-white transition-colors hover:bg-white/[0.05]"
+              className="flex h-9 items-center gap-1.5 rounded-lg border border-[#222] bg-[#1A1A1A] px-3 text-xs font-medium text-[#D4D4D4] hover:bg-[#222] transition"
             >
               <i className="fas fa-pencil-alt text-[10px]"></i> Edit
             </button>
@@ -156,17 +156,17 @@ function SettingsRow({
             <>
               <button
                 onClick={handleCancel}
-                className="flex h-8 items-center justify-center gap-2 rounded-lg border border-white/[0.08] bg-transparent px-3 text-xs font-medium text-white transition-colors hover:bg-white/[0.05]"
+                className="flex h-9 items-center gap-1.5 rounded-lg border border-[#2A2A2A] bg-[#1A1A1A] px-3 text-xs font-medium text-[#D4D4D4] hover:bg-[#222] transition disabled:opacity-50"
                 disabled={isSaving}
               >
                 Cancel
               </button>
               <button
                 onClick={handleSave}
-                className="flex h-8 items-center justify-center gap-2 rounded-lg bg-[#FF5722] px-4 text-xs font-medium text-white transition-colors hover:bg-[#F4511E]"
+                className="flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-medium transition disabled:cursor-not-allowed bg-[#FF5722] hover:bg-[#F4511E] text-white"
                 disabled={isSaving}
               >
-                {isSaving ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-save"></i>} Save
+                {isSaving ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-save text-[14px]"></i>} Save
               </button>
             </>
           )}
