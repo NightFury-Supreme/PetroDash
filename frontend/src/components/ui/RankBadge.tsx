@@ -40,9 +40,9 @@ export function RankBadge({ rank, size = 'md', className = '' }: RankBadgeProps)
     borderClass = 'border-amber-500/30';
   }
 
-  let sizeClass = 'px-2 py-0.5 text-[10px] tracking-wide';
-  if (size === 'sm') sizeClass = 'px-1.5 py-px text-[8px] tracking-wider';
-  if (size === 'lg') sizeClass = 'px-2.5 py-1 text-[11px] tracking-wider';
+  let sizeClass = 'px-1.5 py-[2px] text-[9px] tracking-wider';
+  if (size === 'sm') sizeClass = 'px-1 py-[1px] text-[8px] tracking-wider';
+  if (size === 'lg') sizeClass = 'px-2 py-0.5 text-[10px] tracking-wide';
 
   return (
     <span
