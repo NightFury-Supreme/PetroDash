@@ -148,13 +148,23 @@ function MetaViewer({ data, depth = 0 }: { data: any; depth?: number }) {
       {Object.entries(data).map(([key, value]: [string, any]) => {
         const label = formatLabel(key);
 
-        // Nested object — render as sub-section
+        // If key is "changed" or "changes" — render as full diff section with pills
+        if ((key === 'changed' || key === 'changes') && value && typeof value === 'object') {
+          return (
+            <div key={key}>
+              <p className="text-[8px] uppercase tracking-[0.15em] text-white/25 pt-2 pb-1">{label}</p>
+              <RecursiveDiffViewer data={value} />
+            </div>
+          );
+        }
+
+        // Nested object
         if (value && typeof value === 'object' && !Array.isArray(value)) {
-          // { old, new } diff pair — render inline
+          // { old, new } diff pair — render inline as pills
           if ('old' in value || 'new' in value) {
             return (
-              <div key={key} className="flex justify-between items-start gap-4 py-[7px] border-b border-white/[0.04] last:border-0">
-                <span className="text-[9px] uppercase tracking-[0.1em] text-white/45 shrink-0 pt-px">{label}</span>
+              <div key={key} className="flex justify-between items-center gap-4 py-[7px] border-b border-white/[0.04] last:border-0">
+                <span className="font-sans text-[10px] text-white/55 shrink-0 truncate">{label}</span>
                 <div className="flex items-center gap-2 flex-wrap justify-end">
                   <span className="font-mono text-[11px] text-red-400/80 bg-red-500/[0.06] px-2 py-0.5 rounded">
                     {String(value.old ?? 'null')}
@@ -167,7 +177,7 @@ function MetaViewer({ data, depth = 0 }: { data: any; depth?: number }) {
               </div>
             );
           }
-          // Regular nested object — show label as sub-heading then recurse
+          // Regular nested object — sub-heading then recurse
           return (
             <div key={key} className={depth === 0 ? 'pt-1' : ''}>
               <p className="text-[8px] uppercase tracking-[0.15em] text-white/25 pt-2 pb-1">{label}</p>
@@ -178,7 +188,7 @@ function MetaViewer({ data, depth = 0 }: { data: any; depth?: number }) {
           );
         }
 
-        // Array — join as comma list
+        // Array
         if (Array.isArray(value)) {
           return (
             <div key={key} className="flex justify-between items-start gap-4 py-[7px] border-b border-white/[0.04] last:border-0">
@@ -200,11 +210,28 @@ function MetaViewer({ data, depth = 0 }: { data: any; depth?: number }) {
           );
         }
 
-        // Null / undefined
         if (value === null || value === undefined) return null;
 
-        // Looks like a MongoDB ObjectId (24 hex chars) — monospace + muted
         const str = String(value);
+
+        // "1024 -> 1028" string format — render as pills
+        if (str.includes('->')) {
+          const parts = str.split('->');
+          const oldV = parts[0].trim();
+          const newV = parts.slice(1).join('->').trim();
+          return (
+            <div key={key} className="flex justify-between items-center gap-4 py-[7px] border-b border-white/[0.04] last:border-0">
+              <span className="font-sans text-[10px] text-white/55 shrink-0 truncate">{label}</span>
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                <span className="font-mono text-[11px] text-red-400/80 bg-red-500/[0.06] px-2 py-0.5 rounded">{oldV}</span>
+                <span className="text-white/30 text-[10px]">→</span>
+                <span className="font-mono text-[11px] text-emerald-400/80 bg-emerald-500/[0.06] px-2 py-0.5 rounded">{newV}</span>
+              </div>
+            </div>
+          );
+        }
+
+        // MongoDB ObjectId or long hex — monospace muted
         const isId = /^[a-f0-9]{24}$/.test(str);
         const isLongHex = /^[a-f0-9]{16,}$/.test(str);
 
