@@ -3,7 +3,7 @@ import { useToast } from "@/components/ui/ToastProvider";
 import { useModal } from '@/components/Modal';
 import { Drawer } from '@/components/ui/Drawer';
 import { UpdateSystem } from '../updates';
-import { Palette, Globe, ShieldCheck, Server, Users, Megaphone, CreditCard, RefreshCw, Upload, Trash2, LayoutTemplate, Image as ImageIcon, Coins, Clock, Gift, Mail, Fingerprint, BadgeDollarSign, Database, HardDrive, Cpu, Network, ChevronDown, Loader2 } from 'lucide-react';
+import { Palette, Globe, ShieldCheck, Server, Users, Megaphone, CreditCard, RefreshCw, Upload, Trash2, LayoutTemplate, Image as ImageIcon, Coins, Clock, Gift, Mail, BadgeDollarSign, Database, HardDrive, Cpu, Network, ChevronDown, Loader2 } from 'lucide-react';
 
 function SideItem({ icon: Icon, label, active, onClick }: { icon: any; label: string; active?: boolean; onClick: () => void; }) {
   return (
