@@ -804,7 +804,7 @@ export function AdminSettingsContent({
   
           {/* Discord Login */}
           <SettingsDrawerRow 
-            icon={<Fingerprint />} 
+            icon={<i className="fab fa-discord"></i>} 
             label="Discord Login" 
             description="Allow users to login using their Discord account" 
             enabled={formData.auth?.discord?.enabled || false} 
@@ -871,7 +871,7 @@ export function AdminSettingsContent({
 
           {/* Google Login */}
           <SettingsDrawerRow 
-            icon={<Fingerprint />} 
+            icon={<i className="fab fa-google"></i>} 
             label="Google Login" 
             description="Allow users to login using their Google account" 
             enabled={formData.auth?.google?.enabled || false} 
