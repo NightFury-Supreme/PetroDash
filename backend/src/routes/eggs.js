@@ -11,15 +11,28 @@ router.get('/', requireAuth, async (req, res) => {
         let eggsWithCounts = await getCache('eggs:counts');
         
         if (!eggsWithCounts) {
-            const eggs = await Egg.find().lean();
+            const eggs = await Egg.find().populate('category').lean();
+            const Plan = require('../models/Plan');
+            const allPlans = await Plan.find({}, '_id name').lean();
+            const planMap = new Map();
+            allPlans.forEach(p => {
+                planMap.set(p._id.toString(), p.name);
+                planMap.set(p.name, p.name);
+            });
             
             // Get server count for each egg
             eggsWithCounts = await Promise.all(
                 eggs.map(async (egg) => {
                     const serverCount = await Server.countDocuments({ eggId: egg._id });
+                    const allowedPlanNames = (egg.allowedPlans || [])
+                        .map(ap => planMap.get(String(ap)))
+                        .filter(Boolean);
+                    
                     return {
                         ...egg,
-                        serverCount
+                        categoryName: egg.category?.name || 'Uncategorized',
+                        serverCount,
+                        allowedPlanNames: [...new Set(allowedPlanNames)] // unique names
                     };
                 })
             );

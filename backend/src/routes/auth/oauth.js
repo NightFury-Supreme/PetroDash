@@ -6,8 +6,10 @@ const User = require('../../models/User');
 const { getSettings } = require('../../lib/settings');
 const UserCreationService = require('../../services/userCreation');
 const DiscordService = require('../../services/discord');
+const SessionService = require('../../services/SessionService');
  
 const { writeAudit } = require('../../middleware/audit');
+const { logUserActivity } = require('../../middleware/userActivity');
  
 const router = express.Router();
 const { sendMailTemplate } = require('../../lib/mail');
@@ -72,7 +74,7 @@ const configurePassport = async () => {
         // Create new user using unified service
         const username = profile.username + (profile.discriminator !== '0' ? `#${profile.discriminator}` : '');
         const [firstName, ...lastNameParts] = (profile.global_name || profile.username).split(' ');
-        const lastName = lastNameParts.join(' ') || '';
+        const lastName = lastNameParts.join(' ') || 'User';
 
         user = await UserCreationService.createUser({
           email: profile.email,
@@ -155,7 +157,7 @@ const configurePassport = async () => {
 
         // Create new user using unified service
         const [firstName, ...lastNameParts] = profile.displayName.split(' ');
-        const lastName = lastNameParts.join(' ') || '';
+        const lastName = lastNameParts.join(' ') || 'User';
         const username = profile.emails[0].value.split('@')[0];
 
         user = await UserCreationService.createUser({
@@ -247,10 +249,11 @@ router.get('/discord/callback', async (req, res, next) => {
         userAgent: req.get('User-Agent'),
         durationMs: Date.now() - startTime
       });
+      await logUserActivity(req, 'auth.login.failed', { reason: 'oauth_failed', provider: 'discord' });
       return res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_failed`);
     }
     
-    const token = UserCreationService.generateJwt(req.user);
+    const { token } = await SessionService.createSessionAndJwt(req.user, req);
     
     // If user email not yet verified, mark as verified=true (OAuth providers supply verified emails)
     try {
@@ -302,6 +305,7 @@ router.get('/discord/callback', async (req, res, next) => {
       userAgent: req.get('User-Agent'),
       durationMs: Date.now() - startTime
     });
+    await logUserActivity(req, 'auth.login.success', { loginMethod: 'discord' }, req.user._id.toString());
     
     // Send login alert email (best-effort)
     try {
@@ -348,6 +352,7 @@ router.get('/discord/callback', async (req, res, next) => {
       userAgent: req.get('User-Agent'),
       durationMs: Date.now() - startTime
     });
+    await logUserActivity(req, 'auth.login.failed', { reason: 'oauth_error', provider: 'discord' }, req.user?._id?.toString() || null);
     res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_failed`);
   }
 });
@@ -387,10 +392,11 @@ router.get('/google/callback', async (req, res, next) => {
         userAgent: req.get('User-Agent'),
         durationMs: Date.now() - startTime
       });
+      await logUserActivity(req, 'auth.login.failed', { reason: 'oauth_failed', provider: 'google' });
       return res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_failed`);
     }
     
-    const token = UserCreationService.generateJwt(req.user);
+    const { token } = await SessionService.createSessionAndJwt(req.user, req);
     
     // If user email not yet verified, mark as verified=true (OAuth providers supply verified emails)
     try {
@@ -415,6 +421,7 @@ router.get('/google/callback', async (req, res, next) => {
       userAgent: req.get('User-Agent'),
       durationMs: Date.now() - startTime
     });
+    await logUserActivity(req, 'auth.login.success', { loginMethod: 'google' }, req.user._id.toString());
     
     // Send login alert email (best-effort)
     try {
@@ -450,6 +457,7 @@ router.get('/google/callback', async (req, res, next) => {
       userAgent: req.get('User-Agent'),
       durationMs: Date.now() - startTime
     });
+    await logUserActivity(req, 'auth.login.failed', { reason: 'oauth_error', provider: 'google' }, req.user?._id?.toString() || null);
     res.redirect(`${process.env.FRONTEND_URL}/login?error=oauth_failed`);
   }
 });
@@ -536,6 +544,42 @@ router.post('/create-pterodactyl-user', async (req, res) => {
   } catch (error) {
     // Pterodactyl user creation error logged silently
     res.status(500).json({ error: 'Failed to create Pterodactyl user' });
+  }
+});
+
+const { requireAuth } = require('../../middleware/auth');
+
+// Join Discord Server endpoint
+router.post('/discord/join', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId || req.user.sub);
+    
+    if (!user || !user.oauthProviders?.discord?.id || !user.oauthProviders?.discord?.accessToken) {
+      return res.status(400).json({ error: 'Discord account is not linked or access token is missing. Please log in with Discord again.' });
+    }
+
+    const settings = await getSettings();
+    const botToken = settings?.auth?.discord?.botToken;
+    const guildId = settings?.auth?.discord?.guildId;
+
+    if (!botToken || !guildId) {
+      return res.status(400).json({ error: 'Discord server integration is not fully configured by the administrator.' });
+    }
+
+    const joinResult = await DiscordService.addUserToServer(
+      user.oauthProviders.discord.id,
+      user.oauthProviders.discord.accessToken,
+      botToken,
+      guildId
+    );
+
+    if (joinResult.success) {
+      return res.json({ success: true, message: 'Successfully joined or already in the Discord server.' });
+    } else {
+      return res.status(400).json({ error: joinResult.error || 'Failed to join the Discord server. Your token may have expired. Please log out and log back in with Discord.' });
+    }
+  } catch {
+    res.status(500).json({ error: 'An unexpected error occurred while trying to join the Discord server.' });
   }
 });
 

@@ -44,27 +44,27 @@ export default function AdminEmailSkeleton() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <div className="h-4 w-16 bg-[#333] rounded animate-pulse" />
-              <div className="h-10 w-full bg-[#0d0d0d] border border-[#2a2a2a] rounded animate-pulse" />
+              <div className="h-10 w-full bg-[#0d0d0d] rounded animate-pulse" />
             </div>
             <div className="space-y-2">
               <div className="h-4 w-12 bg-[#333] rounded animate-pulse" />
-              <div className="h-10 w-full bg-[#0d0d0d] border border-[#2a2a2a] rounded animate-pulse" />
+              <div className="h-10 w-full bg-[#0d0d0d] rounded animate-pulse" />
             </div>
             <div className="space-y-2">
               <div className="h-4 w-20 bg-[#333] rounded animate-pulse" />
-              <div className="h-10 w-full bg-[#0d0d0d] border border-[#2a2a2a] rounded animate-pulse" />
+              <div className="h-10 w-full bg-[#0d0d0d] rounded animate-pulse" />
             </div>
             <div className="space-y-2">
               <div className="h-4 w-16 bg-[#333] rounded animate-pulse" />
-              <div className="h-10 w-full bg-[#0d0d0d] border border-[#2a2a2a] rounded animate-pulse" />
+              <div className="h-10 w-full bg-[#0d0d0d] rounded animate-pulse" />
             </div>
             <div className="space-y-2">
               <div className="h-4 w-20 bg-[#333] rounded animate-pulse" />
-              <div className="h-10 w-full bg-[#0d0d0d] border border-[#2a2a2a] rounded animate-pulse" />
+              <div className="h-10 w-full bg-[#0d0d0d] rounded animate-pulse" />
             </div>
             <div className="space-y-2">
               <div className="h-4 w-24 bg-[#333] rounded animate-pulse" />
-              <div className="h-10 w-full bg-[#0d0d0d] border border-[#2a2a2a] rounded animate-pulse" />
+              <div className="h-10 w-full bg-[#0d0d0d] rounded animate-pulse" />
             </div>
           </div>
 

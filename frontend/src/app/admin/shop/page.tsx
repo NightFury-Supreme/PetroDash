@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from 'react';
-import Shell from '@/components/Shell';
 import { useAdminShop } from '@/hooks/admin/shop/useAdminShop';
 import { AdminShopSkeleton } from '@/components/skeletons/admin/shop/AdminShopSkeleton';
 import { AdminShopHeader } from '@/components/admin/shop/AdminShopHeader';
@@ -41,14 +40,14 @@ export default function AdminShopPage() {
 
   if (loading) {
     return (
-      <Shell>
+      
         <AdminShopSkeleton />
-      </Shell>
+      
     );
   }
 
   return (
-    <Shell>
+    
       <div className="p-6 space-y-6">
         {/* Header */}
         <AdminShopHeader />
@@ -68,7 +67,7 @@ export default function AdminShopPage() {
           onToggleEnabled={handleToggleEnabled}
         />
       </div>
-    </Shell>
+    
   );
 }
 
