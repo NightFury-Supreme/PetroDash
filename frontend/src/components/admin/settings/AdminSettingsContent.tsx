@@ -299,8 +299,8 @@ function SettingsDrawerRow({
   icon?: React.ReactNode,
   label: string,
   description: React.ReactNode,
-  enabled: boolean,
-  onToggle: (enabled: boolean) => Promise<void>,
+  enabled?: boolean,
+  onToggle?: (enabled: boolean) => Promise<void>,
   onSave: () => Promise<void>,
   children?: React.ReactNode
 }) {
@@ -323,10 +323,12 @@ function SettingsDrawerRow({
          </div>
          <div className="flex flex-col w-full justify-center">
             <div className="text-sm text-[#D4D4D4] flex items-center md:justify-end h-9">
-              {enabled ? (
-                 <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">Enabled</span>
-              ) : (
-                 <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">Disabled</span>
+              {enabled !== undefined && (
+                enabled ? (
+                   <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">Enabled</span>
+                ) : (
+                   <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">Disabled</span>
+                )
               )}
             </div>
          </div>
@@ -345,26 +347,28 @@ function SettingsDrawerRow({
         icon={icon}
         footer={
           <div className="flex items-center justify-between w-full">
-            {enabled ? (
-              <>
-                <div className="flex items-center gap-2">
-                  <button onClick={async () => { setIsSaving(true); await onToggle(false); setIsSaving(false); setIsOpen(false); }} className="flex h-9 items-center justify-center gap-2 rounded-lg px-4 text-xs font-medium transition-all border border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20 disabled:opacity-50" disabled={isSaving}>
-                     {isSaving ? <Loader2 size={14} className="animate-spin" /> : <><Trash2 size={14}/> Disable</>}
+            {enabled !== undefined && onToggle ? (
+              enabled ? (
+                <>
+                  <div className="flex items-center gap-2">
+                    <button onClick={async () => { setIsSaving(true); await onToggle(false); setIsSaving(false); setIsOpen(false); }} className="flex h-9 items-center justify-center gap-2 rounded-lg px-4 text-xs font-medium transition-all border border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20 disabled:opacity-50" disabled={isSaving}>
+                       {isSaving ? <Loader2 size={14} className="animate-spin" /> : <><Trash2 size={14}/> Disable</>}
+                    </button>
+                  </div>
+                  <button onClick={async () => { setIsSaving(true); await onSave(); setIsSaving(false); setIsOpen(false); }} className="flex h-9 items-center justify-center gap-2 rounded-lg bg-[#FF5722] px-4 text-xs font-medium text-white transition-all hover:bg-[#FF4500] disabled:opacity-50" disabled={isSaving}>
+                    {isSaving ? <Loader2 size={14} className="animate-spin" /> : 'Save Changes'}
                   </button>
-                </div>
-                <div className="flex items-center gap-2">
-                   <button onClick={() => setIsOpen(false)} className="h-9 rounded-lg border border-[#222] bg-transparent px-4 text-xs font-medium text-[#888] hover:bg-[#161616] hover:text-[#D4D4D4]">Cancel</button>
-                   <button onClick={async () => { setIsSaving(true); await onSave(); setIsSaving(false); setIsOpen(false); }} className="flex h-9 items-center justify-center gap-2 rounded-lg px-5 text-xs font-medium bg-[#FF5722] text-white hover:bg-[#F4511E] disabled:opacity-50" disabled={isSaving}>
-                     {isSaving ? <Loader2 size={14} className="animate-spin" /> : "Save Changes"}
-                   </button>
-                </div>
-              </>
+                </>
+              ) : (
+                <button onClick={async () => { setIsSaving(true); await onToggle(true); setIsSaving(false); setIsOpen(false); }} className="flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-[#FF5722] px-4 text-xs font-medium text-white transition-all hover:bg-[#FF4500] disabled:opacity-50" disabled={isSaving}>
+                  {isSaving ? <Loader2 size={14} className="animate-spin" /> : 'Enable Integration'}
+                </button>
+              )
             ) : (
-              <div className="flex items-center justify-end w-full gap-2">
-                 <button onClick={() => setIsOpen(false)} className="h-9 rounded-lg border border-[#222] bg-transparent px-4 text-xs font-medium text-[#888] hover:bg-[#161616] hover:text-[#D4D4D4]">Cancel</button>
-                 <button onClick={async () => { setIsSaving(true); await onToggle(true); setIsSaving(false); setIsOpen(false); }} className="flex h-9 items-center justify-center gap-2 rounded-lg px-5 text-xs font-medium bg-[#FF5722] text-white hover:bg-[#F4511E] disabled:opacity-50" disabled={isSaving}>
-                    {isSaving ? <Loader2 size={14} className="animate-spin" /> : "Enable Method"}
-                 </button>
+              <div className="flex items-center justify-end w-full">
+                <button onClick={async () => { setIsSaving(true); await onSave(); setIsSaving(false); setIsOpen(false); }} className="flex h-9 items-center justify-center gap-2 rounded-lg bg-[#FF5722] px-4 text-xs font-medium text-white transition-all hover:bg-[#FF4500] disabled:opacity-50" disabled={isSaving}>
+                  {isSaving ? <Loader2 size={14} className="animate-spin" /> : 'Save Changes'}
+                </button>
               </div>
             )}
           </div>
@@ -807,9 +811,9 @@ export function AdminSettingsContent({
             description="Allow users to register and login with email and password" 
             enabled={formData.auth?.emailLogin ?? true} 
             onToggle={async (enabled) => { updateFormData('auth.emailLogin', enabled); await saveSection({ auth: { ...formData.auth, emailLogin: enabled } as any }, `Email login ${enabled ? 'enabled' : 'disabled'}`); }} 
-            onSave={async () => await saveSection({ auth: formData.auth, payments: { smtp: formData.payments?.smtp } as any }, 'Email settings updated.')}
+            onSave={async () => await saveSection({ auth: formData.auth }, 'Authentication settings updated.')}
           >
-             <div className="space-y-6">
+             <div className="space-y-4">
                <div className="flex items-center justify-between">
                  <div className="flex flex-col">
                    <span className="text-sm font-medium text-[#D4D4D4] mb-0.5">Enable Email Verification</span>
@@ -820,13 +824,21 @@ export function AdminSettingsContent({
                    <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
                  </label>
                </div>
-               
-               <div className="pt-4 border-t border-white/[0.06]">
-                 <h4 className="text-sm font-semibold text-white mb-4">SMTP Configuration</h4>
+             </div>
+          </SettingsDrawerRow>
+
+          {/* SMTP Configuration */}
+          <SettingsDrawerRow 
+            icon={<i className="fas fa-server"></i>} 
+            label="SMTP Configuration" 
+            description="Configure your email server settings for outgoing emails." 
+            onSave={async () => await saveSection({ payments: { smtp: formData.payments?.smtp } as any }, 'SMTP settings updated.')}
+          >
+             <div className="space-y-4">
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                    <div className="flex flex-col">
                      <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">SMTP Host</label>
-                     <input type="text" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder="smtp.example.com" value={formData.payments?.smtp?.host || ''} onChange={(e) => updateFormData('payments.smtp.host', e.target.value)} disabled={loading} />
+                     <input type="text" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder="smtp-relay.brevo.com" value={formData.payments?.smtp?.host || ''} onChange={(e) => updateFormData('payments.smtp.host', e.target.value)} disabled={loading} />
                    </div>
                    <div className="flex flex-col">
                      <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">SMTP Port</label>
@@ -834,7 +846,7 @@ export function AdminSettingsContent({
                    </div>
                    <div className="flex flex-col">
                      <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">SMTP Username</label>
-                     <input type="text" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder="user@example.com" value={formData.payments?.smtp?.user || ''} onChange={(e) => updateFormData('payments.smtp.user', e.target.value)} disabled={loading} />
+                     <input type="text" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder="b5a8a1001@smtp-brevo.com" value={formData.payments?.smtp?.user || ''} onChange={(e) => updateFormData('payments.smtp.user', e.target.value)} disabled={loading} />
                    </div>
                    <div className="flex flex-col">
                      <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">SMTP Password</label>
@@ -842,11 +854,10 @@ export function AdminSettingsContent({
                    </div>
                    <div className="flex flex-col md:col-span-2">
                      <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">From Email Address</label>
-                     <input type="email" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder="noreply@example.com" value={formData.payments?.smtp?.fromEmail || ''} onChange={(e) => updateFormData('payments.smtp.fromEmail', e.target.value)} disabled={loading} />
+                     <input type="email" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder="email@auto-manager.tk" value={formData.payments?.smtp?.fromEmail || ''} onChange={(e) => updateFormData('payments.smtp.fromEmail', e.target.value)} disabled={loading} />
                      <p className="mt-2 text-[11px] text-[#555]">This email address will be used as the sender for all outgoing emails.</p>
                    </div>
                  </div>
-               </div>
              </div>
           </SettingsDrawerRow>
   
