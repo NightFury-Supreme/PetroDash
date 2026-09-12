@@ -986,7 +986,7 @@ export function AdminSettingsContent({
                    <div className="flex items-center justify-between pt-4 border-t border-white/[0.06]">
                      <div className="flex flex-col">
                        <span className="text-sm font-medium text-[#D4D4D4] mb-0.5">Enable TLS/SSL</span>
-                       <span className="text-xs text-[#888]">Use a secure connection (typically true for port 465, false for 587)</span>
+                       <span className="text-xs text-[#888]">Use a secure connection</span>
                      </div>
                      <label className="relative inline-flex items-center cursor-pointer">
                        <input type="checkbox" className="sr-only peer" checked={formData.payments?.smtp?.secure || false} onChange={(e) => updateFormData('payments.smtp.secure', e.target.checked)} disabled={loading} />
