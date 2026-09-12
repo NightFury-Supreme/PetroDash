@@ -176,6 +176,13 @@ function SettingsRow({
   );
 }
 
+function SiteIconDisplay({ src }: { src: string }) {
+  const [error, setError] = React.useState(false);
+  
+  if (error || !src) return <ImageIcon size={16} />;
+  return <img src={src} alt="Icon" className="w-6 h-6 rounded" onError={() => setError(true)} />;
+}
+
 export function AdminSettingsContent({
   settings,
   loading,
@@ -318,7 +325,7 @@ export function AdminSettingsContent({
             />
           </SettingsRow>
           
-          <SettingsRow icon={(iconPreview || formData.siteIcon) ? <img src={safeSiteIcon} alt="Icon" className="w-6 h-6 rounded" /> : <ImageIcon />} label="Site Icon" description="Upload an image (max 5MB, PNG/JPG/GIF/WEBP/SVG)." displayValue="" onSave={async () => {
+          <SettingsRow icon={<SiteIconDisplay src={safeSiteIcon || '/logo.svg'} />} label="Site Icon" description="Upload an image (max 5MB, PNG/JPG/GIF/WEBP/SVG)." displayValue="" onSave={async () => {
                   let finalSiteIcon = formData.siteIcon;
                   if (iconFile) {
                     const token = localStorage.getItem('auth_token');
