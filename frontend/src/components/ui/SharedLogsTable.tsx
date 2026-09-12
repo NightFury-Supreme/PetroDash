@@ -53,18 +53,30 @@ function formatActionText(action: string) {
   ).join(' ');
 }
 
+function formatDiffKey(fullKey: string) {
+  // "limits.diskMb" → "Limits Disk Mb"
+  return fullKey
+    .split('.')
+    .map(part => part.replace(/([A-Z])/g, ' $1').trim())
+    .join(' ')
+    .split(' ')
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+}
+
 function RecursiveDiffViewer({ data, prefix = '' }: { data: any; prefix?: string }) {
   if (!data || typeof data !== 'object') return null;
   return (
     <>
       {Object.entries(data).map(([key, value]: [string, any]) => {
         const fullKey = prefix ? `${prefix}.${key}` : key;
+        const displayKey = formatDiffKey(fullKey);
 
         if (value && typeof value === 'object' && ('old' in value || 'new' in value)) {
           return (
-            <div key={fullKey} className="flex flex-col sm:flex-row sm:items-center gap-2 py-2 border-b border-white/[0.04] last:border-0">
-              <span className="font-sans text-[10px] text-white/55 sm:w-40 shrink-0 truncate">{fullKey}</span>
-              <div className="flex items-center gap-2 flex-wrap min-w-0">
+            <div key={fullKey} className="flex items-center justify-between gap-4 py-2 border-b border-white/[0.04] last:border-0">
+              <span className="font-sans text-[10px] text-white/55 shrink-0 truncate">{displayKey}</span>
+              <div className="flex items-center gap-2 flex-wrap justify-end ml-auto">
                 <span className="font-mono text-[11px] text-red-400/80 bg-red-500/[0.06] px-2 py-0.5 rounded">
                   {String(value.old ?? 'null')}
                 </span>
@@ -80,9 +92,9 @@ function RecursiveDiffViewer({ data, prefix = '' }: { data: any; prefix?: string
         if (value && typeof value === 'string' && value.includes('->')) {
           const [oldV, newV] = value.split('->').map(s => s.trim());
           return (
-            <div key={fullKey} className="flex flex-col sm:flex-row sm:items-center gap-2 py-2 border-b border-white/[0.04] last:border-0">
-              <span className="font-sans text-[10px] text-white/55 sm:w-40 shrink-0 truncate">{fullKey}</span>
-              <div className="flex items-center gap-2 flex-wrap min-w-0">
+            <div key={fullKey} className="flex items-center justify-between gap-4 py-2 border-b border-white/[0.04] last:border-0">
+              <span className="font-sans text-[10px] text-white/55 shrink-0 truncate">{displayKey}</span>
+              <div className="flex items-center gap-2 flex-wrap justify-end ml-auto">
                 <span className="font-mono text-[11px] text-red-400/80 bg-red-500/[0.06] px-2 py-0.5 rounded">{oldV}</span>
                 <span className="text-white/40 text-[10px]">→</span>
                 <span className="font-mono text-[11px] text-emerald-400/80 bg-emerald-500/[0.06] px-2 py-0.5 rounded">{newV}</span>
@@ -96,9 +108,9 @@ function RecursiveDiffViewer({ data, prefix = '' }: { data: any; prefix?: string
         }
 
         return (
-          <div key={fullKey} className="flex flex-col sm:flex-row sm:items-center gap-2 py-2 border-b border-white/[0.04] last:border-0">
-            <span className="font-sans text-[10px] text-white/50 sm:w-40 shrink-0 truncate">{fullKey}</span>
-            <span className="font-mono text-[11px] text-white/65 break-all">{typeof value === 'string' ? value : JSON.stringify(value)}</span>
+          <div key={fullKey} className="flex items-center justify-between gap-4 py-2 border-b border-white/[0.04] last:border-0">
+            <span className="font-sans text-[10px] text-white/50 shrink-0 truncate">{displayKey}</span>
+            <span className="font-mono text-[11px] text-white/65 break-all ml-auto text-right">{typeof value === 'string' ? value : JSON.stringify(value)}</span>
           </div>
         );
       })}
