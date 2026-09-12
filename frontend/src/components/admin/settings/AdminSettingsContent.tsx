@@ -68,14 +68,14 @@ function SettingsDropdown({
       <button
         onClick={() => !disabled && setOpen(!open)}
         disabled={disabled}
-        className="flex h-9 w-full items-center justify-between gap-2 rounded-lg bg-[#101010] border border-[#222] px-3 text-sm text-[#D4D4D4] transition-colors hover:bg-[#151515] hover:border-[#333] disabled:opacity-50"
+        className="flex h-9 w-full items-center justify-between gap-2 rounded-lg bg-[#1A1A1A] px-3 text-sm text-[#999] transition-colors hover:bg-[#222] hover:text-[#ddd] disabled:opacity-50"
       >
         <span className="truncate">{activeLabel}</span>
         <ChevronDown size={14} className="opacity-50 shrink-0" />
       </button>
 
       {open && (
-        <div className="absolute left-0 right-0 top-10 z-50 rounded-md border border-[#222] bg-[#151515] p-1 shadow-xl max-h-[200px] overflow-y-auto">
+        <div className="absolute left-0 right-0 top-10 z-50 rounded-lg border border-[#222] bg-[#151515] p-1 shadow-xl max-h-[200px] overflow-y-auto">
           {options.map((opt) => (
             <button
               key={opt.value}
@@ -86,7 +86,7 @@ function SettingsDropdown({
               className={`flex h-8 w-full items-center rounded px-2 text-left text-sm transition-colors ${
                 opt.value === value
                   ? "bg-white/10 text-white"
-                  : "text-[#888] hover:bg-white/5 hover:text-white"
+                  : "text-white/70 hover:bg-white/10 hover:text-white"
               }`}
             >
               {opt.label}
