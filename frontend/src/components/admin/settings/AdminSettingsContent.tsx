@@ -278,21 +278,52 @@ function SiteIconDisplay({ src }: { src: string }) {
 const TIMEZONE_OPTIONS = (() => {
   try {
     const d = new Date();
-    return Intl.supportedValuesOf('timeZone').map(tz => {
-      let label = tz.replace(/_/g, ' ');
+    const seen = new Set<string>();
+    const options: { value: string; label: string }[] = [];
+    
+    for (const tz of Intl.supportedValuesOf('timeZone')) {
       try {
-        const long = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'long' })
+        const offsetRaw = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'shortOffset' })
           .formatToParts(d).find(p => p.type === 'timeZoneName')?.value;
-        if (long) {
-          label = `(${long}) - ${label}`;
+        const longGeneric = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'longGeneric' })
+          .formatToParts(d).find(p => p.type === 'timeZoneName')?.value;
+          
+        if (offsetRaw && longGeneric) {
+          let formattedOffset = 'UTC+00:00';
+          if (offsetRaw !== 'GMT') {
+            const p = offsetRaw.replace('GMT', '').split(':');
+            const sign = p[0][0];
+            let hr = p[0].substring(1);
+            if (hr.length === 1) hr = '0' + hr;
+            const min = p[1] || '00';
+            formattedOffset = `UTC${sign}${hr}:${min}`;
+          }
+          
+          const label = `(${formattedOffset}) ${longGeneric}`;
+          if (!seen.has(label)) {
+            seen.add(label);
+            options.push({ value: tz, label });
+          }
         }
       } catch (e) {
-        // fallback to just the tz name
+        // Skip invalid tz
       }
-      return { value: tz, label };
+    }
+    
+    // Sort by UTC offset mathematically
+    options.sort((a, b) => {
+      const getMin = (label: string) => {
+        const match = label.match(/UTC([+-])(\d{2}):(\d{2})/);
+        if (!match) return 0;
+        const mins = parseInt(match[2]) * 60 + parseInt(match[3]);
+        return match[1] === '-' ? -mins : mins;
+      };
+      return getMin(a.label) - getMin(b.label);
     });
+    
+    return options.length > 0 ? options : [{ value: 'UTC', label: '(UTC+00:00) Coordinated Universal Time' }];
   } catch (e) {
-    return [{ value: 'UTC', label: 'UTC' }];
+    return [{ value: 'UTC', label: '(UTC+00:00) Coordinated Universal Time' }];
   }
 })();
 
