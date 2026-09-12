@@ -74,7 +74,7 @@ interface DiffValue {
 /** Keys stripped from the raw meta block before showing "Additional Meta". */
 const META_SYSTEM_KEYS = new Set([
   'changes', 'changed', 'created', 'sessionId', 'ip', 'userAgent',
-  'method', 'path', 'status', 'statusCode', 'durationMs', 'targetName',
+  'method', 'path', 'status', 'statusCode', 'durationMs', 'targetName', 'targetRole'
 ]);
 
 /** Context hint priority order for the user-facing action subtitle. */
@@ -428,13 +428,18 @@ function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; m
           {log.resourceId && (log.resourceType === 'user' || log.resourceType === 'server' || log.resourceType === 'ticket') && (
             <>
               <span className="text-[10px] text-white/30 px-1">→</span>
-              <Link
-                href={`/admin/${log.resourceType}s/${log.resourceId}`}
-                className="text-[10px] text-white/50 hover:text-emerald-400 transition-colors truncate"
-                onClick={e => e.stopPropagation()}
-              >
-                {log.resourceType === 'user' ? 'User' : log.resourceType === 'server' ? 'Server' : 'Ticket'} {meta.targetName ? `(${meta.targetName})` : log.resourceId.slice(-6)}
-              </Link>
+              <div className="flex items-center gap-1.5">
+                <Link
+                  href={`/admin/${log.resourceType}s/${log.resourceId}`}
+                  className="text-[10px] text-white/50 hover:text-emerald-400 transition-colors truncate"
+                  onClick={e => e.stopPropagation()}
+                >
+                  {log.resourceType === 'user' ? 'User' : log.resourceType === 'server' ? 'Server' : 'Ticket'} {meta.targetName ? `(${meta.targetName})` : log.resourceId.slice(-6)}
+                </Link>
+                {log.resourceType === 'user' && meta.targetRole && (
+                  <RankBadge rank={meta.targetRole as string} className="px-1 py-px text-[7px]" />
+                )}
+              </div>
             </>
           )}
         </div>

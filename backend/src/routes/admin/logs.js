@@ -97,18 +97,21 @@ router.get('/', requireAdmin, async (req, res) => {
     const serverIds = [...new Set(list.filter(l => l.resourceType === 'server' && l.resourceId).map(l => l.resourceId))];
 
     const [users, servers] = await Promise.all([
-      userIds.length ? User.find({ _id: { $in: userIds } }, 'username').lean() : [],
+      userIds.length ? User.find({ _id: { $in: userIds } }, 'username role').lean() : [],
       serverIds.length ? Server.find({ _id: { $in: serverIds } }, 'name').lean() : []
     ]);
 
-    const userMap = Object.fromEntries(users.map(u => [u._id.toString(), u.username]));
+    const userMap = Object.fromEntries(users.map(u => [u._id.toString(), { name: u.username, role: u.role }]));
     const serverMap = Object.fromEntries(servers.map(s => [s._id.toString(), s.name]));
 
     const enrichedList = list.map(log => {
       const copy = { ...log };
       if (!copy.meta) copy.meta = {};
       if (copy.resourceType === 'user' && copy.resourceId && userMap[copy.resourceId]) {
-        copy.meta.targetName = userMap[copy.resourceId];
+        copy.meta.targetName = userMap[copy.resourceId].name;
+        if (userMap[copy.resourceId].role) {
+          copy.meta.targetRole = userMap[copy.resourceId].role;
+        }
       }
       if (copy.resourceType === 'server' && copy.resourceId && serverMap[copy.resourceId]) {
         copy.meta.targetName = serverMap[copy.resourceId];
