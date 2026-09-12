@@ -275,6 +275,29 @@ function SiteIconDisplay({ src }: { src: string }) {
   return <img src={src} alt="Icon" className="w-6 h-6 rounded" onError={() => setError(true)} />;
 }
 
+const TIMEZONE_OPTIONS = (() => {
+  try {
+    const d = new Date();
+    return Intl.supportedValuesOf('timeZone').map(tz => {
+      let label = tz.replace(/_/g, ' ');
+      try {
+        const short = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'short' })
+          .formatToParts(d).find(p => p.type === 'timeZoneName')?.value;
+        const long = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'long' })
+          .formatToParts(d).find(p => p.type === 'timeZoneName')?.value;
+        if (short && long) {
+          label = `${short} (${long}) - ${label}`;
+        }
+      } catch (e) {
+        // fallback to just the tz name
+      }
+      return { value: tz, label };
+    });
+  } catch (e) {
+    return [{ value: 'UTC', label: 'UTC' }];
+  }
+})();
+
 export function AdminSettingsContent({
   settings,
   loading,
@@ -557,14 +580,7 @@ export function AdminSettingsContent({
                 await saveSection({ localization: { ...formData.localization, timezone: val } }, 'Localization settings updated.');
               }}
               disabled={loading}
-              options={(() => {
-                try {
-                  const zones = Intl.supportedValuesOf('timeZone').map(tz => ({ value: tz, label: tz.replace(/_/g, ' ') }));
-                  return [{ value: 'UTC', label: 'UTC' }, ...zones];
-                } catch (e) {
-                  return [{ value: 'UTC', label: 'UTC' }];
-                }
-              })()}
+              options={TIMEZONE_OPTIONS}
             />
           </SettingsRow>
         </div>
