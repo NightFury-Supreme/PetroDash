@@ -86,11 +86,6 @@ export function Overview({
 }) {
   const [editingAvatar, setEditingAvatar] = React.useState(false);
   const [avatarDraft, setAvatarDraft] = React.useState('');
-  const [isDragging, setIsDragging] = React.useState(false);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const [uploadingIcon, setUploadingIcon] = React.useState(false);
-  const [iconPreview, setIconPreview] = React.useState<string | null>(null);
-  const [iconFile, setIconFile] = React.useState<File | null>(null);
   return (
     <div className="space-y-6">
       <section>
@@ -114,104 +109,20 @@ export function Overview({
               setAvatarDraft(form.profilePicture || '');
               setEditingAvatar(true);
             }}
-            onCancel={() => {
+            onCancel={() => setEditingAvatar(false)}
+            onSave={() => {
+              setForm({ ...form, profilePicture: avatarDraft });
+              onSaveAvatar(avatarDraft);
               setEditingAvatar(false);
-              setIconFile(null);
-              if (iconPreview) URL.revokeObjectURL(iconPreview);
-              setIconPreview(null);
-            }}
-            onSave={async () => {
-              if (iconFile) {
-                setUploadingIcon(true);
-                try {
-                  const token = localStorage.getItem('auth_token');
-                  const fd = new FormData();
-                  fd.append('avatar', iconFile);
-                  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/upload/avatar`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
-                  if (!res.ok) throw new Error('Failed to upload avatar');
-                  const data = await res.json();
-                  const newUrl = data.filePath || data.url;
-                  setForm({ ...form, profilePicture: newUrl });
-                  onSaveAvatar(newUrl);
-                } catch (e) {
-                  console.error(e);
-                } finally {
-                  setUploadingIcon(false);
-                }
-              } else {
-                setForm({ ...form, profilePicture: avatarDraft });
-                onSaveAvatar(avatarDraft);
-              }
-              setEditingAvatar(false);
-              setIconFile(null);
-              if (iconPreview) URL.revokeObjectURL(iconPreview);
-              setIconPreview(null);
             }}
             customEdit={
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full">
-                {(iconPreview || avatarDraft) && (
-                  <div className="relative w-[36px] h-[36px] bg-[#101010] border border-[#FF5722]/50 rounded-lg overflow-hidden flex-shrink-0">
-                    <img 
-                      src={iconPreview || avatarDraft}
-                      alt="Avatar preview" 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-                <div
-                  className="flex-1 min-w-0"
-                  onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-                  onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
-                  onDrop={(e) => { 
-                    e.preventDefault(); 
-                    setIsDragging(false); 
-                    const file = e.dataTransfer.files?.[0];
-                    if (!file || !file.type.startsWith('image/')) return;
-                    setIconFile(file);
-                    setIconPreview(URL.createObjectURL(file));
-                  }}
-                >
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    ref={fileInputRef}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (!file || !file.type.startsWith('image/')) return;
-                      setIconFile(file);
-                      setIconPreview(URL.createObjectURL(file));
-                    }}
-                    disabled={uploadingIcon}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploadingIcon}
-                    className={`flex items-center justify-between w-full rounded-lg px-4 h-[36px] text-sm text-[#888] transition-colors outline-none ${isDragging ? 'bg-[#FF5722]/10 border-[#FF5722] text-[#FF5722]' : 'bg-[#101010] border border-[#FF5722]/50 hover:bg-[#151515]'}`}
-                  >
-                    <span className="truncate">
-                      {uploadingIcon ? 'Uploading...' : (iconPreview || avatarDraft) ? 'Change avatar (or drop/paste)' : 'Upload avatar (or drop/paste)'}
-                    </span>
-                    {uploadingIcon ? <Loader2 size={16} className="animate-spin text-[#888] shrink-0" /> : <Upload size={16} className="text-[#888] shrink-0" />}
-                  </button>
-                </div>
-                {(iconPreview || avatarDraft) && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (iconPreview) URL.revokeObjectURL(iconPreview);
-                      setIconFile(null);
-                      setIconPreview(null);
-                      setAvatarDraft('');
-                    }}
-                    className="flex items-center justify-center h-[36px] w-[36px] rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-colors shrink-0"
-                    disabled={uploadingIcon}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                )}
-              </div>
+              <input
+                autoFocus
+                value={avatarDraft}
+                onChange={(e) => setAvatarDraft(e.target.value)}
+                placeholder="https://example.com/avatar.png"
+                className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all border-[#FF5722]/50 focus:ring-[#FF5722]/50"
+              />
             }
           />
           <InfoRow icon={<User size={14} />} label="Username" description="Your unique username." value={form.username || 'Not set'} editing={editing === "username"} draft={draft} field="username" onEdit={() => onEdit("username")} onDraft={onDraft} onSave={onSave} onCancel={onCancel} />
