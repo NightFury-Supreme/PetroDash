@@ -255,7 +255,7 @@ export function ActiveSessions({ sessions, onRevoke }: { sessions: Session[]; on
           <>
             <div className="hidden gap-4 grid-cols-[minmax(250px,1fr)_1fr_150px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
               <span>Device</span>
-              <span>Details</span>
+              <span className="md:text-right">Details</span>
               <span className="text-right">Action</span>
             </div>
             <div className="divide-y divide-white/[0.06]">
@@ -284,14 +284,14 @@ function SessionRow({ session, onRevoke }: { session: Session; onRevoke: () => v
             </div>
           </div>
         </div>
-        <div className="flex items-center min-w-0">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#888]">
+        <div className="flex items-center md:justify-end min-w-0">
+          <div className="flex flex-wrap items-center md:justify-end gap-x-3 gap-y-1 text-xs text-[#888]">
             <span className="truncate max-w-[200px]" title={session.browser}>{session.browser?.includes('Mozilla') ? parseUserAgent(session.browser) : session.browser}</span>
-            <span className="text-[#444]">•</span>
+            <span className="text-[#444]">·</span>
             <span className="flex items-center gap-1"><Globe size={12} /> {session.ip || 'Unknown'}</span>
-            <span className="text-[#444]">•</span>
+            <span className="text-[#444]">·</span>
             <span>{session.lastActive ? new Date(session.lastActive).toLocaleString() : 'Unknown'}</span>
-            <span className="text-[#444]">•</span>
+            <span className="text-[#444]">·</span>
             <span className="font-mono text-[10px]">ID: {session.id}</span>
           </div>
         </div>
@@ -470,7 +470,7 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2 md:mt-1">
+        <div className="flex items-center justify-end gap-2 md:mt-1">
           {action}
           {editing ? (
             <>
@@ -508,7 +508,7 @@ export function SecurityItem({ icon, title, description, action, status, onActio
             <p className="mt-1 text-xs text-[#888]">{description}</p>
           </div>
         </div>
-        <div className="flex items-center min-w-0">
+        <div className="flex items-center md:justify-end min-w-0">
           {status && (typeof status === 'string' ? <span className="shrink-0 rounded border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 text-[10px] font-medium text-emerald-400">{status}</span> : status)}
         </div>
         <div className="flex items-center justify-end gap-3 shrink-0">
