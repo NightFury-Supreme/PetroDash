@@ -63,7 +63,7 @@ function RecursiveDiffViewer({ data, prefix = '' }: { data: any; prefix?: string
         if (value && typeof value === 'object' && ('old' in value || 'new' in value)) {
           return (
             <div key={fullKey} className="flex flex-col sm:flex-row sm:items-center gap-2 py-2 border-b border-white/[0.04] last:border-0">
-              <span className="font-mono text-[10px] text-white/55 sm:w-40 shrink-0 truncate">{fullKey}</span>
+              <span className="font-sans text-[10px] text-white/55 sm:w-40 shrink-0 truncate">{fullKey}</span>
               <div className="flex items-center gap-2 flex-wrap min-w-0">
                 <span className="font-mono text-[11px] text-red-400/80 bg-red-500/[0.06] px-2 py-0.5 rounded">
                   {String(value.old ?? 'null')}
@@ -81,7 +81,7 @@ function RecursiveDiffViewer({ data, prefix = '' }: { data: any; prefix?: string
           const [oldV, newV] = value.split('->').map(s => s.trim());
           return (
             <div key={fullKey} className="flex flex-col sm:flex-row sm:items-center gap-2 py-2 border-b border-white/[0.04] last:border-0">
-              <span className="font-mono text-[10px] text-white/55 sm:w-40 shrink-0 truncate">{fullKey}</span>
+              <span className="font-sans text-[10px] text-white/55 sm:w-40 shrink-0 truncate">{fullKey}</span>
               <div className="flex items-center gap-2 flex-wrap min-w-0">
                 <span className="font-mono text-[11px] text-red-400/80 bg-red-500/[0.06] px-2 py-0.5 rounded">{oldV}</span>
                 <span className="text-white/40 text-[10px]">→</span>
@@ -97,7 +97,7 @@ function RecursiveDiffViewer({ data, prefix = '' }: { data: any; prefix?: string
 
         return (
           <div key={fullKey} className="flex flex-col sm:flex-row sm:items-center gap-2 py-2 border-b border-white/[0.04] last:border-0">
-            <span className="font-mono text-[10px] text-white/50 sm:w-40 shrink-0 truncate">{fullKey}</span>
+            <span className="font-sans text-[10px] text-white/50 sm:w-40 shrink-0 truncate">{fullKey}</span>
             <span className="font-mono text-[11px] text-white/65 break-all">{typeof value === 'string' ? value : JSON.stringify(value)}</span>
           </div>
         );
@@ -117,7 +117,7 @@ function CreatedViewer({ created }: { created: any }) {
     <>
       {Object.entries(created).map(([key, value]) => (
         <div key={key} className="flex flex-col sm:flex-row sm:items-center gap-2 py-2 border-b border-white/[0.04] last:border-0">
-          <span className="font-mono text-[10px] text-white/50 sm:w-40 shrink-0 truncate">{key}</span>
+          <span className="font-sans text-[10px] text-white/50 sm:w-40 shrink-0 truncate">{key}</span>
           <span className="font-mono text-[11px] text-emerald-400/70 break-all">{JSON.stringify(value)}</span>
         </div>
       ))}
@@ -155,7 +155,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
   const toggleRow = (id: string) => setExpandedRow(expandedRow === id ? null : id);
 
   return (
-    <div className="w-full">
+    <div className="w-full font-sans">
       {/* Column Headers */}
       <div className="hidden md:grid grid-cols-[2fr_1.5fr_110px_140px_44px] gap-4 px-5 pb-3 border-b border-white/[0.06] text-[9px] uppercase tracking-[0.13em] text-white/40">
         <span>Action</span>
