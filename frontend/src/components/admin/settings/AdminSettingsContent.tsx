@@ -231,7 +231,17 @@ function SettingsRow({
           </div>
         </div>
         <div className={`flex flex-col w-full justify-center ${displayValue === undefined ? 'md:items-end' : ''}`}>
-          {isEditing ? children : (displayValue !== undefined ? <div className="text-sm text-[#D4D4D4] flex items-center md:justify-end h-9">{displayValue}</div> : children)}
+          {isEditing ? children : (displayValue !== undefined ? (
+            <div className="text-sm text-[#D4D4D4] flex items-center md:justify-end h-9">
+              {displayValue === 'Enabled' ? (
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">Enabled</span>
+              ) : displayValue === 'Disabled' ? (
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">Disabled</span>
+              ) : (
+                displayValue
+              )}
+            </div>
+          ) : children)}
         </div>
         {displayValue !== undefined && (
           <div className="flex items-center justify-end gap-2">
