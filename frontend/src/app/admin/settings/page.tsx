@@ -31,6 +31,14 @@ interface Settings {
     };
   };
   payments: {
+    smtp: {
+      host: string;
+      port: number;
+      secure: boolean;
+      user: string;
+      pass: string;
+      fromEmail: string;
+    };
     paypal: {
       enabled: boolean;
       mode: 'sandbox' | 'live';

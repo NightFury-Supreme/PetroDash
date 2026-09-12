@@ -35,6 +35,13 @@ router.get('/', requireAdmin, async (req, res) => {
 
     const settings = await getOrCreate();
     const out = settings.toObject();
+    
+    // Fetch SMTP settings
+    const Email = require('../../models/Email');
+    const emailSettings = await Email.getOrCreate();
+    out.payments = out.payments || {};
+    out.payments.smtp = emailSettings.smtp || {};
+
     out.auth = out.auth || {};
     out.auth.emailLogin = out.auth.emailLogin ?? true;
     out.auth.emailVerification = out.auth.emailVerification ?? false;
@@ -94,6 +101,14 @@ const settingsPayloadSchema = z.object({
     }, 'Invalid IANA timezone').optional(),
   }).optional(),
   payments: z.object({
+    smtp: z.object({
+      host: z.string().min(1).max(200).optional(),
+      port: z.coerce.number().int().min(1).max(65535).optional(),
+      secure: z.coerce.boolean().optional(),
+      user: z.string().max(200).optional(),
+      pass: z.string().max(500).optional(),
+      fromEmail: z.string().email().optional(),
+    }).optional(),
     paypal: z.object({
       enabled: z.coerce.boolean().optional(),
       mode: z.enum(['sandbox', 'live'], 'Invalid PayPal mode').optional(),
@@ -174,10 +189,23 @@ router.patch('/', requireAdmin, async (req, res) => {
     delete update.themePrimary;
 
     // Deep-merge payments.paypal to avoid clobbering other fields
-    if (update.payments && update.payments.paypal) {
-      settings.payments = settings.payments || {};
-      settings.payments.paypal = { ...(settings.payments.paypal || {}), ...update.payments.paypal };
-      delete update.payments.paypal;
+    if (update.payments) {
+      if (update.payments.paypal) {
+        settings.payments = settings.payments || {};
+        settings.payments.paypal = { ...(settings.payments.paypal || {}), ...update.payments.paypal };
+        delete update.payments.paypal;
+      }
+      if (update.payments.smtp) {
+        const Email = require('../../models/Email');
+        let emailSettings = await Email.findOne({});
+        if (!emailSettings) emailSettings = await Email.create({});
+        emailSettings.smtp = { ...(emailSettings.smtp || {}), ...update.payments.smtp };
+        await emailSettings.save();
+        const { deleteCachePattern } = require('../../lib/redis');
+        await deleteCachePattern('email:settings');
+        await deleteCachePattern('api:email:settings');
+        delete update.payments.smtp;
+      }
     }
     if (update.payments && Object.keys(update.payments).length === 0) {
       delete update.payments;
@@ -311,6 +339,13 @@ router.patch('/', requireAdmin, async (req, res) => {
 
     // Return updated settings (excluding sensitive fields)
     const response = settings.toObject();
+    
+    // Attach SMTP to response
+    const EmailResponse = require('../../models/Email');
+    const updatedEmailSettings = await EmailResponse.getOrCreate();
+    response.payments = response.payments || {};
+    response.payments.smtp = updatedEmailSettings.smtp || {};
+
     delete response.__v;
     
     const changes = {};

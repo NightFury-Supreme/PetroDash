@@ -57,7 +57,6 @@ const adminOtherLinks: NavLink[] = [
   { href: "/admin/tickets", label: "Tickets", icon: Ticket },
   { href: "/admin/logs", label: "Logs", icon: List },
   { href: "/admin/settings", label: "Settings", icon: Sliders },
-  { href: "/admin/email", label: "Email", icon: Mail },
 ];
 
 const shopLinks: NavLink[] = [
