@@ -14,7 +14,7 @@ export default function LocationsPageContent() {
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
     if (!token) { router.replace('/login'); return; }
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/locations`, { headers: { Authorization: `Bearer ${token}` }})
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations`, { headers: { Authorization: `Bearer ${token}` }})
       .then(async (r) => { let d: any = {}; try { d = await r.json(); } catch {} if (!r.ok) throw new Error(d?.error || 'Failed'); setItems(d); })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -27,7 +27,18 @@ export default function LocationsPageContent() {
       ) : (
         <>
           <LocationsHeader total={items.length} />
-          <LocationList items={items} />
+          <LocationList 
+            locations={items} 
+            onEdit={(id) => router.push(`/admin/locations/${id}`)}
+            onDelete={async (id) => {
+              const token = localStorage.getItem('auth_token');
+              await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${id}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` }
+              });
+              setItems(items.filter(i => i.id !== id));
+            }}
+          />
         </>
       )}
     </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 interface OAuthProvider {
@@ -17,18 +17,22 @@ interface OAuthButtonsProps {
   onError?: (error: string) => void;
 }
 
-export function OAuthButtons({ onError }: OAuthButtonsProps) {
+// Inner component that uses useSearchParams — must be wrapped in Suspense by the caller
+function OAuthButtonsInner({ onError }: OAuthButtonsProps) {
   const [providers, setProviders] = useState<OAuthProvider[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // All hooks unconditionally at top
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const fetchOAuthStatus = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/`);
         let data: any = {}; try { data = await response.json(); } catch {}
-        
+
         const availableProviders: OAuthProvider[] = [];
-        
+
         if (data.discord?.enabled) {
           availableProviders.push({
             name: 'Discord',
@@ -40,7 +44,7 @@ export function OAuthButtons({ onError }: OAuthButtonsProps) {
             hoverColor: '#4752C4'
           });
         }
-        
+
         if (data.google?.enabled) {
           availableProviders.push({
             name: 'Google',
@@ -52,7 +56,7 @@ export function OAuthButtons({ onError }: OAuthButtonsProps) {
             hoverColor: '#3367D6'
           });
         }
-        
+
         setProviders(availableProviders);
       } catch (error) {
         console.error('Failed to fetch OAuth status:', error);
@@ -65,10 +69,8 @@ export function OAuthButtons({ onError }: OAuthButtonsProps) {
     fetchOAuthStatus();
   }, [onError]);
 
-  const searchParams = useSearchParams();
-
   const handleOAuthLogin = (provider: string) => {
-    const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE}/api/oauth/${provider.toLowerCase()}`);
+    const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/oauth/${provider.toLowerCase()}`);
     const ref = searchParams?.get('ref');
     if (ref) {
       url.searchParams.set('ref', ref);
@@ -79,8 +81,8 @@ export function OAuthButtons({ onError }: OAuthButtonsProps) {
   if (loading) {
     return (
       <div className="space-y-3">
-        <div className="h-12 bg-[#202020] rounded-lg animate-pulse"></div>
-        <div className="h-12 bg-[#202020] rounded-lg animate-pulse"></div>
+        <div className="h-12 bg-[#202020] rounded-lg animate-pulse" />
+        <div className="h-12 bg-[#202020] rounded-lg animate-pulse" />
       </div>
     );
   }
@@ -102,12 +104,24 @@ export function OAuthButtons({ onError }: OAuthButtonsProps) {
             '--provider-hover': provider.hoverColor
           } as React.CSSProperties}
         >
-          <i 
-            className={`${provider.icon} text-lg group-hover:scale-110 transition-transform text-white`}
-          ></i>
+          <i className={`${provider.icon} text-lg group-hover:scale-110 transition-transform text-white`} />
           <span>Continue with {provider.name}</span>
         </button>
       ))}
     </div>
+  );
+}
+
+// Exported wrapper — always renders OAuthButtonsInner inside Suspense
+export function OAuthButtons({ onError }: OAuthButtonsProps) {
+  return (
+    <Suspense fallback={
+      <div className="space-y-3">
+        <div className="h-12 bg-[#202020] rounded-lg animate-pulse" />
+        <div className="h-12 bg-[#202020] rounded-lg animate-pulse" />
+      </div>
+    }>
+      <OAuthButtonsInner onError={onError} />
+    </Suspense>
   );
 }

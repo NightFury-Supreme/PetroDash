@@ -76,7 +76,7 @@ export function usePlansList(): UsePlansListReturn {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -102,7 +102,7 @@ export function usePlansList(): UsePlansListReturn {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans/${planId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans/${planId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -132,7 +132,7 @@ export function usePlansList(): UsePlansListReturn {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans/${plan._id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans/${plan._id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -166,7 +166,7 @@ export function usePlansList(): UsePlansListReturn {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans/${plan._id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans/${plan._id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -200,7 +200,7 @@ export function usePlansList(): UsePlansListReturn {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans/${plan._id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans/${plan._id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

@@ -26,7 +26,7 @@ export default function NewCouponPageContent() {
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
     if (!token) { router.replace('/login'); return; }
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans`, { headers: { Authorization: `Bearer ${token}` }})
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans`, { headers: { Authorization: `Bearer ${token}` }})
       .then(async (r) => { if (r.ok) setPlans(await r.json()); })
       .finally(() => setInitialLoading(false));
   }, [router]);
@@ -35,7 +35,7 @@ export default function NewCouponPageContent() {
     e.preventDefault();
     setLoading(true);
     const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/coupons`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons`, {
       method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({
         ...form,

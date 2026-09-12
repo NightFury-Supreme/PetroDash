@@ -33,7 +33,7 @@ export default function NewLocationPageContent() {
     setLoading(true);
     try {
       const token = localStorage.getItem('auth_token');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/locations`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
