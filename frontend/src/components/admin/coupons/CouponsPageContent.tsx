@@ -18,9 +18,9 @@ export default function CouponsPageContent() {
     const token = localStorage.getItem('auth_token');
     if (!token) { router.replace('/login'); return; }
     Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/coupons`, { headers: { Authorization: `Bearer ${token}` } }),
-      fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans`, { headers: { Authorization: `Bearer ${token}` } }),
-      fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/branding`)
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/branding`)
     ])
       .then(async ([cR, pR, bR]) => {
         if (cR.ok) setCoupons(await cR.json());
@@ -35,7 +35,7 @@ export default function CouponsPageContent() {
 
   const toggleEnabled = async (id: string, enabled: boolean) => {
     const token = localStorage.getItem('auth_token');
-    await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/coupons/${id}`, {
+    await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons/${id}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ enabled })
     });
     setCoupons((prev) => prev.map((c) => (c._id === id ? { ...c, enabled } : c)));
@@ -45,7 +45,7 @@ export default function CouponsPageContent() {
     const token = localStorage.getItem('auth_token');
     setDeleting(id);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/coupons/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) setCoupons((prev) => prev.filter((c) => c._id !== id));
     } finally {
       setDeleting(null);

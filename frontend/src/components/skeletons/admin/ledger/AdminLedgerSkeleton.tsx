@@ -79,7 +79,7 @@ export function AdminLedgerSkeleton() {
         {[...Array(4)].map((_, i) => (
           <div 
             key={i} 
-            className="bg-[#181818] border border-[#303030] rounded-xl p-6 animate-pulse"
+            className="bg-[#181818] rounded-xl p-6 animate-pulse"
             style={{ 
               animationDelay: `${i * 200}ms`,
               animationDuration: '1.5s'

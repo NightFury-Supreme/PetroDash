@@ -200,12 +200,9 @@ router.patch('/:id', requireAdmin, validateObjectId('id'), async (req, res) => {
     Object.assign(plan, updateData);
     await plan.save();
     
-    await writeAudit(req, {
-      action: 'UPDATE',
-      resourceType: 'PLAN',
-      resourceId: plan._id,
-      success: true,
-      meta: { planName: plan.name, updatedFields: Object.keys(updateData) }
+    await writeAudit(req, 'admin.plan.update', 'plan', plan._id.toString(), { 
+      planName: plan.name, 
+      updatedFields: Object.keys(updateData) 
     });
     
     const { deleteCachePattern } = require('../../lib/redis');

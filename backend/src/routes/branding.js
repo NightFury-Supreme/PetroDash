@@ -11,22 +11,27 @@ router.get('/', async (req, res) => {
             return res.json({ 
                 siteName: 'PteroDash', 
                 siteIcon: '',
-                currency: 'USD'
+                currency: 'USD',
+                earnEnabled: false
             });
         }
         
         return res.json({ 
             siteName: settings.siteName || 'PteroDash', 
             siteIcon: settings.siteIcon || '',
-            currency: settings.localization?.currency || 'USD'
+            currency: settings.localization?.currency || 'USD',
+            earnEnabled: (settings.earn?.ads?.enabled || settings.earn?.linkvertise?.enabled) || false,
+            emailVerification: settings.auth?.emailVerification || false
         });
     // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (e) { 
                 return res.json({ 
             siteName: 'PteroDash', 
             siteIcon: '',
-            currency: 'USD'
-        }); 
+            currency: 'USD',
+            earnEnabled: false,
+            emailVerification: false
+        });
     }
 });
 
