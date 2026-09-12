@@ -71,7 +71,7 @@ interface DiffValue {
 
 /** Keys stripped from the raw meta block before showing "Additional Meta". */
 const META_SYSTEM_KEYS = new Set([
-  'changes', 'created', 'sessionId', 'ip', 'userAgent',
+  'changes', 'changed', 'created', 'sessionId', 'ip', 'userAgent',
   'method', 'path', 'status', 'statusCode', 'durationMs',
 ]);
 
@@ -314,21 +314,6 @@ function MetaViewer({ data }: { data: Record<string, unknown> }) {
       {Object.entries(data).map(([key, value]) => {
         const label = getFieldLabel(key);
 
-        // Diff sub-object (changed / changes)
-        if (
-          (key === 'changed' || key === 'changes') &&
-          typeof value === 'object' &&
-          value !== null &&
-          !Array.isArray(value)
-        ) {
-          return (
-            <div key={key} className="mt-4 first:mt-0">
-              <SectionHeading>{label}</SectionHeading>
-              <DiffViewer data={value as Record<string, unknown>} />
-            </div>
-          );
-        }
-
         // { old, new } inline diff
         if (isDiffValue(value)) {
           return (
@@ -460,6 +445,7 @@ function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; m
 
 function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: Variant; meta: LogMeta }) {
   const hasChanges = meta.changes != null && Object.keys(meta.changes).length > 0;
+  const hasChangedLegacy = meta.changed != null && Object.keys(meta.changed).length > 0;
   const hasCreated = meta.created != null && Object.keys(meta.created).length > 0;
 
   const rawMeta = Object.fromEntries(
@@ -493,7 +479,7 @@ function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: Variant
           )}
           {statusCode != null && (
             <div className="flex justify-between items-start gap-4 py-[7px] border-b border-white/[0.04] last:border-0">
-              <span className="text-[9px] uppercase tracking-[0.1em] text-white/45 shrink-0 pt-px">Status Code</span>
+              <span className="text-[10px] uppercase tracking-[0.1em] text-white shrink-0 pt-px">Status Code</span>
               <span className={`font-mono text-[11px] ${statusCode >= 400 ? 'text-red-400' : 'text-emerald-400'}`}>
                 {statusCode}
               </span>
@@ -506,13 +492,19 @@ function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: Variant
           {hasChanges && (
             <div>
               <SectionHeading>Value Changes</SectionHeading>
-              <DiffViewer data={meta.changes!} />
+              <DiffViewer data={meta.changes as Record<string, unknown>} />
+            </div>
+          )}
+          {hasChangedLegacy && (
+            <div>
+              <SectionHeading>Changed</SectionHeading>
+              <DiffViewer data={meta.changed as Record<string, unknown>} />
             </div>
           )}
           {hasCreated && (
             <div>
               <SectionHeading>Created</SectionHeading>
-              <CreatedViewer data={meta.created!} />
+              <CreatedViewer data={meta.created as Record<string, unknown>} />
             </div>
           )}
           {variant === 'admin' && hasRawMeta && (
