@@ -32,13 +32,16 @@ function sanitizeEarn(earn) {
       ayetPlacementId: Number.isFinite(Number(obj.ayetPlacementId)) ? Number(obj.ayetPlacementId) : defaults.ayetPlacementId,
       ayetAdslotName: typeof obj.ayetAdslotName === 'string' ? obj.ayetAdslotName : defaults.ayetAdslotName,
       ayetApiKey: typeof obj.ayetApiKey === 'string' ? obj.ayetApiKey : defaults.ayetApiKey,
+      adslotId: typeof obj.adslotId === 'string' ? obj.adslotId : defaults.adslotId,
+      apiKey: typeof obj.apiKey === 'string' ? obj.apiKey : defaults.apiKey,
     };
   };
 
   return {
-    enabled: Boolean(e.enabled),
-    ads: normalizeMethod(e.ads, { coins: 10, cooldownSeconds: 3600, waitSeconds: 30, maxClaimsPerDay: 24, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '' }),
-    linkvertise: normalizeMethod(e.linkvertise, { coins: 20, cooldownSeconds: 3600, waitSeconds: 10, maxClaimsPerDay: 24, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '' }),
+    ads: normalizeMethod(e.ads, { coins: 10, cooldownSeconds: 3600, waitSeconds: 30, maxClaimsPerDay: 24, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '', adslotId: '', apiKey: '' }),
+    linkvertise: normalizeMethod(e.linkvertise, { coins: 20, cooldownSeconds: 3600, waitSeconds: 10, maxClaimsPerDay: 24, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '', adslotId: '', apiKey: '' }),
+    offerwall: normalizeMethod(e.offerwall, { coins: 0, cooldownSeconds: 0, waitSeconds: 0, maxClaimsPerDay: 0, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '', adslotId: '', apiKey: '' }),
+    surveywall: normalizeMethod(e.surveywall, { coins: 0, cooldownSeconds: 0, waitSeconds: 0, maxClaimsPerDay: 0, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '', adslotId: '', apiKey: '' }),
   };
 }
 
@@ -54,7 +57,6 @@ router.get('/', requireAdmin, async (req, res) => {
 });
 
 const earnPatchSchema = z.object({
-  enabled: z.coerce.boolean().optional(),
   ads: z.object({
     enabled: z.coerce.boolean().optional(),
     coins: z.coerce.number().int().min(0).max(1000000).optional(),
@@ -74,6 +76,16 @@ const earnPatchSchema = z.object({
     url: z.string().max(2048).optional().or(z.literal('')),
     antiBypassToken: z.string().max(2048).optional().or(z.literal('')),
   }).optional(),
+  offerwall: z.object({
+    enabled: z.coerce.boolean().optional(),
+    adslotId: z.string().max(256).optional().or(z.literal('')),
+    apiKey: z.string().max(2048).optional().or(z.literal('')),
+  }).optional(),
+  surveywall: z.object({
+    enabled: z.coerce.boolean().optional(),
+    adslotId: z.string().max(256).optional().or(z.literal('')),
+    apiKey: z.string().max(2048).optional().or(z.literal('')),
+  }).optional(),
 });
 
 router.patch('/', requireAdmin, async (req, res) => {
@@ -85,7 +97,6 @@ router.patch('/', requireAdmin, async (req, res) => {
     settings.earn = settings.earn || {};
 
     const update = parsed.data;
-    if (update.enabled !== undefined) settings.earn.enabled = update.enabled;
 
     const applyMethod = (key) => {
       if (!update[key]) return;
@@ -101,21 +112,56 @@ router.patch('/', requireAdmin, async (req, res) => {
       if (key === 'ads' && src.ayetApiKey !== undefined) settings.earn[key].ayetApiKey = src.ayetApiKey;
       if (key === 'linkvertise' && src.url !== undefined) settings.earn[key].url = src.url;
       if (key === 'linkvertise' && src.antiBypassToken !== undefined) settings.earn[key].antiBypassToken = src.antiBypassToken;
+      if ((key === 'offerwall' || key === 'surveywall') && src.adslotId !== undefined) settings.earn[key].adslotId = src.adslotId;
+      if ((key === 'offerwall' || key === 'surveywall') && src.apiKey !== undefined) settings.earn[key].apiKey = src.apiKey;
     };
 
     applyMethod('ads');
     applyMethod('linkvertise');
+    applyMethod('offerwall');
+    applyMethod('surveywall');
 
     const ayetConfigured = Boolean(Number(settings?.earn?.ads?.ayetPlacementId || 0) > 0)
       && Boolean(String(settings?.earn?.ads?.ayetAdslotName || '').trim())
       && Boolean(String(settings?.earn?.ads?.ayetApiKey || '').trim());
 
-    if (settings?.earn?.ads?.enabled && !ayetConfigured) {
-      return res.status(400).json({ error: 'Configure ayeT Rewarded Video (Placement ID, AdSlot name, API Key) before enabling Watch Ads' });
+    if (settings.earn.ads && settings.earn.ads.enabled) {
+      if (!ayetConfigured) {
+        return res.status(400).json({ error: 'Cannot enable Watch Ads: missing required configuration fields.' });
+      }
     }
 
+    const lvConfigured = Boolean(String(settings?.earn?.linkvertise?.url || '').trim());
+    if (settings.earn.linkvertise && settings.earn.linkvertise.enabled) {
+      if (!lvConfigured) {
+        return res.status(400).json({ error: 'Cannot enable Linkvertise: missing required URL template.' });
+      }
+    }
+
+    const offerwallConfigured = Boolean(String(settings?.earn?.offerwall?.adslotId || '').trim())
+      && Boolean(String(settings?.earn?.offerwall?.apiKey || '').trim());
+    if (settings.earn.offerwall && settings.earn.offerwall.enabled) {
+      if (!offerwallConfigured) {
+        return res.status(400).json({ error: 'Cannot enable Offerwall: missing Adslot ID or API Key.' });
+      }
+    }
+
+    const surveywallConfigured = Boolean(String(settings?.earn?.surveywall?.adslotId || '').trim())
+      && Boolean(String(settings?.earn?.surveywall?.apiKey || '').trim());
+    if (settings.earn.surveywall && settings.earn.surveywall.enabled) {
+      if (!surveywallConfigured) {
+        return res.status(400).json({ error: 'Cannot enable Surveywall: missing Adslot ID or API Key.' });
+      }
+    }
+
+    settings.markModified('earn');
     await settings.save();
     clearSettingsCache();
+
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.earn.update', 'earn_settings', null, {
+      updatedMethods: Object.keys(update)
+    });
 
     return res.json(sanitizeEarn(settings.earn));
   // eslint-disable-next-line unused-imports/no-unused-vars

@@ -37,6 +37,32 @@ async function requireAuth(req, res, next) {
             });
         }
         
+        // Active Session Validation (Option A: Legacy tokens without sessionId still allowed)
+        if (payload.sessionId) {
+            const sessionCacheKey = `session:valid:${payload.sessionId}`;
+            let isSessionValid = await getCache(sessionCacheKey);
+            
+            if (isSessionValid === null) {
+                // Not in cache, query DB
+                const UserSession = require('../models/UserSession');
+                const sessionDoc = await UserSession.findById(payload.sessionId).lean();
+                
+                if (!sessionDoc) {
+                    return res.status(401).json({ error: 'Session revoked' });
+                }
+                
+                // Cache valid session for 60 seconds
+                await setCache(sessionCacheKey, true, 60);
+                
+                // Passively update lastActive in DB
+                UserSession.updateOne({ _id: payload.sessionId }, { $set: { lastActive: new Date() } }).catch(console.error);
+            } else if (isSessionValid === false) {
+                 return res.status(401).json({ error: 'Session revoked' });
+            } else {
+                // valid session cached, passively update last active every ~60s via the cache miss
+            }
+        }
+
         next();
     } catch (e) {
         if (e.name === 'JsonWebTokenError' || e.name === 'TokenExpiredError') {
