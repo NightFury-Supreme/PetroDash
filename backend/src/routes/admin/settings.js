@@ -102,6 +102,7 @@ const settingsPayloadSchema = z.object({
   }).optional(),
   payments: z.object({
     smtp: z.object({
+      enabled: z.coerce.boolean().optional(),
       host: z.string().min(1).max(200).optional(),
       port: z.coerce.number().int().min(1).max(65535).optional(),
       secure: z.coerce.boolean().optional(),

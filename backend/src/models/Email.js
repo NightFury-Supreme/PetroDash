@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const emailSchema = new mongoose.Schema({
   smtp: {
+    enabled: { type: Boolean, default: false },
     host: { type: String, default: '' },
     port: { type: Number, default: 587 },
     secure: { type: Boolean, default: false },

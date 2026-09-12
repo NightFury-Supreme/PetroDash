@@ -32,6 +32,7 @@ interface Settings {
   };
   payments: {
     smtp: {
+      enabled?: boolean;
       host: string;
       port: number;
       secure: boolean;

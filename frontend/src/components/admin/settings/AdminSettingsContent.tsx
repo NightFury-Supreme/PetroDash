@@ -956,6 +956,8 @@ export function AdminSettingsContent({
               icon={<i className="fas fa-server"></i>} 
               label="Email Configuration" 
               description="Configure your email server settings for outgoing emails." 
+              enabled={formData.payments?.smtp?.enabled ?? false}
+              onToggle={async (enabled) => { updateFormData('payments.smtp.enabled', enabled); await saveSection({ payments: { smtp: { ...formData.payments?.smtp, enabled } } as any }, `Email Configuration ${enabled ? 'enabled' : 'disabled'}`); }}
               onSave={async () => await saveSection({ payments: { smtp: formData.payments?.smtp } as any }, 'SMTP settings updated.')}
             >
                <div className="space-y-4">
