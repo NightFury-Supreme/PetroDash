@@ -811,59 +811,61 @@ export function AdminSettingsContent({
             onToggle={async (enabled) => { updateFormData('auth.discord.enabled', enabled); await saveSection({ auth: { ...formData.auth, discord: { ...formData.auth?.discord, enabled } } as any }, `Discord login ${enabled ? 'enabled' : 'disabled'}`); }} 
             onSave={async () => await saveSection({ auth: formData.auth }, 'Authentication settings updated.')}
           >
-             <div className="space-y-4">
+             <div className="space-y-5">
                <div>
-                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Discord Client ID</label>
-                 <input type="text" className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50" placeholder="Enter Discord Client ID" value={formData.auth?.discord?.clientId || ''} onChange={(e) => updateFormData('auth.discord.clientId', e.target.value)} disabled={loading} />
+                 <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">Discord Client ID</label>
+                 <input type="text" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder="Enter Discord Client ID" value={formData.auth?.discord?.clientId || ''} onChange={(e) => updateFormData('auth.discord.clientId', e.target.value)} disabled={loading} />
                </div>
                <div>
-                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Discord Client Secret</label>
-                 <input type="password" className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50" placeholder="Enter Discord Client Secret" value={formData.auth?.discord?.clientSecret || ''} onChange={(e) => updateFormData('auth.discord.clientSecret', e.target.value)} disabled={loading} />
+                 <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">Discord Client Secret</label>
+                 <input type="password" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder="Enter Discord Client Secret" value={formData.auth?.discord?.clientSecret || ''} onChange={(e) => updateFormData('auth.discord.clientSecret', e.target.value)} disabled={loading} />
                </div>
                
-               <div className="pt-2">
+               <div className="pt-3 border-t border-white/[0.06]">
                  <div className="flex items-center justify-between mb-2">
-                   <label className="text-xs font-semibold uppercase tracking-wider text-[#888]">Auto-Join Discord Server</label>
+                   <div className="flex flex-col">
+                     <span className="text-sm font-medium text-[#D4D4D4] mb-0.5">Auto-Join Discord Server</span>
+                     <span className="text-xs text-[#888]">Automatically add users to your Discord server when they login</span>
+                   </div>
                    <label className="relative inline-flex items-center cursor-pointer">
                      <input type="checkbox" className="sr-only peer" checked={formData.auth?.discord?.autoJoin || false} onChange={(e) => updateFormData('auth.discord.autoJoin', e.target.checked)} disabled={loading} />
                      <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
                    </label>
                  </div>
-                 <p className="text-[11px] text-[#555] mb-3">Automatically add users to your Discord server when they login</p>
                  
                  {formData.auth?.discord?.autoJoin && (
-                   <div className="space-y-4 mt-3 pl-3 border-l-2 border-[#222]">
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                      <div>
-                       <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Discord Guild ID</label>
-                       <input type="text" className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50" placeholder="Enter Discord Guild (Server) ID" value={formData.auth?.discord?.guildId || ''} onChange={(e) => updateFormData('auth.discord.guildId', e.target.value)} disabled={loading} />
+                       <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">Discord Guild ID</label>
+                       <input type="text" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder="Enter Discord Guild (Server) ID" value={formData.auth?.discord?.guildId || ''} onChange={(e) => updateFormData('auth.discord.guildId', e.target.value)} disabled={loading} />
                      </div>
                      <div>
-                       <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Discord Bot Token</label>
-                       <input type="password" className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50" placeholder="Enter Discord Bot Token" value={formData.auth?.discord?.botToken || ''} onChange={(e) => updateFormData('auth.discord.botToken', e.target.value)} disabled={loading} />
+                       <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">Discord Bot Token</label>
+                       <input type="password" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder="Enter Discord Bot Token" value={formData.auth?.discord?.botToken || ''} onChange={(e) => updateFormData('auth.discord.botToken', e.target.value)} disabled={loading} />
                      </div>
                    </div>
                  )}
                </div>
              </div>
              
-             <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-4 mt-6">
-                <div className="flex items-start gap-3">
-                  <i className="fab fa-discord text-white mt-1"></i>
-                  <div className="text-sm text-[#AAAAAA]">
-                    <p className="font-medium text-white mb-2">Discord Setup Instructions:</p>
-                    <ol className="space-y-1 list-decimal list-inside">
-                      <li>Go to <a href="https://discord.com/developers/applications" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white hover:underline">discord.com/developers/applications</a></li>
-                      <li>Create a new application or select existing one</li>
-                      <li>Go to OAuth2 → General</li>
-                      <li>Add this redirect URI: <code className="bg-[#181818] px-2 py-1 rounded text-gray-300">{process.env.NEXT_PUBLIC_API_BASE}/api/oauth/discord/callback</code></li>
-                      <li>Copy Client ID and Client Secret to the fields above</li>
-                      <li><strong>For Auto-Join:</strong> Go to Bot → Create Bot → Copy Bot Token</li>
-                      <li><strong>For Auto-Join:</strong> Enable "SERVER MEMBERS INTENT" in Bot settings</li>
-                      <li><strong>For Auto-Join:</strong> Invite bot to your server with "Manage Server" permission</li>
-                      <li><strong>For Auto-Join:</strong> Get your server ID (right-click server → Copy Server ID)</li>
-                    </ol>
+             <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4 mt-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#FF5722]/10 text-[#FF5722]">
+                     <i className="fab fa-discord text-lg"></i>
                   </div>
+                  <h4 className="text-sm font-semibold text-white">Setup Instructions</h4>
                 </div>
+                <ol className="space-y-2 list-decimal list-inside text-xs text-[#888]">
+                  <li>Go to <a href="https://discord.com/developers/applications" target="_blank" rel="noopener noreferrer" className="text-[#FF5722] hover:underline">discord.com/developers/applications</a></li>
+                  <li>Create a new application or select an existing one</li>
+                  <li>Go to <strong>OAuth2</strong> → <strong>General</strong></li>
+                  <li>Add this redirect URI: <code className="bg-[#181818] px-1.5 py-0.5 rounded text-[#D4D4D4]">{process.env.NEXT_PUBLIC_API_BASE}/api/oauth/discord/callback</code></li>
+                  <li>Copy <strong>Client ID</strong> and <strong>Client Secret</strong> to the fields above</li>
+                  <li><strong>For Auto-Join:</strong> Go to <strong>Bot</strong> → <strong>Create Bot</strong> → Copy <strong>Bot Token</strong></li>
+                  <li><strong>For Auto-Join:</strong> Enable <strong>SERVER MEMBERS INTENT</strong> in Bot settings</li>
+                  <li><strong>For Auto-Join:</strong> Invite bot to your server with <strong>Manage Server</strong> permission</li>
+                  <li><strong>For Auto-Join:</strong> Get your server ID (right-click server → Copy Server ID)</li>
+                </ol>
              </div>
           </SettingsDrawerRow>
 
@@ -878,31 +880,31 @@ export function AdminSettingsContent({
           >
              <div className="space-y-4">
                <div>
-                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Google Client ID</label>
-                 <input type="text" className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50" placeholder="Enter Google Client ID" value={formData.auth?.google?.clientId || ''} onChange={(e) => updateFormData('auth.google.clientId', e.target.value)} disabled={loading} />
+                 <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">Google Client ID</label>
+                 <input type="text" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder="Enter Google Client ID" value={formData.auth?.google?.clientId || ''} onChange={(e) => updateFormData('auth.google.clientId', e.target.value)} disabled={loading} />
                </div>
                <div>
-                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Google Client Secret</label>
-                 <input type="password" className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50" placeholder="Enter Google Client Secret" value={formData.auth?.google?.clientSecret || ''} onChange={(e) => updateFormData('auth.google.clientSecret', e.target.value)} disabled={loading} />
+                 <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">Google Client Secret</label>
+                 <input type="password" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder="Enter Google Client Secret" value={formData.auth?.google?.clientSecret || ''} onChange={(e) => updateFormData('auth.google.clientSecret', e.target.value)} disabled={loading} />
                </div>
              </div>
              
-             <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-4 mt-6">
-                <div className="flex items-start gap-3">
-                  <i className="fab fa-google text-white mt-1"></i>
-                  <div className="text-sm text-[#AAAAAA]">
-                    <p className="font-medium text-white mb-2">Google Setup Instructions:</p>
-                    <ol className="space-y-1 list-decimal list-inside">
-                      <li>Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white hover:underline">Google Cloud Console</a></li>
-                      <li>Create a new project or select existing one</li>
-                      <li>Configure OAuth consent screen (Internal/External)</li>
-                      <li>Go to Credentials → Create Credentials → OAuth client ID</li>
-                      <li>Application type: Web application</li>
-                      <li>Authorized redirect URIs: <code className="bg-[#181818] px-2 py-1 rounded text-gray-300">{process.env.NEXT_PUBLIC_API_BASE}/api/oauth/google/callback</code></li>
-                      <li>Copy Client ID and Client Secret to the fields above</li>
-                    </ol>
+             <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4 mt-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#FF5722]/10 text-[#FF5722]">
+                     <i className="fab fa-google text-lg"></i>
                   </div>
+                  <h4 className="text-sm font-semibold text-white">Setup Instructions</h4>
                 </div>
+                <ol className="space-y-2 list-decimal list-inside text-xs text-[#888]">
+                  <li>Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="text-[#FF5722] hover:underline">Google Cloud Console</a></li>
+                  <li>Create a new project or select an existing one</li>
+                  <li>Configure <strong>OAuth consent screen</strong> (Internal/External)</li>
+                  <li>Go to <strong>Credentials</strong> → <strong>Create Credentials</strong> → <strong>OAuth client ID</strong></li>
+                  <li>Application type: <strong>Web application</strong></li>
+                  <li>Authorized redirect URIs: <code className="bg-[#181818] px-1.5 py-0.5 rounded text-[#D4D4D4]">{process.env.NEXT_PUBLIC_API_BASE}/api/oauth/google/callback</code></li>
+                  <li>Copy <strong>Client ID</strong> and <strong>Client Secret</strong> to the fields above</li>
+                </ol>
              </div>
           </SettingsDrawerRow>
         </div>
@@ -972,13 +974,13 @@ export function AdminSettingsContent({
           >
              <div className="space-y-6">
                <div>
-                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Publisher ID</label>
-                 <input type="text" className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50" placeholder="ca-pub-1234567890123456" value={formData.adsense?.publisherId || ''} onChange={(e) => updateFormData('adsense.publisherId', e.target.value)} disabled={loading} />
+                 <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">Publisher ID</label>
+                 <input type="text" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder="ca-pub-1234567890123456" value={formData.adsense?.publisherId || ''} onChange={(e) => updateFormData('adsense.publisherId', e.target.value)} disabled={loading} />
                  <p className="mt-1 text-[11px] text-[#555]">Your Google AdSense Publisher ID (starts with ca-pub-)</p>
                </div>
                
                <div>
-                 <h4 className="text-xs font-semibold uppercase tracking-wider text-[#888] mb-3">Ad Slots</h4>
+                 <h4 className="mb-3 block text-sm font-medium text-[#D4D4D4]">Ad Slots</h4>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                    {([
                      ['header', 'Header Ad Slot'],
@@ -988,15 +990,15 @@ export function AdminSettingsContent({
                      ['mobile', 'Mobile Ad Slot']
                    ] as const).map(([key, label]) => (
                      <div key={key} className="space-y-1.5">
-                       <label className="block text-[11px] font-medium text-[#AAA]">{label}</label>
-                       <input type="text" className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50" placeholder={`${key} ad slot ID`} value={formData.adsense?.adSlots?.[key] || ''} onChange={(e) => updateFormData(`adsense.adSlots.${key}`, e.target.value)} disabled={loading} />
+                       <label className="block text-xs font-medium text-[#D4D4D4]">{label}</label>
+                       <input type="text" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder={`${key} ad slot ID`} value={formData.adsense?.adSlots?.[key] || ''} onChange={(e) => updateFormData(`adsense.adSlots.${key}`, e.target.value)} disabled={loading} />
                      </div>
                    ))}
                  </div>
                </div>
 
                <div>
-                 <h4 className="text-xs font-semibold uppercase tracking-wider text-[#888] mb-3">Ad Types</h4>
+                 <h4 className="mb-3 block text-sm font-medium text-[#D4D4D4]">Ad Types</h4>
                  <div className="grid grid-cols-2 gap-3 bg-white/[0.02] border border-white/[0.06] rounded-lg p-4">
                    {([
                      ['display', 'Display Ads'],
@@ -1018,23 +1020,23 @@ export function AdminSettingsContent({
                </div>
              </div>
              
-             <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-4 mt-6">
-                <div className="flex items-start gap-3">
-                  <i className="fab fa-google text-white mt-1"></i>
-                  <div className="text-sm text-[#AAAAAA]">
-                    <p className="font-medium text-white mb-2">AdSense Setup Instructions:</p>
-                    <ol className="space-y-1 list-decimal list-inside text-xs">
-                      <li>Go to <a href="https://www.google.com/adsense/" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white hover:underline">Google AdSense</a></li>
-                      <li>Sign up or sign in to your AdSense account</li>
-                      <li>Add your website and get approved</li>
-                      <li>Go to Ads → By ad unit → Display ads</li>
-                      <li>Create ad units for different positions (header, sidebar, footer, content, mobile)</li>
-                      <li>Copy the ad unit codes and paste them in the fields above</li>
-                      <li>Your Publisher ID can be found in the AdSense dashboard</li>
-                      <li><strong>Note:</strong> Ads will automatically appear on all pages when enabled</li>
-                    </ol>
+             <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4 mt-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#FF5722]/10 text-[#FF5722]">
+                     <i className="fab fa-google text-lg"></i>
                   </div>
+                  <h4 className="text-sm font-semibold text-white">Setup Instructions</h4>
                 </div>
+                <ol className="space-y-2 list-decimal list-inside text-xs text-[#888]">
+                  <li>Go to <a href="https://www.google.com/adsense/" target="_blank" rel="noopener noreferrer" className="text-[#FF5722] hover:underline">Google AdSense</a></li>
+                  <li>Sign up or sign in to your AdSense account</li>
+                  <li>Add your website and get approved</li>
+                  <li>Go to <strong>Ads</strong> → <strong>By ad unit</strong> → <strong>Display ads</strong></li>
+                  <li>Create ad units for different positions (header, sidebar, footer, content, mobile)</li>
+                  <li>Copy the ad unit codes and paste them in the fields above</li>
+                  <li>Your <strong>Publisher ID</strong> can be found in the AdSense dashboard</li>
+                  <li><strong>Note:</strong> Ads will automatically appear on all pages when enabled</li>
+                </ol>
              </div>
           </SettingsDrawerRow>
         </div>
@@ -1066,7 +1068,7 @@ export function AdminSettingsContent({
           >
              <div className="space-y-4">
                <div>
-                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Environment Mode</label>
+                 <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">Environment Mode</label>
                  <SettingsDropdown
                    value={formData.payments?.paypal?.mode || 'sandbox'}
                    onChange={async (val) => updateFormData('payments.paypal.mode', val)}
@@ -1078,32 +1080,32 @@ export function AdminSettingsContent({
                  />
                </div>
                <div>
-                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Client ID</label>
-                 <input type="text" className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50" placeholder="Enter PayPal Client ID" value={formData.payments?.paypal?.clientId || ''} onChange={(e) => updateFormData('payments.paypal.clientId', e.target.value)} disabled={loading} />
+                 <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">Client ID</label>
+                 <input type="text" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder="Enter PayPal Client ID" value={formData.payments?.paypal?.clientId || ''} onChange={(e) => updateFormData('payments.paypal.clientId', e.target.value)} disabled={loading} />
                </div>
                <div>
-                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Client Secret</label>
-                 <input type="password" className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50" placeholder="Enter PayPal Client Secret" value={formData.payments?.paypal?.clientSecret || ''} onChange={(e) => updateFormData('payments.paypal.clientSecret', e.target.value)} disabled={loading} />
+                 <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">Client Secret</label>
+                 <input type="password" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder="Enter PayPal Client Secret" value={formData.payments?.paypal?.clientSecret || ''} onChange={(e) => updateFormData('payments.paypal.clientSecret', e.target.value)} disabled={loading} />
                </div>
                <div>
-                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Webhook ID</label>
-                 <input type="text" className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 border-[#FF5722]/50 focus:ring-[#FF5722]/50" placeholder="Enter PayPal Webhook ID" value={formData.payments?.paypal?.webhookId || ''} onChange={(e) => updateFormData('payments.paypal.webhookId', e.target.value)} disabled={loading} />
-                 <p className="mt-2 text-[11px] text-[#555]">Configure your PayPal Webhook to POST to <code className="bg-[#202020] px-1.5 py-0.5 rounded text-blue-400">{process.env.NEXT_PUBLIC_API_BASE}/api/paypal/webhook</code></p>
+                 <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">Webhook ID</label>
+                 <input type="text" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder="Enter PayPal Webhook ID" value={formData.payments?.paypal?.webhookId || ''} onChange={(e) => updateFormData('payments.paypal.webhookId', e.target.value)} disabled={loading} />
+                 <p className="mt-2 text-[11px] text-[#555]">Configure your PayPal Webhook to POST to <code className="bg-[#202020] px-1.5 py-0.5 rounded text-[#D4D4D4]">{process.env.NEXT_PUBLIC_API_BASE}/api/paypal/webhook</code></p>
                </div>
              </div>
              
-             <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-4 mt-6">
-                <div className="flex items-start gap-3">
-                  <i className="fas fa-info-circle text-blue-400 mt-1"></i>
-                  <div className="text-sm text-[#AAAAAA]">
-                    <p className="font-medium text-white mb-2">Important Notes:</p>
-                    <ul className="space-y-1 text-xs">
-                      <li>• Use sandbox credentials for testing, live credentials for production</li>
-                      <li>• Return/cancel URLs are fixed at <code className="bg-[#181818] px-2 py-1 rounded">/plan/success</code> and <code className="bg-[#181818] px-2 py-1 rounded">/plan/cancel</code></li>
-                      <li>• Ensure your PayPal app has the necessary permissions enabled</li>
-                    </ul>
+             <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4 mt-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#FF5722]/10 text-[#FF5722]">
+                     <i className="fas fa-info-circle text-lg"></i>
                   </div>
+                  <h4 className="text-sm font-semibold text-white">Important Notes</h4>
                 </div>
+                <ul className="space-y-2 text-xs text-[#888]">
+                  <li>• Use sandbox credentials for testing, live credentials for production</li>
+                  <li>• Return/cancel URLs are fixed at <code className="bg-[#181818] px-1.5 py-0.5 rounded text-[#D4D4D4]">/plan/success</code> and <code className="bg-[#181818] px-1.5 py-0.5 rounded text-[#D4D4D4]">/plan/cancel</code></li>
+                  <li>• Ensure your PayPal app has the necessary permissions enabled</li>
+                </ul>
              </div>
           </SettingsDrawerRow>
         </div>
