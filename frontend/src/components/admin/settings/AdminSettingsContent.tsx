@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useToast } from "@/components/ui/ToastProvider";
 import { useModal } from '@/components/Modal';
 import { UpdateSystem } from '../updates';
-import { Palette, Globe, ShieldCheck, Server, Users, Megaphone, CreditCard, RefreshCw, Upload, Trash2, LayoutTemplate, Image as ImageIcon, Coins, Clock, Gift, Mail, Key, ShieldAlert, MessageSquare, Bot, Fingerprint, BadgeDollarSign, Link as LinkIcon, Activity, Database, HardDrive, Cpu, Network, ChevronDown } from 'lucide-react';
+import { Palette, Globe, ShieldCheck, Server, Users, Megaphone, CreditCard, RefreshCw, Upload, Trash2, LayoutTemplate, Image as ImageIcon, Coins, Clock, Gift, Mail, Key, ShieldAlert, MessageSquare, Bot, Fingerprint, BadgeDollarSign, Link as LinkIcon, Activity, Database, HardDrive, Cpu, Network, ChevronDown, Loader2 } from 'lucide-react';
 
 function SideItem({ icon: Icon, label, active, onClick }: { icon: any; label: string; active?: boolean; onClick: () => void; }) {
   return (
@@ -83,7 +83,7 @@ function SettingsDropdown({
       >
         <span className="truncate">{activeLabel}</span>
         {loading ? (
-          <i className="fas fa-spinner fa-spin text-xs opacity-50 shrink-0" />
+          <Loader2 size={14} className="animate-spin opacity-50 shrink-0" />
         ) : (
           <ChevronDown size={14} className="opacity-50 shrink-0" />
         )}
