@@ -187,7 +187,6 @@ export default function AdminSettingsPage() {
           settings={settings}
           loading={loading}
           onSave={saveSettings}
-          onReload={loadSettings}
         />
       </div>
     
