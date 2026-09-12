@@ -47,10 +47,11 @@ function SettingsDropdown({
 }: {
   value: string;
   options: { label: string; value: string }[];
-  onChange: (val: string) => void;
+  onChange: (val: string) => void | Promise<void>;
   disabled?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -61,17 +62,31 @@ function SettingsDropdown({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  const handleSelect = async (optValue: string) => {
+    setOpen(false);
+    setLoading(true);
+    try {
+      await onChange(optValue);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const activeLabel = options.find((o) => o.value === value)?.label || value;
 
   return (
     <div className="relative w-full max-w-md" ref={ref}>
       <button
-        onClick={() => !disabled && setOpen(!open)}
-        disabled={disabled}
+        onClick={() => !disabled && !loading && setOpen(!open)}
+        disabled={disabled || loading}
         className="flex h-9 w-full items-center justify-between gap-2 rounded-lg bg-[#1A1A1A] px-3 text-sm text-[#999] transition-colors hover:bg-[#222] hover:text-[#ddd] disabled:opacity-50"
       >
         <span className="truncate">{activeLabel}</span>
-        <ChevronDown size={14} className="opacity-50 shrink-0" />
+        {loading ? (
+          <i className="fas fa-spinner fa-spin text-xs opacity-50 shrink-0" />
+        ) : (
+          <ChevronDown size={14} className="opacity-50 shrink-0" />
+        )}
       </button>
 
       {open && (
@@ -79,10 +94,7 @@ function SettingsDropdown({
           {options.map((opt) => (
             <button
               key={opt.value}
-              onClick={() => {
-                onChange(opt.value);
-                setOpen(false);
-              }}
+              onClick={() => handleSelect(opt.value)}
               className={`flex h-8 w-full items-center rounded px-2 text-left text-sm transition-colors ${
                 opt.value === value
                   ? "bg-white/10 text-white"
@@ -501,9 +513,9 @@ export function AdminSettingsContent({
           <SettingsRow icon={<Coins />} label="Site Currency" description="This currency is displayed on the shop and all plans." onSave={() => saveSection({ localization: formData.localization }, 'Localization settings updated.')}>
             <SettingsDropdown
               value={formData.localization?.currency || 'USD'}
-              onChange={(val) => {
+              onChange={async (val) => {
                 updateFormData('localization.currency', val);
-                saveSection({ localization: { ...formData.localization, currency: val } }, 'Localization settings updated.');
+                await saveSection({ localization: { ...formData.localization, currency: val } }, 'Localization settings updated.');
               }}
               disabled={loading}
               options={[
@@ -540,9 +552,9 @@ export function AdminSettingsContent({
           <SettingsRow icon={<Clock />} label="Timezone" description="Global timezone for logs and timestamps." onSave={() => saveSection({ localization: formData.localization }, 'Localization settings updated.')}>
             <SettingsDropdown
               value={formData.localization?.timezone || 'UTC'}
-              onChange={(val) => {
+              onChange={async (val) => {
                 updateFormData('localization.timezone', val);
-                saveSection({ localization: { ...formData.localization, timezone: val } }, 'Localization settings updated.');
+                await saveSection({ localization: { ...formData.localization, timezone: val } }, 'Localization settings updated.');
               }}
               disabled={loading}
               options={[
@@ -998,10 +1010,10 @@ export function AdminSettingsContent({
               <SettingsRow icon={<Activity />} label="Mode" description="Select the environment for PayPal transactions" onSave={() => saveSection({ payments: { paypal: formData.payments.paypal } }, 'PayPal settings updated.')}>
             <SettingsDropdown
               value={formData.payments?.paypal?.mode || 'sandbox'}
-              onChange={(val) => {
+              onChange={async (val) => {
                 updateFormData('payments.paypal.mode', val);
                 const newPaypal = { ...formData.payments?.paypal, mode: val as 'sandbox' | 'live' };
-                saveSection({ payments: { ...formData.payments, paypal: newPaypal } }, 'PayPal settings updated.');
+                await saveSection({ payments: { ...formData.payments, paypal: newPaypal } }, 'PayPal settings updated.');
               }}
               disabled={loading}
               options={[
