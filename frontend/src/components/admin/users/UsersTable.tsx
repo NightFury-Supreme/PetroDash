@@ -1,5 +1,7 @@
 "use client";
 
+import { RankBadge } from "@/components/ui/RankBadge";
+
 export default function UsersTable({ users, onManageUser }: { users: any[], onManageUser: (id: string) => void }) {
   if (!users || users.length === 0) {
     return (
@@ -39,15 +41,7 @@ export default function UsersTable({ users, onManageUser }: { users: any[], onMa
             </div>
 
             <div className="flex items-center">
-              <span
-                className={`rounded border px-2 py-0.5 text-[10px] font-bold tracking-wide ${
-                  u.role === "admin"
-                    ? "border-[#FF5722]/30 bg-[#FF5722]/10 text-[#FF5722]"
-                    : "border-green-500/30 bg-green-500/10 text-green-400"
-                }`}
-              >
-                {u.role === "admin" ? "ADMIN" : "USER"}
-              </span>
+              <RankBadge rank={u.role || 'user'} />
             </div>
 
             <div className="flex items-center">

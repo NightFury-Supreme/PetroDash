@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+
 import Link from 'next/link';
+import { RankBadge } from '@/components/ui/RankBadge';
 import { getFieldLabel } from '@/config/field-labels';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -419,10 +421,10 @@ function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; m
           ) : (
             <span className="text-[10px] text-white/35">System</span>
           )}
-          <span className="text-[8px] text-white/35 uppercase tracking-wider border border-white/[0.12] rounded px-1 py-px">
-            {log.actorRole ?? 'system'}
-          </span>
-
+          <RankBadge
+            rank={log.actorRole ?? 'system'}
+            className="px-1.5 py-0.5 text-[8px]"
+          />
           {log.resourceId && (log.resourceType === 'user' || log.resourceType === 'server' || log.resourceType === 'ticket') && (
             <>
               <span className="text-[10px] text-white/30 px-1">→</span>

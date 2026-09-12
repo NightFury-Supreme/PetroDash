@@ -3,6 +3,7 @@ import { useToast } from "@/components/ui/ToastProvider";
 import { TicketMessage } from '../types';
 import { formatRelative } from '../utils';
 import { Loader2 } from 'lucide-react';
+import { RankBadge } from "@/components/ui/RankBadge";
 
 interface TicketDetailConversationProps {
   messages:       TicketMessage[];
@@ -136,9 +137,7 @@ function MessageBubble({
           
           <div className={`flex items-center gap-2 ${isMine ? 'flex-row-reverse' : ''}`}>
             {isAdmin && (
-              <span className="rounded bg-red-500/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-400">
-                Admin
-              </span>
+              <RankBadge rank="admin" />
             )}
             
             {isAdmin && <span className="h-1 w-1 rounded-full bg-white/20" />}
