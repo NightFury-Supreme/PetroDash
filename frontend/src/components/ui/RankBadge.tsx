@@ -4,10 +4,11 @@ export type RankType = 'admin' | 'user' | 'system' | 'premium' | 'vip' | 'pro' |
 
 export interface RankBadgeProps {
   rank: RankType;
+  size?: 'sm' | 'md' | 'lg';
   className?: string;
 }
 
-export function RankBadge({ rank, className = '' }: RankBadgeProps) {
+export function RankBadge({ rank, size = 'md', className = '' }: RankBadgeProps) {
   if (!rank) return null;
   
   const normalizedRank = String(rank).toLowerCase();
@@ -39,9 +40,13 @@ export function RankBadge({ rank, className = '' }: RankBadgeProps) {
     borderClass = 'border-amber-500/30';
   }
 
+  let sizeClass = 'px-2 py-0.5 text-[10px] tracking-wide';
+  if (size === 'sm') sizeClass = 'px-1.5 py-px text-[8px] tracking-wider';
+  if (size === 'lg') sizeClass = 'px-2.5 py-1 text-[11px] tracking-wider';
+
   return (
     <span
-      className={`inline-flex items-center justify-center rounded border px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase ${bgClass} ${textClass} ${borderClass} ${className}`}
+      className={`inline-flex items-center justify-center rounded border font-bold uppercase ${sizeClass} ${bgClass} ${textClass} ${borderClass} ${className}`}
     >
       {label}
     </span>

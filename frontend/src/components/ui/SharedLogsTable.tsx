@@ -423,8 +423,9 @@ function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; m
           )}
           <RankBadge
             rank={log.actorRole ?? 'system'}
-            className="px-1.5 py-0.5 text-[8px]"
+            size="sm"
           />
+
           {log.resourceId && (log.resourceType === 'user' || log.resourceType === 'server' || log.resourceType === 'ticket') && (
             <>
               <span className="text-[10px] text-white/30 px-1">→</span>
@@ -437,7 +438,7 @@ function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; m
                   {log.resourceType === 'user' ? 'User' : log.resourceType === 'server' ? 'Server' : 'Ticket'} {meta.targetName ? `(${meta.targetName})` : log.resourceId.slice(-6)}
                 </Link>
                 {log.resourceType === 'user' && meta.targetRole && (
-                  <RankBadge rank={meta.targetRole as string} className="px-1 py-px text-[7px]" />
+                  <RankBadge rank={meta.targetRole as string} size="sm" />
                 )}
               </div>
             </>
