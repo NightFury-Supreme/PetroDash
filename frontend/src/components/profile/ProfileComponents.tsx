@@ -17,9 +17,6 @@ import {
   Clock3,
   Laptop,
   AlertCircle,
-  Upload,
-  Loader2,
-  Trash2,
 } from "lucide-react";
 
 export function SideItem({ icon: Icon, label, active, danger, onClick }: { icon: any; label: string; active?: boolean; danger?: boolean; onClick: () => void; }) {
