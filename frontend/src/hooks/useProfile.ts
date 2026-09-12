@@ -115,7 +115,7 @@ export function useProfile() {
         lastName: d.lastName ?? f.lastName,
       }));
       setSuccess('Profile updated');
-    } catch (e: any) { setError(e.message); throw e; } finally { setSaving(false); }
+    } catch (e: any) { throw e; } finally { setSaving(false); }
   }, []);
 
   const updateEmail = useCallback(async (email: string, password: string, tfaCode?: string) => {
@@ -140,7 +140,7 @@ export function useProfile() {
       }
       setForm((f) => ({ ...f, email: d.email }));
       setSuccess('Email updated');
-    } catch (e: any) { setError(e.message); throw e; } finally { setSaving(false); }
+    } catch (e: any) { throw e; } finally { setSaving(false); }
   }, []);
 
   const updatePassword = useCallback(async (currentPassword: string, newPassword: string, tfaCode?: string) => {
@@ -164,7 +164,7 @@ export function useProfile() {
         throw new Error(message);
       }
       setSuccess('Password updated');
-    } catch (e: any) { setError(e.message); throw e; } finally { setSaving(false); }
+    } catch (e: any) { throw e; } finally { setSaving(false); }
   }, []);
 
   const updateProfilePicture = useCallback(async (profilePicture: string) => {
@@ -182,7 +182,7 @@ export function useProfile() {
       setSuccess('Profile picture updated');
       // Reload to refresh sidebar
       await load();
-    } catch (e: any) { setError(e.message); throw e; } finally { setSaving(false); }
+    } catch (e: any) { throw e; } finally { setSaving(false); }
   }, [load]);
 
   const revokeSession = useCallback(async (id: string) => {
@@ -200,7 +200,6 @@ export function useProfile() {
       setSessions(prev => prev.filter(s => s.id !== id));
       setSuccess('Session revoked successfully');
     } catch (e: any) {
-      setError(e.message);
       throw e;
     } finally {
       setSaving(false);
@@ -227,7 +226,6 @@ export function useProfile() {
       }
       setSuccess('Verification email sent');
     } catch (e: any) {
-      setError(e.message);
       throw e;
     } finally {
       setSaving(false);
@@ -250,7 +248,6 @@ export function useProfile() {
       setForm(f => ({ ...f, emailVerified: true }));
       setSuccess('Email verified successfully');
     } catch (e: any) {
-      setError(e.message);
       throw e;
     } finally {
       setSaving(false);
