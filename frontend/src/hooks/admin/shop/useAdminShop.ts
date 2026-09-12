@@ -31,7 +31,7 @@ export function useAdminShop() {
       const token = localStorage.getItem('auth_token');
       if (!token) throw new Error('No auth token');
 
-      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/shop`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/shop`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -54,7 +54,7 @@ export function useAdminShop() {
       const token = localStorage.getItem('auth_token');
       if (!token) throw new Error('No auth token');
 
-      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/shop/${itemId}`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/shop/${itemId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

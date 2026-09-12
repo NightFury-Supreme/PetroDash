@@ -5,7 +5,6 @@ import React from "react";
 const MAX_LEN = 5000;
 
 export default function AdminTicketInputBar({
-  contentPadding,
   value,
   internal,
   canSend,
@@ -13,7 +12,6 @@ export default function AdminTicketInputBar({
   onToggleInternal,
   onSend,
 }: {
-  contentPadding: number;
   value: string;
   internal: boolean;
   canSend: boolean;
@@ -27,48 +25,51 @@ export default function AdminTicketInputBar({
   const overLimit = remaining < 0;
 
   return (
-    <div className="fixed right-0 bottom-0 bg-[#0A0A0A]/80 backdrop-blur-md border-t border-[#202020] z-10" style={{ left: contentPadding }}>
-      <div className="max-w-4xl mx-auto w-full p-4">
-        <div className={`flex items-end gap-2 bg-[#1A1A1A] border rounded-2xl px-4 py-2 shadow-inner transition-colors ${overLimit ? "border-red-600/60" : internal ? "border-yellow-700/40" : "border-[#333333] focus-within:border-[#555555]"}`}>
-          <div className="flex-1 flex flex-col gap-1 pt-1">
-            <textarea
-              value={value}
-              onChange={e => {
-                if (e.target.value.length <= MAX_LEN + 200) {
-                  onChange(e.target.value);
-                  e.currentTarget.style.height = "0px";
-                  e.currentTarget.style.height = Math.min(140, e.currentTarget.scrollHeight) + "px";
-                }
-              }}
-              onKeyDown={e => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  if (!overLimit && value.trim()) onSend();
-                }
-              }}
-              placeholder={internal ? "Write an internal note... (Admins only)" : "Type your reply..."}
-              className={`w-full bg-transparent resize-none outline-none py-1.5 text-sm ${internal ? "placeholder:text-yellow-700/50 text-yellow-50" : "placeholder:text-[#777] text-white"}`}
-              style={{ minHeight: "40px" }}
-            />
-          </div>
-          <div className="flex items-center gap-2 pb-1.5">
-            <span className={`text-[10px] ${overLimit ? "text-red-400" : "text-[#777]"}`}>
-              {remaining}
-            </span>
+    <div className="bg-[#111] p-2 sm:p-4">
+      <div className={`flex flex-col gap-2 rounded-xl border p-2 transition-colors focus-within:border-[#444] ${
+        overLimit ? 'border-red-500/50 bg-red-500/5' : internal ? 'border-yellow-700/40 bg-yellow-900/10' : 'border-[#222] bg-[#161616]'
+      }`}>
+        <textarea
+          value={value}
+          onChange={e => {
+            if (e.target.value.length <= MAX_LEN + 200) {
+              onChange(e.target.value);
+              e.currentTarget.style.height = '0px';
+              e.currentTarget.style.height = Math.min(140, e.currentTarget.scrollHeight) + 'px';
+            }
+          }}
+          onKeyDown={e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              if (!overLimit && value.trim()) onSend();
+            }
+          }}
+          placeholder={internal ? "Write an internal note... (Admins only)" : "Type your reply..."}
+          className={`w-full resize-none bg-transparent px-2 py-1.5 text-sm outline-none placeholder:text-[#555] ${internal ? 'text-yellow-100 placeholder:text-yellow-700/50' : 'text-[#E0E0E0]'}`}
+          style={{ minHeight: '40px' }}
+        />
+        
+        <div className="flex items-center justify-between px-2 pb-1">
+          <span className={`text-[10px] font-medium ${overLimit ? 'text-red-400' : 'text-[#555]'}`}>
+            {value.length > 0 && `${remaining} remaining`}
+          </span>
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onToggleInternal}
-              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${internal ? "bg-yellow-600/20 text-yellow-400" : "text-[#777] hover:bg-[#303030] hover:text-white"}`}
-              title="Toggle Internal Note"
+              className={`flex h-8 items-center gap-1.5 rounded-lg px-3 text-xs font-medium transition-colors ${
+                internal ? 'bg-yellow-600/20 text-yellow-500 hover:bg-yellow-600/30' : 'bg-[#222] text-[#888] hover:bg-[#333] hover:text-[#fff]'
+              }`}
             >
-              <i className="fas fa-eye-slash text-sm" />
+              <i className={internal ? "fas fa-eye-slash" : "fas fa-eye"} />
+              {internal ? 'Internal' : 'Public'}
             </button>
             <button
               onClick={onSend}
               disabled={overLimit || !value.trim()}
-              className="w-10 h-10 rounded-xl bg-white text-black flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 shadow-sm transition-colors"
+              className="flex h-8 items-center gap-1.5 rounded-lg bg-white px-4 text-xs font-medium text-black transition-colors hover:bg-[#e0e0e0] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <i className="fas fa-paper-plane text-sm" />
+              Send
             </button>
           </div>
         </div>

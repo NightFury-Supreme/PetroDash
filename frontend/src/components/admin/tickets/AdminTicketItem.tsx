@@ -1,53 +1,158 @@
 "use client";
 
 import React, { useState } from "react";
+import { CheckCircle2, Inbox, MoreHorizontal, ShieldOff, RotateCcw, XCircle } from 'lucide-react';
+import { TicketStatusBadge } from "@/components/tickets/TicketStatusBadge";
+import { formatRelative, shortId } from "@/components/tickets/utils";
 
-type Ticket = { _id: string; title: string; status: string; priority: string; category?: string; updatedAt: string; deletedByUser?: boolean; user?: { username?: string; email?: string } };
+type Ticket = { 
+  _id: string; 
+  title: string; 
+  status: string; 
+  priority: string; 
+  category?: string; 
+  updatedAt: string; 
+  deletedByUser?: boolean; 
+  user?: { username?: string; email?: string } 
+};
 
 export default function AdminTicketItem({ t, onAction }:{ t: Ticket; onAction: (action: 'close'|'resolve'|'delete'|'restore'|'reopen', id: string)=>Promise<void> }){
   const [opening, setOpening] = useState(false);
   const [menu, setMenu] = useState(false);
+
   return (
-    <div onClick={()=>{ setOpening(true); window.location.href=`/admin/tickets/${t._id}`; }} className={`cursor-pointer border border-[var(--border)] bg-[var(--surface)] rounded-xl p-4 flex items-center justify-between relative shadow-sm ${opening?'opacity-70':''} ${menu ? 'z-50' : 'z-10'}`}>
-      <div>
-        <div className="text-white font-medium flex items-center gap-2">
-          {t.title}
-          {t.deletedByUser ? (
-            <span className="text-[10px] px-2 py-0.5 rounded-full border bg-red-600/20 text-red-300 border-red-700/50">DELETED</span>
-          ) : (
-            <span className={`text-[10px] px-2 py-0.5 rounded-full border ${t.status==='open'?'bg-green-600/20 text-green-300 border-green-700/50':t.status==='pending'?'bg-yellow-600/20 text-yellow-300 border-yellow-700/50':t.status==='resolved'?'bg-blue-600/20 text-blue-300 border-blue-700/50':'bg-[#303030] text-[#AAAAAA] border-[#404040]'}`}>{t.status.toUpperCase()}</span>
-          )}
-          <span className={`text-[10px] px-2 py-0.5 rounded-full border ${t.priority==='high'?'bg-red-600/20 text-red-300 border-red-700/50':t.priority==='medium'?'bg-yellow-600/20 text-yellow-300 border-yellow-700/50':'bg-[#303030] text-[#AAAAAA] border-[#404040]'}`}>{t.priority}</span>
-          {t.category && <span className="text-[10px] px-2 py-0.5 rounded-full border bg-[#181818] text-white border-[var(--border)]"><i className="fas fa-folder mr-1"/> {t.category}</span>}
-        </div>
-        <div className="text-xs text-[#AAAAAA]">{t.user?.username || t.user?.email || 'User'} • Updated {new Date(t.updatedAt).toLocaleString()}</div>
-      </div>
-      <div className="ml-3 flex items-center gap-2" onClick={(e)=>e.stopPropagation()}>
-        <button onClick={()=>setMenu(!menu)} className="w-9 h-9 rounded-lg border border-[var(--border)] text-white hover:bg-[var(--hover)] flex items-center justify-center transition-colors">
-          <i className="fas fa-ellipsis-h"/>
-        </button>
-        {menu && (
-          <div className="absolute right-3 top-12 z-20 w-44 rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-xl overflow-hidden" onClick={(e)=>e.stopPropagation()}>
-            {!t.deletedByUser ? (
-              <>
-                {(t.status === 'closed' || t.status === 'resolved') ? (
-                  <button onClick={async()=>{ await onAction('reopen', t._id); setMenu(false); }} className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#202020]">Reopen Ticket</button>
-                ) : (
-                  <>
-                    <button onClick={async()=>{ await onAction('close', t._id); setMenu(false); }} className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#202020]">Close Ticket</button>
-                    <button onClick={async()=>{ await onAction('resolve', t._id); setMenu(false); }} className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#202020]">Resolve</button>
-                  </>
-                )}
-                <button onClick={async()=>{ await onAction('delete', t._id); setMenu(false); }} className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#202020]">Soft Delete</button>
-              </>
-            ) : (
-              <button onClick={async()=>{ await onAction('restore', t._id); setMenu(false); }} className="w-full text-left px-3 py-2 text-sm text-green-400 hover:bg-[#202020]">Restore</button>
-            )}
+    <div className={`relative transition-colors hover:bg-white/[0.015] ${opening ? 'opacity-70' : ''}`}>
+      <div className="grid grid-cols-[1fr_auto] items-center gap-3 py-4 md:grid-cols-[1fr_130px_100px_90px_80px_60px_36px] md:gap-4">
+        
+        {/* Subject + ID */}
+        <button type="button" onClick={()=>{ setOpening(true); window.location.href=`/admin/tickets/${t._id}`; }} className="min-w-0 text-left">
+          <div className="flex items-center gap-2.5">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="truncate text-sm font-medium text-[#D4D4D4] transition-colors hover:text-white">
+                  {t.title}
+                </span>
+                <span className="hidden shrink-0 font-mono text-[10px] text-white/30 sm:inline">
+                  {shortId(t._id)}
+                </span>
+              </div>
+              {/* Mobile meta */}
+              <div className="mt-0.5 flex items-center gap-1.5 md:hidden">
+                <span className="text-[11px] capitalize text-[#888]">{t.user?.username || t.user?.email || 'User'}</span>
+                <span className="text-white/20">&middot;</span>
+                <span className="text-[11px] text-[#666]">{formatRelative(t.updatedAt)}</span>
+              </div>
+            </div>
           </div>
-        )}
+        </button>
+
+        {/* User — desktop */}
+        <div className="hidden md:block" title={t.user?.email || t.user?.username}>
+          <span className="block truncate text-xs text-[#D4D4D4]">
+            {t.user?.username || t.user?.email || 'User'}
+          </span>
+          <span className="block truncate text-[10px] text-[#555] mt-0.5">
+            {t.user?.email !== t.user?.username ? t.user?.email || '' : ''}
+          </span>
+        </div>
+
+        {/* Category — desktop */}
+        <span className="hidden text-xs capitalize text-[#888] md:block">
+          {t.category || 'general'}
+        </span>
+
+        {/* Updated — desktop */}
+        <span className="hidden text-xs text-[#666] md:block">
+          {formatRelative(t.updatedAt)}
+        </span>
+
+        {/* Status badge */}
+        <span className="hidden md:block">
+          <TicketStatusBadge status={t.status as any} />
+        </span>
+
+        {/* Priority */}
+        <span className="hidden md:block text-xs">
+          <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium capitalize border
+            ${t.priority === 'high' ? 'bg-[#FF3333]/10 text-[#FF3333] border-[#FF3333]/20' : 
+              t.priority === 'medium' ? 'bg-[#FF9900]/10 text-[#FF9900] border-[#FF9900]/20' : 
+              'bg-[#303030]/50 text-[#888] border-[#333]'}
+          `}>
+            {t.priority}
+          </span>
+        </span>
+
+        {/* Actions menu */}
+        <div className="relative flex justify-end">
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setMenu(!menu); }}
+            className="flex h-7 w-7 items-center justify-center rounded-md border border-[#2A2A2A] bg-[#161616] text-[#666] transition-colors hover:border-[#3A3A3A] hover:text-[#ddd]"
+          >
+            <MoreHorizontal size={13} />
+          </button>
+
+          {menu && (
+            <AdminTicketContextMenu 
+              ticket={t} 
+              onAction={async (action) => { await onAction(action, t._id); setMenu(false); }} 
+              onClose={() => setMenu(false)}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
+function AdminTicketContextMenu({ ticket: t, onAction, onClose }: {
+  ticket: Ticket;
+  onAction: (a: 'close'|'resolve'|'delete'|'restore'|'reopen') => void;
+  onClose: () => void;
+}) {
+  return (
+    <>
+      <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); onClose(); }} />
+      <div
+        className="absolute right-0 top-9 z-50 w-44 overflow-hidden rounded-xl border border-[#2A2A2A] bg-[#161616] py-1 shadow-xl"
+        onClick={e => e.stopPropagation()}
+      >
+        {!t.deletedByUser ? (
+          <>
+            {(t.status === 'closed' || t.status === 'resolved') ? (
+              <CtxItem icon={<Inbox size={12} />} label="Reopen Ticket" onClick={() => onAction('reopen')} />
+            ) : (
+              <>
+                <CtxItem icon={<CheckCircle2 size={12} />} label="Resolve" onClick={() => onAction('resolve')} />
+                <CtxItem icon={<XCircle size={12} />} label="Close Ticket" onClick={() => onAction('close')} />
+              </>
+            )}
+            <CtxItem icon={<ShieldOff size={12} />} label="Soft Delete" danger onClick={() => onAction('delete')} />
+          </>
+        ) : (
+          <CtxItem icon={<RotateCcw size={12} />} label="Restore" onClick={() => onAction('restore')} />
+        )}
+      </div>
+    </>
+  );
+}
 
+function CtxItem({ icon, label, onClick, disabled = false, danger = false }: {
+  icon: React.ReactNode; label: string; onClick: () => void;
+  disabled?: boolean; danger?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs transition-colors ${
+        disabled ? 'cursor-not-allowed text-[#3a3a3a]'
+          : danger ? 'text-[#ef4444] hover:bg-[#2A1111]'
+            : 'text-[#888] hover:bg-[#1e1e1e] hover:text-[#ddd]'
+      }`}
+    >
+      {icon}{label}
+    </button>
+  );
+}

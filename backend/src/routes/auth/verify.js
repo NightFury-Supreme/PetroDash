@@ -8,6 +8,7 @@ const UserCreationService = require('../../services/userCreation');
  
 const { generateSecureCode, hashString } = require('../../utils/security');
 const { verificationRateLimit, resendRateLimit } = require('../../middleware/rateLimit');
+const { logUserActivity } = require('../../middleware/userActivity');
 
 const router = express.Router();
 
@@ -43,6 +44,9 @@ router.get('/verify', async (req, res) => {
 
     await UserCreationService.grantReferralRewards(user);
     
+    await logUserActivity(req, 'auth.email.verified', { method: 'link' }, user._id.toString());
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'auth.email.verified', 'auth', user._id.toString(), { method: 'link' });
     const redirect = (process.env.FRONTEND_URL || 'http://localhost:3000') + '/dashboard?verified=1';
     const wantsRedirect = String(req.query.redirect || '1') !== '0';
     
@@ -71,6 +75,12 @@ router.post('/verify/resend', resendRateLimit, async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.json({ ok: true });
     if (user.emailVerified) return res.json({ ok: true, alreadyVerified: true });
+
+    const existingToken = await VerificationToken.findOne({ userId: user._id, purpose: 'email_verification', usedAt: null }).sort({ createdAt: -1 });
+    if (existingToken && (Date.now() - existingToken.createdAt.getTime() < 60 * 1000)) {
+      const retryAfter = 60 - Math.floor((Date.now() - existingToken.createdAt.getTime()) / 1000);
+      return res.status(429).json({ error: 'Too many requests, please try again later.', retryAfter, message: `Rate limit exceeded. Try again in ${retryAfter} seconds.` });
+    }
 
     // Generate secure 8-digit verification code
     const verificationCode = generateSecureCode(8);
@@ -194,6 +204,9 @@ router.post('/verify/code', verificationRateLimit, async (req, res) => {
 
     await UserCreationService.grantReferralRewards(user);
     
+    await logUserActivity(req, 'auth.email.verified', { method: 'code' }, user._id.toString());
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'auth.email.verified', 'auth', user._id.toString(), { method: 'code' });
     return res.json({ ok: true });
     
   // eslint-disable-next-line unused-imports/no-unused-vars
