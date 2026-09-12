@@ -89,13 +89,41 @@ router.get('/', requireAdmin, async (req, res) => {
       AuditLog.countDocuments(query).exec()
     ]);
 
+    // --- ENRICH TARGET NAMES ---
+    const User = require('../../models/User');
+    const Server = require('../../models/Server');
+
+    const userIds = [...new Set(list.filter(l => l.resourceType === 'user' && l.resourceId).map(l => l.resourceId))];
+    const serverIds = [...new Set(list.filter(l => l.resourceType === 'server' && l.resourceId).map(l => l.resourceId))];
+
+    const [users, servers] = await Promise.all([
+      userIds.length ? User.find({ _id: { $in: userIds } }, 'username').lean() : [],
+      serverIds.length ? Server.find({ _id: { $in: serverIds } }, 'name').lean() : []
+    ]);
+
+    const userMap = Object.fromEntries(users.map(u => [u._id.toString(), u.username]));
+    const serverMap = Object.fromEntries(servers.map(s => [s._id.toString(), s.name]));
+
+    const enrichedList = list.map(log => {
+      const copy = { ...log };
+      if (!copy.meta) copy.meta = {};
+      if (copy.resourceType === 'user' && copy.resourceId && userMap[copy.resourceId]) {
+        copy.meta.targetName = userMap[copy.resourceId];
+      }
+      if (copy.resourceType === 'server' && copy.resourceId && serverMap[copy.resourceId]) {
+        copy.meta.targetName = serverMap[copy.resourceId];
+      }
+      return copy;
+    });
+    // ---------------------------
+
     // Calculate pagination info
     const totalPages = Math.ceil(total / limit);
     const hasNext = page < totalPages;
     const hasPrev = page > 1;
 
     const result = {
-      list: list || [],
+      list: enrichedList,
       total,
       page,
       pageSize: limit,

@@ -72,7 +72,7 @@ interface DiffValue {
 /** Keys stripped from the raw meta block before showing "Additional Meta". */
 const META_SYSTEM_KEYS = new Set([
   'changes', 'changed', 'created', 'sessionId', 'ip', 'userAgent',
-  'method', 'path', 'status', 'statusCode', 'durationMs',
+  'method', 'path', 'status', 'statusCode', 'durationMs', 'targetName',
 ]);
 
 /** Context hint priority order for the user-facing action subtitle. */
@@ -431,7 +431,7 @@ function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; m
                 className="text-[10px] text-white/50 hover:text-emerald-400 transition-colors truncate"
                 onClick={e => e.stopPropagation()}
               >
-                {log.resourceType === 'user' ? 'User' : log.resourceType === 'server' ? 'Server' : 'Ticket'} {log.resourceId.slice(-6)}
+                {log.resourceType === 'user' ? 'User' : log.resourceType === 'server' ? 'Server' : 'Ticket'} {meta.targetName ? `(${meta.targetName})` : log.resourceId.slice(-6)}
               </Link>
             </>
           )}
@@ -485,7 +485,7 @@ function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: Variant
           {variant === 'admin' && log.resourceType && (
             <InfoRow
               label={log.resourceType === 'user' ? 'Target User' : log.resourceType === 'server' ? 'Target Server' : log.resourceType === 'ticket' ? 'Target Ticket' : 'Resource'}
-              value={log.resourceId ? log.resourceId : log.resourceType}
+              value={log.resourceId ? (meta.targetName ? `${meta.targetName} (${log.resourceId})` : log.resourceId) : log.resourceType}
               mono
               muted
             />
