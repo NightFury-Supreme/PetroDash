@@ -135,6 +135,92 @@ function InfoRow({ label, value, mono = false, muted = false }: { label: string;
   );
 }
 
+function formatLabel(key: string) {
+  return key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').trim()
+    .split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+function MetaViewer({ data, depth = 0 }: { data: any; depth?: number }) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
+
+  return (
+    <>
+      {Object.entries(data).map(([key, value]: [string, any]) => {
+        const label = formatLabel(key);
+
+        // Nested object — render as sub-section
+        if (value && typeof value === 'object' && !Array.isArray(value)) {
+          // { old, new } diff pair — render inline
+          if ('old' in value || 'new' in value) {
+            return (
+              <div key={key} className="flex justify-between items-start gap-4 py-[7px] border-b border-white/[0.04] last:border-0">
+                <span className="text-[9px] uppercase tracking-[0.1em] text-white/45 shrink-0 pt-px">{label}</span>
+                <div className="flex items-center gap-2 flex-wrap justify-end">
+                  <span className="font-mono text-[11px] text-red-400/80 bg-red-500/[0.06] px-2 py-0.5 rounded">
+                    {String(value.old ?? 'null')}
+                  </span>
+                  <span className="text-white/30 text-[10px]">→</span>
+                  <span className="font-mono text-[11px] text-emerald-400/80 bg-emerald-500/[0.06] px-2 py-0.5 rounded">
+                    {String(value.new ?? 'null')}
+                  </span>
+                </div>
+              </div>
+            );
+          }
+          // Regular nested object — show label as sub-heading then recurse
+          return (
+            <div key={key} className={depth === 0 ? 'pt-1' : ''}>
+              <p className="text-[8px] uppercase tracking-[0.15em] text-white/25 pt-2 pb-1">{label}</p>
+              <div className={depth > 0 ? 'pl-2 border-l border-white/[0.06]' : ''}>
+                <MetaViewer data={value} depth={depth + 1} />
+              </div>
+            </div>
+          );
+        }
+
+        // Array — join as comma list
+        if (Array.isArray(value)) {
+          return (
+            <div key={key} className="flex justify-between items-start gap-4 py-[7px] border-b border-white/[0.04] last:border-0">
+              <span className="text-[9px] uppercase tracking-[0.1em] text-white/45 shrink-0 pt-px">{label}</span>
+              <span className="text-right text-[11px] text-white/60 break-all">{value.join(', ') || '—'}</span>
+            </div>
+          );
+        }
+
+        // Boolean
+        if (typeof value === 'boolean') {
+          return (
+            <div key={key} className="flex justify-between items-start gap-4 py-[7px] border-b border-white/[0.04] last:border-0">
+              <span className="text-[9px] uppercase tracking-[0.1em] text-white/45 shrink-0 pt-px">{label}</span>
+              <span className={`text-[11px] font-medium ${value ? 'text-emerald-400' : 'text-red-400'}`}>
+                {value ? 'Yes' : 'No'}
+              </span>
+            </div>
+          );
+        }
+
+        // Null / undefined
+        if (value === null || value === undefined) return null;
+
+        // Looks like a MongoDB ObjectId (24 hex chars) — monospace + muted
+        const str = String(value);
+        const isId = /^[a-f0-9]{24}$/.test(str);
+        const isLongHex = /^[a-f0-9]{16,}$/.test(str);
+
+        return (
+          <div key={key} className="flex justify-between items-start gap-4 py-[7px] border-b border-white/[0.04] last:border-0">
+            <span className="text-[9px] uppercase tracking-[0.1em] text-white/45 shrink-0 pt-px">{label}</span>
+            <span className={`text-right break-all text-[11px] ${(isId || isLongHex) ? 'font-mono text-white/50' : 'text-white/70'}`}>
+              {str}
+            </span>
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
 function StatusBadge({ log }: { log: LogEntry }) {
   if (log.success !== undefined) {
     return log.success
@@ -330,9 +416,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
                         {variant === 'admin' && Object.keys(rawMeta).length > 0 && (
                           <div>
                             <p className="mb-3 text-[9px] uppercase tracking-[0.13em] text-white/40">Additional Meta</p>
-                            <pre className="text-[10px] text-white/45 font-mono whitespace-pre-wrap break-all overflow-y-auto max-h-36 leading-relaxed">
-                              {JSON.stringify(rawMeta, null, 2)}
-                            </pre>
+                            <MetaViewer data={rawMeta} />
                           </div>
                         )}
                       </div>
