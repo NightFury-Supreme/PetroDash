@@ -73,3 +73,26 @@ export function getFieldLabel(key: string): string {
   // Last resort: return the raw key unchanged
   return key;
 }
+
+/**
+ * Human-readable labels for log categories.
+ */
+const CATEGORY_LABELS: Record<string, string> = {
+  'auth': 'Authentication',
+  'server_management': 'Server Management',
+  'user_management': 'User Management',
+  'admin_activity': 'Admin Activity',
+  'system': 'System',
+  'security': 'Security',
+  'billing': 'Billing',
+  'shop': 'Shop',
+  'tickets': 'Tickets',
+};
+
+/**
+ * Resolve a category to its human-readable label.
+ */
+export function getCategoryLabel(cat: string): string {
+  if (!cat) return '';
+  return CATEGORY_LABELS[cat] || cat;
+}
