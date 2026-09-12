@@ -1,4 +1,4 @@
-"use client";
+import React from 'react';
 
 interface AdditionalResourceCardProps {
   title: string;
@@ -8,20 +8,28 @@ interface AdditionalResourceCardProps {
 }
 
 export function AdditionalResourceCard({ title, used, limit, icon }: AdditionalResourceCardProps) {
+  const percentage = limit > 0 ? Math.min(Math.round((used / limit) * 100), 100) : 0;
+  
   return (
-    <div className="bg-[#202020] border border-[#303030] rounded-xl p-3 sm:p-4 hover:bg-[#272727] transition-colors">
-      <div className="flex items-center gap-2 sm:gap-3">
-        <div className="w-6 h-6 sm:w-8 sm:h-8 bg-[#303030] rounded-lg flex items-center justify-center">
-          <i className={`fas ${icon} text-[#AAAAAA] text-xs sm:text-sm`}></i>
+    <div className="bg-[#1A1A1A] rounded-xl p-4 border border-white/[0.05] flex flex-col justify-between">
+      <div className="flex justify-between items-center mb-3">
+        <div className="flex items-center gap-2 text-[#888]">
+          <i className={`fas ${icon}`}></i>
+          <span className="text-sm font-medium">{title}</span>
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-xs text-[#AAAAAA]">{title}</div>
-          <div className="text-base sm:text-lg font-bold text-white">{used}</div>
-        </div>
-        <div className="text-right flex-shrink-0">
-          <div className="text-xs text-[#AAAAAA]">Limit</div>
-          <div className="text-sm font-medium text-white">{limit}</div>
-        </div>
+        <span className="text-xs font-semibold text-white">{percentage}%</span>
+      </div>
+      
+      <div className="w-full bg-[#333] h-1.5 rounded-full overflow-hidden mb-3">
+        <div 
+          className="bg-[#FF5722] h-full rounded-full transition-all duration-500" 
+          style={{ width: `${percentage}%` }}
+        ></div>
+      </div>
+      
+      <div className="flex justify-between items-center text-xs">
+        <span className="text-[#666]">Used: <span className="text-[#AAA]">{used}</span></span>
+        <span className="text-[#666]">Limit: <span className="text-[#AAA]">{limit}</span></span>
       </div>
     </div>
   );

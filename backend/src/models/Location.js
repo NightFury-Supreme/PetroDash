@@ -17,6 +17,7 @@ const LocationSchema = new mongoose.Schema(
         latencyUrl: { type: String, default: '' }, // Keep latencyUrl as it's for ping testing, not a file
         serverLimit: { type: Number, default: 0 },
         platform: { type: PlatformSettingsSchema, default: () => ({}) },
+        allowedPlans: { type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Plan' }], default: [] },
     },
     { timestamps: true }
 );

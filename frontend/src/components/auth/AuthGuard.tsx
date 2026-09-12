@@ -42,7 +42,10 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         }
         // Validate token and check ban state
         const base = process.env.NEXT_PUBLIC_API_BASE || "";
-        const res = await fetch(`${base}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
+        const [res, brandingRes] = await Promise.all([
+          fetch(`${base}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" }),
+          fetch(`${base}/api/branding`, { cache: "no-store" })
+        ]);
         if (res.status === 403) {
           try {
             let d: any = {}; try { d = await res.json(); } catch {}
@@ -56,8 +59,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         }
         if (res.ok) {
           let data: any = {}; try { data = await res.json(); } catch {}
+          let brandingData: any = {}; try { brandingData = await brandingRes.json(); } catch {}
           // Require verification for all login methods
-          if (data.emailVerification && !data.emailVerified) {
+          if (brandingData.emailVerification && !data.emailVerified) {
             if (typeof window !== "undefined") {
               sessionStorage.setItem("verify_email", data.email || "");
             }
