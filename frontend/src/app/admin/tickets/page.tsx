@@ -107,25 +107,24 @@ export default function AdminTicketsPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  // Load all tickets for accurate counts
+  // Load ticket counts using optimized aggregation endpoint (ISO 25010 Performance)
   const loadCounts = useCallback(async () => {
     setCountsLoading(true);
     try {
-      const r = await fetch(`${API_BASE}/api/admin/tickets?deleted=all&limit=2000`, {
+      const r = await fetch(`${API_BASE}/api/admin/tickets/counts`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       let d: any = {}; try { d = await r.json(); } catch {}
-      if (r.ok && d?.tickets) {
-        const all = d.tickets;
-        setAllTickets(all);
+      if (r.ok && d) {
         setCounts({
-          all: all.filter((t: any) => !t.deletedByUser && t.status !== 'closed').length,
-          open: all.filter((t: any) => !t.deletedByUser && t.status === 'open').length,
-          pending: all.filter((t: any) => !t.deletedByUser && t.status === 'pending').length,
-          resolved: all.filter((t: any) => !t.deletedByUser && t.status === 'resolved').length,
-          closed: all.filter((t: any) => !t.deletedByUser && t.status === 'closed').length,
-          deleted: all.filter((t: any) => t.deletedByUser).length,
+          all: (d.byStatus?.open || 0) + (d.byStatus?.pending || 0) + (d.byStatus?.resolved || 0),
+          open: d.byStatus?.open || 0,
+          pending: d.byStatus?.pending || 0,
+          resolved: d.byStatus?.resolved || 0,
+          closed: d.byStatus?.closed || 0,
+          deleted: d.deleted || 0,
         });
+        setAllTickets(d.byCategory || {});
       }
     } catch {} finally {
       setCountsLoading(false);
@@ -275,3 +274,4 @@ export default function AdminTicketsPage() {
     </div>
   );
 }
+

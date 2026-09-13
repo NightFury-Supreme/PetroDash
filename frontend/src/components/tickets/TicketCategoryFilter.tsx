@@ -4,7 +4,7 @@ interface TicketCategoryFilterProps {
   categories: string[];
   activeTab: string;
   catFilter: string;
-  tickets: Array<{ category?: string; status: string; deletedByUser?: boolean }>;
+  tickets: Array<{ category?: string; status: string; deletedByUser?: boolean }> | Record<string, { all: number, open: number, pending: number, resolved: number, closed: number, deleted: number }>;
   loading?: boolean;
   onSelect: (cat: string) => void;
 }
@@ -17,22 +17,34 @@ export function TicketCategoryFilter({
   loading,
   onSelect,
 }: TicketCategoryFilterProps) {
+  const isServerAggregated = !Array.isArray(tickets);
+
   const catCounts = categories.reduce((acc, cat) => {
-    acc[cat] = tickets.filter((t) => {
-      if (activeTab === "deleted") return !!t.deletedByUser && t.category === cat;
-      if (t.deletedByUser) return false;
-      if (activeTab === "all") return t.status !== "closed" && t.category === cat;
-      return t.status === activeTab && t.category === cat;
-    }).length;
+    if (isServerAggregated) {
+      const catData = (tickets as Record<string, any>)[cat] || { all: 0, open: 0, pending: 0, resolved: 0, closed: 0, deleted: 0 };
+      if (activeTab === "deleted") acc[cat] = catData.deleted || 0;
+      else if (activeTab === "all") acc[cat] = catData.all || 0;
+      else acc[cat] = catData[activeTab as keyof typeof catData] || 0;
+    } else {
+      const arr = tickets as Array<any>;
+      acc[cat] = arr.filter((t) => {
+        if (activeTab === "deleted") return !!t.deletedByUser && t.category === cat;
+        if (t.deletedByUser) return false;
+        if (activeTab === "all") return t.status !== "closed" && t.category === cat;
+        return t.status === activeTab && t.category === cat;
+      }).length;
+    }
     return acc;
   }, {} as Record<string, number>);
 
-  const allCategoriesCount = tickets.filter((t) => {
-    if (activeTab === "deleted") return !!t.deletedByUser;
-    if (t.deletedByUser) return false;
-    if (activeTab === "all") return t.status !== "closed";
-    return t.status === activeTab;
-  }).length;
+  const allCategoriesCount = isServerAggregated 
+    ? categories.reduce((sum, cat) => sum + (catCounts[cat] || 0), 0)
+    : (tickets as Array<any>).filter((t) => {
+        if (activeTab === "deleted") return !!t.deletedByUser;
+        if (t.deletedByUser) return false;
+        if (activeTab === "all") return t.status !== "closed";
+        return t.status === activeTab;
+      }).length;
 
   return (
     <div className="mb-6 -ml-[13px] flex overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">

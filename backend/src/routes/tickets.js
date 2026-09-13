@@ -110,6 +110,8 @@ router.post('/', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) 
 
     // Invalidate user's ticket cache
     await deleteCachePattern(`tickets:mine:${userId}:*`);
+    await deleteCachePattern('tickets:admin:list:*');
+    await deleteCachePattern('tickets:admin:counts:*');
 
     const { writeAudit } = require('../middleware/audit');
     const createdPayload = { created: { subject: ticket.subject, category: ticket.category, priority: ticket.priority } };
@@ -341,6 +343,8 @@ router.post('/:id/messages', requireAuth, createRateLimiter(10, 60 * 1000), asyn
     
     // Invalidate cache
     await deleteCachePattern(`tickets:mine:${userId}:*`);
+    await deleteCachePattern('tickets:admin:list:*');
+    await deleteCachePattern('tickets:admin:counts:*');
     await deleteCachePattern(`tickets:detail:${req.params.id}`);
     
     const { writeAudit } = require('../middleware/audit');
@@ -393,6 +397,8 @@ router.post('/:id/status', requireAuth, async (req, res) => {
     
     // Invalidate cache
     await deleteCachePattern(`tickets:mine:${userId}:*`);
+    await deleteCachePattern('tickets:admin:list:*');
+    await deleteCachePattern('tickets:admin:counts:*');
     await deleteCachePattern(`tickets:detail:${req.params.id}`);
     
     const changes = { status: { old: oldStatus, new: t.status } };

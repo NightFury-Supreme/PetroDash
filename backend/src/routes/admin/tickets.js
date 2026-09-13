@@ -12,7 +12,74 @@ function extractAdminId(req) {
   return (req.user && (req.user.sub || req.user.userId || req.user._id || req.user.id)) || null;
 }
 
-// GET /api/admin/tickets — list with server-side search + pagination
+// GET /api/admin/tickets/counts - Get ticket counts grouped by category and status
+router.get('/counts', requireAdmin, async (req, res) => {
+  try {
+    const countsCacheKey = 'tickets:admin:counts:all';
+    const cachedCounts = await getCache(countsCacheKey);
+    if (cachedCounts) return res.json(cachedCounts);
+
+    // Fast MongoDB aggregation to count tickets per status per category (and deleted status)
+    const pipeline = [
+      {
+        $group: {
+          _id: {
+            category: '$category',
+            status: '$status',
+            deletedByUser: '$deletedByUser'
+          },
+          count: { $sum: 1 }
+        }
+      }
+    ];
+
+    const results = await Ticket.aggregate(pipeline);
+    
+    // Transform into a structured count object
+    const structuredCounts = {
+      total: 0,
+      byStatus: { open: 0, pending: 0, resolved: 0, closed: 0 },
+      byCategory: {},
+      deleted: 0
+    };
+
+    for (const r of results) {
+      const cat = r._id.category || 'general';
+      const stat = r._id.status;
+      const isDeleted = r._id.deletedByUser === true;
+      const count = r.count;
+
+      if (isDeleted) {
+        structuredCounts.deleted += count;
+      } else {
+        structuredCounts.total += count;
+        if (structuredCounts.byStatus[stat] !== undefined) {
+          structuredCounts.byStatus[stat] += count;
+        }
+      }
+
+      if (!structuredCounts.byCategory[cat]) {
+        structuredCounts.byCategory[cat] = { all: 0, open: 0, pending: 0, resolved: 0, closed: 0, deleted: 0 };
+      }
+      
+      if (isDeleted) {
+        structuredCounts.byCategory[cat].deleted += count;
+      } else {
+        structuredCounts.byCategory[cat].all += count;
+        if (structuredCounts.byCategory[cat][stat] !== undefined) {
+          structuredCounts.byCategory[cat][stat] += count;
+        }
+      }
+    }
+
+    await setCache(countsCacheKey, structuredCounts, 60);
+    return res.json(structuredCounts);
+  } catch (_err) {
+    res.status(500).json({ error: 'Failed to aggregate ticket counts' });
+  }
+});
+
+// GET /api/admin/tickets - list with server-side search + pagination
 router.get('/', requireAdmin, async (req, res) => {
   try {
     const { q, status, priority, category, deleted, sort = 'updated_desc', page = '1', limit = '25' } = req.query;
@@ -32,7 +99,8 @@ router.get('/', requireAdmin, async (req, res) => {
       query.priority = { $eq: priority };
     }
     if (category && typeof category === 'string' && category.trim()) {
-      query.category = { $regex: category.trim(), $options: 'i' };
+      // Enterprise Optimization (ISO 25010 Performance): Use exact match instead of regex for category (indexed lookup)
+      query.category = category.trim();
     }
     if (q && typeof q === 'string' && q.trim()) {
       const escaped = q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -74,7 +142,7 @@ router.get('/', requireAdmin, async (req, res) => {
 
     res.json(responseData);
   // eslint-disable-next-line unused-imports/no-unused-vars
-  } catch (err) {
+  } catch (_err) {
     res.status(500).json({ error: 'Failed to list tickets' });
   }
 });
@@ -133,7 +201,7 @@ router.get('/:id', requireAdmin, async (req, res) => {
     await setCache(cacheKey, t, 30);
     res.json(t);
   // eslint-disable-next-line unused-imports/no-unused-vars
-  } catch (err) {
+  } catch (_err) {
     res.status(500).json({ error: 'Failed to load ticket' });
   }
 });
@@ -214,6 +282,7 @@ router.post('/:id/messages', requireAdmin, async (req, res) => {
 
     // Invalidate caches
     await deleteCachePattern('tickets:admin:list:*');
+      await deleteCachePattern('tickets:admin:counts:*');
     await deleteCachePattern(`tickets:mine:${t.user}:*`);
     await deleteCachePattern(`tickets:admin:detail:${req.params.id}`);
 
@@ -224,7 +293,7 @@ router.post('/:id/messages', requireAdmin, async (req, res) => {
 
     res.json({ ok: true, message: savedMsg, status: t.status });
   // eslint-disable-next-line unused-imports/no-unused-vars
-  } catch (err) {
+  } catch (_err) {
     res.status(500).json({ error: 'Failed to add message' });
   }
 });
@@ -297,6 +366,8 @@ router.patch('/:id', requireAdmin, async (req, res) => {
       
       // Invalidate caches
       await deleteCachePattern('tickets:admin:list:*');
+      await deleteCachePattern('tickets:admin:counts:*');
+      await deleteCachePattern('tickets:admin:counts:*');
       await deleteCachePattern(`tickets:mine:${t.user}:*`);
       await deleteCachePattern(`tickets:admin:detail:${req.params.id}`);
 
@@ -325,7 +396,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
 
     res.json({ ok: true, status: t.status, priority: t.priority });
   // eslint-disable-next-line unused-imports/no-unused-vars
-  } catch (err) {
+  } catch (_err) {
     res.status(500).json({ error: 'Failed to update ticket' });
   }
 });
@@ -340,6 +411,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
     
     // Invalidate caches
     await deleteCachePattern('tickets:admin:list:*');
+      await deleteCachePattern('tickets:admin:counts:*');
     if (result.user) await deleteCachePattern(`tickets:mine:${result.user}:*`);
     await deleteCachePattern(`tickets:admin:detail:${req.params.id}`);
     
@@ -348,7 +420,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
 
     res.json({ ok: true });
   // eslint-disable-next-line unused-imports/no-unused-vars
-  } catch (err) {
+  } catch (_err) {
     res.status(500).json({ error: 'Failed to delete ticket' });
   }
 });
@@ -360,7 +432,7 @@ router.get('/settings/categories', requireAdmin, async (req, res) => {
     const categories = (s && Array.isArray(s.ticketCategories) ? s.ticketCategories : []);
     res.json({ categories });
   // eslint-disable-next-line unused-imports/no-unused-vars
-  } catch (err) {
+  } catch (_err) {
     res.status(500).json({ error: 'Failed to load categories' });
   }
 });
@@ -376,7 +448,7 @@ router.get('/settings/categories/usage', requireAdmin, async (req, res) => {
     for (const row of agg) usage[row._id] = row.count;
     res.json({ usage });
   // eslint-disable-next-line unused-imports/no-unused-vars
-  } catch (err) {
+  } catch (_err) {
     res.status(500).json({ error: 'Failed to load usage' });
   }
 });
@@ -421,7 +493,7 @@ router.patch('/settings/categories', requireAdmin, async (req, res) => {
 
     res.json({ ok: true, categories: s.ticketCategories });
   // eslint-disable-next-line unused-imports/no-unused-vars
-  } catch (err) {
+  } catch (_err) {
     res.status(500).json({ error: 'Failed to update categories' });
   }
 });

@@ -24,6 +24,11 @@ TicketSchema.index({ status: 1, priority: 1, updatedAt: -1 });
 TicketSchema.index({ lastUserActivityAt: -1 });
 TicketSchema.index({ lastAdminReplyAt: -1 });
 
+// Enterprise Optimization (ISO 25010 Performance): Indexes for /counts aggregation and list filtering
+TicketSchema.index({ deletedByUser: 1, status: 1, updatedAt: -1 });
+TicketSchema.index({ category: 1, status: 1, deletedByUser: 1 });
+TicketSchema.index({ title: 'text', tags: 'text' });
+
 TicketSchema.pre('save', function (next) {
   this.updatedAt = new Date();
   next();
