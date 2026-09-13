@@ -1109,21 +1109,24 @@ export function AdminSettingsContent({
 
                <div>
                  <h4 className="mb-3 block text-sm font-medium text-[#D4D4D4]">Ad Types</h4>
-                 <div className="grid grid-cols-2 gap-3 bg-white/[0.02] border border-white/[0.06] rounded-lg p-4">
+                 <div className="flex flex-col bg-white/[0.02] border border-white/[0.06] rounded-lg px-4 pb-4">
                    {([
-                     ['display', 'Display Ads'],
-                     ['text', 'Text Ads'],
-                     ['link', 'Link Ads'],
-                     ['inFeed', 'In-Feed Ads'],
-                     ['inArticle', 'In-Article Ads'],
-                     ['matchedContent', 'Matched Content']
-                   ] as const).map(([key, label]) => (
-                     <div key={key} className="flex items-center gap-3">
+                     ['display', 'Display Ads', 'Show graphical display ads on your pages'],
+                     ['text', 'Text Ads', 'Show simple text-based ads'],
+                     ['link', 'Link Ads', 'Show link unit ads'],
+                     ['inFeed', 'In-Feed Ads', 'Show native ads inserted between feed items'],
+                     ['inArticle', 'In-Article Ads', 'Show native ads integrated inside articles'],
+                     ['matchedContent', 'Matched Content', 'Show recommended content with ads']
+                   ] as const).map(([key, label, desc], index) => (
+                     <div key={key} className="flex items-center justify-between pt-4 border-t border-white/[0.06] first:border-0">
+                       <div className="flex flex-col">
+                         <span className="text-sm font-medium text-[#D4D4D4] mb-0.5">{label}</span>
+                         <span className="text-xs text-[#888]">{desc}</span>
+                       </div>
                        <label className="relative inline-flex items-center cursor-pointer">
                          <input type="checkbox" className="sr-only peer" checked={formData.adsense?.adTypes?.[key] || false} onChange={(e) => updateFormData(`adsense.adTypes.${key}`, e.target.checked)} disabled={loading} />
                          <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
                        </label>
-                       <span className="text-[#D4D4D4] text-xs font-medium">{label}</span>
                      </div>
                    ))}
                  </div>
