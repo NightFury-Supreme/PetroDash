@@ -359,3 +359,4 @@ export default function AdminTicketDetailPage() {
     </div>
   );
 }
+

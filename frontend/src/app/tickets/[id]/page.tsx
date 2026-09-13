@@ -373,3 +373,4 @@ export default function TicketDetailPage() {
     </div>
   );
 }
+

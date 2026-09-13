@@ -156,10 +156,14 @@ router.get('/:id/messages', requireAdmin, async (req, res) => {
     const TicketMessage = require('../../models/TicketMessage');
     const limit = parseInt(req.query.limit) || 50;
     const before = req.query.before;
+    const since = req.query.since;
 
     const query = { ticket: req.params.id }; // Admin sees internal notes
     if (before && /^[0-9a-fA-F]{24}$/.test(before)) {
-      query._id = { $lt: new mongoose.Types.ObjectId(before) };
+      query._id = { $lt: new mongoose.Types.ObjectId(String(before)) };
+    }
+    if (since && /^[0-9a-fA-F]{24}$/.test(since)) {
+      query._id = { ...query._id, $gt: new mongoose.Types.ObjectId(String(since)) };
     }
 
     const messages = await TicketMessage.find(query)
