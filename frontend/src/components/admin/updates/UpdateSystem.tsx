@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { RefreshCw, CheckCircle, AlertTriangle, XCircle, FileText, Github } from 'lucide-react';
+import { RefreshCw, CheckCircle, AlertTriangle, XCircle, Github } from 'lucide-react';
 
 interface UpdateInfo {
   currentVersion: string;
@@ -94,19 +94,25 @@ export default function UpdateSystem() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-4">
                   <p className="text-sm font-medium text-white">Update Available</p>
-                  <span className="text-xs font-mono text-[#FF5722]">v{updateInfo.currentVersion} → v{updateInfo.latestVersion}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-mono text-[#FF5722]">v{updateInfo.currentVersion} → v{updateInfo.latestVersion}</span>
+                    <a
+                      href={updateInfo.releaseUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 h-7 px-3 rounded-md bg-white/[0.06] border border-white/[0.08] text-xs text-white hover:bg-white/[0.1] transition-colors"
+                    >
+                      <Github className="w-3 h-3" />
+                      View on GitHub
+                    </a>
+                  </div>
                 </div>
                 <p className="text-xs text-[#888] mt-0.5">
                   Published on {new Date(updateInfo.publishedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
                 </p>
 
-
                 {updateInfo.releaseNotes && (
                   <div className="mt-3">
-                    <div className="flex items-center gap-1.5 text-xs text-white mb-3">
-                      <FileText className="w-3 h-3" />
-                      Release Notes
-                    </div>
                     <div className="prose prose-invert prose-sm max-w-none text-[#888]
                       [&_h1]:text-[#D4D4D4] [&_h1]:text-base [&_h1]:font-semibold [&_h1]:mb-2 [&_h1]:mt-4
                       [&_h2]:text-[#D4D4D4] [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mb-2 [&_h2]:mt-4
@@ -124,16 +130,6 @@ export default function UpdateSystem() {
                     </div>
                   </div>
                 )}
-
-                <a
-                  href={updateInfo.releaseUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-1.5 text-xs text-white hover:text-white/70 transition-colors"
-                >
-                  <Github className="w-3.5 h-3.5" />
-                  View on GitHub
-                </a>
               </div>
             </div>
           ) : (
