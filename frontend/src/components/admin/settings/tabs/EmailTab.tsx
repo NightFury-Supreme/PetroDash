@@ -40,7 +40,7 @@ export function EmailTab({ formData, updateFormData, saveSection, loading }: Tab
                    </div>
                    <div className="flex flex-col">
                      <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">SMTP Password</label>
-                     <input type="password" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder="••••••••" value={formData.payments?.smtp?.pass || ''} onChange={(e) => updateFormData('payments.smtp.pass', e.target.value)} disabled={loading} />
+                     <input type="password" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder={formData.payments?.smtp?.pass === '***' ? '•••••••• (Configured - Leave blank to keep)' : 'Enter SMTP Password'} value={formData.payments?.smtp?.pass === '***' ? '' : (formData.payments?.smtp?.pass || '')} onChange={(e) => updateFormData('payments.smtp.pass', e.target.value)} disabled={loading} />
                    </div>
                    <div className="flex flex-col md:col-span-2">
                      <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">From Email Address</label>
