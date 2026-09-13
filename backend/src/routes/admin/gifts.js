@@ -40,7 +40,6 @@ router.get('/', requireAdmin, async (req, res) => {
       .skip((pageNum - 1) * limitNum)
       .limit(limitNum)
       .populate('createdBy', 'username email profilePicture')
-      .populate('redemptions.user', 'username email profilePicture')
       .lean();
 
     res.json({
@@ -81,20 +80,25 @@ router.get('/:id/redemptions', requireAdmin, async (req, res) => {
     const giftMeta = await Gift.findById(String(req.params.id)).select('redeemedCount code').lean();
     if (!giftMeta) return res.status(404).json({ error: 'Gift not found' });
 
-    const giftRedemptions = await Gift.findById(String(req.params.id))
-      .select('redemptions')
-      .slice('redemptions', [(pageNum - 1) * limitNum, limitNum])
-      .populate('redemptions.user', 'username email profilePicture')
+    const GiftRedemption = require('../../models/GiftRedemption');
+    
+    const totalRedemptions = await GiftRedemption.countDocuments({ gift: req.params.id });
+    
+    const giftRedemptions = await GiftRedemption.find({ gift: req.params.id })
+      .sort({ redeemedAt: -1 })
+      .skip((pageNum - 1) * limitNum)
+      .limit(limitNum)
+      .populate('user', 'username email profilePicture')
       .lean();
 
     res.json({
       code: giftMeta.code,
-      redemptions: giftRedemptions ? giftRedemptions.redemptions : [],
+      redemptions: giftRedemptions.map(r => ({ user: r.user, redeemedAt: r.redeemedAt })),
       pagination: {
         page: pageNum,
         limit: limitNum,
-        total: giftMeta.redeemedCount || 0,
-        totalPages: Math.ceil((giftMeta.redeemedCount || 0) / limitNum) || 1
+        total: totalRedemptions,
+        totalPages: Math.ceil(totalRedemptions / limitNum) || 1
       }
     });
   // eslint-disable-next-line unused-imports/no-unused-vars
