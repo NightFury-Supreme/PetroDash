@@ -936,16 +936,17 @@ router.post('/:method/claim', requireAuth, async (req, res) => {
 
       const reward = Number(locked.rewardCoins || 0);
 
-      const user = await User.findById(userId).session(txSession);
+      const user = await User.findOneAndUpdate(
+        { _id: userId },
+        { $inc: { coins: reward } },
+        { new: true, session: txSession }
+      );
       if (!user) throw new Error('NOUSER');
-      const coinsBefore = Number(user.coins || 0);
-      user.coins = coinsBefore + reward;
-      await user.save({ session: txSession });
 
       result = {
         rewardCoins: reward,
-        coinsBefore,
-        coinsAfter: Number(user.coins || 0),
+        coinsBefore: user.coins - reward,
+        coinsAfter: user.coins,
         sessionId: String(locked._id),
       };
     });
@@ -1033,12 +1034,6 @@ router.get('/ayet/callback', async (req, res) => {
         return; 
       }
 
-      const user = await User.findById(userId).session(session);
-      if (!user) {
-        console.warn(`[ayeT-Studios Callback] User not found: ${userId}`);
-        return;
-      }
-
       let adjustment = 0;
       if (String(is_chargeback) === '1') {
         adjustment = -Math.abs(amount);
@@ -1046,9 +1041,16 @@ router.get('/ayet/callback', async (req, res) => {
         adjustment = Math.abs(amount);
       }
 
-      const coinsBefore = Number(user.coins || 0);
-      user.coins = coinsBefore + adjustment;
-      await user.save({ session });
+      const user = await User.findOneAndUpdate(
+        { _id: userId },
+        { $inc: { coins: adjustment } },
+        { new: true, session }
+      );
+      if (!user) {
+        console.warn(`[ayeT-Studios Callback] User not found: ${userId}`);
+        return;
+      }
+      const coinsBefore = user.coins - adjustment;
 
       const [createdSession] = await EarnSession.create([{
         userId,

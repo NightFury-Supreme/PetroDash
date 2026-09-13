@@ -33,4 +33,6 @@ EarnSessionSchema.index(
   }
 );
 
+EarnSessionSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('EarnSession', EarnSessionSchema);
