@@ -3,8 +3,6 @@ const mongoose = require('mongoose');
 const crypto = require('crypto');
 const Gift = require('../models/Gift');
 const User = require('../models/User');
-const Plan = require('../models/Plan');
-const UserPlan = require('../models/UserPlan');
 const { requireAuth } = require('../middleware/auth');
 const { logUserActivity } = require('../middleware/userActivity');
 

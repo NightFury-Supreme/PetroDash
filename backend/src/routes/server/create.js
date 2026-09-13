@@ -10,8 +10,12 @@ const axios = require('axios');
 const { getEggDetails } = require('../../services/pterodactyl');
 const { deleteCache, deleteCachePattern } = require('../../lib/redis');
 const { writeAudit } = require('../../middleware/audit');
+const UserCreationService = require('../../services/userCreation');
+const { logUserActivity } = require('../../middleware/userActivity');
+const { sendMailTemplate } = require('../../lib/mail');
 
 const router = express.Router();
+const { createRateLimiter } = require('../../middleware/rateLimit');
 
 const createSchema = z.object({
   name: z.string().min(1).max(50).regex(/^[a-zA-Z0-9\s\-_]+$/, 'Name can only contain letters, numbers, spaces, hyphens, and underscores'),
@@ -28,7 +32,7 @@ const createSchema = z.object({
 });
 
 // POST /api/servers
-router.post('/', requireAuth, async (req, res) => {
+router.post('/', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) => {
   // 1. Validate input
   const parsed = createSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -63,7 +67,7 @@ router.post('/', requireAuth, async (req, res) => {
     // 3.5. Just-In-Time Pterodactyl User Sync
     // If the user registered while the panel was offline, their panel account is pending.
     if (!user.pterodactylUserId) {
-      const UserCreationService = require('../../services/userCreation');
+      
       await UserCreationService.createPterodactylUser(user);
       if (!user.pterodactylUserId) {
         return res.status(503).json({ 
@@ -281,7 +285,7 @@ router.post('/', requireAuth, async (req, res) => {
       status: isQueued ? 'queued' : 'active',
     });
 
-    const { logUserActivity } = require('../../middleware/userActivity');
+    
     await logUserActivity(req, 'server.create', { 
       serverName: name, 
       serverId: panelServer?.id, 
@@ -308,7 +312,7 @@ router.post('/', requireAuth, async (req, res) => {
 
     // 12. Send confirmation email (non-blocking, failure is not fatal)
     try {
-      const { sendMailTemplate } = require('../../lib/mail');
+      
       
       const backendUrl = (process.env.API_URL || process.env.BACKEND_URL) 
         ? (process.env.API_URL || process.env.BACKEND_URL).replace(/\/$/, '')

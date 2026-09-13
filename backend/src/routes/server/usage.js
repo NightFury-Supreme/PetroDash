@@ -3,13 +3,15 @@ const { requireAuth } = require('../../middleware/auth');
 const Server = require('../../models/Server');
 const { getServer: getPanelServer } = require('../../services/pterodactyl');
 const { hasServerLimitsChanged } = require('../../utils/security');
+const { getCache, setCache } = require('../../lib/redis');
+const { deleteCachePattern, deleteCache } = require('../../lib/redis');
 
 const router = express.Router();
 
 // GET /api/servers/usage - aggregate usage from servers in our DB
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const { getCache, setCache } = require('../../lib/redis');
+    
     const cacheKey = `server:usage:${req.user.sub}`;
     const cached = await getCache(cacheKey);
     if (cached) return res.json(cached);
@@ -69,7 +71,7 @@ router.get('/', requireAuth, async (req, res) => {
     );
     
     if (deletedCount > 0) {
-      const { deleteCachePattern, deleteCache } = require('../../lib/redis');
+      
       await deleteCachePattern(`api:servers:${req.user.sub}:*`);
       await deleteCachePattern('api:admin:servers:*');
       await deleteCache('eggs:counts');

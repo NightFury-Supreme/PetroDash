@@ -8,7 +8,6 @@ const { createRateLimiter } = require('../middleware/rateLimit');
 const { getSettings } = require('../lib/settings');
 const EarnSession = require('../models/EarnSession');
 const User = require('../models/User');
-const { writeAudit } = require('../middleware/audit');
 const { logUserActivity } = require('../middleware/userActivity');
 
 const router = express.Router();

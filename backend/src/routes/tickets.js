@@ -119,7 +119,7 @@ router.post('/', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) 
     await logUserActivity(req, 'ticket.create', { ticketId: ticket._id, ...createdPayload });
     await writeAudit(req, 'ticket.create', 'ticket', ticket._id.toString(), createdPayload);
     res.status(201).json(ticket);
-  } catch (err) {
+  } catch (_) {
     console.error('Create ticket error:', err);
     res.status(500).json({ error: 'Failed to create ticket' });
   }
@@ -150,7 +150,7 @@ router.get('/counts', requireAuth, async (req, res) => {
     
     await setCache(cacheKey, counts, 30);
     res.json(counts);
-  } catch (err) {
+  } catch (_) {
     res.status(500).json({ error: 'Failed to fetch counts' });
   }
 });

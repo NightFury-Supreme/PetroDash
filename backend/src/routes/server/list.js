@@ -3,6 +3,7 @@ const { requireAuth } = require('../../middleware/auth');
 const Server = require('../../models/Server');
 const { getServer } = require('../../services/pterodactyl');
 const { getCache, setCache } = require('../../lib/redis');
+const { deleteCachePattern, deleteCache } = require('../../lib/redis');
 
 const router = express.Router();
 
@@ -40,7 +41,7 @@ router.get('/', requireAuth, async (req, res) => {
     
   const base = (process.env.PTERO_BASE_URL || '').replace(/\/$/, '');
   let deletedCount = 0;
-  const { writeAudit } = require('../../middleware/audit');
+  
     const enriched = await Promise.all(list.map(async (s) => {
         let status = s.status || 'unknown';
         let suspended = status === 'suspended';
@@ -82,7 +83,7 @@ router.get('/', requireAuth, async (req, res) => {
     }));
     const filtered = enriched.filter(Boolean);
     if (deletedCount > 0) {
-      const { deleteCachePattern, deleteCache } = require('../../lib/redis');
+      
       await deleteCachePattern(`server:usage:${req.user.sub}`);
       await deleteCachePattern(`api:servers:${req.user.sub}:*`);
       await deleteCachePattern('api:admin:servers:*');

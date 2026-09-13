@@ -74,7 +74,7 @@ router.get('/counts', requireAdmin, async (req, res) => {
 
     await setCache(countsCacheKey, structuredCounts, 60);
     return res.json(structuredCounts);
-  } catch (_err) {
+  } catch (_) {
     res.status(500).json({ error: 'Failed to aggregate ticket counts' });
   }
 });

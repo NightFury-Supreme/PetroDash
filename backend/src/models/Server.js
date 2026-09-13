@@ -25,6 +25,7 @@ const ServerSchema = new mongoose.Schema(
 ServerSchema.index({ owner: 1 });
 ServerSchema.index({ locationId: 1 });
 
+ServerSchema.index({ status: 1, priority: -1, createdAt: 1 });
 module.exports = mongoose.model('Server', ServerSchema);
 
 

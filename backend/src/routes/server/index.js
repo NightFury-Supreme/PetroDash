@@ -103,6 +103,14 @@ router.get('/:id', requireAuth, validateObjectId('id'), async (req, res) => {
 
 // PATCH /api/servers/:id - update server
 const { createRateLimiter } = require('../../middleware/rateLimit');
+const User = require('../../models/User');
+const { updateServerDetails } = require('../../services/pterodactyl');
+const { writeAudit } = require('../../middleware/audit');
+const { forceDeleteServer, getServer } = require('../../services/pterodactyl');
+const PendingDeletion = require('../../models/PendingDeletion');
+const { sendMailTemplate } = require('../../lib/mail');
+const Egg = require('../../models/Egg');
+const Location = require('../../models/Location');
 // Validation schema for update payload
 const updateSchema = z.object({
   name: z.string().trim().min(1).max(100).optional(),
@@ -119,7 +127,7 @@ const updateSchema = z.object({
 router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 60 * 1000), async (req, res) => {
   let lockAcquired = false;
   const userId = req.user.sub;
-  const User = require('../../models/User');
+  
   
   try {
     const serverId = req.params.id;
@@ -225,7 +233,7 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
         // Update server name on Pterodactyl panel if panelServerId exists
         if (server.panelServerId) {
           try {
-            const { updateServerDetails } = require('../../services/pterodactyl');
+            
             
             await updateServerDetails(server.panelServerId, { 
               name: newName, 
@@ -385,7 +393,7 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
     await server.save();
 
     // Log audit trail
-    const { writeAudit } = require('../../middleware/audit');
+    
     writeAudit(req, 'server.update', 'server', server._id.toString(), { 
       changes,
       serverId: server._id,
@@ -431,7 +439,7 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
 router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10, 60 * 1000), async (req, res) => {
   let lockAcquired = false;
   const userId = req.user.sub;
-  const User = require('../../models/User');
+  
 
   try {
     // 1. Verify the server exists and belongs to this user
@@ -482,7 +490,7 @@ router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10,
     // 4. Delete from Pterodactyl panel
     if (server.panelServerId) {
       try {
-        const { forceDeleteServer, getServer } = require('../../services/pterodactyl');
+        
         try {
           const panelServerData = await getServer(server.panelServerId);
           serverIdentifier = panelServerData?.attributes?.identifier;
@@ -499,7 +507,7 @@ router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10,
           console.warn(`Panel server ${server.panelServerId} already gone — cleaning up locally.`);
         } else {
           console.warn(`Panel deletion failed for ${server.panelServerId}. Queueing for background deletion. Error:`, detail);
-          const PendingDeletion = require('../../models/PendingDeletion');
+          
           await PendingDeletion.create({ resourceType: 'server', panelId: server.panelServerId });
         }
       }
@@ -509,7 +517,7 @@ router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10,
     await Server.deleteOne({ _id: server._id });
 
     // 6. Audit trail
-    const { writeAudit } = require('../../middleware/audit');
+    
     writeAudit(req, 'server.delete', 'server', server._id.toString(), {
       serverName: server.name,
       limits: server.limits,
@@ -522,9 +530,9 @@ router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10,
     // Email notification for server deletion (non-blocking)
     try {
       if (user?.email) {
-        const { sendMailTemplate } = require('../../lib/mail');
-        const Egg = require('../../models/Egg');
-        const Location = require('../../models/Location');
+        
+        
+        
         
         const egg = await Egg.findById(server.eggId);
         const location = await Location.findById(server.locationId);
