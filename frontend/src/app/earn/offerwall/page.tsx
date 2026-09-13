@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { useEarn } from "@/hooks/useEarn";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";

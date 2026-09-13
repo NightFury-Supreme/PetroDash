@@ -80,6 +80,26 @@ export function AdminLogsFilters({
 }: AdminLogsFiltersProps) {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
+  const [searchTerm, setSearchTerm] = useState(filters.actorId || filters.requestId || '');
+
+  // Sync external filters clear to local search term
+  useEffect(() => {
+    if (!filters.actorId && !filters.requestId) {
+      setSearchTerm('');
+    }
+  }, [filters.actorId, filters.requestId]);
+
+  // Debounce search changes to prevent API spam (ISO 25010 Performance)
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      // Only trigger if it actually differs from current filters to prevent double-load
+      const currentCombined = filters.actorId || filters.requestId || '';
+      if (searchTerm !== currentCombined) {
+        onSearchChange(searchTerm);
+      }
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, onSearchChange, filters.actorId, filters.requestId]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {

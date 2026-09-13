@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
-import { useRouter } from "next/navigation";
 import TicketsHeader from "@/components/tickets/TicketsHeader";
 import { TicketNavSidebar } from "@/components/tickets/TicketNavSidebar";
 import TicketItem from "@/components/tickets/TicketItem";
