@@ -48,10 +48,7 @@ export function EarnMethodCard({
 
   const descriptionForMethod = () => {
     switch (method) {
-      case "ads": return "Watch short videos to earn coins";
       case "linkvertise": return "View articles to earn coins";
-      case "offerwall": return "Complete tasks and download apps";
-      case "surveywall": return "Share your opinion to earn coins";
       default: return "Earn coins";
     }
   };

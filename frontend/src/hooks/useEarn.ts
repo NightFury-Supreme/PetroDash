@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
-export type EarnMethod = "ads" | "linkvertise" | "offerwall" | "surveywall";
+export type EarnMethod = "linkvertise";
 
 export interface EarnMethodConfig {
   enabled: boolean;
@@ -12,16 +12,11 @@ export interface EarnMethodConfig {
   waitSeconds: number;
   maxClaimsPerDay: number;
   url?: string;
-  ayetPlacementId?: number;
-  ayetAdslotName?: string;
 }
 
 export interface EarnConfig {
   enabled: boolean;
-  ads: EarnMethodConfig;
   linkvertise: EarnMethodConfig;
-  offerwall: EarnMethodConfig;
-  surveywall: EarnMethodConfig;
 }
 
 export interface EarnMethodStatus {
@@ -49,11 +44,6 @@ export interface EarnStartResponse {
     rewardCoins: number;
     availableAt: string;
     expiresAt: string;
-  };
-  ads?: {
-    provider: "ayet";
-    placementId: number;
-    adslotName: string;
   };
   linkvertise?: {
     url: string;

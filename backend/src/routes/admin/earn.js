@@ -1,47 +1,28 @@
 const express = require('express');
 const { z } = require('zod');
 const { requireAdmin } = require('../../middleware/auth');
-const { createRateLimiter } = require('../../middleware/rateLimit');
-const { getSettings, clearSettingsCache } = require('../../lib/settings');
-const Settings = require('../../models/Settings');
+const { getSettings, getOrCreate, clearSettingsCache } = require('../../lib/settings');
 const EarnSession = require('../../models/EarnSession');
 
 const router = express.Router();
 
-const adminEarnRateLimiter = createRateLimiter(120, 15 * 60 * 1000);
-router.use(adminEarnRateLimiter);
-
-async function getOrCreate() {
-  let doc = await Settings.findOne({});
-  if (!doc) doc = await Settings.create({});
-  return doc;
+function normalizeMethod(obj, def) {
+  if (!obj) return def;
+  return {
+    enabled: !!obj.enabled,
+    coins: Number(obj.coins || def.coins || 0),
+    cooldownSeconds: Number(obj.cooldownSeconds || def.cooldownSeconds || 0),
+    waitSeconds: Number(obj.waitSeconds || def.waitSeconds || 0),
+    maxClaimsPerDay: Number(obj.maxClaimsPerDay || def.maxClaimsPerDay || 0),
+    url: obj.url !== undefined ? obj.url : def.url,
+    antiBypassToken: obj.antiBypassToken !== undefined ? obj.antiBypassToken : def.antiBypassToken,
+  };
 }
 
-function sanitizeEarn(earn) {
-  const e = earn || {};
-  const normalizeMethod = (m, defaults) => {
-    const obj = m || {};
-    return {
-      enabled: Boolean(obj.enabled),
-      coins: Number.isFinite(Number(obj.coins)) ? Number(obj.coins) : defaults.coins,
-      cooldownSeconds: Number.isFinite(Number(obj.cooldownSeconds)) ? Number(obj.cooldownSeconds) : defaults.cooldownSeconds,
-      waitSeconds: Number.isFinite(Number(obj.waitSeconds)) ? Number(obj.waitSeconds) : defaults.waitSeconds,
-      maxClaimsPerDay: Number.isFinite(Number(obj.maxClaimsPerDay)) ? Number(obj.maxClaimsPerDay) : defaults.maxClaimsPerDay,
-      url: typeof obj.url === 'string' ? obj.url : defaults.url,
-      antiBypassToken: typeof obj.antiBypassToken === 'string' ? obj.antiBypassToken : defaults.antiBypassToken,
-      ayetPlacementId: Number.isFinite(Number(obj.ayetPlacementId)) ? Number(obj.ayetPlacementId) : defaults.ayetPlacementId,
-      ayetAdslotName: typeof obj.ayetAdslotName === 'string' ? obj.ayetAdslotName : defaults.ayetAdslotName,
-      ayetApiKey: typeof obj.ayetApiKey === 'string' ? obj.ayetApiKey : defaults.ayetApiKey,
-      adslotId: typeof obj.adslotId === 'string' ? obj.adslotId : defaults.adslotId,
-      apiKey: typeof obj.apiKey === 'string' ? obj.apiKey : defaults.apiKey,
-    };
-  };
-
+function sanitizeEarn(e) {
+  if (!e) e = {};
   return {
-    ads: normalizeMethod(e.ads, { coins: 10, cooldownSeconds: 3600, waitSeconds: 30, maxClaimsPerDay: 24, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '', adslotId: '', apiKey: '' }),
-    linkvertise: normalizeMethod(e.linkvertise, { coins: 20, cooldownSeconds: 3600, waitSeconds: 10, maxClaimsPerDay: 24, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '', adslotId: '', apiKey: '' }),
-    offerwall: normalizeMethod(e.offerwall, { coins: 0, cooldownSeconds: 0, waitSeconds: 0, maxClaimsPerDay: 0, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '', adslotId: '', apiKey: '' }),
-    surveywall: normalizeMethod(e.surveywall, { coins: 0, cooldownSeconds: 0, waitSeconds: 0, maxClaimsPerDay: 0, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '', adslotId: '', apiKey: '' }),
+    linkvertise: normalizeMethod(e.linkvertise, { coins: 20, cooldownSeconds: 3600, waitSeconds: 10, maxClaimsPerDay: 24, url: '', antiBypassToken: '' }),
   };
 }
 
@@ -57,16 +38,6 @@ router.get('/', requireAdmin, async (req, res) => {
 });
 
 const earnPatchSchema = z.object({
-  ads: z.object({
-    enabled: z.coerce.boolean().optional(),
-    coins: z.coerce.number().int().min(0).max(1000000).optional(),
-    cooldownSeconds: z.coerce.number().int().min(0).max(86400).optional(),
-    waitSeconds: z.coerce.number().int().min(0).max(3600).optional(),
-    maxClaimsPerDay: z.coerce.number().int().min(0).max(1000).optional(),
-    ayetPlacementId: z.coerce.number().int().min(0).max(1000000000).optional(),
-    ayetAdslotName: z.string().max(256).optional().or(z.literal('')),
-    ayetApiKey: z.string().max(2048).optional().or(z.literal('')),
-  }).optional(),
   linkvertise: z.object({
     enabled: z.coerce.boolean().optional(),
     coins: z.coerce.number().int().min(0).max(1000000).optional(),
@@ -75,16 +46,6 @@ const earnPatchSchema = z.object({
     maxClaimsPerDay: z.coerce.number().int().min(0).max(1000).optional(),
     url: z.string().max(2048).optional().or(z.literal('')),
     antiBypassToken: z.string().max(2048).optional().or(z.literal('')),
-  }).optional(),
-  offerwall: z.object({
-    enabled: z.coerce.boolean().optional(),
-    adslotId: z.string().max(256).optional().or(z.literal('')),
-    apiKey: z.string().max(2048).optional().or(z.literal('')),
-  }).optional(),
-  surveywall: z.object({
-    enabled: z.coerce.boolean().optional(),
-    adslotId: z.string().max(256).optional().or(z.literal('')),
-    apiKey: z.string().max(2048).optional().or(z.literal('')),
   }).optional(),
 });
 
@@ -107,50 +68,16 @@ router.patch('/', requireAdmin, async (req, res) => {
       if (src.cooldownSeconds !== undefined) settings.earn[key].cooldownSeconds = src.cooldownSeconds;
       if (src.waitSeconds !== undefined) settings.earn[key].waitSeconds = src.waitSeconds;
       if (src.maxClaimsPerDay !== undefined) settings.earn[key].maxClaimsPerDay = src.maxClaimsPerDay;
-      if (key === 'ads' && src.ayetPlacementId !== undefined) settings.earn[key].ayetPlacementId = src.ayetPlacementId;
-      if (key === 'ads' && src.ayetAdslotName !== undefined) settings.earn[key].ayetAdslotName = src.ayetAdslotName;
-      if (key === 'ads' && src.ayetApiKey !== undefined) settings.earn[key].ayetApiKey = src.ayetApiKey;
       if (key === 'linkvertise' && src.url !== undefined) settings.earn[key].url = src.url;
       if (key === 'linkvertise' && src.antiBypassToken !== undefined) settings.earn[key].antiBypassToken = src.antiBypassToken;
-      if ((key === 'offerwall' || key === 'surveywall') && src.adslotId !== undefined) settings.earn[key].adslotId = src.adslotId;
-      if ((key === 'offerwall' || key === 'surveywall') && src.apiKey !== undefined) settings.earn[key].apiKey = src.apiKey;
     };
 
-    applyMethod('ads');
     applyMethod('linkvertise');
-    applyMethod('offerwall');
-    applyMethod('surveywall');
-
-    const ayetConfigured = Boolean(Number(settings?.earn?.ads?.ayetPlacementId || 0) > 0)
-      && Boolean(String(settings?.earn?.ads?.ayetAdslotName || '').trim())
-      && Boolean(String(settings?.earn?.ads?.ayetApiKey || '').trim());
-
-    if (settings.earn.ads && settings.earn.ads.enabled) {
-      if (!ayetConfigured) {
-        return res.status(400).json({ error: 'Cannot enable Watch Ads: missing required configuration fields.' });
-      }
-    }
 
     const lvConfigured = Boolean(String(settings?.earn?.linkvertise?.url || '').trim());
     if (settings.earn.linkvertise && settings.earn.linkvertise.enabled) {
       if (!lvConfigured) {
         return res.status(400).json({ error: 'Cannot enable Linkvertise: missing required URL template.' });
-      }
-    }
-
-    const offerwallConfigured = Boolean(String(settings?.earn?.offerwall?.adslotId || '').trim())
-      && Boolean(String(settings?.earn?.offerwall?.apiKey || '').trim());
-    if (settings.earn.offerwall && settings.earn.offerwall.enabled) {
-      if (!offerwallConfigured) {
-        return res.status(400).json({ error: 'Cannot enable Offerwall: missing Adslot ID or API Key.' });
-      }
-    }
-
-    const surveywallConfigured = Boolean(String(settings?.earn?.surveywall?.adslotId || '').trim())
-      && Boolean(String(settings?.earn?.surveywall?.apiKey || '').trim());
-    if (settings.earn.surveywall && settings.earn.surveywall.enabled) {
-      if (!surveywallConfigured) {
-        return res.status(400).json({ error: 'Cannot enable Surveywall: missing Adslot ID or API Key.' });
       }
     }
 
@@ -190,7 +117,7 @@ router.get('/sessions', requireAdmin, async (req, res) => {
     if (userId && /^[0-9a-fA-F]{24}$/.test(String(userId))) {
       q.userId = { $eq: String(userId) };
     }
-    if (method && ['ads', 'linkvertise'].includes(String(method))) {
+    if (method && ['linkvertise'].includes(String(method))) {
       q.method = { $eq: String(method) };
     }
     if (status && ['started', 'completed', 'expired'].includes(String(status))) {

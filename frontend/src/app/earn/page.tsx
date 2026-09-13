@@ -99,7 +99,7 @@ function EarnContent() {
 
 
 
-  const onStart = async (method: "ads" | "linkvertise" | "offerwall" | "surveywall") => {
+  const onStart = async (method: "linkvertise") => {
     try {
       if (!canShow) {
         showError("Earn is currently disabled.");
@@ -137,7 +137,7 @@ function EarnContent() {
     }
   };
 
-  const onClaim = async (method: "ads" | "linkvertise" | "offerwall" | "surveywall") => {
+  const onClaim = async (method: "linkvertise") => {
     try {
       const sessionId = data?.status?.[method]?.sessionId;
       if (!sessionId) throw new Error("No active session");

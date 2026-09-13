@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const EarnSessionSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    method: { type: String, enum: ['ads', 'linkvertise', 'offerwall', 'surveywall'], required: true, index: true },
+    method: { type: String, enum: ['linkvertise'], required: true, index: true },
     status: { type: String, enum: ['started', 'completed', 'expired'], default: 'started', index: true },
     rewardCoins: { type: Number, default: 0 },
     provider: { type: String },

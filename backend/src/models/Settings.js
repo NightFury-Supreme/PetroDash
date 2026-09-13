@@ -10,16 +10,6 @@ const SettingsSchema = new mongoose.Schema(
       customCodeMinInvites: { type: Number, default: 10 },
     },
     earn: {
-      ads: {
-        enabled: { type: Boolean, default: false },
-        coins: { type: Number, default: 10 },
-        cooldownSeconds: { type: Number, default: 3600 },
-        waitSeconds: { type: Number, default: 30 },
-        maxClaimsPerDay: { type: Number, default: 24 },
-        ayetPlacementId: { type: Number, default: 0 },
-        ayetAdslotName: { type: String, default: '' },
-        ayetApiKey: { type: String, default: '' },
-      },
       linkvertise: {
         enabled: { type: Boolean, default: false },
         coins: { type: Number, default: 20 },
@@ -28,16 +18,6 @@ const SettingsSchema = new mongoose.Schema(
         maxClaimsPerDay: { type: Number, default: 24 },
         url: { type: String, default: '' },
         antiBypassToken: { type: String, default: '' },
-      },
-      offerwall: {
-        enabled: { type: Boolean, default: false },
-        adslotId: { type: String, default: '' },
-        apiKey: { type: String, default: '' },
-      },
-      surveywall: {
-        enabled: { type: Boolean, default: false },
-        adslotId: { type: String, default: '' },
-        apiKey: { type: String, default: '' },
       },
     },
     auth: {

@@ -8,7 +8,7 @@ interface EarnListProps {
   data: any;
   showLinkvertise: boolean;
   starting: string | null;
-  onStart: (method: "ads" | "linkvertise" | "offerwall" | "surveywall") => void;
+  onStart: (method: "linkvertise") => void;
 }
 
 export function EarnList({ canShow, data, showLinkvertise, starting, onStart }: EarnListProps) {
