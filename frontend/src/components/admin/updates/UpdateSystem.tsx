@@ -80,7 +80,7 @@ export default function UpdateSystem() {
     <section className="space-y-6">
       {/* Header */}
       <div>
-        <h3 className="text-2xl font-bold text-[#FF5722] tracking-tight">System Updates</h3>
+        <h3 className="text-2xl font-bold text-white tracking-tight">System Updates</h3>
         <p className="mt-1 text-sm text-[#888888]">Check current and latest versions</p>
       </div>
 
@@ -133,12 +133,12 @@ export default function UpdateSystem() {
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-3 p-4 rounded-lg bg-emerald-500/[0.06] border border-emerald-500/20">
+            <div className="flex items-center gap-3 p-4 rounded-lg">
               <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
               <div className="flex-1">
                 <div className="flex items-center justify-between gap-4">
                   <p className="text-sm font-medium text-white">You&apos;re up to date!</p>
-                  <span className="text-xs font-mono text-emerald-400">v{updateInfo.currentVersion}</span>
+                  <span className="text-xs font-mono text-white">v{updateInfo.currentVersion}</span>
                 </div>
                 <p className="text-xs text-[#888] mt-0.5">You are running the latest version</p>
               </div>
