@@ -147,7 +147,7 @@ export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocati
       >
         <div className="flex flex-col h-full overflow-hidden">
           {loading || !form ? (
-            <div className="flex items-center justify-center h-full min-h-[300px]"><span className="text-[#888] text-sm animate-pulse">Loading location data...</span></div>
+            <DrawerSkeleton />
           ) : (
             <div className="flex-1 overflow-y-auto px-1 pb-6">
               <form id="location-form" onSubmit={save} className="space-y-8">

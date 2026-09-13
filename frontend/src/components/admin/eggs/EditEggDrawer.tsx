@@ -15,6 +15,49 @@ interface EditEggDrawerProps {
   onUpdate: () => void;
 }
 
+function DrawerSkeleton() {
+  return (
+    <div className="flex-1 flex flex-col h-full w-full animate-in fade-in duration-300 px-1 pb-6 space-y-8">
+      <section className="space-y-5">
+        <div>
+          <div className="h-4 w-32 rounded bg-white/[0.03] animate-pulse mb-1.5" />
+          <div className="h-3 w-48 rounded bg-white/[0.02] animate-pulse" />
+        </div>
+        
+        <div>
+          <div className="h-3 w-24 rounded bg-white/[0.03] animate-pulse mb-1.5" />
+          <div className="h-[42px] w-full rounded-lg border border-[#222] bg-white/[0.02] animate-pulse" />
+        </div>
+
+        <div>
+          <div className="h-3 w-24 rounded bg-white/[0.03] animate-pulse mb-1.5" />
+          <div className="h-[84px] w-full rounded-lg border border-[#222] bg-white/[0.02] animate-pulse" />
+        </div>
+      </section>
+
+      <div className="border-t border-white/[0.06]" />
+
+      <section className="space-y-5">
+        <div>
+          <div className="h-4 w-48 rounded bg-white/[0.03] animate-pulse mb-1.5" />
+          <div className="h-3 w-64 rounded bg-white/[0.02] animate-pulse" />
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <div className="h-3 w-20 rounded bg-white/[0.03] animate-pulse mb-1.5" />
+            <div className="h-[42px] w-full rounded-lg border border-[#222] bg-white/[0.02] animate-pulse" />
+          </div>
+          <div>
+            <div className="h-3 w-24 rounded bg-white/[0.03] animate-pulse mb-1.5" />
+            <div className="h-[42px] w-full rounded-lg border border-[#222] bg-white/[0.02] animate-pulse" />
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export function EditEggDrawer({ eggId, onClose, onUpdate }: EditEggDrawerProps) {
   const [form, setForm] = useState<{ _id: string; name: string; description: string; pterodactylEggId: string; pterodactylNestId: string; recommended: boolean; allowedPlans: string[]; category?: string; icon?: string; serversCount?: number } | null>(null);
   const [env, setEnv] = useState<EnvVar[]>([]);
@@ -144,9 +187,7 @@ export function EditEggDrawer({ eggId, onClose, onUpdate }: EditEggDrawerProps) 
       >
         <div className="flex flex-col h-full overflow-hidden">
           {loading || !form ? (
-            <div className="flex items-center justify-center h-full min-h-[300px]">
-              <span className="text-[#888] text-sm animate-pulse">Loading egg data...</span>
-            </div>
+            <DrawerSkeleton />
           ) : (
             <div className="flex-1 overflow-y-auto px-1 pb-6">
               <EggForm
