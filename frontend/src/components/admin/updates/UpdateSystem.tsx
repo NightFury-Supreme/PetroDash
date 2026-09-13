@@ -86,87 +86,61 @@ export default function UpdateSystem() {
 
       {/* Version Info Row */}
       {updateInfo && (
-        <div className="divide-y divide-white/[0.06]">
-          <div className="flex items-center justify-between py-4">
-            <div className="flex flex-col">
-              <span className="text-[#D4D4D4] text-sm font-medium mb-0.5">Current Version</span>
-              <span className="text-[#888] text-xs">The version currently running on this server</span>
-            </div>
-            <span className="text-[#888] text-sm font-mono">
-              v{updateInfo.currentVersion}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between py-4">
-            <div className="flex flex-col">
-              <span className="text-[#D4D4D4] text-sm font-medium mb-0.5">Latest Version</span>
-              <span className="text-[#888] text-xs">The latest available release on GitHub</span>
-            </div>
-            <span className={`text-sm font-mono ${
-              updateInfo.isUpdateAvailable ? 'text-[#FF5722]' : 'text-emerald-400'
-            }`}>
-              v{updateInfo.latestVersion}
-            </span>
-          </div>
-
-          {/* Status Banner */}
+        <div>
           {updateInfo.isUpdateAvailable ? (
-            <div className="py-4">
-              <div className="flex items-start gap-3 p-4 rounded-lg bg-[#FF5722]/[0.06] border border-[#FF5722]/20">
-                <AlertTriangle className="w-4 h-4 text-[#FF5722] mt-0.5 shrink-0" />
-                <div className="flex-1 min-w-0">
+            <div className="flex items-start gap-3 p-4 rounded-lg bg-[#FF5722]/[0.06] border border-[#FF5722]/20">
+              <AlertTriangle className="w-4 h-4 text-[#FF5722] mt-0.5 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-4">
                   <p className="text-sm font-medium text-white">Update Available</p>
-                  <p className="text-xs text-[#888] mt-0.5">
-                    Version v{updateInfo.latestVersion} was published on{' '}
-                    {new Date(updateInfo.publishedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
-                  </p>
-
-                  {/* Package Info */}
-                  {updateInfo.fullPackageName && (
-                    <div className="mt-3 flex items-center gap-2 text-xs text-[#888]">
-                      <Package className="w-3.5 h-3.5 shrink-0" />
-                      <span>{updateInfo.fullPackageName}</span>
-                      {updateInfo.fullPackageSize && (
-                        <span className="text-[#555]">— {(updateInfo.fullPackageSize / 1024 / 1024).toFixed(2)} MB</span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Release Notes */}
-                  {updateInfo.releaseNotes && (
-                    <div className="mt-3">
-                      <div className="flex items-center gap-1.5 text-xs text-[#666] mb-1.5">
-                        <FileText className="w-3 h-3" />
-                        Release Notes
-                      </div>
-                      <div className="bg-black/20 rounded-md p-3 max-h-28 overflow-y-auto border border-white/[0.04]">
-                        <pre className="text-[#888] text-xs whitespace-pre-wrap font-sans leading-relaxed">{updateInfo.releaseNotes}</pre>
-                      </div>
-                    </div>
-                  )}
-
-                  <a
-                    href={updateInfo.releaseUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 inline-flex items-center gap-1.5 text-xs text-[#888] hover:text-white transition-colors"
-                  >
-                    <Github className="w-3.5 h-3.5" />
-                    View on GitHub
-                  </a>
+                  <span className="text-xs font-mono text-[#FF5722]">v{updateInfo.currentVersion} → v{updateInfo.latestVersion}</span>
                 </div>
+                <p className="text-xs text-[#888] mt-0.5">
+                  Published on {new Date(updateInfo.publishedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+                </p>
+
+                {updateInfo.fullPackageName && (
+                  <div className="mt-3 flex items-center gap-2 text-xs text-[#888]">
+                    <Package className="w-3.5 h-3.5 shrink-0" />
+                    <span>{updateInfo.fullPackageName}</span>
+                    {updateInfo.fullPackageSize && (
+                      <span className="text-[#555]">— {(updateInfo.fullPackageSize / 1024 / 1024).toFixed(2)} MB</span>
+                    )}
+                  </div>
+                )}
+
+                {updateInfo.releaseNotes && (
+                  <div className="mt-3">
+                    <div className="flex items-center gap-1.5 text-xs text-[#666] mb-1.5">
+                      <FileText className="w-3 h-3" />
+                      Release Notes
+                    </div>
+                    <div className="bg-black/20 rounded-md p-3 max-h-28 overflow-y-auto border border-white/[0.04]">
+                      <pre className="text-[#888] text-xs whitespace-pre-wrap font-sans leading-relaxed">{updateInfo.releaseNotes}</pre>
+                    </div>
+                  </div>
+                )}
+
+                <a
+                  href={updateInfo.releaseUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex items-center gap-1.5 text-xs text-[#888] hover:text-white transition-colors"
+                >
+                  <Github className="w-3.5 h-3.5" />
+                  View on GitHub
+                </a>
               </div>
             </div>
           ) : (
-            <div className="py-4">
-              <div className="flex items-center gap-3 p-4 rounded-lg bg-emerald-500/[0.06] border border-emerald-500/20">
-                <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                <div>
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-emerald-500/[0.06] border border-emerald-500/20">
+              <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+              <div className="flex-1">
+                <div className="flex items-center justify-between gap-4">
                   <p className="text-sm font-medium text-white">You&apos;re up to date!</p>
-                  <p className="text-xs text-[#888] mt-0.5">
-                    You are running the latest version (v{updateInfo.currentVersion})
-                  </p>
+                  <span className="text-xs font-mono text-emerald-400">v{updateInfo.currentVersion}</span>
                 </div>
+                <p className="text-xs text-[#888] mt-0.5">You are running the latest version</p>
               </div>
             </div>
           )}
