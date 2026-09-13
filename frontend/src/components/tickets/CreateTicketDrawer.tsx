@@ -2,7 +2,7 @@
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useRef, useEffect, useState } from 'react';
-import { Loader2, Server, FileText, Ticket } from 'lucide-react';
+import { Loader2, Server, FileText, Ticket, ChevronDown } from 'lucide-react';
 import { Drawer } from '@/components/ui/Drawer';
 import { API_BASE, getToken } from './utils';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -295,13 +295,48 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 function CustomSelect({ value, options, onChange }: { value: string, options: {label: string, value: string}[], onChange: (v: string)=>void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const activeLabel = options.find((o) => o.value === value)?.label || value;
+
   return (
-    <select
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      className="w-full rounded-lg border border-[#222] bg-[#161616] px-4 py-2.5 text-sm text-[#D4D4D4] outline-none transition-colors focus:border-[#FF5722]/60 appearance-none"
-    >
-      {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-    </select>
+    <div className="relative w-full" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center justify-between gap-2 rounded-lg border border-[#222] bg-[#161616] px-4 py-2.5 text-sm text-[#D4D4D4] transition-colors focus:border-[#FF5722]/60 hover:bg-[#1A1A1A] outline-none"
+      >
+        <span className="truncate">{activeLabel}</span>
+        <ChevronDown size={14} className="opacity-50 shrink-0" />
+      </button>
+
+      {open && (
+        <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 rounded-lg border border-[#222] bg-[#151515] p-1 shadow-xl max-h-[200px] overflow-y-auto">
+          {options.map((opt) => (
+            <button
+              type="button"
+              key={opt.value}
+              onClick={() => { onChange(opt.value); setOpen(false); }}
+              className={`flex h-9 w-full items-center rounded-md px-3 text-left text-sm transition-colors ${
+                opt.value === value
+                  ? "bg-white/10 text-white"
+                  : "text-[#888] hover:bg-white/10 hover:text-white"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
