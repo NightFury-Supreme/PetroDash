@@ -41,13 +41,13 @@ export function useAdminLogs() {
       if (filterParams.requestId) params.set('requestId', filterParams.requestId);
       if (filterParams.severity) params.set('severity', filterParams.severity);
 
-      const response = await fetch(\\/api/admin/logs?\\, {
-        headers: { Authorization: \Bearer \\ }
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/logs?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Failed to load logs' }));
-        throw new Error(errorData?.error || \HTTP \: \\);
+        throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`);
       }
 
       const data: LogsResponse = await response.json();
