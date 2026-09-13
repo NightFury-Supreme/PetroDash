@@ -3,7 +3,7 @@ import { useToast } from "@/components/ui/ToastProvider";
 import { Download, ChevronLeft, ChevronRight } from "lucide-react";
 
 export function InvoicesTab({ invoices, invoicePage, invoiceTotalPages, invoiceTotal, setInvoicePage }: any) {
-    const { showSuccess, showError } = useToast();
+    const { showError } = useToast();
   const downloadInvoice = async (id: string) => {
     try {
       const token = localStorage.getItem("auth_token");

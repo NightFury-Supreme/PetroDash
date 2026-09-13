@@ -18,7 +18,7 @@ export function useAdminLogs() {
     severity: ''
   });
 
-  const { showSuccess, showError } = useToast();
+  const { showError } = useToast();
 
   const loadLogs = useCallback(async (pageNum = 1, filterParams = filters, sortParam = sortBy) => {
     setError(null);

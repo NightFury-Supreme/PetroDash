@@ -6,7 +6,7 @@ import { Cpu, HardDrive, Database, Server, Network, Layers } from "lucide-react"
 export function ResourcesTab({ resources, setResources, userId, onRefresh: _onRefresh }: any) {
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState<any>(null);
-    const { showSuccess, showError } = useToast();
+    const { showError } = useToast();
 
   const beginEdit = (field: string) => {
     setEditing(field);

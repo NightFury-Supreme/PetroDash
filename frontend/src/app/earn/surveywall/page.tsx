@@ -7,8 +7,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
 export default function SurveywallPage() {
-  const router = useRouter();
-  const { data, loading } = useEarn();
+    const { data, loading } = useEarn();
   
   const decodedUserId = useMemo(() => {
     try {

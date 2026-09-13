@@ -86,7 +86,7 @@ export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-    const { showSuccess, showError } = useToast();
+    const { showError } = useToast();
 
   const loadSettings = useCallback(async () => {
     setError(null);

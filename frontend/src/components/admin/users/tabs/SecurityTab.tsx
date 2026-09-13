@@ -5,7 +5,7 @@ import { ShieldAlert } from "lucide-react";
 
 export function SecurityTab({ ban, userId, onRefresh }: any) {
   const modal = useModal();
-  const { showSuccess, showError } = useToast();
+  const { showError } = useToast();
   const [showBanModal, setShowBanModal] = useState(false);
   const [banForm, setBanForm] = useState({ reason: '', durationMinutes: undefined as number | undefined });
   const [banning, setBanning] = useState(false);

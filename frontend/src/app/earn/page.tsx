@@ -40,8 +40,7 @@ function EarnContent() {
       return;
     }
     try {
-      const url = localStorage.getItem(lvUrlKey(sid));
-      
+            
     // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_) {}
   }, [data?.status?.linkvertise?.sessionId]);

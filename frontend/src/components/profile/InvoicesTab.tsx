@@ -4,7 +4,7 @@ import { Download, Loader2 } from "lucide-react";
 import { Pagination } from "@/components/Pagination";
 
 export function InvoicesTab({ currency = "USD" }: { currency?: string }) {
-    const { showSuccess, showError } = useToast();
+    const { showError } = useToast();
   
   const downloadInvoice = async (id: string) => {
     try {

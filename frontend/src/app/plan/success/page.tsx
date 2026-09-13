@@ -10,7 +10,7 @@ export const runtime = 'edge';
 export default function PlanSuccessPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-    const { showSuccess, showError } = useToast();
+    const { showError } = useToast();
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(false);
 

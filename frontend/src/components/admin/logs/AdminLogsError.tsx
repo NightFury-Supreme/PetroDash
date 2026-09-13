@@ -8,7 +8,7 @@ interface AdminLogsErrorProps {
 }
 
 export function AdminLogsError({ error }: AdminLogsErrorProps) {
-    const { showSuccess, showError } = useToast();
+    const { showError } = useToast();
   const last = useRef<string | null>(null);
 
   useEffect(() => {

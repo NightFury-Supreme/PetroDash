@@ -21,13 +21,11 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
   const [description, setDescription] = useState("");
   const [creating, setCreating] = useState(false);
   const [createdCode, setCreatedCode] = useState<string | null>(null);
-  const [copiedCreated, setCopiedCreated] = useState(false);
-
+  
   const coinValue = Number(coins) || 0;
   const redemptionValue = Number(maxRedemptions) || 0;
   const totalCost = coinValue * redemptionValue;
-  const canCreate = coinValue > 0 && coinValue <= 1000000 && redemptionValue >= 1 && redemptionValue <= 100 && Number(expiresInDays) >= 1 && totalCost <= (profile.coins || 0);
-
+  
   function validate() {
     if (!coins.trim() || coinValue <= 0) {
       showError("Enter a valid coin amount greater than 0.");

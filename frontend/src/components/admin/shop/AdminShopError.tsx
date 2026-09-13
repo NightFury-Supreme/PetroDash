@@ -8,7 +8,7 @@ interface AdminShopErrorProps {
 }
 
 export function AdminShopError({ error }: AdminShopErrorProps) {
-    const { showSuccess, showError } = useToast();
+    const { showError } = useToast();
   const last = useRef<string | null>(null);
 
   useEffect(() => {

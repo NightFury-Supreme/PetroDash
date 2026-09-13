@@ -7,7 +7,7 @@ import { AdminEditServerDrawer } from "@/components/admin/servers/AdminEditServe
 export function ServersTab({ user, servers, onRefresh }: any) {
   const [editingServer, setEditingServer] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
-    const { showSuccess, showError } = useToast();
+    const { showError } = useToast();
   const modal = useModal();
 
   const formattedServers = servers.map((s: any) => ({

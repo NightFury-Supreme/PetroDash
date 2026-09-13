@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-    const { showSuccess, showError } = useToast();
+    const { showError } = useToast();
 
   useEffect(() => {
     const handleCallback = async () => {

@@ -8,7 +8,7 @@ import {
 export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefresh }: any) {
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState<any>("");
-    const { showSuccess, showError } = useToast();
+    const { showError } = useToast();
   
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
   const roleDropdownRef = useRef<HTMLDivElement>(null);

@@ -8,7 +8,7 @@ interface AdminLedgerErrorProps {
 }
 
 export function AdminLedgerError({ error }: AdminLedgerErrorProps) {
-    const { showSuccess, showError } = useToast();
+    const { showError } = useToast();
   const last = useRef<string | null>(null);
 
   useEffect(() => {

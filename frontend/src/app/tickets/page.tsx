@@ -20,8 +20,8 @@ const PAGE_SIZE = 25;
 
 export default function TicketsPage() {
   const { showError, showSuccess } = useToast();
-  const router = useRouter();
-  const { tickets, loading, error, categories, fetchTickets, updateStatus, createTicket } = useTickets();
+  
+  const { tickets, loading, error, categories, updateStatus, createTicket } = useTickets();
 
   // Search + filter + sort + pagination
   const [q, setQ] = useState("");
@@ -37,10 +37,8 @@ export default function TicketsPage() {
   const [createMessage, setCreateMessage] = useState("");
   const [createCategory, setCreateCategory] = useState("general");
   const [createPriority, setCreatePriority] = useState("low");
-  const [createError, setCreateError] = useState<string | null>(null);
-  const [creating, setCreating] = useState(false);
-  const [createSuccess, setCreateSuccess] = useState(false);
-
+    const [creating, setCreating] = useState(false);
+  
   // Debounce search
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {
