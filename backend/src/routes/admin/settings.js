@@ -50,6 +50,13 @@ router.get('/', requireAdmin, async (req, res) => {
     delete out.themePrimary;
     delete out.__v;
     
+    // Mask secrets for API transport (OWASP ASVS Write-Only Pattern)
+    if (out.auth?.discord?.clientSecret) out.auth.discord.clientSecret = '***';
+    if (out.auth?.discord?.botToken) out.auth.discord.botToken = '***';
+    if (out.auth?.google?.clientSecret) out.auth.google.clientSecret = '***';
+    if (out.payments?.paypal?.clientSecret) out.payments.paypal.clientSecret = '***';
+    if (out.payments?.smtp?.pass) out.payments.smtp.pass = '***';
+    
     await setCache('admin:settings', out, 30);
     return res.json(out);
   // eslint-disable-next-line unused-imports/no-unused-vars
@@ -181,6 +188,13 @@ router.patch('/', requireAdmin, async (req, res) => {
         details: parsed.error.flatten()
       });
     }
+
+    // Strip masked secrets so we don't accidentally overwrite real secrets with '***'
+    if (parsed.data.auth?.discord?.clientSecret === '***') delete parsed.data.auth.discord.clientSecret;
+    if (parsed.data.auth?.discord?.botToken === '***') delete parsed.data.auth.discord.botToken;
+    if (parsed.data.auth?.google?.clientSecret === '***') delete parsed.data.auth.google.clientSecret;
+    if (parsed.data.payments?.paypal?.clientSecret === '***') delete parsed.data.payments.paypal.clientSecret;
+    if (parsed.data.payments?.smtp?.pass === '***') delete parsed.data.payments.smtp.pass;
 
     const settings = await getOrCreate();
     const originalSettings = settings.toObject();
@@ -326,6 +340,13 @@ router.patch('/', requireAdmin, async (req, res) => {
     response.payments.smtp = updatedEmailSettings.smtp || {};
 
     delete response.__v;
+    
+    // Mask secrets for API transport (OWASP ASVS Write-Only Pattern)
+    if (response.auth?.discord?.clientSecret) response.auth.discord.clientSecret = '***';
+    if (response.auth?.discord?.botToken) response.auth.discord.botToken = '***';
+    if (response.auth?.google?.clientSecret) response.auth.google.clientSecret = '***';
+    if (response.payments?.paypal?.clientSecret) response.payments.paypal.clientSecret = '***';
+    if (response.payments?.smtp?.pass) response.payments.smtp.pass = '***';
     
     const changes = {};
     const sensitiveKeys = ['clientSecret', 'botToken', 'pass', 'webhookId', 'apiKey'];
