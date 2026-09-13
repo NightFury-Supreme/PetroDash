@@ -121,16 +121,16 @@ export default function TicketsPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans flex flex-col gap-6 w-full max-w-full overflow-x-hidden relative">
+      <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans flex flex-col gap-6 w-full max-w-full overflow-x-hidden relative">
       <TicketsHeader 
         loading={loading}
         onRefresh={() => fetchTickets({
           page, limit: PAGE_SIZE, status: activeTab, category: catFilter, search: debouncedQ, sortBy
         })} 
-        onCreate={() => setShowCreate(true)}
+        onNew={() => setShowCreate(true)}
       />
 
-      <div className="flex flex-col lg:flex-row gap-6 w-full max-w-[1400px] mx-auto min-h-0">
+      <div className="flex flex-col lg:flex-row gap-6 w-full min-h-0">
         <TicketNavSidebar
           counts={{...counts, deleted: 0}}
           activeStatus={activeTab}
