@@ -398,7 +398,7 @@ function SiteIconDisplay({ src }: { src: string }) {
   const [error, setError] = React.useState(false);
   
   if (error || !src) return <ImageIcon size={16} />;
-  return <img src={src} alt="Icon" className="w-6 h-6 rounded" onError={() => setError(true)} />;
+  return <img src={src} alt="Icon" className="w-full h-full object-cover rounded-md" onError={() => setError(true)} />;
 }
 
 const TIMEZONE_OPTIONS = (() => {
