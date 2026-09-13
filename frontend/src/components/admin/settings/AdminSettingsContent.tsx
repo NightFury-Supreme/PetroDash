@@ -879,22 +879,20 @@ export function AdminSettingsContent({
              </div>
              
              <div className="pt-6 mt-6 border-t border-white/[0.06]">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-white">
-                     <i className="fab fa-discord text-lg"></i>
-                  </div>
+                <div className="flex items-center gap-2 mb-3">
+                  <i className="fab fa-discord text-lg text-white"></i>
                   <h4 className="text-sm font-semibold text-white">Setup Instructions</h4>
                 </div>
-                <ol className="list-decimal list-inside text-xs text-[#888] divide-y divide-white/[0.06]">
-                  <li className="py-2.5 pl-1">Go to <a href="https://discord.com/developers/applications" target="_blank" rel="noopener noreferrer" className="text-white hover:underline">discord.com/developers/applications</a></li>
-                  <li className="py-2.5 pl-1">Create a new application or select an existing one</li>
-                  <li className="py-2.5 pl-1">Go to <strong>OAuth2</strong> → <strong>General</strong></li>
-                  <li className="py-2.5 pl-1">Add this redirect URI: <code className="bg-[#181818] px-1.5 py-0.5 rounded text-[#D4D4D4]">{process.env.NEXT_PUBLIC_API_BASE}/api/oauth/discord/callback</code></li>
-                  <li className="py-2.5 pl-1">Copy <strong>Client ID</strong> and <strong>Client Secret</strong> to the fields above</li>
-                  <li className="py-2.5 pl-1"><strong>For Auto-Join:</strong> Go to <strong>Bot</strong> → <strong>Create Bot</strong> → Copy <strong>Bot Token</strong></li>
-                  <li className="py-2.5 pl-1"><strong>For Auto-Join:</strong> Enable <strong>SERVER MEMBERS INTENT</strong> in Bot settings</li>
-                  <li className="py-2.5 pl-1"><strong>For Auto-Join:</strong> Invite bot to your server with <strong>Manage Server</strong> permission</li>
-                  <li className="py-2.5 pl-1"><strong>For Auto-Join:</strong> Get your server ID (right-click server → Copy Server ID)</li>
+                <ol className="space-y-2 list-decimal list-inside text-xs text-[#888]">
+                  <li>Go to <a href="https://discord.com/developers/applications" target="_blank" rel="noopener noreferrer" className="text-white hover:underline">discord.com/developers/applications</a></li>
+                  <li>Create a new application or select an existing one</li>
+                  <li>Go to <strong>OAuth2</strong> → <strong>General</strong></li>
+                  <li>Add this redirect URI: <code className="bg-[#181818] px-1.5 py-0.5 rounded text-[#D4D4D4]">{process.env.NEXT_PUBLIC_API_BASE}/api/oauth/discord/callback</code></li>
+                  <li>Copy <strong>Client ID</strong> and <strong>Client Secret</strong> to the fields above</li>
+                  <li><strong>For Auto-Join:</strong> Go to <strong>Bot</strong> → <strong>Create Bot</strong> → Copy <strong>Bot Token</strong></li>
+                  <li><strong>For Auto-Join:</strong> Enable <strong>SERVER MEMBERS INTENT</strong> in Bot settings</li>
+                  <li><strong>For Auto-Join:</strong> Invite bot to your server with <strong>Manage Server</strong> permission</li>
+                  <li><strong>For Auto-Join:</strong> Get your server ID (right-click server → Copy Server ID)</li>
                 </ol>
              </div>
           </SettingsDrawerRow>
@@ -920,20 +918,18 @@ export function AdminSettingsContent({
              </div>
              
              <div className="pt-6 mt-6 border-t border-white/[0.06]">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-white">
-                     <i className="fab fa-google text-lg"></i>
-                  </div>
+                <div className="flex items-center gap-2 mb-3">
+                  <i className="fab fa-google text-lg text-white"></i>
                   <h4 className="text-sm font-semibold text-white">Setup Instructions</h4>
                 </div>
-                <ol className="list-decimal list-inside text-xs text-[#888] divide-y divide-white/[0.06]">
-                  <li className="py-2.5 pl-1">Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="text-white hover:underline">Google Cloud Console</a></li>
-                  <li className="py-2.5 pl-1">Create a new project or select an existing one</li>
-                  <li className="py-2.5 pl-1">Configure <strong>OAuth consent screen</strong> (Internal/External)</li>
-                  <li className="py-2.5 pl-1">Go to <strong>Credentials</strong> → <strong>Create Credentials</strong> → <strong>OAuth client ID</strong></li>
-                  <li className="py-2.5 pl-1">Application type: <strong>Web application</strong></li>
-                  <li className="py-2.5 pl-1">Authorized redirect URIs: <code className="bg-[#181818] px-1.5 py-0.5 rounded text-[#D4D4D4]">{process.env.NEXT_PUBLIC_API_BASE}/api/oauth/google/callback</code></li>
-                  <li className="py-2.5 pl-1">Copy <strong>Client ID</strong> and <strong>Client Secret</strong> to the fields above</li>
+                <ol className="space-y-2 list-decimal list-inside text-xs text-[#888]">
+                  <li>Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="text-white hover:underline">Google Cloud Console</a></li>
+                  <li>Create a new project or select an existing one</li>
+                  <li>Configure <strong>OAuth consent screen</strong> (Internal/External)</li>
+                  <li>Go to <strong>Credentials</strong> → <strong>Create Credentials</strong> → <strong>OAuth client ID</strong></li>
+                  <li>Application type: <strong>Web application</strong></li>
+                  <li>Authorized redirect URIs: <code className="bg-[#181818] px-1.5 py-0.5 rounded text-[#D4D4D4]">{process.env.NEXT_PUBLIC_API_BASE}/api/oauth/google/callback</code></li>
+                  <li>Copy <strong>Client ID</strong> and <strong>Client Secret</strong> to the fields above</li>
                 </ol>
              </div>
           </SettingsDrawerRow>
@@ -1134,21 +1130,19 @@ export function AdminSettingsContent({
              </div>
              
              <div className="pt-6 mt-6 border-t border-white/[0.06]">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-white">
-                     <i className="fab fa-google text-lg"></i>
-                  </div>
+                <div className="flex items-center gap-2 mb-3">
+                  <i className="fab fa-google text-lg text-white"></i>
                   <h4 className="text-sm font-semibold text-white">Setup Instructions</h4>
                 </div>
-                <ol className="list-decimal list-inside text-xs text-[#888] divide-y divide-white/[0.06]">
-                  <li className="py-2.5 pl-1">Go to <a href="https://www.google.com/adsense/" target="_blank" rel="noopener noreferrer" className="text-white hover:underline">Google AdSense</a></li>
-                  <li className="py-2.5 pl-1">Sign up or sign in to your AdSense account</li>
-                  <li className="py-2.5 pl-1">Add your website and get approved</li>
-                  <li className="py-2.5 pl-1">Go to <strong>Ads</strong> → <strong>By ad unit</strong> → <strong>Display ads</strong></li>
-                  <li className="py-2.5 pl-1">Create ad units for different positions (header, sidebar, footer, content, mobile)</li>
-                  <li className="py-2.5 pl-1">Copy the ad unit codes and paste them in the fields above</li>
-                  <li className="py-2.5 pl-1">Your <strong>Publisher ID</strong> can be found in the AdSense dashboard</li>
-                  <li className="py-2.5 pl-1"><strong>Note:</strong> Ads will automatically appear on all pages when enabled</li>
+                <ol className="space-y-2 list-decimal list-inside text-xs text-[#888]">
+                  <li>Go to <a href="https://www.google.com/adsense/" target="_blank" rel="noopener noreferrer" className="text-white hover:underline">Google AdSense</a></li>
+                  <li>Sign up or sign in to your AdSense account</li>
+                  <li>Add your website and get approved</li>
+                  <li>Go to <strong>Ads</strong> → <strong>By ad unit</strong> → <strong>Display ads</strong></li>
+                  <li>Create ad units for different positions (header, sidebar, footer, content, mobile)</li>
+                  <li>Copy the ad unit codes and paste them in the fields above</li>
+                  <li>Your <strong>Publisher ID</strong> can be found in the AdSense dashboard</li>
+                  <li><strong>Note:</strong> Ads will automatically appear on all pages when enabled</li>
                 </ol>
              </div>
           </SettingsDrawerRow>
@@ -1208,16 +1202,14 @@ export function AdminSettingsContent({
              </div>
              
              <div className="pt-6 mt-6 border-t border-white/[0.06]">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-white">
-                     <i className="fas fa-info-circle text-lg"></i>
-                  </div>
+                <div className="flex items-center gap-2 mb-3">
+                  <i className="fas fa-info-circle text-lg text-white"></i>
                   <h4 className="text-sm font-semibold text-white">Important Notes</h4>
                 </div>
-                <ul className="text-xs text-[#888] divide-y divide-white/[0.06]">
-                  <li className="py-2.5 pl-1">• Use sandbox credentials for testing, live credentials for production</li>
-                  <li className="py-2.5 pl-1">• Return/cancel URLs are fixed at <code className="bg-[#181818] px-1.5 py-0.5 rounded text-[#D4D4D4]">/plan/success</code> and <code className="bg-[#181818] px-1.5 py-0.5 rounded text-[#D4D4D4]">/plan/cancel</code></li>
-                  <li className="py-2.5 pl-1">• Ensure your PayPal app has the necessary permissions enabled</li>
+                <ul className="space-y-2 text-xs text-[#888]">
+                  <li>• Use sandbox credentials for testing, live credentials for production</li>
+                  <li>• Return/cancel URLs are fixed at <code className="bg-[#181818] px-1.5 py-0.5 rounded text-[#D4D4D4]">/plan/success</code> and <code className="bg-[#181818] px-1.5 py-0.5 rounded text-[#D4D4D4]">/plan/cancel</code></li>
+                  <li>• Ensure your PayPal app has the necessary permissions enabled</li>
                 </ul>
              </div>
           </SettingsDrawerRow>
