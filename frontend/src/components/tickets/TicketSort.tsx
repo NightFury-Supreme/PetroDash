@@ -4,11 +4,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ArrowUpDown, ChevronDown, Check } from 'lucide-react';
 
 interface TicketSortProps {
-  sortBy: string;
-  setSortBy: (val: string) => void;
+  value: string;
+  onChange: (val: string) => void;
 }
 
-export function TicketSort({ sortBy, setSortBy }: TicketSortProps) {
+export function TicketSort({ value: sortBy, onChange: setSortBy }: TicketSortProps) {
   const [sortOpen, setSortOpen] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
 
