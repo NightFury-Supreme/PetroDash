@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function AdminGiftRedemptionsSkeleton() {
   return (
-    <div className="w-full animate-pulse">
+    <div className="-mx-6 sm:-mx-8 animate-pulse">
       {/* Skeleton header */}
       <div className="hidden gap-4 grid-cols-[1.5fr_1.5fr_1fr] border-b border-white/[0.06] px-6 sm:px-8 pb-3 pt-4 md:grid">
         <div className="h-2 w-16 bg-[#222] rounded"></div>
