@@ -1,7 +1,8 @@
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect, useCallback } from "react";
 import { Drawer } from "@/components/ui/Drawer";
-import { Loader2, Users, User } from "lucide-react";
+import AdminGiftRedemptionsSkeleton from "@/components/skeletons/admin/gifts/AdminGiftRedemptionsSkeleton";
+import { Users, User } from "lucide-react";
 import { Pagination } from "@/components/Pagination";
 import Link from "next/link";
 
@@ -67,9 +68,7 @@ export function AdminGiftRedemptionsDrawer({
       }
     >
       {loading && redemptions.length === 0 ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 size={32} className="animate-spin text-[#888]" />
-        </div>
+        <AdminGiftRedemptionsSkeleton />
       ) : error ? (
         <div className="p-3 m-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
           {error}

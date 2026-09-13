@@ -1,6 +1,7 @@
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect } from "react";
 import { Drawer } from "@/components/ui/Drawer";
+import AdminEditGiftSkeleton from "@/components/skeletons/admin/gifts/AdminEditGiftSkeleton";
 import { Loader2, Edit2, Tag, FileText, Infinity, Coins, Cpu, MemoryStick, HardDrive, Server } from "lucide-react";
 
 export function AdminEditGiftDrawer({
@@ -17,6 +18,7 @@ export function AdminEditGiftDrawer({
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const [form, setForm] = useState({
     code: "",
@@ -66,6 +68,27 @@ export function AdminEditGiftDrawer({
       .finally(() => setLoading(false));
     }
   }, [isOpen, giftId]);
+
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this gift? This cannot be undone.')) return;
+    setDeleting(true);
+    const token = localStorage.getItem("auth_token");
+    try {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/gifts/${giftId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        let d: any = {}; try { d = await res.json(); } catch {}
+        throw new Error(d.error || 'Failed to delete gift');
+      }
+      onSuccess();
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const handleUpdate = async () => {
     if (!giftId) return;
@@ -125,26 +148,35 @@ export function AdminEditGiftDrawer({
       subtitle={`Updating gift ${form.code}`}
       icon={<Edit2 size={20} />}
       footer={
-        <div className="flex items-center justify-end w-full gap-2">
-          <button onClick={onClose} className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]">Cancel</button>
-          <button
-            onClick={handleUpdate}
-            disabled={saving || loading || !isFormValid}
-            className={`flex items-center justify-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-all ${
-              saving || loading || !isFormValid
-                ? "bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed"
-                : "bg-[#FF5722] border border-[#FF5722] text-white hover:bg-[#F4511E]"
-            }`}
-          >
-            {saving ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : "Save Changes"}
-          </button>
+        <div className="flex items-center justify-between w-full">
+          <div>
+            <button
+              onClick={handleDelete}
+              disabled={deleting || loading}
+              className="flex items-center justify-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-500/20 transition-colors"
+            >
+              {deleting ? <Loader2 size={16} className="animate-spin" /> : "Delete Gift"}
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={onClose} disabled={saving || deleting} className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]">Cancel</button>
+            <button
+              onClick={handleUpdate}
+              disabled={saving || loading || deleting || !isFormValid}
+              className={`flex items-center justify-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-all ${
+                saving || loading || deleting || !isFormValid
+                  ? "bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed"
+                  : "bg-[#FF5722] border border-[#FF5722] text-white hover:bg-[#F4511E]"
+              }`}
+            >
+              {saving ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : "Save Changes"}
+            </button>
+          </div>
         </div>
       }
     >
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 size={32} className="animate-spin text-[#888]" />
-        </div>
+        <AdminEditGiftSkeleton />
       ) : (
         <div className="space-y-6">
           {error && (
