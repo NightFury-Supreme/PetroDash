@@ -92,7 +92,7 @@ export function AdminSettingsContent({
     formData,
     updateFormData,
     saveSection,
-    loading
+    loading: loading || saving
   };
 
   return (

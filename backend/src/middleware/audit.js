@@ -168,6 +168,7 @@ async function writeAudit(reqOrActorId, action, resourceTypeOrDetails, resourceI
     // Push to memory queue for async batching
     logQueue.push(logEntry);
     
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (_) {
     // Audit log error logged silently for production
   }

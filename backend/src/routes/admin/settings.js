@@ -33,12 +33,15 @@ router.get('/', requireAdmin, async (req, res) => {
     const cached = await getCache('admin:settings');
     if (cached) return res.json(cached);
 
-    const settings = await getOrCreate();
+    // Fetch Global Settings and SMTP settings in parallel for optimized latency (ISO 25010)
+    const Email = require('../../models/Email');
+    const [settings, emailSettings] = await Promise.all([
+      getOrCreate(),
+      Email.getOrCreate()
+    ]);
+
     const out = settings.toObject();
     
-    // Fetch SMTP settings
-    const Email = require('../../models/Email');
-    const emailSettings = await Email.getOrCreate();
     out.payments = out.payments || {};
     out.payments.smtp = emailSettings.smtp || {};
 
