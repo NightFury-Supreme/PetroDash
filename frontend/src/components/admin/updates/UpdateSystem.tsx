@@ -103,7 +103,7 @@ export default function UpdateSystem() {
 
                 {updateInfo.releaseNotes && (
                   <div className="mt-3">
-                    <div className="flex items-center gap-1.5 text-xs text-[#666] mb-3">
+                    <div className="flex items-center gap-1.5 text-xs text-white mb-3">
                       <FileText className="w-3 h-3" />
                       Release Notes
                     </div>
@@ -129,7 +129,7 @@ export default function UpdateSystem() {
                   href={updateInfo.releaseUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-1.5 text-xs text-[#888] hover:text-white transition-colors"
+                  className="mt-3 inline-flex items-center gap-1.5 text-xs text-white hover:text-white/70 transition-colors"
                 >
                   <Github className="w-3.5 h-3.5" />
                   View on GitHub
