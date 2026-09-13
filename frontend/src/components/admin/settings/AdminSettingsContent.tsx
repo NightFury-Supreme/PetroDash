@@ -878,7 +878,7 @@ export function AdminSettingsContent({
                </div>
              </div>
              
-             <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4 mt-6">
+             <div className="pt-6 mt-6 border-t border-white/[0.06]">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-white">
                      <i className="fab fa-discord text-lg"></i>
@@ -919,7 +919,7 @@ export function AdminSettingsContent({
                </div>
              </div>
              
-             <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4 mt-6">
+             <div className="pt-6 mt-6 border-t border-white/[0.06]">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-white">
                      <i className="fab fa-google text-lg"></i>
@@ -1133,7 +1133,7 @@ export function AdminSettingsContent({
                </div>
              </div>
              
-             <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4 mt-6">
+             <div className="pt-6 mt-6 border-t border-white/[0.06]">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-white">
                      <i className="fab fa-google text-lg"></i>
@@ -1207,7 +1207,7 @@ export function AdminSettingsContent({
                </div>
              </div>
              
-             <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4 mt-6">
+             <div className="pt-6 mt-6 border-t border-white/[0.06]">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 text-white">
                      <i className="fas fa-info-circle text-lg"></i>
