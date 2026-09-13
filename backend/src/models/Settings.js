@@ -95,7 +95,7 @@ const SettingsSchema = new mongoose.Schema(
       diskMb: { type: Number, default: 5120 },
       serverSlots: { type: Number, default: 1 },
       backups: { type: Number, default: 0 },
-      allocations: { type: Number, default: 0 },
+      allocations: { type: Number, default: 1 },
       databases: { type: Number, default: 0 },
       coins: { type: Number, default: 0 },
     },
