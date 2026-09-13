@@ -213,21 +213,22 @@ export default function TicketsPage() {
         </div>
       </div>
 
-      <CreateTicketDrawer
-        open={showCreate}
-        onOpenChange={setShowCreate}
-        title={createTitle}
-        setTitle={setCreateTitle}
-        message={createMessage}
-        setMessage={setCreateMessage}
-        category={createCategory}
-        setCategory={setCreateCategory}
-        priority={createPriority}
-        setPriority={setCreatePriority}
-        categories={categories}
-        loading={creating}
-        onSubmit={handleCreate}
-      />
+      {showCreate && (
+        <CreateTicketDrawer
+          title={createTitle}
+          message={createMessage}
+          category={createCategory}
+          priority={createPriority}
+          categories={categories}
+          creating={creating}
+          onTitleChange={setCreateTitle}
+          onMessageChange={setCreateMessage}
+          onCategoryChange={setCreateCategory}
+          onPriorityChange={setCreatePriority}
+          onClose={() => setShowCreate(false)}
+          onCreate={handleCreate}
+        />
+      )}
     </div>
   );
 }

@@ -8,28 +8,24 @@ import { API_BASE, getToken } from './utils';
 import { useCurrency } from '@/hooks/useCurrency';
 
 export interface CreateTicketDrawerProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  title: string;
-  setTitle: (v: string) => void;
-  message: string;
-  setMessage: (v: string) => void;
-  category: string;
-  setCategory: (v: string) => void;
-  priority: string;
-  setPriority: (v: string) => void;
-  categories: string[];
-  loading: boolean;
-  onSubmit: () => void;
+  title:            string;
+  message:          string;
+  category:         string;
+  priority:         string;
+  categories:       string[];
+  creating:         boolean;
+  onTitleChange:    (v: string) => void;
+  onMessageChange:  (v: string) => void;
+  onCategoryChange: (v: string) => void;
+  onPriorityChange: (v: string) => void;
+  onClose:          () => void;
+  onCreate:         () => void;
 }
 
 export function CreateTicketDrawer({
-  open, onOpenChange,
-  title, setTitle,
-  message, setMessage,
-  category, setCategory,
-  priority, setPriority,
-  categories, loading, onSubmit
+  title, message, category, priority, categories, creating,
+  onTitleChange, onMessageChange, onCategoryChange, onPriorityChange,
+  onClose, onCreate,
 }: CreateTicketDrawerProps) {
   const { currency } = useCurrency();
   const editorRef = useRef<HTMLDivElement>(null);
@@ -88,7 +84,7 @@ export function CreateTicketDrawer({
       setMentionQuery(null);
     }
     
-    setMessage(parsedText);
+    onMessageChange(parsedText);
   };
 
   const insertMentionPill = (type: string, itemId: string, name: string) => {
@@ -114,46 +110,41 @@ export function CreateTicketDrawer({
       el.dataset.type = type;
       el.dataset.id = itemId;
       el.dataset.name = name;
-      el.className = 'inline-flex items-center gap-1 bg-[#FF5722]/20 text-[#FF5722] px-1.5 py-0.5 rounded text-xs mx-1 align-middle whitespace-nowrap select-none';
-      
-      const icon = document.createElement('span');
-      icon.innerHTML = type === 'server' ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>' : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>';
-      icon.className = 'w-2.5 h-2.5';
-      
-      const textSpan = document.createElement('span');
-      textSpan.textContent = name;
-      
-      el.appendChild(icon);
-      el.appendChild(textSpan);
+      el.className = type === 'server' 
+        ? 'inline-flex items-center align-middle font-semibold text-[#FF5722]'
+        : 'inline-flex items-center align-middle font-semibold text-emerald-400';
+      el.innerHTML = type === 'server'
+        ? `<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" ry="2" stroke-width="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2" stroke-width="2"></rect><line x1="6" y1="6" x2="6.01" y2="6" stroke-width="2"></line><line x1="6" y1="18" x2="6.01" y2="18" stroke-width="2"></line></svg>${name}`
+        : `<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>${name}`;
       
       range.insertNode(el);
-      
-      const space = document.createTextNode('\u00A0');
       range.setStartAfter(el);
-      range.setEndAfter(el);
+      
+      const space = document.createTextNode('\u00A0'); 
       range.insertNode(space);
       range.setStartAfter(space);
       range.collapse(true);
       
       selection.removeAllRanges();
       selection.addRange(range);
-      
-      setMentionQuery(null);
-      handleInput();
     }
+    
+    handleInput();
+    setMentionQuery(null);
   };
 
   let filteredServers = mentionsData?.servers || [];
   let filteredPayments = mentionsData?.payments || [];
+  
   if (mentionQuery) {
-    filteredServers = filteredServers.filter(s => s.name.toLowerCase().includes(mentionQuery) || s.identifier.toLowerCase().includes(mentionQuery));
+    filteredServers = filteredServers.filter(s => s.name.toLowerCase().includes(mentionQuery) || s.identifier?.toLowerCase().includes(mentionQuery));
     filteredPayments = filteredPayments.filter(p => p._id.toLowerCase().includes(mentionQuery) || 'invoice'.includes(mentionQuery) || `invoice #${p._id.slice(-6).toLowerCase()}`.includes(mentionQuery));
   }
 
   return (
     <Drawer
-      isOpen={open}
-      onClose={() => onOpenChange(false)}
+      isOpen={true}
+      onClose={onClose}
       title="New Support Ticket"
       subtitle="Open a new request"
       icon={<Ticket className="text-[#D4D4D4]" size={22} />}
@@ -161,127 +152,145 @@ export function CreateTicketDrawer({
         <div className="flex items-center justify-end gap-2 w-full">
           <button
             type="button"
-            onClick={() => onOpenChange(false)}
-            disabled={loading}
+            onClick={onClose}
+            disabled={creating}
             className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             type="button"
-            onClick={onSubmit}
-            disabled={loading || !title.trim() || !message.trim()}
-            className="flex items-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#ff6939] disabled:opacity-50"
+            onClick={onCreate}
+            disabled={creating}
+            className={`flex min-w-[140px] items-center justify-center gap-2 rounded-lg border px-5 py-2 text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[#FF5722] border-[#FF5722] hover:bg-[#F4511E]`}
           >
-            {loading ? <Loader2 className="animate-spin" size={16} /> : null}
-            Create Ticket
+            {creating ? <Loader2 size={16} className="animate-spin" /> : 'Create Ticket'}
           </button>
         </div>
       }
     >
-      <div className="flex flex-col gap-5 p-6">
-        <div>
-          <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">
-            Subject <span className="text-[#FF5722]">*</span>
-          </label>
+      <div className="flex flex-col">
+        <Field label="Subject">
           <input
-            type="text"
             value={title}
-            onChange={e => setTitle(e.target.value)}
-            placeholder="Brief description of the issue"
-            className="w-full rounded-lg border border-[#222] bg-[#161616] px-4 py-2.5 text-sm text-[#D4D4D4] outline-none transition-colors focus:border-[#FF5722]/60 placeholder:text-[#555]"
-            maxLength={100}
-            autoFocus
+            onChange={e => onTitleChange(e.target.value)}
+            placeholder="Brief description of your issue"
+            className="w-full rounded-lg border border-[#222] bg-[#161616] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60"
           />
-        </div>
+        </Field>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">
-              Category <span className="text-[#FF5722]">*</span>
-            </label>
-            <CustomSelect 
-              value={category} 
-              onChange={setCategory}
-              options={categories.map(c => ({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c }))} 
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Category">
+            <CustomSelect
+              value={category}
+              onChange={onCategoryChange}
+              options={categories.map(c => ({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c }))}
             />
-          </div>
-          <div>
-            <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">
-              Priority <span className="text-[#FF5722]">*</span>
-            </label>
-            <CustomSelect 
-              value={priority} 
-              onChange={setPriority}
+          </Field>
+
+          <Field label="Priority">
+            <CustomSelect
+              value={priority}
+              onChange={onPriorityChange}
               options={[
                 { label: 'Low', value: 'low' },
-                { label: 'Medium', value: 'medium' },
+                { label: 'Normal', value: 'normal' },
                 { label: 'High', value: 'high' }
-              ]} 
+              ]}
             />
-          </div>
+          </Field>
         </div>
 
-        <div>
-          <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">
-            Message <span className="text-[#FF5722]">*</span>
-          </label>
+        <Field label="Message">
           <div className="relative">
-            <div
-              ref={editorRef}
-              contentEditable
-              onInput={handleInput}
-              onPaste={(e) => { e.preventDefault(); const text = e.clipboardData.getData('text/plain'); document.execCommand('insertText', false, text); }}
-              onKeyDown={(e) => { if (e.key === 'Enter') { document.execCommand('insertLineBreak'); e.preventDefault(); } }}
-              className="min-h-[150px] max-h-[300px] w-full overflow-y-auto rounded-lg border border-[#222] bg-[#161616] p-4 text-sm text-[#D4D4D4] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-[#1A1A1A] whitespace-pre-wrap break-words"
-              data-placeholder="Describe your issue in detail. Use @ to mention a server or invoice..."
-            />
-            {message.length === 0 && (
-              <div className="pointer-events-none absolute left-4 top-4 text-sm text-[#555]">
-                Describe your issue in detail. Use @ to mention a server or invoice...
+            {mentionQuery !== null && (
+              <div className="absolute bottom-full mb-2 left-0 w-80 max-h-64 overflow-y-auto rounded-xl border border-[#2A2A2A] bg-[#161616] p-2 shadow-2xl z-50">
+                {!mentionsData ? (
+                  <div className="p-3 text-center text-xs text-white/40 flex items-center justify-center gap-2">
+                    <Loader2 size={12} className="animate-spin" /> Loading...
+                  </div>
+                ) : filteredServers.length === 0 && filteredPayments.length === 0 ? (
+                  <div className="p-3 text-center text-xs text-white/40">No matches found</div>
+                ) : (
+                  <>
+                    {filteredServers.length > 0 && (
+                      <div className="mb-2">
+                        <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#888]">Servers</div>
+                        {filteredServers.map(s => (
+                          <button
+                            key={s._id}
+                            onClick={() => insertMentionPill('server', s._id, s.name)}
+                            className="w-full flex items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-white/5 transition-colors"
+                          >
+                            <Server size={14} className="text-[#FF5722]" />
+                            <div className="flex flex-col">
+                              <span className="text-xs font-medium text-white/80">{s.name}</span>
+                              <span className="text-[10px] text-white/40 font-mono">{s.identifier || s._id}</span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {filteredPayments.length > 0 && (
+                      <div>
+                        <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-[#888]">Invoices</div>
+                        {filteredPayments.map(p => (
+                          <button
+                            key={p._id}
+                            onClick={() => insertMentionPill('invoice', p._id, `Invoice #${p._id.slice(-6).toUpperCase()}`)}
+                            className="w-full flex items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-white/5 transition-colors"
+                          >
+                            <FileText size={14} className="text-emerald-400" />
+                            <div className="flex flex-col">
+                              <span className="text-xs font-medium text-white/80">Invoice #${p._id.slice(-6).toUpperCase()}</span>
+                              <span className="text-[10px] text-white/40">{p.amount} {p.currency || currency} • {new Date(p.createdAt).toLocaleDateString()}</span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             )}
             
-            {mentionQuery !== null && (
-              <div className="absolute z-50 mt-2 w-full max-w-[300px] rounded-lg border border-[#333] bg-[#161616] shadow-xl overflow-hidden">
-                <div className="max-h-[200px] overflow-y-auto">
-                  {filteredServers.length > 0 && (
-                    <div className="py-1">
-                      <div className="px-3 py-1 text-xs font-semibold text-[#888] uppercase tracking-wider">Servers</div>
-                      {filteredServers.map(s => (
-                        <button key={s._id} type="button" onClick={() => insertMentionPill('server', s._id, s.name)} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#D4D4D4] hover:bg-[#222] transition-colors">
-                          <Server size={14} className="text-[#888]" />
-                          <span className="truncate">{s.name}</span>
-                          <span className="text-xs text-[#555] ml-auto font-mono">{s.identifier}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  {filteredPayments.length > 0 && (
-                    <div className="py-1 border-t border-[#333]">
-                      <div className="px-3 py-1 text-xs font-semibold text-[#888] uppercase tracking-wider">Invoices</div>
-                      {filteredPayments.map(p => (
-                        <button key={p._id} type="button" onClick={() => insertMentionPill('invoice', p._id, `Invoice #${p._id.slice(-6)}`)} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#D4D4D4] hover:bg-[#222] transition-colors">
-                          <FileText size={14} className="text-[#888]" />
-                          <span className="truncate font-mono">Invoice #{p._id.slice(-6)}</span>
-                          <span className="text-xs text-[#555] ml-auto">{currency.symbol}{(p.amount/100).toFixed(2)}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                  {filteredServers.length === 0 && filteredPayments.length === 0 && (
-                    <div className="px-3 py-3 text-sm text-[#888] text-center">No matches found</div>
-                  )}
-                </div>
-              </div>
-            )}
+            <div
+              ref={editorRef}
+              contentEditable={!creating}
+              onInput={handleInput}
+              onKeyDown={(e) => {
+                if (mentionQuery !== null && (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'Enter')) {
+                  if (e.key === 'Enter') e.preventDefault(); 
+                }
+              }}
+              className={`w-full overflow-y-auto rounded-lg border border-[#222] bg-[#161616] px-4 py-2.5 text-sm leading-[1.6] text-[#D4D4D4] outline-none min-h-[120px] max-h-[300px] break-words whitespace-pre-wrap transition-colors focus:border-[#FF5722]/60 ${creating ? 'opacity-50' : ''}`}
+              style={{ scrollbarWidth: 'thin', scrollbarColor: '#555 transparent' }}
+              data-placeholder="Describe your issue in detail… (use @ to link servers or invoices)"
+            />
+            <style dangerouslySetInnerHTML={{__html: `
+              [contenteditable]:empty:before {
+                content: attr(data-placeholder);
+                color: #555;
+                pointer-events: none;
+                display: block;
+              }
+            `}} />
           </div>
-          <p className="mt-2 text-[11px] text-[#888]">
-            Be as descriptive as possible. If this relates to a specific service, type <code className="bg-[#222] px-1 py-0.5 rounded text-[#D4D4D4]">@</code> to mention it.
-          </p>
-        </div>
+        </Field>
       </div>
     </Drawer>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+
+  return (
+    <div className="mb-2 mt-5 block">
+      <label className="mb-2 block text-sm font-medium text-[#D4D4D4] capitalize">
+        {label} <span className="text-[#FF5722]">*</span>
+      </label>
+      {children}
+    </div>
   );
 }
 
