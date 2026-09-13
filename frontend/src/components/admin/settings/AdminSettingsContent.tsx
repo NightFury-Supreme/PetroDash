@@ -3,7 +3,7 @@ import { useToast } from "@/components/ui/ToastProvider";
 import { useModal } from '@/components/Modal';
 import { Drawer } from '@/components/ui/Drawer';
 import { UpdateSystem } from '../updates';
-import { Palette, Globe, ShieldCheck, Server, Users, Megaphone, CreditCard, RefreshCw, Upload, Trash2, LayoutTemplate, Image as ImageIcon, Coins, Clock, Gift, Mail, BadgeDollarSign, Database, HardDrive, Cpu, Network, ChevronDown, Loader2 } from 'lucide-react';
+import { Palette, Globe, ShieldCheck, Server, Users, Megaphone, CreditCard, RefreshCw, Upload, Trash2, LayoutTemplate, Image as ImageIcon, Coins, Clock, Gift, Mail, BadgeDollarSign, Database, HardDrive, Cpu, Network, ChevronDown, Loader2, Archive, MemoryStick } from 'lucide-react';
 
 function SideItem({ icon: Icon, label, active, onClick }: { icon: any; label: string; active?: boolean; onClick: () => void; }) {
   return (
@@ -1024,7 +1024,24 @@ export function AdminSettingsContent({
             ['databases', 'Databases', 'Number of databases allowed'],
             ['coins', 'Coins', 'Starting coin balance']
           ] as [keyof Settings['defaults'], string, string][]).map(([key, label, tooltip]) => (
-            <SettingsRow key={key} icon={key === "cpu" ? <Cpu /> : key === "ram" ? <HardDrive /> : key === "disk" ? <Database /> : <Network />} label={label} description={tooltip} displayValue={formData.defaults?.[key]} onSave={() => saveSection({ defaults: formData.defaults }, 'Default resources updated.')}>
+              <SettingsRow 
+                key={key} 
+                icon={
+                  key === 'cpuPercent' ? <Cpu /> : 
+                  key === 'memoryMb' ? <MemoryStick /> : 
+                  key === 'diskMb' ? <HardDrive /> : 
+                  key === 'serverSlots' ? <Server /> : 
+                  key === 'backups' ? <Archive /> : 
+                  key === 'allocations' ? <Network /> : 
+                  key === 'databases' ? <Database /> : 
+                  key === 'coins' ? <Coins /> : 
+                  <Server />
+                } 
+                label={label} 
+                description={tooltip} 
+                displayValue={formData.defaults?.[key]} 
+                onSave={() => saveSection({ defaults: formData.defaults }, 'Default resources updated.')}
+              >
               <input
                 type="number"
                 min="0"
