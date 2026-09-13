@@ -148,9 +148,23 @@ export default function UpdateSystem() {
         </div>
       )}
 
+      {/* Skeleton Loading State */}
+      {isChecking && !updateInfo && (
+        <div className="flex items-center gap-3 py-4 border-t border-b border-white/[0.06]">
+          <div className="w-4 h-4 rounded-full bg-white/5 animate-pulse shrink-0" />
+          <div className="flex-1">
+            <div className="flex items-center justify-between gap-4">
+              <div className="h-[20px] w-32 bg-white/5 rounded animate-pulse" />
+              <div className="h-[16px] w-12 bg-white/5 rounded animate-pulse" />
+            </div>
+            <div className="mt-1 h-[16px] w-48 bg-white/5 rounded animate-pulse" />
+          </div>
+        </div>
+      )}
+
       {/* Empty state when no data yet */}
       {!updateInfo && !isChecking && !error && (
-        <div className="py-10 flex flex-col items-center justify-center text-center">
+        <div className="py-10 flex flex-col items-center justify-center text-center border-t border-b border-white/[0.06]">
           <RefreshCw className="w-8 h-8 text-[#333] mb-3" />
           <p className="text-[#666] text-sm">Click &quot;Check for Updates&quot; to see if a newer version is available.</p>
         </div>
