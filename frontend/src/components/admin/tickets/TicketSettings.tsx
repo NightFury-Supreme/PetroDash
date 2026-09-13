@@ -148,8 +148,41 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
       }
     >
       {loading ? (
-        <div className="flex h-32 items-center justify-center text-[#888]">
-          <Loader2 className="animate-spin mr-2" size={20} /> Loading...
+        <div className="flex flex-col min-h-0 space-y-8 animate-in fade-in duration-300 pointer-events-none">
+          <section>
+            <div className="h-5 w-32 rounded bg-white/[0.05] animate-pulse" />
+            <div className="mt-2 h-4 w-64 rounded bg-white/[0.03] animate-pulse" />
+            
+            <div className="mt-5 flex gap-3">
+              <div className="h-[42px] flex-1 rounded-lg bg-white/[0.04] animate-pulse" />
+              <div className="h-[42px] w-[88px] rounded-lg bg-white/[0.04] animate-pulse" />
+            </div>
+          </section>
+
+          <section>
+            <div className="h-5 w-40 rounded bg-white/[0.05] animate-pulse" />
+            <div className="mt-2 mb-6 h-4 w-72 rounded bg-white/[0.03] animate-pulse" />
+            
+            <div>
+              <div className="hidden gap-4 grid-cols-[30px_1.5fr_1fr_70px] border-b border-white/[0.06] px-2 pb-3 md:grid">
+                <div className="h-2.5 w-4 rounded bg-white/[0.03] animate-pulse" />
+                <div className="h-2.5 w-24 rounded bg-white/[0.03] animate-pulse" />
+                <div className="h-2.5 w-16 rounded bg-white/[0.03] animate-pulse" />
+                <div className="h-2.5 w-12 rounded bg-white/[0.03] animate-pulse ml-auto" />
+              </div>
+              
+              <div className="divide-y divide-white/[0.06]">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="grid grid-cols-1 gap-4 px-2 py-5 md:grid-cols-[30px_1.5fr_1fr_70px] md:items-center">
+                    <div className="h-3 w-4 rounded bg-white/[0.05] animate-pulse hidden md:block" />
+                    <div className="h-3.5 w-28 rounded bg-white/[0.05] animate-pulse" />
+                    <div className="h-3.5 w-8 rounded bg-white/[0.05] animate-pulse" />
+                    <div className="h-8 w-8 rounded-lg bg-white/[0.03] animate-pulse md:ml-auto" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
         </div>
       ) : (
         <div className="flex flex-col min-h-0 space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
