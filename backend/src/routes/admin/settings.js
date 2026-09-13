@@ -63,7 +63,7 @@ router.get('/', requireAdmin, async (req, res) => {
 
 // Validation schema for settings payload
 const settingsPayloadSchema = z.object({
-  siteName: z.string().min(1, 'Site name must be at least 1 character').max(100, 'Site name must be less than 100 characters').optional(),
+  siteName: z.string().min(1, 'Site name must be at least 1 character').max(100, 'Site name must be less than 100 characters').regex(/^[^<>]*$/, 'Site name cannot contain HTML tags').optional(),
   siteIcon: z.string().max(500, 'Icon path must be less than 500 characters').optional(), // Changed from siteIconUrl
   referrals: z.object({
     referrerCoins: z.coerce.number().int().min(0).max(1000000).optional(),
@@ -95,6 +95,7 @@ const settingsPayloadSchema = z.object({
       try {
         Intl.DateTimeFormat(undefined, { timeZone: tz });
         return true;
+      // eslint-disable-next-line unused-imports/no-unused-vars
       } catch (e) {
         return false;
       }
@@ -121,14 +122,14 @@ const settingsPayloadSchema = z.object({
     }).optional(),
   }).optional(),
   defaults: z.object({
-    cpuPercent: z.coerce.number().int('CPU percent must be a whole number').min(0, 'CPU percent cannot be negative').optional(),
-    memoryMb: z.coerce.number().int('Memory must be a whole number').min(0, 'Memory cannot be negative').optional(),
-    diskMb: z.coerce.number().int('Disk must be a whole number').min(0, 'Disk cannot be negative').optional(),
-    serverSlots: z.coerce.number().int('Server slots must be a whole number').min(0, 'Server slots cannot be negative').optional(),
-    backups: z.coerce.number().int('Backups must be a whole number').min(0, 'Backups cannot be negative').optional(),
-    allocations: z.coerce.number().int('Allocations must be a whole number').min(0, 'Allocations cannot be negative').optional(),
-    databases: z.coerce.number().int('Databases must be a whole number').min(0, 'Databases cannot be negative').optional(),
-    coins: z.coerce.number().int('Coins must be a whole number').min(0, 'Coins cannot be negative').optional(),
+    cpuPercent: z.coerce.number().int('CPU percent must be a whole number').min(0, 'CPU percent cannot be negative').max(1000000, 'CPU percent exceeds maximum allowed').optional(),
+    memoryMb: z.coerce.number().int('Memory must be a whole number').min(0, 'Memory cannot be negative').max(100000000, 'Memory exceeds maximum allowed').optional(),
+    diskMb: z.coerce.number().int('Disk must be a whole number').min(0, 'Disk cannot be negative').max(100000000, 'Disk exceeds maximum allowed').optional(),
+    serverSlots: z.coerce.number().int('Server slots must be a whole number').min(0, 'Server slots cannot be negative').max(100000, 'Server slots exceeds maximum allowed').optional(),
+    backups: z.coerce.number().int('Backups must be a whole number').min(0, 'Backups cannot be negative').max(100000, 'Backups exceeds maximum allowed').optional(),
+    allocations: z.coerce.number().int('Allocations must be a whole number').min(0, 'Allocations cannot be negative').max(100000, 'Allocations exceeds maximum allowed').optional(),
+    databases: z.coerce.number().int('Databases must be a whole number').min(0, 'Databases cannot be negative').max(100000, 'Databases exceeds maximum allowed').optional(),
+    coins: z.coerce.number().int('Coins must be a whole number').min(0, 'Coins cannot be negative').max(1000000000, 'Coins exceeds maximum allowed').optional(),
   }).optional(),
   adsense: z.object({
     enabled: z.coerce.boolean().optional(),
@@ -193,14 +194,15 @@ router.patch('/', requireAdmin, async (req, res) => {
     if (update.payments) {
       if (update.payments.paypal) {
         settings.payments = settings.payments || {};
-        settings.payments.paypal = { ...(settings.payments.paypal || {}), ...update.payments.paypal };
+        settings.payments.paypal = { ...(originalSettings.payments?.paypal || {}), ...update.payments.paypal };
         delete update.payments.paypal;
       }
       if (update.payments.smtp) {
         const Email = require('../../models/Email');
         let emailSettings = await Email.findOne({});
         if (!emailSettings) emailSettings = await Email.create({});
-        emailSettings.smtp = { ...(emailSettings.smtp || {}), ...update.payments.smtp };
+        const originalEmailSettings = emailSettings.toObject();
+        emailSettings.smtp = { ...(originalEmailSettings.smtp || {}), ...update.payments.smtp };
         await emailSettings.save();
         const { deleteCachePattern } = require('../../lib/redis');
         await deleteCachePattern('email:settings');
@@ -223,10 +225,10 @@ router.patch('/', requireAdmin, async (req, res) => {
         settings.auth.emailVerification = update.auth.emailVerification;
       }
       if (update.auth.discord) {
-        settings.auth.discord = { ...(settings.auth.discord || {}), ...update.auth.discord };
+        settings.auth.discord = { ...(originalSettings.auth?.discord || {}), ...update.auth.discord };
       }
       if (update.auth.google) {
-        settings.auth.google = { ...(settings.auth.google || {}), ...update.auth.google };
+        settings.auth.google = { ...(originalSettings.auth?.google || {}), ...update.auth.google };
       }
       delete update.auth;
     }
@@ -241,10 +243,10 @@ router.patch('/', requireAdmin, async (req, res) => {
         settings.adsense.publisherId = update.adsense.publisherId;
       }
       if (update.adsense.adSlots) {
-        settings.adsense.adSlots = { ...(settings.adsense.adSlots || {}), ...update.adsense.adSlots };
+        settings.adsense.adSlots = { ...(originalSettings.adsense?.adSlots || {}), ...update.adsense.adSlots };
       }
       if (update.adsense.adTypes) {
-        settings.adsense.adTypes = { ...(settings.adsense.adTypes || {}), ...update.adsense.adTypes };
+        settings.adsense.adTypes = { ...(originalSettings.adsense?.adTypes || {}), ...update.adsense.adTypes };
       }
       delete update.adsense;
     }
@@ -326,6 +328,7 @@ router.patch('/', requireAdmin, async (req, res) => {
     delete response.__v;
     
     const changes = {};
+    const sensitiveKeys = ['clientSecret', 'botToken', 'pass', 'webhookId', 'apiKey'];
     const checkDiff = (target, source, original, prefix = '') => {
       for (const k of Object.keys(source || {})) {
         if (typeof source[k] === 'object' && source[k] !== null && !Array.isArray(source[k])) {
@@ -333,7 +336,11 @@ router.patch('/', requireAdmin, async (req, res) => {
         } else {
           const keyName = prefix ? `${prefix}.${k}` : k;
           if (JSON.stringify(original[k]) !== JSON.stringify(source[k])) {
-            target[keyName] = { old: original[k], new: source[k] };
+            const isSensitive = sensitiveKeys.includes(k);
+            target[keyName] = { 
+              old: isSensitive ? (original[k] ? '***' : null) : original[k], 
+              new: isSensitive ? (source[k] ? '***' : null) : source[k] 
+            };
           }
         }
       }

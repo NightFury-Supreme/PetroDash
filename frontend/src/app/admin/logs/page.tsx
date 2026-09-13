@@ -24,10 +24,8 @@ export default function AdminLogsPage() {
   } = useAdminLogs();
 
   useEffect(() => {
-    // Note: useEffect dependency array ensures this runs appropriately
     loadLogs(1, filters, sortBy);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount, hook dependencies are internally managed
+  }, [loadLogs]);
 
   if (loading && logs.length === 0) {
     return (
