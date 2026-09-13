@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { RefreshCw, CheckCircle, AlertTriangle, XCircle, FileText, Github } from 'lucide-react';
 
 interface UpdateInfo {
@@ -102,12 +103,24 @@ export default function UpdateSystem() {
 
                 {updateInfo.releaseNotes && (
                   <div className="mt-3">
-                    <div className="flex items-center gap-1.5 text-xs text-[#666] mb-1.5">
+                    <div className="flex items-center gap-1.5 text-xs text-[#666] mb-3">
                       <FileText className="w-3 h-3" />
                       Release Notes
                     </div>
-                    <div className="bg-black/20 rounded-md p-3 max-h-28 overflow-y-auto border border-white/[0.04]">
-                      <pre className="text-[#888] text-xs whitespace-pre-wrap font-sans leading-relaxed">{updateInfo.releaseNotes}</pre>
+                    <div className="prose prose-invert prose-sm max-w-none text-[#888]
+                      [&_h1]:text-[#D4D4D4] [&_h1]:text-base [&_h1]:font-semibold [&_h1]:mb-2 [&_h1]:mt-4
+                      [&_h2]:text-[#D4D4D4] [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mb-2 [&_h2]:mt-4
+                      [&_h3]:text-[#C4C4C4] [&_h3]:text-xs [&_h3]:font-semibold [&_h3]:mb-1.5 [&_h3]:mt-3
+                      [&_p]:text-[#888] [&_p]:text-xs [&_p]:leading-relaxed [&_p]:mb-2
+                      [&_ul]:text-[#888] [&_ul]:text-xs [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:space-y-1 [&_ul]:mb-2
+                      [&_ol]:text-[#888] [&_ol]:text-xs [&_ol]:list-decimal [&_ol]:pl-4 [&_ol]:space-y-1 [&_ol]:mb-2
+                      [&_li]:text-[#888] [&_li]:text-xs
+                      [&_strong]:text-[#C4C4C4] [&_strong]:font-semibold
+                      [&_a]:text-[#FF5722] [&_a]:hover:underline
+                      [&_code]:text-[#D4D4D4] [&_code]:bg-white/[0.05] [&_code]:px-1 [&_code]:rounded [&_code]:text-[11px]
+                      [&_pre]:bg-black/20 [&_pre]:rounded-md [&_pre]:p-3 [&_pre]:border [&_pre]:border-white/[0.04]
+                      [&_hr]:border-white/[0.06]">
+                      <ReactMarkdown>{updateInfo.releaseNotes}</ReactMarkdown>
                     </div>
                   </div>
                 )}
