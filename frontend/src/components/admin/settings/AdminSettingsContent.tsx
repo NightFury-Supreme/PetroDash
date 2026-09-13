@@ -233,7 +233,7 @@ function SettingsRow({
       <div className={`grid grid-cols-1 gap-4 ${displayValue === undefined ? 'md:grid-cols-[minmax(250px,1fr)_1fr]' : 'md:grid-cols-[minmax(250px,1fr)_1fr_150px]'} md:items-start`}>
         <div className="flex items-center gap-3">
           {icon && (
-            <div className="flex shrink-0 items-center justify-center text-[#D4D4D4] mr-2">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center text-[#D4D4D4]">
               {React.isValidElement(icon) && typeof icon.type !== 'string' ? React.cloneElement(icon as React.ReactElement<any>, { size: 16 }) : icon}
             </div>
           )}
@@ -315,7 +315,7 @@ function SettingsDrawerRow({
       <div className={`grid grid-cols-1 gap-4 md:grid-cols-[minmax(250px,1fr)_1fr_150px] md:items-start`}>
          <div className="flex items-center gap-3">
           {icon && (
-            <div className="flex shrink-0 items-center justify-center text-[#D4D4D4] mr-2">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center text-[#D4D4D4]">
               {React.isValidElement(icon) && typeof icon.type !== 'string' ? React.cloneElement(icon as React.ReactElement<any>, { size: 16 }) : icon}
             </div>
           )}

@@ -274,7 +274,7 @@ function SessionRow({ session, onRevoke }: { session: Session; onRevoke: () => v
     <div className="px-5 py-4 transition hover:bg-white/[0.02]">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(250px,1fr)_1fr_150px] md:items-center">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex shrink-0 items-center justify-center mr-2">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center">
             <DeviceIcon size={18} className="text-[#D4D4D4]" />
           </div>
           <div className="min-w-0">
@@ -425,7 +425,7 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
     <div className="px-5 py-4 transition hover:bg-white/[0.02]">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(250px,1fr)_1fr_150px] md:items-start">
         <div className="flex items-center gap-3">
-          <div className="flex shrink-0 items-center justify-center text-[#D4D4D4] mr-2">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center text-[#D4D4D4]">
             {React.isValidElement(icon) && typeof icon.type !== 'string' ? React.cloneElement(icon as React.ReactElement<any>, { size: 16 }) : icon}
           </div>
           <div>
@@ -500,7 +500,7 @@ export function SecurityItem({ icon, title, description, action, status, onActio
     <div className="px-5 py-4 transition hover:bg-white/[0.02]">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(250px,1fr)_1fr_150px] md:items-center">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex shrink-0 items-center justify-center text-[#D4D4D4] mr-2">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center text-[#D4D4D4]">
             {React.cloneElement(icon as React.ReactElement<any>, { size: 16 })}
           </div>
           <div className="min-w-0">
