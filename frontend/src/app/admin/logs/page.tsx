@@ -1,136 +1,33 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { useToast } from "@/components/ui/ToastProvider";
+import { useEffect } from 'react';
 import { ScrollText, RefreshCw } from 'lucide-react';
 import { ErrorState, DashboardButton, ErrorDescription } from '@/components/ui/ErrorState';
-import { AdminLogsHeader, AdminLogsContent } from '@/components/admin/logs';
-
-interface AuditLog {
-  _id: string;
-  actorId?: string;
-  actorRole: 'user' | 'admin';
-  actorUsername?: string;
-  action: string;
-  resourceType: string;
-  resourceId?: string;
-  targetUserId?: string;
-  meta: Record<string, unknown>;
-  ip?: string;
-  userAgent?: string;
-  method?: string;
-  path?: string;
-  statusCode?: number;
-  success?: boolean;
-  durationMs?: number;
-  responsePreview?: string;
-  createdAt: string;
-}
-
-interface LogsResponse {
-  list: AuditLog[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
+import { AdminLogsHeader, AdminLogsContent, useAdminLogs } from '@/components/admin/logs';
 
 export default function AdminLogsPage() {
-  const [logs, setLogs] = useState<AuditLog[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [pageSize] = useState(50);
-  const [sortBy, setSortBy] = useState('newest');
-  const [filters, setFilters] = useState({
-    action: '',
-    actorId: '',
-    resourceType: '',
-    requestId: '',
-    severity: ''
-  });
-    const { showSuccess, showError } = useToast();
-
-  const loadLogs = useCallback(async (pageNum = 1, filterParams = filters, sortParam = sortBy) => {
-    setError(null);
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        setError('Authentication token not found');
-        return;
-      }
-
-      const params = new URLSearchParams();
-      params.set('page', pageNum.toString());
-      params.set('pageSize', pageSize.toString());
-      params.set('sortBy', sortParam);
-      
-      if (filterParams.action) params.set('action', filterParams.action);
-      if (filterParams.actorId) params.set('actorId', filterParams.actorId);
-      if (filterParams.resourceType) params.set('resourceType', filterParams.resourceType);
-      if (filterParams.requestId) params.set('requestId', filterParams.requestId);
-      if (filterParams.severity) params.set('severity', filterParams.severity);
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/logs?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to load logs' }));
-        throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data: LogsResponse = await response.json();
-      setLogs(data.list || []);
-      setTotal(data.total || 0);
-      setPage(data.page || 1);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'An unknown error occurred');
-      if (logs.length > 0) {
-        showError(e instanceof Error ? e.message : 'An unknown error occurred');
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [pageSize, logs.length]);
+  const {
+    logs,
+    loading,
+    error,
+    page,
+    total,
+    pageSize,
+    filters,
+    sortBy,
+    loadLogs,
+    handlePageChange,
+    handleFilterChange,
+    handleSearchChange,
+    handleClearFilters,
+    handleSortChange
+  } = useAdminLogs();
 
   useEffect(() => {
+    // Note: useEffect dependency array ensures this runs appropriately
     loadLogs(1, filters, sortBy);
-  }, [loadLogs]);
-
-  const handlePageChange = (newPage: number) => {
-    loadLogs(newPage, filters, sortBy);
-  };
-
-  const handleFilterChange = (key: 'action' | 'actorId' | 'resourceType' | 'requestId' | 'severity', value: string) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-    loadLogs(1, newFilters, sortBy);
-  };
-
-  const handleSearchChange = (value: string) => {
-    // Check if it looks like a UUID (Request ID)
-    const isRequestId = value.length === 36 && value.includes('-');
-    const newFilters = { 
-      ...filters, 
-      actorId: isRequestId ? '' : value,
-      requestId: isRequestId ? value : '' 
-    };
-    setFilters(newFilters);
-    loadLogs(1, newFilters, sortBy);
-  };
-
-  const handleClearFilters = () => {
-    const emptyFilters = { action: '', actorId: '', resourceType: '', requestId: '', severity: '' };
-    setFilters(emptyFilters);
-    loadLogs(1, emptyFilters, sortBy);
-  };
-
-  const handleSortChange = (newSort: string) => {
-    setSortBy(newSort);
-    loadLogs(1, filters, newSort);
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount, hook dependencies are internally managed
 
   if (loading && logs.length === 0) {
     return (
@@ -209,5 +106,4 @@ export default function AdminLogsPage() {
     </div>
   );
 }
-
 
