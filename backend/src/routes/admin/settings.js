@@ -40,30 +40,46 @@ router.get('/', requireAdmin, async (req, res) => {
       Email.getOrCreate()
     ]);
 
-    const out = settings.toObject();
-    
-    out.payments = out.payments || {};
-    out.payments.smtp = emailSettings.smtp || {};
+    const {
+      __v: _v,
+      themePrimary: _themePrimary,
+      earn: _earn,
+      ticketCategories: _ticketCategories,
+      ...apiSettings
+    } = settings.toObject();
 
-    out.auth = out.auth || {};
-    out.auth.emailLogin = out.auth.emailLogin ?? true;
-    out.auth.emailVerification = out.auth.emailVerification ?? false;
+    // Construct immutable Data Transfer Object (DTO) for API response
+    const responseDto = {
+      ...apiSettings,
+      payments: {
+        ...(apiSettings.payments || {}),
+        paypal: {
+          ...(apiSettings.payments?.paypal || {}),
+          clientSecret: apiSettings.payments?.paypal?.clientSecret ? '***' : ''
+        },
+        smtp: {
+          ...(emailSettings.smtp || {}),
+          pass: emailSettings.smtp?.pass ? '***' : ''
+        }
+      },
+      auth: {
+        ...(apiSettings.auth || {}),
+        emailLogin: apiSettings.auth?.emailLogin ?? true,
+        emailVerification: apiSettings.auth?.emailVerification ?? false,
+        discord: {
+          ...(apiSettings.auth?.discord || {}),
+          clientSecret: apiSettings.auth?.discord?.clientSecret ? '***' : '',
+          botToken: apiSettings.auth?.discord?.botToken ? '***' : ''
+        },
+        google: {
+          ...(apiSettings.auth?.google || {}),
+          clientSecret: apiSettings.auth?.google?.clientSecret ? '***' : ''
+        }
+      }
+    };
     
-    // Hide deprecated and sensitive fields
-    delete out.themePrimary;
-    delete out.__v;
-    delete out.earn;
-    delete out.ticketCategories;
-    
-    // Mask secrets for API transport (OWASP ASVS Write-Only Pattern)
-    if (out.auth?.discord?.clientSecret) out.auth.discord.clientSecret = '***';
-    if (out.auth?.discord?.botToken) out.auth.discord.botToken = '***';
-    if (out.auth?.google?.clientSecret) out.auth.google.clientSecret = '***';
-    if (out.payments?.paypal?.clientSecret) out.payments.paypal.clientSecret = '***';
-    if (out.payments?.smtp?.pass) out.payments.smtp.pass = '***';
-    
-    await setCache('admin:settings', out, 30);
-    return res.json(out);
+    await setCache('admin:settings', responseDto, 30);
+    return res.json(responseDto);
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
     return res.status(500).json({
