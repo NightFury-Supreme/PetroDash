@@ -17,6 +17,7 @@ export function CategorySelect({ value, onChange }: { value: string, onChange: (
   const [editVal, setEditVal] = useState('');
   
   const [newCat, setNewCat] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -62,10 +63,10 @@ export function CategorySelect({ value, onChange }: { value: string, onChange: (
         setIsOpen(false);
       } else {
         const data = await res.json();
-        alert(data.error || 'Failed to create');
+        setError(data.error || 'Failed to create');
       }
     } catch {
-      alert('Failed to create category');
+      setError('Failed to create category');
     }
     setLoading(false);
   };
@@ -86,10 +87,10 @@ export function CategorySelect({ value, onChange }: { value: string, onChange: (
         setEditingId(null);
       } else {
         const data = await res.json();
-        alert(data.error || 'Failed to rename');
+        setError(data.error || 'Failed to rename');
       }
     } catch {
-      alert('Failed to rename');
+      setError('Failed to rename');
     }
     setLoading(false);
   };
@@ -109,10 +110,10 @@ export function CategorySelect({ value, onChange }: { value: string, onChange: (
         if (value === id) onChange('');
       } else {
         const data = await res.json();
-        alert(data.error || 'Failed to delete');
+        setError(data.error || 'Failed to delete');
       }
     } catch {
-      alert('Failed to delete');
+      setError('Failed to delete');
     }
     setLoading(false);
   };
@@ -172,7 +173,7 @@ export function CategorySelect({ value, onChange }: { value: string, onChange: (
               )}
               <div className="h-[1px] bg-[#2A2A2A] my-1" />
               <div 
-                onClick={() => setIsCreating(true)}
+                onClick={() => { setIsCreating(true); setError(null); }}
                 className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-sm transition-colors hover:bg-[#FF5722]/10 hover:text-[#FF5722] text-[#FF5722] cursor-pointer"
               >
                 <Plus size={14} /> Create new category

@@ -24,6 +24,7 @@ export function CreateLocationDrawer({ onClose, onSuccess }: CreateLocationDrawe
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const currentStep = STEPS[currentStepIndex].id;
 
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: '',
     flag: '',
@@ -75,7 +76,8 @@ export function CreateLocationDrawer({ onClose, onSuccess }: CreateLocationDrawe
   };
 
   const handleSubmit = async () => {
-        setLoading(true);
+        setError(null);
+    setLoading(true);
     try {
       const token = localStorage.getItem('auth_token');
       let finalFlag = form.flag === 'pending' ? '' : form.flag;

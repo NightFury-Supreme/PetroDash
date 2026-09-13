@@ -68,17 +68,18 @@ export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocati
     e.preventDefault();
     if (!form) return;
     if (!form.name || form.name.trim().length === 0) {
-      alert("Location name is required.");
+      setError("Location name is required.");
       return;
     }
     if (!pendingFlagFile && (!form.flag || form.flag === 'pending')) {
-      alert("Location flag is required.");
+      setError("Location flag is required.");
       return;
     }
     if (!form.latencyUrl || form.latencyUrl.trim().length === 0) {
-      alert("Node IP is required.");
+      setError("Node IP is required.");
       return;
     }
+    setError(null);
     setSubmitting(true);
     try {
       const token = localStorage.getItem('auth_token');
@@ -104,7 +105,7 @@ export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocati
       });
       if (!res.ok) { let d: any = {}; try { d = await res.json(); } catch {} throw new Error(d?.error || 'Failed'); }
       onUpdate(); onClose();
-    } catch (err: any) { alert(err.message || 'Failed to update'); } finally { setSubmitting(false); }
+    } catch (err: any) { setError(err.message || 'Failed to update'); } finally { setSubmitting(false); }
   };
 
   const remove = async () => {
@@ -150,6 +151,11 @@ export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocati
           ) : (
             <div className="flex-1 overflow-y-auto px-1 pb-6">
               <form id="location-form" onSubmit={save} className="space-y-8">
+                {error && (
+                  <div className="mb-6 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                    {error}
+                  </div>
+                )}
                 {/* Basic Info */}
                 <div className="space-y-5">
                   <div><h3 className="text-sm font-semibold text-white mb-0.5">Basic Information</h3><p className="text-xs text-[#888]">Configure the location identity</p></div>
