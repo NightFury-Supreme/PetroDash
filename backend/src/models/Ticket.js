@@ -28,6 +28,8 @@ TicketSchema.index({ lastAdminReplyAt: -1 });
 TicketSchema.index({ deletedByUser: 1, status: 1, updatedAt: -1 });
 TicketSchema.index({ category: 1, status: 1, deletedByUser: 1 });
 TicketSchema.index({ title: 'text', tags: 'text' });
+TicketSchema.index({ user: 1, deletedByUser: 1, status: 1, updatedAt: -1 });
+TicketSchema.index({ user: 1, deletedByUser: 1, category: 1, updatedAt: -1 });
 
 TicketSchema.pre('save', function (next) {
   this.updatedAt = new Date();
@@ -35,4 +37,5 @@ TicketSchema.pre('save', function (next) {
 });
 
 module.exports = mongoose.model('Ticket', TicketSchema);
+
 

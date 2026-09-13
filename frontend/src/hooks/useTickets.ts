@@ -7,9 +7,11 @@ interface UseTicketsReturn {
   loading: boolean;
   error: string | null;
   categories: string[];
-  fetchTickets: () => Promise<void>;
+  fetchTickets: (params?: any) => Promise<void>;
   updateStatus: (id: string, action: TicketAction) => Promise<{ ok: boolean; error?: string }>;
   createTicket: (data: { title: string; message: string; category: string; priority?: string }) => Promise<{ ok: boolean; error?: string }>;
+  pagination: { total: number; page: number; limit: number; pages: number } | null;
+  counts: { all: number; open: number; pending: number; resolved: number; closed: number };
 }
 
 export function useTickets(): UseTicketsReturn {
@@ -17,29 +19,51 @@ export function useTickets(): UseTicketsReturn {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>(['general']);
+  const [pagination, setPagination] = useState<{ total: number; page: number; limit: number; pages: number } | null>(null);
+  const [counts, setCounts] = useState({ all: 0, open: 0, pending: 0, resolved: 0, closed: 0 });
 
-  const fetchTickets = useCallback(async () => {
+  const fetchTickets = useCallback(async (params?: any) => {
     setLoading(true);
     setError(null);
     try {
-      const r = await fetch(`${API_BASE}/api/tickets/mine`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
-      const d = await r.json().catch(() => ({}));
-      if (!r.ok) {
+      const q = new URLSearchParams();
+      if (params) {
+        if (params.page) q.set('page', String(params.page));
+        if (params.limit) q.set('limit', String(params.limit));
+        if (params.status && params.status !== 'all') q.set('status', params.status);
+        if (params.category) q.set('category', params.category);
+        if (params.search) q.set('search', params.search);
+        if (params.sortBy) q.set('sortBy', params.sortBy);
+      }
+      
+      const [rTickets, rCounts] = await Promise.all([
+        fetch(`${API_BASE}/api/tickets/mine?${q.toString()}`, {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        }),
+        fetch(`${API_BASE}/api/tickets/counts`, {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        })
+      ]);
+
+      const d = await rTickets.json().catch(() => ({}));
+      const dCounts = await rCounts.json().catch(() => ({}));
+      
+      if (!rTickets.ok) {
         throw new Error(d?.error || 'Failed to load tickets');
       }
-      setTickets(Array.isArray(d?.tickets || d) ? (d?.tickets || d) : []);
+      
+      setTickets(Array.isArray(d?.tickets) ? d.tickets : (Array.isArray(d) ? d : []));
+      if (d?.pagination) setPagination(d.pagination);
+      
+      if (rCounts.ok && dCounts) {
+        setCounts(dCounts);
+      }
     } catch (e: any) {
       setError(e.message || 'Failed to load tickets');
     } finally {
       setLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    fetchTickets();
-  }, [fetchTickets]);
 
   /* -- Categories ----------------------------------- */
   useEffect(() => {
@@ -95,12 +119,11 @@ export function useTickets(): UseTicketsReturn {
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) return { ok: false, error: d?.error || 'Failed to create ticket' };
-      await fetchTickets();
       return { ok: true };
     } catch (e: any) {
       return { ok: false, error: e?.message || 'Failed to create ticket' };
     }
-  }, [fetchTickets]);
+  }, []);
 
-  return { tickets, loading, error, categories, fetchTickets, updateStatus, createTicket };
+  return { tickets, loading, error, categories, fetchTickets, updateStatus, createTicket, pagination, counts };
 }

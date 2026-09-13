@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import TicketsHeader from "@/components/tickets/TicketsHeader";
 import { TicketNavSidebar } from "@/components/tickets/TicketNavSidebar";
 import TicketItem from "@/components/tickets/TicketItem";
@@ -20,7 +20,7 @@ const PAGE_SIZE = 25;
 export default function TicketsPage() {
   const { showError, showSuccess } = useToast();
   
-  const { tickets, loading, error, categories, updateStatus, createTicket } = useTickets();
+  const { tickets, loading, error, categories, updateStatus, createTicket, fetchTickets, pagination, counts } = useTickets();
 
   // Search + filter + sort + pagination
   const [q, setQ] = useState("");
@@ -36,7 +36,7 @@ export default function TicketsPage() {
   const [createMessage, setCreateMessage] = useState("");
   const [createCategory, setCreateCategory] = useState("general");
   const [createPriority, setCreatePriority] = useState("low");
-    const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useState(false);
   
   // Debounce search
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -52,244 +52,182 @@ export default function TicketsPage() {
   // Reset page when filters change
   useEffect(() => setPage(1), [activeTab, catFilter, sortBy]);
 
-  // Derived state from loaded tickets
-  const filteredTickets = useMemo(() => {
-    let result = [...tickets];
-    
-    // Status filter
-    if (activeTab !== "all") {
-      if (activeTab === "deleted") {
-        result = result.filter(t => t.deletedByUser);
-      } else {
-        result = result.filter(t => t.status === activeTab && !t.deletedByUser);
-      }
-    } else {
-      result = result.filter(t => !t.deletedByUser); // Hide deleted in "all"
-    }
-
-    // Category filter
-    if (catFilter) {
-      result = result.filter(t => t.category === catFilter);
-    }
-
-    // Search filter
-    if (debouncedQ) {
-      const qLower = debouncedQ.toLowerCase();
-      result = result.filter(t => 
-        t.title?.toLowerCase().includes(qLower) || 
-        t._id.toLowerCase().includes(qLower) ||
-        t.category?.toLowerCase().includes(qLower)
-      );
-    }
-
-    // Sort
-    result.sort((a, b) => {
-      if (sortBy === "updated_desc") return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-      if (sortBy === "updated_asc") return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
-      if (sortBy === "created_desc") return new Date(b.createdAt || b.updatedAt).getTime() - new Date(a.createdAt || a.updatedAt).getTime();
-      if (sortBy === "created_asc") return new Date(a.createdAt || a.updatedAt).getTime() - new Date(b.createdAt || b.updatedAt).getTime();
-      return 0;
-    });
-
-    return result;
-  }, [tickets, activeTab, catFilter, debouncedQ, sortBy]);
-
-  // Counts
-  const counts = useMemo(() => {
-    return {
-      all: tickets.filter(t => !t.deletedByUser).length,
-      open: tickets.filter(t => t.status === "open" && !t.deletedByUser).length,
-      pending: tickets.filter(t => t.status === "pending" && !t.deletedByUser).length,
-      resolved: tickets.filter(t => t.status === "resolved" && !t.deletedByUser).length,
-      closed: tickets.filter(t => t.status === "closed" && !t.deletedByUser).length,
-      deleted: tickets.filter(t => t.deletedByUser).length,
-    };
-  }, [tickets]);
-
-  // Pagination slice
-  const total = filteredTickets.length;
-  const totalPages = Math.ceil(total / PAGE_SIZE) || 1;
-  const paginatedTickets = filteredTickets.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  // Handlers
-  const handleAction = useCallback(async (action: 'close'|'resolve'|'delete'|'restore'|'reopen', id: string) => {
-    const mappedAction = action === 'resolve' ? 'resolved' : action;
-    const res = await updateStatus(id, mappedAction as TicketAction);
-    if (res && !res.ok) {
-      throw new Error(res.error || 'Failed to update ticket');
-    }
-  }, [updateStatus]);
-
-  const openCreate = useCallback(() => {
-    
-    setCreateTitle("");
-    setCreateMessage("");
-    setCreateCategory(categories[0] || "general");
-    setCreatePriority("low");
-    setShowCreate(true);
-  }, [categories]);
-
-  const handleCreate = useCallback(async () => {
-    
-    if (!createTitle.trim()) { showError('Subject is required'); return; }
-    if (createMessage.trim().length < 3) { showError('Message must be at least 3 characters'); return; }
-    setCreating(true);
-    const result = await createTicket({ title: createTitle, message: createMessage, category: createCategory, priority: createPriority });
-    if (result.ok) {
-      showSuccess("Ticket created successfully");
-      setShowCreate(false);
-      openCreate();
-    } else {
-      showError(result.error || 'Failed to create ticket');
-    }
-    setCreating(false);
-  }, [createTitle, createMessage, createCategory, createPriority, createTicket, openCreate]);
-
+  // Fetch from server when dependencies change
   useEffect(() => {
-    if (error) showError(error);
-  }, [error]);
+    fetchTickets({
+      page,
+      limit: PAGE_SIZE,
+      status: activeTab,
+      category: catFilter,
+      search: debouncedQ,
+      sortBy
+    });
+  }, [page, activeTab, catFilter, debouncedQ, sortBy, fetchTickets]);
 
+  const totalPages = pagination?.pages || 1;
+
+  // Render logic
   if (error) {
     return (
-      <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
-        <ErrorState
-          icon={<MessageSquare strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
-          kicker="Load Error"
-          title="Failed to Load Tickets"
-          errorString={error}
-          description={<ErrorDescription error={error} topic="Tickets" />}
-          buttons={
-            <>
-              <button
-                onClick={() => window.location.reload()}
-                className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
-              >
-                <RefreshCw className="w-[14px] h-[14px]" />
-                Retry
-              </button>
-              <DashboardButton variant="secondary" />
-            </>
-          }
-        />
+      <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans flex items-center justify-center">
+        <ErrorState icon={RefreshCw} title="Failed to load tickets">
+          <ErrorDescription>{error}</ErrorDescription>
+          <DashboardButton onClick={() => window.location.reload()}>Retry</DashboardButton>
+        </ErrorState>
       </div>
     );
   }
 
+  const handleCreate = async () => {
+    if (!createTitle.trim() || !createMessage.trim()) {
+      showError("Please fill out all required fields.");
+      return;
+    }
+    setCreating(true);
+    const { ok, error: err } = await createTicket({
+      title: createTitle,
+      message: createMessage,
+      category: createCategory,
+      priority: createPriority
+    });
+    setCreating(false);
+    if (ok) {
+      showSuccess("Ticket created successfully.");
+      setShowCreate(false);
+      setCreateTitle("");
+      setCreateMessage("");
+      setCreateCategory("general");
+      setCreatePriority("low");
+      
+      // Refresh list
+      fetchTickets({
+        page, limit: PAGE_SIZE, status: activeTab, category: catFilter, search: debouncedQ, sortBy
+      });
+    } else {
+      showError(err || "Failed to create ticket.");
+    }
+  };
+
+  const onAction = async (id: string, action: TicketAction) => {
+    const { ok, error: err } = await updateStatus(id, action);
+    if (ok) {
+      showSuccess(`Ticket marked as ${action === "reopen" ? "open" : "resolved"}.`);
+      fetchTickets({
+        page, limit: PAGE_SIZE, status: activeTab, category: catFilter, search: debouncedQ, sortBy
+      });
+    } else {
+      showError(err || `Failed to ${action} ticket.`);
+    }
+  };
+
   return (
-    <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans">
-      <div className="flex flex-col h-full space-y-6">
-        <TicketsHeader 
-          title="Tickets"
-          description="Manage your support requests"
+    <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans flex flex-col gap-6 w-full max-w-full overflow-x-hidden relative">
+      <TicketsHeader 
+        loading={loading}
+        onRefresh={() => fetchTickets({
+          page, limit: PAGE_SIZE, status: activeTab, category: catFilter, search: debouncedQ, sortBy
+        })} 
+        onCreate={() => setShowCreate(true)}
+      />
+
+      <div className="flex flex-col lg:flex-row gap-6 w-full max-w-[1400px] mx-auto min-h-0">
+        <TicketNavSidebar
+          counts={{...counts, deleted: 0}}
+          activeStatus={activeTab}
+          onStatusChange={setActiveTab}
           loading={loading}
-          onNew={openCreate}
         />
 
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
-          <TicketNavSidebar 
-            activeStatus={activeTab} 
-            onStatusChange={setActiveTab} 
-            counts={counts}
-            loading={loading} 
-          />
-
-          <div className="flex-1 min-w-0 w-full">
-            <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-[10px]">
-              <div className="relative flex-1 h-[42px] flex items-center gap-[10px] px-[13px] border border-[#282828] rounded-[7px] bg-[#121212] text-[#5e5e5e] focus-within:border-[#454545] focus-within:bg-[#151515] transition-colors">
-                <Search size={14} className="shrink-0 text-[#555]" />
-                <input
-                  type="text"
-                  placeholder="Search tickets..."
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  className="w-full min-w-0 border-0 outline-none bg-transparent text-[#d5d5d5] text-[11px] placeholder:text-[#505050]"
-                />
-                {q && (
-                  <button type="button" onClick={() => setQ('')} className="shrink-0 w-[23px] h-[23px] flex items-center justify-center rounded-[5px] text-[#666] hover:bg-[#222] hover:text-[#ddd] transition-colors">
-                    <X size={13} />
-                  </button>
-                )}
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <TicketSort 
-                  sortBy={sortBy}
-                  setSortBy={setSortBy}
-                />
-              </div>
+        <div className="flex-1 min-w-0 flex flex-col">
+          {/* Controls Bar */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-5">
+            <div className="relative flex-1 h-[42px] flex items-center gap-[10px] px-[13px] border border-[#282828] rounded-[7px] bg-[#121212] text-[#5e5e5e] focus-within:border-[#454545] focus-within:bg-[#151515] transition-colors">
+              <Search className="h-4 w-4 shrink-0" />
+              <input 
+                type="text" 
+                placeholder="Search your tickets..." 
+                className="w-full min-w-0 border-0 outline-none bg-transparent text-[#d5d5d5] text-[13px] placeholder:text-[#505050]"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+              />
+              {q && (
+                <button onClick={() => setQ("")} className="shrink-0 p-1 hover:text-white transition-colors">
+                  <X className="h-3 w-3" />
+                </button>
+              )}
             </div>
+            
+            <div className="flex gap-2 shrink-0">
+              <TicketCategoryFilter
+                categories={categories}
+                value={catFilter}
+                onChange={setCatFilter}
+              />
+              <TicketSort value={sortBy} onChange={setSortBy} />
+            </div>
+          </div>
 
-            <TicketCategoryFilter 
-              categories={categories}
-              activeTab={activeTab}
-              catFilter={catFilter}
-              tickets={tickets}
-              loading={loading}
-              onSelect={setCatFilter}
-            />
-
-            <div className="border-0 p-0">
-              {loading && tickets.length === 0 ? (
-                <TicketsSkeleton isAdmin={false} />
-              ) : paginatedTickets.length === 0 ? (
-                <div className="py-8 text-center text-xs text-white/25">
-                  {q || activeTab !== "all" || catFilter
-                    ? "No tickets found matching your filters."
-                    : "You haven't opened any support tickets yet."}
+          {/* List Area */}
+          {loading ? (
+            <div className="w-full">
+              <TicketsSkeleton count={6} />
+            </div>
+          ) : (
+            <div className="flex-1 min-h-0">
+              {tickets.length > 0 ? (
+                <div className="flex flex-col gap-3">
+                  {tickets.map(t => (
+                    <TicketItem 
+                      key={t._id} 
+                      ticket={t} 
+                      onAction={(action) => onAction(t._id, action)} 
+                    />
+                  ))}
                 </div>
               ) : (
-                <div>
-                  <div className="hidden grid-cols-[1fr_100px_90px_80px_60px_36px] gap-4 border-b border-white/[0.06] pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30 md:grid">
-                    <span>Ticket</span>
-                    <span>Category</span>
-                    <span>Updated</span>
-                    <span>Status</span>
-                    <span>Priority</span>
-                    <span />
-                  </div>
-                  
-                  <div className="divide-y divide-[#222]">
-                    {paginatedTickets.map((t: any) => (
-                      <TicketItem 
-                        key={t._id} 
-                        t={t} 
-                        onAction={handleAction} 
-                        isAdmin={false} 
-                      />
-                    ))}
-                  </div>
-
-                  {totalPages > 1 && (
-                    <TicketPagination 
-                      page={page} 
-                      pageSize={PAGE_SIZE} 
-                      totalItems={total} 
-                      onPageChange={setPage} 
-                    />
-                  )}
+                <div className="flex flex-col items-center justify-center py-20 text-center bg-[#141414] rounded-[10px] border border-[#282828]">
+                  <MessageSquare className="h-10 w-10 text-[#505050] mb-4 opacity-50" />
+                  <h3 className="text-[15px] font-medium text-[#d5d5d5] mb-2">
+                    {debouncedQ ? "No matches found" : "No tickets found"}
+                  </h3>
+                  <p className="text-[#888] text-[13px] max-w-[300px]">
+                    {debouncedQ 
+                      ? "Try adjusting your search or filters to find what you're looking for."
+                      : "You haven't opened any tickets in this category yet."}
+                  </p>
                 </div>
               )}
             </div>
-          </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-6 flex justify-center">
+              <TicketPagination 
+                currentPage={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+              />
+            </div>
+          )}
         </div>
       </div>
-      
-      {showCreate && (
-        <CreateTicketDrawer
-          title={createTitle}
-          message={createMessage}
-          category={createCategory}
-          priority={createPriority}
-          categories={categories}
-          creating={creating}
-          onTitleChange={setCreateTitle}
-          onMessageChange={setCreateMessage}
-          onCategoryChange={setCreateCategory}
-          onPriorityChange={setCreatePriority}
-          onClose={() => setShowCreate(false)}
-          onCreate={handleCreate}
-        />
-      )}
+
+      <CreateTicketDrawer
+        open={showCreate}
+        onOpenChange={setShowCreate}
+        title={createTitle}
+        setTitle={setCreateTitle}
+        message={createMessage}
+        setMessage={setCreateMessage}
+        category={createCategory}
+        setCategory={setCreateCategory}
+        priority={createPriority}
+        setPriority={setCreatePriority}
+        categories={categories}
+        loading={creating}
+        onSubmit={handleCreate}
+      />
     </div>
   );
 }

@@ -126,28 +126,87 @@ router.post('/', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) 
 });
 
 // GET /api/tickets/mine — list current user's tickets (no messages in list)
+// GET /api/tickets/counts - get user ticket counts
+router.get('/counts', requireAuth, async (req, res) => {
+  try {
+    const userId = extractUserId(req);
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const cacheKey = `tickets:user:counts:${userId}`;
+    const cached = await getCache(cacheKey);
+    if (cached) return res.json(cached);
+
+    const agg = await Ticket.aggregate([
+      { $match: { user: new mongoose.Types.ObjectId(String(userId)), deletedByUser: { $ne: true } } },
+      { $group: { _id: '$status', count: { $sum: 1 } } }
+    ]);
+    const counts = { all: 0, open: 0, pending: 0, resolved: 0, closed: 0 };
+    for (const row of agg) {
+      if (counts[row._id] !== undefined) {
+        counts[row._id] = row.count;
+        counts.all += row.count;
+      }
+    }
+    
+    await setCache(cacheKey, counts, 30);
+    res.json(counts);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch counts' });
+  }
+});
+
+// GET /api/tickets/mine
 router.get('/mine', requireAuth, async (req, res) => {
   try {
     const userId = extractUserId(req);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-    const { status } = req.query;
     
-    const cacheKey = `tickets:mine:${userId}:${status || 'all'}`;
-    const cachedTickets = await getCache(cacheKey);
-    if (cachedTickets) {
-      return res.json(cachedTickets);
+    let { status, page, limit, search, category, sortBy } = req.query;
+    page = Math.max(1, parseInt(page) || 1);
+    limit = Math.min(100, Math.max(1, parseInt(limit) || 25));
+    
+    const query = { user: userId, deletedByUser: { $ne: true } };
+    if (status && ['open', 'pending', 'resolved', 'closed'].includes(status)) {
+      query.status = status;
+    }
+    if (category) {
+      query.category = category;
+    }
+    if (search && search.trim()) {
+      const q = search.trim();
+      const searchRegex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      const orClauses = [{ title: searchRegex }, { category: searchRegex }];
+      if (/^[0-9a-fA-F]{24}$/.test(q)) {
+        orClauses.push({ _id: new mongoose.Types.ObjectId(q) });
+      }
+      query.$or = orClauses;
     }
 
-    const query = { user: userId, deletedByUser: { $ne: true } };
-    if (status && ['open', 'pending', 'resolved', 'closed'].includes(status))
-      query.status = { $eq: status };
-    const tickets = await Ticket.find(query).select('-messages').sort({ updatedAt: -1 }).lean();
+    let sort = { updatedAt: -1 };
+    if (sortBy) {
+      if (sortBy === 'updated_asc') sort = { updatedAt: 1 };
+      else if (sortBy === 'created_desc') sort = { createdAt: -1 };
+      else if (sortBy === 'created_asc') sort = { createdAt: 1 };
+    }
+
+    const skip = (page - 1) * limit;
     
-    await setCache(cacheKey, tickets, 30); // Cache for 30 seconds
+    const [tickets, total] = await Promise.all([
+      Ticket.find(query).select('-messages').sort(sort).skip(skip).limit(limit).lean(),
+      Ticket.countDocuments(query)
+    ]);
     
-    res.json(tickets);
+    res.json({
+      tickets,
+      pagination: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit)
+      }
+    });
    
-  } catch {
+  } catch (err) {
     res.status(500).json({ error: 'Failed to fetch tickets' });
   }
 });
@@ -414,4 +473,6 @@ router.post('/:id/status', requireAuth, async (req, res) => {
 });
 
 module.exports = router;
+
+
 
