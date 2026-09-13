@@ -84,7 +84,7 @@ export function PanelContent() {
     setResetting(true);
     try {
       const token = localStorage.getItem("auth_token");
-      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/panel/reset-password`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/panel/reset`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

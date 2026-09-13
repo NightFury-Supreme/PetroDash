@@ -84,8 +84,8 @@ router.get('/', requireAuth, createRateLimiter(100, 60 * 1000), async (req, res)
   }
 });
 
-// POST /api/panel/reset-password - Reset panel password
-router.post('/reset-password', requireAuth, createRateLimiter(3, 5 * 60 * 1000), async (req, res) => {
+// POST /api/panel/reset - Reset panel password
+router.post('/reset', requireAuth, createRateLimiter(3, 5 * 60 * 1000), async (req, res) => {
   try {
     const userId = req.user.sub;
     // Validate user exists and is active
