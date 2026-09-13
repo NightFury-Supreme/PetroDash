@@ -953,7 +953,7 @@ export function AdminSettingsContent({
           <div className="divide-y divide-white/[0.06]">
             {/* Email Configuration */}
             <SettingsDrawerRow 
-              icon={<i className="fas fa-server"></i>} 
+              icon={<Server />} 
               label="Email Configuration" 
               description="Configure your email server settings for outgoing emails." 
               enabled={formData.payments?.smtp?.enabled ?? false}
