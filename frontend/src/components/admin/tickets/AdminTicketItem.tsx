@@ -21,7 +21,7 @@ export default function AdminTicketItem({ t, onAction }:{ t: Ticket; onAction: (
   const [menu, setMenu] = useState(false);
 
   return (
-    <div className={`relative transition-colors hover:bg-white/[0.015] ${opening ? 'opacity-70' : ''}`}>
+    <div className={`relative transition-colors hover:bg-white/[0.015] ${opening ? 'opacity-70' : ''} ${menu ? 'z-50' : 'z-0'}`}>
       <div className="grid grid-cols-[1fr_auto] items-center gap-3 py-4 md:grid-cols-[1fr_130px_100px_90px_80px_60px_36px] md:gap-4">
         
         {/* Subject + ID */}

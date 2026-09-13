@@ -47,7 +47,7 @@ export default function TicketItem({ ticket: t, onAction, isAdmin = false }:{ ti
   const isBusy = actionStatus === 'loading' || opening;
 
   return (
-    <div className={`relative transition-opacity ${isBusy ? 'opacity-60' : 'opacity-100'}`}>
+    <div className={`relative transition-opacity ${isBusy ? 'opacity-60' : 'opacity-100'} ${menu ? 'z-50' : 'z-0'}`}>
       <div className={`grid grid-cols-[1fr_auto] items-center gap-3 py-4 md:gap-4 ${isAdmin ? 'md:grid-cols-[1fr_130px_100px_90px_80px_60px_36px]' : 'md:grid-cols-[1fr_100px_90px_80px_60px_36px]'}`}>
         
         {/* Subject + ID */}
