@@ -105,56 +105,23 @@ router.get('/', requireAdmin, async (req, res) => {
     }
     
     const base = (process.env.PTERO_BASE_URL || '').replace(/\/$/, '');
-    const enriched = await Promise.all(servers.map(async (server) => {
-      try {
-        const panelResponse = server.panelServerId ? await getServer(server.panelServerId) : null;
-        const panel = panelResponse?.attributes;
-        const identifier = panel?.identifier || panel?.uuid || null;
-        
-        // Check if server is suspended in panel
-        const suspended = panel?.suspended === true || panel?.suspended === 1;
-        
-        // Determine status based on panel data
-        let status = server.status || 'unknown';
-        if (suspended) {
-          status = 'suspended';
-        } else if (panel) {
-          status = panel?.status || server.status || 'unknown';
-        }
-        
-        // Transform the data to match frontend expectations
-        return {
-          _id: server._id,
-          name: server.name,
-          status: status,
-          userId: server.owner, // Map owner to userId for frontend
-          egg: server.eggId,    // Map eggId to egg for frontend
-          location: server.locationId, // Map locationId to location for frontend
-          limits: server.limits,
-          createdAt: server.createdAt,
-          clientUrl: identifier ? `${base}/server/${identifier}` : `${base}`,
-          suspended: suspended
-        };
-      } catch (error) {
-        if (shouldLogPanelErrors) {
-          console.error(`Failed to fetch panel server ${server.panelServerId}:`, error.message);
-        }
-        // Return server with fallback data and error flag
-        return {
-          _id: server._id,
-          name: server.name,
-          status: 'unreachable',
-          userId: server.owner,
-          egg: server.eggId,
-          location: server.locationId,
-          limits: server.limits,
-          createdAt: server.createdAt,
-          clientUrl: `${base}`,
-          unreachable: true,
-          error: error.message
-        };
-      }
-    }));
+    // [ISO 25010 Performance] Stripped out N+1 Pterodactyl API calls from the list route
+    // The panel data is only fetched dynamically in the single server view (GET /:id) to prevent catastrophic timeouts
+    const enriched = servers.map((server) => {
+      return {
+        _id: server._id,
+        name: server.name,
+        status: server.status || 'unknown',
+        userId: server.owner, 
+        egg: server.eggId,    
+        location: server.locationId, 
+        limits: server.limits,
+        createdAt: server.createdAt,
+        clientUrl: `${base}`,
+        suspended: server.status === 'suspended',
+        unreachable: false
+      };
+    });
     
     const responsePayload = paginate ? { data: enriched, meta: { total, page, pageSize } } : enriched;
 

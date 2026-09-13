@@ -42,30 +42,11 @@ router.get('/', requireAuth, async (req, res) => {
   let deletedCount = 0;
   const { writeAudit } = require('../../middleware/audit');
     const enriched = await Promise.all(list.map(async (s) => {
-      try {
-        const panelResponse = s.panelServerId ? await getServer(s.panelServerId) : null;
-        const panel = panelResponse?.attributes;
-        const identifier = panel?.identifier || panel?.uuid || null;
-        
-        // Check if server is suspended in panel
-        const suspended = panel?.suspended === true || panel?.suspended === 1;
-        
-        // Determine status based on panel data
         let status = s.status || 'unknown';
-        if (suspended) {
-          status = 'suspended';
-        } else if (panel) {
-          const isInstalling = panel.status === 'installing' || (panel.container && panel.container.installed === false);
-          if (isInstalling) {
-            status = 'creating';
-          } else {
-            status = panel.status || s.status || 'unknown';
-          }
-        }
+        let suspended = status === 'suspended';
         
         let queuePosition = null;
         if (status === 'queued') {
-          // Count servers ahead of this one in the queue
           const aheadCount = await Server.countDocuments({
             status: 'queued',
             $or: [
@@ -76,7 +57,6 @@ router.get('/', requireAuth, async (req, res) => {
           queuePosition = aheadCount + 1;
         }
         
-        // Ensure consistent data structure
         return {
           _id: s._id,
           name: s.name || 'Unnamed Server',
@@ -94,50 +74,11 @@ router.get('/', requireAuth, async (req, res) => {
           eggIcon: s.eggId?.icon || undefined,
           location: s.locationId?.name || 'Unknown',
           locationFlag: s.locationId?.flag || undefined,
-          clientUrl: identifier ? `${base}/server/${identifier}` : `${base}`,
-          createdAt: s.createdAt || new Date(),
-          suspended: suspended
-        };
-      } catch (error) {
-        const panelStatus = error?.response?.status;
-        const panelDetail = error?.response?.data?.errors?.[0]?.detail || '';
-        const notFound = panelStatus === 404 || panelDetail.includes('assigned pterodactyl server was not found');
-        if (notFound) {
-          deletedCount += 1;
-          await Server.deleteOne({ _id: s._id });
-          writeAudit(req, 'server.delete', 'server', s._id.toString(), {
-            serverName: s.name,
-            limits: s.limits,
-            reason: 'panel_not_found',
-            panelServerId: s.panelServerId,
-            panelStatus,
-            panelDetail
-          });
-          return null;
-        }
-        // Return server with fallback data and error flag
-        return {
-          _id: s._id,
-          name: s.name || 'Unnamed Server',
-          status: 'unreachable',
-          limits: {
-            diskMb: Number(s.limits?.diskMb || 0),
-            memoryMb: Number(s.limits?.memoryMb || 0),
-            cpuPercent: Number(s.limits?.cpuPercent || 0),
-            backups: Number(s.limits?.backups || 0),
-            databases: Number(s.limits?.databases || 0),
-            allocations: Number(s.limits?.allocations || 0)
-          },
-          eggName: s.eggId?.name || 'Unknown',
-          eggIcon: s.eggId?.icon || undefined,
-          location: s.locationId?.name || 'Unknown',
-          locationFlag: s.locationId?.flag || undefined,
           clientUrl: `${base}`,
           createdAt: s.createdAt || new Date(),
-          unreachable: true,
-          error: error.message
+          suspended: suspended,
+          unreachable: false
         };
-      }
     }));
     const filtered = enriched.filter(Boolean);
     if (deletedCount > 0) {
