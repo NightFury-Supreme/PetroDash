@@ -3,7 +3,10 @@ import { useToast } from "@/components/ui/ToastProvider";
 import { useModal } from '@/components/Modal';
 import { Drawer } from '@/components/ui/Drawer';
 import { UpdateSystem } from '../updates';
-import { Palette, Globe, ShieldCheck, Server, Users, Megaphone, CreditCard, RefreshCw, Upload, Trash2, LayoutTemplate, Image as ImageIcon, Coins, Clock, Gift, Mail, Database, HardDrive, Cpu, Network, ChevronDown, Loader2, Archive, MemoryStick } from 'lucide-react';
+import { Palette, Globe, ShieldCheck, Server, Users, RefreshCw, Upload, Trash2, LayoutTemplate, Image as ImageIcon, Coins, Clock, Gift, Mail, Database, HardDrive, Cpu, Network, ChevronDown, Loader2, Archive, MemoryStick } from 'lucide-react';
+
+const PayPalIcon = ({ size }: { size?: number }) => <i className="fab fa-paypal" style={{ fontSize: size, width: size, textAlign: 'center' }}></i>;
+const GoogleIcon = ({ size }: { size?: number }) => <i className="fab fa-google" style={{ fontSize: size, width: size, textAlign: 'center' }}></i>;
 
 function SideItem({ icon: Icon, label, active, onClick }: { icon: any; label: string; active?: boolean; onClick: () => void; }) {
   return (
@@ -230,7 +233,7 @@ function SettingsRow({
       <div className={`grid grid-cols-1 gap-4 ${displayValue === undefined ? 'md:grid-cols-[minmax(250px,1fr)_1fr]' : 'md:grid-cols-[minmax(250px,1fr)_1fr_150px]'} md:items-start`}>
         <div className="flex items-center gap-3">
           {icon && (
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#222] border border-[#2A2A2A] text-[#D4D4D4]">
+            <div className="flex shrink-0 items-center justify-center text-[#D4D4D4] mr-2">
               {React.isValidElement(icon) && typeof icon.type !== 'string' ? React.cloneElement(icon as React.ReactElement<any>, { size: 16 }) : icon}
             </div>
           )}
@@ -312,7 +315,7 @@ function SettingsDrawerRow({
       <div className={`grid grid-cols-1 gap-4 md:grid-cols-[minmax(250px,1fr)_1fr_150px] md:items-start`}>
          <div className="flex items-center gap-3">
           {icon && (
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#222] border border-[#2A2A2A] text-[#D4D4D4]">
+            <div className="flex shrink-0 items-center justify-center text-[#D4D4D4] mr-2">
               {React.isValidElement(icon) && typeof icon.type !== 'string' ? React.cloneElement(icon as React.ReactElement<any>, { size: 16 }) : icon}
             </div>
           )}
@@ -562,8 +565,8 @@ export function AdminSettingsContent({
             <SideItem icon={Mail} label="Email" active={activeTab === 'email'} onClick={() => setActiveTab('email')} />
             <SideItem icon={Server} label="Default Resources" active={activeTab === 'resources'} onClick={() => setActiveTab('resources')} />
             <SideItem icon={Users} label="Referrals" active={activeTab === 'referrals'} onClick={() => setActiveTab('referrals')} />
-            <SideItem icon={Megaphone} label="Google AdSense" active={activeTab === 'adsense'} onClick={() => setActiveTab('adsense')} />
-            <SideItem icon={CreditCard} label="PayPal" active={activeTab === 'paypal'} onClick={() => setActiveTab('paypal')} />
+            <SideItem icon={GoogleIcon} label="Google AdSense" active={activeTab === 'adsense'} onClick={() => setActiveTab('adsense')} />
+            <SideItem icon={PayPalIcon} label="PayPal" active={activeTab === 'paypal'} onClick={() => setActiveTab('paypal')} />
             <SideItem icon={RefreshCw} label="System Updates" active={activeTab === 'updates'} onClick={() => setActiveTab('updates')} />
           </nav>
         </div>
