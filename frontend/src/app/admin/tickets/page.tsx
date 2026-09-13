@@ -21,7 +21,7 @@ export default function AdminTicketsPage() {
   const { showError } = useToast();
   // Remote data
   const [tickets, setTickets] = useState<any[]>([]);
-  const [allTickets, setAllTickets] = useState<any[]>([]); // For category counts
+  
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -125,7 +125,7 @@ export default function AdminTicketsPage() {
           closed: d.byStatus?.closed || 0,
           deleted: d.deleted || 0,
         });
-        setAllTickets(d.byCategory || {});
+        
       }
     } catch {} finally {
       setCountsLoading(false);
@@ -186,7 +186,7 @@ export default function AdminTicketsPage() {
           {/* Content Area */}
           <div className="flex-1 min-w-0 w-full">
 
-            {/* Search + Sort bar */}
+            {/* Search + Filter + Sort bar */}
             <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-[10px]">
               <div className="relative flex-1 h-[42px] flex items-center gap-[10px] px-[13px] border border-[#282828] rounded-[7px] bg-[#121212] text-[#5e5e5e] focus-within:border-[#454545] focus-within:bg-[#151515] transition-colors">
                 <Search size={14} className="shrink-0 text-[#555]" />
@@ -203,20 +203,15 @@ export default function AdminTicketsPage() {
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
-                <TicketSort sortBy={sortBy} setSortBy={setSortBy} />
+              <div className="flex items-center gap-2 shrink-0">
+                <TicketCategoryFilter
+                  categories={categories}
+                  value={catFilter}
+                  onChange={(cat) => setCatFilter(cat)}
+                />
+                <TicketSort value={sortBy} onChange={setSortBy} />
               </div>
             </div>
-
-            {/* Category Filter Horizontal Tabs */}
-            <TicketCategoryFilter
-              categories={categories}
-              activeTab={activeTab}
-              catFilter={catFilter}
-              tickets={allTickets}
-              loading={countsLoading}
-              onSelect={(cat) => setCatFilter(cat)}
-            />
 
             {/* Table */}
             <div className="border-0 p-0">
