@@ -438,7 +438,7 @@ router.get('/', requireAdmin, async (req, res) => {
       ticketLifecycle
     };
 
-    await setCache(cacheKey, result, 60);
+    await setCache(cacheKey, result, 300);
     return res.json(result);
   } catch (e) {
     console.error('Stats error:', e);

@@ -17,43 +17,98 @@ interface EditEggDrawerProps {
 
 function DrawerSkeleton() {
   return (
-    <div className="flex-1 flex flex-col h-full w-full animate-in fade-in duration-300 px-1 pb-6 space-y-8">
-      <section className="space-y-5">
-        <div>
+    <div className="flex-1 flex flex-col h-full w-full overflow-hidden px-1 pb-6 animate-in fade-in duration-300">
+      <div className="space-y-10">
+        {/* SECTION 1: Basic Information */}
+        <section>
           <div className="h-4 w-32 rounded bg-white/[0.03] animate-pulse mb-1.5" />
           <div className="h-3 w-48 rounded bg-white/[0.02] animate-pulse" />
-        </div>
-        
-        <div>
-          <div className="h-3 w-24 rounded bg-white/[0.03] animate-pulse mb-1.5" />
-          <div className="h-[42px] w-full rounded-lg border border-[#222] bg-white/[0.02] animate-pulse" />
-        </div>
 
-        <div>
-          <div className="h-3 w-24 rounded bg-white/[0.03] animate-pulse mb-1.5" />
-          <div className="h-[84px] w-full rounded-lg border border-[#222] bg-white/[0.02] animate-pulse" />
-        </div>
-      </section>
-
-      <div className="border-t border-white/[0.06]" />
-
-      <section className="space-y-5">
-        <div>
-          <div className="h-4 w-48 rounded bg-white/[0.03] animate-pulse mb-1.5" />
-          <div className="h-3 w-64 rounded bg-white/[0.02] animate-pulse" />
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <div className="h-3 w-20 rounded bg-white/[0.03] animate-pulse mb-1.5" />
-            <div className="h-[42px] w-full rounded-lg border border-[#222] bg-white/[0.02] animate-pulse" />
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <div className="mb-2 h-3 w-16 rounded bg-white/[0.03] animate-pulse" />
+              <div className="h-[42px] w-full rounded-lg border border-[#222] bg-white/[0.02] animate-pulse" />
+            </div>
+            <div>
+              <div className="mb-2 h-3 w-20 rounded bg-white/[0.03] animate-pulse" />
+              <div className="h-[42px] w-full rounded-lg border border-[#222] bg-white/[0.02] animate-pulse" />
+            </div>
           </div>
-          <div>
-            <div className="h-3 w-24 rounded bg-white/[0.03] animate-pulse mb-1.5" />
-            <div className="h-[42px] w-full rounded-lg border border-[#222] bg-white/[0.02] animate-pulse" />
+
+          <div className="mt-4">
+            <div className="mb-2 h-3 w-24 rounded bg-white/[0.03] animate-pulse" />
+            <div className="h-[80px] w-full rounded-lg border border-[#222] bg-white/[0.02] animate-pulse" />
           </div>
-        </div>
-      </section>
+
+          <div className="mt-4">
+            <div className="mb-2 h-3 w-20 rounded bg-white/[0.03] animate-pulse" />
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-lg bg-white/[0.02] border border-[#222] animate-pulse shrink-0" />
+              <div className="flex-1 h-[44px] rounded-lg border border-[#222] bg-white/[0.02] animate-pulse" />
+            </div>
+          </div>
+        </section>
+
+        {/* SECTION 2: Panel Configuration */}
+        <section className="mt-8">
+          <div className="h-4 w-40 rounded bg-white/[0.03] animate-pulse mb-1.5" />
+          <div className="h-3 w-56 rounded bg-white/[0.02] animate-pulse" />
+
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <div className="mb-2 h-3 w-32 rounded bg-white/[0.03] animate-pulse" />
+              <div className="h-[42px] w-full rounded-lg border border-[#222] bg-white/[0.02] animate-pulse" />
+            </div>
+            <div>
+              <div className="mb-2 h-3 w-32 rounded bg-white/[0.03] animate-pulse" />
+              <div className="h-[42px] w-full rounded-lg border border-[#222] bg-white/[0.02] animate-pulse" />
+            </div>
+          </div>
+        </section>
+
+        {/* SECTION 3: Environment Variables */}
+        <section className="mt-8">
+          <div className="flex items-center justify-between mb-0.5">
+            <div>
+              <div className="h-4 w-40 rounded bg-white/[0.03] animate-pulse mb-1.5" />
+              <div className="h-3 w-64 rounded bg-white/[0.02] animate-pulse" />
+            </div>
+            <div className="h-8 w-24 rounded bg-white/[0.02] animate-pulse" />
+          </div>
+          <div className="mt-5 space-y-3">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="w-full sm:w-1/3 h-[42px] rounded-lg border border-[#222] bg-white/[0.02] animate-pulse" />
+              <div className="w-full sm:w-2/3 h-[42px] rounded-lg border border-[#222] bg-white/[0.02] animate-pulse" />
+            </div>
+          </div>
+        </section>
+
+        {/* SECTION 4: Permissions & Plans */}
+        <section className="mt-8">
+          <div className="h-4 w-36 rounded bg-white/[0.03] animate-pulse mb-1.5" />
+          <div className="h-3 w-48 rounded bg-white/[0.02] animate-pulse" />
+
+          <div className="mt-6 space-y-6">
+            <div className="border-t border-white/[0.06] py-4 flex items-center justify-between">
+              <div className="space-y-1.5">
+                <div className="h-3 w-24 rounded bg-white/[0.03] animate-pulse" />
+                <div className="h-3 w-64 rounded bg-white/[0.02] animate-pulse" />
+              </div>
+              <div className="h-6 w-11 rounded-full bg-white/[0.02] border border-[#222] animate-pulse" />
+            </div>
+            
+            <div className="border-t border-white/[0.06] pt-5">
+              <div className="h-3 w-28 rounded bg-white/[0.03] animate-pulse mb-1.5" />
+              <div className="h-3 w-56 rounded bg-white/[0.02] animate-pulse mb-4" />
+              <div className="space-y-2 border-t border-white/[0.06] pt-4">
+                {[...Array(2)].map((_, i) => (
+                  <div key={i} className="h-[72px] w-full rounded-lg bg-white/[0.015] animate-pulse" />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
@@ -179,8 +234,12 @@ export function EditEggDrawer({ eggId, onClose, onUpdate }: EditEggDrawerProps) 
               </div>
             </div>
           ) : (
-            <div className="flex items-center justify-between w-full">
-              <span className="text-xs text-[#888]">Loading...</span>
+            <div className="flex items-center justify-between w-full animate-in fade-in duration-300">
+              <div className="h-[40px] w-[100px] rounded-lg bg-red-500/5 border border-red-500/10 animate-pulse" />
+              <div className="flex items-center gap-3">
+                <div className="h-[40px] w-[70px] rounded-lg bg-white/[0.02] animate-pulse" />
+                <div className="h-[40px] w-[130px] rounded-lg bg-[#FF5722]/20 animate-pulse" />
+              </div>
             </div>
           )
         }

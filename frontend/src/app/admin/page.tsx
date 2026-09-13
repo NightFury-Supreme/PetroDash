@@ -44,6 +44,7 @@ export default function AdminDashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [stats, setStats] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const t = localStorage.getItem('auth_token');
@@ -56,15 +57,38 @@ export default function AdminDashboard() {
   const refresh = async () => {
     if (refreshing || !token) return;
     setRefreshing(true);
+    setError(null);
     try {
       const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/stats?range=${range}`, { headers: { Authorization: `Bearer ${token}` } });
       const d = await r.json();
-      if (r.ok) setStats(d);
-    } catch (e) { console.error(e); }
+      if (r.ok) {
+        setStats(d);
+      } else {
+        throw new Error(d?.error || 'Failed to fetch dashboard stats');
+      }
+    } catch (e: any) {
+      console.error(e);
+      setError(e.message || 'An unexpected error occurred while fetching dashboard data.');
+    }
     setRefreshing(false);
   };
 
   useEffect(() => { refresh(); }, [token, range]);
+
+  if (error) {
+    return (
+      <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center p-8 bg-[#161616] border border-[#282828] rounded-xl max-w-md w-full text-center">
+          <Activity size={32} className="text-red-500 mb-4 opacity-80" />
+          <h2 className="text-white font-medium text-lg mb-2">Failed to load Dashboard</h2>
+          <p className="text-[#888] text-sm mb-6">{error}</p>
+          <button onClick={refresh} className="bg-[#FF5722] hover:bg-[#F4511E] text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 mx-auto">
+            <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} /> Retry Fetch
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!stats) return <AdminSkeleton />;
 
