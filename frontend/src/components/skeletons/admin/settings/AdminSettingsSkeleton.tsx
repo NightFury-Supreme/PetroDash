@@ -1,97 +1,80 @@
-import { Palette, Globe, ShieldCheck, Server, Users, RefreshCw, Mail, LayoutTemplate, Image as ImageIcon } from 'lucide-react';
-
-const PayPalIcon = ({ size }: { size?: number }) => <i className="fab fa-paypal" style={{ fontSize: size, width: size, textAlign: 'center' }}></i>;
-const GoogleIcon = ({ size }: { size?: number }) => <i className="fab fa-google" style={{ fontSize: size, width: size, textAlign: 'center' }}></i>;
-
-function SideItem({ icon: Icon, label, active }: { icon: any; label: string; active?: boolean; }) {
-  return (
-    <div
-      className={`
-        group
-        relative
-        flex
-        w-full
-        items-center
-        gap-3
-        rounded-lg
-        px-2.5
-        py-2
-        text-left
-        text-sm
-        transition-colors
-        ${active ? "bg-white/10 text-white" : "text-zinc-500"}
-      `}
-    >
-      {Icon && <Icon size={17} strokeWidth={1.75} className="shrink-0" />}
-      <span className="truncate">{label}</span>
-    </div>
-  );
-}
-
 export function AdminSettingsSkeleton() {
   return (
     <div className="space-y-6">
-      {/* Static Header */}
+      {/* Header Skeleton (Matches AdminSettingsHeader exactly) */}
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-[#FF5722] tracking-tight">System Settings</h1>
-        <p className="text-sm text-[#888888]">
-          Configure your PteroDash installation
-        </p>
+        <div className="h-[32px] w-48 bg-white/5 rounded-md animate-pulse" />
+        <div className="h-[20px] w-64 bg-white/5 rounded-md animate-pulse" />
       </div>
 
+      {/* Main Content Skeleton (Matches AdminSettingsContent exactly) */}
       <div className="flex flex-col lg:flex-row gap-8 items-start">
-        {/* Static Sidebar */}
+        
+        {/* Sidebar */}
         <aside className="w-full lg:w-48 shrink-0 pt-1">
           <div className="sticky top-6">
             <div className="mb-4">
-              <p className="text-[11px] font-medium uppercase tracking-widest text-[#555]">Settings</p>
+              {/* "SETTINGS" label placeholder */}
+              <div className="h-[16px] w-16 bg-white/5 rounded animate-pulse" />
             </div>
             <nav className="flex flex-col gap-1">
-              <SideItem icon={Palette} label="Brand" active={true} />
-              <SideItem icon={Globe} label="Localization" />
-              <SideItem icon={ShieldCheck} label="Authentication" />
-              <SideItem icon={Mail} label="Email" />
-              <SideItem icon={Server} label="Default Resources" />
-              <SideItem icon={Users} label="Referrals" />
-              <SideItem icon={GoogleIcon} label="Google AdSense" />
-              <SideItem icon={PayPalIcon} label="PayPal" />
-              <SideItem icon={RefreshCw} label="System Updates" />
+              {[...Array(9)].map((_, i) => (
+                <div
+                  key={i}
+                  className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2"
+                >
+                  {/* Icon placeholder (17px) */}
+                  <div className="w-[17px] h-[17px] shrink-0 bg-white/5 rounded animate-pulse" />
+                  {/* Label placeholder (text-sm -> 20px line height) */}
+                  <div className="h-[20px] w-24 bg-white/5 rounded animate-pulse" />
+                </div>
+              ))}
             </nav>
           </div>
         </aside>
 
-        {/* Content Area Skeleton */}
+        {/* Content Area */}
         <div className="flex-1 min-w-0 w-full space-y-6">
-          <div className="space-y-6 animate-in fade-in duration-200">
+          <div className="space-y-6">
             <section>
+              {/* Section Header */}
               <div className="mb-5 flex items-end justify-between">
                 <div>
-                  <h3 className="text-xl font-semibold tracking-tight text-white">Brand Settings</h3>
-                  <p className="mt-2 text-sm text-white/35">Customize your site appearance</p>
+                  {/* Section Title (text-xl -> 28px) */}
+                  <div className="h-[28px] w-40 bg-white/5 rounded-md animate-pulse" />
+                  {/* Section Subtitle (mt-2 text-sm -> 20px) */}
+                  <div className="mt-2 h-[20px] w-56 bg-white/5 rounded-md animate-pulse" />
                 </div>
               </div>
 
+              {/* Settings Rows */}
               <div className="divide-y divide-white/[0.06]">
-                {[
-                  { icon: <LayoutTemplate size={16} />, title: "Site Name", desc: "The global name of your application." },
-                  { icon: <ImageIcon size={16} />, title: "Site Icon", desc: "Upload an image (max 5MB, PNG/JPG/GIF/WEBP/SVG)." }
-                ].map((row, i) => (
-                  <div key={i} className="px-5 py-4 transition hover:bg-white/[0.02]">
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(250px,1fr)_1fr] md:items-start">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="px-5 py-4">
+                    <div className="grid grid-cols-1 md:grid-cols-[minmax(250px,1fr)_1fr] gap-4 md:items-start">
+                      
+                      {/* Left Column (Icon + Label/Desc) */}
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center text-[#D4D4D4]">
-                          {row.icon}
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center">
+                          {/* Icon placeholder (16px) */}
+                          <div className="w-4 h-4 bg-white/5 rounded animate-pulse" />
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-[#D4D4D4]">{row.title}</p>
-                          <div className="mt-0.5 text-[13px] text-[#888]">{row.desc}</div>
+                          {/* Label (text-sm -> 20px) */}
+                          <div className="h-[20px] w-32 bg-white/5 rounded animate-pulse" />
+                          {/* Description (mt-0.5 text-[13px] -> ~20px) */}
+                          <div className="mt-0.5 h-[19px] w-48 sm:w-64 bg-white/5 rounded animate-pulse" />
                         </div>
                       </div>
+
+                      {/* Right Column (Value Display) */}
                       <div className="flex flex-col w-full justify-center md:items-end">
-                        <div className="text-sm text-[#D4D4D4] flex items-center md:justify-end h-9 w-full md:w-32">
-                          <div className="h-5 w-full bg-white/[0.04] rounded animate-pulse"></div>
+                        <div className="flex items-center md:justify-end h-9">
+                          {/* Value placeholder (text-sm -> 20px) */}
+                          <div className="h-[20px] w-24 bg-white/5 rounded animate-pulse" />
                         </div>
                       </div>
+
                     </div>
                   </div>
                 ))}
@@ -99,6 +82,7 @@ export function AdminSettingsSkeleton() {
             </section>
           </div>
         </div>
+        
       </div>
     </div>
   );
