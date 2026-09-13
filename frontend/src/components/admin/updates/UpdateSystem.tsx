@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, CheckCircle, AlertTriangle, XCircle, Package, FileText, Github } from 'lucide-react';
+import { RefreshCw, CheckCircle, AlertTriangle, XCircle, FileText, Github } from 'lucide-react';
 
 interface UpdateInfo {
   currentVersion: string;
@@ -99,15 +99,6 @@ export default function UpdateSystem() {
                   Published on {new Date(updateInfo.publishedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
                 </p>
 
-                {updateInfo.fullPackageName && (
-                  <div className="mt-3 flex items-center gap-2 text-xs text-[#888]">
-                    <Package className="w-3.5 h-3.5 shrink-0" />
-                    <span>{updateInfo.fullPackageName}</span>
-                    {updateInfo.fullPackageSize && (
-                      <span className="text-[#555]">— {(updateInfo.fullPackageSize / 1024 / 1024).toFixed(2)} MB</span>
-                    )}
-                  </div>
-                )}
 
                 {updateInfo.releaseNotes && (
                   <div className="mt-3">
