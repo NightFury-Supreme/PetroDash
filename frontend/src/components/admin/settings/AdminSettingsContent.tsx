@@ -1107,29 +1107,29 @@ export function AdminSettingsContent({
                  </div>
                </div>
 
-               <div>
-                  <h4 className="mb-3 block text-sm font-medium text-[#D4D4D4]">Ad Types</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 bg-white/[0.02] border border-white/[0.06] rounded-lg p-5">
-                   {([
-                     ['display', 'Display Ads', 'Show graphical display ads on your pages'],
-                     ['text', 'Text Ads', 'Show simple text-based ads'],
-                     ['link', 'Link Ads', 'Show link unit ads'],
-                     ['inFeed', 'In-Feed Ads', 'Show native ads inserted between feed items'],
-                     ['inArticle', 'In-Article Ads', 'Show native ads integrated inside articles'],
-                     ['matchedContent', 'Matched Content', 'Show recommended content with ads']
-                   ] as const).map(([key, label, desc]) => (
-                     <div key={key} className="flex items-center justify-between gap-3">
-                       <div className="flex flex-col">
-                         <span className="text-[#D4D4D4] text-sm font-medium mb-0.5">{label}</span>
-                         <span className="text-[#888] text-xs leading-snug">{desc}</span>
-                       </div>
-                       <label className="relative inline-flex items-center cursor-pointer shrink-0">
-                         <input type="checkbox" className="sr-only peer" checked={formData.adsense?.adTypes?.[key] || false} onChange={(e) => updateFormData(`adsense.adTypes.${key}`, e.target.checked)} disabled={loading} />
-                         <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
-                       </label>
-                     </div>
-                   ))}
-                 </div>
+               <div className="pt-6 mt-6 border-t border-white/[0.06]">
+                  <h4 className="mb-4 block text-sm font-medium text-[#D4D4D4]">Ad Types</h4>
+                  <div className="flex flex-col">
+                    {([
+                      ['display', 'Display Ads', 'Show graphical display ads on your pages'],
+                      ['text', 'Text Ads', 'Show simple text-based ads'],
+                      ['link', 'Link Ads', 'Show link unit ads'],
+                      ['inFeed', 'In-Feed Ads', 'Show native ads inserted between feed items'],
+                      ['inArticle', 'In-Article Ads', 'Show native ads integrated inside articles'],
+                      ['matchedContent', 'Matched Content', 'Show recommended content with ads']
+                    ] as const).map(([key, label, desc], index) => (
+                      <div key={key} className={`flex items-center justify-between py-4 ${index !== 0 ? 'border-t border-white/[0.06]' : ''}`}>
+                        <div className="flex flex-col">
+                          <span className="text-[#D4D4D4] text-sm font-medium mb-0.5">{label}</span>
+                          <span className="text-[#888] text-xs leading-snug">{desc}</span>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                          <input type="checkbox" className="sr-only peer" checked={formData.adsense?.adTypes?.[key] || false} onChange={(e) => updateFormData(`adsense.adTypes.${key}`, e.target.checked)} disabled={loading} />
+                          <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                </div>
              </div>
              
