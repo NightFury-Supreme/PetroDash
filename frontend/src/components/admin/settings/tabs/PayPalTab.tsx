@@ -42,9 +42,12 @@ export function PayPalTab({ formData, updateFormData, saveSection, loading }: Ta
                <div>
                  <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">Client Secret</label>
                  <input type="password" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" 
-                 placeholder={formData.payments?.paypal?.clientSecret === '***' ? '•••••••• (Configured - Leave blank to keep)' : 'Enter PayPal Client Secret'} 
+                 placeholder={formData.payments?.paypal?.clientSecret === '***' ? '••••••••••••••••••••••••' : 'Enter PayPal Client Secret'} 
                  value={formData.payments?.paypal?.clientSecret === '***' ? '' : (formData.payments?.paypal?.clientSecret || '')} 
                  onChange={(e) => updateFormData('payments.paypal.clientSecret', e.target.value)} disabled={loading} />
+                 {formData.payments?.paypal?.clientSecret === '***' && (
+                   <p className="mt-1.5 text-[11px] text-[#777]">Secret is securely configured. Leave blank to keep.</p>
+                 )}
                </div>
                <div>
                  <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">Webhook ID</label>

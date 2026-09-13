@@ -55,9 +55,12 @@ export function AuthTab({ formData, updateFormData, saveSection, loading }: TabP
                <div>
                    <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">Discord Client Secret</label>
                  <input type="password" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" 
-                 placeholder={formData.auth?.discord?.clientSecret === '***' ? '•••••••• (Configured - Leave blank to keep)' : 'Enter Discord Client Secret'} 
+                 placeholder={formData.auth?.discord?.clientSecret === '***' ? '••••••••••••••••••••••••' : 'Enter Discord Client Secret'} 
                  value={formData.auth?.discord?.clientSecret === '***' ? '' : (formData.auth?.discord?.clientSecret || '')} 
                  onChange={(e) => updateFormData('auth.discord.clientSecret', e.target.value)} disabled={loading} />
+                 {formData.auth?.discord?.clientSecret === '***' && (
+                   <p className="mt-1.5 text-[11px] text-[#777]">Secret is securely configured. Leave blank to keep.</p>
+                 )}
                  </div>
                
                <div className="pt-3 border-t border-white/[0.06]">
@@ -81,9 +84,12 @@ export function AuthTab({ formData, updateFormData, saveSection, loading }: TabP
                      <div>
                        <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">Discord Bot Token</label>
                        <input type="password" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" 
-                       placeholder={formData.auth?.discord?.botToken === '***' ? '•••••••• (Configured - Leave blank to keep)' : 'Enter Discord Bot Token'} 
+                       placeholder={formData.auth?.discord?.botToken === '***' ? '••••••••••••••••••••••••' : 'Enter Discord Bot Token'} 
                        value={formData.auth?.discord?.botToken === '***' ? '' : (formData.auth?.discord?.botToken || '')} 
                        onChange={(e) => updateFormData('auth.discord.botToken', e.target.value)} disabled={loading} />
+                       {formData.auth?.discord?.botToken === '***' && (
+                         <p className="mt-1.5 text-[11px] text-[#777]">Secret is securely configured. Leave blank to keep.</p>
+                       )}
                      </div>
                    </div>
                  )}
@@ -126,9 +132,12 @@ export function AuthTab({ formData, updateFormData, saveSection, loading }: TabP
                <div>
                  <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">Google Client Secret</label>
                  <input type="password" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" 
-                 placeholder={formData.auth?.google?.clientSecret === '***' ? '•••••••• (Configured - Leave blank to keep)' : 'Enter Google Client Secret'} 
+                 placeholder={formData.auth?.google?.clientSecret === '***' ? '••••••••••••••••••••••••' : 'Enter Google Client Secret'} 
                  value={formData.auth?.google?.clientSecret === '***' ? '' : (formData.auth?.google?.clientSecret || '')} 
                  onChange={(e) => updateFormData('auth.google.clientSecret', e.target.value)} disabled={loading} />
+                 {formData.auth?.google?.clientSecret === '***' && (
+                   <p className="mt-1.5 text-[11px] text-[#777]">Secret is securely configured. Leave blank to keep.</p>
+                 )}
                </div>
              </div>
              
