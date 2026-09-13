@@ -52,6 +52,8 @@ router.get('/', requireAdmin, async (req, res) => {
     // Hide deprecated and sensitive fields
     delete out.themePrimary;
     delete out.__v;
+    delete out.earn;
+    delete out.ticketCategories;
     
     // Mask secrets for API transport (OWASP ASVS Write-Only Pattern)
     if (out.auth?.discord?.clientSecret) out.auth.discord.clientSecret = '***';

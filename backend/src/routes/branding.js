@@ -20,7 +20,7 @@ router.get('/', async (req, res) => {
             siteName: settings.siteName || 'PteroDash', 
             siteIcon: settings.siteIcon || '',
             currency: settings.localization?.currency || 'USD',
-            earnEnabled: (settings.earn?.ads?.enabled || settings.earn?.linkvertise?.enabled) || false,
+            earnEnabled: settings.earn?.linkvertise?.enabled || false,
             emailVerification: settings.auth?.emailVerification || false
         });
     // eslint-disable-next-line unused-imports/no-unused-vars
