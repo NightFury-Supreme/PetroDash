@@ -5,12 +5,12 @@ const User = require('../models/User');
 const { getSettings } = require('../lib/settings');
 const { logUserActivity } = require('../middleware/userActivity');
 
+const crypto = require('crypto');
 const router = express.Router();
 
 function generateCode() {
-  const crypto = require('crypto');
   return (crypto.randomBytes(4).toString('hex') + Date.now().toString(36).slice(-4)).toUpperCase();
-};
+}
 
 // Rate limiting handled globally in /api
 

@@ -69,9 +69,11 @@ export default function ReferralsPage() {
         setReferralThreshold(data.minInvites);
         setSuccessfulReferrals(data.referredCount); // Server tracks verified successful referrals here
         setReferrerCoins(data.referrerCoins || 50);
+      } else {
+        throw new Error('Failed to load referral statistics');
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error(err); showError(err.message || 'An unexpected error occurred');
     } finally {
       setMeLoading(false);
     }
@@ -90,9 +92,12 @@ export default function ReferralsPage() {
         const data = await res.json();
         setUsers(data.users);
         setTotalUsers(data.total); // Total registered users (pending + earned)
+      } else {
+        throw new Error('Failed to fetch referred users');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      showError(err.message || 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }
