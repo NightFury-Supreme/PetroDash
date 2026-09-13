@@ -122,13 +122,13 @@ const settingsPayloadSchema = z.object({
   }).optional(),
   defaults: z.object({
     cpuPercent: z.coerce.number().int('CPU percent must be a whole number').min(0, 'CPU percent cannot be negative').optional(),
-    memoryMb: z.coerce.number().int('Memory must be a whole number').min(0, 'Memory cannot be negative').max(1000000, 'Memory cannot exceed 1TB').optional(),
-    diskMb: z.coerce.number().int('Disk must be a whole number').min(0, 'Disk cannot be negative').max(10000000, 'Disk cannot exceed 10TB').optional(),
-    serverSlots: z.coerce.number().int('Server slots must be a whole number').min(0, 'Server slots cannot be negative').max(1000, 'Server slots cannot exceed 1000').optional(),
-    backups: z.coerce.number().int('Backups must be a whole number').min(0, 'Backups cannot be negative').max(1000, 'Backups cannot exceed 1000').optional(),
-    allocations: z.coerce.number().int('Allocations must be a whole number').min(0, 'Allocations cannot be negative').max(10000, 'Allocations cannot exceed 10000').optional(),
-    databases: z.coerce.number().int('Databases must be a whole number').min(0, 'Databases cannot be negative').max(1000, 'Databases cannot exceed 1000').optional(),
-    coins: z.coerce.number().int('Coins must be a whole number').min(0, 'Coins cannot be negative').max(1000000, 'Coins cannot exceed 1 million').optional(),
+    memoryMb: z.coerce.number().int('Memory must be a whole number').min(0, 'Memory cannot be negative').optional(),
+    diskMb: z.coerce.number().int('Disk must be a whole number').min(0, 'Disk cannot be negative').optional(),
+    serverSlots: z.coerce.number().int('Server slots must be a whole number').min(0, 'Server slots cannot be negative').optional(),
+    backups: z.coerce.number().int('Backups must be a whole number').min(0, 'Backups cannot be negative').optional(),
+    allocations: z.coerce.number().int('Allocations must be a whole number').min(0, 'Allocations cannot be negative').optional(),
+    databases: z.coerce.number().int('Databases must be a whole number').min(0, 'Databases cannot be negative').optional(),
+    coins: z.coerce.number().int('Coins must be a whole number').min(0, 'Coins cannot be negative').optional(),
   }).optional(),
   adsense: z.object({
     enabled: z.coerce.boolean().optional(),
@@ -280,23 +280,6 @@ router.patch('/', requireAdmin, async (req, res) => {
     }
 
     
-    // Validate business logic
-    if (update.defaults) {
-      if (update.defaults.memoryMb && update.defaults.memoryMb < 128) {
-        return res.status(400).json({
-          error: 'Invalid memory allocation',
-          message: 'Memory must be at least 128MB'
-        });
-      }
-      
-      if (update.defaults.diskMb && update.defaults.diskMb < 512) {
-        return res.status(400).json({
-          error: 'Invalid disk allocation',
-          message: 'Disk must be at least 512MB'
-        });
-      }
-    }
-
     // Save settings
     await settings.save();
     await clearSettingsCache();
