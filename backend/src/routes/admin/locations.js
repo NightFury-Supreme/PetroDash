@@ -7,7 +7,7 @@ const router = express.Router();
 
 const schema = z.object({
     name: z.string().min(1),
-    flag: z.string().min(1, 'Location flag is required'), // Changed from flagUrl to flag
+    flag: z.string().min(1, 'Location flag is required'),
     latencyUrl: z.string().min(1, 'Node IP is required'),
     serverLimit: z.coerce.number().int().nonnegative().default(0),
     platform: z
@@ -22,12 +22,17 @@ const schema = z.object({
     allowedPlans: z.array(z.string()).optional().default([]),
 });
 
+// Helper to invalidate both caches
+async function clearLocationCaches() {
+    const { deleteCachePattern, deleteCache } = require('../../lib/redis');
+    await deleteCachePattern('admin:locations');
+    await deleteCache('api:locations');
+}
+
 router.get('/', requireAdmin, async (req, res) => {
     const { getCache, setCache } = require('../../lib/redis');
     const cached = await getCache('admin:locations');
     if (cached) return res.json(cached);
-
-    const items = await Location.find().sort({ createdAt: -1 }).lean();
 
     const Plan = require('../../models/Plan');
     const allPlans = await Plan.find({}, '_id name').lean();
@@ -37,22 +42,44 @@ router.get('/', requireAdmin, async (req, res) => {
         planMap.set(p.name, p.name);
     });
 
-    const Server = require('../../models/Server');
+    // ISO 25010 Performance Optimization: Aggregation Pipeline to prevent N+1 Queries
+    const mappedItems = await Location.aggregate([
+        {
+            $lookup: {
+                from: 'servers',
+                localField: '_id',
+                foreignField: 'locationId',
+                as: 'servers'
+            }
+        },
+        {
+            $addFields: {
+                serversCount: { $size: "$servers" }
+            }
+        },
+        {
+            $project: {
+                servers: 0 // Remove the joined array for performance
+            }
+        },
+        {
+            $sort: { createdAt: -1 }
+        }
+    ]);
 
-    const mappedItems = await Promise.all(items.map(async loc => {
+    // Map plans manually since aggregation lookup for Array of Strings is tricky
+    const finalItems = mappedItems.map(loc => {
         const allowedPlanNames = (loc.allowedPlans || [])
             .map(ap => planMap.get(String(ap)))
             .filter(Boolean);
-        const count = await Server.countDocuments({ locationId: loc._id });
         return {
             ...loc,
-            serversCount: count,
             allowedPlanNames: [...new Set(allowedPlanNames)]
         };
-    }));
+    });
 
-    await setCache('admin:locations', mappedItems, 30);
-    res.json(mappedItems);
+    await setCache('admin:locations', finalItems, 30);
+    res.json(finalItems);
 });
 
 router.post('/', requireAdmin, async (req, res) => {
@@ -60,8 +87,7 @@ router.post('/', requireAdmin, async (req, res) => {
     if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
     const created = await Location.create(parsed.data);
 
-    const { deleteCachePattern } = require('../../lib/redis');
-    await deleteCachePattern('admin:locations');
+    await clearLocationCaches();
 
     const { writeAudit } = require('../../middleware/audit');
     await writeAudit(req, 'admin.location.create', 'location', created._id.toString(), { created: parsed.data });
@@ -86,8 +112,7 @@ router.put('/:id', requireAdmin, async (req, res) => {
 
     const updated = await Location.findByIdAndUpdate(String(req.params.id), parsed.data, { new: true }).lean();
 
-    const { deleteCachePattern } = require('../../lib/redis');
-    await deleteCachePattern('admin:locations');
+    await clearLocationCaches();
 
     const changes = {};
     for (const [k, v] of Object.entries(parsed.data)) {
@@ -109,8 +134,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
     const deleted = await Location.findByIdAndDelete(String(req.params.id)).lean();
     if (!deleted) return res.status(404).json({ error: 'Not found' });
 
-    const { deleteCachePattern } = require('../../lib/redis');
-    await deleteCachePattern('admin:locations');
+    await clearLocationCaches();
 
     const { writeAudit } = require('../../middleware/audit');
     await writeAudit(req, 'admin.location.delete', 'location', deleted._id.toString(), { name: deleted.name });
@@ -119,7 +143,3 @@ router.delete('/:id', requireAdmin, async (req, res) => {
 });
 
 module.exports = router;
-
-
-
-

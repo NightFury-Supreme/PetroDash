@@ -1,7 +1,5 @@
 const express = require('express');
-
 const Location = require('../models/Location');
-const Server = require('../models/Server');
 const { requireAuth } = require('../middleware/auth');
 const { getCache, setCache } = require('../lib/redis');
 
@@ -12,7 +10,6 @@ router.get('/', requireAuth, async (req, res) => {
         let locationsWithData = await getCache('api:locations');
         
         if (!locationsWithData) {
-            const locations = await Location.find().lean();
             const Plan = require('../models/Plan');
             const allPlans = await Plan.find({}, '_id name').lean();
             const planMap = new Map();
@@ -21,11 +18,30 @@ router.get('/', requireAuth, async (req, res) => {
                 planMap.set(p.name, p.name);
             });
             
-            // Get server count and ping for each location
+            // ISO 25010 Performance Optimization: Aggregation Pipeline for N+1 Query prevention
+            const aggregatedLocations = await Location.aggregate([
+                {
+                    $lookup: {
+                        from: 'servers',
+                        localField: '_id',
+                        foreignField: 'locationId',
+                        as: 'servers'
+                    }
+                },
+                {
+                    $addFields: {
+                        serverCount: { $size: "$servers" }
+                    }
+                },
+                {
+                    $project: {
+                        servers: 0
+                    }
+                }
+            ]);
+
             locationsWithData = await Promise.all(
-                locations.map(async (location) => {
-                    const serverCount = await Server.countDocuments({ locationId: location._id });
-                    
+                aggregatedLocations.map(async (location) => {
                     // Get ping from Redis cache (populated by pingWorker)
                     const cacheData = await getCache(`ping:${location._id}`);
                     const ping = cacheData ? cacheData.ping : null;
@@ -36,7 +52,6 @@ router.get('/', requireAuth, async (req, res) => {
 
                     return {
                         ...location,
-                        serverCount,
                         ping,
                         allowedPlanNames: [...new Set(allowedPlanNames)] // unique names
                     };
@@ -70,7 +85,3 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 module.exports = router;
-
-
-
-
