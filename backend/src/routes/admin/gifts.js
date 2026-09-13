@@ -78,10 +78,31 @@ router.get('/:id/redemptions', requireAdmin, async (req, res) => {
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
 
-    const giftMeta = await Gift.findById(String(req.params.id)).select('redeemedCount code').lean();
+    // Fetch the raw document without exclusion to check for legacy redemptions array
+    const giftMeta = await Gift.findById(String(req.params.id)).lean();
     if (!giftMeta) return res.status(404).json({ error: 'Gift not found' });
 
     const GiftRedemption = require('../../models/GiftRedemption');
+
+    // [ISO 25010 Maintainability] On-the-fly migration of legacy embedded redemptions
+    if (giftMeta.redemptions && Array.isArray(giftMeta.redemptions) && giftMeta.redemptions.length > 0) {
+      try {
+        const ops = giftMeta.redemptions.map(r => ({
+          updateOne: {
+            filter: { gift: giftMeta._id, user: r.user },
+            update: { $setOnInsert: { gift: giftMeta._id, user: r.user, redeemedAt: r.redeemedAt || new Date() } },
+            upsert: true
+          }
+        }));
+        if (ops.length > 0) {
+          await GiftRedemption.bulkWrite(ops, { ordered: false });
+        }
+        // Securely strip legacy data to prevent running migration again and free up BSON space
+        await Gift.updateOne({ _id: giftMeta._id }, { $unset: { redemptions: "" } });
+      } catch (err) {
+        console.error('Failed to migrate legacy redemptions:', err);
+      }
+    }
     
     const totalRedemptions = await GiftRedemption.countDocuments({ gift: req.params.id });
     
@@ -108,7 +129,6 @@ router.get('/:id/redemptions', requireAdmin, async (req, res) => {
   }
 });
 
-// POST /api/admin/gifts
 router.post('/', requireAdmin, async (req, res) => {
   try {
     const {
