@@ -2,6 +2,7 @@ import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect } from "react";
 import { Drawer } from "@/components/ui/Drawer";
 import AdminEditGiftSkeleton from "@/components/skeletons/admin/gifts/AdminEditGiftSkeleton";
+import { AdminDeleteGiftDrawer } from "./AdminDeleteGiftDrawer";
 import { Loader2, Edit2, Tag, FileText, Infinity, Coins, Cpu, MemoryStick, HardDrive, Server } from "lucide-react";
 
 export function AdminEditGiftDrawer({
@@ -18,7 +19,7 @@ export function AdminEditGiftDrawer({
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
 
   const [form, setForm] = useState({
     code: "",
@@ -69,26 +70,7 @@ export function AdminEditGiftDrawer({
     }
   }, [isOpen, giftId]);
 
-  const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this gift? This cannot be undone.')) return;
-    setDeleting(true);
-    const token = localStorage.getItem("auth_token");
-    try {
-      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/gifts/${giftId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (!res.ok) {
-        let d: any = {}; try { d = await res.json(); } catch {}
-        throw new Error(d.error || 'Failed to delete gift');
-      }
-      onSuccess();
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setDeleting(false);
-    }
-  };
+  
 
   const handleUpdate = async () => {
     if (!giftId) return;
@@ -141,6 +123,7 @@ export function AdminEditGiftDrawer({
   const isFormValid = form.code.trim().length > 0;
 
   return (
+    <>
     <Drawer
       isOpen={isOpen}
       onClose={onClose}
@@ -151,20 +134,20 @@ export function AdminEditGiftDrawer({
         <div className="flex items-center justify-between w-full">
           <div>
             <button
-              onClick={handleDelete}
-              disabled={deleting || loading}
+              onClick={() => setShowDelete(true)}
+              disabled={loading}
               className="flex items-center justify-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-500/20 transition-colors"
             >
-              {deleting ? <Loader2 size={16} className="animate-spin" /> : "Delete Gift"}
+              Delete Gift
             </button>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={onClose} disabled={saving || deleting} className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]">Cancel</button>
+            <button onClick={onClose} disabled={saving} className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]">Cancel</button>
             <button
               onClick={handleUpdate}
-              disabled={saving || loading || deleting || !isFormValid}
+              disabled={saving || loading || !isFormValid}
               className={`flex items-center justify-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-all ${
-                saving || loading || deleting || !isFormValid
+                saving || loading || !isFormValid
                   ? "bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed"
                   : "bg-[#FF5722] border border-[#FF5722] text-white hover:bg-[#F4511E]"
               }`}
@@ -258,5 +241,18 @@ export function AdminEditGiftDrawer({
         </div>
       )}
     </Drawer>
+    
+    <AdminDeleteGiftDrawer
+      isOpen={showDelete}
+      onClose={() => setShowDelete(false)}
+      onSuccess={() => {
+        setShowDelete(false);
+        onClose(); // Close edit drawer
+        onSuccess(); // Refresh table
+      }}
+      giftId={giftId}
+      giftCode={form.code}
+    />
+    </>
   );
 }
