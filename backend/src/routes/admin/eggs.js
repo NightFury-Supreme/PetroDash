@@ -25,18 +25,23 @@ router.get('/', requireAdmin, async (req, res) => {
     if (cached) return res.json(cached);
 
     const Server = require('../../models/Server');
-    const eggs = await Egg.find().populate('category').sort({ createdAt: -1 }).lean();
     
-    const Plan = require('../../models/Plan');
-    const allPlans = await Plan.find({}, '_id name').lean();
+    // [ISO 25010 Performance] O(1) query instead of N+1
+    const [eggs, serverCountsAgg, allPlans] = await Promise.all([
+        Egg.find().populate('category').sort({ createdAt: -1 }).lean(),
+        Server.aggregate([{ $group: { _id: '$eggId', count: { $sum: 1 } } }]),
+        require('../../models/Plan').find({}, '_id name').lean()
+    ]);
+    
+    const serverCounts = new Map(serverCountsAgg.map(s => [s._id?.toString(), s.count]));
     const planMap = new Map();
     allPlans.forEach(p => {
         planMap.set(p._id.toString(), p.name);
         planMap.set(p.name, p.name);
     });
 
-    const list = await Promise.all(eggs.map(async (egg) => {
-        const count = await Server.countDocuments({ eggId: egg._id });
+    const list = eggs.map((egg) => {
+        const count = serverCounts.get(egg._id.toString()) || 0;
         const allowedPlanNames = (egg.allowedPlans || [])
             .map(ap => planMap.get(String(ap)))
             .filter(Boolean);
@@ -48,7 +53,7 @@ router.get('/', requireAdmin, async (req, res) => {
             serversCount: count,
             allowedPlanNames: [...new Set(allowedPlanNames)]
         };
-    }));
+    });
 
     await setCache('admin:eggs:with-count', list, 30);
     res.json(list);
@@ -63,6 +68,7 @@ router.post('/', requireAdmin, async (req, res) => {
     
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:eggs*');
+    await deleteCachePattern('eggs:*');
 
     const { writeAudit } = require('../../middleware/audit');
     await writeAudit(req, 'admin.egg.create', 'egg', egg._id.toString(), { created: parsed.data });
@@ -124,6 +130,7 @@ router.post('/categories', requireAdmin, async (req, res) => {
         const cat = await EggCategory.create({ name: name.trim() });
         const { deleteCachePattern } = require('../../lib/redis');
         await deleteCachePattern('admin:eggs:categories');
+        await deleteCachePattern('eggs:*');
         
         const { writeAudit } = require('../../middleware/audit');
         await writeAudit(req, 'admin.egg_category.create', 'egg_category', cat._id.toString(), { created: { name: cat.name } });
@@ -152,6 +159,7 @@ router.put('/categories/:id', requireAdmin, async (req, res) => {
 
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:eggs*');
+    await deleteCachePattern('eggs:*');
 
     const { writeAudit } = require('../../middleware/audit');
     await writeAudit(req, 'admin.egg_category.update', 'egg_category', cat._id.toString(), { changes: { name: { old: oldName, new: newName } } });
@@ -170,6 +178,7 @@ router.delete('/categories/:id', requireAdmin, async (req, res) => {
     await cat.deleteOne();
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:eggs:categories');
+        await deleteCachePattern('eggs:*');
 
     const { writeAudit } = require('../../middleware/audit');
     await writeAudit(req, 'admin.egg_category.delete', 'egg_category', cat._id.toString(), { name: cat.name });
@@ -213,6 +222,7 @@ router.put('/:id', requireAdmin, async (req, res) => {
 
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:eggs*');
+    await deleteCachePattern('eggs:*');
     await deleteCachePattern(`admin:egg:${req.params.id}`);
 
     const changes = {};
@@ -238,6 +248,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
 
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:eggs*');
+    await deleteCachePattern('eggs:*');
     await deleteCachePattern(`admin:egg:${req.params.id}`);
 
     const { writeAudit } = require('../../middleware/audit');

@@ -17,6 +17,7 @@ export default function EggForm({ form, setForm, env, setEnv, onSubmit, submitti
   const [uploadingIcon, setUploadingIcon] = useState(false);
   const [plans, setPlans] = useState<any[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -54,10 +55,11 @@ export default function EggForm({ form, setForm, env, setEnv, onSubmit, submitti
   const handleInterceptSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pendingIconFile && !form.icon) {
-      alert("Egg icon is required.");
+      setError("Egg icon is required.");
       return;
     }
 
+    setError(null);
     setLocalSubmitting(true);
     let finalIcon = form.icon;
     const oldIcon = form.icon !== 'pending' ? form.icon : '';
@@ -93,7 +95,7 @@ export default function EggForm({ form, setForm, env, setEnv, onSubmit, submitti
         }
       } catch (err) {
         console.error('Upload error:', err);
-        alert('Failed to upload icon. Please try again.');
+        setError('Failed to upload icon. Please try again.');
         setLocalSubmitting(false);
         setUploadingIcon(false);
         return;
@@ -108,6 +110,11 @@ export default function EggForm({ form, setForm, env, setEnv, onSubmit, submitti
 
   return (
     <form id="egg-form" onSubmit={handleInterceptSubmit} className="animate-in fade-in duration-300">
+      {error && (
+        <div className="mb-6 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+          {error}
+        </div>
+      )}
 
       {/* ── SECTION 1: Basic Information ── */}
       <section>

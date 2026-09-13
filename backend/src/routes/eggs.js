@@ -20,22 +20,23 @@ router.get('/', requireAuth, async (req, res) => {
                 planMap.set(p.name, p.name);
             });
             
-            // Get server count for each egg
-            eggsWithCounts = await Promise.all(
-                eggs.map(async (egg) => {
-                    const serverCount = await Server.countDocuments({ eggId: egg._id });
-                    const allowedPlanNames = (egg.allowedPlans || [])
-                        .map(ap => planMap.get(String(ap)))
-                        .filter(Boolean);
-                    
-                    return {
-                        ...egg,
-                        categoryName: egg.category?.name || 'Uncategorized',
-                        serverCount,
-                        allowedPlanNames: [...new Set(allowedPlanNames)] // unique names
-                    };
-                })
-            );
+            // [ISO 25010 Performance] O(1) query instead of N+1
+            const serverCountsAgg = await Server.aggregate([{ $group: { _id: '$eggId', count: { $sum: 1 } } }]);
+            const serverCounts = new Map(serverCountsAgg.map(s => [s._id?.toString(), s.count]));
+
+            eggsWithCounts = eggs.map((egg) => {
+                const serverCount = serverCounts.get(egg._id.toString()) || 0;
+                const allowedPlanNames = (egg.allowedPlans || [])
+                    .map(ap => planMap.get(String(ap)))
+                    .filter(Boolean);
+                
+                return {
+                    ...egg,
+                    categoryName: egg.category?.name || 'Uncategorized',
+                    serverCount,
+                    allowedPlanNames: [...new Set(allowedPlanNames)] // unique names
+                };
+            });
             
             // Cache for 5 minutes
             await setCache('eggs:counts', eggsWithCounts, 300);

@@ -73,7 +73,6 @@ export function EditEggDrawer({ eggId, onClose, onUpdate }: EditEggDrawerProps) 
       onUpdate();
       onClose();
     } catch (err: any) {
-      alert(err.message || 'Failed to update egg');
       setError(err.message || 'Failed to update egg');
     } finally {
       setSubmitting(false);
