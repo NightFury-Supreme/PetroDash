@@ -92,7 +92,7 @@ export default function UpdateSystem() {
               <span className="text-[#D4D4D4] text-sm font-medium mb-0.5">Current Version</span>
               <span className="text-[#888] text-xs">The version currently running on this server</span>
             </div>
-            <span className="text-[#D4D4D4] text-sm font-mono bg-white/[0.04] border border-white/[0.06] px-3 py-1 rounded-md">
+            <span className="text-[#888] text-sm font-mono">
               v{updateInfo.currentVersion}
             </span>
           </div>
@@ -102,10 +102,8 @@ export default function UpdateSystem() {
               <span className="text-[#D4D4D4] text-sm font-medium mb-0.5">Latest Version</span>
               <span className="text-[#888] text-xs">The latest available release on GitHub</span>
             </div>
-            <span className={`text-sm font-mono px-3 py-1 rounded-md border ${
-              updateInfo.isUpdateAvailable
-                ? 'text-[#FF5722] bg-[#FF5722]/[0.08] border-[#FF5722]/20'
-                : 'text-emerald-400 bg-emerald-500/[0.08] border-emerald-500/20'
+            <span className={`text-sm font-mono ${
+              updateInfo.isUpdateAvailable ? 'text-[#FF5722]' : 'text-emerald-400'
             }`}>
               v{updateInfo.latestVersion}
             </span>
