@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect } from "react";
 import { Drawer } from "@/components/ui/Drawer";
 import { Loader2, Plus, Coins, Cpu, MemoryStick, HardDrive, Server, Tag, FileText, Infinity } from "lucide-react";
@@ -71,7 +72,7 @@ export function AdminCreateGiftDrawer({
         }
       };
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/gifts`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/gifts`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(body)

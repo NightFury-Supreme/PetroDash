@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useRef, useEffect } from "react";
 import { Loader2 } from "lucide-react";
@@ -190,7 +191,7 @@ function MentionPill({ type, id, name, viewerRole }: { type: 'server'|'invoice';
           ? `${API_BASE}/api/admin/payments/${id}/invoice` 
           : `${API_BASE}/api/payments/${id}/invoice`;
           
-        const r = await fetch(endpoint, {
+        const r = await fetchWithRetry(endpoint, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!r.ok) throw new Error("Failed to download");

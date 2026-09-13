@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -18,7 +19,7 @@ export default function EditLocationPageContent() {
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
     if (!token) { router.replace('/login'); return; }
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${params.id}`, { headers: { Authorization: `Bearer ${token}` }})
+    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${params.id}`, { headers: { Authorization: `Bearer ${token}` }})
       .then(async (r) => {
         let d: any = {}; try { d = await r.json(); } catch {}
         if (!r.ok) throw new Error(d?.error || 'Failed');
@@ -43,7 +44,7 @@ export default function EditLocationPageContent() {
     e.preventDefault();
     setError(null);
     const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${params.id}`, {
+    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${params.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({
@@ -74,7 +75,7 @@ export default function EditLocationPageContent() {
     });
     if (!confirmed) return;
     const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${params.id}`, {
+    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${params.id}`, {
       method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
     });
     if (res.ok) router.push('/admin/locations');

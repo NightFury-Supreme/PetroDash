@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import React, { useState, useEffect, useRef } from 'react';
 import { Check, AlertCircle, Pencil, Save } from 'lucide-react';
 
@@ -46,7 +47,7 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
     debounceRef.current = setTimeout(async () => {
       try {
         const token = localStorage.getItem('auth_token');
-        const res = await fetch(
+        const res = await fetchWithRetry(
           `${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/check-username?username=${encodeURIComponent(usernameVal.trim())}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );

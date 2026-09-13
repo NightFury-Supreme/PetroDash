@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import React from "react";
 import { useToast } from "@/components/ui/ToastProvider";
 import { Download, ChevronLeft, ChevronRight } from "lucide-react";
@@ -7,7 +8,7 @@ export function InvoicesTab({ invoices, invoicePage, invoiceTotalPages, invoiceT
   const downloadInvoice = async (id: string) => {
     try {
       const token = localStorage.getItem("auth_token");
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/payments/${id}/invoice`, { headers: { Authorization: `Bearer ${token}` } });
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/payments/${id}/invoice`, { headers: { Authorization: `Bearer ${token}` } });
       if (!r.ok) throw new Error("Failed");
       const blob = await r.blob();
       const url = window.URL.createObjectURL(blob);

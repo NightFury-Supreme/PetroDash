@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useState, useEffect } from "react";
 import { Pagination } from "@/components/Pagination";
@@ -55,7 +56,7 @@ export default function ReferralsPage() {
       setMeLoading(true);
       const token = localStorage.getItem("auth_token");
       if (!token) return;
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/referrals/me`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/referrals/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -82,7 +83,7 @@ export default function ReferralsPage() {
       setLoading(true);
       const token = localStorage.getItem("auth_token");
       if (!token) return;
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/referrals/list?page=${page}&limit=${USERS_PER_PAGE}`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/referrals/list?page=${page}&limit=${USERS_PER_PAGE}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -152,7 +153,7 @@ export default function ReferralsPage() {
     setSaveStatus("loading");
     try {
       const token = localStorage.getItem("auth_token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/referrals/code`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/referrals/code`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

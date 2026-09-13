@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState } from 'react';
 import { Check, AlertCircle } from 'lucide-react';
 import { z } from 'zod';
@@ -53,7 +54,7 @@ export default function LoginClient() {
     }
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/login`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(parsed.data),
@@ -81,7 +82,7 @@ export default function LoginClient() {
     if (!tfaCode) { setError('Code is required'); return; }
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/login/2fa`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/login/2fa`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tempToken, code: tfaCode }),

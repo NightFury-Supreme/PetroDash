@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import React, { useState, useEffect, useRef } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
 
@@ -39,7 +40,7 @@ export function PlansTab({ plans, allPlans, userId, onRefresh }: any) {
     setLoading(true);
     try {
       const token = localStorage.getItem('auth_token');
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${userId}/plans`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${userId}/plans`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ planId: newPlanId, months: 1 })
@@ -62,7 +63,7 @@ export function PlansTab({ plans, allPlans, userId, onRefresh }: any) {
     setActionState(planId, 'removeAll', 'loading');
     try {
       const token = localStorage.getItem('auth_token');
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${userId}/plans/${planId}`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${userId}/plans/${planId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -80,7 +81,7 @@ export function PlansTab({ plans, allPlans, userId, onRefresh }: any) {
     setActionState(pid, 'add', 'loading');
     try {
       const token = localStorage.getItem('auth_token');
-      await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${userId}/plans`, {
+      await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${userId}/plans`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ planId: pid, months: 1 })
@@ -98,7 +99,7 @@ export function PlansTab({ plans, allPlans, userId, onRefresh }: any) {
     setActionState(planId, 'remove', 'loading');
     try {
       const token = localStorage.getItem('auth_token');
-      await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${userId}/plans/instance/${instanceId}`, {
+      await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${userId}/plans/instance/${instanceId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });

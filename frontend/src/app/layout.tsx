@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -19,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   let title = "PteroDash";
   let icons: Metadata["icons"] | undefined = undefined;
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/branding`, { cache: 'no-store' });
+    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/branding`, { cache: 'no-store' });
     let s: any = {}; try { s = await res.json(); } catch {}
     if (s?.siteName) title = s.siteName;
     if (s?.siteIcon) icons = { icon: `${process.env.NEXT_PUBLIC_API_BASE || ''}${s.siteIcon}` } as any;

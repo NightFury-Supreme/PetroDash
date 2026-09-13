@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useState } from 'react';
 import { 
@@ -112,7 +113,7 @@ export function CouponDrawer({
     setValidating(true);
     try {
       const token = localStorage.getItem("auth_token");
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/coupons/validate`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/coupons/validate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ code: couponCode, planId: plan?._id })

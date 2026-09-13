@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useEffect, useState } from "react";
 import { Ticket, ChevronLeft, ChevronRight } from "lucide-react";
@@ -45,7 +46,7 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
       const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
       if (!token) return;
       const statusParam = activeTab.toLowerCase();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/gifts/mine?paginate=true&page=${page}&pageSize=${CODES_PER_PAGE}&status=${statusParam}`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/gifts/mine?paginate=true&page=${page}&pageSize=${CODES_PER_PAGE}&status=${statusParam}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       let d: any = {};

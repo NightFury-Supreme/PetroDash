@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { SharedLogsTable } from '@/components/ui/SharedLogsTable';
 import React, { useState, useEffect, useRef } from 'react';
 import { Session } from '@/hooks/useProfile';
@@ -367,7 +368,7 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
     debounceRef.current = setTimeout(async () => {
       try {
         const token = localStorage.getItem('auth_token');
-        const res = await fetch(
+        const res = await fetchWithRetry(
           `${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/check-username?username=${encodeURIComponent(usernameVal.trim())}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -559,7 +560,7 @@ export function ActivityLogSection() {
   React.useEffect(() => {
     let active = true;
     setLoading(true);
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/activity?page=${page}&limit=${LOGS_PER_PAGE}`, {
+    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/activity?page=${page}&limit=${LOGS_PER_PAGE}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('auth_token')}`
       }

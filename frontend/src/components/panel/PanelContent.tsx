@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useState, useEffect } from "react";
 import { Copy, ExternalLink, KeyRound, Link2, Mail, RefreshCw } from "lucide-react";
@@ -23,7 +24,7 @@ export function PanelContent() {
         const token = localStorage.getItem("auth_token");
         if (!token) return;
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/panel`, {
+        const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/panel`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -83,7 +84,7 @@ export function PanelContent() {
     setResetting(true);
     try {
       const token = localStorage.getItem("auth_token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/panel/reset-password`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/panel/reset-password`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -99,13 +100,13 @@ export function useServerEdit(serverId: string): UseServerEditReturn {
         setError(null);
 
         const [meResponse, usageResponse, serverResponse] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, { 
+          fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, { 
             headers: { Authorization: `Bearer ${token}` }
           }),
-          fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers/usage`, { 
+          fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers/usage`, { 
             headers: { Authorization: `Bearer ${token}` }
           }),
-          fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers/${serverId}`, { 
+          fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers/${serverId}`, { 
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);
@@ -300,7 +301,7 @@ export function useServerEdit(serverId: string): UseServerEditReturn {
 
 
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers/${serverId}`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers/${serverId}`, {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json', 

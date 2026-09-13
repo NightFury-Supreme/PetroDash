@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -56,7 +57,7 @@ export default function AdminDashboard() {
     if (refreshing || !token) return;
     setRefreshing(true);
     try {
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/stats?range=${range}`, { headers: { Authorization: `Bearer ${token}` } });
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/stats?range=${range}`, { headers: { Authorization: `Bearer ${token}` } });
       const d = await r.json();
       if (r.ok) setStats(d);
     } catch (e) { console.error(e); }

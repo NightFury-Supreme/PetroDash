@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect } from "react";
 import { Drawer } from "@/components/ui/Drawer";
 import { Loader2, Edit2, Tag, FileText, Infinity, Coins, Cpu, MemoryStick, HardDrive, Server } from "lucide-react";
@@ -42,7 +43,7 @@ export function AdminEditGiftDrawer({
       setLoading(true);
       setError(null);
       const token = localStorage.getItem("auth_token");
-      fetch(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/gifts/${giftId}`, {
+      fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/gifts/${giftId}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(r => r.json())
@@ -91,7 +92,7 @@ export function AdminEditGiftDrawer({
         }
       };
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/gifts/${giftId}`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/gifts/${giftId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

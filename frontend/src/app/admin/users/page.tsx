@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Users, RefreshCw } from 'lucide-react';
@@ -27,7 +28,7 @@ export default function AdminUsersListPage() {
     url.searchParams.set('page', currentPage.toString());
     url.searchParams.set('pageSize', '10');
     
-    fetch(url.toString(), { headers: { Authorization: `Bearer ${token}` } })
+    fetchWithRetry(url.toString(), { headers: { Authorization: `Bearer ${token}` } })
       .then(async (r) => { 
         let d: any = {}; try { d = await r.json(); } catch {} 
         if (!r.ok) throw new Error(d?.error || 'Failed'); 

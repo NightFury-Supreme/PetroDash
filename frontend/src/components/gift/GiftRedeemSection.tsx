@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useState } from "react";
 import { Gift, Ticket } from "lucide-react";
@@ -20,7 +21,7 @@ export function GiftRedeemSection() {
       const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
       if (!token) { showError("Please login to redeem a gift."); return; }
 
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/gifts/redeem`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/gifts/redeem`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ code: normalized }),

@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect, useCallback } from "react";
 import { Drawer } from "@/components/ui/Drawer";
 import { Loader2, Users, User } from "lucide-react";
@@ -25,7 +26,7 @@ export function AdminGiftRedemptionsDrawer({
       setLoading(true);
       setError(null);
       const token = localStorage.getItem("auth_token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/gifts/${giftId}/redemptions?page=${page}&limit=10`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/gifts/${giftId}/redemptions?page=${page}&limit=10`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error("Failed to load redemptions");

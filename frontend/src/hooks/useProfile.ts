@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useEffect, useState, useCallback } from 'react';
 
@@ -26,8 +27,8 @@ export function useProfile() {
       if (!token) { setLoading(false); return; }
       const base = process.env.NEXT_PUBLIC_API_BASE || '';
       const [r, brandingRes] = await Promise.all([
-        fetch(`${base}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`${base}/api/branding`, { cache: 'no-store' })
+        fetchWithRetry(`${base}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetchWithRetry(`${base}/api/branding`, { cache: 'no-store' })
       ]);
       let d: any = {}; try { d = await r.json(); } catch {}
       let brandingData: any = {}; try { brandingData = await brandingRes.json(); } catch {}
@@ -63,7 +64,7 @@ export function useProfile() {
     try {
       const token = localStorage.getItem('auth_token');
       if (!token) return;
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/sessions`, { headers: { Authorization: `Bearer ${token}` } });
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/sessions`, { headers: { Authorization: `Bearer ${token}` } });
       if (r.ok) {
         const data = await r.json();
         setSessions(data);
@@ -89,7 +90,7 @@ export function useProfile() {
       if (updates.firstName !== undefined) payload.firstName = updates.firstName;
       if (updates.lastName !== undefined) payload.lastName = updates.lastName;
 
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/profile`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/profile`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)
@@ -122,7 +123,7 @@ export function useProfile() {
     setSaving(true); setError(null); setSuccess(null);
     try {
       const token = localStorage.getItem('auth_token');
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/profile/email`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/profile/email`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ email, password, ...(tfaCode ? { tfaCode } : {}) })
@@ -147,7 +148,7 @@ export function useProfile() {
     setSaving(true); setError(null); setSuccess(null);
     try {
       const token = localStorage.getItem('auth_token');
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/profile/password`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/profile/password`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ currentPassword, newPassword, ...(tfaCode ? { tfaCode } : {}) })
@@ -171,7 +172,7 @@ export function useProfile() {
     setSaving(true); setError(null); setSuccess(null);
     try {
       const token = localStorage.getItem('auth_token');
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me/profile-picture`, { 
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me/profile-picture`, { 
         method: 'PATCH', 
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, 
         body: JSON.stringify({ profilePicture }) 
@@ -189,7 +190,7 @@ export function useProfile() {
     setSaving(true); setError(null);
     try {
       const token = localStorage.getItem('auth_token');
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/sessions/${id}`, { 
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/sessions/${id}`, { 
         method: 'DELETE', 
         headers: { Authorization: `Bearer ${token}` } 
       });
@@ -210,7 +211,7 @@ export function useProfile() {
     setSaving(true); setError(null);
     try {
       const token = localStorage.getItem('auth_token');
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/verify/resend`, { 
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/verify/resend`, { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ email: form.email })
@@ -236,7 +237,7 @@ export function useProfile() {
     setSaving(true); setError(null);
     try {
       const token = localStorage.getItem('auth_token');
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/verify/code`, { 
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/verify/code`, { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ email: form.email, code })

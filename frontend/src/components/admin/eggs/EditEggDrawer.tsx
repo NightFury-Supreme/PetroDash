@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useEffect, useState } from 'react';
 import EggForm from '@/components/admin/eggs/EggForm';
@@ -27,7 +28,7 @@ export function EditEggDrawer({ eggId, onClose, onUpdate }: EditEggDrawerProps) 
     const token = localStorage.getItem('auth_token');
     if (!token) return;
     
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/${eggId}`, {
+    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/${eggId}`, {
       headers: { Authorization: `Bearer ${token}` },
     }).then(async (r) => {
       let d: any = {}; try { d = await r.json(); } catch {}
@@ -55,7 +56,7 @@ export function EditEggDrawer({ eggId, onClose, onUpdate }: EditEggDrawerProps) 
     const finalForm = updatedForm || form;
     try {
       const token = localStorage.getItem('auth_token');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/${eggId}`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/${eggId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -81,7 +82,7 @@ export function EditEggDrawer({ eggId, onClose, onUpdate }: EditEggDrawerProps) 
 
   const remove = async () => {
     const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/${eggId}`, {
+    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/${eggId}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` }
     });

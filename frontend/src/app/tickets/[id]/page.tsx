@@ -1,4 +1,5 @@
 'use client';
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useParams }                              from "next/navigation";
@@ -50,7 +51,7 @@ export default function TicketDetailPage() {
   const fetchTicket = useCallback(async (silent = false) => {
     if (!id) return;
     try {
-      const r = await fetch(`${API_BASE}/api/tickets/${id}`, {
+      const r = await fetchWithRetry(`${API_BASE}/api/tickets/${id}`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       const d = await r.json().catch(() => ({}));
@@ -78,7 +79,7 @@ export default function TicketDetailPage() {
   const fetchInitialMessages = useCallback(async (isPoll = false) => {
     if (!id) return;
     try {
-      const r = await fetch(`${API_BASE}/api/tickets/${id}/messages?limit=50`, {
+      const r = await fetchWithRetry(`${API_BASE}/api/tickets/${id}/messages?limit=50`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       const d = await r.json().catch(() => ({}));
@@ -102,7 +103,7 @@ export default function TicketDetailPage() {
     const previousScrollTop = container ? container.scrollTop : 0;
 
     try {
-      const r = await fetch(`${API_BASE}/api/tickets/${id}/messages?limit=50&before=${oldestId}`, {
+      const r = await fetchWithRetry(`${API_BASE}/api/tickets/${id}/messages?limit=50&before=${oldestId}`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       const d = await r.json().catch(() => ({}));
@@ -171,7 +172,7 @@ export default function TicketDetailPage() {
     if (!value || replying) return;
     setReplying(true);
     try {
-      const r = await fetch(`${API_BASE}/api/tickets/${id}/messages`, {
+      const r = await fetchWithRetry(`${API_BASE}/api/tickets/${id}/messages`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
         body:    JSON.stringify({ body: value }),
@@ -195,7 +196,7 @@ export default function TicketDetailPage() {
     setStatusDone(null);
     setActionsOpen(false);
       try {
-        const r = await fetch(`${API_BASE}/api/tickets/${id}/status`, {
+        const r = await fetchWithRetry(`${API_BASE}/api/tickets/${id}/status`, {
           method:  'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
           body:    JSON.stringify({ action }),

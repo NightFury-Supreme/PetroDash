@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect, useCallback } from 'react';
 import { ServerInfo, ResourceLimits, ResourceUsage } from '../components/dashboard/types';
 
@@ -20,7 +21,7 @@ export function useDashboard() {
   // Load resource usage
   const loadUsage = async (token: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers/usage`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers/usage`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -53,7 +54,7 @@ export function useDashboard() {
   // Load user resources
   const loadResources = async (token: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -78,7 +79,7 @@ export function useDashboard() {
   // Load servers
   const loadServers = async (token: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -133,7 +134,7 @@ export function useDashboard() {
       }
 
       // Fetch status data independently (doesn't require token, but good to do alongside)
-      fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/status`)
+      fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/status`)
         .then(res => res.json())
         .then(data => setStatusData(data))
         .catch(console.error);

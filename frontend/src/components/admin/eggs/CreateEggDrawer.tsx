@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useState, useEffect, useRef } from "react";
 import { Egg, Loader2, Check, Upload, Trash2, Plus } from "lucide-react";
@@ -62,7 +63,7 @@ export function CreateEggDrawer({ onClose, onSuccess }: CreateEggDrawerProps) {
 
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/plans`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/plans`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       .then((r) => r.json())
       .then((d) => setPlans(Array.isArray(d) ? d : []))
       .catch(() => {})
@@ -119,7 +120,7 @@ export function CreateEggDrawer({ onClose, onSuccess }: CreateEggDrawerProps) {
         const fd = new FormData();
         fd.append('icon', pendingIconFile);
         
-        const uploadRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/upload/icon`, {
+        const uploadRes = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/upload/icon`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
           body: fd
@@ -135,7 +136,7 @@ export function CreateEggDrawer({ onClose, onSuccess }: CreateEggDrawerProps) {
         finalIcon = data.filePath;
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({

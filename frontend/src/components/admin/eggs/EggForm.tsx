@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useState, useEffect, useRef } from 'react';
 import { CategorySelect } from './CategorySelect';
@@ -20,7 +21,7 @@ export default function EggForm({ form, setForm, env, setEnv, onSubmit, submitti
 
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/plans`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/plans`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       .then((r) => r.json())
       .then((d) => setPlans(Array.isArray(d) ? d : []))
       .catch(() => {})
@@ -68,7 +69,7 @@ export default function EggForm({ form, setForm, env, setEnv, onSubmit, submitti
 
       try {
         setUploadingIcon(true);
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/upload/icon`, {
+        const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/upload/icon`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
           body: fd
@@ -84,7 +85,7 @@ export default function EggForm({ form, setForm, env, setEnv, onSubmit, submitti
         finalIcon = data.filePath;
 
         if (oldIcon) {
-          fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/upload/icon`, {
+          fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/upload/icon`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: JSON.stringify({ filePath: oldIcon })

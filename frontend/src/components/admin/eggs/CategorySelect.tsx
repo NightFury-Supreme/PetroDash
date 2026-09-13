@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Plus, Loader2, Trash2, Edit2 } from "lucide-react";
 
@@ -21,7 +22,7 @@ export function CategorySelect({ value, onChange }: { value: string, onChange: (
 
   const loadCategories = () => {
     const token = localStorage.getItem('auth_token');
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/categories`, { 
+    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/categories`, { 
       headers: token ? { Authorization: `Bearer ${token}` } : {} 
     })
       .then(r => r.json())
@@ -47,7 +48,7 @@ export function CategorySelect({ value, onChange }: { value: string, onChange: (
     setLoading(true);
     const token = localStorage.getItem('auth_token');
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/categories`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/categories`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name: newCat.trim() })
@@ -74,7 +75,7 @@ export function CategorySelect({ value, onChange }: { value: string, onChange: (
     setLoading(true);
     const token = localStorage.getItem('auth_token');
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/categories/${id}`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/categories/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name: editVal.trim() })
@@ -99,7 +100,7 @@ export function CategorySelect({ value, onChange }: { value: string, onChange: (
     setLoading(true);
     const token = localStorage.getItem('auth_token');
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/categories/${id}`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/categories/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });

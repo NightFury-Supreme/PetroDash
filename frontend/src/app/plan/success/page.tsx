@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useEffect, useState, useRef } from 'react';
 import { useToast } from "@/components/ui/ToastProvider";
@@ -28,7 +29,7 @@ export default function PlanSuccessPage() {
         const orderId = searchParams.get('token');
         if (!orderId) throw new Error('No order ID found');
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/paypal/capture-order`, {
+        const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/paypal/capture-order`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ orderId })

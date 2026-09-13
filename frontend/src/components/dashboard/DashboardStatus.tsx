@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
@@ -160,7 +161,7 @@ export function DashboardStatus() {
     let isMounted = true;
     const fetchStatus = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/status`);
+        const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/status`);
         if (!res.ok) throw new Error('Failed to fetch status');
         const jsonData = await res.json();
         if (isMounted) setData(jsonData);

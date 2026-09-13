@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import React, { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
 import { Download, Loader2 } from "lucide-react";
@@ -10,7 +11,7 @@ export function InvoicesTab({ currency = "USD" }: { currency?: string }) {
     try {
       const token = localStorage.getItem("auth_token");
       if (!token) throw new Error("Not authenticated");
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/payments/${id}/invoice`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/payments/${id}/invoice`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!r.ok) {
@@ -60,7 +61,7 @@ function PaymentsSection({ currency, onDownload }: { currency: string; onDownloa
       setLoading(true);
       try {
         const token = localStorage.getItem("auth_token");
-        const res = await fetch(
+        const res = await fetchWithRetry(
           `${process.env.NEXT_PUBLIC_API_BASE || ''}/api/payments?paginate=true&page=${page}&pageSize=${PAYMENTS_PER_PAGE}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );

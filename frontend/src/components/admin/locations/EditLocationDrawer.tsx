@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useEffect, useState, useRef } from 'react';
 import { Globe, Trash, Loader2, Check, Upload, Trash2 } from 'lucide-react';
@@ -29,7 +30,7 @@ export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocati
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
     if (!token) return;
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${locationId}`, {
+    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${locationId}`, {
       headers: { Authorization: `Bearer ${token}` },
     }).then(async r => {
       let d: any = {}; try { d = await r.json(); } catch {}
@@ -49,7 +50,7 @@ export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocati
       });
     }).catch(() => {}).finally(() => setLoading(false));
 
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/plans`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/plans`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       .then(r => r.json()).then(d => setPlans(Array.isArray(d) ? d : [])).catch(() => {}).finally(() => setLoadingPlans(false));
   }, [locationId]);
 
@@ -85,13 +86,13 @@ export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocati
       if (pendingFlagFile) {
         setUploadingFlag(true);
         const fd = new FormData(); fd.append('icon', pendingFlagFile);
-        const uploadRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/upload/icon`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
+        const uploadRes = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/upload/icon`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
         setUploadingFlag(false);
         if (!uploadRes.ok) throw new Error('Failed to upload flag image');
         const uploadData = await uploadRes.json();
         finalFlag = uploadData.filePath;
       }
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${locationId}`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${locationId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -108,7 +109,7 @@ export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocati
 
   const remove = async () => {
     const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${locationId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${locationId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
     if (!res.ok) { let d: any = {}; try { d = await res.json(); } catch {} throw new Error(d?.error || 'Failed to delete'); }
     onUpdate(); onClose();
   };

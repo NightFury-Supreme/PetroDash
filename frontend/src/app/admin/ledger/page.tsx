@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
@@ -43,7 +44,7 @@ export default function AdminLedgerPage() {
       params.set('page', pageToLoad.toString());
       params.set('limit', '10');
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/payments/ledger?${params.toString()}`, { 
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/payments/ledger?${params.toString()}`, { 
         headers: { Authorization: `Bearer ${token}` } 
       });
       
@@ -93,7 +94,7 @@ export default function AdminLedgerPage() {
         return;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/payments/${id}/refund`, { 
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/payments/${id}/refund`, { 
         method: 'POST', 
         headers: { Authorization: `Bearer ${token}` } 
       });
@@ -131,7 +132,7 @@ export default function AdminLedgerPage() {
         return;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/payments/${id}/void`, { 
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/payments/${id}/void`, { 
         method: 'POST', 
         headers: { Authorization: `Bearer ${token}` } 
       });

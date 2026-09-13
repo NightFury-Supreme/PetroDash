@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useMemo, useLayoutEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -43,8 +44,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         // Validate token and check ban state
         const base = process.env.NEXT_PUBLIC_API_BASE || "";
         const [res, brandingRes] = await Promise.all([
-          fetch(`${base}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" }),
-          fetch(`${base}/api/branding`, { cache: "no-store" })
+          fetchWithRetry(`${base}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" }),
+          fetchWithRetry(`${base}/api/branding`, { cache: "no-store" })
         ]);
         if (res.status === 403) {
           try {

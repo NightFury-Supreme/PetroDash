@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useModal } from '@/components/Modal';
 import React, { useState } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
@@ -44,7 +45,7 @@ export function ServersTab({ user, servers, onRefresh }: any) {
     setDeleting(id);
     try {
       const token = localStorage.getItem('auth_token');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/servers/${id}`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/servers/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });

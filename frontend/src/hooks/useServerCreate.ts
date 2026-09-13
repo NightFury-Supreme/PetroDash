@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -98,11 +99,11 @@ export function useServerCreate() {
         }
 
         const [eggsRes, locsRes, authRes, usageRes, plansRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/eggs`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/locations`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers/usage`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/user/plans`, { headers: { Authorization: `Bearer ${token}` } })
+          fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/eggs`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/locations`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers/usage`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/user/plans`, { headers: { Authorization: `Bearer ${token}` } })
         ]);
 
         if (!eggsRes.ok || !locsRes.ok || !authRes.ok || !usageRes.ok || !plansRes.ok) {
@@ -234,7 +235,7 @@ export function useServerCreate() {
       const token = localStorage.getItem('auth_token');
       if (!token) throw new Error('Not authenticated');
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({

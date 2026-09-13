@@ -1,4 +1,5 @@
 'use client';
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useRef, useEffect, useState } from 'react';
 import { Loader2, Server, FileText, Ticket } from 'lucide-react';
@@ -41,7 +42,7 @@ export function CreateTicketDrawer({
 
   // Prefetch mentions data on mount so it's ready when user types @
   useEffect(() => {
-    fetch(`${API_BASE}/api/tickets/mentions/search`, {
+    fetchWithRetry(`${API_BASE}/api/tickets/mentions/search`, {
       headers: { Authorization: `Bearer ${getToken()}` },
     })
       .then(res => res.json())

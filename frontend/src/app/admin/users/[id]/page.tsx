@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import React, { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
 import { useParams, useRouter } from "next/navigation";
@@ -54,7 +55,7 @@ export default function AdminUserPage() {
       const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/users/${id}`);
       url.searchParams.set('referralPage', refPage.toString());
       url.searchParams.set('referralPageSize', REFERRAL_PAGE_SIZE.toString());
-      const r = await fetch(url.toString(), { headers: { Authorization: `Bearer ${token}` } });
+      const r = await fetchWithRetry(url.toString(), { headers: { Authorization: `Bearer ${token}` } });
       const d = await r.json();
       if (!r.ok) {
         throw new Error(d.error || 'Failed to load user');
@@ -74,7 +75,7 @@ export default function AdminUserPage() {
 
   const loadPlans = async () => {
     try {
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/plans`);
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/plans`);
       const d = await r.json();
       if (r.ok) setAllPlans(d || []);
     } catch {}
@@ -87,7 +88,7 @@ export default function AdminUserPage() {
       url.searchParams.set('userId', id);
       url.searchParams.set('page', page.toString());
       url.searchParams.set('limit', '5');
-      const r = await fetch(url.toString(), { headers: { Authorization: `Bearer ${token}` } });
+      const r = await fetchWithRetry(url.toString(), { headers: { Authorization: `Bearer ${token}` } });
       const d = await r.json();
       if (r.ok) {
         setInvoices(d.payments || []);
@@ -102,7 +103,7 @@ export default function AdminUserPage() {
     setSaving(true);
     try {
       const token = localStorage.getItem('auth_token');
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/users/${id}`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/users/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ referralCode: newCode })
@@ -128,7 +129,7 @@ export default function AdminUserPage() {
     if (!confirmed) return;
     try {
       const token = localStorage.getItem('auth_token');
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/users/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/users/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
       const d = await r.json();
       if (!r.ok) throw new Error(d?.error || 'Failed to delete user');
       showSuccess(d.message || `User deleted successfully.`);

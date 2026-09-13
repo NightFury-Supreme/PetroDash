@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -120,13 +121,13 @@ export default function Sidebar() {
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
     if (token) {
-      fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+      fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
         .then(async (r) => { 
           let d: any = {}; try { d = await r.json(); } catch {} 
           if (!r.ok) throw new Error(d?.error || 'Failed'); 
           // Check if user has active plans for premium badge
           try {
-            const plansResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/user/plans`, { 
+            const plansResponse = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/user/plans`, { 
               headers: { Authorization: `Bearer ${token}` } 
             });
             if (plansResponse.ok) {
@@ -147,7 +148,7 @@ export default function Sidebar() {
       setLoading(false);
     }
     // Also load brand settings for icon and name
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/branding`)
+    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/branding`)
       .then((r) => r.json())
       .then((s) => setBrand({ name: s?.siteName || 'PetroDash', icon: s?.siteIcon || '', earnEnabled: !!s?.earnEnabled }))
       .catch(() => setBrand({ name: 'PetroDash', icon: '', earnEnabled: false }));
@@ -350,7 +351,7 @@ export default function Sidebar() {
                 try {
                   const token = localStorage.getItem('auth_token');
                   if (token) {
-                    await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/logout`, {
+                    await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/logout`, {
                       method: 'POST',
                       headers: { 'Authorization': `Bearer ${token}` }
                     });

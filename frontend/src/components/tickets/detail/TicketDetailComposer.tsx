@@ -1,4 +1,5 @@
 'use client';
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useRef, useEffect, useState } from 'react';
 import { Check, Loader2, RotateCcw, Send, Server, FileText } from 'lucide-react';
@@ -39,7 +40,7 @@ export function TicketDetailComposer({
   // Prefetch mentions data on mount so it's ready when user types @
   useEffect(() => {
     if (!id) return;
-    fetch(`${API_BASE}/api/tickets/${id}/mentions`, {
+    fetchWithRetry(`${API_BASE}/api/tickets/${id}/mentions`, {
       headers: { Authorization: `Bearer ${getToken()}` },
     })
       .then(res => res.json())

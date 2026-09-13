@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import React, { useState, useEffect, useRef } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
 import { InfoRow } from "@/components/admin/users/AdminInfoRow";
@@ -50,7 +51,7 @@ export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefre
       } else {
         payload = { [editing]: draft };
       }
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/users/${userId}`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/users/${userId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)
@@ -84,7 +85,7 @@ export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefre
     setRoleSaved(false);
     try {
       const token = localStorage.getItem('auth_token');
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/users/${userId}`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/users/${userId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ role: newRole })

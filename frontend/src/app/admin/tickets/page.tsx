@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
@@ -58,7 +59,7 @@ export default function AdminTicketsPage() {
   useEffect(() => {
     (async () => {
       try {
-        const r = await fetch(`${API_BASE}/api/admin/tickets/settings/categories`, {
+        const r = await fetchWithRetry(`${API_BASE}/api/admin/tickets/settings/categories`, {
           headers: { Authorization: `Bearer ${getToken()}` },
         });
         let d: any = {}; try { d = await r.json(); } catch {}
@@ -91,7 +92,7 @@ export default function AdminTicketsPage() {
       if (catFilter !== '') params.set('category', catFilter);
       if (debouncedQ.trim()) params.set('q', debouncedQ.trim());
 
-      const r = await fetch(`${API_BASE}/api/admin/tickets?${params.toString()}`, {
+      const r = await fetchWithRetry(`${API_BASE}/api/admin/tickets?${params.toString()}`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       let d: any = {}; try { d = await r.json(); } catch {}
@@ -111,7 +112,7 @@ export default function AdminTicketsPage() {
   const loadCounts = useCallback(async () => {
     setCountsLoading(true);
     try {
-      const r = await fetch(`${API_BASE}/api/admin/tickets/counts`, {
+      const r = await fetchWithRetry(`${API_BASE}/api/admin/tickets/counts`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       let d: any = {}; try { d = await r.json(); } catch {}
@@ -242,11 +243,11 @@ export default function AdminTicketsPage() {
                         let r;
                         if (action === 'close' || action === 'resolve' || action === 'reopen') {
                           const mappedStatus = action === 'reopen' ? 'open' : action === 'close' ? 'closed' : 'resolved';
-                          r = await fetch(`${API_BASE}/api/admin/tickets/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` }, body: JSON.stringify({ status: mappedStatus }) });
+                          r = await fetchWithRetry(`${API_BASE}/api/admin/tickets/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` }, body: JSON.stringify({ status: mappedStatus }) });
                         } else if (action === 'delete') {
-                          r = await fetch(`${API_BASE}/api/admin/tickets/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` }, body: JSON.stringify({ deletedByUser: true }) });
+                          r = await fetchWithRetry(`${API_BASE}/api/admin/tickets/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` }, body: JSON.stringify({ deletedByUser: true }) });
                         } else if (action === 'restore') {
-                          r = await fetch(`${API_BASE}/api/admin/tickets/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` }, body: JSON.stringify({ deletedByUser: false }) });
+                          r = await fetchWithRetry(`${API_BASE}/api/admin/tickets/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` }, body: JSON.stringify({ deletedByUser: false }) });
                         }
                         if (r && !r.ok) {
                           const d = await r.json().catch(() => ({}));

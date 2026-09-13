@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, X, Globe, Plus, MapPin, RefreshCw } from 'lucide-react';
@@ -23,7 +24,7 @@ export default function LocationsPage() {
     const token = localStorage.getItem('auth_token');
     if (!token) { router.replace('/login'); return; }
     setLoading(true);
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations`, {
+    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(async res => {
@@ -45,7 +46,7 @@ export default function LocationsPage() {
 
   const handleExecuteDelete = async (id: string) => {
     const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${id}`, {
+    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });

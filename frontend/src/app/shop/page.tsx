@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -70,7 +71,7 @@ export default function StorePage() {
     
     try {
       const token = localStorage.getItem("auth_token");
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/shop/purchase`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/shop/purchase`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ itemKey: key, quantity }),
@@ -85,7 +86,7 @@ export default function StorePage() {
       // Refresh coins from server in background
       try {
         const token2 = localStorage.getItem("auth_token");
-        fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, {
+        fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, {
           headers: { Authorization: `Bearer ${token2}` },
         })
           .then((ur) => ur.ok && ur.json())
@@ -129,7 +130,7 @@ export default function StorePage() {
       }
 
       const billingCycle = selectedPlan.lifetime ? "lifetime" : "monthly";
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/paypal/create-order`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/paypal/create-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -170,7 +171,7 @@ export default function StorePage() {
                   if (prev) { // If still processing when closed, it was cancelled
                     showError("Payment was cancelled.");
                     // Notify backend to mark order as VOIDED
-                    fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/paypal/cancel-order`, {
+                    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/paypal/cancel-order`, {
                       method: "POST",
                       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
                       body: JSON.stringify({ orderId: data.id })

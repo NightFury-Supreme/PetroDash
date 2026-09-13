@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState } from 'react';
 
 
@@ -47,7 +48,7 @@ export function AdminLedgerTable({
       try {
         const token = localStorage.getItem('auth_token');
         const baseUrl = process.env.NEXT_PUBLIC_API_BASE || '';
-        const res = await fetch(`${baseUrl}/api/admin/payments/${paymentId}/invoice`, {
+        const res = await fetchWithRetry(`${baseUrl}/api/admin/payments/${paymentId}/invoice`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!res.ok) throw new Error('Failed to download invoice');

@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useCallback, useEffect, useState } from 'react';
 import { SupportTicket, TicketAction, TicketStatus } from '@/components/tickets/types';
 import { API_BASE, getToken } from '@/components/tickets/utils';
@@ -37,10 +38,10 @@ export function useTickets(): UseTicketsReturn {
       }
       
       const [rTickets, rCounts] = await Promise.all([
-        fetch(`${API_BASE}/api/tickets/mine?${q.toString()}`, {
+        fetchWithRetry(`${API_BASE}/api/tickets/mine?${q.toString()}`, {
           headers: { Authorization: `Bearer ${getToken()}` },
         }),
-        fetch(`${API_BASE}/api/tickets/counts`, {
+        fetchWithRetry(`${API_BASE}/api/tickets/counts`, {
           headers: { Authorization: `Bearer ${getToken()}` },
         })
       ]);
@@ -69,7 +70,7 @@ export function useTickets(): UseTicketsReturn {
   useEffect(() => {
     (async () => {
       try {
-        const r = await fetch(`${API_BASE}/api/tickets/categories`, {
+        const r = await fetchWithRetry(`${API_BASE}/api/tickets/categories`, {
           headers: { Authorization: `Bearer ${getToken()}` },
         });
         const d = await r.json().catch(() => ({}));
@@ -91,7 +92,7 @@ export function useTickets(): UseTicketsReturn {
     setTickets(cur => cur.map(t => t._id === id ? { ...t, status: newStatus } : t));
     
     try {
-      const res = await fetch(`${API_BASE}/api/tickets/${id}/status`, {
+      const res = await fetchWithRetry(`${API_BASE}/api/tickets/${id}/status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
         body: JSON.stringify({ action }),
@@ -112,7 +113,7 @@ export function useTickets(): UseTicketsReturn {
   /* -- Create --------------------------------------- */
   const createTicket = useCallback(async (data: { title: string; message: string; category: string; priority?: string }) => {
     try {
-      const r = await fetch(`${API_BASE}/api/tickets`, {
+      const r = await fetchWithRetry(`${API_BASE}/api/tickets`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
         body: JSON.stringify(data),

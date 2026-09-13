@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import React, { useState } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
 import { useModal } from "@/components/Modal";
@@ -18,7 +19,7 @@ export function SecurityTab({ ban, userId, onRefresh }: any) {
       const token = localStorage.getItem('auth_token');
       const payload: any = { isBanned: true, reason: banForm.reason };
       if (banForm.durationMinutes) payload.until = new Date(Date.now() + banForm.durationMinutes * 60000).toISOString();
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${userId}/ban`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${userId}/ban`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)
       });
@@ -38,7 +39,7 @@ export function SecurityTab({ ban, userId, onRefresh }: any) {
     setBanning(true);
     try {
       const token = localStorage.getItem('auth_token');
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${userId}/ban`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${userId}/ban`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ isBanned: false })
       });

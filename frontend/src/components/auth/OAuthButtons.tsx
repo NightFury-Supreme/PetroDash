@@ -1,4 +1,5 @@
 'use client';
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -28,7 +29,7 @@ function OAuthButtonsInner({ onError }: OAuthButtonsProps) {
   useEffect(() => {
     const fetchOAuthStatus = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/`);
+        const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/`);
         let data: any = {}; try { data = await response.json(); } catch {}
 
         const availableProviders: OAuthProvider[] = [];

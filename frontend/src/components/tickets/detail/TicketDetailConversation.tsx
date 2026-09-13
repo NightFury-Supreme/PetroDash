@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import React, { useEffect, useRef } from 'react';
 import { useToast } from "@/components/ui/ToastProvider";
 import { TicketMessage } from '../types';
@@ -219,7 +220,7 @@ function MentionPill({ type, id, name, viewerRole, onServerMentionClick }: { typ
           ? `${API_BASE}/api/admin/payments/${id}/invoice` 
           : `${API_BASE}/api/payments/${id}/invoice`;
           
-        const r = await fetch(endpoint, {
+        const r = await fetchWithRetry(endpoint, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!r.ok) throw new Error("Failed to download");

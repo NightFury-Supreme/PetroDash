@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { AdBlockerModal } from './AdBlockerModal';
@@ -129,7 +130,7 @@ export function AdSense({
   // Load settings with error handling and caching
   const loadSettings = useCallback(async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/ads`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/ads`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -470,7 +471,7 @@ export function useAdSenseSettings() {
         setLoading(true);
         setError(null);
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/ads`, {
+        const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/ads`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

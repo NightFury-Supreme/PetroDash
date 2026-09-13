@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -31,8 +32,8 @@ export default function VerifyCard() {
         if (!token) { if (active) router.replace("/login"); return; }
         const base = process.env.NEXT_PUBLIC_API_BASE || "";
         const [res, brandingRes] = await Promise.all([
-          fetch(`${base}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" }),
-          fetch(`${base}/api/branding`, { cache: "no-store" })
+          fetchWithRetry(`${base}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" }),
+          fetchWithRetry(`${base}/api/branding`, { cache: "no-store" })
         ]);
         if (res.ok) {
           let data: any = {}; try { data = await res.json(); } catch {}
@@ -80,7 +81,7 @@ export default function VerifyCard() {
       const token = localStorage.getItem("auth_token");
       if (!token) return;
       const base = process.env.NEXT_PUBLIC_API_BASE || "";
-      const res = await fetch(`${base}/api/auth/verify/code`, {
+      const res = await fetchWithRetry(`${base}/api/auth/verify/code`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ email, code })
@@ -110,7 +111,7 @@ export default function VerifyCard() {
       const token = localStorage.getItem("auth_token");
       if (!token) return;
       const base = process.env.NEXT_PUBLIC_API_BASE || "";
-      const res = await fetch(`${base}/api/auth/verify/resend`, {
+      const res = await fetchWithRetry(`${base}/api/auth/verify/resend`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ email })
@@ -153,7 +154,7 @@ export default function VerifyCard() {
       if (loginMethod === 'email') payload.password = password;
       if (tfaEnabled) payload.tfaCode = tfaCode;
       
-      const res = await fetch(`${base}/api/auth/profile/email`, {
+      const res = await fetchWithRetry(`${base}/api/auth/profile/email`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)

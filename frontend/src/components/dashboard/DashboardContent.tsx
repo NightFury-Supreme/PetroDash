@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useState, useCallback } from 'react';
 import { useDashboard } from '../../hooks/useDashboard';
@@ -39,7 +40,7 @@ export function DashboardContent() {
     }
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers/${serverId}`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers/${serverId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });

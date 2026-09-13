@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useState, useEffect, useCallback } from "react";
 import {
@@ -188,7 +189,7 @@ export function AdminEditServerDrawer({
     setErrorMsg(null);
     try {
       const token = localStorage.getItem("auth_token");
-      const res = await fetch(
+      const res = await fetchWithRetry(
         `${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/servers/${serverId}`,
         {
           method: "DELETE",
@@ -228,7 +229,7 @@ export function AdminEditServerDrawer({
     try {
       const token = localStorage.getItem("auth_token");
       if (!token) return;
-      const res = await fetch(
+      const res = await fetchWithRetry(
         `${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/servers/${serverId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -265,7 +266,7 @@ export function AdminEditServerDrawer({
     setErrorMsg(null);
     try {
       const token = localStorage.getItem("auth_token");
-      const res = await fetch(
+      const res = await fetchWithRetry(
         `${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/servers/${serverId}`,
         {
           method: "PATCH",

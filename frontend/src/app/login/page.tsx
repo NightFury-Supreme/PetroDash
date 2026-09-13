@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -8,7 +9,7 @@ import LoginClient from './view';
 async function fetchBranding() {
   try {
     const base = process.env.NEXT_PUBLIC_API_BASE || '';
-    const res = await fetch(base ? `${base}/api/branding` : `${base}/api/branding`, { cache: 'no-store' });
+    const res = await fetchWithRetry(base ? `${base}/api/branding` : `${base}/api/branding`, { cache: 'no-store' });
     let d: any = {}; try { d = await res.json(); } catch {}
     return { siteName: d?.siteName || 'PteroDash', siteIcon: d?.siteIcon || '' };
   } catch {

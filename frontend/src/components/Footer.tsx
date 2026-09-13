@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useState, useEffect } from 'react';
 import packageInfo from '../../package.json';
@@ -16,7 +17,7 @@ export default function Footer() {
   useEffect(() => {
     const fetchBranding = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/branding`, { cache: 'no-store' });
+        const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/branding`, { cache: 'no-store' });
         let data: any = {}; try { data = await res.json(); } catch {}
         if (data?.siteName) {
           setBranding(data);
@@ -28,7 +29,7 @@ export default function Footer() {
 
     const fetchStatus = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/status`);
+        const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/status`);
         if (!res.ok) throw new Error('Status fetch failed');
         const data = await res.json();
         

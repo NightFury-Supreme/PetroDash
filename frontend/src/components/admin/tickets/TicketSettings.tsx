@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import React, { useMemo, useState, useEffect } from "react";
 import { Plus, Save, Settings, X, Loader2 } from "lucide-react";
 import { Drawer } from "@/components/ui/Drawer";
@@ -24,13 +25,13 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
     try {
       const token = localStorage.getItem("auth_token");
       
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/tickets/settings/categories`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/tickets/settings/categories`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       let d: any = {};
       try { d = await r.json(); } catch {}
       
-      const u = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/tickets/settings/categories/usage`, {
+      const u = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/tickets/settings/categories/usage`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       let ud: any = {};
@@ -95,7 +96,7 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
       const token = localStorage.getItem("auth_token");
       const categoryNames = categories.map((c) => c.name);
 
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/tickets/settings/categories`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/tickets/settings/categories`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

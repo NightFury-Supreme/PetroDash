@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -38,7 +39,7 @@ export default function UpdateSystem() {
     setError(null);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/updates/check`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/updates/check`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

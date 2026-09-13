@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { DeleteDrawer } from "@/components/ui/DeleteDrawer";
 import { useState } from "react";
 
@@ -21,7 +22,7 @@ export function AdminDeleteGiftDrawer({
     try {
       setError(null);
       const token = localStorage.getItem("auth_token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/gifts/${giftId}`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/gifts/${giftId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });

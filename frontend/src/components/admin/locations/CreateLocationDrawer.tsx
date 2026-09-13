@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useState, useEffect, useRef } from "react";
 import { Globe, Loader2, Check, Upload, Trash2 } from "lucide-react";
@@ -46,7 +47,7 @@ export function CreateLocationDrawer({ onClose, onSuccess }: CreateLocationDrawe
 
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/plans`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/plans`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       .then(r => r.json())
       .then(d => setPlans(Array.isArray(d) ? d : []))
       .catch(() => {})
@@ -83,7 +84,7 @@ export function CreateLocationDrawer({ onClose, onSuccess }: CreateLocationDrawe
         setUploadingFlag(true);
         const fd = new FormData();
         fd.append('icon', pendingFlagFile);
-        const uploadRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/upload/icon`, {
+        const uploadRes = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/upload/icon`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
           body: fd,
@@ -94,7 +95,7 @@ export function CreateLocationDrawer({ onClose, onSuccess }: CreateLocationDrawe
         finalFlag = uploadData.filePath;
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({

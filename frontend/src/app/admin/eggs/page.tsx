@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import EggsHeader from '@/components/admin/eggs/EggsHeader';
@@ -28,7 +29,7 @@ export default function EggsListPage() {
     if (!token) { router.replace('/login'); return; }
     
     setLoading(true);
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/eggs`, {
+    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/eggs`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(async res => {
@@ -75,7 +76,7 @@ export default function EggsListPage() {
 
   const handleExecuteDelete = async (id: string) => {
     const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/${id}`, {
+    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` }
     });

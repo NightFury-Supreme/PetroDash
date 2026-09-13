@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useState } from "react";
 import { Gift, Coins, Check, Copy } from "lucide-react";
@@ -58,7 +59,7 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
       setCreating(true);
       const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
       if (!token) { showError("Please login first."); return; }
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/gifts/create`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/gifts/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ coins: coinValue, maxRedemptions: redemptionValue, expiresInDays: Number(expiresInDays), description }),

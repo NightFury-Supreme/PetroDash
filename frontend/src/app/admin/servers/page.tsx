@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useState, useEffect } from 'react';
 import { useToast } from "@/components/ui/ToastProvider";
@@ -126,8 +127,8 @@ export default function AdminServersPage() {
         const token = localStorage.getItem('auth_token');
         if (!token) return;
         const [locRes, eggRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs`, { headers: { Authorization: `Bearer ${token}` } })
+          fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs`, { headers: { Authorization: `Bearer ${token}` } })
         ]);
         if (locRes.ok) setLocations(await locRes.json());
         if (eggRes.ok) setEggs(await eggRes.json());
@@ -175,7 +176,7 @@ export default function AdminServersPage() {
       if (eggFilter && eggFilter !== 'all') queryParams.append('eggId', eggFilter);
       if (sortBy) queryParams.append('sort', sortBy);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/servers?${queryParams.toString()}`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/servers?${queryParams.toString()}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!response.ok) throw new Error('Failed to load servers');
@@ -211,7 +212,7 @@ export default function AdminServersPage() {
       if (eggFilter && eggFilter !== 'all') queryParams.append('eggId', eggFilter);
       if (sortBy) queryParams.append('sort', sortBy);
       
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/servers/queue?${queryParams.toString()}`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/servers/queue?${queryParams.toString()}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to load queue');
@@ -243,7 +244,7 @@ export default function AdminServersPage() {
     setDeleting(deletingServerDrawer.id);
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/servers/${deletingServerDrawer.id}`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/servers/${deletingServerDrawer.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -269,7 +270,7 @@ export default function AdminServersPage() {
     setIsDeletingQueue(deletingQueueServer._id);
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/servers/${deletingQueueServer._id}?force=true`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/servers/${deletingQueueServer._id}?force=true`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -297,7 +298,7 @@ export default function AdminServersPage() {
         if (locationId && locationId !== 'all') queryParams.append('locationId', locationId);
         if (eggId && eggId !== 'all') queryParams.append('eggId', eggId);
         
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/servers/queue/clear?${queryParams.toString()}`, {
+        const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/servers/queue/clear?${queryParams.toString()}`, {
           method: 'DELETE',
           headers: { Authorization: `Bearer ${token}` }
         });

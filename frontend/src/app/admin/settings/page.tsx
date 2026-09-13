@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useEffect, useState, useCallback } from 'react';
 import { useToast } from "@/components/ui/ToastProvider";
@@ -98,7 +99,7 @@ export default function AdminSettingsPage() {
         throw new Error('Authentication token not found');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/settings`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/settings`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -125,7 +126,7 @@ export default function AdminSettingsPage() {
         throw new Error('Authentication token not found');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/settings`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/settings`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

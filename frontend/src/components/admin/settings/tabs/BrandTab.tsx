@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import React, { useState, useRef } from 'react';
 import { LayoutTemplate, Upload, Trash2 } from 'lucide-react';
 import { SettingsRow, SiteIconDisplay } from '../Shared';
@@ -52,7 +53,7 @@ export function BrandTab({ formData, updateFormData, saveSection, loading }: Tab
                     const token = localStorage.getItem('auth_token');
                     const fd = new FormData();
                     fd.append('icon', iconFile);
-                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/upload/icon`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
+                    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/upload/icon`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
                     if (!res.ok) throw new Error('Failed to upload icon');
                     let data: any = {}; try { data = await res.json(); } catch {}
                     finalSiteIcon = data.filePath || data.url;

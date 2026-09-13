@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import React, { useState } from "react";
 import { useProfile } from '@/hooks/useProfile';
 import ProfileSkeleton from '@/components/skeletons/profile/ProfileSkeleton';
@@ -127,7 +128,7 @@ export default function ProfilePage() {
 
   const changeEmail = async (newEmail: string, password: string, tfaCode: string) => {
     const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/profile/email`, {
+    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/profile/email`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ email: newEmail, password: password || undefined, tfaCode: tfaCode || undefined })
@@ -140,7 +141,7 @@ export default function ProfilePage() {
     }
     
     // Refresh the user profile to get the new email and updated emailVerified status
-    const profileRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, {
+    const profileRes = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     if (profileRes.ok) {
@@ -156,7 +157,7 @@ export default function ProfilePage() {
 
   const verifyEmailChange = async (newEmail: string, code: string) => {
     const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/profile/email/verify`, {
+    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/profile/email/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ email: newEmail, code })
@@ -164,7 +165,7 @@ export default function ProfilePage() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Failed to verify email change');
     
-    const profileRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, {
+    const profileRes = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     if (profileRes.ok) {
@@ -179,7 +180,7 @@ export default function ProfilePage() {
 
   const deleteAccount = async (password?: string, tfaCode?: string) => {
     const token = localStorage.getItem('auth_token');
-    const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/profile`, { 
+    const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/profile`, { 
       method: 'DELETE', 
       headers: { 
         'Content-Type': 'application/json',
@@ -242,7 +243,7 @@ export default function ProfilePage() {
   const start2FASetup = async () => {
     try {
       const token = localStorage.getItem('auth_token');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/2fa/setup`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/2fa/setup`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -262,7 +263,7 @@ export default function ProfilePage() {
   // Called from the drawer — throws on error so the drawer can handle loading state
   const verifyAndEnable2FA = async (code: string) => {
     const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/2fa/enable`, {
+    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/2fa/enable`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ code })
@@ -276,7 +277,7 @@ export default function ProfilePage() {
   // Called from the drawer — throws on error so the drawer can handle loading state
   const disable2FA = async (password: string, code: string) => {
     const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/2fa/disable`, {
+    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/2fa/disable`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ password: password || undefined, code: code || undefined })

@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, notFound }   from "next/navigation";
@@ -50,7 +51,7 @@ export default function AdminTicketDetailPage() {
   const fetchTicket = useCallback(async (silent = false) => {
     if (!id) return;
     try {
-      const r = await fetch(`${API_BASE}/api/admin/tickets/${id}`, {
+      const r = await fetchWithRetry(`${API_BASE}/api/admin/tickets/${id}`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       let d: any = {}; try { d = await r.json(); } catch {}
@@ -66,7 +67,7 @@ export default function AdminTicketDetailPage() {
   const fetchInitialMessages = useCallback(async (isPoll = false) => {
     if (!id) return;
     try {
-      const r = await fetch(`${API_BASE}/api/admin/tickets/${id}/messages?limit=50`, {
+      const r = await fetchWithRetry(`${API_BASE}/api/admin/tickets/${id}/messages?limit=50`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       let d: any = {}; try { d = await r.json(); } catch {}
@@ -87,7 +88,7 @@ export default function AdminTicketDetailPage() {
     const prevH = container?.scrollHeight ?? 0;
     const prevT = container?.scrollTop    ?? 0;
     try {
-      const r = await fetch(
+      const r = await fetchWithRetry(
         `${API_BASE}/api/admin/tickets/${id}/messages?limit=50&before=${oldestId}`,
         { headers: { Authorization: `Bearer ${getToken()}` } }
       );
@@ -154,7 +155,7 @@ export default function AdminTicketDetailPage() {
     setTimeout(() => scrollToBottom(true), 0);
 
     try {
-      const r = await fetch(`${API_BASE}/api/admin/tickets/${id}/messages`, {
+      const r = await fetchWithRetry(`${API_BASE}/api/admin/tickets/${id}/messages`, {
         method:  "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
         body:    JSON.stringify({ body: sentText, internal: isInternal }),
@@ -189,7 +190,7 @@ export default function AdminTicketDetailPage() {
     setActionBusy(actionKey);
     setActionDone(null);
     try {
-      const r = await fetch(`${API_BASE}/api/admin/tickets/${id}`, {
+      const r = await fetchWithRetry(`${API_BASE}/api/admin/tickets/${id}`, {
         method:  "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
         body:    JSON.stringify({ status }),
@@ -207,7 +208,7 @@ export default function AdminTicketDetailPage() {
     setActionBusy("priority");
     setActionDone(null);
     try {
-      const r = await fetch(`${API_BASE}/api/admin/tickets/${id}`, {
+      const r = await fetchWithRetry(`${API_BASE}/api/admin/tickets/${id}`, {
         method:  "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
         body:    JSON.stringify({ priority }),
@@ -227,7 +228,7 @@ export default function AdminTicketDetailPage() {
     else if (action === "reopen")  await updateStatus("open",     "reopen");
     else if (action === "delete") {
       setActionBusy("delete");
-      const r = await fetch(`${API_BASE}/api/admin/tickets/${id}`, {
+      const r = await fetchWithRetry(`${API_BASE}/api/admin/tickets/${id}`, {
         method:  "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
         body:    JSON.stringify({ deletedByUser: true }),
@@ -236,7 +237,7 @@ export default function AdminTicketDetailPage() {
       else setActionBusy(null);
     } else if (action === "restore") {
       setActionBusy("restore");
-      const r = await fetch(`${API_BASE}/api/admin/tickets/${id}`, {
+      const r = await fetchWithRetry(`${API_BASE}/api/admin/tickets/${id}`, {
         method:  "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
         body:    JSON.stringify({ deletedByUser: false }),

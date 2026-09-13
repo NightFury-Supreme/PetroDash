@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState } from 'react';
 import { z } from 'zod';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -56,7 +57,7 @@ export default function RegisterClient({ _emailVerification }: { _emailVerificat
     setLoading(true);
     try {
       const ref = search?.get('ref') || undefined;
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/register`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...parsed.data, ...(ref ? { ref } : {}) }),

@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import React, { useState } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
 import { InfoRow } from "@/components/admin/users/AdminInfoRow";
@@ -20,7 +21,7 @@ export function ResourcesTab({ resources, setResources, userId, onRefresh: _onRe
     try {
       const token = localStorage.getItem('auth_token');
       const newResources = { ...resources, [editing]: Number(draft) };
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/users/${userId}`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/users/${userId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ resources: newResources })

@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -22,7 +23,7 @@ export default function BannedPage() {
         const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
         if (!token) { if (active) router.replace("/login"); return; }
         const base = process.env.NEXT_PUBLIC_API_BASE || "";
-        const res = await fetch(`${base}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
+        const res = await fetchWithRetry(`${base}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
         if (res.ok) {
           if (!active) return;
           try { sessionStorage.removeItem("ban_reason"); sessionStorage.removeItem("ban_until"); } catch {}

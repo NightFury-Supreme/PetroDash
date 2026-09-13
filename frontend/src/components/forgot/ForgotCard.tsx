@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -31,7 +32,7 @@ export default function ForgotCard() {
     setSuccess(null);
     try {
       const base = process.env.NEXT_PUBLIC_API_BASE || "";
-      const res = await fetch(`${base}/api/auth/forgot`, {
+      const res = await fetchWithRetry(`${base}/api/auth/forgot`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email })
@@ -62,7 +63,7 @@ export default function ForgotCard() {
     setSuccess(null);
     try {
       const base = process.env.NEXT_PUBLIC_API_BASE || "";
-      const res = await fetch(`${base}/api/auth/reset`, {
+      const res = await fetchWithRetry(`${base}/api/auth/reset`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, code, newPassword: password })
@@ -88,7 +89,7 @@ export default function ForgotCard() {
     setSuccess(null);
     try {
       const base = process.env.NEXT_PUBLIC_API_BASE || "";
-      const res = await fetch(`${base}/api/auth/forgot`, {
+      const res = await fetchWithRetry(`${base}/api/auth/forgot`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email })

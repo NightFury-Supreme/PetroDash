@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
@@ -45,7 +46,7 @@ export default function GiftsPageContent() {
       url.searchParams.set('sort', sortBy);
       if (query.trim()) url.searchParams.set('search', query.trim());
 
-      const res = await fetch(url.toString(), { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetchWithRetry(url.toString(), { headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) {
         let d: any = {}; try { d = await res.json(); } catch {}
         if (Array.isArray(d)) {
