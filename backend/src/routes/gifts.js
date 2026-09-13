@@ -163,7 +163,6 @@ router.post('/redeem', requireAuth, async (req, res) => {
 
     const authUserId = (req.user && (req.user.sub || req.user.userId || req.user._id || req.user.id)) || null;
     if (!authUserId) return res.status(401).json({ error: 'Unauthorized' });
-    // additional per-route throttling removed
 
     const session = await mongoose.startSession().catch(() => null);
     if (!session) {
@@ -174,32 +173,39 @@ router.post('/redeem', requireAuth, async (req, res) => {
       if (gift.validFrom && now < gift.validFrom) return res.status(400).json({ error: 'Code is not active yet' });
       if (gift.validUntil && now > gift.validUntil) return res.status(400).json({ error: 'Code has expired' });
       if (gift.maxRedemptions && gift.redeemedCount >= gift.maxRedemptions) return res.status(400).json({ error: 'Code redemption limit reached' });
-      const alreadyRedeemed = gift.redemptions?.some(r => r.user?.toString() === String(authUserId));
+      
+      const alreadyRedeemed = await require('../models/GiftRedemption').exists({ gift: gift._id, user: authUserId });
       if (alreadyRedeemed) return res.status(400).json({ error: 'You have already redeemed this code' });
+
+      // Attempt to insert redemption record atomically
+      try {
+        await require('../models/GiftRedemption').create({ gift: gift._id, user: authUserId });
+      } catch (err) {
+        if (err.code === 11000) return res.status(400).json({ error: 'You have already redeemed this code' });
+        throw err;
+      }
 
       // Atomically claim the gift to prevent double-redemption race conditions
       const claimedGift = await Gift.findOneAndUpdate(
-        { code: codeUpper, enabled: true, 'redemptions.user': { $ne: authUserId } },
-        { 
-          $inc: { redeemedCount: 1 },
-          $push: { redemptions: { user: authUserId, redeemedAt: new Date() } }
-        },
+        { _id: gift._id },
+        { $inc: { redeemedCount: 1 } },
         { new: true }
       );
 
       if (!claimedGift) {
+        await require('../models/GiftRedemption').deleteOne({ gift: gift._id, user: authUserId });
         return res.status(400).json({ error: 'Could not redeem code (possibly already redeemed concurrently)' });
       }
       if (claimedGift.maxRedemptions && claimedGift.redeemedCount > claimedGift.maxRedemptions) {
-        // Revert if over-redeemed
-        await Gift.findByIdAndUpdate(claimedGift._id, { $inc: { redeemedCount: -1 }, $pull: { redemptions: { user: authUserId } } });
+        await Gift.findByIdAndUpdate(claimedGift._id, { $inc: { redeemedCount: -1 } });
+        await require('../models/GiftRedemption').deleteOne({ gift: gift._id, user: authUserId });
         return res.status(400).json({ error: 'Code redemption limit reached' });
       }
 
       const user = await User.findById(authUserId);
       if (!user) {
-        // Revert gift claim
-        await Gift.findByIdAndUpdate(claimedGift._id, { $inc: { redeemedCount: -1 }, $pull: { redemptions: { user: authUserId } } });
+        await Gift.findByIdAndUpdate(claimedGift._id, { $inc: { redeemedCount: -1 } });
+        await require('../models/GiftRedemption').deleteOne({ gift: gift._id, user: authUserId });
         return res.status(404).json({ error: 'User not found' });
       }
 
@@ -217,6 +223,8 @@ router.post('/redeem', requireAuth, async (req, res) => {
       const appliedPlans = [];
       const planIds = Array.isArray(rewards.planIds) ? rewards.planIds : [];
       if (planIds.length > 0) {
+        const Plan = require('../models/Plan');
+        const UserPlan = require('../models/UserPlan');
         for (const pid of planIds) {
           try {
             const plan = await Plan.findById(pid);
@@ -253,7 +261,6 @@ router.post('/redeem', requireAuth, async (req, res) => {
             slotsToAdd += Number(productContent.serverLimit || 0);
             
             appliedPlans.push({ planId: String(plan._id), name: plan.name, subscriptionId: String(sub._id), lifetime: isLifetime, expiresAt });
-          // eslint-disable-next-line unused-imports/no-unused-vars
           } catch (_) { /* ignore */ }
         }
       }
@@ -285,7 +292,7 @@ router.post('/redeem', requireAuth, async (req, res) => {
       const metadata = { code: codeUpper, changes };
       
       const { writeAudit } = require('../middleware/audit');
-      await logUserActivity(req, 'gift.redeem', metadata);
+      await require('../middleware/activity').logUserActivity(req, 'gift.redeem', metadata);
       await writeAudit(req, 'gift.redeem', 'gift', null, metadata);
       return res.json({ message: 'Gift redeemed successfully', description: claimedGift.description, rewards: claimedGift.rewards, appliedPlans, user: { coins: updatedUser.coins, resources: updatedUser.resources } });
     }
@@ -299,7 +306,9 @@ router.post('/redeem', requireAuth, async (req, res) => {
       if (gift.validFrom && now < gift.validFrom) throw new Error('NOT_ACTIVE');
       if (gift.validUntil && now > gift.validUntil) throw new Error('EXPIRED');
       if (gift.maxRedemptions && gift.redeemedCount >= gift.maxRedemptions) throw new Error('LIMIT');
-      const alreadyRedeemed = gift.redemptions?.some(r => r.user?.toString() === String(authUserId));
+      
+      const GiftRedemption = require('../models/GiftRedemption');
+      const alreadyRedeemed = await GiftRedemption.exists({ gift: gift._id, user: authUserId }).session(session);
       if (alreadyRedeemed) throw new Error('DUP');
 
       const user = await User.findById(authUserId).session(session);
@@ -326,6 +335,8 @@ router.post('/redeem', requireAuth, async (req, res) => {
       const appliedPlans = [];
       const planIds = Array.isArray(rewards.planIds) ? rewards.planIds : [];
       if (planIds.length > 0) {
+        const Plan = require('../models/Plan');
+        const UserPlan = require('../models/UserPlan');
         for (const pid of planIds) {
           try {
             const plan = await Plan.findById(pid).session(session);
@@ -361,7 +372,6 @@ router.post('/redeem', requireAuth, async (req, res) => {
             user.resources.allocations = Number(user.resources.allocations || 0) + Number(productContent.additionalAllocations || 0);
             user.resources.serverSlots = Number(user.resources.serverSlots || 0) + Number(productContent.serverLimit || 0);
             appliedPlans.push({ planId: String(plan._id), name: plan.name, subscriptionId: String(sub[0]._id), lifetime: isLifetime, expiresAt });
-          // eslint-disable-next-line unused-imports/no-unused-vars
           } catch (_) { /* ignore */ }
         }
       }
@@ -377,9 +387,10 @@ router.post('/redeem', requireAuth, async (req, res) => {
       });
       
       gift.redeemedCount = (gift.redeemedCount || 0) + 1;
-      gift.redemptions = gift.redemptions || [];
-      gift.redemptions.push({ user: user._id, redeemedAt: new Date() });
       await gift.save({ session });
+      
+      await GiftRedemption.create([{ gift: gift._id, user: user._id }], { session });
+      
       result = { description: gift.description, rewards: gift.rewards, user: { coins: user.coins, resources: user.resources }, appliedPlans, changes };
     });
     await session.endSession();
@@ -387,7 +398,7 @@ router.post('/redeem', requireAuth, async (req, res) => {
     const metadata = { code: codeUpper, changes: result?.changes || {} };
     
     const { writeAudit } = require('../middleware/audit');
-    await logUserActivity(req, 'gift.redeem', metadata);
+    await require('../middleware/activity').logUserActivity(req, 'gift.redeem', metadata);
     await writeAudit(req, 'gift.redeem', 'gift', null, metadata);
     return res.json({ message: 'Gift redeemed successfully', ...result });
   } catch (error) {

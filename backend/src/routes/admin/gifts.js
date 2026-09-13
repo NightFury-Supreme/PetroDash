@@ -36,6 +36,7 @@ router.get('/', requireAdmin, async (req, res) => {
 
     const total = await Gift.countDocuments(filter);
     const gifts = await Gift.find(filter)
+      .select('-redemptions') // ISO 25010 / Security: Prevent leaking old deprecated embedded redemptions array
       .sort(sortObj)
       .skip((pageNum - 1) * limitNum)
       .limit(limitNum)
