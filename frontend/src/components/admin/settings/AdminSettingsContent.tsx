@@ -953,7 +953,7 @@ export function AdminSettingsContent({
           <div className="divide-y divide-white/[0.06]">
             {/* Email Configuration */}
             <SettingsDrawerRow 
-              icon={<Server />} 
+              icon={<Mail />} 
               label="Email Configuration" 
               description="Configure your email server settings for outgoing emails." 
               enabled={formData.payments?.smtp?.enabled ?? false}
@@ -1072,7 +1072,7 @@ export function AdminSettingsContent({
         <div className="divide-y divide-white/[0.06]">
           {/* AdSense Settings */}
           <SettingsDrawerRow 
-            icon={<BadgeDollarSign />} 
+            icon={<i className="fab fa-google"></i>} 
             label="Google AdSense" 
             description="Configure Google AdSense integration and ad slots" 
             enabled={formData.adsense?.enabled || false} 
@@ -1166,7 +1166,7 @@ export function AdminSettingsContent({
         <div className="divide-y divide-white/[0.06]">
           {/* PayPal Settings */}
           <SettingsDrawerRow 
-            icon={<CreditCard />} 
+            icon={<i className="fab fa-paypal"></i>} 
             label="PayPal Payments" 
             description="Configure PayPal integration for payments" 
             enabled={formData.payments?.paypal?.enabled || false} 
