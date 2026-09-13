@@ -5,7 +5,7 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
 import TicketsHeader from "@/components/tickets/TicketsHeader";
 import { TicketNavSidebar } from "@/components/tickets/TicketNavSidebar";
-import TicketItem from "@/components/tickets/TicketItem";
+import AdminTicketItem from "@/components/admin/tickets/AdminTicketItem";
 import TicketsSkeleton from "@/components/skeletons/tickets/TicketsSkeleton";
 import TicketSettings from "@/components/admin/tickets/TicketSettings";
 import { TicketPagination } from "@/components/tickets/TicketPagination";
@@ -239,7 +239,7 @@ export default function AdminTicketsPage() {
 
                   <div className="divide-y divide-[#222]">
                     {tickets.map(t => (
-                      <TicketItem key={t._id} t={t as any} onAction={async (action, id) => {
+                      <AdminTicketItem key={t._id} t={t as any} onAction={async (action, id) => {
                         let r;
                         if (action === 'close' || action === 'resolve' || action === 'reopen') {
                           const mappedStatus = action === 'reopen' ? 'open' : action === 'close' ? 'closed' : 'resolved';

@@ -17,7 +17,7 @@ type Ticket = {
   user?: { username?: string; email?: string } 
 };
 
-export default function TicketItem({ t, onAction, isAdmin = true }:{ t: Ticket; onAction: (action: 'close'|'resolve'|'delete'|'restore'|'reopen', id: string)=>Promise<void>, isAdmin?: boolean }){
+export default function TicketItem({ ticket: t, onAction, isAdmin = false }:{ ticket: Ticket; onAction: (action: 'close'|'resolve'|'delete'|'restore'|'reopen', id: string)=>Promise<void> | void, isAdmin?: boolean }){
   const [opening, setOpening] = useState(false);
   const [menu, setMenu] = useState(false);
   const [actionStatus, setActionStatus] = useState<'idle' | 'loading'>('idle');
