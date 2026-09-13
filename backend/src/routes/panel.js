@@ -3,7 +3,8 @@ const crypto = require('crypto');
 const { requireAuth } = require('../middleware/auth');
 const { createRateLimiter } = require('../middleware/rateLimit');
 const User = require('../models/User');
- 
+const UserCreationService = require('../services/userCreation');
+const { getCache, setCache } = require('../lib/redis');
 const { getPanelUser, updatePanelUser } = require('../services/pterodactyl');
 const { logUserActivity } = require('../middleware/userActivity');
 
@@ -18,7 +19,6 @@ router.get('/', requireAuth, createRateLimiter(100, 60 * 1000), async (req, res)
     }
 
     if (!user.pterodactylUserId) {
-      const UserCreationService = require('../services/userCreation');
       await UserCreationService.createPterodactylUser(user);
       if (!user.pterodactylUserId) {
         return res.status(503).json({ 
@@ -37,7 +37,6 @@ router.get('/', requireAuth, createRateLimiter(100, 60 * 1000), async (req, res)
       });
     }
 
-    const { getCache, setCache } = require('../lib/redis');
     const cacheKey = `user:${req.user.sub}:panel`;
     const cached = await getCache(cacheKey);
     if (cached) return res.json(cached);
@@ -96,7 +95,6 @@ router.post('/reset-password', requireAuth, createRateLimiter(3, 5 * 60 * 1000),
     }
 
     if (!user.pterodactylUserId) {
-      const UserCreationService = require('../services/userCreation');
       await UserCreationService.createPterodactylUser(user);
       if (!user.pterodactylUserId) {
         return res.status(503).json({ 
