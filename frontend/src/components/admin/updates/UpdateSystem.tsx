@@ -112,7 +112,7 @@ export default function UpdateSystem() {
           {/* Status Banner */}
           {updateInfo.isUpdateAvailable ? (
             <div className="py-4">
-              <div className="flex items-start gap-3 p-4 rounded-lg bg-[#FF5722]/[0.06] border border-[#FF5722]/20">
+              <div className="flex items-start gap-3 p-4 rounded-lg border border-[#FF5722]/20">
                 <AlertTriangle className="w-4 h-4 text-[#FF5722] mt-0.5 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-white">Update Available</p>
@@ -159,7 +159,7 @@ export default function UpdateSystem() {
             </div>
           ) : (
             <div className="py-4">
-              <div className="flex items-center gap-3 p-4 rounded-lg bg-emerald-500/[0.06] border border-emerald-500/20">
+              <div className="flex items-center gap-3 p-4 rounded-lg border border-emerald-500/20">
                 <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
                 <div>
                   <p className="text-sm font-medium text-white">You&apos;re up to date!</p>
