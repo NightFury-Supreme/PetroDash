@@ -5,6 +5,7 @@ const ShopItem = require('../models/ShopItem');
 const User = require('../models/User');
 const { getCache, setCache, deleteCache } = require('../lib/redis');
 const { logUserActivity } = require('../middleware/userActivity');
+const { writeAudit } = require('../middleware/audit');
 
 const router = express.Router();
 
@@ -70,7 +71,6 @@ router.post('/purchase', requireAuth, async (req, res) => {
     }
   };
 
-  const { writeAudit } = require('../middleware/audit');
   await writeAudit(req, 'shop.purchase', 'shop', item._id.toString(), {
     itemKey,
     quantity,
