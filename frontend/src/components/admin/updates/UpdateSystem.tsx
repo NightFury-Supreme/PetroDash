@@ -94,18 +94,7 @@ export default function UpdateSystem() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-4">
                   <p className="text-sm font-medium text-white">Update Available</p>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-mono text-[#FF5722]">v{updateInfo.currentVersion} → v{updateInfo.latestVersion}</span>
-                    <a
-                      href={updateInfo.releaseUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 h-7 px-3 rounded-md bg-white/[0.06] border border-white/[0.08] text-xs text-white hover:bg-white/[0.1] transition-colors"
-                    >
-                      <Github className="w-3 h-3" />
-                      View on GitHub
-                    </a>
-                  </div>
+                  <span className="text-xs font-mono text-white">v{updateInfo.currentVersion} → v{updateInfo.latestVersion}</span>
                 </div>
                 <p className="text-xs text-[#888] mt-0.5">
                   Published on {new Date(updateInfo.publishedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
@@ -130,6 +119,18 @@ export default function UpdateSystem() {
                     </div>
                   </div>
                 )}
+
+                <div className="flex justify-end mt-4">
+                  <a
+                    href={updateInfo.releaseUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 h-8 px-4 rounded-md bg-[#FF5722] text-white text-xs font-medium hover:bg-[#ff6939] transition-colors"
+                  >
+                    <Github className="w-3.5 h-3.5" />
+                    View on GitHub
+                  </a>
+                </div>
               </div>
             </div>
           ) : (
