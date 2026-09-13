@@ -121,7 +121,7 @@ const settingsPayloadSchema = z.object({
     }).optional(),
   }).optional(),
   defaults: z.object({
-    cpuPercent: z.coerce.number().int('CPU percent must be a whole number').min(0, 'CPU percent cannot be negative').max(100, 'CPU percent cannot exceed 100%').optional(),
+    cpuPercent: z.coerce.number().int('CPU percent must be a whole number').min(0, 'CPU percent cannot be negative').optional(),
     memoryMb: z.coerce.number().int('Memory must be a whole number').min(0, 'Memory cannot be negative').max(1000000, 'Memory cannot exceed 1TB').optional(),
     diskMb: z.coerce.number().int('Disk must be a whole number').min(0, 'Disk cannot be negative').max(10000000, 'Disk cannot exceed 10TB').optional(),
     serverSlots: z.coerce.number().int('Server slots must be a whole number').min(0, 'Server slots cannot be negative').max(1000, 'Server slots cannot exceed 1000').optional(),
@@ -282,13 +282,6 @@ router.patch('/', requireAdmin, async (req, res) => {
     
     // Validate business logic
     if (update.defaults) {
-      if (update.defaults.cpuPercent && update.defaults.cpuPercent > 100) {
-        return res.status(400).json({
-          error: 'Invalid CPU percentage',
-          message: 'CPU percentage cannot exceed 100%'
-        });
-      }
-      
       if (update.defaults.memoryMb && update.defaults.memoryMb < 128) {
         return res.status(400).json({
           error: 'Invalid memory allocation',
