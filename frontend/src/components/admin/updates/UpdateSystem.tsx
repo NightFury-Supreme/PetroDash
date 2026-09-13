@@ -88,7 +88,7 @@ export default function UpdateSystem() {
       {updateInfo && (
         <div>
           {updateInfo.isUpdateAvailable ? (
-            <div className="flex items-start gap-3 p-4 rounded-lg bg-[#FF5722]/[0.06] border border-[#FF5722]/20">
+            <div className="flex items-start gap-3 p-4 rounded-lg">
               <AlertTriangle className="w-4 h-4 text-[#FF5722] mt-0.5 shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-4">
