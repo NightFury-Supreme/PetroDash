@@ -175,14 +175,25 @@ export default function TicketsPage() {
           ) : (
             <div className="flex-1 min-h-0">
               {tickets.length > 0 ? (
-                <div className="flex flex-col gap-3">
-                  {tickets.map(t => (
-                    <TicketItem 
-                      key={t._id} 
-                      ticket={t} 
-                      onAction={(action) => onAction(t._id, action)} 
-                    />
-                  ))}
+                <div>
+                  <div className="hidden grid-cols-[1fr_100px_90px_80px_60px_36px] gap-4 border-b border-white/[0.06] pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30 md:grid">
+                    <span>Ticket</span>
+                    <span>Category</span>
+                    <span>Updated</span>
+                    <span>Status</span>
+                    <span>Priority</span>
+                    <span />
+                  </div>
+                  
+                  <div className="divide-y divide-[#222]">
+                    {tickets.map(t => (
+                      <TicketItem 
+                        key={t._id} 
+                        ticket={t} 
+                        onAction={(action) => onAction(t._id, action)} 
+                      />
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-20 text-center bg-[#141414] rounded-[10px] border border-[#282828]">
