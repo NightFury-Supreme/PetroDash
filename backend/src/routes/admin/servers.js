@@ -105,9 +105,30 @@ router.get('/', requireAdmin, async (req, res) => {
     }
     
     const base = (process.env.PTERO_BASE_URL || '').replace(/\/$/, '');
+    
     // [ISO 25010 Performance] Stripped out N+1 Pterodactyl API calls from the list route
     // The panel data is only fetched dynamically in the single server view (GET /:id) to prevent catastrophic timeouts
+
+    const panelPingData = await getCache('ping:panel');
+    const isPanelDown = !panelPingData || panelPingData.ping === -1 || panelPingData.ping === null;
+    
+    // Extract unique location IDs to batch check their ping status
+    const uniqueLocationIds = [...new Set(servers.map(s => s.locationId?._id?.toString()).filter(Boolean))];
+    const locationPingStatus = {};
+    
+    for (const locId of uniqueLocationIds) {
+      const nodePing = await getCache(`ping:${locId}`);
+      locationPingStatus[locId] = !nodePing || nodePing.ping === -1 || nodePing.ping === null;
+    }
+
     const enriched = servers.map((server) => {
+      let isNodeDown = false;
+      if (server.locationId && server.locationId._id) {
+        isNodeDown = locationPingStatus[server.locationId._id.toString()] || false;
+      }
+      
+      const isUnreachable = isPanelDown || isNodeDown;
+
       return {
         _id: server._id,
         name: server.name,
@@ -119,7 +140,7 @@ router.get('/', requireAdmin, async (req, res) => {
         createdAt: server.createdAt,
         clientUrl: `${base}`,
         suspended: server.status === 'suspended',
-        unreachable: false
+        unreachable: isUnreachable
       };
     });
     
