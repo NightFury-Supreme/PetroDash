@@ -35,84 +35,76 @@ export function ShopItemsList({
 
   if (items.length === 0) {
     return (
-      <div className="text-center py-16">
-        <div className="w-24 h-24 mx-auto mb-6 bg-[#202020] rounded-full flex items-center justify-center shadow-lg">
-          <i className="fas fa-shopping-cart text-white text-3xl"></i>
-        </div>
-        <h3 className="text-2xl font-bold mb-3 text-white">No shop items yet</h3>
-        <p className="text-[#AAAAAA] text-lg mb-8">Shop items will be automatically created as presets</p>
+      <div className="flex flex-col items-center justify-center py-16 text-center border border-white/[0.06] rounded-xl">
+        <i className="fas fa-shopping-cart mb-3 text-2xl text-white/20"></i>
+        <p className="text-sm text-white/40">No shop items available</p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {items.map((item) => (
-        <div 
-          key={item._id} 
-          className="bg-[#181818] border border-[#303030] rounded-xl p-5 hover:bg-[#202020] transition-colors group"
-        >
-          {/* Item Header */}
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-[#202020] rounded-lg flex items-center justify-center group-hover:bg-[#272727] transition-colors">
-              <i className={`${getIconForItem(item.key)} text-white text-sm`}></i>
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-semibold text-white truncate">{item.name}</h3>
-              <p className="text-[#AAAAAA] text-xs truncate">{item.key}</p>
-            </div>
-            <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
-              item.enabled 
-                ? 'bg-[#202020] text-white border border-[#303030]' 
-                : 'bg-[#202020] text-[#AAAAAA] border border-[#303030]'
-            }`}>
-              <i className={`fas ${item.enabled ? 'fa-check-circle' : 'fa-ban'} mr-2 text-white`}></i>
-              {item.enabled ? 'Active' : 'Disabled'}
-            </span>
-          </div>
+    <div className="w-full">
+      {/* Column headers */}
+      <div className="hidden gap-4 grid-cols-[2fr_1fr_1fr_1fr_100px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
+        <span>Resource</span>
+        <span>Amount</span>
+        <span>Price</span>
+        <span>Max</span>
+        <span className="text-right">Action</span>
+      </div>
 
-          {/* Item Description */}
-          {item.description && (
-            <p className="text-[#AAAAAA] mb-4 text-sm leading-relaxed line-clamp-2">{item.description}</p>
-          )}
+      <div className="divide-y divide-white/[0.06]">
+        {items.map((item) => (
+          <div
+            key={item._id || item.key}
+            className={`flex flex-col gap-4 px-5 py-4 transition hover:bg-white/[0.015] md:grid md:grid-cols-[2fr_1fr_1fr_1fr_100px] md:items-center ${
+              !item.enabled ? 'opacity-50 grayscale' : ''
+            }`}
+          >
+            {/* Identity */}
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/[0.07] bg-white/[0.035]">
+                <i className={`${getIconForItem(item.key)} text-sm text-white/50`}></i>
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-white/80 truncate">
+                  {item.name}
+                  {!item.enabled && <span className="ml-2 text-[10px] text-[#FF5722] border border-[#FF5722]/30 bg-[#FF5722]/10 px-1.5 py-0.5 rounded-sm">Disabled</span>}
+                </p>
+                <p className="text-xs text-white/30 truncate">{item.key}</p>
+              </div>
+            </div>
 
-          {/* Item Stats - Clean 2x2 Grid */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="text-center p-3 bg-[#202020] rounded-lg">
-              <div className="text-lg font-bold text-white mb-1">{item.amountPerUnit}</div>
-              <div className="text-xs text-[#AAAAAA]">Amount {formatUnit(item.unit)}</div>
+            {/* Included amount */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-semibold text-white/80">+{item.amountPerUnit}</span>
+              <span className="text-xs text-white/30 uppercase tracking-wide">{formatUnit(item.unit) || item.name}</span>
             </div>
-            
-            <div className="text-center p-3 bg-[#202020] rounded-lg">
-              <div className="text-lg font-bold text-white mb-1">{item.pricePerUnit}</div>
-              <div className="text-xs text-[#AAAAAA]">Coins</div>
+
+            {/* Price */}
+            <div className="flex items-center gap-1.5">
+              <i className="fas fa-coins text-[11px] text-[#FF5722]"></i>
+              <span className="text-sm font-semibold text-white/80">{item.pricePerUnit}</span>
             </div>
-            
-            <div className="text-center p-3 bg-[#202020] rounded-lg">
-              <div className="text-lg font-bold text-white mb-1">{item.maxPerPurchase}</div>
-              <div className="text-xs text-[#AAAAAA]">Max</div>
+
+            {/* Max */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-semibold text-white/80">{item.maxPerPurchase}</span>
+              <span className="text-xs text-white/30 uppercase tracking-wide">MAX</span>
+            </div>
+
+            {/* Action */}
+            <div className="flex justify-end mt-2 md:mt-0">
+              <button
+                onClick={() => onStartEditing(item)}
+                className="h-8 rounded-md bg-white/[0.05] border border-white/[0.05] px-4 text-xs font-medium text-white transition-all hover:bg-white/[0.1] hover:text-white"
+              >
+                Manage
+              </button>
             </div>
           </div>
-
-          {/* Action Buttons - Enable Toggle + Edit */}
-          <div className="flex justify-end gap-2">
-            <button
-              onClick={() => onToggleEnabled(item)}
-              className="w-12 h-12 bg-[#202020] text-white hover:bg-[#272727] border border-[#303030] rounded-lg transition-colors group-hover:border-[#404040] flex items-center justify-center"
-              title={item.enabled ? "Disable this item" : "Enable this item"}
-            >
-              <i className={`fas ${item.enabled ? 'fa-eye' : 'fa-eye-slash'} text-[#AAAAAA] group-hover:text-white transition-colors`}></i>
-            </button>
-            <button
-              onClick={() => onStartEditing(item)}
-              className="w-12 h-12 bg-[#202020] text-white hover:bg-[#272727] border border-[#303030] rounded-lg transition-colors group-hover:border-[#404040] flex items-center justify-center"
-              title="Edit Item"
-            >
-              <i className="fas fa-edit text-[#AAAAAA] group-hover:text-white transition-colors"></i>
-            </button>
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }

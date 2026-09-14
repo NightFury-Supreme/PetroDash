@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import CouponsHeader from '@/components/admin/coupons/CouponsHeader';
 import CouponsList from '@/components/admin/coupons/CouponsList';
 import { AdminCouponsSkeleton } from '@/components/skeletons/admin/coupons/AdminCouponsSkeleton';
+import { CouponDrawer } from './CouponDrawer';
 
 export default function CouponsPageContent() {
   const router = useRouter();
@@ -14,6 +15,10 @@ export default function CouponsPageContent() {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [currency, setCurrency] = useState('USD');
+
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [editingCoupon, setEditingCoupon] = useState<any | null>(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
@@ -34,22 +39,51 @@ export default function CouponsPageContent() {
       .finally(() => setLoading(false));
   }, [router]);
 
-  const toggleEnabled = async (id: string, enabled: boolean) => {
+  const handleSaveCoupon = async (id: string | null, data: any) => {
     const token = localStorage.getItem('auth_token');
-    await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons/${id}`, {
-      method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ enabled })
-    });
-    setCoupons((prev) => prev.map((c) => (c._id === id ? { ...c, enabled } : c)));
-  };
-
-  const deleteCoupon = async (id: string) => {
-    const token = localStorage.getItem('auth_token');
-    setDeleting(id);
+    setSaving(true);
     try {
-      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) setCoupons((prev) => prev.filter((c) => c._id !== id));
+      if (data._delete && id) {
+        const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons/${id}`, { 
+          method: 'DELETE', headers: { Authorization: `Bearer ${token}` } 
+        });
+        if (res.ok) {
+          setCoupons((prev) => prev.filter((c) => c._id !== id));
+          setIsDrawerOpen(false);
+        }
+        return;
+      }
+
+      if (id) {
+        if (Object.keys(data).length === 1 && data.enabled !== undefined) {
+          // just toggle
+          await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons/${id}`, {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(data)
+          });
+          setCoupons((prev) => prev.map((c) => (c._id === id ? { ...c, ...data } : c)));
+          return; // don't close drawer if just toggling
+        }
+
+        const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons/${id}`, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(data)
+        });
+        if (res.ok) {
+          const updated = await res.json();
+          setCoupons((prev) => prev.map((c) => (c._id === id ? updated : c)));
+          setIsDrawerOpen(false);
+        }
+      } else {
+        const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(data)
+        });
+        if (res.ok) {
+          const created = await res.json();
+          setCoupons((prev) => [...prev, created]);
+          setIsDrawerOpen(false);
+        }
+      }
     } finally {
-      setDeleting(null);
+      setSaving(false);
     }
   };
 
@@ -57,8 +91,22 @@ export default function CouponsPageContent() {
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
-      <CouponsHeader />
-      <CouponsList coupons={coupons} plans={plans} onToggle={toggleEnabled} onDelete={deleteCoupon} deletingId={deleting} currency={currency} />
+      <CouponsHeader onCreateNew={() => { setEditingCoupon(null); setIsDrawerOpen(true); }} />
+      <CouponsList 
+        coupons={coupons} 
+        plans={plans} 
+        onManage={(c: any) => { setEditingCoupon(c); setIsDrawerOpen(true); }} 
+        currency={currency} 
+      />
+      <CouponDrawer 
+        item={editingCoupon}
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        onSave={handleSaveCoupon}
+        saving={saving}
+        plans={plans}
+        currency={currency}
+      />
     </div>
   );
 }

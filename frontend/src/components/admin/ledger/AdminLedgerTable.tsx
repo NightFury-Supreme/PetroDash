@@ -135,69 +135,81 @@ export function AdminLedgerTable({
 
   if (items.length === 0) {
     return (
-      <div className="bg-[#181818] border border-[#303030] rounded-xl p-8 text-center">
-        <div className="w-16 h-16 bg-[#202020] rounded-full flex items-center justify-center mx-auto mb-4">
-          <i className="fas fa-inbox text-[#AAAAAA] text-xl"></i>
-        </div>
-        <h3 className="text-white font-medium mb-2">No payments found</h3>
-        <p className="text-[#AAAAAA] text-sm">Try adjusting your filters or check back later.</p>
+      <div className="flex flex-col items-center justify-center py-16 text-center border border-white/[0.06] rounded-xl">
+        <i className="fas fa-inbox mb-3 text-2xl text-white/20"></i>
+        <p className="text-sm text-white/40">No payments found</p>
+        <p className="text-xs text-white/30 mt-1">Try adjusting your filters or check back later.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-[#181818] border border-[#303030] rounded-xl overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[800px]">
-          <thead>
-            <tr className="bg-[#202020] border-b border-[#303030]">
-              <th className="px-6 py-4 text-left text-xs font-medium text-[#AAAAAA] uppercase tracking-wider">Date</th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-[#AAAAAA] uppercase tracking-wider">User</th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-[#AAAAAA] uppercase tracking-wider">Item</th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-[#AAAAAA] uppercase tracking-wider">Provider</th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-[#AAAAAA] uppercase tracking-wider">Order ID</th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-[#AAAAAA] uppercase tracking-wider">Amount</th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-[#AAAAAA] uppercase tracking-wider">Status</th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-[#AAAAAA] uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#303030]">
-            {items.map((item) => (
-              <tr key={item._id} className="hover:bg-[#202020] transition-colors">
-                <td className="px-6 py-4 text-sm text-white whitespace-nowrap">
-                  {new Date(item.createdAt).toLocaleString()}
-                </td>
-                <td className="px-6 py-4 text-sm text-[#AAAAAA]">
-                  <div className="flex flex-col">
-                    <span className="text-white font-medium">{item.userId?.username || 'Unknown'}</span>
-                    <span className="text-xs">{item.userId?.email || item.userId || ''}</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-sm text-[#AAAAAA]">
-                  {item.planId?.name || item.planId || 'Unknown'}
-                </td>
-                <td className="px-6 py-4 text-sm text-[#AAAAAA]">
-                  <span className="inline-flex items-center gap-2 px-2 py-1 bg-[#202020] rounded-lg text-xs">
-                    <i className="fas fa-credit-card"></i>
-                    {item.provider}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-[#AAAAAA] font-mono whitespace-nowrap">
-                  {item.providerOrderId}
-                </td>
-                <td className="px-6 py-4 text-sm text-white font-medium whitespace-nowrap">
-                  {Number(item.amount || 0).toFixed(2)} {item.currency || 'USD'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {getStatusBadge(item.status)}
-                </td>
-                <td className="px-6 py-4">
-                  {getActionMenu(item)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="w-full">
+      {/* Column headers */}
+      <div className="hidden gap-4 grid-cols-[1.5fr_1.5fr_1fr_1fr_1fr_80px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
+        <span>User</span>
+        <span>Order Info</span>
+        <span>Provider</span>
+        <span>Amount</span>
+        <span>Status</span>
+        <span className="text-right">Action</span>
+      </div>
+
+      <div className="divide-y divide-white/[0.06]">
+        {items.map((item) => (
+          <div
+            key={item._id}
+            className="flex flex-col gap-4 px-5 py-4 transition hover:bg-white/[0.015] md:grid md:grid-cols-[1.5fr_1.5fr_1fr_1fr_1fr_80px] md:items-center"
+          >
+            {/* User */}
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/[0.07] bg-white/[0.035]">
+                <span className="text-sm font-bold text-[#D4D4D4]">
+                  {item.userId?.username?.charAt(0).toUpperCase() || 'U'}
+                </span>
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-white/80 truncate">{item.userId?.username || 'Unknown'}</p>
+                <p className="text-xs text-white/30 truncate">{item.userId?.email || item.userId || ''}</p>
+              </div>
+            </div>
+
+            {/* Order Info */}
+            <div className="flex flex-col justify-center">
+              <span className="block truncate font-mono text-xs text-white/60" title={item._id}>
+                {item._id.substring(0, 16)}...
+              </span>
+              <span className="text-[10px] text-white/30 tracking-wide mt-0.5">
+                {new Date(item.createdAt).toLocaleString()}
+              </span>
+            </div>
+
+            {/* Item & Provider */}
+            <div className="flex flex-col justify-center">
+              <span className="text-sm font-semibold text-white/80 truncate">
+                {item.planId?.name || item.planId || 'Unknown'}
+              </span>
+              <span className="text-[10px] text-white/30 uppercase tracking-wide mt-0.5">
+                {item.provider || 'system'}
+              </span>
+            </div>
+
+            {/* Amount */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-semibold text-white/80">{Number(item.amount || 0).toFixed(2)} {item.currency || 'USD'}</span>
+            </div>
+
+            {/* Status */}
+            <div className="flex items-center">
+              {getStatusBadge(item.status)}
+            </div>
+
+            {/* Action */}
+            <div className="flex justify-end mt-2 md:mt-0">
+              {getActionMenu(item)}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

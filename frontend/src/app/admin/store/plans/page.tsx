@@ -1,6 +1,6 @@
 "use client";
 
-import Link from 'next/link';
+import { useState } from 'react';
 import { CreditCard, RefreshCw } from 'lucide-react';
 import { ErrorState, DashboardButton, ErrorDescription } from '@/components/ui/ErrorState';
 import { useToast } from "@/components/ui/ToastProvider";
@@ -8,11 +8,15 @@ import { useModal } from '@/components/Modal';
 import { PlansListSkeleton } from '@/components/skeletons/admin/plan/list/PlansListSkeleton';
 import { usePlansList } from '@/hooks/admin/plan/usePlansList';
 import { PlansList } from '@/components/admin/plan/PlansList';
+import { PlanDrawer } from '@/components/admin/plan/PlanDrawer';
 
 export default function AdminPlansPage() {
   const modal = useModal();
   const { showSuccess, showError } = useToast();
   
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
+
   const {
     plans,
     loading,
@@ -22,6 +26,7 @@ export default function AdminPlansPage() {
     toggleEnabled,
     makeUnlisted,
     makePublic,
+    loadPlans,
   } = usePlansList();
 
   const handleDelete = async (planId: string, planName: string) => {
@@ -108,13 +113,13 @@ export default function AdminPlansPage() {
       <div className="p-4 sm:p-6 space-y-6 sm:space-y-8">
           {/* Action Bar */}
           <div className="flex items-center justify-end">
-            <Link 
-              href="/admin/store/plans/new"
+            <button 
+              onClick={() => { setEditingPlanId(null); setDrawerOpen(true); }}
               className="bg-white hover:bg-gray-100 text-black px-4 py-2 text-sm rounded-lg font-semibold transition-colors flex items-center gap-2 shadow-sm"
             >
               <i className="fas fa-plus"></i>
               Create New Plan
-            </Link>
+            </button>
           </div>
 
           {/* Plans List */}
@@ -122,6 +127,7 @@ export default function AdminPlansPage() {
             plans={plans}
             deleting={deleting}
             onDelete={handleDelete}
+            onManage={(planId: string) => { setEditingPlanId(planId); setDrawerOpen(true); }}
             onToggleEnabled={handleToggleEnabled}
             onMakeUnlisted={handleMakeUnlisted}
             onMakePublic={handleMakePublic}
@@ -134,15 +140,23 @@ export default function AdminPlansPage() {
               <div className="text-sm text-[#AAAAAA]">
                 <div className="font-medium mb-1 text-white">Plan Management Guidelines</div>
                 <ul className="space-y-1 text-xs">
-                  <li>• <strong>Active plans</strong> (with current users) cannot be deleted - make them unlisted instead</li>
-                  <li>• <strong>Unlisted plans</strong> are hidden from public view but remain accessible to existing users</li>
-                  <li>• <strong>Disabled plans</strong> prevent new purchases but don't affect existing users</li>
-                  <li>• Only delete plans that have no active users and are no longer needed</li>
+                  <li>  <strong>Active plans</strong> (with current users) cannot be deleted - make them unlisted instead</li>
+                  <li>  <strong>Unlisted plans</strong> are hidden from public view but remain accessible to existing users</li>
+                  <li>  <strong>Disabled plans</strong> prevent new purchases but don't affect existing users</li>
+                  <li>  Only delete plans that have no active users and are no longer needed</li>
                 </ul>
               </div>
             </div>
           </div>
         </div>
+        
+        <PlanDrawer 
+          planId={editingPlanId} 
+          isOpen={drawerOpen} 
+          onClose={() => setDrawerOpen(false)} 
+          onSaveSuccess={() => { loadPlans(); }}
+          onDeletePlan={handleDelete}
+        />
     </>
   );
 }

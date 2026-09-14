@@ -57,7 +57,7 @@ export default function AdminStorePage() {
         </aside>
 
         {/* Main Content Area */}
-        <div className="flex-1 min-w-0 bg-[#121212] border border-[#222] rounded-2xl overflow-hidden shadow-xl">
+        <div className="flex-1 min-w-0 w-full">
           {tab === 'shop' && <AdminShopPage />}
           {tab === 'plans' && <AdminPlansPage />}
           {tab === 'coupons' && <AdminCouponsPage />}

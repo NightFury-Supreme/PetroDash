@@ -44,19 +44,21 @@ interface PlanFormData {
 interface PlanEditFormProps {
   plan: PlanFormData;
   saving: boolean;
-  onInputChange: (field: string, value: any) => void;
-  onSubmit: () => Promise<void>;
-  onCancel: () => void;
   validationErrors?: Record<string, string>;
+  onInputChange: (path: string, value: any) => void;
+  onSubmit: (e?: React.FormEvent) => void;
+  onCancel: () => void;
+  onDelete?: () => void;
 }
 
 export function PlanEditForm({
   plan,
   saving,
+  validationErrors = {},
   onInputChange,
   onSubmit,
   onCancel,
-  validationErrors = {},
+  onDelete,
 }: PlanEditFormProps) {
 
   const { currency } = useCurrency();
@@ -408,31 +410,50 @@ export function PlanEditForm({
 
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-4">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="bg-[#202020] hover:bg-[#272727] text-white px-6 py-3 rounded-lg font-semibold transition-colors"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={saving}
-          className="bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-black px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2"
-        >
-          {saving ? (
-            <>
-              <i className="fas fa-spinner fa-spin"></i>
-              Saving...
-            </>
-          ) : (
-            <>
-              <i className="fas fa-save"></i>
-              Save Changes
-            </>
+      <div className="flex items-center justify-between mt-8">
+        <div>
+          {onDelete && (
+            <button
+              type="button"
+              onClick={async () => {
+                if (confirm("Are you sure you want to delete this plan?")) {
+                  onDelete();
+                }
+              }}
+              disabled={saving}
+              className="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2 disabled:opacity-50"
+            >
+              <i className="fas fa-trash"></i>
+              Delete Plan
+            </button>
           )}
-        </button>
+        </div>
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="bg-[#202020] hover:bg-[#272727] text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={saving}
+            className="bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-black px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2"
+          >
+            {saving ? (
+              <>
+                <i className="fas fa-spinner fa-spin"></i>
+                Saving...
+              </>
+            ) : (
+              <>
+                <i className="fas fa-save"></i>
+                Save Changes
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </form>
   );
