@@ -51,7 +51,7 @@ export function PlansView({
         {/* ================================================================
            AVAILABLE PLANS
         ================================================================= */}
-        <section>
+        <section className="mt-8">
           <SectionTitle
             icon={<Crown className="h-3.5 w-3.5 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]" />}
             title="Available Plans"
@@ -289,7 +289,7 @@ function SectionTitle({ icon, title, description }: { icon: React.ReactNode; tit
     <div className="flex items-start gap-2">
       <div className="mt-0.5 text-[#FF5722]">{icon}</div>
       <div>
-        <h2 className="text-sm font-semibold text-[#D4D4D4]">{title}</h2>
+        <h2 className="text-lg font-semibold text-white">{title}</h2>
         <p className="mt-1 text-xs text-[#555]">{description}</p>
       </div>
     </div>

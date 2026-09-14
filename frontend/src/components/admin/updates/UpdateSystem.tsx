@@ -82,7 +82,7 @@ export default function UpdateSystem() {
     <section className="space-y-6">
       {/* Header */}
       <div>
-        <h3 className="text-2xl font-bold text-white tracking-tight">System Updates</h3>
+        <h3 className="text-lg font-semibold text-white">System Updates</h3>
         <p className="mt-1 text-sm text-[#888888]">Check current and latest versions</p>
       </div>
 

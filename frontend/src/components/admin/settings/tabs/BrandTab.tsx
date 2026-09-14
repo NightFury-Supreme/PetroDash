@@ -30,7 +30,7 @@ export function BrandTab({ formData, updateFormData, saveSection, loading }: Tab
       <section>
         <div className="mb-5 flex items-end justify-between">
           <div>
-            <h3 className="text-xl font-semibold tracking-tight text-white">Brand Settings</h3>
+            <h3 className="text-lg font-semibold text-white">Brand Settings</h3>
             <p className="mt-2 text-sm text-white/35">Customize your site appearance</p>
           </div>
         </div>

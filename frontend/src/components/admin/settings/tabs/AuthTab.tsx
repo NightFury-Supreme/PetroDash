@@ -9,7 +9,7 @@ export function AuthTab({ formData, updateFormData, saveSection, loading }: TabP
       <section>
         <div className="mb-5 flex items-end justify-between">
           <div>
-            <h3 className="text-xl font-semibold tracking-tight text-white">Authentication Settings</h3>
+            <h3 className="text-lg font-semibold text-white">Authentication Settings</h3>
             <p className="mt-2 text-sm text-white/35">Configure login methods and OAuth options</p>
           </div>
         </div>

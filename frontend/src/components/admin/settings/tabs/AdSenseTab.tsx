@@ -8,7 +8,7 @@ export function AdSenseTab({ formData, updateFormData, saveSection, loading }: T
       <section>
         <div className="mb-5 flex items-end justify-between">
           <div>
-            <h3 className="text-xl font-semibold tracking-tight text-white">Google AdSense Settings</h3>
+            <h3 className="text-lg font-semibold text-white">Google AdSense Settings</h3>
             <p className="mt-2 text-sm text-white/35">Configure Google AdSense integration and ad slots</p>
           </div>
         </div>

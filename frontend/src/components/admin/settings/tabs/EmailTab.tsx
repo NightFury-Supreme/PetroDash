@@ -9,7 +9,7 @@ export function EmailTab({ formData, updateFormData, saveSection, loading }: Tab
       <section>
         <div className="mb-5 flex items-end justify-between">
           <div>
-            <h3 className="text-xl font-semibold tracking-tight text-white">Email Settings</h3>
+            <h3 className="text-lg font-semibold text-white">Email Settings</h3>
             <p className="mt-2 text-sm text-white/35">Configure SMTP and email verification</p>
           </div>
         </div>

@@ -116,7 +116,7 @@ export function AdminSettingsContent({
         </div>
       </aside>
 
-      <div className="flex-1 min-w-0 w-full space-y-6">
+      <div className="flex-1 min-w-0 w-full space-y-6 mt-8">
         {activeTab === 'brand' && <BrandTab {...tabProps} />}
         {activeTab === 'localization' && <LocalizationTab {...tabProps} />}
         {activeTab === 'referrals' && <ReferralsTab {...tabProps} />}

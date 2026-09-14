@@ -8,7 +8,7 @@ export function PayPalTab({ formData, updateFormData, saveSection, loading }: Ta
       <section>
         <div className="mb-5 flex items-end justify-between">
           <div>
-            <h3 className="text-xl font-semibold tracking-tight text-white">PayPal Settings</h3>
+            <h3 className="text-lg font-semibold text-white">PayPal Settings</h3>
             <p className="mt-2 text-sm text-white/35">Configure PayPal integration for payments</p>
           </div>
         </div>

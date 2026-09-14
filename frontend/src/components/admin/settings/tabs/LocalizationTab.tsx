@@ -59,7 +59,7 @@ export function LocalizationTab({ formData, updateFormData, saveSection, loading
       <section>
         <div className="mb-5 flex items-end justify-between">
           <div>
-            <h3 className="text-xl font-semibold tracking-tight text-white">Localization Settings</h3>
+            <h3 className="text-lg font-semibold text-white">Localization Settings</h3>
             <p className="mt-2 text-sm text-white/35">Configure global language and currency</p>
           </div>
         </div>
