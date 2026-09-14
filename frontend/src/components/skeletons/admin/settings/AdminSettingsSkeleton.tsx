@@ -40,8 +40,8 @@ export function AdminSettingsSkeleton() {
               {/* Section Header */}
               <div className="mb-5 flex items-end justify-between">
                 <div>
-                  {/* Section Title (text-xl -> 28px) */}
-                  <div className="h-[28px] w-40 bg-white/5 rounded-md animate-pulse" />
+                  {/* Section Title (text-lg -> 24px) */}
+                  <div className="h-[24px] w-40 bg-white/5 rounded-md animate-pulse" />
                   {/* Section Subtitle (mt-2 text-sm -> 20px) */}
                   <div className="mt-2 h-[20px] w-56 bg-white/5 rounded-md animate-pulse" />
                 </div>
