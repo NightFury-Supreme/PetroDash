@@ -200,6 +200,112 @@ export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocati
         isOpen={true}
         onClose={onClose}
         title={loading ? 'Edit Location' : (form?.name ?? 'Edit Location')}
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [isDeleteDrawerOpen, setIsDeleteDrawerOpen] = useState(false);
+  const [plans, setPlans] = useState<any[]>([]);
+  const [loadingPlans, setLoadingPlans] = useState(true);
+  const [isDragging, setIsDragging] = useState(false);
+  const [pendingFlagFile, setPendingFlagFile] = useState<File | null>(null);
+  const [flagPreview, setFlagPreview] = useState<string | null>(null);
+  const [uploadingFlag, setUploadingFlag] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${locationId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then(async r => {
+      let d: any = {}; try { d = await r.json(); } catch {}
+      if (!r.ok) throw new Error(d?.error || 'Failed');
+      setForm({
+        _id: d._id || locationId,
+        name: d.name || '',
+        flag: d.flag || '',
+        latencyUrl: d.latencyUrl || '',
+        serverLimit: String(d.serverLimit ?? '0'),
+        platformLocationId: d.platform?.platformLocationId || '',
+        swapMb: String(d.platform?.swapMb ?? '-1'),
+        blockIoWeight: String(d.platform?.blockIoWeight ?? '500'),
+        cpuPinning: d.platform?.cpuPinning || '',
+        allowedPlans: Array.isArray(d.allowedPlans) ? d.allowedPlans : [],
+        serversCount: d.serversCount ?? 0,
+      });
+    }).catch(() => {}).finally(() => setLoading(false));
+
+    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/plans`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+      .then(r => r.json()).then(d => setPlans(Array.isArray(d) ? d : [])).catch(() => {}).finally(() => setLoadingPlans(false));
+  }, [locationId]);
+
+  const handleFileSelection = (file: File | undefined | null) => {
+    if (!file || !file.type.startsWith('image/')) return;
+    setPendingFlagFile(file);
+    setFlagPreview(URL.createObjectURL(file));
+    setForm((f: any) => ({ ...f, flag: 'pending' }));
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleRemoveFlag = () => { setPendingFlagFile(null); setFlagPreview(null); setForm((f: any) => ({ ...f, flag: '' })); };
+    
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form) return;
+    if (!form.name || form.name.trim().length === 0) {
+      setError("Location name is required.");
+      return;
+    }
+    if (!pendingFlagFile && (!form.flag || form.flag === 'pending')) {
+      setError("Location flag is required.");
+      return;
+    }
+    if (!form.latencyUrl || form.latencyUrl.trim().length === 0) {
+      setError("Node IP is required.");
+      return;
+    }
+    setError(null);
+    setSubmitting(true);
+    try {
+      const token = localStorage.getItem('auth_token');
+      let finalFlag = form.flag === 'pending' ? '' : form.flag;
+      if (pendingFlagFile) {
+        setUploadingFlag(true);
+        const fd = new FormData(); fd.append('icon', pendingFlagFile);
+        const uploadRes = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/upload/icon`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
+        setUploadingFlag(false);
+        if (!uploadRes.ok) throw new Error('Failed to upload flag image');
+        const uploadData = await uploadRes.json();
+        finalFlag = uploadData.filePath;
+      }
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${locationId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          name: form.name, flag: finalFlag, latencyUrl: form.latencyUrl,
+          serverLimit: Number(form.serverLimit || 0),
+          platform: { platformLocationId: form.platformLocationId, swapMb: Number(form.swapMb || -1), blockIoWeight: Number(form.blockIoWeight || 500), cpuPinning: form.cpuPinning },
+          allowedPlans: form.allowedPlans,
+        }),
+      });
+      if (!res.ok) { let d: any = {}; try { d = await res.json(); } catch {} throw new Error(d?.error || 'Failed'); }
+      onUpdate(); onClose();
+    } catch (err: any) { setError(err.message || 'Failed to update'); } finally { setSubmitting(false); }
+  };
+
+  const remove = async () => {
+    const token = localStorage.getItem('auth_token');
+    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${locationId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) { let d: any = {}; try { d = await res.json(); } catch {} throw new Error(d?.error || 'Failed to delete'); }
+    onUpdate(); onClose();
+  };
+
+  return (
+    <>
+      <Drawer
+        isOpen={true}
+        onClose={onClose}
+        title={loading ? 'Edit Location' : (form?.name ?? 'Edit Location')}
         subtitle={form?._id ? `ID: ` : 'Update configuration'}
         icon={<Globe className="text-[#D4D4D4]" size={22} />}
         footer={
@@ -210,13 +316,13 @@ export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocati
                   type="button"
                   onClick={() => (!form.serversCount || form.serversCount === 0) && setIsDeleteDrawerOpen(true)}
                   disabled={form.serversCount !== undefined && form.serversCount > 0}
-                  className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-sm font-medium text-red-500 transition-colors hover:bg-red-500/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-500 transition-colors hover:bg-red-500/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   title={form.serversCount > 0 ? 'Cannot delete location with existing servers' : ''}
                 ><Trash size={15} /> Delete</button>
               </div>
               <div className="flex items-center gap-2">
-                <button type="button" onClick={onClose} disabled={submitting} className="px-4 py-2 text-sm font-medium text-[#888] hover:text-white transition-colors disabled:opacity-50">Cancel</button>
-                <button type="submit" form="location-form" disabled={submitting} className="flex items-center justify-center gap-2 rounded-lg bg-[#FF5722] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed">
+                <button type="button" onClick={onClose} disabled={submitting} className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50">Cancel</button>
+                <button type="submit" form="location-form" disabled={submitting} className="flex items-center justify-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#ff6939] disabled:opacity-50 disabled:cursor-not-allowed">
                   {(submitting || uploadingFlag) ? <><Loader2 size={14} className="animate-spin" /> Saving...</> : 'Save Changes'}
                 </button>
               </div>

@@ -157,7 +157,7 @@ export function CreateLocationDrawer({ onClose, onSuccess }: CreateLocationDrawe
               type="button"
               onClick={() => setCurrentStepIndex(i => i + 1)}
               disabled={!canGoNext()}
-              className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#ff6939] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next Step
             </button>
@@ -166,7 +166,7 @@ export function CreateLocationDrawer({ onClose, onSuccess }: CreateLocationDrawe
               type="button"
               onClick={handleSubmit}
               disabled={loading || uploadingFlag}
-              className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#ff6939] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {(loading || uploadingFlag) ? <><Loader2 size={16} className="animate-spin" /> Creating...</> : "Create Location"}
             </button>

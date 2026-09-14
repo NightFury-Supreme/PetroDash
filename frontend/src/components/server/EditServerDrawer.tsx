@@ -106,10 +106,10 @@ export function EditServerDrawer({ serverId, onClose, onUpdate }: EditServerDraw
               }
             }}
             disabled={saving || !isFormValid || server?.suspended || server?.status?.toLowerCase() === 'creating'}
-            className={`flex min-w-[140px] max-w-[300px] items-center justify-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-all ${
+            className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
                 saving || !isFormValid || server?.suspended || server?.status?.toLowerCase() === 'creating'
                   ? "bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed"
-                  : "bg-[#FF5722] border border-[#FF5722] text-white hover:bg-[#F4511E]"
+                  : "bg-[#FF5722] text-white hover:bg-[#ff6939]"
             }`}
           >
             {saving ? (

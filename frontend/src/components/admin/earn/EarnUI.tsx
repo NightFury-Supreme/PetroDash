@@ -28,7 +28,7 @@ export function ActionButton({
   onClick: () => Promise<void>; 
   loading: boolean; 
   label: string;
-  variant?: "primary" | "danger";
+  variant?: "primary" | "danger" | "warning";
   className?: string;
   icon?: React.ReactNode;
 }) {
@@ -49,7 +49,7 @@ export function ActionButton({
     <button
       onClick={handleClick}
       disabled={loading || status !== "idle"}
-      className={`flex items-center justify-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-all ${
+      className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
         status === "success"
           ? "bg-emerald-500 border border-emerald-500 text-white cursor-default"
           : status === "error"
@@ -58,6 +58,8 @@ export function ActionButton({
           ? "bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed"
           : variant === "danger"
           ? "border border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20"
+          : variant === "warning"
+          ? "border border-yellow-500/20 bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20"
           : "bg-[#FF5722] border border-[#FF5722] text-white hover:bg-[#F4511E]"
       } ${className}`}
     >

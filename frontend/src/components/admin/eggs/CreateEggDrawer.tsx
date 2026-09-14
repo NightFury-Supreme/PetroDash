@@ -197,7 +197,7 @@ export function CreateEggDrawer({ onClose, onSuccess }: CreateEggDrawerProps) {
                 (currentStep === 'basic' && (!form.name.trim() || !form.category.trim() || !form.icon || !form.description.trim())) ||
                 (currentStep === 'panel' && (!form.pterodactylEggId || !form.pterodactylNestId))
               }
-              className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#ff6939] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next Step
             </button>
@@ -205,14 +205,14 @@ export function CreateEggDrawer({ onClose, onSuccess }: CreateEggDrawerProps) {
             <button
               onClick={submit}
               disabled={loading || saved || failed || !isFormValid}
-              className={`flex min-w-[140px] items-center justify-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-all ${
+              className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
                 saved
-                  ? 'bg-emerald-500 border border-emerald-500 text-white cursor-default'
+                  ? 'bg-emerald-500 text-white cursor-default'
                   : failed
-                  ? 'bg-red-500 border border-red-500 text-white cursor-default'
+                  ? 'bg-red-500 text-white cursor-default'
                   : loading || !isFormValid
                   ? 'bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed'
-                  : 'bg-[#FF5722] border border-[#FF5722] text-white hover:bg-[#F4511E]'
+                  : 'bg-[#FF5722] text-white hover:bg-[#ff6939]'
               }`}
             >
               {loading ? (

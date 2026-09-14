@@ -111,7 +111,7 @@ export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProp
                 (currentStep === 'software' && !form.eggId) ||
                 (currentStep === 'location' && !form.locationId)
               }
-              className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#ff6939] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next Step
             </button>
@@ -129,10 +129,10 @@ export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProp
                 }
               }}
               disabled={saving || !isFormValid}
-              className={`flex min-w-[140px] items-center justify-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-all ${
+              className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
                   saving || !isFormValid
                     ? "bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed"
-                    : "bg-[#FF5722] border border-[#FF5722] text-white hover:bg-[#F4511E]"
+                    : "bg-[#FF5722] text-white hover:bg-[#ff6939]"
               }`}
             >
               {saving ? (
