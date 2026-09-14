@@ -42,9 +42,25 @@ router.get('/', requireAuth, async (req, res) => {
   const base = (process.env.PTERO_BASE_URL || '').replace(/\/$/, '');
   let deletedCount = 0;
   
+    const panelPingData = await getCache('ping:panel');
+    const isPanelDown = !panelPingData || panelPingData.ping === -1 || panelPingData.ping === null;
+    const locationPingCache = {};
+
     const enriched = await Promise.all(list.map(async (s) => {
         let status = s.status || 'unknown';
         let suspended = status === 'suspended';
+        
+        let isNodeDown = false;
+        if (s.locationId && s.locationId._id) {
+          const locId = s.locationId._id.toString();
+          if (locationPingCache[locId] === undefined) {
+             const nodePing = await getCache(`ping:${locId}`);
+             locationPingCache[locId] = !nodePing || nodePing.ping === -1 || nodePing.ping === null;
+          }
+          isNodeDown = locationPingCache[locId];
+        }
+
+        const isUnreachable = isPanelDown || isNodeDown;
         
         let queuePosition = null;
         if (status === 'queued') {
@@ -78,7 +94,7 @@ router.get('/', requireAuth, async (req, res) => {
           clientUrl: `${base}`,
           createdAt: s.createdAt || new Date(),
           suspended: suspended,
-          unreachable: false
+          unreachable: isUnreachable
         };
     }));
     const filtered = enriched.filter(Boolean);
