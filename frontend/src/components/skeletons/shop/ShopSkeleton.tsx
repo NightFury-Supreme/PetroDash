@@ -47,9 +47,9 @@ export default function ShopSkeleton() {
 
           {/* Main Content Skeleton (ShopItemsView mockup) */}
           <div className="flex-1 min-w-0 w-full">
-            <section className="mt-7">
+            <section className="mt-8">
               <div className="mb-3">
-                <h2 className="text-sm font-semibold text-white">Resources</h2>
+                <h2 className="text-lg font-semibold text-white">Resources</h2>
                 <p className="mt-0.5 text-xs text-[#666]">Purchase additional resources for your servers.</p>
               </div>
 

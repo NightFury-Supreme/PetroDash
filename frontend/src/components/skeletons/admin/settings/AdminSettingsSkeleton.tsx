@@ -34,7 +34,7 @@ export function AdminSettingsSkeleton() {
         </aside>
 
         {/* Content Area */}
-        <div className="flex-1 min-w-0 w-full space-y-6">
+        <div className="flex-1 min-w-0 w-full space-y-6 mt-8">
           <div className="space-y-6">
             <section>
               {/* Section Header */}
