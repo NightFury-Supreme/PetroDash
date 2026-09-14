@@ -4,7 +4,7 @@ export default function CouponsHeader({ onCreateNew }: { onCreateNew: () => void
   return (
     <>
       <div className="mb-4 mt-8">
-        <h2 className="text-sm font-semibold text-white">Coupons</h2>
+        <h2 className="text-lg font-semibold text-white">Coupons</h2>
         <p className="mt-0.5 text-xs text-[#666]">Manage promotional codes and discounts.</p>
       </div>
       <div className="flex items-center justify-end">

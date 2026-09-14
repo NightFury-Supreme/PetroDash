@@ -13,7 +13,7 @@ export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
   return (
     <section className="mt-7">
       <div className="mb-3">
-        <h2 className="text-sm font-semibold text-white">Resources</h2>
+        <h2 className="text-lg font-semibold text-white">Resources</h2>
         <p className="mt-0.5 text-xs text-[#666]">Purchase additional resources for your servers.</p>
       </div>
 
@@ -53,14 +53,14 @@ export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
 
                   {/* Included amount */}
                   <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-semibold text-white/80">+{item.amountPerUnit}</span>
+                    <span className="text-lg font-semibold text-white/80">+{item.amountPerUnit}</span>
                     <span className="text-xs text-white/30 uppercase tracking-wide">{item.unit || item.name}</span>
                   </div>
 
                   {/* Price */}
                   <div className="flex items-center gap-1.5">
                     <Coins className="h-3.5 w-3.5 text-[#FF5722]" />
-                    <span className="text-sm font-semibold text-white/80">{item.pricePerUnit}</span>
+                    <span className="text-lg font-semibold text-white/80">{item.pricePerUnit}</span>
                   </div>
 
                   {/* Action */}

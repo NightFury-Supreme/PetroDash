@@ -113,7 +113,7 @@ export default function AdminPlansPage() {
       <div className="space-y-6 sm:space-y-8">
           {/* Header */}
           <div className="mb-4 mt-8">
-            <h2 className="text-sm font-semibold text-white">Plans</h2>
+            <h2 className="text-lg font-semibold text-white">Plans</h2>
             <p className="mt-0.5 text-xs text-[#666]">Manage subscription plans, adjust pricing, and toggle availability.</p>
           </div>
 

@@ -52,7 +52,7 @@ export function AdminLedgerContent({
   return (
     <>
       <div className="mb-4 mt-8">
-        <h2 className="text-sm font-semibold text-white">Ledger</h2>
+        <h2 className="text-lg font-semibold text-white">Ledger</h2>
         <p className="mt-0.5 text-xs text-[#666]">View transactions, filter payments, and manage refunds.</p>
       </div>
 
