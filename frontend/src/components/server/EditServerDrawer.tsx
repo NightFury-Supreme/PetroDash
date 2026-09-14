@@ -76,8 +76,6 @@ export function EditServerDrawer({ serverId, onClose, onUpdate }: EditServerDraw
     </div>
   ) : null;
 
-  if (loading) return <EditServerDrawerSkeleton />;
-
   return (
     <Drawer
       isOpen={true}
