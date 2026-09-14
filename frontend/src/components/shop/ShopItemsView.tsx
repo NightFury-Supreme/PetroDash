@@ -49,6 +49,11 @@ export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
                 }
               };
 
+              const formatUnit = (unit?: string) => {
+                if (!unit || unit === 'count') return '';
+                return unit;
+              };
+
               return (
                 <div
                   key={item._id || item.key}
@@ -68,7 +73,9 @@ export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
                   {/* Included amount */}
                   <div className="flex items-center gap-1.5">
                     <span className="text-lg font-semibold text-white/80">+{item.amountPerUnit}</span>
-                    <span className="text-xs text-white/30 uppercase tracking-wide">{item.unit || item.name}</span>
+                    {formatUnit(item.unit) && (
+                      <span className="text-xs text-white/30 uppercase tracking-wide">{formatUnit(item.unit)}</span>
+                    )}
                   </div>
 
                   {/* Price */}

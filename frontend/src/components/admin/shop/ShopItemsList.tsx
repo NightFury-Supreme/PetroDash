@@ -91,7 +91,9 @@ export function ShopItemsList({
             {/* Included amount */}
             <div className="flex items-center gap-1.5">
               <span className="text-sm font-semibold text-white/80">+{item.amountPerUnit}</span>
-              <span className="text-xs text-white/30 uppercase tracking-wide">{formatUnit(item.unit) || item.name}</span>
+              {formatUnit(item.unit) && (
+                <span className="text-xs text-white/30 uppercase tracking-wide">{formatUnit(item.unit)}</span>
+              )}
             </div>
 
             {/* Price */}
