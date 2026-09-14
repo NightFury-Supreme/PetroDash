@@ -40,7 +40,7 @@ export function AyetWallDrawer({
               <div className="flex items-center gap-2">
                 <ActionButton 
                   onClick={async () => { await onSave({ enabled: false }); setTimeout(onClose, 1000); }} 
-                  loading={saving} label="Disable" variant="warning" icon={<i className="fas fa-ban text-[12px]"></i>} 
+                  loading={saving} label="Disable" variant="danger" icon={<Trash2 size={15} />} 
                 />
               </div>
               <div className="flex items-center gap-2">

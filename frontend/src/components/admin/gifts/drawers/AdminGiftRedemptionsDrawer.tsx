@@ -61,7 +61,7 @@ export function AdminGiftRedemptionsDrawer({
       icon={<Users size={20} />}
       footer={
         <div className="flex items-center justify-end w-full">
-          <button onClick={onClose} className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]">
+          <button onClick={onClose} className="rounded-lg border border-[#222] bg-[#161616] px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#1A1A1A] hover:text-[#D4D4D4]">
             Close
           </button>
         </div>

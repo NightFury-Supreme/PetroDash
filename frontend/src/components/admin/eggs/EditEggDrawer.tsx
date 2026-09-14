@@ -207,7 +207,7 @@ export function EditEggDrawer({ eggId, onClose, onUpdate }: EditEggDrawerProps) 
                     type="button"
                     onClick={() => (!form.serversCount || form.serversCount === 0) && setIsDeleteDrawerOpen(true)}
                     disabled={form.serversCount !== undefined && form.serversCount > 0}
-                    className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-500 transition-colors hover:bg-red-500/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-sm font-medium text-red-500 transition-colors hover:bg-red-500/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     title={form.serversCount !== undefined && form.serversCount > 0 ? "Cannot delete egg with existing servers" : ""}
                   >
                     <Trash size={15} />
@@ -219,7 +219,7 @@ export function EditEggDrawer({ eggId, onClose, onUpdate }: EditEggDrawerProps) 
                   type="button"
                   onClick={onClose}
                   disabled={submitting}
-                  className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#D4D4D4] transition-colors hover:bg-[#161616] disabled:opacity-50"
+                  className="rounded-lg border border-[#222] bg-transparent px-4 py-2.5 text-sm font-medium text-[#D4D4D4] transition-colors hover:bg-[#161616] disabled:opacity-50"
                 >
                   Cancel
                 </button>

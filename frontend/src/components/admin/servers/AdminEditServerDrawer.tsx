@@ -405,14 +405,14 @@ export function AdminEditServerDrawer({
                 <button
                   onClick={handleSave}
                   disabled={saving || saved || failed || !name.trim() || server?.status?.toLowerCase() === "creating"}
-                  className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                  className={`flex min-w-[140px] items-center justify-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-all ${
                     saved
-                      ? "bg-emerald-500 text-white cursor-default"
+                      ? "bg-emerald-500 border border-emerald-500 text-white cursor-default"
                       : failed
-                      ? "bg-red-500 text-white cursor-default"
+                      ? "bg-red-500 border border-red-500 text-white cursor-default"
                       : saving || !name.trim() || server?.status?.toLowerCase() === "creating"
                       ? "bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed"
-                      : "bg-[#FF5722] text-white hover:bg-[#ff6939]"
+                      : "bg-[#FF5722] border border-[#FF5722] text-white hover:bg-[#F4511E]"
                   }`}
                 >
                   {saving ? (
