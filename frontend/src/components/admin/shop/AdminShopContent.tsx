@@ -1,5 +1,4 @@
 import { ShopItem } from '@/hooks/admin/shop/useAdminShop';
-import { ShopNotice } from './ShopNotice';
 import { ShopItemsList } from './ShopItemsList';
 import { EditShopItemModal } from './EditShopItemModal';
 
@@ -26,9 +25,6 @@ export function AdminShopContent({
 }: AdminShopContentProps) {
   return (
     <>
-      {/* Notice */}
-      <ShopNotice />
-
       {/* Shop Items List */}
       <ShopItemsList
         items={items}

@@ -110,7 +110,7 @@ export default function AdminPlansPage() {
 
   return (
     <>
-      <div className="p-4 sm:p-6 space-y-6 sm:space-y-8">
+      <div className="space-y-6 sm:space-y-8">
           {/* Action Bar */}
           <div className="flex items-center justify-end">
             <button 

@@ -46,7 +46,7 @@ export default function AdminShopPage() {
   }
 
   return (
-      <div className="p-4 sm:p-6 space-y-6">
+      <div className="space-y-6">
         {/* Error Display */}
         <AdminShopError error={error} />
 

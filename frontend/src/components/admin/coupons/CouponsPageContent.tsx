@@ -90,7 +90,7 @@ export default function CouponsPageContent() {
   if (loading) return <AdminCouponsSkeleton />;
 
   return (
-    <div className="p-4 sm:p-6 space-y-6">
+    <div className="space-y-6">
       <CouponsHeader onCreateNew={() => { setEditingCoupon(null); setIsDrawerOpen(true); }} />
       <CouponsList 
         coupons={coupons} 

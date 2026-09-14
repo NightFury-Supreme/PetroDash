@@ -155,7 +155,7 @@ export default function AdminLedgerPage() {
   if (loading && items.length === 0) {
     return (
       
-        <div className="p-6">
+        <div>
           <AdminLedgerSkeleton />
         </div>
       
@@ -190,7 +190,7 @@ export default function AdminLedgerPage() {
 
   return (
     <>
-      <div className="p-4 sm:p-6 space-y-6">
+      <div className="space-y-6">
         {/* Main Content */}
         <AdminLedgerContent
           items={items}
