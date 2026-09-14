@@ -334,7 +334,7 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
           if (!usernameVal.trim()) return { valid: false, message: 'Username cannot be empty.' };
           if (usernameVal.trim().length < 3) return { valid: false, message: 'Username must be at least 3 characters.' };
           if (usernameVal.trim().length > 30) return { valid: false, message: 'Username cannot exceed 30 characters.' };
-          if (!/^[a-zA-Z0-9_]+$/.test(usernameVal.trim())) return { valid: false, message: 'Use only letters, numbers and underscores.' };
+          if (!/^[a-zA-Z0-9_-]+$/.test(usernameVal.trim())) return { valid: false, message: 'Use only letters, numbers, underscores and dashes.' };
           return { valid: true, message: '' };
         })()
       : field === 'name' && editing

@@ -16,7 +16,11 @@ const PendingUpdate = require('../../models/PendingUpdate');
 
 const router = express.Router();
 
-const updateProfileSchema = z.object({ username: z.string().min(3).max(30).optional(), firstName: z.string().min(1).optional(), lastName: z.string().min(1).optional() });
+const updateProfileSchema = z.object({ 
+  username: z.string().min(3).max(30).regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores, and dashes').optional(), 
+  firstName: z.string().min(1).max(50).optional(), 
+  lastName: z.string().min(1).max(50).optional() 
+});
 
 router.patch('/profile', requireAuth, async (req, res) => {
   try {

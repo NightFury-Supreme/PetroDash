@@ -119,30 +119,6 @@ export function useProfile() {
     } catch (e: any) { throw e; } finally { setSaving(false); }
   }, []);
 
-  const updateEmail = useCallback(async (email: string, password: string, tfaCode?: string) => {
-    setSaving(true); setError(null); setSuccess(null);
-    try {
-      const token = localStorage.getItem('auth_token');
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/profile/email`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ email, password, ...(tfaCode ? { tfaCode } : {}) })
-      });
-      let d: any = {};
-      try { d = await r.json(); } catch {}
-      if (!r.ok) {
-        let message = d?.error || 'Failed to update email';
-        if (d?.details?.fieldErrors) {
-          const fieldMsgs = Object.entries(d.details.fieldErrors as Record<string, string[]>)
-            .map(([field, msgs]) => `${field}: ${(msgs as string[]).join(', ')}`).join('; ');
-          if (fieldMsgs) message = fieldMsgs;
-        }
-        throw new Error(message);
-      }
-      setForm((f) => ({ ...f, email: d.email }));
-      setSuccess('Email updated');
-    } catch (e: any) { throw e; } finally { setSaving(false); }
-  }, []);
 
   const updatePassword = useCallback(async (currentPassword: string, newPassword: string, tfaCode?: string) => {
     setSaving(true); setError(null); setSuccess(null);
@@ -255,5 +231,5 @@ export function useProfile() {
     }
   }, [form.email]);
 
-  return { form, setForm, loading, saving, error, success, sessions, saveProfile, updateEmail, updatePassword, updateProfilePicture, fetchSessions, revokeSession, resendVerification, verifyEmailCode };
+  return { form, setForm, loading, saving, error, success, sessions, saveProfile, updatePassword, updateProfilePicture, fetchSessions, revokeSession, resendVerification, verifyEmailCode };
 }
