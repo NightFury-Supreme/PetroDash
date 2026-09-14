@@ -26,8 +26,7 @@ import {
   ShoppingCart,
   Receipt,
   PanelLeft,
-  LogOut,
-  ChevronDown
+  LogOut
 } from "lucide-react";
 
 type NavLink = { href: string; label: string; icon: LucideIcon };
@@ -59,12 +58,6 @@ const adminOtherLinks: NavLink[] = [
   { href: "/admin/settings", label: "Settings", icon: Sliders },
 ];
 
-const shopLinks: NavLink[] = [
-  { href: "/admin/plans", label: "Plans", icon: Crown },
-  { href: "/admin/coupons", label: "Coupons", icon: Tag },
-  { href: "/admin/shop", label: "Shop", icon: ShoppingCart },
-  { href: "/admin/ledger", label: "Ledger", icon: Receipt },
-];
 
 function NavButton({
   item,
@@ -103,7 +96,6 @@ export default function Sidebar() {
   const [user, setUser] = useState<{ username?: string; email?: string; role?: string; coins?: number; hasActivePlans?: boolean; profilePicture?: string; firstName?: string; lastName?: string; name?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [brand, setBrand] = useState<{ name: string; icon: string; earnEnabled: boolean }>({ name: 'PetroDash', icon: '', earnEnabled: false });
-  const [openSections, setOpenSections] = useState<{ shop: boolean }>({ shop: false });
 
   // Load collapsed state from localStorage
   useEffect(() => {
@@ -247,31 +239,12 @@ export default function Sidebar() {
                 />
               ))}
               
-              {/* Collapsible Shop Section */}
-              <div className="mt-0.5">
-                <button
-                  onClick={() => setOpenSections((s) => ({ ...s, shop: !s.shop }))}
-                  className="w-full flex items-center justify-between rounded-lg px-2.5 py-2 text-sm text-zinc-500 hover:bg-white/5 hover:text-zinc-200 transition-colors group focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
-                >
-                  <div className="flex items-center gap-3">
-                    <Store size={17} strokeWidth={1.75} className="shrink-0" />
-                    <span className="truncate">Shop</span>
-                  </div>
-                  <ChevronDown size={15} className={`shrink-0 transition-transform ${openSections.shop ? '' : '-rotate-90'}`} />
-                </button>
-                {openSections.shop && (
-                  <div className="pl-6 flex flex-col gap-0.5 mt-0.5 border-l border-white/5 ml-3">
-                    {shopLinks.map((item) => (
-                      <NavButton
-                        key={item.href}
-                        item={item}
-                        collapsed={collapsed}
-                        isActive={checkIsActive(item.href)}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
+              {/* Store Section */}
+              <NavButton
+                item={{ href: "/admin/store", label: "Store", icon: Store }}
+                collapsed={collapsed}
+                isActive={checkIsActive("/admin/store")}
+              />
             </nav>
           </div>
         )}
