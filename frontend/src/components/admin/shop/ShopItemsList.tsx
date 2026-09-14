@@ -58,11 +58,12 @@ export function ShopItemsList({
   return (
     <div className="w-full">
       {/* Column headers */}
-      <div className="hidden gap-4 grid-cols-[2fr_1fr_1fr_1fr_100px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
+      <div className="hidden gap-4 grid-cols-[2fr_1fr_1fr_1fr_1fr_100px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
         <span>Resource</span>
         <span>Amount</span>
         <span>Price</span>
         <span>Max</span>
+        <span>Status</span>
         <span className="text-right">Action</span>
       </div>
 
@@ -70,7 +71,7 @@ export function ShopItemsList({
         {items.map((item) => (
           <div
             key={item._id || item.key}
-            className={`flex flex-col gap-4 px-5 py-4 transition hover:bg-white/[0.015] md:grid md:grid-cols-[2fr_1fr_1fr_1fr_100px] md:items-center ${
+            className={`flex flex-col gap-4 px-5 py-4 transition hover:bg-white/[0.015] md:grid md:grid-cols-[2fr_1fr_1fr_1fr_1fr_100px] md:items-center ${
               !item.enabled ? 'opacity-50 grayscale' : ''
             }`}
           >
@@ -105,6 +106,20 @@ export function ShopItemsList({
             {/* Max */}
             <div className="flex items-center gap-1.5">
               <span className="text-sm font-semibold text-white/80">{item.maxPerPurchase}</span>
+            </div>
+
+            {/* Status */}
+            <div className="flex items-center">
+              <button
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleEnabled(item); }}
+                className="relative inline-flex items-center group cursor-pointer"
+              >
+                {item.enabled ? (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">Enabled</span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">Disabled</span>
+                )}
+              </button>
             </div>
 
             {/* Action */}

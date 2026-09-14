@@ -10,11 +10,12 @@ export function AdminShopSkeleton() {
       {/* Items List Skeleton */}
       <div className="w-full mt-7">
         {/* Column headers */}
-        <div className="hidden gap-4 grid-cols-[2fr_1fr_1fr_1fr_100px] border-b border-white/[0.06] px-5 pb-3 md:grid">
+        <div className="hidden gap-4 grid-cols-[2fr_1fr_1fr_1fr_1fr_100px] border-b border-white/[0.06] px-5 pb-3 md:grid">
           <div className="h-2 w-16 bg-[#202020] rounded animate-pulse"></div>
           <div className="h-2 w-12 bg-[#202020] rounded animate-pulse"></div>
           <div className="h-2 w-10 bg-[#202020] rounded animate-pulse"></div>
           <div className="h-2 w-10 bg-[#202020] rounded animate-pulse"></div>
+          <div className="h-2 w-12 bg-[#202020] rounded animate-pulse"></div>
           <div className="h-2 w-12 bg-[#202020] rounded animate-pulse ml-auto"></div>
         </div>
 
@@ -22,7 +23,7 @@ export function AdminShopSkeleton() {
           {[...Array(6)].map((_, index) => (
             <div
               key={index}
-              className="flex flex-col gap-4 px-5 py-4 md:grid md:grid-cols-[2fr_1fr_1fr_1fr_100px] md:items-center"
+              className="flex flex-col gap-4 px-5 py-4 md:grid md:grid-cols-[2fr_1fr_1fr_1fr_1fr_100px] md:items-center"
             >
               {/* Identity */}
               <div className="flex items-center gap-3">
@@ -48,6 +49,11 @@ export function AdminShopSkeleton() {
               {/* Max */}
               <div className="flex items-center gap-1.5 mt-2 md:mt-0">
                 <div className="h-3 w-6 bg-[#202020] rounded animate-pulse"></div>
+              </div>
+
+              {/* Status */}
+              <div className="flex items-center mt-2 md:mt-0">
+                <div className="h-6 w-16 bg-[#202020] rounded animate-pulse"></div>
               </div>
 
               {/* Action */}
