@@ -263,20 +263,7 @@ export function PanelContent() {
                     type="button"
                     onClick={launchPanel}
                     disabled={!panelData?.panelUrl}
-                    className="
-                        inline-flex h-8 items-center gap-2
-                        rounded-md
-                        border border-[#FF5722]/20
-                        bg-[#FF5722]/10
-                        px-3
-                        text-[11px]
-                        font-medium
-                        text-[#FF5722]
-                        transition
-                        hover:border-[#FF5722]/40
-                        hover:bg-[#FF5722]/20
-                        disabled:opacity-50
-                      "
+                    className="inline-flex h-8 items-center gap-2 rounded-md border border-[#FF5722]/20 bg-[#FF5722]/10 px-3 text-[11px] font-medium text-[#FF5722] transition hover:border-[#FF5722]/40 hover:bg-[#FF5722]/20 disabled:opacity-50"
                   >
                     Launch
                     <ExternalLink className="h-3.5 w-3.5" />

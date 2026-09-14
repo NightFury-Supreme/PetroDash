@@ -111,7 +111,7 @@ export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProp
                 (currentStep === 'software' && !form.eggId) ||
                 (currentStep === 'location' && !form.locationId)
               }
-              className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next Step
             </button>

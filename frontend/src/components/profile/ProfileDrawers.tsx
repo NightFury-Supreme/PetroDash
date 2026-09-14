@@ -134,7 +134,7 @@ export function PasswordDrawer({
           </div>
         )}
         <div className="mt-4 flex justify-end gap-3">
-          <button onClick={handleClose} disabled={isLoading} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-white transition-colors disabled:opacity-50">Cancel</button>
+          <button onClick={handleClose} disabled={isLoading} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-[#D4D4D4] transition-colors disabled:opacity-50 bg-transparent">Cancel</button>
           <button onClick={handleUpdate} disabled={isLoading || !isValid} className={`flex h-11 items-center justify-center rounded-lg px-6 text-[13px] font-medium transition-colors gap-2 ${(!isValid) ? 'bg-[#333] text-[#888] cursor-not-allowed' : 'bg-[#FF5722] hover:bg-[#F4511E] text-white disabled:opacity-50'}`}>
             {isLoading ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : "Update Password"}
           </button>
@@ -316,7 +316,7 @@ export function ChangeEmailDrawer({
               </div>
             )}
             <div className="mt-4 flex justify-end gap-3">
-              <button onClick={handleClose} disabled={isLoading} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-white transition-colors disabled:opacity-50">Cancel</button>
+              <button onClick={handleClose} disabled={isLoading} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-[#D4D4D4] transition-colors disabled:opacity-50 bg-transparent">Cancel</button>
               <button onClick={handleUpdate} disabled={isLoading || !isStep1Valid} className={`flex h-11 items-center justify-center rounded-lg px-6 text-[13px] font-medium transition-colors gap-2 ${(!isStep1Valid) ? 'bg-[#333] text-[#888] cursor-not-allowed' : 'bg-[#FF5722] hover:bg-[#F4511E] text-white disabled:opacity-50'}`}>
                 {isLoading ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : "Change Email"}
               </button>
@@ -343,7 +343,7 @@ export function ChangeEmailDrawer({
             </div>
             
             <div className="mt-4 flex justify-end gap-3">
-              <button onClick={() => setStep(1)} disabled={isLoading} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-white transition-colors disabled:opacity-50">Back</button>
+              <button onClick={() => setStep(1)} disabled={isLoading} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-[#D4D4D4] transition-colors disabled:opacity-50 bg-transparent">Back</button>
               <button onClick={handleVerify} disabled={isLoading || !isStep2Valid} className={`flex h-11 items-center justify-center rounded-lg px-6 text-[13px] font-medium transition-colors gap-2 ${(!isStep2Valid) ? 'bg-[#333] text-[#888] cursor-not-allowed' : 'bg-[#FF5722] hover:bg-[#F4511E] text-white disabled:opacity-50'}`}>
                 {isLoading ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : "Verify & Save"}
               </button>
@@ -466,7 +466,7 @@ export function Setup2FADrawer({
                 <button
                   onClick={handleVerify}
                   disabled={!codeValidation.valid || isLoading}
-                  className="flex h-11 items-center justify-center gap-2 rounded-lg bg-[#FF5722] hover:bg-[#F4511E] px-6 text-[13px] font-medium text-white transition-colors disabled:cursor-not-allowed disabled:bg-[#333] disabled:text-[#888]"
+                  className="flex h-11 items-center justify-center gap-2 rounded-lg bg-[#FF5722] hover:bg-[#F4511E] px-4 text-[13px] font-medium text-white transition-colors disabled:cursor-not-allowed disabled:bg-[#333] disabled:text-[#888]"
                 >
                   {isLoading ? "Verifying..." : "Verify"}
                   {!isLoading && <ArrowRight size={14} />}
@@ -497,7 +497,7 @@ export function Setup2FADrawer({
                 {copied ? <Check size={16} /> : <Copy size={16} />}
                 {copied ? 'Copied!' : 'Copy Codes'}
               </button>
-              <button onClick={handleClose} className="flex h-11 items-center justify-center rounded-lg bg-[#FF5722] px-6 text-[13px] font-medium text-white hover:bg-[#F4511E] transition-colors">I have saved them</button>
+              <button onClick={handleClose} className="flex h-11 items-center justify-center rounded-lg bg-[#FF5722] px-4 text-[13px] font-medium text-white hover:bg-[#F4511E] transition-colors">I have saved them</button>
             </div>
           </>
         )}
@@ -603,7 +603,7 @@ export function Disable2FADrawer({
           <ValidationMsg touched={touchedCode} valid={codeValidation.valid} message={codeValidation.message} hideSuccess={true} />
         </div>
         <div className="mt-4 flex justify-end gap-3">
-          <button onClick={handleClose} disabled={isLoading} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-white transition-colors disabled:opacity-50">Cancel</button>
+          <button onClick={handleClose} disabled={isLoading} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-[#D4D4D4] transition-colors disabled:opacity-50 bg-transparent">Cancel</button>
           <button onClick={handleDisable} disabled={isLoading || !codeValidation.valid} className={`flex h-11 items-center justify-center gap-2 rounded-lg px-6 text-[13px] font-medium transition-colors disabled:cursor-not-allowed ${(isLoading || !codeValidation.valid) ? 'bg-[#333] text-[#888]' : 'bg-red-500 hover:bg-red-600 text-white'}`}>
             {isLoading ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : "Confirm Disable"}
           </button>
@@ -719,7 +719,7 @@ export function DeleteAccountDrawer({
         </div>
 
         <div className="mt-4 flex justify-end gap-3">
-          <button type="button" onClick={handleClose} disabled={isLoading} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-white transition-colors disabled:opacity-50">Cancel</button>
+          <button type="button" onClick={handleClose} disabled={isLoading} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-[#D4D4D4] transition-colors disabled:opacity-50 bg-transparent">Cancel</button>
           <button 
             type="button" 
             onClick={handleDelete} 
@@ -836,7 +836,7 @@ export function EmailVerificationDrawer({
         </div>
 
         <div className="mt-4 flex justify-end gap-3">
-          <button type="button" onClick={handleClose} disabled={isLoading} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-white transition-colors disabled:opacity-50">Cancel</button>
+          <button type="button" onClick={handleClose} disabled={isLoading} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-[#D4D4D4] transition-colors disabled:opacity-50 bg-transparent">Cancel</button>
           <button type="button" onClick={handleVerify} disabled={isLoading || code.length !== 8} className={`flex h-11 items-center justify-center gap-2 rounded-lg px-6 text-[13px] font-medium transition-colors disabled:cursor-not-allowed ${(isLoading || code.length !== 8) ? 'bg-[#333] text-[#888]' : 'bg-[#FF5722] hover:bg-[#F4511E] text-white'}`}>
             {isLoading ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : "Verify"}
           </button>

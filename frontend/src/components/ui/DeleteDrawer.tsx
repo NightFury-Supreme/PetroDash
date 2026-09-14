@@ -65,7 +65,7 @@ export function DeleteDrawer({
         <div className="flex items-center justify-between">
           <button
             onClick={onClose}
-            className="flex items-center gap-2 rounded-lg border border-[#222] bg-transparent px-5 py-2.5 text-sm font-medium text-[#888] transition-colors hover:border-[#333] hover:text-white"
+            className="flex items-center gap-2 rounded-lg border border-[#222] bg-transparent px-5 py-2 text-sm font-medium text-[#888] transition-colors hover:border-[#333] hover:text-[#D4D4D4]"
           >
             Cancel
           </button>

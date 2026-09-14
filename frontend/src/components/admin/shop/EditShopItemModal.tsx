@@ -70,7 +70,7 @@ export function EditShopItemModal({
               disabled={saving}
               className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
                 formData.enabled 
-                  ? 'border-yellow-500/20 bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20' 
+                  ? 'border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20' 
                   : 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
               }`}
             >

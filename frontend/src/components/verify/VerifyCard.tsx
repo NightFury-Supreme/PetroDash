@@ -225,7 +225,7 @@ export default function VerifyCard() {
           {error && <div className="p-3 rounded-lg bg-red-900/20 border border-red-500/30 text-red-400 text-sm mt-4 text-center">{error}</div>}
           
           <div className="space-y-3 mt-6">
-            <button onClick={handleChangeEmail} disabled={loading} className="w-full bg-[#FF5722] hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-xl transition-colors">
+            <button onClick={handleChangeEmail} disabled={loading} className="w-full bg-[#FF5722] hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-colors">
               {loading ? (
                 <span className="flex items-center justify-center gap-2"><i className="fas fa-spinner fa-spin"></i>Updating...</span>
               ) : (
@@ -269,7 +269,7 @@ export default function VerifyCard() {
         )}
         <div className="space-y-3 pt-2">
           {codeSent && (
-            <button onClick={verifyCode} disabled={loading || code.length !== 8} className="w-full bg-[#FF5722] hover:bg-[#F4511E] disabled:bg-[#333] disabled:text-[#888] disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-xl transition-colors">
+            <button onClick={verifyCode} disabled={loading || code.length !== 8} className="w-full bg-[#FF5722] hover:bg-[#F4511E] disabled:bg-[#333] disabled:text-[#888] disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-colors">
               {loading ? (
                 <span className="flex items-center justify-center gap-2"><i className="fas fa-spinner fa-spin"></i>Verifying...</span>
               ) : (

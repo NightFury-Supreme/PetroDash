@@ -151,7 +151,7 @@ export function CategorySelect({ value, onChange }: { value: string, onChange: (
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
                       onClick={(e) => { e.stopPropagation(); setEditingId(c.id); setEditVal(c.name); }}
-                      className="text-[#888] hover:text-white transition-colors"
+                      className="text-[#888] hover:text-[#D4D4D4] transition-colors bg-transparent border border-[#222] rounded-lg"
                       title="Rename"
                     >
                       <Edit2 size={13} />

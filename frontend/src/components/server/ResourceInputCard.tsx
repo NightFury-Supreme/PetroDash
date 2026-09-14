@@ -91,7 +91,7 @@ export const ResourceInputCard = React.memo(function ResourceInputCard({
               type="button"
               tabIndex={-1}
               onClick={() => updateValue(field.key, (Number(value) || 0) + 1)}
-              className="text-[#888] hover:text-[#D4D4D4] transition-colors"
+              className="text-[#888] hover:text-[#D4D4D4] transition-colors bg-transparent border border-[#222] rounded-lg"
             >
               <ChevronUp size={12} strokeWidth={3} />
             </button>
@@ -99,7 +99,7 @@ export const ResourceInputCard = React.memo(function ResourceInputCard({
               type="button"
               tabIndex={-1}
               onClick={() => updateValue(field.key, Math.max(0, (Number(value) || 0) - 1))}
-              className="text-[#888] hover:text-[#D4D4D4] transition-colors -mt-[1px]"
+              className="text-[#888] hover:text-[#D4D4D4] transition-colors -mt-[1px] bg-transparent border border-[#222] rounded-lg"
             >
               <ChevronDown size={12} strokeWidth={3} />
             </button>

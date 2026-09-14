@@ -68,10 +68,10 @@ export function InvoicesTab({ invoices, invoicePage, invoiceTotalPages, invoiceT
               {Math.min(invoicePage * 5, invoiceTotal)} of {invoiceTotal}
             </p>
             <div className="flex items-center gap-1">
-              <button disabled={invoicePage === 1} onClick={() => setInvoicePage(invoicePage - 1)} className="flex h-8 w-8 items-center justify-center rounded-md border border-[#333] text-[#888] transition hover:bg-[#222] hover:text-[#D4D4D4] disabled:opacity-30">
+              <button disabled={invoicePage === 1} onClick={() => setInvoicePage(invoicePage - 1)} className="flex h-8 w-8 items-center justify-center rounded-md border border-[#333] text-[#888] transition hover:bg-[#222] hover:text-[#D4D4D4] disabled:opacity-30 bg-transparent border border-[#222] rounded-lg">
                 <ChevronLeft size={14} />
               </button>
-              <button disabled={invoicePage === invoiceTotalPages} onClick={() => setInvoicePage(invoicePage + 1)} className="flex h-8 w-8 items-center justify-center rounded-md border border-[#333] text-[#888] transition hover:bg-[#222] hover:text-[#D4D4D4] disabled:opacity-30">
+              <button disabled={invoicePage === invoiceTotalPages} onClick={() => setInvoicePage(invoicePage + 1)} className="flex h-8 w-8 items-center justify-center rounded-md border border-[#333] text-[#888] transition hover:bg-[#222] hover:text-[#D4D4D4] disabled:opacity-30 bg-transparent border border-[#222] rounded-lg">
                 <ChevronRight size={14} />
               </button>
             </div>

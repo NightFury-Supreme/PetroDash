@@ -77,7 +77,7 @@ export function EarnMethodRow({
           <button
             onClick={onEdit}
             title="Configure method"
-            className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#888] hover:text-white transition-colors"
+            className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#888] hover:text-[#D4D4D4] transition-colors bg-transparent border border-[#222] rounded-lg"
           >
             <Edit2 size={14} />
           </button>

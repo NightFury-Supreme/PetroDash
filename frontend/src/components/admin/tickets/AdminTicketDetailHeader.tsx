@@ -122,7 +122,7 @@ export default function AdminTicketDetailHeader({
 
       <div className="relative ml-2 flex-shrink-0" ref={menuRef}>
         <button
-          className="flex h-8 w-8 items-center justify-center rounded-md border border-[#222] bg-[#161616] text-[#888] transition-colors hover:text-white"
+          className="flex h-8 w-8 items-center justify-center rounded-md border border-[#222] bg-[#161616] text-[#888] transition-colors hover:text-[#D4D4D4] bg-transparent rounded-lg"
           onClick={() => setMenuOpen(v => !v)}
         >
           <i className="fas fa-ellipsis-h" />

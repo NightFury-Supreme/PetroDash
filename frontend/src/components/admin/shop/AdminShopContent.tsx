@@ -25,6 +25,11 @@ export function AdminShopContent({
 }: AdminShopContentProps) {
   return (
     <>
+      <div className="mb-4">
+        <h2 className="text-sm font-semibold text-white">Shop Items</h2>
+        <p className="mt-0.5 text-xs text-[#666]">Manage preset shop items, adjust pricing, and toggle availability.</p>
+      </div>
+
       {/* Shop Items List */}
       <ShopItemsList
         items={items}

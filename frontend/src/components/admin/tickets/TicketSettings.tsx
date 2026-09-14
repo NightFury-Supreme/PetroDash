@@ -222,7 +222,7 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
               <button
                 disabled={!canAdd || categoryExists}
                 onClick={addCategory}
-                className="flex items-center justify-center gap-2 rounded-lg bg-[#FF5722] hover:bg-[#F4511E] px-5 py-2.5 text-sm font-medium text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 rounded-lg bg-[#FF5722] hover:bg-[#F4511E] px-4 py-2 text-sm font-medium text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Plus size={15} />
                 <span>Add</span>

@@ -406,7 +406,7 @@ export default function EggForm({ form, setForm, env, setEnv, onSubmit, submitti
               type="button"
               onClick={onDelete}
               disabled={isSubmitting}
-              className="px-4 py-2.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-colors text-sm font-medium disabled:opacity-50"
+              className="px-4 py-2 rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-colors text-sm font-medium disabled:opacity-50"
             >
               Delete Egg
             </button>
@@ -414,7 +414,7 @@ export default function EggForm({ form, setForm, env, setEnv, onSubmit, submitti
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#FF5722] text-white hover:bg-[#ff6939] transition-all text-sm font-medium disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#FF5722] text-white hover:bg-[#ff6939] transition-all text-sm font-medium disabled:opacity-50"
           >
             {isSubmitting ? <><Loader2 size={15} className="animate-spin" /> Saving...</> : <><Check size={15} /> {submitLabel}</>}
           </button>

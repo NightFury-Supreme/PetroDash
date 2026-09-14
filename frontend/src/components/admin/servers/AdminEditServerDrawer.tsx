@@ -112,7 +112,7 @@ function ResourceField({
               type="button"
               tabIndex={-1}
               onClick={() => onChange(field.key, (value || 0) + 1)}
-              className="text-[#888] hover:text-[#D4D4D4] transition-colors"
+              className="text-[#888] hover:text-[#D4D4D4] transition-colors bg-transparent border border-[#222] rounded-lg"
             >
               <ChevronUp size={12} strokeWidth={3} />
             </button>
@@ -122,7 +122,7 @@ function ResourceField({
               onClick={() =>
                 onChange(field.key, Math.max(0, (value || 0) - 1))
               }
-              className="text-[#888] hover:text-[#D4D4D4] transition-colors -mt-[1px]"
+              className="text-[#888] hover:text-[#D4D4D4] transition-colors -mt-[1px] bg-transparent border border-[#222] rounded-lg"
             >
               <ChevronDown size={12} strokeWidth={3} />
             </button>

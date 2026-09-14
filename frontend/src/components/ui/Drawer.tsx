@@ -86,7 +86,7 @@ export function Drawer({
           </div>
           <button
             onClick={handleClose}
-            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-[#222] text-[#888] transition-colors hover:border-[#333] hover:text-white hover:bg-[#161616]"
+            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-[#222] text-[#888] transition-colors hover:border-[#333] hover:text-[#D4D4D4] hover:bg-[#161616] bg-transparent"
           >
             <X size={16} />
           </button>

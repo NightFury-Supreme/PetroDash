@@ -111,6 +111,12 @@ export default function AdminPlansPage() {
   return (
     <>
       <div className="space-y-6 sm:space-y-8">
+          {/* Header */}
+          <div className="mb-4">
+            <h2 className="text-sm font-semibold text-white">Plans</h2>
+            <p className="mt-0.5 text-xs text-[#666]">Manage subscription plans, adjust pricing, and toggle availability.</p>
+          </div>
+
           {/* Action Bar */}
           <div className="flex items-center justify-end">
             <button 

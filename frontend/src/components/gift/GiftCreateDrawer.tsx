@@ -115,7 +115,7 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
           <button
             type="button"
             onClick={copyCreatedCode}
-            className="inline-flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-lg px-5 text-sm font-medium transition bg-[#1A0F0C] text-[#FF5722] hover:bg-[#FF5722]/10"
+            className="inline-flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium transition bg-[#1A0F0C] text-[#FF5722] hover:bg-[#FF5722]/10"
           >
             <Copy className="h-4 w-4" />Copy
           </button>
@@ -265,7 +265,7 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
             form="gift-create-form"
             type="submit"
             disabled={creating}
-            className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {creating ? "Creating..." : "Create Gift"}
           </button>

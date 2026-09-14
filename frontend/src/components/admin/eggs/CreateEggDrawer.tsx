@@ -197,7 +197,7 @@ export function CreateEggDrawer({ onClose, onSuccess }: CreateEggDrawerProps) {
                 (currentStep === 'basic' && (!form.name.trim() || !form.category.trim() || !form.icon || !form.description.trim())) ||
                 (currentStep === 'panel' && (!form.pterodactylEggId || !form.pterodactylNestId))
               }
-              className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next Step
             </button>

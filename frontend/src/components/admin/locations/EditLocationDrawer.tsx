@@ -210,13 +210,13 @@ export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocati
                   type="button"
                   onClick={() => (!form.serversCount || form.serversCount === 0) && setIsDeleteDrawerOpen(true)}
                   disabled={form.serversCount !== undefined && form.serversCount > 0}
-                  className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-sm font-medium text-red-500 transition-colors hover:bg-red-500/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-500 transition-colors hover:bg-red-500/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   title={form.serversCount > 0 ? 'Cannot delete location with existing servers' : ''}
                 ><Trash size={15} /> Delete</button>
               </div>
               <div className="flex items-center gap-2">
-                <button type="button" onClick={onClose} disabled={submitting} className="px-4 py-2 text-sm font-medium text-[#888] hover:text-white transition-colors disabled:opacity-50">Cancel</button>
-                <button type="submit" form="location-form" disabled={submitting} className="flex items-center justify-center gap-2 rounded-lg bg-[#FF5722] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed">
+                <button type="button" onClick={onClose} disabled={submitting} className="px-4 py-2 text-sm font-medium text-[#888] hover:text-[#D4D4D4] transition-colors disabled:opacity-50 bg-transparent border border-[#222] rounded-lg">Cancel</button>
+                <button type="submit" form="location-form" disabled={submitting} className="flex items-center justify-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed">
                   {(submitting || uploadingFlag) ? <><Loader2 size={14} className="animate-spin" /> Saving...</> : 'Save Changes'}
                 </button>
               </div>
