@@ -61,11 +61,11 @@ export function PlanForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSubmit();
+    await onSubmit(e);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <form id="new-plan-form" onSubmit={handleSubmit} className="space-y-6">
       {/* Basic Information */}
       <div className="bg-[#181818] border border-[#303030] rounded-xl p-6">
         <div className="flex items-center gap-3 mb-6">
@@ -428,33 +428,6 @@ export function PlanForm({
 
 
 
-      {/* Actions */}
-      <div className="flex items-center justify-end gap-4">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="bg-[#202020] hover:bg-[#272727] text-white px-6 py-3 rounded-lg font-semibold transition-colors"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={saving}
-          className="bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-black px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2"
-        >
-          {saving ? (
-            <>
-              <i className="fas fa-spinner fa-spin"></i>
-              Creating...
-            </>
-          ) : (
-            <>
-              <i className="fas fa-plus"></i>
-              Create Plan
-            </>
-          )}
-        </button>
-      </div>
     </form>
   );
 }
