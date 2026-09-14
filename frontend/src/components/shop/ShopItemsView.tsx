@@ -35,6 +35,20 @@ export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
           <div className="divide-y divide-white/[0.06]">
             {items.map((item) => {
               const Icon = getShopIcon(item.name);
+              
+              const getDescriptionForKey = (key: string, name: string) => {
+                switch (key) {
+                  case 'allocations': return 'Additional network ports';
+                  case 'backups': return 'Additional backup slots';
+                  case 'cpuPercent': return 'Increase CPU limit (in %)';
+                  case 'databases': return 'Additional database slots';
+                  case 'diskMb': return 'Increase disk space (in MB)';
+                  case 'memoryMb': return 'Increase memory (in MB)';
+                  case 'serverSlots': return 'Additional server slots';
+                  default: return `Add extra ${name}`;
+                }
+              };
+
               return (
                 <div
                   key={item._id || item.key}
@@ -47,7 +61,7 @@ export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-white/80 truncate">{item.name}</p>
-                      <p className="text-xs text-white/30 truncate">{item.description || `Add extra ${item.name}`}</p>
+                      <p className="text-xs text-white/30 truncate">{item.description || getDescriptionForKey(item.key, item.name)}</p>
                     </div>
                   </div>
 

@@ -33,6 +33,19 @@ export function ShopItemsList({
     return unit;
   };
 
+  const getDescriptionForKey = (key: string, name: string) => {
+    switch (key) {
+      case 'allocations': return 'Additional network ports';
+      case 'backups': return 'Additional backup slots';
+      case 'cpuPercent': return 'Increase CPU limit (in %)';
+      case 'databases': return 'Additional database slots';
+      case 'diskMb': return 'Increase disk space (in MB)';
+      case 'memoryMb': return 'Increase memory (in MB)';
+      case 'serverSlots': return 'Additional server slots';
+      default: return `Add extra ${name}`;
+    }
+  };
+
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center border border-white/[0.06] rounded-xl">
@@ -71,7 +84,7 @@ export function ShopItemsList({
                   {item.name}
                   {!item.enabled && <span className="ml-2 text-[10px] text-[#FF5722] border border-[#FF5722]/30 bg-[#FF5722]/10 px-1.5 py-0.5 rounded-sm">Disabled</span>}
                 </p>
-                <p className="text-xs text-white/30 truncate">{item.key}</p>
+                <p className="text-xs text-white/30 truncate">{item.description || getDescriptionForKey(item.key, item.name)}</p>
               </div>
             </div>
 
