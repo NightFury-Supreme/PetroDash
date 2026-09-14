@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Drawer } from "@/components/ui/Drawer";
-import { Mail, ShieldCheck, AlertTriangle, AlertCircle, Copy, Trash2, Check, ArrowRight } from "lucide-react";
+import { Mail, KeyRound, ShieldCheck, AlertTriangle, AlertCircle, Copy, Trash2, Check, ArrowRight } from "lucide-react";
 import { useToast } from "@/components/ui/ToastProvider";
 
 // Inline validation message — same pattern as the reference UsernameSetting component
@@ -12,6 +12,135 @@ function ValidationMsg({ touched, valid, message, hideSuccess }: { touched: bool
       {valid ? <Check size={11} /> : <AlertCircle size={11} />}
       <span>{message}</span>
     </div>
+  );
+}
+
+export function PasswordDrawer({
+  isOpen,
+  onClose,
+  tfaEnabled,
+  updatePassword,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  tfaEnabled?: boolean;
+  updatePassword: (current: string, newPass: string, tfa: string) => Promise<void>;
+}) {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [passwordTfaCode, setPasswordTfaCode] = useState('');
+  const [useBackupCode, setUseBackupCode] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [touchedCurrent, setTouchedCurrent] = useState(false);
+  const [touchedNew, setTouchedNew] = useState(false);
+  const [touchedTfa, setTouchedTfa] = useState(false);
+  const { showError, showSuccess } = useToast();
+
+  const currentValidation = useMemo(() => {
+    if (!currentPassword) return { valid: false, message: 'Current password is required.' };
+    return { valid: true, message: 'Current password entered.' };
+  }, [currentPassword]);
+
+  const newValidation = useMemo(() => {
+    if (!newPassword) return { valid: false, message: 'New password is required.' };
+    if (newPassword.length < 8) return { valid: false, message: 'Password must be at least 8 characters.' };
+    if (!/[A-Za-z]/.test(newPassword)) return { valid: false, message: 'Password must contain at least one letter.' };
+    if (!/\d/.test(newPassword)) return { valid: false, message: 'Password must contain at least one number.' };
+    return { valid: true, message: 'Password meets all requirements.' };
+  }, [newPassword]);
+
+  const tfaValidation = useMemo(() => {
+    if (!tfaEnabled) return { valid: true, message: '' };
+    if (!passwordTfaCode) return { valid: false, message: useBackupCode ? 'Backup code is required.' : '2FA code is required.' };
+    if (useBackupCode && passwordTfaCode.length !== 8) return { valid: false, message: 'Enter your 8-character backup code.' };
+    if (!useBackupCode && passwordTfaCode.length !== 6) return { valid: false, message: 'Enter your 6-digit authenticator code.' };
+    return { valid: true, message: useBackupCode ? '8-character backup code entered.' : '6-digit code entered.' };
+  }, [passwordTfaCode, tfaEnabled, useBackupCode]);
+
+  const isValid = currentValidation.valid && newValidation.valid && tfaValidation.valid;
+
+  const handleUpdate = async () => {
+    setTouchedCurrent(true);
+    setTouchedNew(true);
+    setTouchedTfa(true);
+    if (!isValid) return;
+    setIsLoading(true);
+    try {
+      await updatePassword(currentPassword, newPassword, passwordTfaCode);
+      showSuccess("Password updated successfully.");
+      handleClose();
+    } catch (e: any) {
+      showError(e.message || 'An error occurred while updating.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    onClose();
+    setCurrentPassword('');
+    setNewPassword('');
+    setPasswordTfaCode('');
+  };
+
+  return (
+    <Drawer isOpen={isOpen} onClose={handleClose} title="Change Password" subtitle="Update your account password" icon={<KeyRound className="text-[#FF5722]" size={20} />}>
+      <div className="grid gap-6 mt-2">
+        <div>
+          <label className="block text-[11px] uppercase tracking-wider text-[#888] mb-2 font-medium">Current Password</label>
+          <input
+            type="password"
+            value={currentPassword}
+            onChange={(e) => { setCurrentPassword(e.target.value); setTouchedCurrent(true); }}
+            onBlur={() => setTouchedCurrent(true)}
+            disabled={isLoading}
+            className={`w-full h-11 rounded-lg border bg-[#161616] px-4 text-[13px] text-white outline-none focus:border-[#FF5722] transition-colors disabled:opacity-50 ${touchedCurrent && !currentValidation.valid ? 'border-red-400/30' : 'border-[#222]'}`}
+            placeholder="••••••••"
+          />
+          <ValidationMsg touched={touchedCurrent} valid={currentValidation.valid} message={currentValidation.message} hideSuccess={true} />
+        </div>
+        <div>
+          <label className="block text-[11px] uppercase tracking-wider text-[#888] mb-2 font-medium">New Password</label>
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => { setNewPassword(e.target.value); setTouchedNew(true); }}
+            onBlur={() => setTouchedNew(true)}
+            disabled={isLoading}
+            className={`w-full h-11 rounded-lg border bg-[#161616] px-4 text-[13px] text-white outline-none focus:border-[#FF5722] transition-colors disabled:opacity-50 ${touchedNew && !newValidation.valid ? 'border-red-400/30' : 'border-[#222]'}`}
+            placeholder="Minimum 8 characters"
+          />
+          <ValidationMsg touched={touchedNew} valid={newValidation.valid} message={newValidation.message} />
+        </div>
+        {tfaEnabled && (
+          <div>
+            <div className="flex justify-between items-end mb-2">
+              <label className="block text-[11px] uppercase tracking-wider text-[#888] font-medium">{useBackupCode ? 'Backup Code' : '2FA Code'}</label>
+              <button type="button" onClick={() => { setUseBackupCode(!useBackupCode); setPasswordTfaCode(''); setTouchedTfa(false); }} className="text-[12px] font-medium text-[#FF5722] hover:text-[#F4511E] transition-colors">
+                {useBackupCode ? 'Use 2FA Code' : 'Use Backup Code'}
+              </button>
+            </div>
+            <input
+              type="text"
+              maxLength={useBackupCode ? 8 : 6}
+              value={passwordTfaCode}
+              onChange={(e) => { setPasswordTfaCode(e.target.value.replace(useBackupCode ? /[^0-9a-fA-F]/g : /\D/g, '')); setTouchedTfa(true); }}
+              onBlur={() => setTouchedTfa(true)}
+              disabled={isLoading}
+              className={`w-full h-11 rounded-lg border bg-[#161616] px-4 text-[14px] text-white outline-none focus:border-[#FF5722] transition-colors tracking-[0.2em] font-mono text-center disabled:opacity-50 ${touchedTfa && !tfaValidation.valid ? 'border-red-400/30' : 'border-[#222]'}`}
+              placeholder={useBackupCode ? "a1b2c3d4" : "123456"}
+            />
+            <ValidationMsg touched={touchedTfa} valid={tfaValidation.valid} message={tfaValidation.message} hideSuccess={true} />
+          </div>
+        )}
+        <div className="mt-4 flex justify-end gap-3">
+          <button onClick={handleClose} disabled={isLoading} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-white transition-colors disabled:opacity-50">Cancel</button>
+          <button onClick={handleUpdate} disabled={isLoading || !isValid} className={`flex h-11 items-center justify-center rounded-lg px-6 text-[13px] font-medium transition-colors gap-2 ${(!isValid) ? 'bg-[#333] text-[#888] cursor-not-allowed' : 'bg-[#FF5722] hover:bg-[#F4511E] text-white disabled:opacity-50'}`}>
+            {isLoading ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : "Update Password"}
+          </button>
+        </div>
+      </div>
+    </Drawer>
   );
 }
 
