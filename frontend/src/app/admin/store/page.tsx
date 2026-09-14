@@ -28,6 +28,7 @@ export default function AdminStorePage() {
         </header>
 
         <div className="flex flex-col lg:flex-row gap-8 items-start">
+          {/* Vertical Sidebar */}
           <aside className="w-full lg:w-48 shrink-0 pt-1">
             <div className="sticky top-6">
               <div className="mb-4">
@@ -62,6 +63,7 @@ export default function AdminStorePage() {
             </div>
           </aside>
 
+          {/* Main Content */}
           <div className="flex-1 min-w-0 w-full">
             {tab === 'shop' && <AdminShopPage />}
             {tab === 'plans' && <AdminPlansPage />}
