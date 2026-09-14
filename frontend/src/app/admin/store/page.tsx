@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { ShoppingCart, Crown, Tag, Receipt } from 'lucide-react';
 import { SideItem } from '@/components/profile/ProfileComponents';
 import AdminShopPage from './shop/page';
@@ -10,21 +9,10 @@ import AdminCouponsPage from './coupons/page';
 import AdminLedgerPage from './ledger/page';
 
 export default function AdminStorePage() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const initTab = searchParams.get('tab') || 'shop';
-  
-  const [tab, setTab] = useState(initTab);
-
-  useEffect(() => {
-    if (searchParams.get('tab') && searchParams.get('tab') !== tab) {
-      setTab(searchParams.get('tab')!);
-    }
-  }, [searchParams]);
+  const [tab, setTab] = useState('shop');
 
   const handleTabChange = (t: string) => {
     setTab(t);
-    router.push(`/admin/store?tab=${t}`);
   };
 
   return (

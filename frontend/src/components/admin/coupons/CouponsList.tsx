@@ -85,7 +85,7 @@ export default function CouponsList({ coupons, onToggle, onDelete, plans, deleti
               </button>
             </div>
             <div className="flex items-center gap-3">
-              <Link href={`/admin/coupons/edit/${c._id}`} className="bg-[#202020] hover:bg-[#272727] text-white px-6 py-2 rounded-lg font-medium transition-colors" aria-label="Edit">
+              <Link href={`/admin/store/coupons/edit/${c._id}`} className="bg-[#202020] hover:bg-[#272727] text-white px-6 py-2 rounded-lg font-medium transition-colors" aria-label="Edit">
                 <i className="fas fa-edit mr-2 text-white" />
                 Edit
               </Link>

@@ -72,7 +72,7 @@ export function PlansList({
         <h3 className="text-2xl font-bold mb-3 text-white">No plans yet</h3>
         <p className="text-[#AAAAAA] text-lg mb-8">Create your first hosting plan to get started</p>
         <Link 
-          href="/admin/plans/new" 
+          href="/admin/store/plans/new" 
           className="bg-white hover:bg-gray-100 text-black px-8 py-4 rounded-lg font-semibold transition-colors inline-flex items-center gap-3"
         >
           <i className="fas fa-plus"></i>
@@ -232,7 +232,7 @@ export function PlansList({
 
             <div className="flex items-center gap-3">
               <Link
-                href={`/admin/plans/edit/${plan._id}`}
+                href={`/admin/store/plans/edit/${plan._id}`}
                 className="bg-[#202020] hover:bg-[#272727] text-white px-6 py-2 rounded-lg font-medium transition-colors"
               >
                 <i className="fas fa-edit mr-2 text-white"></i>

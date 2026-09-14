@@ -8,7 +8,6 @@ import type { LucideIcon } from "lucide-react";
 import {
   LayoutDashboard,
   Store,
-  Crown,
   Coins,
   Gift,
   Users,
@@ -22,9 +21,6 @@ import {
   MapPin,
   List,
   Sliders,
-  Tag,
-  ShoppingCart,
-  Receipt,
   PanelLeft,
   LogOut
 } from "lucide-react";

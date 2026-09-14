@@ -56,8 +56,8 @@ export default function CouponsPageContent() {
   if (loading) return <AdminCouponsSkeleton />;
 
   return (
-    <div className="p-6 space-y-6">
-      <CouponsHeader total={coupons.length} />
+    <div className="p-4 sm:p-6 space-y-6">
+      <CouponsHeader />
       <CouponsList coupons={coupons} plans={plans} onToggle={toggleEnabled} onDelete={deleteCoupon} deletingId={deleting} currency={currency} />
     </div>
   );

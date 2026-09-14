@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useAdminShop } from '@/hooks/admin/shop/useAdminShop';
 import { AdminShopSkeleton } from '@/components/skeletons/admin/shop/AdminShopSkeleton';
-import { AdminShopHeader } from '@/components/admin/shop/AdminShopHeader';
 import { AdminShopError } from '@/components/admin/shop/AdminShopError';
 import { AdminShopContent } from '@/components/admin/shop/AdminShopContent';
 import { ShopItem } from '@/hooks/admin/shop/useAdminShop';
@@ -47,11 +46,7 @@ export default function AdminShopPage() {
   }
 
   return (
-    
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <AdminShopHeader />
-
+      <div className="p-4 sm:p-6 space-y-6">
         {/* Error Display */}
         <AdminShopError error={error} />
 
@@ -67,7 +62,6 @@ export default function AdminShopPage() {
           onToggleEnabled={handleToggleEnabled}
         />
       </div>
-    
   );
 }
 

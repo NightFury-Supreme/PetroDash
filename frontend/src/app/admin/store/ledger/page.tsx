@@ -6,7 +6,7 @@ import { useToast } from "@/components/ui/ToastProvider";
 import { BookOpen, RefreshCw } from "lucide-react";
 import { ErrorState, DashboardButton, ErrorDescription } from "@/components/ui/ErrorState";
 import { AdminLedgerSkeleton } from "@/components/skeletons/admin/ledger";
-import { AdminLedgerHeader, AdminLedgerContent } from "@/components/admin/ledger";
+import { AdminLedgerContent } from "@/components/admin/ledger";
 import { Pagination } from "@/components/Pagination";
 import { useModal } from "@/components/Modal";
 
@@ -189,11 +189,8 @@ export default function AdminLedgerPage() {
   }
 
   return (
-    
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <AdminLedgerHeader />
-
+    <>
+      <div className="p-4 sm:p-6 space-y-6">
         {/* Main Content */}
         <AdminLedgerContent
           items={items}
@@ -225,7 +222,7 @@ export default function AdminLedgerPage() {
           itemName="payments"
         />
       </div>
-    
+    </>
   );
 }
 

@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 export interface PingResult {
   success: boolean;
   ping?: number;
@@ -21,7 +22,7 @@ export const measurePing = async (latencyUrl: string): Promise<PingResult> => {
     const timeoutId = setTimeout(() => controller.abort(), 3000);
     
     // Use a CORS-friendly method
-    await fetch(pingUrl, { 
+    await fetchWithRetry(pingUrl, { 
       method: 'HEAD',
       mode: 'no-cors', // This prevents CORS errors
       signal: controller.signal

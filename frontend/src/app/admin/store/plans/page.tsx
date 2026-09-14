@@ -105,21 +105,12 @@ export default function AdminPlansPage() {
 
   return (
     <>
-      <div className="p-4 sm:p-6 space-y-6 sm:space-y-8 bg-[#0F0F0F] min-h-screen">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-[#202020] rounded-2xl flex items-center justify-center shadow-lg">
-                <i className="fas fa-crown text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)] text-2xl"></i>
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Plans Management</h1>
-                <p className="text-[#AAAAAA] text-base sm:text-lg">Manage hosting plans and pricing</p>
-              </div>
-            </div>
+      <div className="p-4 sm:p-6 space-y-6 sm:space-y-8">
+          {/* Action Bar */}
+          <div className="flex items-center justify-end">
             <Link 
-              href="/admin/plans/new"
-              className="bg-white hover:bg-gray-100 text-black px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-3"
+              href="/admin/store/plans/new"
+              className="bg-white hover:bg-gray-100 text-black px-4 py-2 text-sm rounded-lg font-semibold transition-colors flex items-center gap-2 shadow-sm"
             >
               <i className="fas fa-plus"></i>
               Create New Plan
