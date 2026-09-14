@@ -105,7 +105,6 @@ export function ShopItemsList({
             {/* Max */}
             <div className="flex items-center gap-1.5">
               <span className="text-sm font-semibold text-white/80">{item.maxPerPurchase}</span>
-              <span className="text-xs text-white/30 uppercase tracking-wide">MAX</span>
             </div>
 
             {/* Action */}
