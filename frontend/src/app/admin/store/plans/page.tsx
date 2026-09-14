@@ -111,12 +111,14 @@ export default function AdminPlansPage() {
   return (
     <>
       <div className="space-y-6 sm:space-y-8">
-          {/* Header & Action Bar */}
-          <div className="flex items-end justify-between mb-2">
-            <div>
-              <h2 className="text-sm font-semibold text-white">Plans</h2>
-              <p className="mt-0.5 text-xs text-[#666]">Manage subscription plans, adjust pricing, and toggle availability.</p>
-            </div>
+          {/* Header */}
+          <div className="mb-4 mt-8">
+            <h2 className="text-sm font-semibold text-white">Plans</h2>
+            <p className="mt-0.5 text-xs text-[#666]">Manage subscription plans, adjust pricing, and toggle availability.</p>
+          </div>
+
+          {/* Action Bar */}
+          <div className="flex items-center justify-end">
             <button 
               onClick={() => { setEditingPlanId(null); setDrawerOpen(true); }}
               className="bg-white hover:bg-gray-100 text-black px-4 py-2 text-sm rounded-lg font-semibold transition-colors flex items-center gap-2 shadow-sm"
