@@ -51,7 +51,7 @@ export function Select({
 
   const sizeClass = size === 'sm' 
     ? 'h-8 px-3 text-xs rounded-md' 
-    : 'px-4 py-2.5 text-sm rounded-lg';
+    : 'h-[42px] px-4 text-sm rounded-lg';
 
   const dropdownItemSizeClass = size === 'sm' ? 'h-8 px-2 text-xs' : 'h-9 px-3 text-sm';
 
@@ -69,7 +69,7 @@ export function Select({
       </button>
 
       {open && (
-        <div className={`absolute top-[calc(100%+4px)] z-50 rounded-lg border border-[#2A2A2A] bg-[#151515] p-1.5 shadow-xl max-h-[250px] overflow-y-auto ${dropdownClassName || 'left-0 right-0'}`}>
+        <div className={`absolute top-[calc(100%+4px)] z-50 rounded-lg border border-[#2A2A2A] bg-[#151515] p-1.5 shadow-xl ${renderDropdown ? '' : 'max-h-[250px] overflow-y-auto'} ${dropdownClassName || 'left-0 right-0'}`}>
           {renderDropdown ? (
             renderDropdown({ close: () => setOpen(false) })
           ) : (
