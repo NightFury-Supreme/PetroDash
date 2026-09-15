@@ -217,12 +217,11 @@ function AdminPlanRow({
 
           {/* Status badge + Edit button */}
           <div className="flex items-center gap-2 shrink-0">
-            {isExpired && (
+            {isExpired ? (
               <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-amber-500/10 text-amber-400 text-[10px] font-medium tracking-wide uppercase border border-amber-500/20">
                 Expired
               </span>
-            )}
-            {isEnabled ? (
+            ) : isEnabled ? (
               <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">
                 Enabled
               </span>
