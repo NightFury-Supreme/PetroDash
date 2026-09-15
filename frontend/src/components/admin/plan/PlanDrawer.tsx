@@ -1,5 +1,5 @@
-import { ActionButton } from '@/components/admin/earn/EarnUI';
 "use client";
+import { ActionButton } from '@/components/admin/earn/EarnUI';
 
 import { useEffect } from 'react';
 import { Drawer } from '@/components/ui/Drawer';
