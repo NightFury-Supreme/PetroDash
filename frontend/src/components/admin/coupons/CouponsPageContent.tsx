@@ -7,8 +7,10 @@ import CouponsHeader from '@/components/admin/coupons/CouponsHeader';
 import CouponsList from '@/components/admin/coupons/CouponsList';
 import { AdminCouponsSkeleton } from '@/components/skeletons/admin/coupons/AdminCouponsSkeleton';
 import { CouponDrawer } from './CouponDrawer';
+import { useToast } from '@/components/ui/ToastProvider';
 
 export default function CouponsPageContent() {
+  const { showSuccess, showError } = useToast();
   const router = useRouter();
   const [coupons, setCoupons] = useState<any[]>([]);
   const [plans, setPlans] = useState<any[]>([]);
@@ -50,6 +52,9 @@ export default function CouponsPageContent() {
         if (res.ok) {
           setCoupons((prev) => prev.filter((c) => c._id !== id));
           setIsDrawerOpen(false);
+          showSuccess("Coupon deleted successfully");
+        } else {
+          showError("Failed to delete coupon");
         }
         return;
       }
@@ -57,10 +62,15 @@ export default function CouponsPageContent() {
       if (id) {
         if (Object.keys(data).length === 1 && data.enabled !== undefined) {
           // just toggle
-          await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons/${id}`, {
+          const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons/${id}`, {
             method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(data)
           });
-          setCoupons((prev) => prev.map((c) => (c._id === id ? { ...c, ...data } : c)));
+          if (res.ok) {
+            setCoupons((prev) => prev.map((c) => (c._id === id ? { ...c, ...data } : c)));
+            showSuccess(`Coupon ${data.enabled ? 'enabled' : 'disabled'} successfully`);
+          } else {
+            showError("Failed to toggle coupon");
+          }
           return; // don't close drawer if just toggling
         }
 
@@ -71,6 +81,9 @@ export default function CouponsPageContent() {
           const updated = await res.json();
           setCoupons((prev) => prev.map((c) => (c._id === id ? updated : c)));
           setIsDrawerOpen(false);
+          showSuccess("Coupon updated successfully");
+        } else {
+          showError("Failed to update coupon");
         }
       } else {
         const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons`, {
@@ -80,8 +93,13 @@ export default function CouponsPageContent() {
           const created = await res.json();
           setCoupons((prev) => [...prev, created]);
           setIsDrawerOpen(false);
+          showSuccess("Coupon created successfully");
+        } else {
+          showError("Failed to create coupon");
         }
       }
+    } catch (err: any) {
+      showError(err?.message || "An error occurred");
     } finally {
       setSaving(false);
     }

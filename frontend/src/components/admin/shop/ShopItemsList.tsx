@@ -72,9 +72,7 @@ export function ShopItemsList({
         {items.map((item) => (
           <div
             key={item._id || item.key}
-            className={`flex flex-col gap-4 px-5 py-4 transition hover:bg-white/[0.015] md:grid md:grid-cols-[2fr_1fr_1fr_1fr_1fr_100px] md:items-center ${
-              !item.enabled ? 'opacity-50 grayscale' : ''
-            }`}
+            className="flex flex-col gap-4 px-5 py-4 transition hover:bg-white/[0.015] md:grid md:grid-cols-[2fr_1fr_1fr_1fr_1fr_100px] md:items-center"
           >
             {/* Identity */}
             <div className="flex items-center gap-3">

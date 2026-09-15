@@ -6,8 +6,10 @@ import { AdminShopSkeleton } from '@/components/skeletons/admin/shop/AdminShopSk
 import { AdminShopError } from '@/components/admin/shop/AdminShopError';
 import { AdminShopContent } from '@/components/admin/shop/AdminShopContent';
 import { ShopItem } from '@/hooks/admin/shop/useAdminShop';
+import { useToast } from '@/components/ui/ToastProvider';
 
 export default function AdminShopPage() {
+  const { showSuccess, showError } = useToast();
   const {
     items,
     loading,
@@ -30,11 +32,21 @@ export default function AdminShopPage() {
   };
 
   const handleSaveItem = async (itemId: string, updates: Partial<ShopItem>) => {
-    await updateItem(itemId, updates);
+    try {
+      await updateItem(itemId, updates);
+      showSuccess("Item updated successfully");
+    } catch (err: any) {
+      showError(err?.message || "Failed to update item");
+    }
   };
 
   const handleToggleEnabled = async (item: ShopItem) => {
-    await updateItem(item._id, { enabled: !item.enabled });
+    try {
+      await updateItem(item._id, { enabled: !item.enabled });
+      showSuccess(`Item ${item.enabled ? 'disabled' : 'enabled'} successfully`);
+    } catch (err: any) {
+      showError(err?.message || "Failed to toggle item");
+    }
   };
 
   if (loading) {
