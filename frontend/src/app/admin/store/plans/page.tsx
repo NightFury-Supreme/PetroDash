@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { CreditCard, RefreshCw } from 'lucide-react';
+import { CreditCard, RefreshCw, Plus } from 'lucide-react';
 import { ErrorState, DashboardButton, ErrorDescription } from '@/components/ui/ErrorState';
 import { useToast } from "@/components/ui/ToastProvider";
 import { useModal } from '@/components/Modal';
@@ -120,9 +120,9 @@ export default function AdminPlansPage() {
             <div className="flex items-center shrink-0">
               <button 
                 onClick={() => { setEditingPlanId(null); setDrawerOpen(true); }}
-                className="bg-white hover:bg-gray-100 text-black px-4 py-2 text-sm rounded-lg font-semibold transition-colors flex items-center gap-2 shadow-sm"
-              >
-                <i className="fas fa-plus"></i>
+                className="bg-[#FF5722] hover:bg-[#ff6939] text-white h-[42px] px-4 text-sm rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 shadow-sm"
+                >
+                <Plus size={16} />
                 Create New Plan
               </button>
             </div>
