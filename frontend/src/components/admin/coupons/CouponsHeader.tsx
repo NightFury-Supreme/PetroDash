@@ -8,7 +8,7 @@ export default function CouponsHeader({ onCreateNew }: { onCreateNew: () => void
         <p className="mt-0.5 text-xs text-[#666]">Manage promotional codes and discounts.</p>
       </div>
       <div className="flex items-center shrink-0">
-        <button onClick={onCreateNew} className="bg-[#FF5722] hover:bg-[#ff6939] text-white h-[42px] px-4 text-sm rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 shadow-sm">
+        <button onClick={onCreateNew} className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-colors bg-[#FF5722] text-white hover:bg-[#ff6939]">
           <i className="fas fa-plus"></i>
           Create New Coupon
         </button>

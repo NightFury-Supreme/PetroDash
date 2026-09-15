@@ -95,6 +95,7 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan }: { pla
                 }}
                 loading={saving}
                 disabled={isInvalid}
+                className="min-w-[140px]"
                 label="Enable Item"
                 onSuccess={() => { showSuccess(`Plan "${plan.name}" enabled.`); onClose(); }}
                 onError={(e) => showError(e)}
@@ -107,6 +108,7 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan }: { pla
                 }}
                 loading={saving}
                 disabled={isInvalid}
+                className="min-w-[140px]"
                 label="Save Changes"
                 icon={<i className="fas fa-save mr-2"></i>}
                 onSuccess={() => { showSuccess(`Plan "${plan.name}" saved.`); onClose(); }}
@@ -187,6 +189,7 @@ function NewPlanWrapper({ onClose, onSaveSuccess }: { onClose: () => void, onSav
                 }}
                 loading={saving}
                 disabled={isInvalid}
+                className="min-w-[140px]"
                 label="Create Plan"
                 icon={<i className="fas fa-plus mr-2"></i>}
                 onSuccess={() => { showSuccess("Plan created successfully."); onClose(); }}
