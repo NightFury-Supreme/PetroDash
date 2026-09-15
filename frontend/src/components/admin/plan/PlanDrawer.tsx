@@ -162,7 +162,7 @@ function NewPlanWrapper({ onClose, onSaveSuccess }: { onClose: () => void, onSav
           saving={saving}
           validationErrors={validationErrors}
           onInputChange={handleInputChange}
-          onSubmit={async (e) => { if(e) e.preventDefault(); await handleSubmit(); onSaveSuccess(); onClose(); }}
+          onSubmit={async () => { await handleSubmit(); onSaveSuccess(); onClose(); }}
           onCancel={onClose}
         />
       </div>
