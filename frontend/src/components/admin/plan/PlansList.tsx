@@ -1,7 +1,7 @@
 "use client";
 
-import { useCurrency } from '@/hooks/useCurrency';
 import { Edit2 } from 'lucide-react';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Plan {
   _id: string;
@@ -11,6 +11,7 @@ interface Plan {
   pricePerMonth: number;
   pricePerYear: number;
   visibility: 'public' | 'unlisted';
+  enabled?: boolean;
   availableAt?: string;
   availableUntil?: string;
   stock: number;
@@ -65,14 +66,14 @@ export function PlansList({
   onManage,
 }: PlansListProps) {
   const { currency } = useCurrency();
-  
+
   if (plans.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center border border-white/[0.06] rounded-xl">
         <i className="fas fa-crown mb-3 text-2xl text-yellow-400/50"></i>
         <p className="text-sm text-white/40">No plans yet</p>
         <div className="mt-4">
-          <button 
+          <button
             onClick={() => onManage && onManage("")}
             className="bg-white hover:bg-gray-100 text-black px-4 py-2 text-sm rounded-lg font-semibold transition-colors"
           >
@@ -85,11 +86,13 @@ export function PlansList({
 
   return (
     <div className="w-full">
-      <div className="hidden gap-4 grid-cols-[2fr_2fr_1fr_1fr_120px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
+      {/* Column headers */}
+      <div className="hidden gap-4 grid-cols-[2fr_2fr_1fr_1fr_1fr_100px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
         <span>Plan Name</span>
         <span>Specifications</span>
         <span>Price</span>
         <span>Stats</span>
+        <span>Status</span>
         <span className="text-right">Action</span>
       </div>
 
@@ -97,10 +100,9 @@ export function PlansList({
         {plans.map((plan) => (
           <div
             key={plan._id}
-            className={`flex flex-col gap-4 px-5 py-4 transition hover:bg-white/[0.015] md:grid md:grid-cols-[2fr_2fr_1fr_1fr_120px] md:items-center ${
-              plan.visibility !== 'public' ? 'opacity-70' : ''
-            }`}
+            className="flex flex-col gap-4 px-5 py-4 transition hover:bg-white/[0.015] md:grid md:grid-cols-[2fr_2fr_1fr_1fr_1fr_100px] md:items-center"
           >
+            {/* Plan Name */}
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/[0.07] bg-white/[0.035]">
                 <i className="fas fa-crown text-sm text-yellow-500/50"></i>
@@ -108,13 +110,22 @@ export function PlansList({
               <div className="min-w-0">
                 <p className="text-sm font-medium text-white/80 truncate">
                   {plan.name}
-                  {plan.popular && <span className="ml-2 text-[10px] text-yellow-500 border border-yellow-500/30 bg-yellow-500/10 px-1.5 py-0.5 rounded-sm">POPULAR</span>}
-                  {plan.visibility !== 'public' && <span className="ml-2 text-[10px] text-[#AAAAAA] border border-[#AAAAAA]/30 bg-[#AAAAAA]/10 px-1.5 py-0.5 rounded-sm">UNLISTED</span>}
+                  {plan.popular && (
+                    <span className="ml-2 text-[10px] text-yellow-500 border border-yellow-500/30 bg-yellow-500/10 px-1.5 py-0.5 rounded-sm">
+                      POPULAR
+                    </span>
+                  )}
+                  {plan.visibility !== 'public' && (
+                    <span className="ml-2 text-[10px] text-[#AAAAAA] border border-[#AAAAAA]/30 bg-[#AAAAAA]/10 px-1.5 py-0.5 rounded-sm">
+                      UNLISTED
+                    </span>
+                  )}
                 </p>
                 <p className="text-xs text-white/30 truncate">{plan.description || 'Hosting Plan'}</p>
               </div>
             </div>
 
+            {/* Specs */}
             <div className="flex flex-col justify-center">
               <span className="text-sm font-semibold text-white/80">
                 {plan.productContent.recurrentResources.cpuPercent}% CPU, {plan.productContent.recurrentResources.memoryMb}MB RAM
@@ -124,25 +135,47 @@ export function PlansList({
               </span>
             </div>
 
+            {/* Price */}
             <div className="flex flex-col justify-center">
               <span className="text-sm font-semibold text-white/80">{plan.pricePerMonth} {currency}</span>
-              <span className="text-[10px] text-white/30 uppercase tracking-wide">{plan.billingOptions?.lifetime ? 'ONCE' : 'PER MONTH'}</span>
+              <span className="text-[10px] text-white/30 uppercase tracking-wide">
+                {plan.billingOptions?.lifetime ? 'ONCE' : 'PER MONTH'}
+              </span>
             </div>
 
+            {/* Stats */}
             <div className="flex flex-col justify-center">
-              <span className="text-sm font-semibold text-white/80">{plan.currentUsers} / {plan.stock === -1 ? '∞' : plan.stock}</span>
+              <span className="text-sm font-semibold text-white/80">
+                {plan.currentUsers} / {plan.stock === -1 ? '∞' : plan.stock}
+              </span>
               <span className="text-[10px] text-white/30 uppercase tracking-wide">USERS / STOCK</span>
             </div>
 
-              <div className="flex justify-end mt-2 md:mt-0">
-                <button
-                  onClick={() => onManage && onManage(plan._id)}
-                  className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors"
-                  title="Manage"
-                >
-                  <Edit2 size={14} />
-                </button>
+            {/* Status */}
+            <div className="flex items-center">
+              <div className="relative inline-flex items-center">
+                {plan.enabled !== false ? (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">
+                    Enabled
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">
+                    Disabled
+                  </span>
+                )}
               </div>
+            </div>
+
+            {/* Action */}
+            <div className="flex justify-end mt-2 md:mt-0">
+              <button
+                onClick={() => onManage && onManage(plan._id)}
+                className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors"
+                title="Manage"
+              >
+                <Edit2 size={14} />
+              </button>
+            </div>
           </div>
         ))}
       </div>

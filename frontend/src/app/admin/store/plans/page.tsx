@@ -139,21 +139,6 @@ export default function AdminPlansPage() {
             onMakePublic={handleMakePublic}
           />
 
-          {/* Info Section */}
-          <div className="bg-[#181818] border border-[#303030] rounded-xl p-4">
-            <div className="flex items-start gap-3">
-              <i className="fas fa-info-circle text-blue-400 mt-1"></i>
-              <div className="text-sm text-[#AAAAAA]">
-                <div className="font-medium mb-1 text-white">Plan Management Guidelines</div>
-                <ul className="space-y-1 text-xs">
-                  <li>  <strong>Active plans</strong> (with current users) cannot be deleted - make them unlisted instead</li>
-                  <li>  <strong>Unlisted plans</strong> are hidden from public view but remain accessible to existing users</li>
-                  <li>  <strong>Disabled plans</strong> prevent new purchases but don't affect existing users</li>
-                  <li>  Only delete plans that have no active users and are no longer needed</li>
-                </ul>
-              </div>
-            </div>
-          </div>
         </div>
         
         <PlanDrawer 
