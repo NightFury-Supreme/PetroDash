@@ -1,61 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Select } from '@/components/ui/Select';
 import { SlidersHorizontal, ChevronDown } from 'lucide-react';
-
-function CustomDropdown({
-  value,
-  options,
-  onChange,
-}: {
-  value: string;
-  options: { label: string; value: string }[];
-  onChange: (val: string) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  const activeLabel = options.find((o) => o.value === value)?.label || value;
-
-  return (
-    <div className="relative w-full" ref={ref}>
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex h-8 w-full items-center justify-between gap-2 rounded-md bg-[#1A1A1A] px-3 text-xs text-[#999] transition-colors hover:bg-[#222] hover:text-[#ddd]"
-      >
-        <span>{activeLabel}</span>
-        <ChevronDown size={12} className="opacity-50" />
-      </button>
-
-      {open && (
-        <div className="absolute left-0 right-0 top-9 z-50 rounded-md border border-[#222] bg-[#151515] p-1 shadow-xl max-h-[150px] overflow-y-auto">
-          {options.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => {
-                onChange(opt.value);
-                setOpen(false);
-              }}
-              className={`flex h-8 w-full items-center rounded px-2 text-left text-xs transition-colors ${
-                opt.value === value
-                  ? "bg-white/10 text-white"
-                  : "text-white/70 hover:bg-white/10 hover:text-white"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 interface AdminServerFiltersProps {
   locationFilter: string;
@@ -117,7 +62,7 @@ export function AdminServerFilters({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-[15px] p-[13px]">
             <div className="flex flex-col gap-[7px]">
               <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">Node</label>
-              <CustomDropdown
+              <Select size="sm"
                 value={locationFilter}
                 options={[
                   { label: "All Nodes", value: "all" },
@@ -129,7 +74,7 @@ export function AdminServerFilters({
 
             <div className="flex flex-col gap-[7px]">
               <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">Egg</label>
-              <CustomDropdown
+              <Select size="sm"
                 value={eggFilter}
                 options={[
                   { label: "All Eggs", value: "all" },

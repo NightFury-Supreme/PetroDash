@@ -1,70 +1,8 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from 'react';
+import { Select } from '@/components/ui/Select';
 import { shortId } from "@/components/tickets/utils";
-
-function CustomDropdown({
-  value,
-  options,
-  onChange,
-  busy,
-  done,
-}: {
-  value: string;
-  options: { label: string; value: string }[];
-  onChange: (val: string) => Promise<void> | void;
-  busy?: boolean;
-  done?: boolean;
-}) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  const activeLabel = options.find((o) => o.value === value)?.label || value;
-
-  return (
-    <div className="relative w-full" ref={ref}>
-      <button
-        onClick={() => !busy && setOpen(!open)}
-        disabled={busy}
-        className="flex h-8 w-full items-center justify-between gap-2 rounded-md bg-[#1A1A1A] px-3 text-xs text-[#999] transition-colors hover:bg-[#222] hover:text-[#ddd] disabled:opacity-60 disabled:cursor-not-allowed"
-      >
-        {busy ? (
-          <span className="flex items-center gap-2"><span className="h-3 w-3 rounded-full border-2 border-[#999] border-t-transparent animate-spin" /> Saving…</span>
-        ) : done ? (
-          <span className="flex items-center gap-2 text-emerald-400"><span>✓</span> {activeLabel}</span>
-        ) : (
-          <span>{activeLabel}</span>
-        )}
-        {!busy && <i className="fas fa-chevron-down text-[10px] opacity-50" />}
-      </button>
-      
-      {open && !busy && (
-        <div className="absolute left-0 right-0 top-8 z-30 rounded-md border border-[#222] bg-[#151515] p-1 shadow-xl">
-          {options.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={async () => {
-                await onChange(opt.value);
-                setOpen(false);
-              }}
-              className="flex h-8 w-full items-center rounded px-2 text-left text-xs text-white/70 transition-colors hover:bg-white/10 hover:text-white"
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 interface AdminTicketDetailSidebarProps {
   ticket: {
@@ -110,7 +48,7 @@ export function AdminTicketDetailSidebar({
           {/* Priority — dropdown */}
           <div className="border-b border-white/[0.06] pb-4">
             <span className="text-sm font-medium text-white/50 mb-3 block">Priority</span>
-            <CustomDropdown
+            <Select size="sm"
               value={ticket.priority || "low"}
               options={[
                 { label: "Low",    value: "low"    },
@@ -126,7 +64,7 @@ export function AdminTicketDetailSidebar({
           {/* Status — dropdown */}
           <div className="border-b border-white/[0.06] pb-4">
             <span className="text-sm font-medium text-white/50 mb-3 block">Status</span>
-            <CustomDropdown
+            <Select size="sm"
               value={ticket.status || "open"}
               options={[
                 { label: "Open",     value: "open"     },

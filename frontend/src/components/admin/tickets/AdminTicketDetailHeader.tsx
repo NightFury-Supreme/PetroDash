@@ -15,62 +15,6 @@ const PRIORITY_COLORS: Record<string, string> = {
   low: "bg-[#303030]/50 text-[#888] border-[#333]",
 };
 
-function CustomDropdown({
-  value,
-  options,
-  colors,
-  onChange,
-}: {
-  value: string;
-  options: { label: string; value: string }[];
-  colors: Record<string, string>;
-  onChange: (val: string) => Promise<void>;
-}) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  const activeColor = colors[value] || colors[options[0].value];
-  const activeLabel = options.find((o) => o.value === value)?.label || value.toUpperCase();
-
-  return (
-    <div className="relative flex-shrink-0" ref={ref}>
-      <button
-        onClick={() => setOpen(!open)}
-        className={`flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded border cursor-pointer outline-none transition-colors ${activeColor}`}
-      >
-        <span>{activeLabel}</span>
-        <i className="fas fa-chevron-down text-[10px] opacity-70" />
-      </button>
-      {open && (
-        <div className="absolute left-0 mt-1 w-28 rounded-lg border border-[#222] bg-[#161616] shadow-xl z-50 overflow-hidden">
-          {options.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={async () => {
-                await onChange(opt.value);
-                setOpen(false);
-              }}
-              className={`w-full text-left px-3 py-1.5 text-xs uppercase tracking-wider hover:bg-[#202020] transition-colors ${
-                value === opt.value ? "font-bold text-white bg-[#202020]" : "text-[#AAAAAA]"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function AdminTicketDetailHeader({
   ticket,
   onAction,
@@ -98,7 +42,7 @@ export default function AdminTicketDetailHeader({
 
   return (
     <div className="flex items-center gap-2">
-      <CustomDropdown
+      <Select size="sm"
         value={ticket.status || "open"}
         options={[
           { label: "OPEN",     value: "open"     },
@@ -109,7 +53,7 @@ export default function AdminTicketDetailHeader({
         colors={STATUS_COLORS}
         onChange={onStatusChange}
       />
-      <CustomDropdown
+      <Select size="sm"
         value={ticket.priority || "low"}
         options={[
           { label: "LOW",    value: "low"    },

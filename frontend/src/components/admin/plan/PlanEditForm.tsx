@@ -2,103 +2,8 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { FieldLabel, FieldHint } from '@/components/admin/earn/EarnUI';
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { Select } from '@/components/ui/Select';
 import { PlanCategorySelect } from './PlanCategorySelect';
-
-function CustomSelect({
-  value,
-  options,
-  onChange,
-}: {
-  value: string;
-  options: { label: string; value: string }[];
-  onChange: (val: string) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  const activeLabel = options.find((o) => o.value === value)?.label || value;
-
-  return (
-    <div className="relative w-full" ref={ref}>
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between gap-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50 transition-colors"
-      >
-        <span className="truncate">{activeLabel}</span>
-        <ChevronDown size={14} className="opacity-50 shrink-0" />
-      </button>
-
-      {open && (
-        <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-50 rounded-lg border border-[#222] bg-[#151515] p-1 shadow-xl max-h-[200px] overflow-y-auto">
-          {options.map((opt) => (
-            <button
-              type="button"
-              key={opt.value}
-              onClick={() => { onChange(opt.value); setOpen(false); }}
-              className={`flex h-8 w-full items-center rounded px-2 text-left text-sm transition-colors ${
-                opt.value === value
-                  ? "bg-white/10 text-white"
-                  : "text-white/70 hover:bg-white/10 hover:text-white"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-interface PlanFormData {
-  _id: string;
-  name: string;
-  description?: string;
-  strikeThroughPrice: number;
-  pricePerMonth: number;
-  pricePerYear: number;
-  visibility: 'public' | 'unlisted';
-  availableAt?: string;
-  availableUntil?: string;
-  stock: number;
-  limitPerCustomer: number;
-  category: string;
-  redirectionLink?: string;
-  billingOptions: {
-    renewable: boolean;
-    nonRenewable: boolean;
-    lifetime: boolean;
-  };
-  availableBillingCycles: string[];
-  productContent: {
-    recurrentResources: {
-      cpuPercent: number;
-      memoryMb: number;
-      diskMb: number;
-      swapMb: number;
-      blockIoProportion: number;
-      cpuPinning: string;
-    };
-    additionalAllocations: number;
-    databases: number;
-    backups: number;
-    coins: number;
-    serverLimit: number;
-  };
-  staffNotes: string;
-  popular: boolean;
-  enabled: boolean;
-  sortOrder: number;
-}
 
 interface PlanEditFormProps {
   plan: PlanFormData;
@@ -253,7 +158,7 @@ export function PlanEditForm({
           </div>
           <div className="md:col-span-2">
             <FieldLabel>Visibility</FieldLabel>
-            <CustomSelect
+            <Select
               value={plan.visibility}
               onChange={(val) => onInputChange('visibility', val)}
               options={[

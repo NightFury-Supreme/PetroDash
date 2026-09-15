@@ -119,8 +119,8 @@ export function PlanCategorySelect({ value, onChange }: { value: string, onChang
   };
 
   const buttonClass = isOpen
-    ? 'bg-[#222] border-[#222] text-[#ddd]' 
-    : 'bg-[#101010] border-[#2A2A2A] text-[#D4D4D4] hover:border-[#FF5722]/50 hover:text-[#ddd]';
+    ? 'bg-[#1A1A1A] border-[#FF5722] text-white' 
+    : 'bg-[#1A1A1A] border-[#2A2A2A] text-[#D4D4D4] hover:border-[#FF5722]/50 hover:text-white';
 
   const selectedCat = categories.find(c => c.id === value);
 
@@ -128,7 +128,7 @@ export function PlanCategorySelect({ value, onChange }: { value: string, onChang
     <div className="relative" ref={ref}>
       <div 
         onClick={() => !isCreating && !editingId && setIsOpen(!isOpen)}
-        className={`w-full rounded-md border px-4 py-2.5 text-sm cursor-pointer flex justify-between items-center transition-colors outline-none ${buttonClass}`}
+        className={`w-full rounded-lg border px-4 py-2.5 text-sm cursor-pointer flex justify-between items-center transition-colors outline-none ${buttonClass}`}
       >
         {selectedCat ? selectedCat.name : <span className="text-[#858585]">Select a category...</span>}
         <ChevronDown size={14} className={`text-[#858585] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -142,7 +142,7 @@ export function PlanCategorySelect({ value, onChange }: { value: string, onChang
                 <div 
                   key={c.id}
                   onClick={() => { onChange(c.id); setIsOpen(false); }}
-                  className="flex items-center justify-between w-full px-2 py-1.5 rounded-md text-sm transition-colors hover:bg-[#FF5722]/10 hover:text-[#FF5722] text-[#D4D4D4] cursor-pointer group"
+                  className={`flex items-center justify-between w-full px-3 py-2 rounded-md text-sm transition-colors cursor-pointer group ${c.id === value ? 'bg-white/10 text-white' : 'text-[#D4D4D4] hover:bg-white/5 hover:text-white'}`}
                 >
                   <div className="flex items-center gap-2 overflow-hidden">
                     <span className="truncate">{c.name}</span>
@@ -174,7 +174,7 @@ export function PlanCategorySelect({ value, onChange }: { value: string, onChang
               <div className="h-[1px] bg-[#2A2A2A] my-1" />
               <div 
                 onClick={() => { setIsCreating(true); setError(null); }}
-                className="flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-sm transition-colors hover:bg-[#FF5722]/10 hover:text-[#FF5722] text-[#FF5722] cursor-pointer"
+                className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-sm transition-colors hover:bg-white/5 hover:text-white text-[#D4D4D4] cursor-pointer mt-1"
               >
                 <Plus size={14} /> Create new category
               </div>
