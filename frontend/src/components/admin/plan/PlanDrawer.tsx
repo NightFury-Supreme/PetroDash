@@ -32,22 +32,16 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan }: { pla
       footer={
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => handleInputChange('enabled', !plan.enabled)}
-              disabled={saving}
-              className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
-                plan.enabled
-                  ? 'border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20'
-                  : 'border-emerald-500/20 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
-              } disabled:opacity-50`}
-            >
-              {plan.enabled ? (
-                <><i className="fas fa-ban mr-2"></i> Disable</>
-              ) : (
-                <><i className="fas fa-check mr-2"></i> Enable</>
-              )}
-            </button>
+            {plan.enabled && (
+              <button
+                type="button"
+                onClick={() => handleInputChange('enabled', false)}
+                disabled={saving}
+                className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20 disabled:opacity-50"
+              >
+                <i className="fas fa-ban mr-2"></i> Disable
+              </button>
+            )}
             <button
               type="button"
               onClick={async () => {
@@ -73,15 +67,27 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan }: { pla
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              form="edit-plan-form"
-              disabled={saving}
-              className="flex items-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#ff6939] disabled:opacity-50"
-            >
-              {saving ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-save"></i>}
-              Save Changes
-            </button>
+            {!plan.enabled ? (
+              <button
+                type="button"
+                onClick={() => handleInputChange('enabled', true)}
+                disabled={saving}
+                className="flex items-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#ff6939] disabled:opacity-50"
+              >
+                {saving ? <i className="fas fa-spinner fa-spin"></i> : null}
+                Enable Item
+              </button>
+            ) : (
+              <button
+                type="submit"
+                form="edit-plan-form"
+                disabled={saving}
+                className="flex items-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#ff6939] disabled:opacity-50"
+              >
+                {saving ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-save"></i>}
+                Save Changes
+              </button>
+            )}
           </div>
         </div>
       }
