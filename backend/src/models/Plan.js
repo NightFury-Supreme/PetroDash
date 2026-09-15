@@ -8,6 +8,7 @@ const planSchema = new mongoose.Schema({
   },
   description: {
     type: String,
+    required: true,
     trim: true
   },
   // Pricing
@@ -29,7 +30,7 @@ const planSchema = new mongoose.Schema({
   limitPerCustomer: { type: Number, default: 0 }, // 0 = unlimited
   
   // Category and redirection
-  category: { type: mongoose.Schema.Types.ObjectId, ref: 'PlanCategory' },
+  category: { type: mongoose.Schema.Types.ObjectId, ref: 'PlanCategory', required: true },
   redirectionLink: { type: String }, // External checkout link
   
   // Billing configuration
