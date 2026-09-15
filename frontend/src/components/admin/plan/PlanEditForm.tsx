@@ -216,7 +216,7 @@ export function PlanEditForm({
             <input
               type="number"
               value={plan.pricePerMonth}
-              onChange={(e) => onInputChange('pricePerMonth', parseFloat(e.target.value) || 0)}
+              onChange={(e) => onInputChange('pricePerMonth', e.target.value === '' ? '' : parseFloat(e.target.value))}
               className={inputClass}
               min="0" step="0.01"
             />
@@ -226,7 +226,7 @@ export function PlanEditForm({
             <input
               type="number"
               value={plan.strikeThroughPrice}
-              onChange={(e) => onInputChange('strikeThroughPrice', parseFloat(e.target.value) || 0)}
+              onChange={(e) => onInputChange('strikeThroughPrice', e.target.value === '' ? '' : parseFloat(e.target.value))}
               className={inputClass}
               min="0" step="0.01"
             />
@@ -236,7 +236,7 @@ export function PlanEditForm({
             <input
               type="number"
               value={plan.stock}
-              onChange={(e) => onInputChange('stock', parseInt(e.target.value) || 0)}
+              onChange={(e) => onInputChange('stock', e.target.value === '' ? '' : parseInt(e.target.value))}
               className={inputClass}
               min="-1"
             />
@@ -247,7 +247,7 @@ export function PlanEditForm({
             <input
               type="number"
               value={plan.limitPerCustomer}
-              onChange={(e) => onInputChange('limitPerCustomer', parseInt(e.target.value) || 0)}
+              onChange={(e) => onInputChange('limitPerCustomer', e.target.value === '' ? '' : parseInt(e.target.value))}
               className={inputClass}
               min="0"
             />
@@ -278,7 +278,7 @@ export function PlanEditForm({
             <input
               type="number"
               value={plan.productContent.recurrentResources.cpuPercent}
-              onChange={(e) => onInputChange('productContent.recurrentResources.cpuPercent', parseInt(e.target.value) || 0)}
+              onChange={(e) => onInputChange('productContent.recurrentResources.cpuPercent', e.target.value === '' ? '' : parseInt(e.target.value))}
               className={inputClass}
               min="0" step="1"
             />
@@ -288,7 +288,7 @@ export function PlanEditForm({
             <input
               type="number"
               value={plan.productContent.recurrentResources.memoryMb}
-              onChange={(e) => onInputChange('productContent.recurrentResources.memoryMb', parseInt(e.target.value) || 0)}
+              onChange={(e) => onInputChange('productContent.recurrentResources.memoryMb', e.target.value === '' ? '' : parseInt(e.target.value))}
               className={inputClass}
               min="0"
             />
@@ -298,7 +298,7 @@ export function PlanEditForm({
             <input
               type="number"
               value={plan.productContent.recurrentResources.diskMb}
-              onChange={(e) => onInputChange('productContent.recurrentResources.diskMb', parseInt(e.target.value) || 0)}
+              onChange={(e) => onInputChange('productContent.recurrentResources.diskMb', e.target.value === '' ? '' : parseInt(e.target.value))}
               className={inputClass}
               min="0"
             />
@@ -308,7 +308,7 @@ export function PlanEditForm({
             <input
               type="number"
               value={plan.productContent.backups}
-              onChange={(e) => onInputChange('productContent.backups', parseInt(e.target.value) || 0)}
+              onChange={(e) => onInputChange('productContent.backups', e.target.value === '' ? '' : parseInt(e.target.value))}
               className={inputClass}
               min="0"
             />
@@ -318,7 +318,7 @@ export function PlanEditForm({
             <input
               type="number"
               value={plan.productContent.databases}
-              onChange={(e) => onInputChange('productContent.databases', parseInt(e.target.value) || 0)}
+              onChange={(e) => onInputChange('productContent.databases', e.target.value === '' ? '' : parseInt(e.target.value))}
               className={inputClass}
               min="0"
             />
@@ -328,7 +328,7 @@ export function PlanEditForm({
             <input
               type="number"
               value={plan.productContent.additionalAllocations}
-              onChange={(e) => onInputChange('productContent.additionalAllocations', parseInt(e.target.value) || 0)}
+              onChange={(e) => onInputChange('productContent.additionalAllocations', e.target.value === '' ? '' : parseInt(e.target.value))}
               className={inputClass}
               min="0"
             />
@@ -338,7 +338,7 @@ export function PlanEditForm({
             <input
               type="number"
               value={plan.productContent.serverLimit}
-              onChange={(e) => onInputChange('productContent.serverLimit', parseInt(e.target.value) || 1)}
+              onChange={(e) => onInputChange('productContent.serverLimit', e.target.value === '' ? '' : parseInt(e.target.value))}
               className={inputClass}
               min="1"
             />
@@ -348,7 +348,7 @@ export function PlanEditForm({
             <input
               type="number"
               value={plan.productContent.coins}
-              onChange={(e) => onInputChange('productContent.coins', parseInt(e.target.value) || 0)}
+              onChange={(e) => onInputChange('productContent.coins', e.target.value === '' ? '' : parseInt(e.target.value))}
               className={inputClass}
               min="0"
             />
