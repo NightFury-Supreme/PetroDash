@@ -39,7 +39,9 @@ export function PlansView({
   const groupedPlans = Object.values(groups);
 
   const groupedAvailablePlans = plans.reduce((acc, plan) => {
-    const categoryName = plan.category?.name || 'Uncategorized';
+    const categoryName = typeof plan.category === 'string' 
+      ? plan.category 
+      : (plan.category?.name || 'Uncategorized');
     if (!acc[categoryName]) acc[categoryName] = [];
     acc[categoryName].push(plan);
     return acc;
