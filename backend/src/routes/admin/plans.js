@@ -16,7 +16,7 @@ const createSchema = z.object({
   pricePerMonth: z.number().min(0, 'Monthly price must be 0 or greater'),
   pricePerYear: z.number().min(0, 'Yearly price must be 0 or greater').optional().default(0),
   visibility: z.enum(['public', 'unlisted']).default('public'),
-  availableAt: z.string().min(1, 'Valid from date is required'),
+  availableAt: z.string().optional(),
   availableUntil: z.string().optional(),
   stock: z.number().default(0),
   limitPerCustomer: z.number().min(0).default(1),

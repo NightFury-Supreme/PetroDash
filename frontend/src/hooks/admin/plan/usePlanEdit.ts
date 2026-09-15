@@ -157,9 +157,6 @@ export function usePlanEdit(): UsePlanEditReturn {
       errors.category = 'Category is required';
     }
 
-    if (!plan.availableAt) {
-      errors.availableAt = 'Available at date is required';
-    }
 
     // availableUntil is optional; when Forever is checked it will be null
 

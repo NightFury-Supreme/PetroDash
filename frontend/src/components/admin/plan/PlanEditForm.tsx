@@ -164,7 +164,7 @@ export function PlanEditForm({
           </div>
 
           <div>
-            <FieldLabel>Valid From <span className="text-red-500">*</span></FieldLabel>
+            <FieldLabel>Valid From</FieldLabel>
             <input
               type="datetime-local"
               value={plan.availableAt ? new Date(plan.availableAt).toISOString().slice(0, 16) : ''}
