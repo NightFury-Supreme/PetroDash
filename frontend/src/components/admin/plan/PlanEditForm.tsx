@@ -141,15 +141,19 @@ export function PlanEditForm({
             </div>
           </div>
 
-          <div className="md:col-span-2 pt-2">
-            <label className="flex items-center gap-2">
+          <div className="md:col-span-2 pt-2 flex items-center justify-between border border-white/[0.06] bg-white/[0.015] rounded-xl p-4">
+            <div className="flex flex-col">
+              <span className="text-sm font-medium text-[#D4D4D4] mb-0.5">Mark as Popular</span>
+              <span className="text-xs text-[#888]">Highlight this plan with a popular badge to attract users.</span>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
+                className="sr-only peer"
                 checked={plan.popular}
                 onChange={(e) => onInputChange('popular', e.target.checked)}
-                className="text-[#FF5722] rounded border-[#333] bg-[#222]"
               />
-              <span className="text-sm text-white">Mark as Popular</span>
+              <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
             </label>
           </div>
         </div>
