@@ -1,16 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import { Select } from '@/components/ui/Select';
-import { Search, SlidersHorizontal, ChevronDown, X,  } from 'lucide-react';
+import { Search, X, SlidersHorizontal } from 'lucide-react';
 
 interface AdminLogsFiltersProps {
   filters: {
-    action: string;
     actorId: string;
+    action: string;
     resourceType: string;
-    requestId: string;
     severity: string;
+    requestId: string;
   };
-  onFilterChange: (key: 'action' | 'actorId' | 'resourceType' | 'requestId' | 'severity', value: string) => void;
+  onFilterChange: (key: string, value: string) => void;
   onSearchChange: (value: string) => void;
   onClearFilters: () => void;
   loading: boolean;
@@ -23,8 +25,6 @@ export function AdminLogsFilters({
   onClearFilters,
   loading
 }: AdminLogsFiltersProps) {
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const filterRef = useRef<HTMLDivElement>(null);
   const [searchTerm, setSearchTerm] = useState(filters.actorId || filters.requestId || '');
 
   // Sync external filters clear to local search term
@@ -45,14 +45,6 @@ export function AdminLogsFilters({
     }, 500);
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, onSearchChange, filters.actorId, filters.requestId]);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (filterRef.current && !filterRef.current.contains(e.target as Node)) setFiltersOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
 
   const actionOptions = [
     { value: '', label: 'All Actions' },
@@ -122,77 +114,74 @@ export function AdminLogsFilters({
         </div>
 
       <div className="flex items-center gap-[7px] w-full sm:w-auto">
-        <div className="relative" ref={filterRef}>
-          <button 
-            onClick={() => setFiltersOpen(!filtersOpen)}
-            disabled={loading}
-            className={`h-[42px] min-w-[100px] flex items-center justify-center gap-[7px] px-[11px] border rounded-md text-[10px] text-[#858585] transition-colors
-              ${filtersOpen ? 'bg-[#222] border-[#222] text-[#ddd]' : 'bg-[#1A1A1A] border-transparent hover:bg-[#222] hover:text-[#ddd]'}
-              ${loading ? 'opacity-50 cursor-not-allowed' : ''}
-            `}
-          >
-            <SlidersHorizontal size={14} />
-            Filters
-            {activeFilterCount > 0 && (
-              <span className="min-w-[17px] h-[17px] inline-flex items-center justify-center px-1 rounded-[9px] bg-[#ff5722] text-white text-[8px] font-bold">
-                {activeFilterCount}
-              </span>
+        <div className="w-[110px]">
+          <Select
+            value=""
+            dropdownClassName="w-[450px] right-0 max-w-[calc(100vw-36px)] sm:max-w-none"
+            renderButtonContent={() => (
+              <div className="flex items-center gap-[7px]">
+                <SlidersHorizontal size={14} className="text-[#858585]" />
+                <span className="text-[10px] text-[#858585]">Filters</span>
+                {activeFilterCount > 0 && (
+                  <span className="min-w-[17px] h-[17px] inline-flex items-center justify-center px-1 rounded-[9px] bg-[#ff5722] text-white text-[8px] font-bold">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </div>
             )}
-            <ChevronDown size={12} />
-          </button>
+            renderDropdown={({ close }) => (
+              <div className="flex flex-col">
+                <div className="min-h-[50px] flex flex-col justify-center px-3 pt-1 border-b border-[#222] pb-3">
+                  <strong className="text-[#ddd] text-[11px] mb-[2px]">Filters</strong>
+                  <span className="text-[#555] text-[9px]">Narrow down your audit logs</span>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-[15px] p-[13px]">
+                  <div className="flex flex-col gap-[7px]">
+                    <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">Action</label>
+                    <Select size="sm"
+                      value={filters.action}
+                      options={actionOptions}
+                      onChange={(val) => onFilterChange('action', val)}
+                    />
+                  </div>
 
-          {filtersOpen && (
-            <div className="absolute z-50 top-[calc(100%+8px)] right-0 w-[450px] border border-[#222] rounded-md bg-[#151515] p-1 shadow-xl max-w-[calc(100vw-36px)] sm:max-w-none">
-              <div className="min-h-[50px] flex flex-col justify-center px-3 pt-1 border-b border-[#222] pb-3">
-                <strong className="text-[#ddd] text-[11px] mb-[2px]">Filters</strong>
-                <span className="text-[#555] text-[9px]">Narrow down your audit logs</span>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-[15px] p-[13px]">
-                <div className="flex flex-col gap-[7px]">
-                  <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">Action</label>
-                  <Select size="sm"
-                    value={filters.action}
-                    options={actionOptions}
-                    onChange={(val) => onFilterChange('action', val)}
-                  />
+                  <div className="flex flex-col gap-[7px]">
+                    <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">Resource</label>
+                    <Select size="sm"
+                      value={filters.resourceType}
+                      options={resourceTypeOptions}
+                      onChange={(val) => onFilterChange('resourceType', val)}
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-[7px]">
+                    <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">Severity</label>
+                    <Select size="sm"
+                      value={filters.severity}
+                      options={severityOptions}
+                      onChange={(val) => onFilterChange('severity', val)}
+                    />
+                  </div>
                 </div>
 
-                <div className="flex flex-col gap-[7px]">
-                  <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">Resource</label>
-                  <Select size="sm"
-                    value={filters.resourceType}
-                    options={resourceTypeOptions}
-                    onChange={(val) => onFilterChange('resourceType', val)}
-                  />
-                </div>
-
-                <div className="flex flex-col gap-[7px]">
-                  <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">Severity</label>
-                  <Select size="sm"
-                    value={filters.severity}
-                    options={severityOptions}
-                    onChange={(val) => onFilterChange('severity', val)}
-                  />
+                <div className="flex items-center justify-end gap-[15px] px-3 py-3 border-t border-[#222]">
+                  <button 
+                    onClick={onClearFilters} 
+                    className="text-[10px] font-medium text-[#777] hover:text-[#ddd] transition-colors"
+                  >
+                    Clear filters
+                  </button>
+                  <button 
+                    onClick={close} 
+                    className="h-[35px] px-[15px] rounded-md text-[10px] font-semibold bg-[#ff5722] text-white hover:bg-[#ff6939] transition-colors"
+                  >
+                    Apply filters
+                  </button>
                 </div>
               </div>
-
-              <div className="flex items-center justify-end gap-[15px] px-3 py-3 border-t border-[#222]">
-                <button 
-                  onClick={onClearFilters} 
-                  className="text-[10px] font-medium text-[#777] hover:text-[#ddd] transition-colors"
-                >
-                  Clear filters
-                </button>
-                <button 
-                  onClick={() => setFiltersOpen(false)} 
-                  className="h-[35px] px-[15px] rounded-md text-[10px] font-semibold bg-[#ff5722] text-white hover:bg-[#ff6939] transition-colors"
-                >
-                  Apply filters
-                </button>
-              </div>
-            </div>
-          )}
+            )}
+          />
         </div>
       </div>
     </div>

@@ -13,6 +13,7 @@ interface SelectProps {
   onChange?: (val: string) => void;
   placeholder?: string;
   className?: string;
+  dropdownClassName?: string;
   size?: 'sm' | 'md';
   renderButtonContent?: (selectedLabel: string | undefined) => ReactNode;
   renderDropdown?: (props: { close: () => void }) => ReactNode;
@@ -24,6 +25,7 @@ export function Select({
   onChange,
   placeholder = 'Select an option...',
   className = '',
+  dropdownClassName,
   size = 'md',
   renderButtonContent,
   renderDropdown
@@ -67,7 +69,7 @@ export function Select({
       </button>
 
       {open && (
-        <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-50 rounded-lg border border-[#2A2A2A] bg-[#151515] p-1.5 shadow-xl max-h-[250px] overflow-y-auto">
+        <div className={`absolute top-[calc(100%+4px)] z-50 rounded-lg border border-[#2A2A2A] bg-[#151515] p-1.5 shadow-xl max-h-[250px] overflow-y-auto ${dropdownClassName || 'left-0 right-0'}`}>
           {renderDropdown ? (
             renderDropdown({ close: () => setOpen(false) })
           ) : (
