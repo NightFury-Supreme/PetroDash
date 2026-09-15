@@ -6,6 +6,7 @@ import { PlanCategorySelect } from './PlanCategorySelect';
 
 interface PlanFormProps {
   formData: PlanFormData;
+  currentStep?: string;
   validationErrors: Record<string, string>;
   saving: boolean;
   onInputChange: (field: string, value: any) => void;
@@ -19,16 +20,18 @@ export function PlanForm({
   saving,
   onInputChange,
   onSubmit,
+  currentStep,
 }: PlanFormProps) {
   const { currency } = useCurrency();
 
   const inputClass = "w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50 transition-colors disabled:opacity-50";
 
   return (
-    <form id="create-plan-form" onSubmit={(e) => { e.preventDefault(); onSubmit(); }} className="space-y-6">
+    <form id="create-plan-form" onSubmit={(e) => { e.preventDefault(); onSubmit(); }} className="space-y-0">
       
       {/* Basic Info */}
-      <div className="space-y-4">
+      {(!currentStep || currentStep === "basics") && (
+      <div className="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4">
         <h3 className="text-sm font-medium text-white mb-4">Basic Information</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -100,11 +103,11 @@ export function PlanForm({
           </div>
         </div>
       </div>
-
-      <hr className="border-white/[0.06]" />
+      )}
 
       {/* Pricing */}
-      <div className="space-y-4">
+      {(!currentStep || currentStep === "pricing") && (
+      <div className="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4">
         <h3 className="text-sm font-medium text-white mb-4">Pricing & Availability</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -162,11 +165,11 @@ export function PlanForm({
           </div>
         </div>
       </div>
-
-      <hr className="border-white/[0.06]" />
+      )}
 
       {/* Resource Limits */}
-      <div className="space-y-4">
+      {(!currentStep || currentStep === "resources") && (
+      <div className="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4">
         <h3 className="text-sm font-medium text-white mb-4">Resource Limits</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
@@ -251,6 +254,7 @@ export function PlanForm({
           </div>
         </div>
       </div>
+      )}
 
     </form>
   );
