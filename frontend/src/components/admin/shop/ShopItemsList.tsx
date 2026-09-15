@@ -6,13 +6,11 @@ import { ShopItem } from '@/hooks/admin/shop/useAdminShop';
 interface ShopItemsListProps {
   items: ShopItem[];
   onStartEditing: (item: ShopItem) => void;
-  onToggleEnabled: (item: ShopItem) => Promise<void>;
 }
 
 export function ShopItemsList({
   items,
   onStartEditing,
-  onToggleEnabled,
 }: ShopItemsListProps) {
   const getIconForItem = (key: string) => {
     const k = key.toLowerCase();
@@ -108,16 +106,13 @@ export function ShopItemsList({
 
             {/* Status */}
             <div className="flex items-center">
-              <button
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleEnabled(item); }}
-                className="relative inline-flex items-center group cursor-pointer"
-              >
+              <div className="relative inline-flex items-center">
                 {item.enabled ? (
                   <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">Enabled</span>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-white/[0.02] text-white/40 text-[10px] font-medium tracking-wide uppercase border border-white/[0.05] hover:bg-white/[0.05] hover:text-white/60 transition-colors">Disabled</span>
+                  <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">Disabled</span>
                 )}
-              </button>
+              </div>
             </div>
 
             {/* Action */}

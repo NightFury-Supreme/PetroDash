@@ -40,15 +40,6 @@ export default function AdminShopPage() {
     }
   };
 
-  const handleToggleEnabled = async (item: ShopItem) => {
-    try {
-      await updateItem(item._id, { enabled: !item.enabled });
-      showSuccess(`Item ${item.enabled ? 'disabled' : 'enabled'} successfully`);
-    } catch (err: any) {
-      showError(err?.message || "Failed to toggle item");
-    }
-  };
-
   if (loading) {
     return (
       
@@ -71,7 +62,6 @@ export default function AdminShopPage() {
           onStartEditing={handleStartEditing}
           onCloseModal={handleCloseModal}
           onSaveItem={handleSaveItem}
-          onToggleEnabled={handleToggleEnabled}
         />
       </div>
   );

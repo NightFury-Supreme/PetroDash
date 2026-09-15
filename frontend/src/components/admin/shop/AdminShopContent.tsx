@@ -10,7 +10,6 @@ interface AdminShopContentProps {
   onStartEditing: (item: ShopItem) => void;
   onCloseModal: () => void;
   onSaveItem: (itemId: string, updates: Partial<ShopItem>) => Promise<void>;
-  onToggleEnabled: (item: ShopItem) => Promise<void>;
 }
 
 export function AdminShopContent({
@@ -21,7 +20,6 @@ export function AdminShopContent({
   onStartEditing,
   onCloseModal,
   onSaveItem,
-  onToggleEnabled,
 }: AdminShopContentProps) {
   return (
     <>
@@ -34,7 +32,6 @@ export function AdminShopContent({
       <ShopItemsList
         items={items}
         onStartEditing={onStartEditing}
-        onToggleEnabled={onToggleEnabled}
       />
 
       {/* Edit Modal */}
