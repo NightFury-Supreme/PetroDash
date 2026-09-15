@@ -23,16 +23,60 @@ const STEPS = [
   { id: 'resources', label: 'Resources' }
 ];
 
+/** Inline skeleton rendered inside the Drawer while plan data loads */
+function DrawerPlanSkeleton() {
+  return (
+    <div className="pb-8 space-y-6 animate-pulse">
+      {/* Name + Category row */}
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="space-y-2">
+            <div className="h-3 w-20 rounded bg-[#222]" />
+            <div className="h-10 w-full rounded-lg bg-[#1a1a1a]" />
+          </div>
+        ))}
+      </div>
+      {/* Description */}
+      <div className="space-y-2">
+        <div className="h-3 w-24 rounded bg-[#222]" />
+        <div className="h-20 w-full rounded-lg bg-[#1a1a1a]" />
+      </div>
+      {/* Pricing row */}
+      <div className="grid grid-cols-2 gap-5 sm:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="space-y-2">
+            <div className="h-3 w-16 rounded bg-[#222]" />
+            <div className="h-10 w-full rounded-lg bg-[#1a1a1a]" />
+          </div>
+        ))}
+      </div>
+      {/* Resources row */}
+      <div className="grid grid-cols-2 gap-5 sm:grid-cols-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="space-y-2">
+            <div className="h-3 w-12 rounded bg-[#222]" />
+            <div className="h-10 w-full rounded-lg bg-[#1a1a1a]" />
+          </div>
+        ))}
+      </div>
+      {/* Features block */}
+      <div className="space-y-3">
+        <div className="h-3 w-20 rounded bg-[#222]" />
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="h-10 w-full rounded-lg bg-[#1a1a1a]" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan }: { planId: string, onClose: () => void, onSaveSuccess: () => void, onDeletePlan: (planId: string, planName: string) => Promise<void> }) {
   const { loading, saving, error, plan, validationErrors, loadPlan, handleInputChange, handleSubmit } = usePlanEdit();
   const { showSuccess, showError } = useToast();
   
   useEffect(() => { loadPlan(planId); }, [planId, loadPlan]);
 
-  if (loading) return <div className="p-8 text-center text-[#888]"><i className="fas fa-spinner fa-spin mr-2"></i>Loading plan...</div>;
-  if (error || !plan) return <div className="p-8 text-center text-red-500">{error || 'Plan not found'}</div>;
-
-  const isInvalid = !plan.name || !plan.category || !plan.description || plan.pricePerMonth === '' || plan.pricePerMonth === undefined || plan.pricePerMonth === null;
+  const isInvalid = !plan || !plan.name || !plan.category || !plan.description || plan.pricePerMonth === '' || plan.pricePerMonth === undefined || plan.pricePerMonth === null;
 
   return (
     <Drawer
@@ -42,94 +86,116 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan }: { pla
       subtitle="Update plan details and settings"
       icon={<PenTool className="text-[#D4D4D4]" size={22} />}
       footer={
-        <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-2">
-            {plan.enabled && (
+        !loading && plan ? (
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2">
+              {plan.enabled && (
+                <ActionButton
+                  onClick={async () => {
+                    handleInputChange('enabled', false);
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                    await handleSubmit();
+                    onSaveSuccess();
+                  }}
+                  loading={saving}
+                  disabled={isInvalid}
+                  label="Disable"
+                  variant="danger"
+                  icon={<i className="fas fa-ban mr-2"></i>}
+                  onSuccess={() => { showSuccess(`Plan "${plan.name}" disabled.`); onClose(); }}
+                  onError={(e) => showError(e)}
+                />
+              )}
               <ActionButton
                 onClick={async () => {
-                  handleInputChange('enabled', false);
-                  await new Promise(resolve => setTimeout(resolve, 50));
-                  await handleSubmit();
-                  onSaveSuccess();
+                  if (confirm("Are you sure you want to delete this plan?")) {
+                    await onDeletePlan(plan._id, plan.name);
+                    onSaveSuccess();
+                  }
                 }}
                 loading={saving}
-                disabled={isInvalid}
-                label="Disable"
+                label="Delete"
                 variant="danger"
-                icon={<i className="fas fa-ban mr-2"></i>}
-                onSuccess={() => { showSuccess(`Plan "${plan.name}" disabled.`); onClose(); }}
+                icon={<i className="fas fa-trash mr-2"></i>}
+                onSuccess={() => { showSuccess(`Plan "${plan.name}" deleted.`); onClose(); }}
                 onError={(e) => showError(e)}
               />
-            )}
-            <ActionButton
-              onClick={async () => {
-                if (confirm("Are you sure you want to delete this plan?")) {
-                  await onDeletePlan(plan._id, plan.name);
-                  onSaveSuccess();
-                }
-              }}
-              loading={saving}
-              label="Delete"
-              variant="danger"
-              icon={<i className="fas fa-trash mr-2"></i>}
-              onSuccess={() => { showSuccess(`Plan "${plan.name}" deleted.`); onClose(); }}
-              onError={(e) => showError(e)}
-            />
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={saving}
+                className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              {!plan.enabled ? (
+                <ActionButton
+                  onClick={async () => {
+                    handleInputChange('enabled', true);
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                    await handleSubmit();
+                    onSaveSuccess();
+                  }}
+                  loading={saving}
+                  disabled={isInvalid}
+                  className="min-w-[140px]"
+                  label="Enable Item"
+                  onSuccess={() => { showSuccess(`Plan "${plan.name}" enabled.`); onClose(); }}
+                  onError={(e) => showError(e)}
+                />
+              ) : (
+                <ActionButton
+                  onClick={async () => {
+                    await handleSubmit();
+                    onSaveSuccess();
+                  }}
+                  loading={saving}
+                  disabled={isInvalid}
+                  className="min-w-[140px]"
+                  label="Save Changes"
+                  icon={<i className="fas fa-save mr-2"></i>}
+                  onSuccess={() => { showSuccess(`Plan "${plan.name}" saved.`); onClose(); }}
+                  onError={(e) => showError(e)}
+                />
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={saving}
-              className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Cancel
-            </button>
-            {!plan.enabled ? (
-              <ActionButton
-                onClick={async () => {
-                  handleInputChange('enabled', true);
-                  await new Promise(resolve => setTimeout(resolve, 50));
-                  await handleSubmit();
-                  onSaveSuccess();
-                }}
-                loading={saving}
-                disabled={isInvalid}
-                className="min-w-[140px]"
-                label="Enable Item"
-                onSuccess={() => { showSuccess(`Plan "${plan.name}" enabled.`); onClose(); }}
-                onError={(e) => showError(e)}
-              />
-            ) : (
-              <ActionButton
-                onClick={async () => {
-                  await handleSubmit();
-                  onSaveSuccess();
-                }}
-                loading={saving}
-                disabled={isInvalid}
-                className="min-w-[140px]"
-                label="Save Changes"
-                icon={<i className="fas fa-save mr-2"></i>}
-                onSuccess={() => { showSuccess(`Plan "${plan.name}" saved.`); onClose(); }}
-                onError={(e) => showError(e)}
-              />
-            )}
+        ) : (
+          /* Skeleton footer buttons while loading */
+          <div className="flex items-center justify-end gap-2 w-full animate-pulse">
+            <div className="h-9 w-20 rounded-lg bg-[#1a1a1a]" />
+            <div className="h-9 w-32 rounded-lg bg-[#1a1a1a]" />
           </div>
-        </div>
+        )
       }
     >
-      <div className="pb-8">
-        <PlanEditForm
-          plan={plan}
-          saving={saving}
-          validationErrors={validationErrors}
-          onInputChange={handleInputChange}
-          onSubmit={async (e) => { if(e) e.preventDefault(); await handleSubmit(); onSaveSuccess(); onClose(); }}
-          onCancel={onClose}
-          onDelete={async () => {}}
-        />
-      </div>
+      {loading ? (
+        <DrawerPlanSkeleton />
+      ) : error || !plan ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
+          <div className="text-red-500/60 text-sm">{error || 'Plan not found'}</div>
+          <button
+            onClick={() => loadPlan(planId)}
+            className="text-xs text-[#FF5722] hover:underline"
+          >
+            Try again
+          </button>
+        </div>
+      ) : (
+        <div className="pb-8">
+          <PlanEditForm
+            plan={plan}
+            saving={saving}
+            validationErrors={validationErrors}
+            onInputChange={handleInputChange}
+            onSubmit={async (e) => { if(e) e.preventDefault(); await handleSubmit(); onSaveSuccess(); onClose(); }}
+            onCancel={onClose}
+            onDelete={async () => {}}
+          />
+        </div>
+      )}
     </Drawer>
   );
 }
