@@ -246,20 +246,20 @@ function AdminPlanRow({
         <div className="flex flex-wrap items-center gap-4">
           {isLifetime && (
             <div className="flex items-center gap-1.5">
-              <Check className="h-3.5 w-3.5 text-emerald-500" />
-              <span className="text-xs text-white/40 whitespace-nowrap">Lifetime access</span>
+              <Check className="h-3 w-3 text-emerald-500" />
+              <span className="text-[11px] text-white/40 whitespace-nowrap">Lifetime access</span>
             </div>
           )}
           {plan.stock > 0 && (
             <div className="flex items-center gap-1.5">
-              <Package className="h-3.5 w-3.5 text-orange-400" />
-              <span className="text-xs text-white/40 whitespace-nowrap">Limited stock</span>
+              <Package className="h-3 w-3 text-orange-400" />
+              <span className="text-[11px] text-white/40 whitespace-nowrap">Limited stock</span>
             </div>
           )}
           {plan.availableUntil && (
             <div className="flex items-center gap-1.5">
-              <Clock className="h-3.5 w-3.5 text-blue-400" />
-              <span className="text-xs text-white/40 whitespace-nowrap">
+              <Clock className="h-3 w-3 text-blue-400" />
+              <span className="text-[11px] text-white/40 whitespace-nowrap">
                 Ends{" "}
                 {new Date(plan.availableUntil).toLocaleDateString(undefined, {
                   day: "numeric",
@@ -269,12 +269,12 @@ function AdminPlanRow({
             </div>
           )}
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-white/40 whitespace-nowrap">
+            <span className="text-[11px] text-white/40 whitespace-nowrap">
               {plan.currentUsers} users · {plan.stock === -1 ? "∞" : plan.stock} stock · {plan.totalPurchases} purchases
             </span>
           </div>
         </div>
-        <span className="text-xs text-white/20 shrink-0 ml-4 hidden sm:block whitespace-nowrap">
+        <span className="text-[11px] text-white/20 shrink-0 ml-4 hidden sm:block whitespace-nowrap">
           {isLifetime ? "One-time purchase" : "Recurring subscription"}
         </span>
       </div>
