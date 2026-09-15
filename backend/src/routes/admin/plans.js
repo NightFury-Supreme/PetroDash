@@ -3,6 +3,7 @@ const { z } = require('zod');
 const { requireAdmin } = require('../../middleware/auth');
 const { writeAudit } = require('../../middleware/audit');
 const Plan = require('../../models/Plan');
+require('../../models/PlanCategory'); // Ensure model is registered before populate
 
 const router = express.Router();
 const { validateObjectId } = require('../../middleware/validateObjectId');
@@ -10,16 +11,16 @@ const { validateObjectId } = require('../../middleware/validateObjectId');
 // Validation schemas
 const createSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  description: z.string().optional(),
+  description: z.string().min(1, 'Description is required'),
   strikeThroughPrice: z.number().min(0, 'Strike-through price must be 0 or greater').default(0),
   pricePerMonth: z.number().min(0, 'Monthly price must be 0 or greater'),
   pricePerYear: z.number().min(0, 'Yearly price must be 0 or greater').optional().default(0),
   visibility: z.enum(['public', 'unlisted']).default('public'),
-  availableAt: z.string().optional(),
+  availableAt: z.string().min(1, 'Valid from date is required'),
   availableUntil: z.string().optional(),
   stock: z.number().default(0),
   limitPerCustomer: z.number().min(0).default(1),
-  category: z.string().default(''),
+  category: z.string().min(1, 'Category is required'),
   redirectionLink: z.string().optional(),
   billingOptions: z.object({
     renewable: z.boolean().default(true),

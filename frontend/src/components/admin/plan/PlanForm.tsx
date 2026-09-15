@@ -126,7 +126,7 @@ export function PlanForm({
         <h3 className="text-sm font-medium text-white mb-4">Basic Information</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <FieldLabel>Plan Name</FieldLabel>
+            <FieldLabel>Plan Name <span className="text-red-500">*</span></FieldLabel>
             <input
               type="text"
               value={formData.name}
@@ -144,7 +144,7 @@ export function PlanForm({
             {validationErrors?.category && <p className="text-red-400 text-xs mt-1">{validationErrors.category}</p>}
           </div>
           <div className="md:col-span-2">
-            <FieldLabel>Description</FieldLabel>
+            <FieldLabel>Description <span className="text-red-500">*</span></FieldLabel>
             <textarea
               value={formData.description || ''}
               onChange={(e) => onInputChange('description', e.target.value)}
@@ -156,7 +156,7 @@ export function PlanForm({
           </div>
 
           <div>
-            <FieldLabel>Valid From</FieldLabel>
+            <FieldLabel>Valid From <span className="text-red-500">*</span></FieldLabel>
             <input
               type="datetime-local"
               value={formData.availableAt ? new Date(formData.availableAt).toISOString().slice(0, 16) : ''}
@@ -202,7 +202,7 @@ export function PlanForm({
         <h3 className="text-sm font-medium text-white mb-4">Pricing & Availability</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <FieldLabel>{formData.billingOptions.lifetime ? 'Price' : 'Monthly Price'} ({currency})</FieldLabel>
+            <FieldLabel>{formData.billingOptions.lifetime ? 'Price' : 'Monthly Price'} ({currency}) <span className="text-red-500">*</span></FieldLabel>
             <input
               type="number"
               value={formData.pricePerMonth}
@@ -264,7 +264,7 @@ export function PlanForm({
         <h3 className="text-sm font-medium text-white mb-4">Resource Limits</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <FieldLabel>CPU Limit (%)</FieldLabel>
+            <FieldLabel>CPU Limit (%) <span className="text-red-500">*</span></FieldLabel>
             <input
               type="number"
               value={formData.productContent.recurrentResources.cpuPercent}
@@ -274,7 +274,7 @@ export function PlanForm({
             />
           </div>
           <div>
-            <FieldLabel>Memory (MB)</FieldLabel>
+            <FieldLabel>Memory (MB) <span className="text-red-500">*</span></FieldLabel>
             <input
               type="number"
               value={formData.productContent.recurrentResources.memoryMb}
@@ -284,7 +284,7 @@ export function PlanForm({
             />
           </div>
           <div>
-            <FieldLabel>Disk (MB)</FieldLabel>
+            <FieldLabel>Disk (MB) <span className="text-red-500">*</span></FieldLabel>
             <input
               type="number"
               value={formData.productContent.recurrentResources.diskMb}
@@ -294,7 +294,7 @@ export function PlanForm({
             />
           </div>
           <div>
-            <FieldLabel>Backups</FieldLabel>
+            <FieldLabel>Backups <span className="text-red-500">*</span></FieldLabel>
             <input
               type="number"
               value={formData.productContent.backups}
@@ -304,7 +304,7 @@ export function PlanForm({
             />
           </div>
           <div>
-            <FieldLabel>Databases</FieldLabel>
+            <FieldLabel>Databases <span className="text-red-500">*</span></FieldLabel>
             <input
               type="number"
               value={formData.productContent.databases}
@@ -324,7 +324,7 @@ export function PlanForm({
             />
           </div>
           <div>
-            <FieldLabel>Server Limit</FieldLabel>
+            <FieldLabel>Server Limit <span className="text-red-500">*</span></FieldLabel>
             <input
               type="number"
               value={formData.productContent.serverLimit}

@@ -20,6 +20,7 @@ router.get('/', async (req, res) => {
     if (cached) return res.json(cached);
 
     const now = new Date();
+    require('../models/PlanCategory'); // Ensure model is registered
     const plansQuery = Plan.find({
       visibility: 'public',
       enabled: true,
@@ -46,7 +47,7 @@ router.get('/', async (req, res) => {
           ]
         }
       ]
-    }).sort({ popular: -1, sortOrder: 1, createdAt: -1 }).lean();
+    }).populate('category', 'name').sort({ popular: -1, sortOrder: 1, createdAt: -1 }).lean();
     
     // Optional pagination
     let plansRaw;
@@ -78,6 +79,7 @@ router.get('/', async (req, res) => {
       const { staffNotes: _staffNotes, totalPurchases: _totalPurchases, currentUsers: _currentUsers, limitPerCustomer: _limitPerCustomer, redirectionLink: _redirectionLink, billingOptions, ...rest } = p;
       return { 
         ...rest, 
+        category: p.category && p.category.name ? p.category.name : (p.category || 'Others'),
         lifetime: Boolean(billingOptions?.lifetime), 
         currency,
         stockLeft: p.stockLeft 

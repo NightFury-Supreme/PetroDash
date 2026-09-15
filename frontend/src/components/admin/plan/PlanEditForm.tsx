@@ -134,7 +134,7 @@ export function PlanEditForm({
         <h3 className="text-sm font-medium text-white mb-4">Basic Information</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <FieldLabel>Plan Name</FieldLabel>
+            <FieldLabel>Plan Name <span className="text-red-500">*</span></FieldLabel>
             <input
               type="text"
               value={plan.name}
@@ -152,7 +152,7 @@ export function PlanEditForm({
             {validationErrors?.category && <p className="text-red-400 text-xs mt-1">{validationErrors.category}</p>}
           </div>
           <div className="md:col-span-2">
-            <FieldLabel>Description</FieldLabel>
+            <FieldLabel>Description <span className="text-red-500">*</span></FieldLabel>
             <textarea
               value={plan.description || ''}
               onChange={(e) => onInputChange('description', e.target.value)}
@@ -164,7 +164,7 @@ export function PlanEditForm({
           </div>
 
           <div>
-            <FieldLabel>Valid From</FieldLabel>
+            <FieldLabel>Valid From <span className="text-red-500">*</span></FieldLabel>
             <input
               type="datetime-local"
               value={plan.availableAt ? new Date(plan.availableAt).toISOString().slice(0, 16) : ''}
@@ -210,7 +210,7 @@ export function PlanEditForm({
         <h3 className="text-sm font-medium text-white mb-4">Pricing & Availability</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <FieldLabel>{plan.billingOptions.lifetime ? 'Price' : 'Monthly Price'} ({currency})</FieldLabel>
+            <FieldLabel>{plan.billingOptions.lifetime ? 'Price' : 'Monthly Price'} ({currency}) <span className="text-red-500">*</span></FieldLabel>
             <input
               type="number"
               value={plan.pricePerMonth}
@@ -272,7 +272,7 @@ export function PlanEditForm({
         <h3 className="text-sm font-medium text-white mb-4">Resource Limits</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <FieldLabel>CPU Limit (%)</FieldLabel>
+            <FieldLabel>CPU Limit (%) <span className="text-red-500">*</span></FieldLabel>
             <input
               type="number"
               value={plan.productContent.recurrentResources.cpuPercent}
@@ -282,7 +282,7 @@ export function PlanEditForm({
             />
           </div>
           <div>
-            <FieldLabel>Memory (MB)</FieldLabel>
+            <FieldLabel>Memory (MB) <span className="text-red-500">*</span></FieldLabel>
             <input
               type="number"
               value={plan.productContent.recurrentResources.memoryMb}
@@ -292,7 +292,7 @@ export function PlanEditForm({
             />
           </div>
           <div>
-            <FieldLabel>Disk (MB)</FieldLabel>
+            <FieldLabel>Disk (MB) <span className="text-red-500">*</span></FieldLabel>
             <input
               type="number"
               value={plan.productContent.recurrentResources.diskMb}
@@ -302,7 +302,7 @@ export function PlanEditForm({
             />
           </div>
           <div>
-            <FieldLabel>Backups</FieldLabel>
+            <FieldLabel>Backups <span className="text-red-500">*</span></FieldLabel>
             <input
               type="number"
               value={plan.productContent.backups}
@@ -312,7 +312,7 @@ export function PlanEditForm({
             />
           </div>
           <div>
-            <FieldLabel>Databases</FieldLabel>
+            <FieldLabel>Databases <span className="text-red-500">*</span></FieldLabel>
             <input
               type="number"
               value={plan.productContent.databases}
@@ -332,7 +332,7 @@ export function PlanEditForm({
             />
           </div>
           <div>
-            <FieldLabel>Server Limit</FieldLabel>
+            <FieldLabel>Server Limit <span className="text-red-500">*</span></FieldLabel>
             <input
               type="number"
               value={plan.productContent.serverLimit}
