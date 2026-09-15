@@ -1,3 +1,4 @@
+import { ActionButton } from '@/components/admin/earn/EarnUI';
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -88,32 +89,30 @@ export function CouponDrawer({
             {item && (
               <>
                 {formData.enabled && (
-                  <button
-                    type="button"
+                  <ActionButton
                     onClick={async () => {
                       await onSave(item._id, { enabled: false });
                       setFormData((prev: any) => ({ ...prev, enabled: false }));
-                      onClose();
+                      setTimeout(onClose, 1000);
                     }}
-                    disabled={saving}
-                    className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20"
-                  >
-                    <i className="fas fa-ban mr-2"></i> Disable
-                  </button>
+                    loading={saving}
+                    label="Disable"
+                    variant="danger"
+                    icon={<i className="fas fa-ban mr-2"></i>}
+                  />
                 )}
-                <button
-                  type="button"
+                <ActionButton
                   onClick={async () => {
                     if (confirm("Are you sure you want to delete this coupon?")) {
                       await onSave(item._id, { _delete: true });
-                      onClose();
+                      setTimeout(onClose, 1000);
                     }
                   }}
-                  disabled={saving}
-                  className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-500 transition-colors hover:bg-red-500/20"
-                >
-                  <i className="fas fa-trash mr-2"></i> Delete
-                </button>
+                  loading={saving}
+                  label="Delete"
+                  variant="danger"
+                  icon={<i className="fas fa-trash mr-2"></i>}
+                />
               </>
             )}
           </div>
@@ -126,27 +125,25 @@ export function CouponDrawer({
               Cancel
             </button>
             {item && !formData.enabled ? (
-              <button
+              <ActionButton
                 onClick={async () => {
                   await onSave(item._id, { enabled: true });
                   setFormData((prev: any) => ({ ...prev, enabled: true }));
-                  onClose();
+                  setTimeout(onClose, 1000);
                 }}
-                disabled={saving}
-                className="flex items-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#ff6939] disabled:opacity-50"
-              >
-                {saving ? <i className="fas fa-spinner fa-spin"></i> : null}
-                Enable Item
-              </button>
+                loading={saving}
+                label="Enable Item"
+              />
             ) : (
-              <button
-                onClick={handleSubmit}
-                disabled={saving}
-                className="flex items-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#ff6939] disabled:opacity-50"
-              >
-                {saving ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-save"></i>}
-                {item ? "Save Changes" : "Create Coupon"}
-              </button>
+              <ActionButton
+                onClick={async () => {
+                  await handleSubmit();
+                  setTimeout(onClose, 1000);
+                }}
+                loading={saving}
+                label={item ? "Save Changes" : "Create Coupon"}
+                icon={<i className="fas fa-save mr-2"></i>}
+              />
             )}
           </div>
         </div>

@@ -1,3 +1,4 @@
+import { ActionButton } from '@/components/admin/earn/EarnUI';
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -62,18 +63,17 @@ export function EditShopItemModal({
         formData.enabled ? (
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
-              <button
-                type="button"
+              <ActionButton
                 onClick={async () => {
                   await onSave(item._id, { enabled: false });
                   setFormData(prev => ({ ...prev, enabled: false }));
-                  onClose();
+                  setTimeout(onClose, 1000);
                 }}
-                disabled={saving}
-                className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20"
-              >
-                <i className="fas fa-ban mr-2"></i> Disable
-              </button>
+                loading={saving}
+                label="Disable"
+                variant="danger"
+                icon={<i className="fas fa-ban mr-2"></i>}
+              />
             </div>
             <div className="flex items-center gap-2">
               <button 
@@ -83,14 +83,15 @@ export function EditShopItemModal({
               >
                 Cancel
               </button>
-              <button
-                onClick={handleSubmit}
-                disabled={saving}
-                className="flex items-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#ff6939] disabled:opacity-50"
-              >
-                {saving ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-save"></i>}
-                Save Changes
-              </button>
+              <ActionButton
+                onClick={async () => {
+                  await handleSubmit();
+                  setTimeout(onClose, 1000);
+                }}
+                loading={saving}
+                label="Save Changes"
+                icon={<i className="fas fa-save mr-2"></i>}
+              />
             </div>
           </div>
         ) : (
@@ -102,18 +103,15 @@ export function EditShopItemModal({
             >
               Cancel
             </button>
-            <button
+            <ActionButton
               onClick={async () => {
                 await onSave(item._id, { enabled: true });
                 setFormData(prev => ({ ...prev, enabled: true }));
-                onClose();
+                setTimeout(onClose, 1000);
               }}
-              disabled={saving}
-              className="flex items-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#ff6939] disabled:opacity-50"
-            >
-              {saving ? <i className="fas fa-spinner fa-spin"></i> : null}
-              Enable Item
-            </button>
+              loading={saving}
+              label="Enable Item"
+            />
           </div>
         )
       }

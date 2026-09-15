@@ -1,3 +1,4 @@
+import { ActionButton } from '@/components/admin/earn/EarnUI';
 "use client";
 
 import { useEffect } from 'react';
@@ -33,37 +34,35 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan }: { pla
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-2">
             {plan.enabled && (
-              <button
-                type="button"
-                onClick={() => {
+              <ActionButton
+                onClick={async () => {
                   handleInputChange('enabled', false);
-                  setTimeout(() => {
-                    const form = document.getElementById('edit-plan-form') as HTMLFormElement;
-                    if (form) form.requestSubmit();
-                  }, 50);
+                  await new Promise(resolve => setTimeout(resolve, 50));
+                  await handleSubmit();
+                  onSaveSuccess();
+                  setTimeout(onClose, 1000);
                 }}
-                disabled={saving}
-                className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20 disabled:opacity-50"
-              >
-                <i className="fas fa-ban mr-2"></i> Disable
-              </button>
+                loading={saving}
+                label="Disable"
+                variant="danger"
+                icon={<i className="fas fa-ban mr-2"></i>}
+              />
             )}
-            <button
-              type="button"
+            <ActionButton
               onClick={async () => {
                 if (confirm("Are you sure you want to delete this plan?")) {
                   try {
                     await onDeletePlan(plan._id, plan.name);
                     onSaveSuccess();
-                    onClose();
+                    setTimeout(onClose, 1000);
                   } catch (e) {}
                 }
               }}
-              disabled={saving}
-              className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-500 transition-colors hover:bg-red-500/20 disabled:opacity-50"
-            >
-              <i className="fas fa-trash mr-2"></i> Delete
-            </button>
+              loading={saving}
+              label="Delete"
+              variant="danger"
+              icon={<i className="fas fa-trash mr-2"></i>}
+            />
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -74,31 +73,28 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan }: { pla
               Cancel
             </button>
             {!plan.enabled ? (
-              <button
-                type="button"
-                onClick={() => {
+              <ActionButton
+                onClick={async () => {
                   handleInputChange('enabled', true);
-                  setTimeout(() => {
-                    const form = document.getElementById('edit-plan-form') as HTMLFormElement;
-                    if (form) form.requestSubmit();
-                  }, 50);
+                  await new Promise(resolve => setTimeout(resolve, 50));
+                  await handleSubmit();
+                  onSaveSuccess();
+                  setTimeout(onClose, 1000);
                 }}
-                disabled={saving}
-                className="flex items-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#ff6939] disabled:opacity-50"
-              >
-                {saving ? <i className="fas fa-spinner fa-spin"></i> : null}
-                Enable Item
-              </button>
+                loading={saving}
+                label="Enable Item"
+              />
             ) : (
-              <button
-                type="submit"
-                form="edit-plan-form"
-                disabled={saving}
-                className="flex items-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#ff6939] disabled:opacity-50"
-              >
-                {saving ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-save"></i>}
-                Save Changes
-              </button>
+              <ActionButton
+                onClick={async () => {
+                  await handleSubmit();
+                  onSaveSuccess();
+                  setTimeout(onClose, 1000);
+                }}
+                loading={saving}
+                label="Save Changes"
+                icon={<i className="fas fa-save mr-2"></i>}
+              />
             )}
           </div>
         </div>
@@ -138,15 +134,16 @@ function NewPlanWrapper({ onClose, onSaveSuccess }: { onClose: () => void, onSav
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              form="new-plan-form"
-              disabled={saving}
-              className="flex items-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#ff6939] disabled:opacity-50"
-            >
-              {saving ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-plus"></i>}
-              Create Plan
-            </button>
+            <ActionButton
+              onClick={async () => {
+                await handleSubmit();
+                onSaveSuccess();
+                setTimeout(onClose, 1000);
+              }}
+              loading={saving}
+              label="Create Plan"
+              icon={<i className="fas fa-plus mr-2"></i>}
+            />
           </div>
         </div>
       }
