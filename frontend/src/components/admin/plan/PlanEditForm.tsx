@@ -141,7 +141,7 @@ export function PlanEditForm({
             </div>
           </div>
 
-          <div className="md:col-span-2 flex items-center justify-between bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-3.5">
+          <div className="md:col-span-2 flex items-center justify-between py-2">
             <div className="flex flex-col">
               <span className="text-sm font-semibold text-white mb-0.5">Mark as Popular</span>
               <span className="text-[11px] text-[#888]">Highlight this plan with a popular badge to attract users.</span>
