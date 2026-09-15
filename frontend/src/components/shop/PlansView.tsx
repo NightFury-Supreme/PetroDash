@@ -73,7 +73,7 @@ export function PlansView({
             } available.`}
           />
 
-          <div className="mt-6 space-y-10 border-t border-white/[0.06] pt-6">
+          <div className="mt-6 space-y-10">
             {availableCategories.map((category) => (
               <div key={category} className="w-full">
                 <h2 className="mb-4 px-2 text-xl font-bold text-white tracking-tight">
