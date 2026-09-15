@@ -26,6 +26,8 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan }: { pla
   if (loading) return <div className="p-8 text-center text-[#888]"><i className="fas fa-spinner fa-spin mr-2"></i>Loading plan...</div>;
   if (error || !plan) return <div className="p-8 text-center text-red-500">{error || 'Plan not found'}</div>;
 
+  const isInvalid = !plan.name || plan.pricePerMonth === '' || plan.pricePerMonth === undefined || plan.pricePerMonth === null;
+
   return (
     <Drawer
       isOpen={true}
@@ -44,6 +46,7 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan }: { pla
                   onSaveSuccess();
                 }}
                 loading={saving}
+                disabled={isInvalid}
                 label="Disable"
                 variant="danger"
                 icon={<i className="fas fa-ban mr-2"></i>}
@@ -84,6 +87,7 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan }: { pla
                   onSaveSuccess();
                 }}
                 loading={saving}
+                disabled={isInvalid}
                 label="Enable Item"
                 onSuccess={() => { showSuccess(`Plan "${plan.name}" enabled.`); onClose(); }}
                 onError={(e) => showError(e)}
@@ -95,6 +99,7 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan }: { pla
                   onSaveSuccess();
                 }}
                 loading={saving}
+                disabled={isInvalid}
                 label="Save Changes"
                 icon={<i className="fas fa-save mr-2"></i>}
                 onSuccess={() => { showSuccess(`Plan "${plan.name}" saved.`); onClose(); }}
@@ -124,6 +129,8 @@ function NewPlanWrapper({ onClose, onSaveSuccess }: { onClose: () => void, onSav
   const { saving, validationErrors, handleInputChange, handleSubmit, formData } = usePlanForm();
   const { showSuccess, showError } = useToast();
 
+  const isInvalid = !formData.name || formData.pricePerMonth === '' || formData.pricePerMonth === undefined || formData.pricePerMonth === null;
+
   return (
     <Drawer
       isOpen={true}
@@ -147,6 +154,7 @@ function NewPlanWrapper({ onClose, onSaveSuccess }: { onClose: () => void, onSav
                 onSaveSuccess();
               }}
               loading={saving}
+              disabled={isInvalid}
               label="Create Plan"
               icon={<i className="fas fa-plus mr-2"></i>}
               onSuccess={() => { showSuccess("Plan created successfully."); onClose(); }}
