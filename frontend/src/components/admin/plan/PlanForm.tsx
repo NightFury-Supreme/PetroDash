@@ -158,36 +158,25 @@ export function PlanForm({
           </div>
 
           <div>
-            <FieldLabel>Available at</FieldLabel>
+            <FieldLabel>Valid From</FieldLabel>
             <input
               type="datetime-local"
               value={formData.availableAt ? new Date(formData.availableAt).toISOString().slice(0, 16) : ''}
               onChange={(e) => onInputChange('availableAt', e.target.value ? new Date(e.target.value).toISOString() : null)}
               className={inputClass}
             />
-            <FieldHint>Countdown time until plan is available</FieldHint>
+            <FieldHint>Leave blank to start immediately</FieldHint>
           </div>
           
           <div>
-            <FieldLabel>Available until</FieldLabel>
+            <FieldLabel>Valid Until</FieldLabel>
             <input
               type="datetime-local"
               value={formData.availableUntil ? new Date(formData.availableUntil).toISOString().slice(0, 16) : ''}
               onChange={(e) => onInputChange('availableUntil', e.target.value ? new Date(e.target.value).toISOString() : null)}
               className={inputClass}
-              disabled={!formData.availableUntil}
             />
-            <div className="mt-2 flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={!formData.availableUntil}
-                onChange={(e) => {
-                  if (e.target.checked) onInputChange('availableUntil', null);
-                }}
-                className="text-[#FF5722] rounded border-[#333] bg-[#222]"
-              />
-              <span className="text-[11px] text-[#888]">Forever (no expiration)</span>
-            </div>
+            <FieldHint>Leave blank to never expire</FieldHint>
           </div>
 
           <div className="md:col-span-2 flex items-center justify-between py-2">
