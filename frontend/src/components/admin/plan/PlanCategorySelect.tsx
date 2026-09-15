@@ -9,8 +9,16 @@ type Category = {
   planCount: number;
 };
 
-export function PlanCategorySelect({ value, onChange }: { value: string, onChange: (v: string) => void }) {
-  const [categories, setCategories] = useState<Category[]>([]);
+export function PlanCategorySelect({
+  value,
+  onChange,
+  initialCategories,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  initialCategories?: Category[];
+}) {
+  const [categories, setCategories] = useState<Category[]>(initialCategories ?? []);
   const [isOpen, setIsOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -32,7 +40,10 @@ export function PlanCategorySelect({ value, onChange }: { value: string, onChang
   };
 
   useEffect(() => {
-    loadCategories();
+    // Only fetch from the API if the parent didn't pre-supply categories
+    if (!initialCategories || initialCategories.length === 0) {
+      loadCategories();
+    }
     const clickOutside = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setIsOpen(false);
@@ -43,6 +54,7 @@ export function PlanCategorySelect({ value, onChange }: { value: string, onChang
     document.addEventListener('mousedown', clickOutside);
     return () => document.removeEventListener('mousedown', clickOutside);
   }, []);
+
 
   const handleCreate = async () => {
     if (!newCat.trim()) return;

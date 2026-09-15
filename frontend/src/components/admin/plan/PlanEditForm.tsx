@@ -12,6 +12,8 @@ interface PlanEditFormProps {
   onSubmit: (e?: React.FormEvent) => void;
   onCancel: () => void;
   onDelete?: () => void;
+  /** Pre-loaded categories from the parent list — avoids a redundant /categories API call */
+  initialCategories?: Array<{ id: string; name: string; planCount: number }>;
 }
 
 export function PlanEditForm({
@@ -20,6 +22,7 @@ export function PlanEditForm({
   validationErrors = {},
   onInputChange,
   onSubmit,
+  initialCategories,
 }: PlanEditFormProps) {
   const { currency } = useCurrency();
 
@@ -51,7 +54,8 @@ export function PlanEditForm({
             <FieldLabel>Category <span className="text-red-500">*</span></FieldLabel>
             <PlanCategorySelect 
               value={plan.category || ''} 
-              onChange={(v) => onInputChange('category', v)} 
+              onChange={(v) => onInputChange('category', v)}
+              initialCategories={initialCategories}
             />
             {validationErrors?.category && <p className="text-red-400 text-xs mt-1">{validationErrors.category}</p>}
           </div>

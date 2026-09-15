@@ -81,10 +81,26 @@ export default function AdminPlansPage() {
   };
 
 
-  const categories = useMemo(() => {
-    const cats = new Set(plans.map(p => p.category?.name || 'Uncategorized'));
-    return Array.from(cats).sort();
+  /** Structured category list derived from loaded plans — used both for filtering and to
+   *  pre-populate PlanCategorySelect in the edit drawer, eliminating a separate /categories fetch. */
+  const categoryObjects = useMemo(() => {
+    const map = new Map<string, { id: string; name: string; planCount: number }>();
+    for (const p of plans) {
+      const cat = p.category as any;
+      if (!cat) continue;
+      const id   = cat._id ?? cat.id ?? '';
+      const name = cat.name ?? 'Uncategorized';
+      if (!id) continue;
+      if (map.has(id)) {
+        map.get(id)!.planCount += 1;
+      } else {
+        map.set(id, { id, name, planCount: 1 });
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
   }, [plans]);
+
+  const categories = useMemo(() => categoryObjects.map(c => c.name), [categoryObjects]);
 
   const activeFilterCount = categoryFilter !== 'all' ? 1 : 0;
   const clearFilters = () => setCategoryFilter('all');
@@ -211,6 +227,7 @@ export default function AdminPlansPage() {
           onClose={() => setDrawerOpen(false)} 
           onSaveSuccess={() => { loadPlans(); }}
           onDeletePlan={handleDelete}
+          preloadedCategories={categoryObjects}
         />
     </>
   );

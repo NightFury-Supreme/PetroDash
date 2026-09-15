@@ -9,7 +9,7 @@ type EnvVar = { key: string; value: string };
 
 const INPUT_CLASS = "w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60";
 
-export default function EggForm({ form, setForm, env, setEnv, onSubmit, submitting, onDelete, submitLabel = 'Save', hideFooter = false }: any) {
+export default function EggForm({ form, setForm, env, setEnv, onSubmit, submitting, onDelete, submitLabel = 'Save', hideFooter = false, initialCategories }: any) {
   const [pendingIconFile, setPendingIconFile] = useState<File | null>(null);
   const [iconPreview, setIconPreview] = useState<string | null>(null);
   const [localSubmitting, setLocalSubmitting] = useState(false);
@@ -141,6 +141,7 @@ export default function EggForm({ form, setForm, env, setEnv, onSubmit, submitti
             <CategorySelect
               value={form.category}
               onChange={(cat: string) => setForm((f: any) => ({ ...f, category: cat }))}
+              initialCategories={initialCategories}
             />
           </div>
         </div>

@@ -15,6 +15,8 @@ export interface PlanDrawerProps {
   onClose: () => void;
   onSaveSuccess: () => void;
   onDeletePlan: (planId: string, planName: string) => Promise<void>;
+  /** Categories already loaded by the parent page — skips the separate /categories fetch */
+  preloadedCategories?: Array<{ id: string; name: string; planCount: number }>;
 }
 
 const STEPS = [
@@ -127,7 +129,7 @@ function DrawerPlanSkeleton() {
 }
 
 
-function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan }: { planId: string, onClose: () => void, onSaveSuccess: () => void, onDeletePlan: (planId: string, planName: string) => Promise<void> }) {
+function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan, preloadedCategories }: { planId: string, onClose: () => void, onSaveSuccess: () => void, onDeletePlan: (planId: string, planName: string) => Promise<void>, preloadedCategories?: Array<{ id: string; name: string; planCount: number }> }) {
   const { loading, saving, error, plan, validationErrors, loadPlan, handleInputChange, handleSubmit } = usePlanEdit();
   const { showSuccess, showError } = useToast();
   
@@ -250,6 +252,7 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan }: { pla
             onSubmit={async (e) => { if(e) e.preventDefault(); await handleSubmit(); onSaveSuccess(); onClose(); }}
             onCancel={onClose}
             onDelete={async () => {}}
+            initialCategories={preloadedCategories}
           />
         </div>
       )}
@@ -257,7 +260,7 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan }: { pla
   );
 }
 
-function NewPlanWrapper({ onClose, onSaveSuccess }: { onClose: () => void, onSaveSuccess: () => void }) {
+function NewPlanWrapper({ onClose, onSaveSuccess, preloadedCategories }: { onClose: () => void, onSaveSuccess: () => void, preloadedCategories?: Array<{ id: string; name: string; planCount: number }> }) {
   const { saving, validationErrors, handleInputChange, handleSubmit, formData } = usePlanForm();
   const { showSuccess, showError } = useToast();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -352,20 +355,21 @@ function NewPlanWrapper({ onClose, onSaveSuccess }: { onClose: () => void, onSav
           onSubmit={async () => { await handleSubmit(); onSaveSuccess(); onClose(); }}
           onCancel={onClose}
           currentStep={currentStep}
+          initialCategories={preloadedCategories}
         />
       </div>
     </Drawer>
   );
 }
 
-export function PlanDrawer({ planId, isOpen, onClose, onSaveSuccess, onDeletePlan }: PlanDrawerProps) {
+export function PlanDrawer({ planId, isOpen, onClose, onSaveSuccess, onDeletePlan, preloadedCategories }: PlanDrawerProps) {
   if (!isOpen) return null;
   return (
     <>
       {planId ? (
-        <EditPlanWrapper planId={planId} onClose={onClose} onSaveSuccess={onSaveSuccess} onDeletePlan={onDeletePlan} />
+        <EditPlanWrapper planId={planId} onClose={onClose} onSaveSuccess={onSaveSuccess} onDeletePlan={onDeletePlan} preloadedCategories={preloadedCategories} />
       ) : (
-        <NewPlanWrapper onClose={onClose} onSaveSuccess={onSaveSuccess} />
+        <NewPlanWrapper onClose={onClose} onSaveSuccess={onSaveSuccess} preloadedCategories={preloadedCategories} />
       )}
     </>
   );

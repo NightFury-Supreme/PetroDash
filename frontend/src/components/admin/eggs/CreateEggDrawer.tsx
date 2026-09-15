@@ -29,8 +29,9 @@ import { CategorySelect } from './CategorySelect';
 interface CreateEggDrawerProps {
   onClose: () => void;
   onSuccess: () => void;
+  preloadedCategories?: Array<{ id: string; name: string; eggCount: number }>;
 }
-export function CreateEggDrawer({ onClose, onSuccess }: CreateEggDrawerProps) {
+export function CreateEggDrawer({ onClose, onSuccess, preloadedCategories }: CreateEggDrawerProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const currentStep = STEPS[currentStepIndex].id;
 
@@ -278,7 +279,8 @@ export function CreateEggDrawer({ onClose, onSuccess }: CreateEggDrawerProps) {
                     </label>
                     <CategorySelect 
                       value={form.category} 
-                      onChange={(cat) => setForm(f => ({ ...f, category: cat }))} 
+                      onChange={(cat) => setForm(f => ({ ...f, category: cat }))}
+                      initialCategories={preloadedCategories}
                     />
                   </div>
                 </div>

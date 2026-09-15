@@ -13,6 +13,7 @@ interface EditEggDrawerProps {
   eggId: string;
   onClose: () => void;
   onUpdate: () => void;
+  preloadedCategories?: Array<{ id: string; name: string; eggCount: number }>;
 }
 
 function DrawerSkeleton() {
@@ -113,7 +114,7 @@ function DrawerSkeleton() {
   );
 }
 
-export function EditEggDrawer({ eggId, onClose, onUpdate }: EditEggDrawerProps) {
+export function EditEggDrawer({ eggId, onClose, onUpdate, preloadedCategories }: EditEggDrawerProps) {
   const [form, setForm] = useState<{ _id: string; name: string; description: string; pterodactylEggId: string; pterodactylNestId: string; recommended: boolean; allowedPlans: string[]; category?: string; icon?: string; serversCount?: number } | null>(null);
   const [env, setEnv] = useState<EnvVar[]>([]);
   const [loading, setLoading] = useState(true);
@@ -259,6 +260,7 @@ export function EditEggDrawer({ eggId, onClose, onUpdate }: EditEggDrawerProps) 
                 submitting={submitting}
                 submitLabel="Save Changes"
                 hideFooter={true}
+                initialCategories={preloadedCategories}
               />
             </div>
           )}

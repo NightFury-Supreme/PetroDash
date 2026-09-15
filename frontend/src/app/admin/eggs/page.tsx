@@ -45,10 +45,22 @@ export default function EggsListPage() {
     fetchEggs();
   }, [fetchEggs]);
 
-  const categories = useMemo(() => {
-    const cats = new Set(eggs.map(e => (e as any).categoryName || 'Uncategorized'));
-    return Array.from(cats).sort();
+  const categoryObjects = useMemo(() => {
+    const map = new Map<string, { id: string; name: string; eggCount: number }>();
+    for (const e of eggs) {
+      const id = (e as any).category;
+      const name = (e as any).categoryName || 'Uncategorized';
+      if (!id) continue;
+      if (map.has(id)) {
+        map.get(id)!.eggCount += 1;
+      } else {
+        map.set(id, { id, name, eggCount: 1 });
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
   }, [eggs]);
+
+  const categories = useMemo(() => categoryObjects.map(c => c.name), [categoryObjects]);
 
   const activeFilterCount = categoryFilter !== 'all' ? 1 : 0;
   const clearFilters = () => setCategoryFilter('all');
@@ -175,6 +187,7 @@ export default function EggsListPage() {
             setIsDrawerOpen(false);
             fetchEggs();
           }} 
+          preloadedCategories={categoryObjects}
         />
       )}
 
@@ -186,6 +199,7 @@ export default function EggsListPage() {
             setEditingEggId(null);
             fetchEggs();
           }}
+          preloadedCategories={categoryObjects}
         />
       )}
 

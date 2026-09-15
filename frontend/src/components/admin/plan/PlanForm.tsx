@@ -12,6 +12,7 @@ interface PlanFormProps {
   onInputChange: (field: string, value: any) => void;
   onSubmit: () => Promise<void>;
   onCancel: () => void;
+  initialCategories?: Array<{ id: string; name: string; planCount: number }>;
 }
 
 export function PlanForm({
@@ -21,6 +22,7 @@ export function PlanForm({
   onInputChange,
   onSubmit,
   currentStep,
+  initialCategories,
 }: PlanFormProps) {
   const { currency } = useCurrency();
 
@@ -49,6 +51,7 @@ export function PlanForm({
             <PlanCategorySelect 
               value={formData.category || ''} 
               onChange={(v) => onInputChange('category', v)} 
+              initialCategories={initialCategories}
             />
             {validationErrors?.category && <p className="text-red-400 text-xs mt-1">{validationErrors.category}</p>}
           </div>

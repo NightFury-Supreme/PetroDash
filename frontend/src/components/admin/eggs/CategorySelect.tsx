@@ -9,8 +9,16 @@ type Category = {
   eggCount: number;
 };
 
-export function CategorySelect({ value, onChange }: { value: string, onChange: (v: string) => void }) {
-  const [categories, setCategories] = useState<Category[]>([]);
+export function CategorySelect({
+  value,
+  onChange,
+  initialCategories,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  initialCategories?: Category[];
+}) {
+  const [categories, setCategories] = useState<Category[]>(initialCategories ?? []);
   const [isOpen, setIsOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -32,7 +40,9 @@ export function CategorySelect({ value, onChange }: { value: string, onChange: (
   };
 
   useEffect(() => {
-    loadCategories();
+    if (!initialCategories || initialCategories.length === 0) {
+      loadCategories();
+    }
     const clickOutside = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setIsOpen(false);
