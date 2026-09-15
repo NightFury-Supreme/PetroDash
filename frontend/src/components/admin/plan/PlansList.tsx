@@ -106,13 +106,13 @@ export function PlansList({
   const categories = Object.keys(groupedPlans).sort();
 
   return (
-    <div className="w-full space-y-10 border-t border-white/[0.06] pt-6">
+    <div className="w-full space-y-10">
       {categories.map((category) => (
         <div key={category} className="w-full">
           <h2 className="mb-4 px-2 text-xl font-bold text-white tracking-tight">
             {category}
           </h2>
-          <div className="divide-y divide-white/[0.06] border border-white/[0.06] rounded-xl overflow-hidden bg-[#121212]">
+          <div className="divide-y divide-white/[0.06] border-t border-white/[0.06]">
             {groupedPlans[category].map((plan) => (
               <AdminPlanRow
                 key={plan._id}

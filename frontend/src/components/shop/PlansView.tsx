@@ -25,17 +25,7 @@ export function PlansView({
   currency,
   onPurchasePlan,
 }: PlansViewProps) {
-  const [activeCategory, setActiveCategory] = useState<string>("all");
 
-  const categories = useMemo(() => {
-    const cats = new Set(plans.map((p: any) => p.category?.name || 'Uncategorized'));
-    return Array.from(cats).sort();
-  }, [plans]);
-
-  const filteredPlans = useMemo(() => {
-    if (activeCategory === "all") return plans;
-    return plans.filter((p: any) => (p.category?.name || 'Uncategorized') === activeCategory);
-  }, [plans, activeCategory]);
 
   // Group active plans
   const groups: Record<string, any> = {};
@@ -87,7 +77,7 @@ export function PlansView({
                 <h2 className="mb-4 px-2 text-xl font-bold text-white tracking-tight">
                   {category}
                 </h2>
-                <div className="divide-y divide-white/[0.06] border border-white/[0.06] rounded-xl overflow-hidden bg-[#121212]">
+                <div className="divide-y divide-white/[0.06] border-t border-white/[0.06]">
                   {groupedAvailablePlans[category].map((plan: any) => (
                     <PlanRow
                       key={plan._id || plan.id}
