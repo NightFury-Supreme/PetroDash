@@ -56,9 +56,40 @@ router.get('/', requireAdmin, async (req, res) => {
     const cached = await getCache('admin:plans');
     if (cached) return res.json(cached);
 
-    const plans = await Plan.find().sort({ sortOrder: 1, createdAt: -1 });
-    await setCache('admin:plans', plans, 30);
-    res.json(plans);
+    const plans = await Plan.find().sort({ sortOrder: 1, createdAt: -1 }).lean();
+    
+    const UserPlan = require('../../models/UserPlan');
+    const stats = await UserPlan.aggregate([
+      {
+        $group: {
+          _id: "$planId",
+          totalPurchases: { $sum: 1 },
+          currentUsers: {
+            $sum: { $cond: [{ $eq: ["$status", "active"] }, 1, 0] }
+          }
+        }
+      }
+    ]);
+    
+    const statsMap = {};
+    stats.forEach(s => {
+      statsMap[s._id.toString()] = {
+        totalPurchases: s.totalPurchases,
+        currentUsers: s.currentUsers
+      };
+    });
+
+    const enrichedPlans = plans.map(p => {
+      const pStats = statsMap[p._id.toString()] || { totalPurchases: 0, currentUsers: 0 };
+      return {
+        ...p,
+        totalPurchases: pStats.totalPurchases,
+        currentUsers: pStats.currentUsers
+      };
+    });
+
+    await setCache('admin:plans', enrichedPlans, 30);
+    res.json(enrichedPlans);
   } catch (error) {
     console.error('Error fetching plans:', error);
     res.status(500).json({ error: 'Failed to fetch plans' });
@@ -68,10 +99,33 @@ router.get('/', requireAdmin, async (req, res) => {
 // GET /api/admin/plans/:id - Get single plan
 router.get('/:id', requireAdmin, validateObjectId('id'), async (req, res) => {
   try {
-    const plan = await Plan.findById(String(req.params.id));
+    let plan = await Plan.findById(String(req.params.id)).lean();
     if (!plan) {
       return res.status(404).json({ error: 'Plan not found' });
     }
+    
+    const UserPlan = require('../../models/UserPlan');
+    const stats = await UserPlan.aggregate([
+      { $match: { planId: plan._id } },
+      {
+        $group: {
+          _id: null,
+          totalPurchases: { $sum: 1 },
+          currentUsers: {
+            $sum: { $cond: [{ $eq: ["$status", "active"] }, 1, 0] }
+          }
+        }
+      }
+    ]);
+    
+    if (stats.length > 0) {
+      plan.totalPurchases = stats[0].totalPurchases;
+      plan.currentUsers = stats[0].currentUsers;
+    } else {
+      plan.totalPurchases = 0;
+      plan.currentUsers = 0;
+    }
+    
     res.json(plan);
   } catch (error) {
     console.error('Error fetching plan:', error);
