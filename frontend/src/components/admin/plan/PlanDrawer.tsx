@@ -35,7 +35,13 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan }: { pla
             {plan.enabled && (
               <button
                 type="button"
-                onClick={() => handleInputChange('enabled', false)}
+                onClick={() => {
+                  handleInputChange('enabled', false);
+                  setTimeout(() => {
+                    const form = document.getElementById('edit-plan-form') as HTMLFormElement;
+                    if (form) form.requestSubmit();
+                  }, 50);
+                }}
                 disabled={saving}
                 className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20 disabled:opacity-50"
               >
@@ -70,7 +76,13 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan }: { pla
             {!plan.enabled ? (
               <button
                 type="button"
-                onClick={() => handleInputChange('enabled', true)}
+                onClick={() => {
+                  handleInputChange('enabled', true);
+                  setTimeout(() => {
+                    const form = document.getElementById('edit-plan-form') as HTMLFormElement;
+                    if (form) form.requestSubmit();
+                  }, 50);
+                }}
                 disabled={saving}
                 className="flex items-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#ff6939] disabled:opacity-50"
               >

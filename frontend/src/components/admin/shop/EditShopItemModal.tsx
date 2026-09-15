@@ -67,7 +67,7 @@ export function EditShopItemModal({
                 onClick={async () => {
                   await onSave(item._id, { enabled: false });
                   setFormData(prev => ({ ...prev, enabled: false }));
-                  setTimeout(onClose, 1000);
+                  onClose();
                 }}
                 disabled={saving}
                 className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20"
@@ -106,7 +106,7 @@ export function EditShopItemModal({
               onClick={async () => {
                 await onSave(item._id, { enabled: true });
                 setFormData(prev => ({ ...prev, enabled: true }));
-                setTimeout(onClose, 1000);
+                onClose();
               }}
               disabled={saving}
               className="flex items-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#ff6939] disabled:opacity-50"

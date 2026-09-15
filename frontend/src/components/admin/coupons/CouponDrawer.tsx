@@ -93,6 +93,7 @@ export function CouponDrawer({
                     onClick={async () => {
                       await onSave(item._id, { enabled: false });
                       setFormData((prev: any) => ({ ...prev, enabled: false }));
+                      onClose();
                     }}
                     disabled={saving}
                     className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20"
@@ -105,6 +106,7 @@ export function CouponDrawer({
                   onClick={async () => {
                     if (confirm("Are you sure you want to delete this coupon?")) {
                       await onSave(item._id, { _delete: true });
+                      onClose();
                     }
                   }}
                   disabled={saving}
@@ -128,6 +130,7 @@ export function CouponDrawer({
                 onClick={async () => {
                   await onSave(item._id, { enabled: true });
                   setFormData((prev: any) => ({ ...prev, enabled: true }));
+                  onClose();
                 }}
                 disabled={saving}
                 className="flex items-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#ff6939] disabled:opacity-50"
