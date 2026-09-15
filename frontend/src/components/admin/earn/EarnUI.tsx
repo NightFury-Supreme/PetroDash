@@ -53,7 +53,7 @@ export function ActionButton({
   };
 
   const isDisabled = running || loading || externalDisabled;
-  const isLoading = running || loading;
+  const isLoading = running; // Only THIS button shows "Saving..." when it was the one clicked
 
   return (
     <button
