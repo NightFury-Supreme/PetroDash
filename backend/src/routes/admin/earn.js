@@ -1,7 +1,8 @@
 const express = require('express');
 const { z } = require('zod');
 const { requireAdmin } = require('../../middleware/auth');
-const { getSettings, getOrCreate, clearSettingsCache } = require('../../lib/settings');
+const { getSettings, clearSettingsCache } = require('../../lib/settings');
+const Settings = require('../../models/Settings');
 const EarnSession = require('../../models/EarnSession');
 
 const router = express.Router();
@@ -54,7 +55,9 @@ router.patch('/', requireAdmin, async (req, res) => {
     const parsed = earnPatchSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
 
-    const settings = await getOrCreate();
+    let settings = await Settings.findOne({});
+    if (!settings) settings = new Settings();
+    
     settings.earn = settings.earn || {};
 
     const update = parsed.data;
