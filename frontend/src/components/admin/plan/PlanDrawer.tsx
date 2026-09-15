@@ -26,19 +26,19 @@ const STEPS = [
 /** Inline skeleton — mirrors PlanEditForm section-by-section */
 function DrawerPlanSkeleton() {
   return (
-    <div className="space-y-6 animate-pulse">
+    <div className="space-y-6 pb-8 animate-pulse">
 
       {/* ── BASIC INFORMATION ── */}
       <div className="space-y-4">
         <div className="h-4 w-36 rounded bg-[#232323]" />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Plan Name */}
           <div><div className="h-3 w-20 rounded bg-[#232323] mb-2" /><div className="h-10 w-full rounded-lg bg-[#1c1c1c]" /></div>
           {/* Category */}
           <div><div className="h-3 w-16 rounded bg-[#232323] mb-2" /><div className="h-10 w-full rounded-lg bg-[#1c1c1c]" /></div>
-          {/* Description – col-span-2 */}
-          <div className="md:col-span-2">
+          {/* Description – full width */}
+          <div className="sm:col-span-2">
             <div className="h-3 w-24 rounded bg-[#232323] mb-2" />
             <div className="h-[82px] w-full rounded-lg bg-[#1c1c1c]" />
           </div>
@@ -54,8 +54,8 @@ function DrawerPlanSkeleton() {
             <div className="h-10 w-full rounded-lg bg-[#1c1c1c]" />
             <div className="h-3 w-40 rounded bg-[#1c1c1c] mt-1.5" />
           </div>
-          {/* Popular toggle – col-span-2 */}
-          <div className="md:col-span-2 flex items-center justify-between py-2">
+          {/* Popular toggle – full width */}
+          <div className="sm:col-span-2 flex items-center justify-between py-2">
             <div className="space-y-1.5">
               <div className="h-3.5 w-28 rounded bg-[#232323]" />
               <div className="h-3 w-64 rounded bg-[#1c1c1c]" />
@@ -71,7 +71,7 @@ function DrawerPlanSkeleton() {
       <div className="space-y-4">
         <div className="h-4 w-44 rounded bg-[#232323]" />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Monthly Price */}
           <div><div className="h-3 w-32 rounded bg-[#232323] mb-2" /><div className="h-10 w-full rounded-lg bg-[#1c1c1c]" /></div>
           {/* Strike-through Price */}
@@ -88,8 +88,8 @@ function DrawerPlanSkeleton() {
             <div className="h-10 w-full rounded-lg bg-[#1c1c1c]" />
             <div className="h-3 w-20 rounded bg-[#1c1c1c] mt-1.5" />
           </div>
-          {/* Visibility – col-span-2 */}
-          <div className="md:col-span-2">
+          {/* Visibility – full width */}
+          <div className="sm:col-span-2">
             <div className="h-3 w-20 rounded bg-[#232323] mb-2" />
             <div className="h-10 w-full rounded-lg bg-[#1c1c1c]" />
           </div>
@@ -102,7 +102,7 @@ function DrawerPlanSkeleton() {
       <div className="space-y-4">
         <div className="h-4 w-32 rounded bg-[#232323]" />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {/* CPU */}
           <div><div className="h-3 w-20 rounded bg-[#232323] mb-2" /><div className="h-10 w-full rounded-lg bg-[#1c1c1c]" /></div>
           {/* Memory */}
@@ -125,6 +125,7 @@ function DrawerPlanSkeleton() {
     </div>
   );
 }
+
 
 function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan }: { planId: string, onClose: () => void, onSaveSuccess: () => void, onDeletePlan: (planId: string, planName: string) => Promise<void> }) {
   const { loading, saving, error, plan, validationErrors, loadPlan, handleInputChange, handleSubmit } = usePlanEdit();
