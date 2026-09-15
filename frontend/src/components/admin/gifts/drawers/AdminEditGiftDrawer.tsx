@@ -1,4 +1,5 @@
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
+import { Select } from "@/components/ui/Select";
 import { useState, useEffect } from "react";
 import { Drawer } from "@/components/ui/Drawer";
 import AdminEditGiftSkeleton from "@/components/skeletons/admin/gifts/AdminEditGiftSkeleton";
@@ -192,10 +193,7 @@ export function AdminEditGiftDrawer({
 
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Enabled</label>
-              <select value={form.enabled ? "true" : "false"} onChange={(e) => setForm({ ...form, enabled: e.target.value === "true" })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50 appearance-none">
-                <option value="true">Yes</option>
-                <option value="false">No</option>
-              </select>
+              <Select value={form.enabled ? "true" : "false"} onChange={(val) => setForm({ ...form, enabled: val === "true" })} disabled={saving} options={[{label: "Yes", value: "true"}, {label: "No", value: "false"}]} size="md" />
             </div>
 
             <div>

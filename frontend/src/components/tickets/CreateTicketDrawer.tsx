@@ -3,7 +3,7 @@ import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useRef, useEffect, useState } from 'react';
 import { Select } from '@/components/ui/Select';
-import { Loader2, Server, FileText, Ticket, ChevronDown } from 'lucide-react';
+import { Loader2, Server, FileText, Ticket } from 'lucide-react';
 import { Drawer } from '@/components/ui/Drawer';
 import { API_BASE, getToken } from './utils';
 import { useCurrency } from '@/hooks/useCurrency';

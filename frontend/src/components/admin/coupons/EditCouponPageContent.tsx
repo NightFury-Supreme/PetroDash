@@ -1,3 +1,4 @@
+import { Select } from "@/components/ui/Select";
 "use client";
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
@@ -85,10 +86,7 @@ export default function EditCouponPageContent() {
             </label>
             <label>
               <div className="label">Type *</div>
-              <select className="input" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
-                <option value="percentage">Percentage (%)</option>
-                <option value="fixed">Fixed amount ({currency})</option>
-              </select>
+              <Select value={form.type} onChange={(val) => setForm({ ...form, type: val })} options={[{label: "Percentage (%)", value: "percentage"}, {label: `Fixed amount (${currency})`, value: "fixed"}]} size="md" />
             </label>
             <label>
               <div className="label">Value *</div>

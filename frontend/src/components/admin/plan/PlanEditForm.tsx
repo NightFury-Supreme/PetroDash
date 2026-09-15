@@ -1,7 +1,6 @@
 import { useCurrency } from '@/hooks/useCurrency';
 import { FieldLabel, FieldHint } from '@/components/admin/earn/EarnUI';
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown } from 'lucide-react';
+import React from 'react';
 import { Select } from '@/components/ui/Select';
 import { PlanCategorySelect } from './PlanCategorySelect';
 
