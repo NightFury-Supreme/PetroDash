@@ -29,7 +29,7 @@ const planSchema = new mongoose.Schema({
   limitPerCustomer: { type: Number, default: 0 }, // 0 = unlimited
   
   // Category and redirection
-  category: { type: String, default: 'Others' },
+  category: { type: mongoose.Schema.Types.ObjectId, ref: 'PlanCategory' },
   redirectionLink: { type: String }, // External checkout link
   
   // Billing configuration

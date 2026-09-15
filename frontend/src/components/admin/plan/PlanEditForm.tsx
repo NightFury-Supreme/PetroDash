@@ -2,6 +2,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { FieldLabel, FieldHint } from '@/components/admin/earn/EarnUI';
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { PlanCategorySelect } from './PlanCategorySelect';
 
 function CustomSelect({
   value,
@@ -143,13 +144,10 @@ export function PlanEditForm({
             />
           </div>
           <div>
-            <FieldLabel>Category</FieldLabel>
-            <input
-              type="text"
-              value={plan.category}
-              onChange={(e) => onInputChange('category', e.target.value)}
-              className={inputClass}
-              placeholder="e.g., Gaming"
+            <FieldLabel>Category <span className="text-red-500">*</span></FieldLabel>
+            <PlanCategorySelect 
+              value={plan.category || ''} 
+              onChange={(v) => onInputChange('category', v)} 
             />
             {validationErrors?.category && <p className="text-red-400 text-xs mt-1">{validationErrors.category}</p>}
           </div>

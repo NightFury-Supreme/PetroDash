@@ -86,6 +86,9 @@ export function usePlanEdit(): UsePlanEditReturn {
       }
 
       let data: any = {}; try { data = await response.json(); } catch {}
+      if (data && data.category && typeof data.category === 'object' && data.category._id) {
+        data.category = data.category._id;
+      }
       setPlan(data);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load plan');
