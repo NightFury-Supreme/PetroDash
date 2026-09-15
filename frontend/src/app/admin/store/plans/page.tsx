@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { CreditCard, RefreshCw, Plus } from 'lucide-react';
+import { CreditCard, RefreshCw, Plus, Search } from 'lucide-react';
 import { ErrorState, DashboardButton, ErrorDescription } from '@/components/ui/ErrorState';
 import { useToast } from "@/components/ui/ToastProvider";
 import { useModal } from '@/components/Modal';
@@ -9,6 +9,10 @@ import { PlansListSkeleton } from '@/components/skeletons/admin/plan/list/PlansL
 import { usePlansList } from '@/hooks/admin/plan/usePlansList';
 import { PlansList } from '@/components/admin/plan/PlansList';
 import { PlanDrawer } from '@/components/admin/plan/PlanDrawer';
+import { AdminPlanFilters } from '@/components/admin/plan/AdminPlanFilters';
+import { AdminPlanActiveFilters } from '@/components/admin/plan/AdminPlanActiveFilters';
+import { useMemo } from 'react';
+
 
 export default function AdminPlansPage() {
   const modal = useModal();
@@ -16,6 +20,9 @@ export default function AdminPlansPage() {
   
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+
 
   const {
     plans,
@@ -73,7 +80,33 @@ export default function AdminPlansPage() {
     }
   };
 
+
+  const categories = useMemo(() => {
+    const cats = new Set(plans.map(p => p.category?.name || 'Uncategorized'));
+    return Array.from(cats).sort();
+  }, [plans]);
+
+  const activeFilterCount = categoryFilter !== 'all' ? 1 : 0;
+  const clearFilters = () => setCategoryFilter('all');
+  const removeFilter = () => setCategoryFilter('all');
+
+  const filteredPlans = useMemo(() => {
+    let result = plans;
+    if (categoryFilter !== 'all') {
+      result = result.filter(p => (p.category?.name || 'Uncategorized') === categoryFilter);
+    }
+    if (searchQuery.trim()) {
+      const lower = searchQuery.toLowerCase();
+      result = result.filter(p => 
+        p.name.toLowerCase().includes(lower) || 
+        (p.category?.name && p.category.name.toLowerCase().includes(lower))
+      );
+    }
+    return result;
+  }, [plans, searchQuery, categoryFilter]);
+
   if (error) {
+
     return (
       <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
         <ErrorState
@@ -128,9 +161,40 @@ export default function AdminPlansPage() {
             </div>
           </div>
 
+
+          <div className="flex flex-col sm:flex-row items-center gap-[10px] mb-6">
+            <div className="relative flex-1 h-[42px] flex items-center gap-[10px] px-[13px] border border-[#282828] rounded-[7px] bg-[#121212] text-[#5e5e5e] focus-within:border-[#454545] focus-within:bg-[#151515] transition-colors w-full">
+              <Search size={15} />
+              <input
+                type="text"
+                placeholder="Search by plan name or category..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full min-w-0 border-0 outline-none bg-transparent text-[#d5d5d5] text-[11px] placeholder:text-[#505050]"
+              />
+            </div>
+            <div className="flex items-center gap-[7px] w-full sm:w-auto">
+              <AdminPlanFilters
+                categoryFilter={categoryFilter}
+                setCategoryFilter={setCategoryFilter}
+                categories={categories as string[]}
+                activeFilterCount={activeFilterCount}
+                clearFilters={clearFilters}
+              />
+            </div>
+          </div>
+          
+          <AdminPlanActiveFilters
+            activeFilterCount={activeFilterCount}
+            categoryFilter={categoryFilter}
+            removeFilter={removeFilter}
+            clearFilters={clearFilters}
+          />
+
           {/* Plans List */}
           <PlansList
-            plans={plans}
+            plans={filteredPlans}
+
             deleting={deleting}
             onDelete={handleDelete}
             onManage={(planId: string) => { setEditingPlanId(planId); setDrawerOpen(true); }}

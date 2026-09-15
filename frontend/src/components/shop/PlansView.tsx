@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
 import {
   Check,
   Cpu,
@@ -25,6 +25,17 @@ export function PlansView({
   currency,
   onPurchasePlan,
 }: PlansViewProps) {
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+
+  const categories = useMemo(() => {
+    const cats = new Set(plans.map((p: any) => p.category?.name || 'Uncategorized'));
+    return Array.from(cats).sort();
+  }, [plans]);
+
+  const filteredPlans = useMemo(() => {
+    if (activeCategory === "all") return plans;
+    return plans.filter((p: any) => (p.category?.name || 'Uncategorized') === activeCategory);
+  }, [plans, activeCategory]);
 
   // Group active plans
   const groups: Record<string, any> = {};
