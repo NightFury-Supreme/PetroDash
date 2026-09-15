@@ -1,7 +1,9 @@
  "use client";
 
 
-export default function CouponsList({ coupons, onToggle, onDelete, plans, deletingId, currency = 'USD' }: any) {
+import { Edit2 } from 'lucide-react';
+
+export default function CouponsList({ coupons, onManage, onToggle, onDelete, plans, deletingId, currency = 'USD' }: any) {
   const getPlanNames = (planIds?: string[]) => {
     if (!planIds || planIds.length === 0) return 'All plans';
     return planIds.map((id) => plans.find((p: any) => p._id === id)?.name || id).join(', ');
@@ -73,9 +75,10 @@ export default function CouponsList({ coupons, onToggle, onDelete, plans, deleti
             <div className="flex justify-end mt-2 md:mt-0">
               <button
                 onClick={() => onManage(c)}
-                className="h-8 rounded-md bg-white/[0.05] border border-white/[0.05] px-4 text-xs font-medium text-white transition-all hover:bg-white/[0.1] hover:text-white"
+                className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors"
+                title="Manage"
               >
-                Manage
+                <Edit2 size={14} />
               </button>
             </div>
           </div>

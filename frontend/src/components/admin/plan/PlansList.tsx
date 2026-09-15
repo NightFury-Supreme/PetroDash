@@ -1,6 +1,7 @@
 "use client";
 
 import { useCurrency } from '@/hooks/useCurrency';
+import { Edit2 } from 'lucide-react';
 
 interface Plan {
   _id: string;
@@ -133,14 +134,15 @@ export function PlansList({
               <span className="text-[10px] text-white/30 uppercase tracking-wide">USERS / STOCK</span>
             </div>
 
-            <div className="flex justify-end mt-2 md:mt-0">
-              <button
-                onClick={() => onManage && onManage(plan._id)}
-                className="h-8 rounded-md bg-white/[0.05] border border-white/[0.05] px-4 text-xs font-medium text-white transition-all hover:bg-white/[0.1] hover:text-white"
-              >
-                Manage
-              </button>
-            </div>
+              <div className="flex justify-end mt-2 md:mt-0">
+                <button
+                  onClick={() => onManage && onManage(plan._id)}
+                  className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors"
+                  title="Manage"
+                >
+                  <Edit2 size={14} />
+                </button>
+              </div>
           </div>
         ))}
       </div>
