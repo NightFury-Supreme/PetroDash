@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -22,51 +24,55 @@ export function FieldHint({ children }: { children: React.ReactNode }) {
   return <p className="text-[11px] text-[#555] mt-2 font-mono">{children}</p>;
 }
 
-export function ActionButton({ 
-  onClick, loading, label, variant = "primary", className = "", icon
-}: { 
-  onClick: () => Promise<void>; 
-  loading: boolean; 
+export function ActionButton({
+  onClick, loading, label, variant = "primary", className = "", icon, onSuccess, onError, disabled: externalDisabled = false
+}: {
+  onClick: () => Promise<void>;
+  loading: boolean;
   label: string;
   variant?: "primary" | "danger";
   className?: string;
   icon?: React.ReactNode;
+  onSuccess?: () => void;
+  onError?: (err: string) => void;
+  disabled?: boolean;
 }) {
-  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [running, setRunning] = useState(false);
 
   const handleClick = async () => {
+    if (running || loading || externalDisabled) return;
+    setRunning(true);
     try {
       await onClick();
-      setStatus("success");
-      setTimeout(() => setStatus("idle"), 2000);
-    } catch (e: any) {
-      setStatus("error");
-      setTimeout(() => setStatus("idle"), 3000);
+      onSuccess?.();
+    } catch (err: any) {
+      onError?.(err?.message ?? "Something went wrong");
+    } finally {
+      setRunning(false);
     }
   };
+
+  const isDisabled = running || loading || externalDisabled;
+  const isLoading = running || loading;
 
   return (
     <button
       onClick={handleClick}
-      disabled={loading || status !== "idle"}
+      disabled={isDisabled}
       className={`flex items-center justify-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-all ${
-        status === "success"
-          ? "bg-emerald-500 border border-emerald-500 text-white cursor-default"
-          : status === "error"
-          ? "bg-red-500 border border-red-500 text-white cursor-default"
-          : loading
+        isLoading
           ? "bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed"
+          : isDisabled
+          ? "opacity-50 cursor-not-allowed " + (variant === "danger"
+              ? "border border-red-500/20 bg-red-500/10 text-red-500"
+              : "bg-[#FF5722] border border-[#FF5722] text-white")
           : variant === "danger"
           ? "border border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20"
           : "bg-[#FF5722] border border-[#FF5722] text-white hover:bg-[#F4511E]"
       } ${className}`}
     >
-      {loading ? (
+      {isLoading ? (
         <><Loader2 size={16} className="animate-spin" /> Saving...</>
-      ) : status === "success" ? (
-        "Saved!"
-      ) : status === "error" ? (
-        "Failed"
       ) : (
         <>
           {icon}

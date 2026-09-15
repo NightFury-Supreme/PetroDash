@@ -1,5 +1,8 @@
-import { PlayCircle, Trash2 } from "lucide-react";
+"use client";
+
+import { PlayCircle } from "lucide-react";
 import { Drawer } from "@/components/ui/Drawer";
+import { useToast } from "@/components/ui/ToastProvider";
 import { ActionButton, FieldLabel, FieldInput, FieldHint } from "../EarnUI";
 import type { AdminEarnSettings } from "@/hooks/admin/earn/useAdminEarn";
 
@@ -21,6 +24,7 @@ export function AdsConfigDrawer({
   onSaveAds,
 }: AdsConfigDrawerProps) {
   const sf = (path: string, value: any) => onChange(path, value);
+  const { showSuccess, showError } = useToast();
 
   return (
     <Drawer
@@ -34,20 +38,48 @@ export function AdsConfigDrawer({
           {form.ads.enabled ? (
             <>
               <div className="flex items-center gap-2">
-                <ActionButton 
-                  onClick={async () => { await onSaveAds({ enabled: false }); setTimeout(onClose, 1000); }} 
-                  loading={saving} label="Disable" variant="danger" icon={<Trash2 size={15} />} 
+                <ActionButton
+                  onClick={async () => { await onSaveAds({ enabled: false }); }}
+                  loading={saving}
+                  label="Disable"
+                  variant="danger"
+                  onSuccess={() => { showSuccess("Ads disabled successfully."); onClose(); }}
+                  onError={(e) => showError(e)}
                 />
               </div>
               <div className="flex items-center gap-2">
-                <button onClick={onClose} className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]">Cancel</button>
-                <ActionButton onClick={async () => { await onSaveAds(); setTimeout(onClose, 1000); }} loading={saving} label="Save Changes" />
+                <button
+                  onClick={onClose}
+                  disabled={saving}
+                  className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Cancel
+                </button>
+                <ActionButton
+                  onClick={async () => { await onSaveAds(); }}
+                  loading={saving}
+                  label="Save Changes"
+                  onSuccess={() => { showSuccess("Ads settings saved."); onClose(); }}
+                  onError={(e) => showError(e)}
+                />
               </div>
             </>
           ) : (
             <div className="flex items-center justify-end w-full gap-2">
-              <button onClick={onClose} className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]">Cancel</button>
-              <ActionButton onClick={async () => { await onSaveAds({ enabled: true }); setTimeout(onClose, 1000); }} loading={saving} label="Enable Method" />
+              <button
+                onClick={onClose}
+                disabled={saving}
+                className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <ActionButton
+                onClick={async () => { await onSaveAds({ enabled: true }); }}
+                loading={saving}
+                label="Enable Method"
+                onSuccess={() => { showSuccess("Ads method enabled."); onClose(); }}
+                onError={(e) => showError(e)}
+              />
             </div>
           )}
         </div>

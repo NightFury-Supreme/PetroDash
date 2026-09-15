@@ -1,5 +1,6 @@
 "use client";
 import { ActionButton } from '@/components/admin/earn/EarnUI';
+import { useToast } from '@/components/ui/ToastProvider';
 
 import { useEffect } from 'react';
 import { Drawer } from '@/components/ui/Drawer';
@@ -18,6 +19,7 @@ export interface PlanDrawerProps {
 
 function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan }: { planId: string, onClose: () => void, onSaveSuccess: () => void, onDeletePlan: (planId: string, planName: string) => Promise<void> }) {
   const { loading, saving, error, plan, validationErrors, loadPlan, handleInputChange, handleSubmit } = usePlanEdit();
+  const { showSuccess, showError } = useToast();
   
   useEffect(() => { loadPlan(planId); }, [planId, loadPlan]);
 
@@ -40,35 +42,36 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan }: { pla
                   await new Promise(resolve => setTimeout(resolve, 50));
                   await handleSubmit();
                   onSaveSuccess();
-                  setTimeout(onClose, 1000);
                 }}
                 loading={saving}
                 label="Disable"
                 variant="danger"
                 icon={<i className="fas fa-ban mr-2"></i>}
+                onSuccess={() => { showSuccess(`Plan "${plan.name}" disabled.`); onClose(); }}
+                onError={(e) => showError(e)}
               />
             )}
             <ActionButton
               onClick={async () => {
                 if (confirm("Are you sure you want to delete this plan?")) {
-                  try {
-                    await onDeletePlan(plan._id, plan.name);
-                    onSaveSuccess();
-                    setTimeout(onClose, 1000);
-                  } catch (e) {}
+                  await onDeletePlan(plan._id, plan.name);
+                  onSaveSuccess();
                 }
               }}
               loading={saving}
               label="Delete"
               variant="danger"
               icon={<i className="fas fa-trash mr-2"></i>}
+              onSuccess={() => { showSuccess(`Plan "${plan.name}" deleted.`); onClose(); }}
+              onError={(e) => showError(e)}
             />
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
+              disabled={saving}
+              className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
@@ -79,21 +82,23 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan }: { pla
                   await new Promise(resolve => setTimeout(resolve, 50));
                   await handleSubmit();
                   onSaveSuccess();
-                  setTimeout(onClose, 1000);
                 }}
                 loading={saving}
                 label="Enable Item"
+                onSuccess={() => { showSuccess(`Plan "${plan.name}" enabled.`); onClose(); }}
+                onError={(e) => showError(e)}
               />
             ) : (
               <ActionButton
                 onClick={async () => {
                   await handleSubmit();
                   onSaveSuccess();
-                  setTimeout(onClose, 1000);
                 }}
                 loading={saving}
                 label="Save Changes"
                 icon={<i className="fas fa-save mr-2"></i>}
+                onSuccess={() => { showSuccess(`Plan "${plan.name}" saved.`); onClose(); }}
+                onError={(e) => showError(e)}
               />
             )}
           </div>
@@ -117,6 +122,7 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan }: { pla
 
 function NewPlanWrapper({ onClose, onSaveSuccess }: { onClose: () => void, onSaveSuccess: () => void }) {
   const { saving, validationErrors, handleInputChange, handleSubmit, formData } = usePlanForm();
+  const { showSuccess, showError } = useToast();
 
   return (
     <Drawer
@@ -130,7 +136,8 @@ function NewPlanWrapper({ onClose, onSaveSuccess }: { onClose: () => void, onSav
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
+              disabled={saving}
+              className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
@@ -138,11 +145,12 @@ function NewPlanWrapper({ onClose, onSaveSuccess }: { onClose: () => void, onSav
               onClick={async () => {
                 await handleSubmit();
                 onSaveSuccess();
-                setTimeout(onClose, 1000);
               }}
               loading={saving}
               label="Create Plan"
               icon={<i className="fas fa-plus mr-2"></i>}
+              onSuccess={() => { showSuccess("Plan created successfully."); onClose(); }}
+              onError={(e) => showError(e)}
             />
           </div>
         </div>

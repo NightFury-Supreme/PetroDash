@@ -1,5 +1,8 @@
-import { Link2, Trash2 } from "lucide-react";
+"use client";
+
+import { Link2 } from "lucide-react";
 import { Drawer } from "@/components/ui/Drawer";
+import { useToast } from "@/components/ui/ToastProvider";
 import { ActionButton, FieldLabel, FieldInput, FieldHint } from "../EarnUI";
 import type { AdminEarnSettings } from "@/hooks/admin/earn/useAdminEarn";
 
@@ -21,6 +24,7 @@ export function LinkvertiseConfigDrawer({
   onSaveLinkvertise,
 }: LinkvertiseConfigDrawerProps) {
   const sf = (path: string, value: any) => onChange(path, value);
+  const { showSuccess, showError } = useToast();
 
   return (
     <Drawer
@@ -34,20 +38,48 @@ export function LinkvertiseConfigDrawer({
           {form.linkvertise.enabled ? (
             <>
               <div className="flex items-center gap-2">
-                <ActionButton 
-                  onClick={async () => { await onSaveLinkvertise({ enabled: false }); setTimeout(onClose, 1000); }} 
-                  loading={saving} label="Disable" variant="danger" icon={<Trash2 size={15} />} 
+                <ActionButton
+                  onClick={async () => { await onSaveLinkvertise({ enabled: false }); }}
+                  loading={saving}
+                  label="Disable"
+                  variant="danger"
+                  onSuccess={() => { showSuccess("Linkvertise disabled."); onClose(); }}
+                  onError={(e) => showError(e)}
                 />
               </div>
               <div className="flex items-center gap-2">
-                <button onClick={onClose} className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]">Cancel</button>
-                <ActionButton onClick={async () => { await onSaveLinkvertise(); setTimeout(onClose, 1000); }} loading={saving} label="Save Changes" />
+                <button
+                  onClick={onClose}
+                  disabled={saving}
+                  className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Cancel
+                </button>
+                <ActionButton
+                  onClick={async () => { await onSaveLinkvertise(); }}
+                  loading={saving}
+                  label="Save Changes"
+                  onSuccess={() => { showSuccess("Linkvertise settings saved."); onClose(); }}
+                  onError={(e) => showError(e)}
+                />
               </div>
             </>
           ) : (
             <div className="flex items-center justify-end w-full gap-2">
-              <button onClick={onClose} className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]">Cancel</button>
-              <ActionButton onClick={async () => { await onSaveLinkvertise({ enabled: true }); setTimeout(onClose, 1000); }} loading={saving} label="Enable Method" />
+              <button
+                onClick={onClose}
+                disabled={saving}
+                className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <ActionButton
+                onClick={async () => { await onSaveLinkvertise({ enabled: true }); }}
+                loading={saving}
+                label="Enable Method"
+                onSuccess={() => { showSuccess("Linkvertise enabled."); onClose(); }}
+                onError={(e) => showError(e)}
+              />
             </div>
           )}
         </div>

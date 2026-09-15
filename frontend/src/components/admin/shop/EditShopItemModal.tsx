@@ -1,5 +1,6 @@
 "use client";
 import { ActionButton } from '@/components/admin/earn/EarnUI';
+import { useToast } from '@/components/ui/ToastProvider';
 
 import { useState, useEffect } from 'react';
 import { ShopItem } from '@/hooks/admin/shop/useAdminShop';
@@ -21,6 +22,7 @@ export function EditShopItemModal({
   saving,
 }: EditShopItemModalProps) {
   const [formData, setFormData] = useState<Partial<ShopItem>>({});
+  const { showSuccess, showError } = useToast();
 
   useEffect(() => {
     if (item) {
@@ -33,16 +35,6 @@ export function EditShopItemModal({
       });
     }
   }, [item]);
-
-  const handleSubmit = async () => {
-    if (!item) return;
-    try {
-      await onSave(item._id, formData);
-      onClose();
-    } catch (error) {
-      // Error handling is done in the parent component
-    }
-  };
 
   const handleInputChange = (field: keyof ShopItem, value: any) => {
     setFormData(prev => ({
@@ -67,30 +59,31 @@ export function EditShopItemModal({
                 onClick={async () => {
                   await onSave(item._id, { enabled: false });
                   setFormData(prev => ({ ...prev, enabled: false }));
-                  setTimeout(onClose, 1000);
                 }}
                 loading={saving}
                 label="Disable"
                 variant="danger"
                 icon={<i className="fas fa-ban mr-2"></i>}
+                onSuccess={() => { showSuccess(`${item.name} disabled.`); onClose(); }}
+                onError={(e) => showError(e)}
               />
             </div>
             <div className="flex items-center gap-2">
               <button 
                 type="button"
-                onClick={onClose} 
-                className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
+                onClick={onClose}
+                disabled={saving}
+                className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
               <ActionButton
-                onClick={async () => {
-                  await handleSubmit();
-                  setTimeout(onClose, 1000);
-                }}
+                onClick={async () => { await onSave(item._id, formData); }}
                 loading={saving}
                 label="Save Changes"
                 icon={<i className="fas fa-save mr-2"></i>}
+                onSuccess={() => { showSuccess(`${item.name} saved.`); onClose(); }}
+                onError={(e) => showError(e)}
               />
             </div>
           </div>
@@ -98,8 +91,9 @@ export function EditShopItemModal({
           <div className="flex items-center justify-end w-full gap-2">
             <button 
               type="button"
-              onClick={onClose} 
-              className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
+              onClick={onClose}
+              disabled={saving}
+              className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
@@ -107,10 +101,11 @@ export function EditShopItemModal({
               onClick={async () => {
                 await onSave(item._id, { enabled: true });
                 setFormData(prev => ({ ...prev, enabled: true }));
-                setTimeout(onClose, 1000);
               }}
               loading={saving}
               label="Enable Item"
+              onSuccess={() => { showSuccess(`${item.name} enabled.`); onClose(); }}
+              onError={(e) => showError(e)}
             />
           </div>
         )

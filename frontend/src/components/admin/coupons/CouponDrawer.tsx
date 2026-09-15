@@ -1,5 +1,6 @@
 "use client";
 import { ActionButton } from '@/components/admin/earn/EarnUI';
+import { useToast } from '@/components/ui/ToastProvider';
 
 import { useState, useEffect } from 'react';
 import { Drawer } from '@/components/ui/Drawer';
@@ -33,6 +34,7 @@ export function CouponDrawer({
     appliesToPlanIds: [],
     enabled: true,
   });
+  const { showSuccess, showError } = useToast();
 
   useEffect(() => {
     if (item) {
@@ -60,20 +62,12 @@ export function CouponDrawer({
     }
   }, [item, isOpen]);
 
-  const handleSubmit = async () => {
-    try {
-      const data = {
-        ...formData,
-        code: String(formData.code || '').toUpperCase(),
-        validFrom: formData.validFrom ? new Date(formData.validFrom).toISOString() : undefined,
-        validUntil: formData.validUntil ? new Date(formData.validUntil).toISOString() : undefined,
-      };
-      await onSave(item ? item._id : null, data);
-      onClose();
-    } catch (error) {
-      // Error handled in parent
-    }
-  };
+  const buildSaveData = () => ({
+    ...formData,
+    code: String(formData.code || '').toUpperCase(),
+    validFrom: formData.validFrom ? new Date(formData.validFrom).toISOString() : undefined,
+    validUntil: formData.validUntil ? new Date(formData.validUntil).toISOString() : undefined,
+  });
 
   if (!isOpen) return null;
 
@@ -93,25 +87,27 @@ export function CouponDrawer({
                     onClick={async () => {
                       await onSave(item._id, { enabled: false });
                       setFormData((prev: any) => ({ ...prev, enabled: false }));
-                      setTimeout(onClose, 1000);
                     }}
                     loading={saving}
                     label="Disable"
                     variant="danger"
                     icon={<i className="fas fa-ban mr-2"></i>}
+                    onSuccess={() => { showSuccess(`Coupon ${item.code} disabled.`); onClose(); }}
+                    onError={(e) => showError(e)}
                   />
                 )}
                 <ActionButton
                   onClick={async () => {
                     if (confirm("Are you sure you want to delete this coupon?")) {
                       await onSave(item._id, { _delete: true });
-                      setTimeout(onClose, 1000);
                     }
                   }}
                   loading={saving}
                   label="Delete"
                   variant="danger"
                   icon={<i className="fas fa-trash mr-2"></i>}
+                  onSuccess={() => { showSuccess(`Coupon ${item.code} deleted.`); onClose(); }}
+                  onError={(e) => showError(e)}
                 />
               </>
             )}
@@ -119,8 +115,9 @@ export function CouponDrawer({
           <div className="flex items-center gap-2">
             <button 
               type="button"
-              onClick={onClose} 
-              className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
+              onClick={onClose}
+              disabled={saving}
+              className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
@@ -129,20 +126,22 @@ export function CouponDrawer({
                 onClick={async () => {
                   await onSave(item._id, { enabled: true });
                   setFormData((prev: any) => ({ ...prev, enabled: true }));
-                  setTimeout(onClose, 1000);
                 }}
                 loading={saving}
                 label="Enable Item"
+                onSuccess={() => { showSuccess(`Coupon ${item.code} enabled.`); onClose(); }}
+                onError={(e) => showError(e)}
               />
             ) : (
               <ActionButton
                 onClick={async () => {
-                  await handleSubmit();
-                  setTimeout(onClose, 1000);
+                  await onSave(item ? item._id : null, buildSaveData());
                 }}
                 loading={saving}
                 label={item ? "Save Changes" : "Create Coupon"}
                 icon={<i className="fas fa-save mr-2"></i>}
+                onSuccess={() => { showSuccess(item ? `Coupon ${item.code} saved.` : "Coupon created."); onClose(); }}
+                onError={(e) => showError(e)}
               />
             )}
           </div>
