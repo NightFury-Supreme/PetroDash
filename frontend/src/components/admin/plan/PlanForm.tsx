@@ -1,4 +1,5 @@
 import { useCurrency } from '@/hooks/useCurrency';
+import { FieldLabel, FieldHint } from '@/components/admin/earn/EarnUI';
 
 interface PlanFormData {
   name: string;
@@ -54,379 +55,248 @@ export function PlanForm({
   saving,
   onInputChange,
   onSubmit,
-  onCancel,
 }: PlanFormProps) {
-
   const { currency } = useCurrency();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await onSubmit(e);
-  };
+  const inputClass = "w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50 transition-colors disabled:opacity-50";
 
   return (
-    <form id="new-plan-form" onSubmit={handleSubmit} className="space-y-6">
-      {/* Basic Information */}
-      <div className="bg-[#181818] border border-[#303030] rounded-xl p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 bg-[#202020] rounded-lg flex items-center justify-center">
-            <i className="fas fa-info-circle text-white text-sm"></i>
-          </div>
-          <h2 className="text-xl font-semibold text-white">Basic Information</h2>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#AAAAAA]">
-              Plan Name <span className="text-red-400">*</span>
-            </label>
+    <form id="create-plan-form" onSubmit={(e) => { e.preventDefault(); onSubmit(); }} className="space-y-6">
+      
+      {/* Basic Info */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-white mb-4">Basic Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <FieldLabel>Plan Name</FieldLabel>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => onInputChange('name', e.target.value)}
-              className="w-full bg-[#202020] border border-[#404040] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-              placeholder="e.g., Starter Plan, Pro Plan"
+              className={inputClass}
+              placeholder="e.g., Starter Plan"
             />
-            {validationErrors.name && (
-              <p className="text-red-400 text-sm">{validationErrors.name}</p>
-            )}
           </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#AAAAAA]">
-              Category <span className="text-red-400">*</span>
-            </label>
+          <div>
+            <FieldLabel>Category</FieldLabel>
             <input
               type="text"
               value={formData.category}
               onChange={(e) => onInputChange('category', e.target.value)}
-              className="w-full bg-[#202020] border border-[#404040] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-              placeholder="e.g., Gaming, Web Hosting"
+              className={inputClass}
+              placeholder="e.g., Gaming"
             />
-            {validationErrors.category && (
-              <p className="text-red-400 text-sm">{validationErrors.category}</p>
-            )}
+            {validationErrors?.category && <p className="text-red-400 text-xs mt-1">{validationErrors.category}</p>}
           </div>
-          
-          <div className="md:col-span-2 space-y-2">
-            <label className="text-sm font-medium text-[#AAAAAA]">
-              Description <span className="text-red-400">*</span>
-            </label>
+          <div className="md:col-span-2">
+            <FieldLabel>Description</FieldLabel>
             <textarea
-              value={formData.description}
+              value={formData.description || ''}
               onChange={(e) => onInputChange('description', e.target.value)}
-              className="w-full bg-[#202020] border border-[#404040] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              className={inputClass}
               rows={3}
               placeholder="Describe what this plan offers..."
             />
-            {validationErrors.description && (
-              <p className="text-red-400 text-sm">{validationErrors.description}</p>
-            )}
+            {validationErrors?.description && <p className="text-red-400 text-xs mt-1">{validationErrors.description}</p>}
           </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#AAAAAA]">
-              Available at <span className="text-red-400">*</span>
-            </label>
+
+          <div>
+            <FieldLabel>Available at</FieldLabel>
             <input
               type="datetime-local"
               value={formData.availableAt ? new Date(formData.availableAt).toISOString().slice(0, 16) : ''}
               onChange={(e) => onInputChange('availableAt', e.target.value ? new Date(e.target.value).toISOString() : null)}
-              className="w-full bg-[#202020] border border-[#404040] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              className={inputClass}
             />
-            <p className="text-xs text-[#666666]">Countdown time until the plan is available to purchase</p>
-            {validationErrors.availableAt && (
-              <p className="text-red-400 text-sm">{validationErrors.availableAt}</p>
-            )}
+            <FieldHint>Countdown time until plan is available</FieldHint>
           </div>
           
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#AAAAAA]">
-              Available until <span className="text-red-400">*</span>
-            </label>
-            <div className="space-y-2">
+          <div>
+            <FieldLabel>Available until</FieldLabel>
+            <input
+              type="datetime-local"
+              value={formData.availableUntil ? new Date(formData.availableUntil).toISOString().slice(0, 16) : ''}
+              onChange={(e) => onInputChange('availableUntil', e.target.value ? new Date(e.target.value).toISOString() : null)}
+              className={inputClass}
+              disabled={!formData.availableUntil}
+            />
+            <div className="mt-2 flex items-center gap-2">
               <input
-                type="datetime-local"
-                value={formData.availableUntil ? new Date(formData.availableUntil).toISOString().slice(0, 16) : ''}
-                onChange={(e) => onInputChange('availableUntil', e.target.value ? new Date(e.target.value).toISOString() : null)}
-                className="w-full bg-[#202020] border border-[#404040] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                type="checkbox"
+                checked={!formData.availableUntil}
+                onChange={(e) => {
+                  if (e.target.checked) onInputChange('availableUntil', null);
+                }}
+                className="text-[#FF5722] rounded border-[#333] bg-[#222]"
               />
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={!formData.availableUntil}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      onInputChange('availableUntil', null);
-                    }
-                  }}
-                  className="text-blue-500"
-                />
-                <span className="text-sm text-white">Forever (no expiration)</span>
-              </label>
+              <span className="text-[11px] text-[#888]">Forever (no expiration)</span>
             </div>
-            <p className="text-xs text-[#666666]">Countdown time until the plan is unavailable to purchase</p>
-            {validationErrors.availableUntil && (
-              <p className="text-red-400 text-sm">{validationErrors.availableUntil}</p>
-            )}
           </div>
-          
-          <div className="space-y-4">
+
+          <div className="md:col-span-2 pt-2">
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
                 checked={formData.popular}
                 onChange={(e) => onInputChange('popular', e.target.checked)}
-                className="text-blue-500"
+                className="text-[#FF5722] rounded border-[#333] bg-[#222]"
               />
-              <span className="text-white">Mark as Popular</span>
+              <span className="text-sm text-white">Mark as Popular</span>
             </label>
           </div>
         </div>
       </div>
 
+      <hr className="border-white/[0.06]" />
+
       {/* Pricing */}
-      <div className="bg-[#181818] border border-[#303030] rounded-xl p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 bg-[#202020] rounded-lg flex items-center justify-center">
-            <i className="fas fa-dollar-sign text-white text-sm"></i>
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-white mb-4">Pricing & Availability</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <FieldLabel>{formData.billingOptions.lifetime ? 'Price' : 'Monthly Price'} ({currency})</FieldLabel>
+            <input
+              type="number"
+              value={formData.pricePerMonth}
+              onChange={(e) => onInputChange('pricePerMonth', parseFloat(e.target.value) || 0)}
+              className={inputClass}
+              min="0" step="0.01"
+            />
           </div>
-          <h2 className="text-xl font-semibold text-white">Pricing & Availability</h2>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#AAAAAA]">
-              {formData.billingOptions.lifetime ? 'Price' : 'Monthly Price'} <span className="text-red-400">*</span>
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">{currency}</span>
-              <input
-                type="number"
-                value={formData.pricePerMonth}
-                onChange={(e) => onInputChange('pricePerMonth', parseFloat(e.target.value) || 0)}
-                className="w-full bg-[#202020] border border-[#404040] rounded-lg pl-8 pr-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-                min="0"
-                step="0.01"
-              />
-            </div>
-            {formData.billingOptions.lifetime && (
-              <p className="text-xs text-[#AAAAAA]">One-time payment for lifetime access</p>
-            )}
-            {validationErrors.pricePerMonth && (
-              <p className="text-red-400 text-sm">{validationErrors.pricePerMonth}</p>
-            )}
+          <div>
+            <FieldLabel>Strike-through Price ({currency})</FieldLabel>
+            <input
+              type="number"
+              value={formData.strikeThroughPrice}
+              onChange={(e) => onInputChange('strikeThroughPrice', parseFloat(e.target.value) || 0)}
+              className={inputClass}
+              min="0" step="0.01"
+            />
           </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#AAAAAA]">Strike-through Price</label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">{currency}</span>
-              <input
-                type="number"
-                value={formData.strikeThroughPrice}
-                onChange={(e) => onInputChange('strikeThroughPrice', parseFloat(e.target.value) || 0)}
-                className="w-full bg-[#202020] border border-[#404040] rounded-lg pl-8 pr-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-                min="0"
-                step="0.01"
-              />
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#AAAAAA]">Stock</label>
+          <div>
+            <FieldLabel>Stock</FieldLabel>
             <input
               type="number"
               value={formData.stock}
               onChange={(e) => onInputChange('stock', parseInt(e.target.value) || 0)}
-              className="w-full bg-[#202020] border border-[#404040] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              className={inputClass}
               min="-1"
-              placeholder="0 = unlimited, -1 = unavailable"
             />
-            <p className="text-xs text-[#AAAAAA]">0 = unlimited, -1 = unavailable</p>
+            <FieldHint>0 = unlimited, -1 = unavailable</FieldHint>
           </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#AAAAAA]">Limit Per Customer</label>
+          <div>
+            <FieldLabel>Limit Per Customer</FieldLabel>
             <input
               type="number"
               value={formData.limitPerCustomer}
               onChange={(e) => onInputChange('limitPerCustomer', parseInt(e.target.value) || 0)}
-              className="w-full bg-[#202020] border border-[#404040] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              className={inputClass}
               min="0"
-              placeholder="0 = unlimited"
             />
-            <p className="text-xs text-[#AAAAAA]">0 = unlimited</p>
+            <FieldHint>0 = unlimited</FieldHint>
           </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#AAAAAA]">Visibility</label>
+          <div className="md:col-span-2">
+            <FieldLabel>Visibility</FieldLabel>
             <select
               value={formData.visibility}
               onChange={(e) => onInputChange('visibility', e.target.value)}
-              className="w-full bg-[#202020] border border-[#404040] rounded-lg px-4 py-3 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              className={inputClass}
             >
               <option value="public">Public - Visible to all users</option>
               <option value="unlisted">Unlisted - Hidden from public view</option>
             </select>
-            <p className="text-xs text-[#AAAAAA]">Controls whether this plan is visible to users</p>
           </div>
         </div>
       </div>
 
+      <hr className="border-white/[0.06]" />
+
       {/* Resource Limits */}
-      <div className="bg-[#181818] border border-[#303030] rounded-xl p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 bg-[#202020] rounded-lg flex items-center justify-center">
-            <i className="fas fa-server text-white text-sm"></i>
-          </div>
-          <h2 className="text-xl font-semibold text-white">Resource Limits</h2>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#AAAAAA]">CPU Limit (%)</label>
+      <div className="space-y-4">
+        <h3 className="text-sm font-medium text-white mb-4">Resource Limits</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <FieldLabel>CPU Limit (%)</FieldLabel>
             <input
               type="number"
               value={formData.productContent.recurrentResources.cpuPercent}
-              onChange={(e) => {
-                const value = parseInt(e.target.value) || 0;
-                onInputChange('productContent.recurrentResources.cpuPercent', value);
-              }}
-              className="w-full bg-[#202020] border border-[#404040] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-              min="0"
-              step="1"
+              onChange={(e) => onInputChange('productContent.recurrentResources.cpuPercent', parseInt(e.target.value) || 0)}
+              className={inputClass}
+              min="0" step="1"
             />
-            <p className="text-xs text-[#AAAAAA]">Maximum CPU usage allowed</p>
-            {validationErrors.cpuPercent && (
-              <p className="text-red-400 text-sm">{validationErrors.cpuPercent}</p>
-            )}
           </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#AAAAAA]">Memory (MB)</label>
+          <div>
+            <FieldLabel>Memory (MB)</FieldLabel>
             <input
               type="number"
               value={formData.productContent.recurrentResources.memoryMb}
               onChange={(e) => onInputChange('productContent.recurrentResources.memoryMb', parseInt(e.target.value) || 0)}
-              className="w-full bg-[#202020] border border-[#404040] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              className={inputClass}
               min="0"
             />
-            {validationErrors.memoryMb && (
-              <p className="text-red-400 text-sm">{validationErrors.memoryMb}</p>
-            )}
           </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#AAAAAA]">Disk (MB)</label>
+          <div>
+            <FieldLabel>Disk (MB)</FieldLabel>
             <input
               type="number"
               value={formData.productContent.recurrentResources.diskMb}
               onChange={(e) => onInputChange('productContent.recurrentResources.diskMb', parseInt(e.target.value) || 0)}
-              className="w-full bg-[#202020] border border-[#404040] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              className={inputClass}
               min="0"
             />
-            {validationErrors.diskMb && (
-              <p className="text-red-400 text-sm">{validationErrors.diskMb}</p>
-            )}
           </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#AAAAAA]">Backups</label>
+          <div>
+            <FieldLabel>Backups</FieldLabel>
             <input
               type="number"
               value={formData.productContent.backups}
               onChange={(e) => onInputChange('productContent.backups', parseInt(e.target.value) || 0)}
-              className="w-full bg-[#202020] border border-[#404040] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              className={inputClass}
               min="0"
             />
-            {validationErrors.backups && (
-              <p className="text-red-400 text-sm">{validationErrors.backups}</p>
-            )}
           </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#AAAAAA]">Databases</label>
+          <div>
+            <FieldLabel>Databases</FieldLabel>
             <input
               type="number"
               value={formData.productContent.databases}
               onChange={(e) => onInputChange('productContent.databases', parseInt(e.target.value) || 0)}
-              className="w-full bg-[#202020] border border-[#404040] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              className={inputClass}
               min="0"
             />
-            {validationErrors.databases && (
-              <p className="text-red-400 text-sm">{validationErrors.databases}</p>
-            )}
           </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#AAAAAA]">Ports (Allocations)</label>
+          <div>
+            <FieldLabel>Ports</FieldLabel>
             <input
               type="number"
               value={formData.productContent.additionalAllocations}
               onChange={(e) => onInputChange('productContent.additionalAllocations', parseInt(e.target.value) || 0)}
-              className="w-full bg-[#202020] border border-[#404040] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              className={inputClass}
               min="0"
             />
           </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#AAAAAA]">Server Limit</label>
+          <div>
+            <FieldLabel>Server Limit</FieldLabel>
             <input
               type="number"
               value={formData.productContent.serverLimit}
               onChange={(e) => onInputChange('productContent.serverLimit', parseInt(e.target.value) || 1)}
-              className="w-full bg-[#202020] border border-[#404040] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              className={inputClass}
               min="1"
             />
-            {validationErrors.serverLimit && (
-              <p className="text-red-400 text-sm">{validationErrors.serverLimit}</p>
-            )}
           </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#AAAAAA]">Coins</label>
+          <div>
+            <FieldLabel>Coins</FieldLabel>
             <input
               type="number"
               value={formData.productContent.coins}
               onChange={(e) => onInputChange('productContent.coins', parseInt(e.target.value) || 0)}
-              className="w-full bg-[#202020] border border-[#404040] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              className={inputClass}
               min="0"
             />
-            <p className="text-xs text-[#666666]">Coins added to user account when plan is purchased</p>
           </div>
         </div>
       </div>
-
-      {/* Billing Options */}
-      <div className="bg-[#181818] border border-[#303030] rounded-xl p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 bg-[#202020] rounded-lg flex items-center justify-center">
-            <i className="fas fa-credit-card text-white text-sm"></i>
-          </div>
-          <h2 className="text-xl font-semibold text-white">Billing Options</h2>
-        </div>
-        
-        <div className="space-y-6">
-          {/* Lifetime Plan Toggle */}
-          <div className="space-y-2">
-            <label className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                checked={true}
-                disabled={true}
-                className="w-4 h-4 text-blue-500 bg-[#202020] border-[#303030] rounded focus:ring-blue-500 focus:ring-2"
-              />
-              <span className="text-sm font-medium text-white">Lifetime Plan</span>
-            </label>
-            <p className="text-xs text-[#666666]">All plans are lifetime (one-time payment)</p>
-          </div>
-
-
-        </div>
-      </div>
-
-
 
     </form>
   );
