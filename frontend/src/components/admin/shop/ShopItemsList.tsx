@@ -84,7 +84,6 @@ export function ShopItemsList({
               <div className="min-w-0">
                 <p className="text-sm font-medium text-white/80 truncate">
                   {item.name}
-                  {!item.enabled && <span className="ml-2 text-[10px] text-[#FF5722] border border-[#FF5722]/30 bg-[#FF5722]/10 px-1.5 py-0.5 rounded-sm">Disabled</span>}
                 </p>
                 <p className="text-xs text-white/30 truncate">{item.description || getDescriptionForKey(item.key, item.name)}</p>
               </div>
@@ -118,7 +117,7 @@ export function ShopItemsList({
                 {item.enabled ? (
                   <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">Enabled</span>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">Disabled</span>
+                  <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-white/[0.02] text-white/40 text-[10px] font-medium tracking-wide uppercase border border-white/[0.05] hover:bg-white/[0.05] hover:text-white/60 transition-colors">Disabled</span>
                 )}
               </button>
             </div>

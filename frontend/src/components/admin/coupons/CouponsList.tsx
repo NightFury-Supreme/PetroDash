@@ -47,7 +47,6 @@ export default function CouponsList({ coupons, onManage, onToggle, onDelete, pla
               <div className="min-w-0">
                 <p className="text-sm font-medium text-white/80 truncate">
                   {c.code}
-                  {!c.enabled && <span className="ml-2 text-[10px] text-[#FF5722] border border-[#FF5722]/30 bg-[#FF5722]/10 px-1.5 py-0.5 rounded-sm">Disabled</span>}
                 </p>
                 <p className="text-xs text-white/30 truncate">Applies to: {getPlanNames(c.appliesToPlanIds)}</p>
               </div>
