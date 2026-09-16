@@ -186,6 +186,21 @@ export default function AdminTicketsPage() {
           {/* Content Area */}
           <div className="flex-1 min-w-0 w-full">
 
+            {/* Dynamic Tab Heading */}
+            <div className="mb-5">
+              <h2 className="text-lg font-semibold text-white capitalize">
+                {activeTab === 'all' ? 'All Tickets' : `${activeTab} Tickets`}
+              </h2>
+              <p className="mt-0.5 text-xs text-[#666]">
+                {activeTab === 'all' && "Manage and view all user support tickets across all statuses."}
+                {activeTab === 'open' && "Tickets that require your immediate attention and response."}
+                {activeTab === 'pending' && "Tickets waiting for a response from the user."}
+                {activeTab === 'resolved' && "Tickets that have been successfully resolved."}
+                {activeTab === 'closed' && "Tickets that have been closed and require no further action."}
+                {activeTab === 'deleted' && "Tickets that have been deleted from the system."}
+              </p>
+            </div>
+
             {/* Search + Filter + Sort bar */}
             <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-[10px]">
               <div className="relative flex-1 h-[42px] flex items-center gap-[10px] px-[13px] border border-[#282828] rounded-[7px] bg-[#121212] text-[#5e5e5e] focus-within:border-[#454545] focus-within:bg-[#151515] transition-colors">
