@@ -49,8 +49,8 @@ export function AdminLedgerTableSkeleton() {
             </div>
 
             {/* Action */}
-            <div className="flex items-center gap-1 justify-end mt-2 md:mt-0">
-              <div className="h-8 w-8 bg-[#202020] rounded-lg animate-pulse"></div>
+            <div className="flex items-center gap-1.5 justify-end mt-2 md:mt-0">
+              <div className="h-7 w-7 bg-[#202020] rounded border border-white/[0.04] animate-pulse"></div>
             </div>
           </div>
         ))}

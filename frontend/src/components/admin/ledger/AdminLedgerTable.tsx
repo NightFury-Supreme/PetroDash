@@ -81,15 +81,15 @@ export function AdminLedgerTable({
     }
 
     return (
-      <div className="flex items-center gap-1 justify-end">
+      <div className="flex items-center gap-1.5 justify-end">
         {canInvoice && (
           <button
             onClick={() => handleDownloadInvoice(item._id)}
             disabled={downloading === item._id}
             title="Download Invoice"
-            className="w-8 h-8 rounded-lg flex items-center justify-center bg-transparent hover:bg-white/[0.08] text-[#AAAAAA] hover:text-white transition-colors disabled:opacity-50"
+            className="w-7 h-7 rounded border flex items-center justify-center bg-white/[0.02] border-white/[0.04] text-white/40 hover:text-white hover:bg-white/[0.06] hover:border-white/[0.08] transition-colors disabled:opacity-50"
           >
-            {downloading === item._id ? <i className="fas fa-spinner fa-spin text-[13px]"></i> : <i className="fas fa-download text-[13px]"></i>}
+            {downloading === item._id ? <i className="fas fa-spinner fa-spin text-[12px]"></i> : <i className="fas fa-download text-[12px]"></i>}
           </button>
         )}
         {canRefund && (
@@ -97,9 +97,9 @@ export function AdminLedgerTable({
             onClick={() => onRefund(item._id)}
             disabled={refunding === item._id}
             title="Refund Payment"
-            className="w-8 h-8 rounded-lg flex items-center justify-center bg-transparent hover:bg-yellow-500/10 text-yellow-500 transition-colors disabled:opacity-50"
+            className="w-7 h-7 rounded border flex items-center justify-center bg-white/[0.02] border-white/[0.04] text-yellow-500/80 hover:text-yellow-500 hover:bg-yellow-500/10 hover:border-yellow-500/20 transition-colors disabled:opacity-50"
           >
-            {refunding === item._id ? <i className="fas fa-spinner fa-spin text-[13px]"></i> : <i className="fas fa-undo text-[13px]"></i>}
+            {refunding === item._id ? <i className="fas fa-spinner fa-spin text-[12px]"></i> : <i className="fas fa-undo text-[12px]"></i>}
           </button>
         )}
         {canVoid && (
@@ -107,9 +107,9 @@ export function AdminLedgerTable({
             onClick={() => onVoid(item._id)}
             disabled={voiding === item._id}
             title="Void Checkout"
-            className="w-8 h-8 rounded-lg flex items-center justify-center bg-transparent hover:bg-red-500/10 text-red-500 transition-colors disabled:opacity-50"
+            className="w-7 h-7 rounded border flex items-center justify-center bg-white/[0.02] border-white/[0.04] text-red-500/80 hover:text-red-500 hover:bg-red-500/10 hover:border-red-500/20 transition-colors disabled:opacity-50"
           >
-            {voiding === item._id ? <i className="fas fa-spinner fa-spin text-[13px]"></i> : <i className="fas fa-ban text-[13px]"></i>}
+            {voiding === item._id ? <i className="fas fa-spinner fa-spin text-[12px]"></i> : <i className="fas fa-ban text-[12px]"></i>}
           </button>
         )}
       </div>
