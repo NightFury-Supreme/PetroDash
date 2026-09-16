@@ -48,6 +48,7 @@ export function AdminLedgerContent({
   onStatusChange,
   onProviderChange,
   onUserIdChange,
+  onSortChange,
   onFilter,
   onRefund,
   onVoid
