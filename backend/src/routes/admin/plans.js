@@ -443,16 +443,15 @@ router.delete('/:id', requireAdmin, validateObjectId('id'), async (req, res) => 
     
     // Check if any users are currently using this plan
     const UserPlan = require('../../models/UserPlan');
-    const activeUsers = await UserPlan.countDocuments({ 
-      planId: String(req.params.id), 
-      status: 'active' 
+    const assignedUsers = await UserPlan.countDocuments({ 
+      planId: String(req.params.id)
     });
     
-    if (activeUsers > 0) {
+    if (assignedUsers > 0) {
       return res.status(400).json({ 
         error: 'Cannot delete plan', 
-        reason: 'Plan is currently being used by users',
-        activeUsers,
+        reason: 'Plan is currently assigned to users',
+        assignedUsers,
         suggestion: 'Make the plan unlisted instead of deleting it'
       });
     }

@@ -173,6 +173,8 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan, preload
                   }
                 }}
                 loading={saving}
+                disabled={plan.totalPurchases > 0}
+                title={plan.totalPurchases > 0 ? "Cannot delete plan while it is assigned to users" : undefined}
                 label="Delete"
                 variant="danger"
                 icon={<i className="fas fa-trash mr-2"></i>}

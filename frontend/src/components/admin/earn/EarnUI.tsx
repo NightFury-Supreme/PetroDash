@@ -36,6 +36,7 @@ export function ActionButton({
   onSuccess?: () => void;
   onError?: (err: string) => void;
   disabled?: boolean;
+  title?: string;
 }) {
   const [running, setRunning] = useState(false);
 
@@ -59,6 +60,7 @@ export function ActionButton({
     <button
       onClick={handleClick}
       disabled={isDisabled}
+      title={title}
       className={`flex items-center justify-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-all ${
         isLoading
           ? "bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed"
