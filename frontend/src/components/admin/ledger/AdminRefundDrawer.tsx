@@ -6,7 +6,7 @@ interface AdminRefundDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => Promise<void>;
-  paymentId: string | null;
+  payment: any | null;
   isRefunding: boolean;
 }
 
@@ -14,7 +14,7 @@ export function AdminRefundDrawer({
   isOpen,
   onClose,
   onConfirm,
-  paymentId,
+  payment,
   isRefunding
 }: AdminRefundDrawerProps) {
   const [confirmText, setConfirmText] = useState("");
@@ -62,14 +62,14 @@ export function AdminRefundDrawer({
     >
       <div className="border-b border-white/[0.07] pb-6 mb-8 mt-2">
         <div className="flex flex-row items-center gap-5">
-          <div className="flex shrink-0 items-center justify-center text-zinc-300">
-            <Undo size={24} />
-          </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-[16px] font-semibold text-zinc-200 truncate leading-snug">Order ID: {paymentId || "Unknown"}</h2>
-            <div className="mt-1 flex flex-wrap items-center gap-1.5">
-              <span className="text-[11px] font-medium text-[#888]">
-                This payment will be marked as refunded.
+            <h2 className="text-[16px] font-semibold text-zinc-200 truncate leading-snug">Order ID: {payment?._id || "Unknown"}</h2>
+            <div className="mt-3 flex flex-col gap-1.5">
+              <span className="text-[13px] font-medium text-[#D4D4D4]">
+                Refund Amount: <span className="text-white font-bold">{Number(payment?.amount || 0).toFixed(2)} {payment?.currency || 'USD'}</span>
+              </span>
+              <span className="text-[13px] font-medium text-[#D4D4D4]">
+                User: <span className="text-white">{payment?.userId?.username || 'Unknown'}</span> <span className="text-zinc-500">({payment?.userId?.email || 'N/A'})</span>
               </span>
             </div>
           </div>

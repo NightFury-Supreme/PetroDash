@@ -233,7 +233,7 @@ export default function AdminLedgerPage() {
           isOpen={refundDrawerOpen}
           onClose={() => setRefundDrawerOpen(false)}
           onConfirm={confirmRefund}
-          paymentId={refundTargetId}
+          payment={items.find((i: any) => i._id === refundTargetId) || null}
           isRefunding={!!refunding}
         />
       </div>
