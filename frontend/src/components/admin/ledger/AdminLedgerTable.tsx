@@ -76,12 +76,12 @@ export function AdminLedgerTable({
     }
 
     return (
-      <div className="flex items-center gap-2 justify-end">
+      <div className="flex items-center gap-1 justify-end">
         {canInvoice && (
           <button
             onClick={() => handleDownloadInvoice(item._id)}
             title="Download Invoice"
-            className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.05] text-[#AAAAAA] hover:text-white transition-colors"
+            className="w-8 h-8 rounded-lg flex items-center justify-center bg-transparent hover:bg-white/[0.08] text-[#AAAAAA] hover:text-white transition-colors"
           >
             <i className="fas fa-download text-[13px]"></i>
           </button>
@@ -91,7 +91,7 @@ export function AdminLedgerTable({
             onClick={() => onRefund(item._id)}
             disabled={refunding === item._id}
             title="Refund Payment"
-            className="w-8 h-8 rounded-lg flex items-center justify-center bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/20 text-yellow-500 hover:text-yellow-400 transition-colors disabled:opacity-50"
+            className="w-8 h-8 rounded-lg flex items-center justify-center bg-transparent hover:bg-yellow-500/10 text-yellow-500 transition-colors disabled:opacity-50"
           >
             {refunding === item._id ? <i className="fas fa-spinner fa-spin text-[13px]"></i> : <i className="fas fa-undo text-[13px]"></i>}
           </button>
@@ -101,7 +101,7 @@ export function AdminLedgerTable({
             onClick={() => onVoid(item._id)}
             disabled={voiding === item._id}
             title="Void Checkout"
-            className="w-8 h-8 rounded-lg flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 hover:text-red-400 transition-colors disabled:opacity-50"
+            className="w-8 h-8 rounded-lg flex items-center justify-center bg-transparent hover:bg-red-500/10 text-red-500 transition-colors disabled:opacity-50"
           >
             {voiding === item._id ? <i className="fas fa-spinner fa-spin text-[13px]"></i> : <i className="fas fa-ban text-[13px]"></i>}
           </button>
