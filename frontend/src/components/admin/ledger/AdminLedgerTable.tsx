@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 
@@ -17,6 +18,7 @@ export function AdminLedgerTable({
   refunding,
   voiding
 }: AdminLedgerTableProps) {
+  const [downloading, setDownloading] = useState<string | null>(null);
   
   const getStatusBadge = (status: string) => {
     const normStatus = String(status || "").toUpperCase();
@@ -48,6 +50,7 @@ export function AdminLedgerTable({
     const canInvoice = item.status === 'COMPLETED';
 
     const handleDownloadInvoice = async (paymentId: string) => {
+      setDownloading(paymentId);
       try {
         const token = localStorage.getItem('auth_token');
         const baseUrl = process.env.NEXT_PUBLIC_API_BASE || '';
@@ -68,6 +71,8 @@ export function AdminLedgerTable({
       } catch (err) {
         console.error(err);
         alert('Failed to download invoice');
+      } finally {
+        setDownloading(null);
       }
     };
 
@@ -80,10 +85,11 @@ export function AdminLedgerTable({
         {canInvoice && (
           <button
             onClick={() => handleDownloadInvoice(item._id)}
+            disabled={downloading === item._id}
             title="Download Invoice"
-            className="w-8 h-8 rounded-lg flex items-center justify-center bg-transparent hover:bg-white/[0.08] text-[#AAAAAA] hover:text-white transition-colors"
+            className="w-8 h-8 rounded-lg flex items-center justify-center bg-transparent hover:bg-white/[0.08] text-[#AAAAAA] hover:text-white transition-colors disabled:opacity-50"
           >
-            <i className="fas fa-download text-[13px]"></i>
+            {downloading === item._id ? <i className="fas fa-spinner fa-spin text-[13px]"></i> : <i className="fas fa-download text-[13px]"></i>}
           </button>
         )}
         {canRefund && (

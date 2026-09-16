@@ -6,7 +6,7 @@ import { useToast } from "@/components/ui/ToastProvider";
 import { BookOpen, RefreshCw } from "lucide-react";
 import { ErrorState, DashboardButton, ErrorDescription } from "@/components/ui/ErrorState";
 import { AdminLedgerSkeleton } from "@/components/skeletons/admin/ledger";
-import { AdminLedgerContent } from "@/components/admin/ledger";
+import { AdminLedgerContent, AdminRefundDrawer } from "@/components/admin/ledger";
 import { Pagination } from "@/components/Pagination";
 import { useModal } from "@/components/Modal";
 
@@ -25,6 +25,10 @@ export default function AdminLedgerPage() {
   const [refunding, setRefunding] = useState<string | null>(null);
   const [voiding, setVoiding] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  
+  const [refundDrawerOpen, setRefundDrawerOpen] = useState(false);
+  const [refundTargetId, setRefundTargetId] = useState<string | null>(null);
+  
   const modal = useModal();
   const { showSuccess, showError } = useToast();
 
@@ -78,15 +82,14 @@ export default function AdminLedgerPage() {
     load(currentPage); 
   }, [currentPage]);
 
-  const handleRefund = async (id: string) => {
-    const confirmed = await modal.confirm({
-      title: "Confirm Refund",
-      body: "Are you sure you want to refund this payment? This action cannot be undone.",
-      confirmText: "Refund Payment",
-      cancelText: "Cancel"
-    });
-    
-    if (!confirmed) return;
+  const initiateRefund = (id: string) => {
+    setRefundTargetId(id);
+    setRefundDrawerOpen(true);
+  };
+
+  const confirmRefund = async () => {
+    if (!refundTargetId) return;
+    const id = refundTargetId;
     
     setRefunding(id);
     try {
@@ -107,7 +110,7 @@ export default function AdminLedgerPage() {
       }
       
       showSuccess("The payment has been successfully refunded.");
-      
+      setRefundDrawerOpen(false);
       await load(); // Reload the data
     } catch (e: unknown) {
       showError(e instanceof Error ? e.message : 'Failed to refund payment');
@@ -212,7 +215,7 @@ export default function AdminLedgerPage() {
             setCurrentPage(1);
             load(1);
           }}
-          onRefund={handleRefund}
+          onRefund={initiateRefund}
           onVoid={handleVoid}
         />
 
@@ -224,6 +227,14 @@ export default function AdminLedgerPage() {
           pageSize={10}
           onPageChange={setCurrentPage}
           itemName="payments"
+        />
+        
+        <AdminRefundDrawer
+          isOpen={refundDrawerOpen}
+          onClose={() => setRefundDrawerOpen(false)}
+          onConfirm={confirmRefund}
+          paymentId={refundTargetId}
+          isRefunding={!!refunding}
         />
       </div>
     </>
