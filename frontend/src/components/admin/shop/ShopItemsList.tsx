@@ -119,7 +119,7 @@ export function ShopItemsList({
             <div className="flex justify-end mt-2 md:mt-0">
               <button
                 onClick={() => onStartEditing(item)}
-                className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors"
+                className="p-1.5 text-white/40 hover:text-white hover:bg-white/[0.06] rounded transition-colors"
                 title="Manage"
               >
                 <Edit2 size={14} />
