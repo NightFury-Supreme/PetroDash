@@ -211,6 +211,7 @@ export function CouponDrawer({
               onChange={(e) => setFormData({ ...formData, validFrom: e.target.value })}
               className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50 transition-colors"
             />
+            <p className="text-[11px] text-[#555] mt-2 font-mono">Leave blank to start immediately</p>
           </div>
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Valid Until</label>
@@ -220,6 +221,7 @@ export function CouponDrawer({
               onChange={(e) => setFormData({ ...formData, validUntil: e.target.value })}
               className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50 transition-colors"
             />
+            <p className="text-[11px] text-[#555] mt-2 font-mono">Leave blank to never expire</p>
           </div>
         </div>
 
