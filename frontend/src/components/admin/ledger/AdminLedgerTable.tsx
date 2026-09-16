@@ -83,7 +83,7 @@ export function AdminLedgerTable({
             title="Download Invoice"
             className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.05] text-[#AAAAAA] hover:text-white transition-colors"
           >
-            <i className="fas fa-file-pdf text-[13px]"></i>
+            <i className="fas fa-download text-[13px]"></i>
           </button>
         )}
         {canRefund && (
