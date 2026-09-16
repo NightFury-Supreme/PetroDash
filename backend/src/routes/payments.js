@@ -28,10 +28,10 @@ router.get('/', requireAuth, async (req, res) => {
     let userId;
     try { userId = new mongoose.Types.ObjectId(String(req.user.sub)); } catch { userId = req.user.sub; }
 
-    // Only show actionable or completed payments to the user - hide abandoned checkouts (CREATED/VOIDED)
+    // Only show actionable or completed/voided payments to the user - hide abandoned checkouts (CREATED) until they are voided
     const baseQuery = { 
       userId,
-      status: { $in: ['COMPLETED', 'FAILED', 'REFUNDED'] }
+      status: { $in: ['COMPLETED', 'FAILED', 'REFUNDED', 'VOIDED'] }
     };
     let q = Payment.find(baseQuery).sort({ createdAt: -1 }).lean();
 

@@ -209,23 +209,24 @@ function PaymentRow({ payment, currency, onDownload }: { payment: any; currency:
 
 function PaymentStatus({ status }: { status: string; }) {
   const normStatus = String(status || "").toUpperCase();
-  const isPaid = normStatus === "COMPLETED" || normStatus === "PAID";
-  const isRefunded = normStatus === "REFUNDED" || normStatus === "VOIDED";
   
-  let styles = "border-yellow-500/20 bg-yellow-500/[0.04] text-yellow-500";
-  let label = normStatus;
+  let styles = "border-gray-500/20 bg-gray-500/[0.04] text-gray-400";
   
-  if (isPaid) {
+  if (normStatus === "COMPLETED" || normStatus === "PAID") {
     styles = "border-emerald-500/20 bg-emerald-500/[0.04] text-emerald-500";
-  } else if (isRefunded) {
+  } else if (normStatus === "FAILED") {
     styles = "border-red-500/20 bg-red-500/[0.04] text-red-500";
-  } else if (normStatus === "PENDING" || normStatus === "CREATED") {
-    label = "PROCESSING";
+  } else if (normStatus === "REFUNDED") {
+    styles = "border-yellow-500/20 bg-yellow-500/[0.04] text-yellow-500";
+  } else if (normStatus === "VOIDED") {
+    styles = "border-gray-500/20 bg-gray-500/[0.04] text-gray-500";
+  } else if (normStatus === "CREATED" || normStatus === "PENDING") {
+    styles = "border-blue-500/20 bg-blue-500/[0.04] text-blue-500";
   }
 
   return (
-    <span className={`inline-flex w-fit rounded border px-2 py-1 text-xs font-medium ${styles}`}>
-      {label}
+    <span className={`inline-flex w-fit rounded border px-2 py-1 text-xs font-medium uppercase ${styles}`}>
+      {normStatus}
     </span>
   );
 }
