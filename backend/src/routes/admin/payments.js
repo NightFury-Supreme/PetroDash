@@ -59,7 +59,7 @@ router.get('/ledger', requireAdmin, async (req, res) => {
       .sort(sortObj)
       .skip((pageNum - 1) * limitNum)
       .limit(limitNum)
-      .populate('userId', 'username email profilePicture')
+      .populate('userId', 'username email profilePicture oauthProviders')
       .populate('planId', 'name')
       .lean();
       

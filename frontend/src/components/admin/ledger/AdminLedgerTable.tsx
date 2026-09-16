@@ -146,10 +146,31 @@ export function AdminLedgerTable({
           >
             {/* User */}
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/[0.07] bg-white/[0.035]">
-                <span className="text-sm font-bold text-[#D4D4D4]">
-                  {item.userId?.username?.charAt(0).toUpperCase() || 'U'}
-                </span>
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/[0.07] bg-white/[0.035] overflow-hidden">
+                {(() => {
+                  const avatarUrl =
+                    item.userId?.profilePicture ||
+                    item.userId?.oauthProviders?.discord?.avatar ||
+                    item.userId?.oauthProviders?.google?.picture;
+                  return avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={item.userId?.username || 'User'}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const parent = (e.target as HTMLImageElement).parentElement;
+                        if (parent) {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                          parent.innerHTML = `<span class="text-sm font-bold text-[#D4D4D4]">${(item.userId?.username?.charAt(0) || 'U').toUpperCase()}</span>`;
+                        }
+                      }}
+                    />
+                  ) : (
+                    <span className="text-sm font-bold text-[#D4D4D4]">
+                      {item.userId?.username?.charAt(0).toUpperCase() || 'U'}
+                    </span>
+                  );
+                })()}
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-medium text-white/80 truncate">{item.userId?.username || 'Unknown'}</p>
