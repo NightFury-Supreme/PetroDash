@@ -8,7 +8,7 @@ import { AdminShopContent } from '@/components/admin/shop/AdminShopContent';
 import { ShopItem } from '@/hooks/admin/shop/useAdminShop';
 import { useToast } from '@/components/ui/ToastProvider';
 
-export default function AdminShopPage() {
+export default function AdminShopTab() {
   const { showSuccess, showError } = useToast();
   const {
     items,

@@ -13,7 +13,7 @@ import { useModal } from "@/components/Modal";
 // Use a flexible item shape to match API without strict coupling
 type LedgerItem = Record<string, any>;
 
-export default function AdminLedgerPage() {
+export default function AdminLedgerTab() {
   const [items, setItems] = useState<LedgerItem[]>([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [status, setStatus] = useState<string>("");

@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { ShoppingCart, Crown, Tag, Receipt } from 'lucide-react';
 import { SideItem } from '@/components/profile/ProfileComponents';
-import AdminShopPage from './shop/page';
-import AdminPlansPage from './plans/page';
-import AdminCouponsPage from './coupons/page';
-import AdminLedgerPage from './ledger/page';
+import AdminShopTab from '@/components/admin/store/tabs/ShopTab';
+import AdminPlansTab from '@/components/admin/store/tabs/PlansTab';
+import AdminCouponsTab from '@/components/admin/store/tabs/CouponsTab';
+import AdminLedgerTab from '@/components/admin/store/tabs/LedgerTab';
 
 export default function AdminStorePage() {
   const [tab, setTab] = useState('shop');
@@ -65,10 +65,10 @@ export default function AdminStorePage() {
 
           {/* Main Content */}
           <div className="flex-1 min-w-0 w-full">
-            {tab === 'shop' && <AdminShopPage />}
-            {tab === 'plans' && <AdminPlansPage />}
-            {tab === 'coupons' && <AdminCouponsPage />}
-            {tab === 'ledger' && <AdminLedgerPage />}
+            {tab === 'shop' && <AdminShopTab />}
+            {tab === 'plans' && <AdminPlansTab />}
+            {tab === 'coupons' && <AdminCouponsTab />}
+            {tab === 'ledger' && <AdminLedgerTab />}
           </div>
         </div>
       </div>

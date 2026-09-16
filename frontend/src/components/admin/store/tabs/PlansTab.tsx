@@ -15,7 +15,7 @@ import { Pagination } from '@/components/Pagination';
 import { useMemo } from 'react';
 
 
-export default function AdminPlansPage() {
+export default function AdminPlansTab() {
   const modal = useModal();
   const { showSuccess, showError } = useToast();
   
