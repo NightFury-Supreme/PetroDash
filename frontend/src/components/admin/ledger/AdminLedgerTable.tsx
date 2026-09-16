@@ -21,20 +21,21 @@ export function AdminLedgerTable({
   const [showMenuFor, setShowMenuFor] = useState<string | null>(null);
 
   const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      'CREATED': { color: 'bg-blue-500/20 text-blue-400 border-blue-500/30', icon: 'fa-clock' },
-      'COMPLETED': { color: 'bg-green-500/20 text-green-400 border-green-500/30', icon: 'fa-check-circle' },
-      'FAILED': { color: 'bg-red-500/20 text-red-400 border-red-500/30', icon: 'fa-times-circle' },
-      'REFUNDED': { color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30', icon: 'fa-undo' },
-      'VOIDED': { color: 'bg-gray-500/20 text-gray-400 border-gray-500/30', icon: 'fa-ban' }
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig['CREATED'];
+    const normStatus = String(status || "").toUpperCase();
+    const isPaid = normStatus === "COMPLETED" || normStatus === "PAID";
+    const isRefunded = normStatus === "REFUNDED" || normStatus === "VOIDED" || normStatus === "FAILED";
+    
+    let styles = "border-yellow-500/20 bg-yellow-500/[0.04] text-yellow-500";
+    
+    if (isPaid) {
+      styles = "border-emerald-500/20 bg-emerald-500/[0.04] text-emerald-500";
+    } else if (isRefunded) {
+      styles = "border-red-500/20 bg-red-500/[0.04] text-red-500";
+    }
 
     return (
-      <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border ${config.color}`}>
-        <i className={`fas ${config.icon}`}></i>
-        {status}
+      <span className={`inline-flex w-fit rounded border px-2 py-1 text-xs font-medium uppercase ${styles}`}>
+        {normStatus}
       </span>
     );
   };
