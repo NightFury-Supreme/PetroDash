@@ -19,6 +19,7 @@ export default function AdminLedgerPage() {
   const [status, setStatus] = useState<string>("");
   const [provider, setProvider] = useState<string>("");
   const [userId, setUserId] = useState<string>("");
+  const [sort, setSort] = useState<string>("-createdAt");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [refunding, setRefunding] = useState<string | null>(null);
@@ -40,7 +41,8 @@ export default function AdminLedgerPage() {
       const params = new URLSearchParams();
       if (status) params.set('status', status);
       if (provider) params.set('provider', provider);
-      if (userId) params.set('userId', userId);
+      if (userId) params.set('search', userId);
+      if (sort) params.set('sort', sort);
       params.set('page', pageToLoad.toString());
       params.set('limit', '10');
       
@@ -197,13 +199,15 @@ export default function AdminLedgerPage() {
           status={status}
           provider={provider}
           userId={userId}
+          sort={sort}
           error={error}
           loading={loading}
           refunding={refunding}
           voiding={voiding}
-          onStatusChange={setStatus}
-          onProviderChange={setProvider}
-          onUserIdChange={setUserId}
+          onStatusChange={(v) => { setStatus(v); setCurrentPage(1); }}
+          onProviderChange={(v) => { setProvider(v); setCurrentPage(1); }}
+          onUserIdChange={(v) => { setUserId(v); setCurrentPage(1); }}
+          onSortChange={(v) => { setSort(v); setCurrentPage(1); }}
           onFilter={() => {
             setCurrentPage(1);
             load(1);

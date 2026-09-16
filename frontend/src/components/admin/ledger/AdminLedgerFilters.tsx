@@ -1,13 +1,15 @@
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { Search, SlidersHorizontal, ArrowDownUp, X } from 'lucide-react';
 import { Select } from '@/components/ui/Select';
 
 interface AdminLedgerFiltersProps {
   status: string;
   provider: string;
   userId: string;
+  sort: string;
   onStatusChange: (value: string) => void;
   onProviderChange: (value: string) => void;
   onUserIdChange: (value: string) => void;
+  onSortChange: (value: string) => void;
   onFilter: () => void;
   loading: boolean;
 }
@@ -16,9 +18,11 @@ export function AdminLedgerFilters({
   status,
   provider,
   userId,
+  sort,
   onStatusChange,
   onProviderChange,
   onUserIdChange,
+  onSortChange,
   onFilter,
   loading
 }: AdminLedgerFiltersProps) {
@@ -36,6 +40,13 @@ export function AdminLedgerFilters({
     { value: 'paypal', label: 'PayPal' }
   ];
 
+  const sortOptions = [
+    { value: '-createdAt', label: 'Newest First' },
+    { value: 'createdAt', label: 'Oldest First' },
+    { value: '-amount', label: 'Highest Amount' },
+    { value: 'amount', label: 'Lowest Amount' }
+  ];
+
   const activeFilterCount = (status ? 1 : 0) + (provider ? 1 : 0);
 
   const clearFilters = () => {
@@ -51,7 +62,7 @@ export function AdminLedgerFilters({
           <Search size={15} />
           <input
             type="text"
-            placeholder="Search by User ID..."
+            placeholder="Search by User, Email, Order ID..."
             value={userId}
             onChange={(e) => onUserIdChange(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && onFilter()}
@@ -60,6 +71,20 @@ export function AdminLedgerFilters({
         </div>
         
         <div className="flex items-center gap-[7px] w-full sm:w-auto">
+          <div className="w-[130px]">
+            <Select
+              value={sort}
+              options={sortOptions}
+              onChange={(v) => { onSortChange(v); setTimeout(onFilter, 0); }}
+              renderButtonContent={(label) => (
+                <div className="flex items-center gap-[7px]">
+                  <ArrowDownUp size={14} className="text-[#858585]" />
+                  <span className="text-[10px] text-[#858585]">{label}</span>
+                </div>
+              )}
+            />
+          </div>
+
           <div className="w-[110px]">
             <Select
               value=""
@@ -119,16 +144,6 @@ export function AdminLedgerFilters({
               )}
             />
           </div>
-          
-          {/* Main Filter button if they want to trigger search manually */}
-          <button
-            onClick={onFilter}
-            disabled={loading}
-            className="h-[42px] px-4 bg-[#FF5722] hover:bg-[#ff6939] text-white rounded-[7px] text-[11px] font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
-          >
-            {loading ? <i className="fas fa-spinner fa-spin"></i> : <Search size={14} />}
-            Search
-          </button>
         </div>
       </div>
 

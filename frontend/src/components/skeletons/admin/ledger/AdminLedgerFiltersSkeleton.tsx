@@ -7,8 +7,8 @@ export function AdminLedgerFiltersSkeleton() {
         
         {/* Buttons skeleton */}
         <div className="flex items-center gap-[7px] w-full sm:w-auto">
+          <div className="w-[130px] h-[42px] bg-[#1a1a1a] rounded-lg animate-pulse border border-[#2a2a2a]"></div>
           <div className="w-[110px] h-[42px] bg-[#1a1a1a] rounded-lg animate-pulse border border-[#2a2a2a]"></div>
-          <div className="w-[84px] h-[42px] bg-[#1a1a1a] rounded-[7px] animate-pulse border border-[#2a2a2a]"></div>
         </div>
       </div>
     </div>

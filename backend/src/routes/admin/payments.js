@@ -11,52 +11,52 @@ const router = express.Router();
 // GET /api/admin/ledger - list payments with filters
 router.get('/ledger', requireAdmin, async (req, res) => {
   try {
-    const { status, provider, userId, page = '1', limit = '10' } = req.query;
+    const { status, provider, userId, search, sort, page = '1', limit = '10' } = req.query;
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
 
     const q = {};
-    if (status && ['CREATED', 'COMPLETED', 'FAILED', 'REFUNDED', 'VOIDED'].includes(status)) {
-      q.status = { $eq: status };
-    } else {
-      // By default, sync with the user invoice list and hide abandoned/voided checkouts
-      q.status = { $in: ['COMPLETED', 'FAILED', 'REFUNDED'] };
+    if (status) {
+      q.status = { $eq: status.toUpperCase() };
+    }
+    if (provider) {
+      q.provider = { $eq: provider.toLowerCase() };
     }
     
-    if (provider && ['paypal', 'stripe', 'coinbase'].includes(provider)) {
-      q.provider = { $eq: provider };
-    }
-    
-    if (userId) {
-      if (/^[0-9a-fA-F]{24}$/.test(userId)) {
-        q.userId = { $eq: userId };
-      } else {
-        const User = require('../../models/User');
-        // Search user by email or username
-        const users = await User.find({
-          $or: [
-            { email: { $regex: userId, $options: 'i' } },
-            { username: { $regex: userId, $options: 'i' } }
-          ]
-        }).select('_id').lean();
-        
-        if (users.length > 0) {
-          q.userId = { $in: users.map(u => u._id) };
-        } else {
-          // Force empty result if search query doesn't match any users
-          q.userId = { $eq: '000000000000000000000000' };
-        }
+    const searchTerm = search || userId;
+    if (searchTerm) {
+      const searchRegex = new RegExp(searchTerm, 'i');
+      const User = require('../../models/User');
+      const matchedUsers = await User.find({ $or: [{ username: searchRegex }, { email: searchRegex }] }, { _id: 1 }).lean();
+      const matchedUserIds = matchedUsers.map(u => u._id);
+      
+      const orConditions = [
+        { providerOrderId: searchRegex }
+      ];
+      if (/^[0-9a-fA-F]{24}$/.test(searchTerm)) {
+        orConditions.push({ _id: searchTerm });
+        orConditions.push({ userId: searchTerm });
       }
+      if (matchedUserIds.length > 0) {
+        orConditions.push({ userId: { $in: matchedUserIds } });
+      }
+      q.$or = orConditions;
     }
 
+    let sortObj = { createdAt: -1 };
+    if (sort === 'createdAt') sortObj = { createdAt: 1 };
+    else if (sort === '-createdAt') sortObj = { createdAt: -1 };
+    else if (sort === 'amount') sortObj = { amount: 1 };
+    else if (sort === '-amount') sortObj = { amount: -1 };
+
     const { getCache, setCache } = require('../../lib/redis');
-    const cacheKey = `admin:ledger:${status || ''}:${provider || ''}:${userId || ''}:${pageNum}:${limitNum}`;
+    const cacheKey = `admin:ledger:${status || ''}:${provider || ''}:${searchTerm || ''}:${sort || ''}:${pageNum}:${limitNum}`;
     const cached = await getCache(cacheKey);
     if (cached) return res.json(cached);
     
     const total = await Payment.countDocuments(q);
     const list = await Payment.find(q)
-      .sort({ createdAt: -1 })
+      .sort(sortObj)
       .skip((pageNum - 1) * limitNum)
       .limit(limitNum)
       .populate('userId', 'username email profilePicture')

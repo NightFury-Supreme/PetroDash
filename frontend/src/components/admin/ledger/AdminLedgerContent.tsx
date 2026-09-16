@@ -21,6 +21,7 @@ interface AdminLedgerContentProps {
   status: string;
   provider: string;
   userId: string;
+  sort: string;
   error: string | null;
   loading: boolean;
   refunding: string | null;
@@ -28,9 +29,10 @@ interface AdminLedgerContentProps {
   onStatusChange: (value: string) => void;
   onProviderChange: (value: string) => void;
   onUserIdChange: (value: string) => void;
+  onSortChange: (value: string) => void;
   onFilter: () => void;
-  onRefund: (id: string) => void;
-  onVoid: (id: string) => void;
+  onRefund: (paymentId: string) => void;
+  onVoid: (paymentId: string) => void;
 }
 
 export function AdminLedgerContent({
@@ -38,6 +40,7 @@ export function AdminLedgerContent({
   status,
   provider,
   userId,
+  sort,
   error,
   loading,
   refunding,
@@ -64,9 +67,11 @@ export function AdminLedgerContent({
           status={status}
           provider={provider}
           userId={userId}
+          sort={sort}
           onStatusChange={onStatusChange}
           onProviderChange={onProviderChange}
           onUserIdChange={onUserIdChange}
+          onSortChange={onSortChange}
           onFilter={onFilter}
           loading={loading}
         />
