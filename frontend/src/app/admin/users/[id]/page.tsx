@@ -75,7 +75,10 @@ export default function AdminUserPage() {
 
   const loadPlans = async () => {
     try {
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/plans`);
+      const token = localStorage.getItem('auth_token');
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
       const d = await r.json();
       if (r.ok) setAllPlans(d || []);
     } catch {}

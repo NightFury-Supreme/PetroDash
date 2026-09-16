@@ -22,7 +22,7 @@ export default function EggForm({ form, setForm, env, setEnv, onSubmit, submitti
 
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
-    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/plans`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       .then((r) => r.json())
       .then((d) => setPlans(Array.isArray(d) ? d : []))
       .catch(() => {})
