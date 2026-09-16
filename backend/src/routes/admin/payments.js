@@ -16,14 +16,34 @@ router.get('/ledger', requireAdmin, async (req, res) => {
     const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
 
     const q = {};
-    if (status && ['pending', 'completed', 'failed', 'refunded'].includes(status)) {
+    if (status && ['CREATED', 'COMPLETED', 'FAILED', 'REFUNDED', 'VOIDED'].includes(status)) {
       q.status = { $eq: status };
     }
+    
     if (provider && ['paypal', 'stripe', 'coinbase'].includes(provider)) {
       q.provider = { $eq: provider };
     }
-    if (userId && /^[0-9a-fA-F]{24}$/.test(userId)) {
-      q.userId = { $eq: userId };
+    
+    if (userId) {
+      if (/^[0-9a-fA-F]{24}$/.test(userId)) {
+        q.userId = { $eq: userId };
+      } else {
+        const User = require('../../models/User');
+        // Search user by email or username
+        const users = await User.find({
+          $or: [
+            { email: { $regex: userId, $options: 'i' } },
+            { username: { $regex: userId, $options: 'i' } }
+          ]
+        }).select('_id').lean();
+        
+        if (users.length > 0) {
+          q.userId = { $in: users.map(u => u._id) };
+        } else {
+          // Force empty result if search query doesn't match any users
+          q.userId = { $eq: '000000000000000000000000' };
+        }
+      }
     }
 
     const { getCache, setCache } = require('../../lib/redis');
