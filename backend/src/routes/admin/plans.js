@@ -201,14 +201,24 @@ router.delete('/categories/:id', requireAdmin, async (req, res) => {
 // GET /api/admin/plans - List all plans
 router.get('/', requireAdmin, async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
     const { getCache, setCache } = require('../../lib/redis');
-    const cached = await getCache('admin:plans');
+    const cacheKey = `admin:plans:page:${page}:limit:${limit}`;
+    const cached = await getCache(cacheKey);
     if (cached) return res.json(cached);
 
-    const plans = await Plan.find().populate('category', 'name').sort({ sortOrder: 1, createdAt: -1 }).lean();
+    const [plans, total] = await Promise.all([
+      Plan.find().populate('category', 'name').sort({ sortOrder: 1, createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Plan.countDocuments()
+    ]);
     
     const UserPlan = require('../../models/UserPlan');
+    const planIds = plans.map(p => p._id);
     const stats = await UserPlan.aggregate([
+      { $match: { planId: { $in: planIds.map(id => id.toString()) } } },
       {
         $group: {
           _id: "$planId",
@@ -237,8 +247,16 @@ router.get('/', requireAdmin, async (req, res) => {
       };
     });
 
-    await setCache('admin:plans', enrichedPlans, 30);
-    res.json(enrichedPlans);
+    const response = {
+      plans: enrichedPlans,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    };
+
+    await setCache(cacheKey, response, 30);
+    res.json(response);
   } catch (error) {
     console.error('Error fetching plans:', error);
     res.status(500).json({ error: 'Failed to fetch plans' });

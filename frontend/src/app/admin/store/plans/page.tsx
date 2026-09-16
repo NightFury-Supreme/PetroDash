@@ -11,6 +11,7 @@ import { PlansList } from '@/components/admin/plan/PlansList';
 import { PlanDrawer } from '@/components/admin/plan/PlanDrawer';
 import { AdminPlanFilters } from '@/components/admin/plan/AdminPlanFilters';
 import { AdminPlanActiveFilters } from '@/components/admin/plan/AdminPlanActiveFilters';
+import { Pagination } from '@/components/Pagination';
 import { useMemo } from 'react';
 
 
@@ -29,6 +30,10 @@ export default function AdminPlansPage() {
     loading,
     error,
     deleting,
+    page,
+    setPage,
+    totalPages,
+    totalItems,
     deletePlan,
     toggleEnabled,
     makeUnlisted,
@@ -81,7 +86,7 @@ export default function AdminPlansPage() {
   };
 
 
-  /** Structured category list derived from loaded plans — used both for filtering and to
+  /** Structured category list derived from loaded plans - used both for filtering and to
    *  pre-populate PlanCategorySelect in the edit drawer, eliminating a separate /categories fetch. */
   const categoryObjects = useMemo(() => {
     const map = new Map<string, { id: string; name: string; planCount: number }>();
@@ -210,13 +215,21 @@ export default function AdminPlansPage() {
           {/* Plans List */}
           <PlansList
             plans={filteredPlans}
-
             deleting={deleting}
             onDelete={handleDelete}
             onManage={(planId: string) => { setEditingPlanId(planId); setDrawerOpen(true); }}
             onToggleEnabled={handleToggleEnabled}
             onMakeUnlisted={handleMakeUnlisted}
             onMakePublic={handleMakePublic}
+          />
+
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={10}
+            onPageChange={setPage}
+            itemName="plans"
           />
 
         </div>

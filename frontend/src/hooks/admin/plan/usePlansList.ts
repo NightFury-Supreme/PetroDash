@@ -50,9 +50,13 @@ interface UsePlansListReturn {
   loading: boolean;
   error: string | null;
   deleting: string | null;
+  page: number;
+  setPage: (page: number) => void;
+  totalPages: number;
+  totalItems: number;
   
   // Actions
-  loadPlans: () => Promise<void>;
+  loadPlans: (pageIndex?: number) => Promise<void>;
   deletePlan: (planId: string, planName: string) => Promise<{ success: boolean; message: string }>;
   toggleEnabled: (plan: Plan) => Promise<{ success: boolean; message: string }>;
   makeUnlisted: (plan: Plan) => Promise<{ success: boolean; message: string }>;
@@ -65,9 +69,13 @@ export function usePlansList(): UsePlansListReturn {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
 
   // Load plans
-  const loadPlans = useCallback(async () => {
+  const loadPlans = useCallback(async (pageIndex = page) => {
     try {
       setLoading(true);
       setError(null);
@@ -77,7 +85,7 @@ export function usePlansList(): UsePlansListReturn {
         throw new Error('Authentication required');
       }
 
-      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans?page=${pageIndex}&limit=10`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -86,13 +94,15 @@ export function usePlansList(): UsePlansListReturn {
       }
       
       let data: any = {}; try { data = await response.json(); } catch {}
-      setPlans(data);
+      setPlans(data.plans || data);
+      setTotalPages(data.totalPages || 1);
+      setTotalItems(data.total || (Array.isArray(data) ? data.length : 0));
     } catch (err: any) {
       setError(err.message || 'Failed to load plans');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page]);
 
   // Delete plan
   const deletePlan = useCallback(async (planId: string, planName: string) => {
@@ -243,6 +253,10 @@ export function usePlansList(): UsePlansListReturn {
     loading,
     error,
     deleting,
+    page,
+    setPage,
+    totalPages,
+    totalItems,
     
     // Actions
     loadPlans,

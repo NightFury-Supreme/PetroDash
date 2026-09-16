@@ -8,14 +8,30 @@ const router = express.Router();
 // GET /api/admin/coupons - list all coupons
 router.get('/', requireAdmin, async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
     const { getCache, setCache } = require('../../lib/redis');
-    const cached = await getCache('admin:coupons');
+    const cacheKey = `admin:coupons:page:${page}:limit:${limit}`;
+    const cached = await getCache(cacheKey);
     if (cached) return res.json(cached);
 
-    const coupons = await Coupon.find({}).sort({ createdAt: -1 }).lean();
+    const [coupons, total] = await Promise.all([
+      Coupon.find({}).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Coupon.countDocuments({})
+    ]);
     
-    await setCache('admin:coupons', coupons, 30);
-    res.json(coupons);
+    const response = {
+      coupons,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    };
+
+    await setCache(cacheKey, response, 30);
+    res.json(response);
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch coupons' });
