@@ -23,7 +23,7 @@ export default function CouponsList({ coupons, onManage, onToggle, onDelete, pla
   return (
     <div className="w-full">
       {/* Column headers */}
-      <div className="hidden gap-4 grid-cols-[2fr_1fr_1fr_1fr_120px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
+      <div className="hidden gap-4 grid-cols-[2fr_1fr_1fr_1fr_160px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
         <span>Coupon Code</span>
         <span>Value</span>
         <span>Uses</span>
@@ -35,7 +35,7 @@ export default function CouponsList({ coupons, onManage, onToggle, onDelete, pla
         {coupons.map((c: any) => (
           <div
             key={c._id}
-            className="flex flex-col gap-4 px-5 py-4 transition hover:bg-white/[0.015] md:grid md:grid-cols-[2fr_1fr_1fr_1fr_120px] md:items-center"
+            className="flex flex-col gap-4 px-5 py-4 transition hover:bg-white/[0.015] md:grid md:grid-cols-[2fr_1fr_1fr_1fr_160px] md:items-center"
           >
             {/* Identity */}
             <div className="flex items-center gap-3">
@@ -69,7 +69,23 @@ export default function CouponsList({ coupons, onManage, onToggle, onDelete, pla
             </div>
 
             {/* Action */}
-            <div className="flex justify-end mt-2 md:mt-0">
+            <div className="flex items-center justify-end gap-2 mt-2 md:mt-0 shrink-0">
+              {(() => {
+                const isExpired = c.validUntil && new Date(c.validUntil).getTime() < Date.now();
+                return isExpired ? (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-amber-500/10 text-amber-400 text-[10px] font-medium tracking-wide uppercase border border-amber-500/20">
+                    Expired
+                  </span>
+                ) : c.enabled ? (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">
+                    Enabled
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">
+                    Disabled
+                  </span>
+                );
+              })()}
               <button
                 onClick={() => onManage(c)}
                 className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors"
