@@ -13,12 +13,25 @@ type Ticket = {
   category?: string; 
   updatedAt: string; 
   deletedByUser?: boolean; 
-  user?: { username?: string; email?: string } 
+  user?: { 
+    username?: string; 
+    email?: string; 
+    profilePicture?: string; 
+    oauthProviders?: { 
+      discord?: { avatar?: string }; 
+      google?: { picture?: string }; 
+    };
+  } 
 };
 
 export default function AdminTicketItem({ t, onAction }:{ t: Ticket; onAction: (action: 'close'|'resolve'|'delete'|'restore'|'reopen', id: string)=>Promise<void> }){
   const [opening, setOpening] = useState(false);
   const [menu, setMenu] = useState(false);
+
+  const avatarUrl =
+    t.user?.profilePicture ||
+    t.user?.oauthProviders?.discord?.avatar ||
+    t.user?.oauthProviders?.google?.picture;
 
   return (
     <div className={`relative transition-colors hover:bg-white/[0.015] ${opening ? 'opacity-70' : ''} ${menu ? 'z-50' : 'z-0'}`}>
@@ -46,14 +59,36 @@ export default function AdminTicketItem({ t, onAction }:{ t: Ticket; onAction: (
           </div>
         </button>
 
-        {/* User — desktop */}
-        <div className="hidden md:block" title={t.user?.email || t.user?.username}>
-          <span className="block truncate text-xs text-[#D4D4D4]">
-            {t.user?.username || t.user?.email || 'User'}
-          </span>
-          <span className="block truncate text-[10px] text-[#555] mt-0.5">
-            {t.user?.email !== t.user?.username ? t.user?.email || '' : ''}
-          </span>
+        {/* User - desktop */}
+        <div className="hidden md:flex items-center gap-2" title={t.user?.email || t.user?.username}>
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-white/[0.07] bg-white/[0.035] overflow-hidden">
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt={t.user?.username || 'User'}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const parent = (e.target as HTMLImageElement).parentElement;
+                  if (parent) {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                    parent.innerHTML = `<span class="text-[11px] font-bold text-[#D4D4D4]">${(t.user?.username?.charAt(0) || 'U').toUpperCase()}</span>`;
+                  }
+                }}
+              />
+            ) : (
+              <span className="text-[11px] font-bold text-[#D4D4D4]">
+                {(t.user?.username?.charAt(0) || 'U').toUpperCase()}
+              </span>
+            )}
+          </div>
+          <div className="min-w-0">
+            <span className="block truncate text-xs text-[#D4D4D4]">
+              {t.user?.username || t.user?.email || 'User'}
+            </span>
+            <span className="block truncate text-[10px] text-[#555] mt-0.5">
+              {t.user?.email !== t.user?.username ? t.user?.email || '' : ''}
+            </span>
+          </div>
         </div>
 
         {/* Category — desktop */}

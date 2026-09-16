@@ -104,11 +104,32 @@ router.get('/', requireAdmin, async (req, res) => {
     }
     if (q && typeof q === 'string' && q.trim()) {
       const escaped = q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      query.$or = [
-        { title: { $regex: escaped, $options: 'i' } },
-        { tags: { $elemMatch: { $regex: escaped, $options: 'i' } } },
-        { category: { $regex: escaped, $options: 'i' } }
+      const searchRegex = { $regex: escaped, $options: 'i' };
+
+      // Search by username / email (lookup users first)
+      const User = require('../../models/User');
+      const matchedUsers = await User.find(
+        { $or: [{ username: searchRegex }, { email: searchRegex }] },
+        { _id: 1 }
+      ).lean();
+      const matchedUserIds = matchedUsers.map(u => u._id);
+
+      const orConditions = [
+        { title: searchRegex },
+        { tags: { $elemMatch: searchRegex } },
+        { category: searchRegex },
       ];
+
+      // Ticket ID (exact 24-char hex match)
+      if (/^[0-9a-fA-F]{24}$/.test(q.trim())) {
+        orConditions.push({ _id: q.trim() });
+      }
+
+      if (matchedUserIds.length > 0) {
+        orConditions.push({ user: { $in: matchedUserIds } });
+      }
+
+      query.$or = orConditions;
     }
 
     // Sort mapping
@@ -129,13 +150,13 @@ router.get('/', requireAdmin, async (req, res) => {
     }
 
     const total = await Ticket.countDocuments(query);
-    const tickets = await Ticket.find(query)
-      .select('-messages')
-      .sort(sortObj)
-      .skip((pageNum - 1) * limitNum)
-      .limit(limitNum)
-      .populate('user', 'username email')
-      .lean();
+      const tickets = await Ticket.find(query)
+        .select('-messages')
+        .sort(sortObj)
+        .skip((pageNum - 1) * limitNum)
+        .limit(limitNum)
+        .populate('user', 'username email profilePicture oauthProviders')
+        .lean();
 
     const responseData = { tickets, total, page: pageNum, pages: Math.ceil(total / limitNum) };
     await setCache(cacheKey, responseData, 30);

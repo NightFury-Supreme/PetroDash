@@ -193,7 +193,7 @@ export default function AdminTicketsPage() {
                 <input
                   value={q}
                   onChange={e => setQ(e.target.value)}
-                  placeholder="Search by title, category, user email..."
+                  placeholder="Search by title, ticket ID, username, email..."
                   className="w-full min-w-0 border-0 outline-none bg-transparent text-[#d5d5d5] text-[11px] placeholder:text-[#505050]"
                 />
                 {q && (
