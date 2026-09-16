@@ -20,7 +20,7 @@ async function fetchBranding() {
 export default async function RegisterPage() {
   const brand = await fetchBranding();
   return (
-    <main style={{ background: 'var(--background)', color: 'var(--foreground)' }}>
+    <main className="bg-[#0F0F0F] min-h-screen text-white">
       <AuthCard title="Create account" subtitle="It only takes a minute" siteName={brand.siteName} siteIcon={brand.siteIcon}>
         <RegisterClient _emailVerification={brand.emailVerification} />
       </AuthCard>

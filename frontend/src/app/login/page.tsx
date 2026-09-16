@@ -20,7 +20,7 @@ async function fetchBranding() {
 export default async function LoginPage() {
   const brand = await fetchBranding();
   return (
-    <main style={{ background: 'var(--background)', color: 'var(--foreground)' }}>
+    <main className="bg-[#0F0F0F] min-h-screen text-white">
       <AuthCard title="Login" subtitle="Enter your credentials to continue" siteName={brand.siteName} siteIcon={brand.siteIcon}>
         <LoginClient />
       </AuthCard>
