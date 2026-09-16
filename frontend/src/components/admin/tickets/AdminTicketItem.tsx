@@ -61,7 +61,7 @@ export default function AdminTicketItem({ t, onAction }:{ t: Ticket; onAction: (
 
         {/* User - desktop */}
         <div className="hidden md:flex items-center gap-2" title={t.user?.email || t.user?.username}>
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-white/[0.07] bg-white/[0.035] overflow-hidden">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white/[0.035] overflow-hidden">
             {avatarUrl ? (
               <img
                 src={avatarUrl}
