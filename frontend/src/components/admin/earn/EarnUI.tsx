@@ -25,7 +25,7 @@ export function FieldHint({ children }: { children: React.ReactNode }) {
 }
 
 export function ActionButton({
-  onClick, loading, label, variant = "primary", className = "", icon, onSuccess, onError, disabled: externalDisabled = false
+  onClick, loading, label, variant = "primary", className = "", icon, onSuccess, onError, disabled: externalDisabled = false, title
 }: {
   onClick: () => Promise<void>;
   loading: boolean;
