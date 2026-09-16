@@ -71,7 +71,7 @@ export function AdminLedgerFilters({
         </div>
         
         <div className="flex items-center gap-[7px] w-full sm:w-auto">
-          <div className="w-[130px]">
+          <div className="w-[150px]">
             <Select
               value={sort}
               options={sortOptions}
