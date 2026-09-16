@@ -205,6 +205,9 @@ connectToDatabase()
         // Start background audit logs pruning job
         const { startPruneLogsJob } = require('./jobs/pruneAuditLogs');
         startPruneLogsJob();
+        // Start background abandoned payments cancellation job
+        const { startCancelAbandonedPaymentsJob } = require('./jobs/cancelAbandonedPayments');
+        startCancelAbandonedPaymentsJob();
 
         app.listen(port, () => {
             console.log(`[PteroDash] Server running on port ${port} (${process.env.NODE_ENV || 'development'})`);
