@@ -146,7 +146,7 @@ export function AdminLedgerTable({
           >
             {/* User */}
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/[0.035] overflow-hidden">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/[0.035] text-[#D4D4D4] overflow-hidden">
                 {(() => {
                   const avatarUrl =
                     item.userId?.profilePicture ||
@@ -173,8 +173,8 @@ export function AdminLedgerTable({
                 })()}
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-medium text-white/80 truncate">{item.userId?.username || 'Unknown'}</p>
-                <p className="text-xs text-white/30 truncate">{item.userId?.email || item.userId || ''}</p>
+                <p className="truncate text-sm font-semibold text-[#D4D4D4]">{item.userId?.username || 'Unknown'}</p>
+                <p className="mt-0.5 truncate text-[13px] text-[#888]">{item.userId?.email || item.userId || ''}</p>
               </div>
             </div>
 
