@@ -146,7 +146,7 @@ export function AdminLedgerTable({
           >
             {/* User */}
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/[0.035] text-[#D4D4D4] overflow-hidden">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.035] text-[#D4D4D4] overflow-hidden">
                 {(() => {
                   const avatarUrl =
                     item.userId?.profilePicture ||
@@ -161,20 +161,20 @@ export function AdminLedgerTable({
                         const parent = (e.target as HTMLImageElement).parentElement;
                         if (parent) {
                           (e.target as HTMLImageElement).style.display = 'none';
-                          parent.innerHTML = `<span class="text-sm font-bold text-[#D4D4D4]">${(item.userId?.username?.charAt(0) || 'U').toUpperCase()}</span>`;
+                          parent.innerHTML = `<span class="text-xs font-bold text-[#D4D4D4]">${(item.userId?.username?.charAt(0) || 'U').toUpperCase()}</span>`;
                         }
                       }}
                     />
                   ) : (
-                    <span className="text-sm font-bold text-[#D4D4D4]">
+                    <span className="text-xs font-bold text-[#D4D4D4]">
                       {item.userId?.username?.charAt(0).toUpperCase() || 'U'}
                     </span>
                   );
                 })()}
               </div>
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-[#D4D4D4]">{item.userId?.username || 'Unknown'}</p>
-                <p className="mt-0.5 truncate text-[13px] text-[#888]">{item.userId?.email || item.userId || ''}</p>
+                <p className="truncate text-[13px] font-medium text-[#D4D4D4]">{item.userId?.username || 'Unknown'}</p>
+                <p className="mt-0.5 truncate text-xs text-[#888]">{item.userId?.email || item.userId || ''}</p>
               </div>
             </div>
 
