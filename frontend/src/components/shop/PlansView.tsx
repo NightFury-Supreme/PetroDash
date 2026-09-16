@@ -66,7 +66,6 @@ export function PlansView({
         ================================================================= */}
         <section className="mt-8">
           <SectionTitle
-            icon={<Crown className="h-3.5 w-3.5 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]" />}
             title="Available Plans"
             description={`${plans.length} ${
               plans.length === 1 ? "plan" : "plans"
