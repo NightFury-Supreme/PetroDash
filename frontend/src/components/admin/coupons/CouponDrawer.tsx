@@ -228,7 +228,7 @@ export function CouponDrawer({
           <div>
             <h3 className="text-sm font-medium text-white mb-1">Allowed Plans</h3>
             <p className="text-xs text-[#888] mb-4">Select which plans this coupon can be applied to. Leave empty to allow all plans.</p>
-            <div className="border-t border-white/[0.06] divide-y divide-white/[0.06] -mx-6 px-6">
+            <div className="border-t border-white/[0.06] divide-y divide-white/[0.06]">
               {plans.map((p) => {
                 const id = String(p._id || p.id);
                 const name = p.name || id;
@@ -248,7 +248,7 @@ export function CouponDrawer({
                           : [...(prev.appliesToPlanIds || []), id]
                       }));
                     }}
-                    className={`w-full flex items-center justify-between px-5 py-4 text-left transition-colors rounded-lg ${selected ? 'bg-[#FF5722]/[0.06]' : 'hover:bg-white/[0.015]'}`}
+                    className={`w-full flex items-center justify-between px-5 py-4 text-left transition-colors ${selected ? 'bg-[#FF5722]/[0.06]' : 'hover:bg-white/[0.015]'}`}
                   >
                     <div className="min-w-0 pr-4">
                       <span className={`block text-sm font-medium ${selected ? 'text-white/90' : 'text-white/70'}`}>
