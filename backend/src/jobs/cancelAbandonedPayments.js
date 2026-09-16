@@ -4,9 +4,9 @@ let cancelInterval = null;
 
 async function cancelAbandonedPayments() {
   try {
-    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const result = await Payment.updateMany(
-      { status: 'CREATED', createdAt: { $lt: thirtyMinutesAgo } },
+      { status: 'CREATED', createdAt: { $lt: twentyFourHoursAgo } },
       { $set: { status: 'VOIDED' } }
     );
     if (result.modifiedCount > 0) {
@@ -19,8 +19,8 @@ async function cancelAbandonedPayments() {
 
 function startCancelAbandonedPaymentsJob() {
   if (cancelInterval) return;
-  // Run every 5 minutes
-  cancelInterval = setInterval(cancelAbandonedPayments, 5 * 60 * 1000);
+  // Run every 15 minutes
+  cancelInterval = setInterval(cancelAbandonedPayments, 15 * 60 * 1000);
   // Run once immediately on startup
   cancelAbandonedPayments();
   console.log('[Jobs] Started abandoned payments cancellation job');
