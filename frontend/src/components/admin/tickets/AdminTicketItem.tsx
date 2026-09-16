@@ -34,8 +34,8 @@ export default function AdminTicketItem({ t, onAction }:{ t: Ticket; onAction: (
     t.user?.oauthProviders?.google?.picture;
 
   return (
-    <div className={`relative transition-colors hover:bg-white/[0.015] ${opening ? 'opacity-70' : ''} ${menu ? 'z-50' : 'z-0'}`}>
-      <div className="grid grid-cols-[1fr_auto] items-center gap-3 py-4 md:grid-cols-[1fr_130px_100px_90px_80px_60px_36px] md:gap-4">
+    <div className={`relative transition-colors hover:bg-white/[0.015] px-2 ${opening ? 'opacity-70' : ''} ${menu ? 'z-50' : 'z-0'}`}>
+      <div className="grid grid-cols-[1fr_auto] items-center gap-3 py-5 md:grid-cols-[1.5fr_2fr_100px_100px_100px_80px_36px] md:gap-4">
         
         {/* Subject + ID */}
         <button type="button" onClick={()=>{ setOpening(true); window.location.href=`/admin/tickets/${t._id}`; }} className="min-w-0 text-left">
@@ -60,8 +60,8 @@ export default function AdminTicketItem({ t, onAction }:{ t: Ticket; onAction: (
         </button>
 
         {/* User - desktop */}
-        <div className="hidden md:flex items-center gap-2" title={t.user?.email || t.user?.username}>
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white/[0.035] overflow-hidden">
+        <div className="hidden md:flex items-center gap-3 min-w-0 pr-4" title={t.user?.email || t.user?.username}>
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white/[0.035] overflow-hidden">
             {avatarUrl ? (
               <img
                 src={avatarUrl}
@@ -71,33 +71,33 @@ export default function AdminTicketItem({ t, onAction }:{ t: Ticket; onAction: (
                   const parent = (e.target as HTMLImageElement).parentElement;
                   if (parent) {
                     (e.target as HTMLImageElement).style.display = 'none';
-                    parent.innerHTML = `<span class="text-[11px] font-bold text-[#D4D4D4]">${(t.user?.username?.charAt(0) || 'U').toUpperCase()}</span>`;
+                    parent.innerHTML = `<span class="text-sm font-bold text-[#D4D4D4]">${(t.user?.username?.charAt(0) || 'U').toUpperCase()}</span>`;
                   }
                 }}
               />
             ) : (
-              <span className="text-[11px] font-bold text-[#D4D4D4]">
+              <span className="text-sm font-bold text-[#D4D4D4]">
                 {(t.user?.username?.charAt(0) || 'U').toUpperCase()}
               </span>
             )}
           </div>
-          <div className="min-w-0">
-            <span className="block truncate text-xs text-[#D4D4D4]">
+          <div className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-medium text-white/80">
               {t.user?.username || t.user?.email || 'User'}
             </span>
-            <span className="block truncate text-[10px] text-[#555] mt-0.5">
+            <span className="block truncate text-xs text-white/30 mt-0.5">
               {t.user?.email !== t.user?.username ? t.user?.email || '' : ''}
             </span>
           </div>
         </div>
 
         {/* Category — desktop */}
-        <span className="hidden text-xs capitalize text-[#888] md:block">
+        <span className="hidden text-sm capitalize text-[#888] md:block truncate">
           {t.category || 'general'}
         </span>
 
         {/* Updated — desktop */}
-        <span className="hidden text-xs text-[#666] md:block">
+        <span className="hidden text-sm text-[#666] md:block truncate">
           {formatRelative(t.updatedAt)}
         </span>
 

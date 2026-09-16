@@ -222,7 +222,7 @@ export default function AdminTicketsPage() {
               ) : (
                 <div>
                   {/* Column headers */}
-                  <div className="hidden grid-cols-[1fr_130px_100px_90px_80px_60px_36px] gap-4 border-b border-white/[0.06] pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30 md:grid">
+                  <div className="hidden grid-cols-[1.5fr_2fr_100px_100px_100px_80px_36px] gap-4 border-b border-white/[0.06] pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30 md:grid px-2">
                     <span>Ticket</span>
                     <span>User</span>
                     <span>Category</span>
@@ -232,7 +232,7 @@ export default function AdminTicketsPage() {
                     <span />
                   </div>
 
-                  <div className="divide-y divide-[#222]">
+                  <div className="divide-y divide-white/[0.06]">
                     {tickets.map(t => (
                       <AdminTicketItem key={t._id} t={t as any} onAction={async (action, id) => {
                         let r;
