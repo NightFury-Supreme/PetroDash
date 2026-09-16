@@ -97,19 +97,21 @@ export function CouponDrawer({
                     onError={(e) => showError(e)}
                   />
                 )}
-                <ActionButton
-                  onClick={async () => {
-                    if (confirm("Are you sure you want to delete this coupon?")) {
-                      await onSave(item._id, { _delete: true });
-                    }
-                  }}
-                  loading={saving}
-                  label="Delete"
-                  variant="danger"
-                  icon={<i className="fas fa-trash mr-2"></i>}
-                  onSuccess={() => { showSuccess(`Coupon ${item.code} deleted.`); onClose(); }}
-                  onError={(e) => showError(e)}
-                />
+                  <ActionButton
+                    onClick={async () => {
+                      if (confirm("Are you sure you want to delete this coupon?")) {
+                        await onSave(item._id, { _delete: true });
+                      }
+                    }}
+                    loading={saving}
+                    disabled={item.redeemedCount > 0}
+                    title={item.redeemedCount > 0 ? "Cannot delete coupon that has been used" : undefined}
+                    label="Delete"
+                    variant="danger"
+                    icon={<i className="fas fa-trash mr-2"></i>}
+                    onSuccess={() => { showSuccess(`Coupon ${item.code} deleted.`); onClose(); }}
+                    onError={(e) => showError(e)}
+                  />
               </>
             )}
           </div>

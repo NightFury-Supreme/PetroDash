@@ -199,7 +199,12 @@ router.delete('/:id', requireAdmin, async (req, res) => {
 
     // Check if coupon has been used
     if (coupon.redeemedCount > 0) {
-      return res.status(400).json({ error: 'Cannot delete coupon that has been used' });
+      return res.status(400).json({ 
+        error: 'Cannot delete coupon',
+        reason: 'Coupon has already been used by users',
+        redeemedCount: coupon.redeemedCount,
+        suggestion: 'Disable the coupon instead of deleting it'
+      });
     }
 
     await Coupon.findByIdAndDelete(String(req.params.id));
