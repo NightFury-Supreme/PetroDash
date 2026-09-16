@@ -12,45 +12,45 @@ export function AdminLedgerTableSkeleton() {
       </div>
 
       <div className="divide-y divide-white/[0.06]">
-        {[...Array(10)].map((_, rowIndex) => (
+        {[...Array(6)].map((_, rowIndex) => (
           <div
             key={rowIndex}
             className="flex flex-col gap-4 px-5 py-4 transition hover:bg-white/[0.015] md:grid md:grid-cols-[1.5fr_1.5fr_1fr_1fr_1fr_80px] md:items-center"
           >
             {/* User */}
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 shrink-0 rounded-lg bg-white/[0.035] animate-pulse"></div>
-              <div className="min-w-0 flex flex-col gap-1">
-                <div className="h-4 w-24 bg-white/5 rounded animate-pulse"></div>
-                <div className="h-3 w-32 bg-white/[0.03] rounded animate-pulse"></div>
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center text-[#D4D4D4] overflow-hidden rounded-lg bg-white/[0.035] animate-pulse"></div>
+              <div className="min-w-0">
+                <div className="h-4 w-28 bg-[#202020] rounded animate-pulse"></div>
+                <div className="h-3 w-36 bg-[#202020] rounded animate-pulse mt-1"></div>
               </div>
             </div>
 
             {/* Order Info */}
-            <div className="flex flex-col gap-1">
-              <div className="h-4 w-28 bg-white/5 rounded animate-pulse"></div>
-              <div className="h-3 w-20 bg-white/[0.03] rounded animate-pulse"></div>
+            <div className="flex flex-col justify-center">
+              <div className="h-3 w-32 bg-[#202020] rounded animate-pulse"></div>
+              <div className="h-2 w-24 bg-[#202020] rounded animate-pulse mt-1"></div>
             </div>
 
             {/* Provider */}
-            <div className="flex flex-col gap-1">
-              <div className="h-4 w-20 bg-white/5 rounded animate-pulse"></div>
-              <div className="h-3 w-24 bg-white/[0.03] rounded animate-pulse"></div>
+            <div className="flex flex-col justify-center">
+              <div className="h-4 w-20 bg-[#202020] rounded animate-pulse"></div>
+              <div className="h-2.5 w-12 bg-[#202020] rounded animate-pulse mt-1"></div>
             </div>
 
             {/* Amount */}
-            <div className="flex flex-col gap-1">
-              <div className="h-4 w-16 bg-white/5 rounded animate-pulse"></div>
+            <div className="flex items-center gap-1.5">
+              <div className="h-4 w-16 bg-[#202020] rounded animate-pulse"></div>
             </div>
 
             {/* Status */}
-            <div>
-              <div className="h-6 w-20 bg-white/5 rounded animate-pulse"></div>
+            <div className="flex items-center">
+              <div className="h-5 w-16 bg-[#202020] rounded animate-pulse"></div>
             </div>
 
             {/* Action */}
-            <div className="flex items-center gap-1 justify-end">
-              <div className="h-8 w-8 bg-white/[0.035] rounded-lg animate-pulse"></div>
+            <div className="flex items-center gap-1 justify-end mt-2 md:mt-0">
+              <div className="h-8 w-8 bg-[#202020] rounded-lg animate-pulse"></div>
             </div>
           </div>
         ))}

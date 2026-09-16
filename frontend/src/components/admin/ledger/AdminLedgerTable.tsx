@@ -146,7 +146,7 @@ export function AdminLedgerTable({
           >
             {/* User */}
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.035] text-[#D4D4D4] overflow-hidden">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center text-[#D4D4D4] overflow-hidden rounded-lg bg-white/[0.035]">
                 {(() => {
                   const avatarUrl =
                     item.userId?.profilePicture ||
@@ -156,7 +156,7 @@ export function AdminLedgerTable({
                     <img
                       src={avatarUrl}
                       alt={item.userId?.username || 'User'}
-                      className="w-full h-full object-cover"
+                      className="h-full w-full object-cover rounded-lg"
                       onError={(e) => {
                         const parent = (e.target as HTMLImageElement).parentElement;
                         if (parent) {
@@ -173,8 +173,8 @@ export function AdminLedgerTable({
                 })()}
               </div>
               <div className="min-w-0">
-                <p className="truncate text-[13px] font-medium text-[#D4D4D4]">{item.userId?.username || 'Unknown'}</p>
-                <p className="mt-0.5 truncate text-xs text-[#888]">{item.userId?.email || item.userId || ''}</p>
+                <p className="truncate text-sm font-semibold text-[#D4D4D4]">{item.userId?.username || 'Unknown'}</p>
+                <p className="mt-0.5 truncate text-[13px] text-[#888]">{item.userId?.email || item.userId || ''}</p>
               </div>
             </div>
 
