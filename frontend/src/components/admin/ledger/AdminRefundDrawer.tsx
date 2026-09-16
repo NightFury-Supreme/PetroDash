@@ -22,7 +22,7 @@ export function AdminRefundDrawer({
       isOpen={isOpen}
       onClose={onClose}
       title="Confirm Refund"
-      subtitle={Are you sure you want to refund payment \?}
+      subtitle={`Are you sure you want to refund payment ${paymentId ? paymentId.substring(0, 12) + '...' : ''}?`}
       footer={
         <div className="flex items-center justify-end gap-2 w-full">
           <button
