@@ -4,11 +4,6 @@
 import { Edit2 } from 'lucide-react';
 
 export default function CouponsList({ coupons, onManage, onToggle, onDelete, plans, deletingId, currency = 'USD' }: any) {
-  const getPlanNames = (planIds?: string[]) => {
-    if (!planIds || planIds.length === 0) return 'All plans';
-    return planIds.map((id) => plans.find((p: any) => p._id === id)?.name || id).join(', ');
-  };
-
   const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString() : 'No limit');
 
   if (!coupons?.length) {
@@ -47,7 +42,7 @@ export default function CouponsList({ coupons, onManage, onToggle, onDelete, pla
                 <p className="text-sm font-medium text-white/80 truncate">
                   {c.code}
                 </p>
-                <p className="text-xs text-white/30 truncate">Applies to: {getPlanNames(c.appliesToPlanIds)}</p>
+                <p className="text-[11px] font-mono text-white/30 truncate">{c._id || c.id}</p>
               </div>
             </div>
 
