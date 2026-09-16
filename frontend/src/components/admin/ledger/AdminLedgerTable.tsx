@@ -146,7 +146,7 @@ export function AdminLedgerTable({
           >
             {/* User */}
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/[0.07] bg-white/[0.035] overflow-hidden">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/[0.07] bg-white/[0.035] overflow-hidden">
                 {(() => {
                   const avatarUrl =
                     item.userId?.profilePicture ||
