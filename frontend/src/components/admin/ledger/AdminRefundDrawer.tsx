@@ -60,18 +60,25 @@ export function AdminRefundDrawer({
         </div>
       }
     >
-      <div className="border-b border-white/[0.07] pb-6 mb-8 mt-2">
-        <div className="flex flex-row items-center gap-5">
-          <div className="flex-1 min-w-0">
-            <h2 className="text-[16px] font-semibold text-zinc-200 truncate leading-snug">Order ID: {payment?._id || "Unknown"}</h2>
-            <div className="mt-3 flex flex-col gap-1.5">
-              <span className="text-[13px] font-medium text-[#D4D4D4]">
-                Refund Amount: <span className="text-white font-bold">{Number(payment?.amount || 0).toFixed(2)} {payment?.currency || 'USD'}</span>
-              </span>
-              <span className="text-[13px] font-medium text-[#D4D4D4]">
-                User: <span className="text-white">{payment?.userId?.username || 'Unknown'}</span> <span className="text-zinc-500">({payment?.userId?.email || 'N/A'})</span>
-              </span>
-            </div>
+      <div className="border-b border-white/[0.07] pb-6 mb-8 mt-1">
+        <div className="flex flex-col mb-5">
+          <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-zinc-500 mb-1.5">Order ID</span>
+          <span className="text-[13px] font-mono text-zinc-300 bg-white/[0.03] border border-white/[0.05] px-2.5 py-1.5 rounded-md w-fit">
+            {payment?._id || "Unknown"}
+          </span>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col p-3.5 rounded-lg border border-white/[0.06] bg-white/[0.02]">
+            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-zinc-500 mb-1">Refund Amount</span>
+            <span className="text-[17px] font-bold text-zinc-100">
+              {Number(payment?.amount || 0).toFixed(2)} <span className="text-[13px] text-zinc-500 font-medium">{payment?.currency || 'USD'}</span>
+            </span>
+          </div>
+          <div className="flex flex-col p-3.5 rounded-lg border border-white/[0.06] bg-white/[0.02] min-w-0">
+            <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-zinc-500 mb-1">Customer</span>
+            <span className="text-[14px] font-semibold text-zinc-200 truncate">{payment?.userId?.username || 'Unknown'}</span>
+            <span className="text-[12px] text-zinc-500 truncate mt-0.5">{payment?.userId?.email || 'N/A'}</span>
           </div>
         </div>
       </div>
