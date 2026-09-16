@@ -18,6 +18,9 @@ router.get('/ledger', requireAdmin, async (req, res) => {
     const q = {};
     if (status && ['CREATED', 'COMPLETED', 'FAILED', 'REFUNDED', 'VOIDED'].includes(status)) {
       q.status = { $eq: status };
+    } else {
+      // By default, sync with the user invoice list and hide abandoned/voided checkouts
+      q.status = { $in: ['COMPLETED', 'FAILED', 'REFUNDED'] };
     }
     
     if (provider && ['paypal', 'stripe', 'coinbase'].includes(provider)) {
