@@ -42,7 +42,9 @@ export default function CouponsList({ coupons, onManage, onToggle, onDelete, pla
                 <p className="text-sm font-medium text-white/80 truncate">
                   {c.code}
                 </p>
-                <p className="text-[11px] font-mono text-white/30 truncate">{c._id || c.id}</p>
+                <p className="text-[11px] text-white/30 truncate">
+                  {c.appliesToPlanIds?.length > 0 ? `Specific Plans (${c.appliesToPlanIds.length})` : 'Global Coupon'}
+                </p>
               </div>
             </div>
 
