@@ -25,18 +25,14 @@ router.get('/', requireAuth, async (req, res) => {
       return res.json(cached);
     }
 
-    // Auto-void stale payments in background — non-blocking
-    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
-    Payment.updateMany(
-      { userId: req.user.sub, status: 'CREATED', createdAt: { $lt: thirtyMinutesAgo } },
-      { $set: { status: 'VOIDED' } }
-    ).catch(() => {});
-
-    // Use ObjectId for reliable matching
     let userId;
     try { userId = new mongoose.Types.ObjectId(String(req.user.sub)); } catch { userId = req.user.sub; }
 
-    const baseQuery = { userId };
+    // Only show actionable or completed payments to the user - hide abandoned checkouts (CREATED/VOIDED)
+    const baseQuery = { 
+      userId,
+      status: { $in: ['COMPLETED', 'FAILED', 'REFUNDED'] }
+    };
     let q = Payment.find(baseQuery).sort({ createdAt: -1 }).lean();
 
     if (paginate) q = q.skip((page - 1) * pageSize).limit(pageSize);
