@@ -4,6 +4,7 @@ import { useToast } from '@/components/ui/ToastProvider';
 
 import { useState, useEffect } from 'react';
 import { Drawer } from '@/components/ui/Drawer';
+import { Check } from 'lucide-react';
 
 export interface CouponDrawerProps {
   item: any | null;
@@ -224,32 +225,62 @@ export function CouponDrawer({
 
         <hr className="border-white/[0.06]" />
 
-        <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Apply to plans</label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-            {plans.map((p) => (
-              <label key={p._id} className="flex items-center gap-3 p-3 rounded-lg border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.appliesToPlanIds.includes(p._id)}
-                  onChange={() => {
-                    setFormData((prev: any) => ({
-                      ...prev,
-                      appliesToPlanIds: prev.appliesToPlanIds.includes(p._id)
-                        ? prev.appliesToPlanIds.filter((id: string) => id !== p._id)
-                        : [...prev.appliesToPlanIds, p._id]
-                    }));
-                  }}
-                  className="w-4 h-4 text-[#FF5722] bg-[#1A1A1A] border-[#2A2A2A] rounded focus:ring-[#FF5722] focus:ring-2"
-                />
-                <div>
-                  <div className="text-sm font-medium text-white/80">{p.name}</div>
-                  <div className="text-xs text-white/40">{p.pricePerMonth ?? 0} {currency}/month</div>
-                </div>
-              </label>
-            ))}
+          <div>
+            <h3 className="text-sm font-medium text-white mb-1">Allowed Plans</h3>
+            <p className="text-xs text-[#888] mb-4">Select which plans this coupon can be applied to. Leave empty to allow all plans.</p>
+            <div className="border-t border-white/[0.06] divide-y divide-white/[0.06] -mx-6 px-6">
+              {plans.map((p) => {
+                const id = String(p._id || p.id);
+                const name = p.name || id;
+                const price = p.pricePerMonth !== undefined ? Number(p.pricePerMonth) : 0;
+                const planCurrency = p.currency || currency;
+                const selected = (formData.appliesToPlanIds || []).includes(id);
+
+                return (
+                  <button
+                    type="button"
+                    key={id}
+                    onClick={() => {
+                      setFormData((prev: any) => ({
+                        ...prev,
+                        appliesToPlanIds: selected
+                          ? prev.appliesToPlanIds.filter((v: string) => v !== id)
+                          : [...(prev.appliesToPlanIds || []), id]
+                      }));
+                    }}
+                    className={`w-full flex items-center justify-between px-5 py-4 text-left transition-colors rounded-lg ${selected ? 'bg-[#FF5722]/[0.06]' : 'hover:bg-white/[0.015]'}`}
+                  >
+                    <div className="min-w-0 pr-4">
+                      <span className={`block text-sm font-medium ${selected ? 'text-white/90' : 'text-white/70'}`}>
+                        {name}
+                      </span>
+                      <span className="block mt-0.5 font-mono text-[11px] text-white/35">
+                        {id}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-6 shrink-0">
+                      <div>
+                        <p className="text-[9px] uppercase tracking-[0.13em] text-white/20 text-right">Price</p>
+                        <p className={`text-sm font-semibold tracking-tight mt-0.5 ${selected ? 'text-white/90' : 'text-white/60'}`}>
+                          {price > 0 ? price.toFixed(2) : "0.00"} <span className="text-[10px] font-normal text-white/25">{planCurrency}</span>
+                        </p>
+                      </div>
+
+                      <div className={`flex items-center justify-center w-5 h-5 rounded-full border transition-colors shrink-0 ${
+                        selected ? 'bg-[#FF5722] border-[#FF5722] text-black' : 'border-white/15 text-transparent'
+                      }`}>
+                        <Check size={12} strokeWidth={3} />
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+              {plans.length === 0 && (
+                <div className="py-6 text-center text-xs text-white/25 italic">No plans available.</div>
+              )}
+            </div>
           </div>
-        </div>
       </div>
     </Drawer>
   );
