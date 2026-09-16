@@ -1,5 +1,4 @@
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
-import { useState } from 'react';
 
 
 
@@ -18,8 +17,7 @@ export function AdminLedgerTable({
   refunding,
   voiding
 }: AdminLedgerTableProps) {
-  const [showMenuFor, setShowMenuFor] = useState<string | null>(null);
-
+  
   const getStatusBadge = (status: string) => {
     const normStatus = String(status || "").toUpperCase();
     
@@ -73,66 +71,40 @@ export function AdminLedgerTable({
       }
     };
 
-    return (
-      <div className="relative">
-        <button
-          onClick={() => setShowMenuFor(showMenuFor === item._id ? null : item._id)}
-          className="w-8 h-8 bg-[#202020] hover:bg-[#272727] border border-[#303030] hover:border-[#404040] rounded-lg flex items-center justify-center transition-colors"
-          title="Actions"
-        >
-          <i className="fas fa-ellipsis-v text-[#AAAAAA] text-sm"></i>
-        </button>
+    if (!canRefund && !canVoid && !canInvoice) {
+      return <span className="text-white/20 text-xs">-</span>;
+    }
 
-        {showMenuFor === item._id && (
-          <div className="absolute right-0 top-full mt-1 w-48 bg-[#181818] border border-[#303030] rounded-lg shadow-xl z-10">
-            <div className="py-1">
-              {canInvoice && (
-                <button
-                  onClick={() => {
-                    handleDownloadInvoice(item._id);
-                    setShowMenuFor(null);
-                  }}
-                  className="w-full px-4 py-2 text-left text-sm text-[#AAAAAA] hover:text-white hover:bg-[#202020] transition-colors flex items-center gap-2"
-                >
-                  <i className="fas fa-file-pdf"></i>
-                  Download Invoice
-                </button>
-              )}
-              {canRefund && (
-                <button
-                  onClick={() => {
-                    onRefund(item._id);
-                    setShowMenuFor(null);
-                  }}
-                  disabled={refunding === item._id}
-                  className="w-full px-4 py-2 text-left text-sm text-yellow-400 hover:bg-[#202020] transition-colors flex items-center gap-2 disabled:opacity-50"
-                >
-                  <i className="fas fa-undo"></i>
-                  {refunding === item._id ? 'Refunding...' : 'Refund'}
-                </button>
-              )}
-              
-              {canVoid && (
-                <button
-                  onClick={() => {
-                    onVoid(item._id);
-                    setShowMenuFor(null);
-                  }}
-                  disabled={voiding === item._id}
-                  className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-[#202020] transition-colors flex items-center gap-2 disabled:opacity-50"
-                >
-                  <i className="fas fa-ban"></i>
-                  {voiding === item._id ? 'Voiding...' : 'Void'}
-                </button>
-              )}
-              
-              {!canRefund && !canVoid && !canInvoice && (
-                <div className="px-4 py-2 text-xs text-[#AAAAAA]">
-                  No actions available
-                </div>
-              )}
-            </div>
-          </div>
+    return (
+      <div className="flex items-center gap-2 justify-end">
+        {canInvoice && (
+          <button
+            onClick={() => handleDownloadInvoice(item._id)}
+            title="Download Invoice"
+            className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.05] text-[#AAAAAA] hover:text-white transition-colors"
+          >
+            <i className="fas fa-file-pdf text-[13px]"></i>
+          </button>
+        )}
+        {canRefund && (
+          <button
+            onClick={() => onRefund(item._id)}
+            disabled={refunding === item._id}
+            title="Refund Payment"
+            className="w-8 h-8 rounded-lg flex items-center justify-center bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/20 text-yellow-500 hover:text-yellow-400 transition-colors disabled:opacity-50"
+          >
+            {refunding === item._id ? <i className="fas fa-spinner fa-spin text-[13px]"></i> : <i className="fas fa-undo text-[13px]"></i>}
+          </button>
+        )}
+        {canVoid && (
+          <button
+            onClick={() => onVoid(item._id)}
+            disabled={voiding === item._id}
+            title="Void Checkout"
+            className="w-8 h-8 rounded-lg flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 hover:text-red-400 transition-colors disabled:opacity-50"
+          >
+            {voiding === item._id ? <i className="fas fa-spinner fa-spin text-[13px]"></i> : <i className="fas fa-ban text-[13px]"></i>}
+          </button>
         )}
       </div>
     );
