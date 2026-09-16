@@ -4,6 +4,7 @@ import { useToast } from '@/components/ui/ToastProvider';
 
 import { useState, useEffect } from 'react';
 import { Drawer } from '@/components/ui/Drawer';
+import { Select } from '@/components/ui/Select';
 import { Check } from 'lucide-react';
 
 export interface CouponDrawerProps {
@@ -165,14 +166,14 @@ export function CouponDrawer({
           </div>
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Type <span className="text-[#FF5722]">*</span></label>
-            <select
-              value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-              className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50 transition-colors"
-            >
-              <option value="percentage">Percentage (%)</option>
-              <option value="fixed">Fixed amount ({currency})</option>
-            </select>
+              <Select
+                value={formData.type}
+                onChange={(val) => setFormData({ ...formData, type: val })}
+                options={[
+                  { label: 'Percentage (%)', value: 'percentage' },
+                  { label: `Fixed amount (${currency})`, value: 'fixed' }
+                ]}
+              />
           </div>
         </div>
 
