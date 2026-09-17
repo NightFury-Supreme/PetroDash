@@ -11,8 +11,8 @@ export interface AuthCardProps {
 export default function AuthCard({ title, subtitle, children, siteName = 'PteroDash', siteIcon = '' }: AuthCardProps) {
   const iconSrc = siteIcon ? `${process.env.NEXT_PUBLIC_API_BASE || ''}${siteIcon}` : '/logo.svg';
   
-  // Stunning abstract dark 4K wallpaper as placeholder
-  const wallpaperUrl = "https://r4.wallpaperflare.com/wallpaper/948/782/354/minecraft-minecraft-dungeons-ocean-view-minecraft-dungeons-hidden-depths-4k-hd-wallpaper-d8565d58c0f08c58c04c118e68f2d44a.jpg";
+  // Use local auth.jpg from the public directory
+  const wallpaperUrl = "/auth.jpg";
 
   return (
     <div className="min-h-[100dvh] w-full flex flex-col lg:flex-row bg-[#0F0F0F] text-white font-sans overflow-hidden">
