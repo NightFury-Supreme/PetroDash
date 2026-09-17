@@ -10,8 +10,7 @@ export default function AuthSubmit({ children, disabled }: AuthSubmitProps) {
     <button
       type="submit"
       disabled={disabled}
-      className="w-full rounded-lg px-4 py-3 font-medium"
-      style={{ background: disabled ? '#ffffffcc' : '#ffffff', color: '#111', border: '1px solid var(--border)' }}
+      className="w-full h-[42px] mt-2 flex items-center justify-center rounded-[7px] bg-[#FF5722] hover:bg-[#F4511E] text-white text-[13px] font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {children}
     </button>

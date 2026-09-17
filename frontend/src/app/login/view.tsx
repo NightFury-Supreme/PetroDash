@@ -198,23 +198,23 @@ export default function LoginClient() {
             placeholder="••••••••"
             error={fieldErrors.password}
           />
-          <div className="text-right text-sm">
-            <Link href="/forgot" className="underline">Forgot password?</Link>
+          <div className="text-right text-[12px] mt-1 mb-4">
+            <Link href="/forgot" className="text-[#888888] hover:text-[#FF5722] transition-colors">Forgot password?</Link>
           </div>
-          {error && <div className="text-sm" style={{ color: '#ff6b6b' }}>{error}</div>}
-          <AuthSubmit disabled={loading}>{loading ? 'Loading…' : 'Login'}</AuthSubmit>
+          {error && <div className="text-[13px] text-red-400 mb-2">{error}</div>}
+          <AuthSubmit disabled={loading}>{loading ? 'Loading.' : 'Login'}</AuthSubmit>
         </>
       )}
 
       {showOAuth && (
         <>
           {showEmailLogin && (
-            <div className="relative">
+            <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-[#303030]" />
+                <div className="w-full border-t border-[#222]" />
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 text-[#AAAAAA]">Or continue with</span>
+              <div className="relative flex justify-center text-[11px] uppercase tracking-wider font-semibold">
+                <span className="px-3 bg-[#0F0F0F] text-[#666]">Or continue with</span>
               </div>
             </div>
           )}
@@ -223,16 +223,16 @@ export default function LoginClient() {
       )}
 
       {!showEmailLogin && !showOAuth && (
-        <div className="text-center text-[#AAAAAA]">
+        <div className="text-center text-[#888888] text-[13px]">
           <p>No login methods are currently available.</p>
-          <p className="text-sm">Please contact an administrator.</p>
+          <p className="text-[12px] mt-1">Please contact an administrator.</p>
         </div>
       )}
 
       {showEmailLogin && (
-        <div className="text-sm text-muted">
+        <div className="text-[12px] text-[#888888] text-center mt-6">
           Don&apos;t have an account?{' '}
-          <Link href="/register" className="underline">Create one</Link>
+          <Link href="/register" className="text-[#FF5722] hover:text-[#F4511E] transition-colors font-medium">Create one</Link>
         </div>
       )}
     </form>

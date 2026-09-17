@@ -98,14 +98,14 @@ function OAuthButtonsInner({ onError }: OAuthButtonsProps) {
         <button
           key={provider.name}
           onClick={() => handleOAuthLogin(provider.name)}
-          className="w-full h-12 bg-[#202020] border border-[#303030] rounded-lg flex items-center justify-center gap-3 text-white font-medium hover:bg-[#272727] hover:border-[#404040] transition-all duration-200 group"
+          className="w-full h-[42px] bg-[#121212] border border-[#282828] rounded-[7px] flex items-center justify-center gap-3 text-[#d5d5d5] text-[13px] font-medium hover:bg-[#1A1A1A] hover:border-[#383838] hover:text-white transition-all duration-200 group"
           style={{
             '--provider-color': provider.color,
             '--provider-bg': provider.bgColor,
             '--provider-hover': provider.hoverColor
           } as React.CSSProperties}
         >
-          <i className={`${provider.icon} text-lg group-hover:scale-110 transition-transform text-white`} />
+          <i className={`${provider.icon} text-[15px] group-hover:scale-110 transition-transform`} style={{ color: 'var(--provider-color)' }} />
           <span>Continue with {provider.name}</span>
         </button>
       ))}
