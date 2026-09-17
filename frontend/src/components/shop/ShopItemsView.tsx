@@ -38,18 +38,31 @@ export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
             {items.map((item) => {
               const Icon = getShopIcon(item.name);
               
-              const getDescriptionForKey = (key: string, name: string) => {
-                switch (key) {
-                  case 'allocations': return 'Additional network ports';
-                  case 'backups': return 'Additional backup slots';
-                  case 'cpuPercent': return 'Increase CPU limit (in %)';
-                  case 'databases': return 'Additional database slots';
-                  case 'diskMb': return 'Increase disk space (in MB)';
-                  case 'memoryMb': return 'Increase memory (in MB)';
-                  case 'serverSlots': return 'Additional server slots';
-                  default: return `Add extra ${name}`;
-                }
-              };
+              const getTranslatedName = (key: string, defaultName: string) => {
+                  switch (key) {
+                    case 'allocations': return t('nameAllocations');
+                    case 'backups': return t('nameBackups');
+                    case 'cpuPercent': return t('nameCpu');
+                    case 'databases': return t('nameDatabases');
+                    case 'diskMb': return t('nameDisk');
+                    case 'memoryMb': return t('nameMemory');
+                    case 'serverSlots': return t('nameServerSlots');
+                    default: return defaultName;
+                  }
+                };
+
+                const getDescriptionForKey = (key: string, name: string) => {
+                  switch (key) {
+                    case 'allocations': return t('descAllocations');
+                    case 'backups': return t('descBackups');
+                    case 'cpuPercent': return t('descCpu');
+                    case 'databases': return t('descDatabases');
+                    case 'diskMb': return t('descDisk');
+                    case 'memoryMb': return t('descMemory');
+                    case 'serverSlots': return t('descServerSlots');
+                    default: return t('addExtra', { name });
+                  }
+                };
 
               const formatUnit = (unit?: string) => {
                 if (!unit || unit === 'count') return '';
@@ -67,7 +80,7 @@ export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
                       <Icon className="h-4 w-4 text-white/50" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-white/80 truncate">{item.name}</p>
+                      <p className="text-sm font-medium text-white/80 truncate">{getTranslatedName(item.key, item.name)}</p>
                       <p className="text-xs text-white/30 truncate">{item.description || getDescriptionForKey(item.key, item.name)}</p>
                     </div>
                   </div>

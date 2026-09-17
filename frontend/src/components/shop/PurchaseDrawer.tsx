@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Coins, Minus, Plus, Loader2 } from "lucide-react";
 import { Drawer } from "@/components/ui/Drawer";
+import { useTranslations } from "next-intl";
 import { getShopIcon, getTotalAmount, MAX_QUANTITY, SummaryRow } from "./shopUtils";
 
 interface PurchaseDrawerProps {
@@ -38,6 +39,7 @@ export function PurchaseDrawer({
   onConfirm,
   
 }: PurchaseDrawerProps) {
+  const t = useTranslations('Shop');
     // Track last item so the drawer doesn't instantly empty out during slide-out animation
   const [lastItem, setLastItem] = useState<any | null>(null);
   
@@ -176,7 +178,7 @@ export function PurchaseDrawer({
               <div className="mt-4 space-y-3.5">
                 <SummaryRow label="Price per unit" value={`${displayItem.pricePerUnit} coins`} />
                 <SummaryRow label="Quantity" value={`× ${quantity}`} />
-                <SummaryRow label="Resource added" value={getTotalAmount(displayItem, quantity)} />
+                <SummaryRow label={t("resource")} value={getTotalAmount(displayItem, quantity)} />
               </div>
             </div>
 
