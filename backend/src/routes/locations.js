@@ -74,7 +74,7 @@ router.get('/', requireAuth, async (req, res) => {
                 isPlanAllowed: !Array.isArray(l.allowedPlans) || l.allowedPlans.length === 0 || l.allowedPlans.some((ap) => tokens.has(String(ap)))
             }));
             return res.json(withFlag);
-        // eslint-disable-next-line unused-imports/no-unused-vars
+         
         } catch (_) {
             return res.json(locationsWithData);
         }

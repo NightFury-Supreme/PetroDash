@@ -10,6 +10,7 @@ import { useServerEdit } from "@/hooks/useServerEdit";
 import { Drawer } from "@/components/ui/Drawer";
 import { RESOURCE_FIELDS, ResourceInputCard, ResourceKey } from "./ResourceInputCard";
 import { useToast } from "@/components/ui/ToastProvider";
+import { useTranslations } from "next-intl";
 
 interface EditServerDrawerProps {
   serverId: string;
@@ -19,6 +20,7 @@ interface EditServerDrawerProps {
 
 export function EditServerDrawer({ serverId, onClose, onUpdate }: EditServerDrawerProps) {
   const { showError, showSuccess } = useToast();
+  const t = useTranslations('Dashboard');
 
   const {
     loading,
@@ -47,8 +49,8 @@ export function EditServerDrawer({ serverId, onClose, onUpdate }: EditServerDraw
 
 
   const headerExtra = server ? (
-    <div className="flex items-center gap-2">
-      <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#222] bg-[#161616] px-2.5 py-1 text-xs text-[#888]">
+    <div className="flex items-center gap-2 text-xs text-[#888]">
+      <span className="inline-flex items-center gap-1.5">
         {server.locationFlag && (
           <img 
             src={server.locationFlag.startsWith('http') 
@@ -59,10 +61,13 @@ export function EditServerDrawer({ serverId, onClose, onUpdate }: EditServerDraw
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
         )}
-        <span className="truncate max-w-[120px]">{server.location || 'Unknown'}</span>
+        <span className="truncate max-w-[120px]">{server.location || t('unknown')}</span>
       </span>
-      {server.eggIcon && (
-        <span className="inline-flex items-center justify-center w-6 h-6 rounded-md border border-[#222] bg-[#161616]">
+
+      <span className="text-[#333]">|</span>
+
+      <span className="inline-flex items-center gap-1.5">
+        {server.eggIcon && (
           <img 
             src={server.eggIcon.startsWith('http') 
               ? server.eggIcon 
@@ -71,8 +76,9 @@ export function EditServerDrawer({ serverId, onClose, onUpdate }: EditServerDraw
             className="w-3.5 h-3.5 object-contain opacity-80"
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
-        </span>
-      )}
+        )}
+        <span className="truncate max-w-[120px]">{server.eggName || t('unknown')}</span>
+      </span>
     </div>
   ) : null;
 
@@ -80,8 +86,8 @@ export function EditServerDrawer({ serverId, onClose, onUpdate }: EditServerDraw
     <Drawer
       isOpen={true}
       onClose={onClose}
-      title={server?.name || 'Edit Server'}
-      subtitle={server?.uuid ? `UUID: ${server.uuid.split('-')[0]}...` : 'Update configuration'}
+      title={server?.name || t('editServer')}
+      subtitle={server?.uuid ? `UUID: ${server.uuid.split('-')[0]}...` : t('updateConfig')}
       icon={<Server className="text-[#D4D4D4]" size={22} />}
       headerExtra={headerExtra}
       footer={
@@ -92,13 +98,13 @@ export function EditServerDrawer({ serverId, onClose, onUpdate }: EditServerDraw
             disabled={saving}
             className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50"
           >
-            Cancel
+            {t('cancel')}
           </button>
           <button
             onClick={async (e) => {
               const success = await handleSave(e);
               if (success) {
-                showSuccess("Server updated successfully!");
+                showSuccess(t('serverUpdatedSuccess'));
                 if (onUpdate) onUpdate();
                 onClose();
               }
@@ -111,9 +117,9 @@ export function EditServerDrawer({ serverId, onClose, onUpdate }: EditServerDraw
             }`}
           >
             {saving ? (
-              <><Loader2 size={16} className="animate-spin" /> Saving...</>
+              <><Loader2 size={16} className="animate-spin" /> {t('saving')}</>
             ) : (
-              "Save Changes"
+              t('saveChanges')
             )}
           </button>
         </div>
@@ -124,17 +130,17 @@ export function EditServerDrawer({ serverId, onClose, onUpdate }: EditServerDraw
       ) : (
         <div className="space-y-6">
                 <section>
-                  <h2 className="text-base font-semibold text-white">Server Details</h2>
-                  <p className="mt-0.5 text-sm text-[#888]">Configure your server&apos;s basic information</p>
+                  <h2 className="text-base font-semibold text-white">{t('serverDetails')}</h2>
+                  <p className="mt-0.5 text-sm text-[#888]">{t('configBasicInfo')}</p>
 
                   <label className="mb-2 mt-5 block text-sm font-medium text-[#D4D4D4]">
-                    Server Name <span className="text-[#FF5722]">*</span>
+                    {t('serverName')} <span className="text-[#FF5722]">*</span>
                   </label>
                   <input
                     type="text"
                     value={form.name}
                     onChange={(e) => setForm(prev => ({...prev, name: e.target.value}))}
-                    placeholder="Enter server name"
+                    placeholder={t('enterServerName')}
                     className="w-full rounded-lg border border-[#222] bg-[#161616] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60"
                   />
                   {violations.name && <p className="mt-1.5 text-xs text-red-400">{violations.name}</p>}
@@ -142,9 +148,9 @@ export function EditServerDrawer({ serverId, onClose, onUpdate }: EditServerDraw
 
                 <section className="mt-8">
                   <div className="flex items-center justify-between mb-0.5">
-                      <h2 className="text-base font-semibold text-white">Resource Limits</h2>
+                      <h2 className="text-base font-semibold text-white">{t('resourceLimits')}</h2>
                   </div>
-                  <p className="text-sm text-[#888]">Configure your server&apos;s resource allocation</p>
+                  <p className="text-sm text-[#888]">{t('configResourceAlloc')}</p>
 
                   <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
                     {RESOURCE_FIELDS.map((field) => (

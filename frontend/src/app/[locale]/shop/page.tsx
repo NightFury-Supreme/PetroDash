@@ -2,6 +2,7 @@
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { ShoppingCart, CreditCard, ShoppingBag, RefreshCw } from "lucide-react";
 import { ErrorState, DashboardButton, ErrorDescription } from "@/components/ui/ErrorState";
@@ -16,6 +17,7 @@ import { CouponDrawer } from "@/components/shop/CouponDrawer";
 import { MAX_QUANTITY } from "@/components/shop/shopUtils";
 
 export default function StorePage() {
+  const t = useTranslations('Shop');
   const router = useRouter();
 
   // Drawer state
@@ -50,7 +52,7 @@ export default function StorePage() {
       // In production you might want to verify event.origin
       if (event.data?.type === "PAYPAL_SUCCESS") {
         setIsPopupProcessing(false);
-        showSuccess("Payment processed successfully!");
+        showSuccess(t('paymentSuccess'));
         setShowCouponModal(false);
         setSelectedPlan(null);
         window.location.reload();
@@ -141,7 +143,7 @@ export default function StorePage() {
       });
       let data: any = {};
       try { data = await res.json(); } catch {}
-      if (!res.ok) throw new Error(data?.error || "Failed to create PayPal order");
+      if (!res.ok) throw new Error(data?.error || t('paypalOrderFailed'));
 
       if (data.bypassPaypal) {
         router.push("/plan/success?orderId=" + encodeURIComponent(data.id));
@@ -169,7 +171,7 @@ export default function StorePage() {
                 clearInterval(checkClosed);
                 setIsPopupProcessing((prev) => {
                   if (prev) { // If still processing when closed, it was cancelled
-                    showError("Payment was cancelled.");
+                    showError(t('paymentCancelled'));
                     // Notify backend to mark order as VOIDED
                     fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/paypal/cancel-order`, {
                       method: "POST",
@@ -195,9 +197,9 @@ export default function StorePage() {
           }
         }
       }
-      throw new Error("PayPal redirect link not found");
+      throw new Error(t('paypalLinkNotFound'));
     } catch (e: any) {
-      showError(e.message || "Failed to process payment.");
+      showError(e.message || t('paymentFailed'));
       setPurchaseLoading(false);
     }
   };
@@ -218,8 +220,8 @@ export default function StorePage() {
       <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
         <ErrorState
           icon={<ShoppingBag strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
-          kicker="Load Error"
-          title="Failed to Load Shop"
+          kicker={t('loadError')}
+          title={t('failedToLoadShop')}
           errorString={error}
           description={<ErrorDescription error={error} topic="Shop" />}
           buttons={
@@ -229,7 +231,7 @@ export default function StorePage() {
                 className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
               >
                 <RefreshCw className="w-[14px] h-[14px]" />
-                Retry
+                {t('retry')}
               </button>
               <DashboardButton variant="secondary" />
             </>

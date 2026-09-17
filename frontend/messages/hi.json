@@ -179,11 +179,11 @@
     "cpu": "CPU",
     "memory": "मेमोरी",
     "disk": "डिस्क",
-    "limit": "सीमा",
+    "limit": "सीमा", "used": "उपयोग किया गया", "user": "उपयोगकर्ता",
     "mb": "MB",
     "percent": "%",
     "resourceUsage": "संसाधन",
-    "databases": "डेटाबेस",
+    "databases": "डेटाबेस", "anomaliesDetected": "मामूली विसंगतियां पाई गईं", "diskIoSpikes": "03:22 पर डिस्क I/O स्पाइक्स", "cpuFluctuation": "SG क्षेत्र में CPU उतार-चढ़ाव",
     "ports": "पोर्ट",
     "backups": "बैकअप",
     "systemStatus": "सिस्टम स्थिति",
@@ -209,7 +209,7 @@
     "colEgg": "एग",
     "colStatus": "स्थिति",
     "colAction": "कार्रवाई",
-    "statusActive": "सक्रिय",
+    "statusActive": "सक्रिय", "failedToDeleteServer": "सर्वर हटाने में विफल",
     "statusSuspended": "निलंबित",
     "statusUnreachable": "पहुंच से बाहर",
     "statusCreating": "बनाया जा रहा है",
@@ -217,7 +217,7 @@
     "statusQueuedPosition": "कतार में (स्थिति: {pos})",
     "noServers": "कोई सर्वर नहीं मिला। शुरू करने के लिए अपना पहला सर्वर बनाएं।",
     "openServer": "सर्वर खोलें",
-    "editServer": "संपादित करें",
+    "editServer": "संपादित करें", "deployNewServer": "नया सर्वर तैनात करें", "back": "पीछे", "cancel": "रद्द करें", "nextStep": "अगला कदम", "deploying": "तैनात कर रहा है...", "serverCreatedSuccess": "सर्वर सफलतापूर्वक बनाया गया!", "limits": "सीमाएं", "software": "सॉफ्टवेयर", "location": "स्थान", "summary": "सारांश", "serverDetails": "सर्वर विवरण", "configBasicInfo": "अपने सर्वर की मूल जानकारी कॉन्फ़िगर करें", "serverName": "सर्वर का नाम", "enterServerName": "सर्वर का नाम दर्ज करें", "resourceLimits": "संसाधन सीमाएं", "configResourceAlloc": "संसाधन आवंटन कॉन्फ़िगर करें", "selectSoftware": "सॉफ्टवेयर चुनें", "uncategorized": "अवर्गीकृत", "recommended": "अनुशंसित", "server": "सर्वर", "selectDeploymentLoc": "तैनाती स्थान चुनें", "reviewConfig": "बनाने से पहले अपनी कॉन्फ़िगरेशन की समीक्षा करें", "generalInformation": "सामान्य जानकारी", "unnamedServer": "अनाम सर्वर", "noneSelected": "कोई नहीं चुना गया", "includedResources": "शामिल संसाधन", "updateConfig": "कॉन्फ़िगरेशन अपडेट करें", "saving": "सहेज रहा है...", "saveChanges": "परिवर्तन सहेजें", "serverUpdatedSuccess": "सर्वर सफलतापूर्वक अपडेट किया गया!",
     "deleteServer": "हटाएं",
     "cannotOpenUnreachable": "अनुपलब्ध सर्वर नहीं खोल सकते",
     "cannotOpenCreating": "सर्वर बनाया जा रहा है",
@@ -236,11 +236,11 @@
     "failedFetchStatus": "स्थिति लाने में विफल",
     "authRequired": "प्रमाणीकरण आवश्यक है",
     "deleteServerSuccess": "सर्वर \"{name}\" सफलतापूर्वक हटाया गया",
-    "unknown": "अज्ञात",
+    "unknown": "अज्ञात", "statusActive": "सक्रिय", "failedToDeleteServer": "सर्वर हटाने में विफल", "statusSuspended": "निलंबित", "statusUnreachable": "पहुंच से बाहर", "statusCreating": "बन रहा है", "statusQueued": "कतार में", "statusQueuedPos": "कतार में (स्थान: {pos})", "serverIsCreating": "सर्वर बन रहा है", "serverSuspended": "सर्वर निलंबित", "serverSuspendedDesc": "यह सर्वर निलंबित है और इसे संपादित नहीं किया जा सकता है। सहायता के लिए व्यवस्थापक से संपर्क करें।", "serverIdSupport": "समर्थन के लिए सर्वर आईडी:", "cannotOpenUnreachable": "पहुंच से बाहर सर्वर नहीं खोला जा सकता",
     "uptimeStr": "अपटाइम",
     "hrsStr": "घंटे",
     "minsStr": "मिनट",
-    "deleteDrawerEntity": "सर्वर"
+    "deleteDrawerEntity": "सर्वर", "available": "उपलब्ध", "warnQueueRemove": "यह सर्वर को कतार से स्थायी रूप से हटा देगा।", "warnRecreateManual": "आपको मैन्युअल रूप से सर्वर को फिर से बनाना होगा।", "warnCannotUndo": "इस कार्रवाई को पूर्ववत नहीं किया जा सकता है।", "warnPermDelete": "सर्वर को पैनल से स्थायी रूप से हटा दिया जाएगा।", "warnDataLost": "सभी संबंधित डेटा और कॉन्फ़िगरेशन खो जाएंगे।", "exceedsLimit": "उपलब्ध सीमा से {num} अधिक है"
   },
   "Footer": {
     "checkingSystems": "सिस्टम की जाँच हो रही है...",
@@ -249,15 +249,15 @@
     "majorOutage": "बड़ी खराबी",
     "poweredBy": "द्वारा संचालित"
   },
-  "UI": {
-    "deleteDrawer": {
-      "title": "Delete {type}",
-      "subtitle": "This will permanently remove the {type} and its configuration.",
-      "cancel": "Cancel",
-      "deleteBtn": "Delete {type}",
-      "beforeContinue": "BEFORE YOU CONTINUE",
-      "typeToConfirm": "Type {name} to confirm",
-      "failedToDelete": "Failed to delete {type}"
+  "Shop": { "storeTitle": "स्टोर", "paymentSuccess": "भुगतान सफलतापूर्वक संसाधित किया गया!", "paymentCancelled": "भुगतान रद्द कर दिया गया था।", "paypalLinkNotFound": "पेपैल रीडायरेक्ट लिंक नहीं मिला", "paymentFailed": "भुगतान को संसाधित करने में विफल।", "paypalOrderFailed": "पेपैल ऑर्डर बनाने में विफल", "loadError": "लोड त्रुटि", "failedToLoadShop": "स्टोर लोड करने में विफल", "retry": "पुनः प्रयास करें", "shopItems": "स्टोर आइटम", "plans": "योजनाएं", "purchaseHelpText": "अतिरिक्त संसाधन खरीदें या प्रीमियम योजना के साथ अपने खाते को अपग्रेड करें।", "storeSubtitle": "संसाधन और प्रीमियम योजनाएं खरीदें।", "resources": "संसाधन", "noItems": "कोई स्टोर आइटम उपलब्ध नहीं है", "resource": "संसाधन", "included": "शामिल", "price": "मूल्य", "action": "कार्रवाई", "planPrice": "योजना मूल्य", "includedResources": "शामिल संसाधन", "orderSummary": "ऑर्डर सारांश", "plan": "योजना", "couponCode": "कूपन कोड", "optional": "वैकल्पिक", "total": "कुल", "lifetimeAccess": "आजीवन पहुंच", "soldOut": "बिक गया", "limitedStock": "सीमित स्टॉक", "pricePerUnit": "प्रति इकाई मूल्य", "coins": "सिक्के", "quantity": "मात्रा", "stock": "स्टॉक", "uncategorized": "अवर्गीकृत" }, "UI": {
+    "system": "सिस्टम", "requestInfo": "अनुरोध जानकारी", "statusCode": "स्थिति कोड", "valueChanges": "मान में परिवर्तन", "changed": "बदला गया", "created": "बनाया गया", "additionalInfo": "अतिरिक्त जानकारी", "action": "कार्रवाई", "status": "स्थिति", "date": "तारीख", "noActivity": "अभी तक कोई गतिविधि नहीं", "device": "डिवाइस", "deleteDrawer": {
+      "title": "{type} हटाएं",
+      "subtitle": "यह {type} और इसके कॉन्फ़िगरेशन को स्थायी रूप से हटा देगा।",
+      "cancel": "रद्द करें",
+      "deleteBtn": "{type} हटाएं",
+      "beforeContinue": "जारी रखने से पहले",
+      "typeToConfirm": "पुष्टि करने के लिए {name} टाइप करें",
+      "failedToDelete": "{type} को हटाने में विफल"
     },
     "toast": {
       "success": "Success",

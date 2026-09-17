@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from 'next-intl';
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useState } from 'react';
@@ -88,6 +89,7 @@ export function CouponDrawer({
   loading = false,
   isPopupProcessing = false,
 }: CouponDrawerProps) {
+  const t = useTranslations('Shop');
   const { currency } = useCurrency();
   const { showError, showSuccess } = useToast();
   const [couponCode, setCouponCode] = useState('');
@@ -236,7 +238,7 @@ export function CouponDrawer({
                   </p>
                 </div>
                 <div className="text-left sm:text-right">
-                  <p className="text-[8px] uppercase tracking-[0.1em] text-zinc-700">Plan price</p>
+                  <p className="text-[8px] uppercase tracking-[0.1em] text-zinc-700">{t('planPrice')}</p>
                   <p className="mt-1 text-[20px] font-semibold tracking-[-0.03em] text-zinc-100">
                     {planPrice.toFixed(2)} {currency}
                   </p>
@@ -246,7 +248,7 @@ export function CouponDrawer({
           </section>
 
           <section className="mt-9">
-            <CheckoutSectionTitle>Included resources</CheckoutSectionTitle>
+            <CheckoutSectionTitle>{t('includedResources')}</CheckoutSectionTitle>
             <div className="mt-4 grid border-y border-white/[0.07] sm:grid-cols-2">
               {resources.map((resource, index) => (
                 <ResourceRow key={resource.label} resource={resource} index={index} total={resources.length} />
@@ -262,14 +264,14 @@ export function CouponDrawer({
         =========================================================== */}
         <div className="space-y-6">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#555]">Order Summary</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#555]">{t('orderSummary')}</p>
             <div className="mt-4 space-y-3.5">
               <div className="flex items-center justify-between">
-                <span className="text-[13px] text-[#666]">Plan</span>
+                <span className="text-[13px] text-[#666]">{t('plan')}</span>
                 <span className="text-[13px] font-semibold text-white">{planName}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[13px] text-[#666]">Price</span>
+                <span className="text-[13px] text-[#666]">{t('price')}</span>
                 <span className="text-[13px] font-semibold text-white">{planPrice.toFixed(2)} {currency}</span>
               </div>
               {appliedCoupon && (
@@ -283,8 +285,8 @@ export function CouponDrawer({
 
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <label htmlFor="coupon" className="text-xs font-medium text-[#888]">Coupon Code</label>
-              <span className="text-[10px] text-[#444]">Optional</span>
+              <label htmlFor="coupon" className="text-xs font-medium text-[#888]">{t('couponCode')}</label>
+              <span className="text-[10px] text-[#444]">{t('optional')}</span>
             </div>
             <div className={`flex h-11 overflow-hidden rounded-lg border bg-[#161616] ${
               appliedCoupon ? 'border-emerald-500/50' : 'border-[#2A2A2A]'
@@ -316,7 +318,7 @@ export function CouponDrawer({
           <div className="rounded-lg border border-[#2A2A2A] bg-[#161616] p-4">
             <div className="flex items-end justify-between">
               <div>
-                <p className="text-[9px] uppercase tracking-[0.08em] text-[#555]">Total</p>
+                <p className="text-[9px] uppercase tracking-[0.08em] text-[#555]">{t('total')}</p>
                 <p className="mt-1 text-2xl font-semibold tracking-tight text-white">
                   {finalPrice.toFixed(2)}
                 </p>

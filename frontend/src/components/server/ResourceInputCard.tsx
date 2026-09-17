@@ -1,5 +1,6 @@
 import React from "react";
 import { HardDrive, MemoryStick, Cpu, Save, Database, Network, ChevronUp, ChevronDown } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export type ResourceKey = "diskMb" | "memoryMb" | "cpuPercent" | "backups" | "databases" | "allocations";
 
@@ -58,15 +59,25 @@ export const ResourceInputCard = React.memo(function ResourceInputCard({
   updateValue: (key: ResourceKey, v: number) => void;
 }) {
   const Icon = field.icon;
+  const t = useTranslations('Dashboard');
+  const keyMap: Record<string, string> = {
+    diskMb: 'disk',
+    memoryMb: 'memory',
+    cpuPercent: 'cpu',
+    backups: 'backups',
+    databases: 'databases',
+    allocations: 'ports',
+  };
+
   return (
     <div className="relative group">
       <div className="mb-2 flex items-center justify-between">
         <span className="flex items-center gap-1.5 text-sm font-medium text-[#D4D4D4]">
           <Icon size={14} className="text-[#888]" />
-          {field.label}
+          {t(keyMap[field.key])}
         </span>
         <span className="text-xs text-[#888]">
-          Available: <span className="text-[#D4D4D4] font-medium">{remaining.toLocaleString()}</span>
+          {t('available')}: <span className="text-[#D4D4D4] font-medium">{remaining.toLocaleString()}</span>
         </span>
       </div>
       <div className="relative">
@@ -108,7 +119,7 @@ export const ResourceInputCard = React.memo(function ResourceInputCard({
       </div>
       {(violation || isExceeding) && (
         <p className="mt-1.5 text-xs text-red-400">
-            {violation || `Exceeds available limit by ${Math.abs(remaining)}`}
+            {violation || t('exceedsLimit', { num: Math.abs(remaining) })}
         </p>
       )}
       <div className="mt-3 flex items-center justify-between w-full">

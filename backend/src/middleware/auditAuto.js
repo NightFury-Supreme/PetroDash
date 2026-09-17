@@ -26,7 +26,7 @@ function auditAuto() {
     let chunks = [];
     const origJson = res.json.bind(res);
     res.json = function (data) {
-      // eslint-disable-next-line unused-imports/no-unused-vars
+       
       try { chunks.push(JSON.stringify(data)); } catch (_) {}
       return origJson(data);
     };
@@ -66,7 +66,7 @@ function auditAuto() {
           severity,
           requestId: req.requestId
         });
-      // eslint-disable-next-line unused-imports/no-unused-vars
+       
       } catch (_) {}
     });
     next();

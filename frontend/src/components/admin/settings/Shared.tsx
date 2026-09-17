@@ -116,7 +116,7 @@ export function SettingsRow({
   label, 
   description, 
   children, 
-  vertical = false,
+  _vertical = false,
   displayValue,
   onSave
 }: { 

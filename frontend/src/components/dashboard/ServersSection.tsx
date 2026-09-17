@@ -54,32 +54,32 @@ export function ServersSection({ servers, onDelete, onEdit }: ServersSectionProp
             servers.map((server) => {
               let statusBadge = (
                 <span className="inline-flex rounded border border-emerald-500/20 bg-emerald-500/[0.04] px-2 py-1 text-[10px] font-medium text-emerald-500">
-                  Active
+                  {t('statusActive')}
                 </span>
               );
 
               if (server.suspended || server.status === 'suspended') {
                 statusBadge = (
                   <span className="inline-flex rounded border border-orange-500/20 bg-orange-500/[0.04] px-2 py-1 text-[10px] font-medium text-orange-500">
-                    Suspended
+                    {t('statusSuspended')}
                   </span>
                 );
               } else if (server.unreachable || server.status === 'unreachable' || server.status === 'error') {
                 statusBadge = (
                   <span className="inline-flex rounded border border-red-500/20 bg-red-500/[0.04] px-2 py-1 text-[10px] font-medium text-red-500">
-                    Unreachable
+                    {t('statusUnreachable')}
                   </span>
                 );
               } else if (server.status === 'creating') {
                 statusBadge = (
                   <span className="inline-flex rounded border border-blue-500/20 bg-blue-500/[0.04] px-2 py-1 text-[10px] font-medium text-blue-500">
-                    Creating
+                    {t('statusCreating')}
                   </span>
                 );
               } else if (server.status === 'queued') {
                 statusBadge = (
                   <span className="inline-flex whitespace-nowrap rounded border border-purple-500/20 bg-purple-500/[0.04] px-2 py-1 text-[10px] font-medium text-purple-400">
-                    {server.queuePosition ? `Queued (Position: ${server.queuePosition})` : 'Queued'}
+                    {server.queuePosition ? t('statusQueuedPos', { pos: server.queuePosition }) : t('statusQueued')}
                   </span>
                 );
               }
@@ -150,7 +150,7 @@ export function ServersSection({ servers, onDelete, onEdit }: ServersSectionProp
                       <>
                         {/* Open Server */}
                         {isDownOrUnreachable || server.status === 'creating' ? (
-                          <button disabled className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/30 cursor-not-allowed transition-colors" title={server.status === 'creating' ? "Server is creating" : "Cannot open unreachable server"}>
+                          <button disabled className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/30 cursor-not-allowed transition-colors" title={server.status === 'creating' ? t('serverIsCreating') : t('cannotOpenUnreachable')}>
                             <ExternalLink size={14} />
                           </button>
                         ) : (
@@ -207,14 +207,14 @@ export function ServersSection({ servers, onDelete, onEdit }: ServersSectionProp
         warningPoints={
           deletingServer?.status === 'queued' || deletingServer?.status === 'error'
             ? [
-                "This will remove the server from the queue permanently.",
-                "You will need to recreate the server manually.",
-                "This action cannot be undone."
+                t('warnQueueRemove'),
+                t('warnRecreateManual'),
+                t('warnCannotUndo')
               ]
             : [
-                "The server will be permanently deleted from the panel.",
-                "All associated data and configurations will be lost.",
-                "This action cannot be undone."
+                t('warnPermDelete'),
+                t('warnDataLost'),
+                t('warnCannotUndo')
               ]
         }
       />

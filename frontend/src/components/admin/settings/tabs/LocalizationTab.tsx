@@ -33,7 +33,7 @@ const TIMEZONE_OPTIONS = (() => {
             options.push({ value: tz, label });
           }
         }
-      } catch (e) {
+      } catch {
       }
     }
     
@@ -48,7 +48,7 @@ const TIMEZONE_OPTIONS = (() => {
     });
     
     return options.length > 0 ? options : [{ value: 'UTC', label: '(UTC+00:00) Coordinated Universal Time' }];
-  } catch (e) {
+  } catch {
     return [{ value: 'UTC', label: '(UTC+00:00) Coordinated Universal Time' }];
   }
 })();

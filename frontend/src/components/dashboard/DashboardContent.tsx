@@ -23,7 +23,7 @@ export function DashboardContent() {
   const [editingServerId, setEditingServerId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  const username = form?.username || 'User';
+  const username = form?.username || t('user');
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -49,7 +49,7 @@ export function DashboardContent() {
 
       if (!response.ok) {
         let errorData: any = {}; try { errorData = await response.json(); } catch {}
-        throw new Error(errorData?.error || 'Failed to delete server');
+        throw new Error(errorData?.error || t('failedToDeleteServer'));
       }
 
       removeServer(serverId);

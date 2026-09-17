@@ -45,7 +45,7 @@ export default function ForgotCoordinator() {
         const data = await res.json().catch(() => ({}));
         showError(data.error || tErrors('failedSendReset'));
       }
-    } catch (_e) {
+    } catch {
       showError(tErrors('failedSendReset'));
     } finally {
       setLoading(false);
@@ -70,7 +70,7 @@ export default function ForgotCoordinator() {
         const data = await res.json().catch(() => ({}));
         showError(data.error || tErrors('failedReset'));
       }
-    } catch (_e) {
+    } catch {
       showError(tErrors('failedReset'));
     } finally {
       setLoading(false);
@@ -92,7 +92,7 @@ export default function ForgotCoordinator() {
         const data = await res.json().catch(() => ({}));
         showError(data.error || tErrors('failedResend'));
       }
-    } catch (_e) {
+    } catch {
       showError(tErrors('failedResend'));
     } finally {
       setResendLoading(false);

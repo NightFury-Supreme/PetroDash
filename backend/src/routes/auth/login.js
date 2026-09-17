@@ -111,7 +111,7 @@ router.post('/login', loginRateLimit, async (req, res) => {
           username: user.username,
         }
       });
-    // eslint-disable-next-line unused-imports/no-unused-vars
+     
     } catch (_) {}
     
     return res.json({ 

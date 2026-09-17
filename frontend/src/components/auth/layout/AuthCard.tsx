@@ -37,7 +37,7 @@ export default function AuthCard({ title, subtitle, children, siteName = 'PteroD
           <span className="text-[11px] text-[#444] select-none">
             © {new Date().getFullYear()} {siteName}
           </span>
-          <LanguageSwitcher />
+          <LanguageSwitcher align="right" />
         </div>
       </div>
 

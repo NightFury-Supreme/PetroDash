@@ -76,11 +76,11 @@ export function ResourceUsagePanel({ usage, resources }: ResourceUsagePanelProps
         <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#FF4444]"></div>
         <div className="flex items-center gap-2 text-[#888] mb-3 text-xs font-medium">
           <AlertTriangle size={14} className="text-[#FF4444]" />
-          <span className="text-white">2</span> minor anomalies detected
+          <span className="text-white">2</span> {t('anomaliesDetected')}
         </div>
         <ul className="text-xs text-[#888] space-y-2 pl-4">
-          <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 bg-[#FF5722] rounded-sm"></span>Disk I/O spikes at 03:22</li>
-          <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 bg-[#FF5722] rounded-sm"></span>CPU fluctuation in SG region</li>
+          <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 bg-[#FF5722] rounded-sm"></span>{t('diskIoSpikes')}</li>
+          <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 bg-[#FF5722] rounded-sm"></span>{t('cpuFluctuation')}</li>
         </ul>
       </div>
     </div>

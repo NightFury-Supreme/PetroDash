@@ -189,7 +189,7 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
           panelAttributes?.suspended === 1 ||
           panelAttributes?.status === 'suspended'
         );
-      // eslint-disable-next-line unused-imports/no-unused-vars
+       
       } catch (_) {
         // Ignore panel lookup failures here; unreachable handling occurs later when attempting updates.
       }
@@ -571,7 +571,7 @@ router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10,
           }
         });
       }
-    // eslint-disable-next-line unused-imports/no-unused-vars
+     
     } catch (_) {}
 
     // Invalidate user profile cache and server lists

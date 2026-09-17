@@ -21,9 +21,9 @@
  */
 async function buildUserResourcePool(userId) {
   const User     = require('../models/User');
-  // const UserPlan = require('../models/UserPlan');
+  const UserPlan = require('../models/UserPlan');
 
-  // const User = await User.findById(userId).lean();
+  const user = await User.findById(userId).lean();
   if (!user) return null;
 
   const base = user.resources || {};
@@ -75,10 +75,8 @@ async function doSuspend(server, reason) {
 
 async function runComplianceSweep() {
   const Server   = require('../models/Server');
-  const User     = require('../models/User');
   const Location = require('../models/Location');
   const Egg      = require('../models/Egg');
-  // const UserPlan = require('../models/UserPlan');
   const { writeAudit } = require('../middleware/audit');
 
   console.log('[Compliance] Starting server compliance sweep...');
@@ -234,7 +232,7 @@ async function runComplianceSweep() {
       }
 
       // Re-fetch remaining active servers (some may have just been suspended above)
-      const stillActive = servers.filter(s => {
+      const stillActive = servers.filter(_s => {
         // Skip servers we already suspended in resource check
         return true; // We check location/egg for all original servers; doSuspend is idempotent
       });

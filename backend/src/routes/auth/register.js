@@ -100,7 +100,7 @@ router.post('/register', createRateLimiter(5, 60 * 60 * 1000), async (req, res) 
     } else {
       try {
         await UserCreationService.grantReferralRewards(user);
-      // eslint-disable-next-line unused-imports/no-unused-vars
+       
       } catch (_) {}
     }
 

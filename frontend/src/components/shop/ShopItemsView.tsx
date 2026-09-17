@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from 'next-intl';
 
 import { Coins, ShoppingBag } from "lucide-react";
 import { getShopIcon, MAX_QUANTITY } from "./shopUtils";
@@ -10,26 +11,27 @@ interface ShopItemsViewProps {
 }
 
 export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
+  const t = useTranslations('Shop');
   return (
     <section className="mt-8">
       <div className="mb-3">
-        <h2 className="text-lg font-semibold text-white">Resources</h2>
+        <h2 className="text-lg font-semibold text-white">{t('resources')}</h2>
         <p className="mt-0.5 text-xs text-[#666]">Purchase additional resources for your servers.</p>
       </div>
 
       {items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center border border-white/[0.06] rounded-xl">
           <ShoppingBag className="mb-3 h-8 w-8 text-white/20" />
-          <p className="text-sm text-white/40">No shop items available</p>
+          <p className="text-sm text-white/40">{t('noItems')}</p>
         </div>
       ) : (
         <div className="w-full">
           {/* Column headers */}
           <div className="hidden gap-4 grid-cols-[2fr_1fr_1fr_80px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
-            <span>Resource</span>
-            <span>Included</span>
-            <span>Price</span>
-            <span className="text-right">Action</span>
+            <span>{t('resource')}</span>
+            <span>{t('included')}</span>
+            <span>{t('price')}</span>
+            <span className="text-right">{t('action')}</span>
           </div>
 
           <div className="divide-y divide-white/[0.06]">

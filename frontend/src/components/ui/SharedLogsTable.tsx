@@ -4,6 +4,7 @@ import { Link } from '@/i18n/routing';
 import { ClipboardList } from 'lucide-react';
 import { RankBadge } from '@/components/ui/RankBadge';
 import { getFieldLabel, getCategoryLabel, getActionLabel } from '@/config/field-labels';
+import { useTranslations } from 'next-intl';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -514,13 +515,13 @@ function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: Variant
           )}
           {hasChangedLegacy && (
             <div>
-              <SectionHeading>Changed</SectionHeading>
+              <SectionHeading>{t('changed')}</SectionHeading>
               <DiffViewer data={meta.changed as Record<string, unknown>} />
             </div>
           )}
           {hasCreated && (
             <div>
-              <SectionHeading>Created</SectionHeading>
+              <SectionHeading>{t('created')}</SectionHeading>
               <CreatedViewer data={meta.created as Record<string, unknown>} />
             </div>
           )}
@@ -542,6 +543,7 @@ function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: Variant
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps) {
+  const t = useTranslations('UI');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const toggle = (id: string) => setExpandedId(prev => (prev === id ? null : id));
@@ -551,10 +553,10 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
 
       {/* Column headers */}
       <div className="hidden md:grid grid-cols-[2fr_1.5fr_110px_140px_44px] gap-4 px-5 pb-3 border-b border-white/[0.06] text-[9px] uppercase tracking-[0.13em] text-white/40">
-        <span>Action</span>
+        <span>{t('action')}</span>
         <span>Device / Browser</span>
-        <span>Status</span>
-        <span>Date</span>
+        <span>{t('status')}</span>
+        <span>{t('date')}</span>
         <span />
       </div>
 
@@ -573,7 +575,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
         {!loading && logs.length === 0 && (
           <div className="py-16 flex flex-col items-center justify-center gap-3 text-white/40">
             <ClipboardList size={24} className="opacity-50" />
-            <p className="text-xs">No activity yet</p>
+            <p className="text-xs">{t('noActivity')}</p>
           </div>
         )}
 
@@ -598,7 +600,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
 
                 {/* Device / IP */}
                 <div className="min-w-0">
-                  <p className="mb-1 text-[9px] uppercase tracking-wider text-white/30 md:hidden">Device</p>
+                  <p className="mb-1 text-[9px] uppercase tracking-wider text-white/30 md:hidden">{t('device')}</p>
                   <div className="text-[11px] text-white/65 font-mono truncate">{ip ?? '—'}</div>
                   <div className="mt-0.5 text-[10px] text-white/40">
                     {parseUserAgent(log.userAgent ?? meta.userAgent)}
@@ -607,13 +609,13 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
 
                 {/* Status */}
                 <div className="min-w-0">
-                  <p className="mb-1 text-[9px] uppercase tracking-wider text-white/30 md:hidden">Status</p>
+                  <p className="mb-1 text-[9px] uppercase tracking-wider text-white/30 md:hidden">{t('status')}</p>
                   <StatusBadge log={log} />
                 </div>
 
                 {/* Date */}
                 <div className="min-w-0">
-                  <p className="mb-1 text-[9px] uppercase tracking-wider text-white/30 md:hidden">Date</p>
+                  <p className="mb-1 text-[9px] uppercase tracking-wider text-white/30 md:hidden">{t('date')}</p>
                   <div className="text-[11px] text-white/55">
                     {new Date(log.createdAt).toLocaleString('en-GB', {
                       day: '2-digit', month: '2-digit', year: 'numeric',

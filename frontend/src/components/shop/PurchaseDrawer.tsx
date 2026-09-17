@@ -117,9 +117,9 @@ export function PurchaseDrawer({
                     </p>
                   </div>
                   <div className="text-left sm:text-right">
-                    <p className="text-[8px] uppercase tracking-[0.1em] text-zinc-700">Price per unit</p>
+                    <p className="text-[8px] uppercase tracking-[0.1em] text-zinc-700">{t('pricePerUnit')}</p>
                     <p className="mt-1 text-[20px] font-semibold tracking-[-0.03em] text-zinc-100">
-                      {displayItem.pricePerUnit} <span className="text-[12px] text-zinc-500">coins</span>
+                      {displayItem.pricePerUnit} <span className="text-[12px] text-zinc-500">{t('coins')}</span>
                     </p>
                   </div>
                 </div>
@@ -132,7 +132,7 @@ export function PurchaseDrawer({
             {/* Quantity stepper */}
             <section className="mt-9">
               <div className="mb-4 flex items-center justify-between">
-                <CheckoutSectionTitle>Quantity</CheckoutSectionTitle>
+                <CheckoutSectionTitle>{t('quantity')}</CheckoutSectionTitle>
                 <span className="text-[10px] text-zinc-600">Maximum {maxQty}</span>
               </div>
               <div className="flex h-11 overflow-hidden rounded-lg border border-[#2A2A2A] bg-[#161616]">
@@ -183,12 +183,12 @@ export function PurchaseDrawer({
             <div className="rounded-lg border border-[#2A2A2A] bg-[#161616] p-4">
               <div className="flex items-end justify-between">
                 <div>
-                  <p className="text-[9px] uppercase tracking-[0.08em] text-[#555]">Total</p>
+                  <p className="text-[9px] uppercase tracking-[0.08em] text-[#555]">{t('total')}</p>
                   <p className="mt-1 text-2xl font-semibold tracking-tight text-white">
                     {total}
                   </p>
                 </div>
-                <span className="mb-1 text-[11px] text-[#555]">coins</span>
+                <span className="mb-1 text-[11px] text-[#555]">{t('coins')}</span>
               </div>
             </div>
 

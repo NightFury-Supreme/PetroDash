@@ -24,7 +24,7 @@ export function CreateLocationDrawer({ onClose, onSuccess }: CreateLocationDrawe
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const currentStep = STEPS[currentStepIndex].id;
 
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: '',
     flag: '',

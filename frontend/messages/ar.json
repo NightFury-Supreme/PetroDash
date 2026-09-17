@@ -179,11 +179,11 @@
     "cpu": "المعالج",
     "memory": "الذاكرة",
     "disk": "القرص",
-    "limit": "الحد",
+    "limit": "الحد", "used": "مستخدم", "user": "مستخدم",
     "mb": "ميغابايت",
     "percent": "%",
     "resourceUsage": "الموارد",
-    "databases": "قواعد البيانات",
+    "databases": "قواعد البيانات", "anomaliesDetected": "تم اكتشاف شذوذ طفيف", "diskIoSpikes": "ارتفاعات في إدخال/إخراج القرص في 03:22", "cpuFluctuation": "تقلب وحدة المعالجة المركزية في منطقة SG",
     "ports": "المنافذ",
     "backups": "النسخ الاحتياطية",
     "systemStatus": "حالة النظام",
@@ -209,7 +209,7 @@
     "colEgg": "بيضة",
     "colStatus": "الحالة",
     "colAction": "إجراء",
-    "statusActive": "نشط",
+    "statusActive": "نشط", "failedToDeleteServer": "فشل في حذف الخادم",
     "statusSuspended": "موقوف",
     "statusUnreachable": "لا يمكن الوصول إليه",
     "statusCreating": "جار الإنشاء",
@@ -217,7 +217,7 @@
     "statusQueuedPosition": "في قائمة الانتظار (الموضع: {pos})",
     "noServers": "لم يتم العثور على خوادم. أنشئ خادمك الأول للبدء.",
     "openServer": "فتح الخادم",
-    "editServer": "تعديل",
+    "editServer": "تعديل", "deployNewServer": "نشر خادم جديد", "back": "رجوع", "cancel": "إلغاء", "nextStep": "الخطوة التالية", "deploying": "جاري النشر...", "serverCreatedSuccess": "تم إنشاء الخادم بنجاح!", "limits": "الحدود", "software": "البرمجيات", "location": "الموقع", "summary": "الملخص", "serverDetails": "تفاصيل الخادم", "configBasicInfo": "تكوين المعلومات الأساسية لخادمك", "serverName": "اسم الخادم", "enterServerName": "أدخل اسم الخادم", "resourceLimits": "حدود الموارد", "configResourceAlloc": "تكوين تخصيص موارد خادمك", "selectSoftware": "اختر البرنامج لتشغيله على خادمك", "uncategorized": "غير مصنف", "recommended": "موصى به", "server": "خادم", "selectDeploymentLoc": "حدد موقع النشر لخادمك", "reviewConfig": "راجع تكوين الخادم قبل الإنشاء", "generalInformation": "معلومات عامة", "unnamedServer": "خادم غير مسمى", "noneSelected": "لم يتم تحديد شيء", "includedResources": "الموارد المضمنة", "updateConfig": "تحديث التكوين", "saving": "جاري الحفظ...", "saveChanges": "حفظ التغييرات", "serverUpdatedSuccess": "تم تحديث الخادم بنجاح!",
     "deleteServer": "حذف",
     "cannotOpenUnreachable": "لا يمكن فتح خادم غير متاح",
     "cannotOpenCreating": "الخادم قيد الإنشاء",
@@ -236,11 +236,11 @@
     "failedFetchStatus": "فشل في جلب الحالة",
     "authRequired": "المصادقة مطلوبة",
     "deleteServerSuccess": "تم حذف الخادم \"{name}\" بنجاح",
-    "unknown": "غير معروف",
+    "unknown": "غير معروف", "statusActive": "نشط", "failedToDeleteServer": "فشل في حذف الخادم", "statusSuspended": "معلق", "statusUnreachable": "لا يمكن الوصول إليه", "statusCreating": "جاري الإنشاء", "statusQueued": "في قائمة الانتظار", "statusQueuedPos": "في قائمة الانتظار (المركز: {pos})", "serverIsCreating": "جاري إنشاء الخادم", "serverSuspended": "تم تعليق الخادم", "serverSuspendedDesc": "هذا الخادم معلق ولا يمكن تحريره. اتصل بالمسؤول للحصول على المساعدة.", "serverIdSupport": "معرف الخادم للدعم:", "cannotOpenUnreachable": "لا يمكن فتح خادم لا يمكن الوصول إليه",
     "uptimeStr": "وقت التشغيل",
     "hrsStr": "ساعات",
     "minsStr": "دقيقة",
-    "deleteDrawerEntity": "الخادم"
+    "deleteDrawerEntity": "خادم", "available": "متاح", "warnQueueRemove": "سيؤدي هذا إلى إزالة الخادم من قائمة الانتظار بشكل دائم.", "warnRecreateManual": "سوف تحتاج إلى إعادة إنشاء الخادم يدويًا.", "warnCannotUndo": "لا يمكن التراجع عن هذا الإجراء.", "warnPermDelete": "سيتم حذف الخادم بشكل دائم من اللوحة.", "warnDataLost": "سيتم فقد جميع البيانات والتكوينات المرتبطة.", "exceedsLimit": "يتجاوز الحد المتاح بمقدار {num}"
   },
   "Footer": {
     "checkingSystems": "جاري فحص الأنظمة...",
@@ -249,8 +249,8 @@
     "majorOutage": "انقطاع كبير",
     "poweredBy": "بدعم من"
   },
-  "UI": {
-    "deleteDrawer": {
+  "Shop": { "storeTitle": "المتجر", "paymentSuccess": "تمت معالجة الدفع بنجاح!", "paymentCancelled": "تم إلغاء الدفع.", "paypalLinkNotFound": "رابط إعادة التوجيه لـ PayPal غير موجود", "paymentFailed": "فشل في معالجة الدفع.", "paypalOrderFailed": "فشل إنشاء طلب PayPal", "loadError": "خطأ في التحميل", "failedToLoadShop": "فشل تحميل المتجر", "retry": "إعادة المحاولة", "shopItems": "عناصر المتجر", "plans": "الخطط", "purchaseHelpText": "قم بشراء موارد إضافية أو قم بترقية حسابك بخطة مميزة.", "storeSubtitle": "شراء الموارد والخطط المميزة.", "resources": "الموارد", "noItems": "لا توجد عناصر متاحة في المتجر", "resource": "مورد", "included": "مشمول", "price": "السعر", "action": "إجراء", "planPrice": "سعر الخطة", "includedResources": "الموارد المشمولة", "orderSummary": "ملخص الطلب", "plan": "خطة", "couponCode": "رمز القسيمة", "optional": "اختياري", "total": "المجموع", "lifetimeAccess": "وصول مدى الحياة", "soldOut": "نفذت الكمية", "limitedStock": "مخزون محدود", "pricePerUnit": "السعر لكل وحدة", "coins": "عملات", "quantity": "الكمية", "stock": "مخزون", "uncategorized": "غير مصنف" }, "UI": {
+    "system": "النظام", "requestInfo": "معلومات الطلب", "statusCode": "رمز الحالة", "valueChanges": "تغييرات القيمة", "changed": "تم التغيير", "created": "تم الإنشاء", "additionalInfo": "معلومات إضافية", "action": "إجراء", "status": "الحالة", "date": "التاريخ", "noActivity": "لا يوجد نشاط بعد", "device": "الجهاز", "deleteDrawer": {
       "title": "Delete {type}",
       "subtitle": "This will permanently remove the {type} and its configuration.",
       "cancel": "Cancel",

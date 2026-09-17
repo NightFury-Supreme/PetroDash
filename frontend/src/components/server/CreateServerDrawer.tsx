@@ -22,6 +22,7 @@ import { useServerCreate, CreateFormData } from "@/hooks/useServerCreate";
 import { RESOURCE_FIELDS, ResourceInputCard } from "./ResourceInputCard";
 
 import { useToast } from "@/components/ui/ToastProvider";
+import { useTranslations } from "next-intl";
 
 type Step = 'resources' | 'software' | 'location' | 'summary';
 
@@ -39,6 +40,7 @@ interface CreateServerDrawerProps {
 
 export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProps) {
   const { showError, showSuccess } = useToast();
+  const t = useTranslations('Dashboard');
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   const currentStep = STEPS[currentStepIndex].id;
@@ -71,7 +73,7 @@ export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProp
   const groupedEggs = useMemo(() => {
     const groups: Record<string, typeof eggs> = {};
     eggs.forEach((egg) => {
-      const cat = egg.categoryName || 'Uncategorized';
+      const cat = egg.categoryName || t('uncategorized');
       if (!groups[cat]) groups[cat] = [];
       groups[cat].push(egg);
     });
@@ -82,8 +84,8 @@ export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProp
     <Drawer
       isOpen={true}
       onClose={onClose}
-      title="Create Server"
-      subtitle="Deploy a new server instance"
+      title={t('createServer')}
+      subtitle={t('deployNewServer')}
       icon={<Server className="text-[#D4D4D4]" size={22} />}
       footer={
         <div className="flex items-center justify-end gap-2 w-full">
@@ -92,14 +94,14 @@ export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProp
               onClick={() => setCurrentStepIndex(i => i - 1)}
               className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
             >
-              Back
+              {t('back')}
             </button>
           ) : (
             <button
               onClick={onClose}
               className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
             >
-              Cancel
+              {t('cancel')}
             </button>
           )}
           
@@ -113,14 +115,14 @@ export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProp
               }
               className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Next Step
+              {t('nextStep')}
             </button>
           ) : (
             <button
               onClick={async (e) => {
                 const success = await handleSave(e);
                 if (success) {
-                  showSuccess("Server created successfully!");
+                  showSuccess(t('serverCreatedSuccess'));
                   if (onUpdate) onUpdate();
                   onClose();
                 } else {
@@ -136,9 +138,9 @@ export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProp
               }`}
             >
               {saving ? (
-                <><Loader2 size={16} className="animate-spin" /> Deploying...</>
+                <><Loader2 size={16} className="animate-spin" /> {t('deploying')}</>
               ) : (
-                "Create Server"
+                t('createServer')
               )}
             </button>
           )}
@@ -176,17 +178,17 @@ export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProp
           {currentStep === 'resources' && (
             <div className="animate-in fade-in slide-in-from-right-4 duration-300">
               <section>
-                <h2 className="text-base font-semibold text-white">Server Details</h2>
-                <p className="mt-0.5 text-sm text-[#888]">Configure your server's basic information</p>
+                <h2 className="text-base font-semibold text-white">{t('serverDetails')}</h2>
+                <p className="mt-0.5 text-sm text-[#888]">{t('configBasicInfo')}</p>
     
                 <label className="mb-2 mt-5 block text-sm font-medium text-[#D4D4D4]">
-                  Server Name <span className="text-[#FF5722]">*</span>
+                  {t('serverName')} <span className="text-[#FF5722]">*</span>
                 </label>
                 <input
                   type="text"
                   value={form.name}
                   onChange={(e) => updateValue('name', e.target.value)}
-                  placeholder="Enter server name"
+                  placeholder={t('enterServerName')}
                   className="w-full rounded-lg border border-[#222] bg-[#161616] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60"
                 />
                 {violations.name && <p className="mt-1.5 text-xs text-red-400">{violations.name}</p>}
@@ -194,9 +196,9 @@ export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProp
 
               <section className="mt-8">
                 <div className="flex items-center justify-between mb-0.5">
-                    <h2 className="text-base font-semibold text-white">Resource Limits</h2>
+                    <h2 className="text-base font-semibold text-white">{t('resourceLimits')}</h2>
                 </div>
-                <p className="text-sm text-[#888]">Configure your server's resource allocation</p>
+                <p className="text-sm text-[#888]">{t('configResourceAlloc')}</p>
     
                 <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
                 {RESOURCE_FIELDS.map((field) => (
@@ -217,8 +219,8 @@ export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProp
 
           {currentStep === 'software' && (
             <section className="animate-in fade-in slide-in-from-right-4 duration-300">
-              <h2 className="text-base font-semibold text-white">Software</h2>
-              <p className="mt-0.5 text-sm text-[#888]">Select the software to run on your server</p>
+              <h2 className="text-base font-semibold text-white">{t('software')}</h2>
+              <p className="mt-0.5 text-sm text-[#888]">{t('selectSoftware')}</p>
               <div className="mt-5 space-y-6">
                 {Object.entries(groupedEggs).map(([category, categoryEggs]) => (
                   <div key={category} className="space-y-3">
@@ -267,7 +269,7 @@ export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProp
                                   )}
                                   {egg.recommended && (
                                     <span className={`rounded px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider ${!egg.isPlanAllowed ? 'bg-emerald-500/5 text-emerald-500/50' : 'bg-emerald-500/10 text-emerald-500'}`}>
-                                      Recommended
+                                      {t('recommended')}
                                     </span>
                                   )}
                                 </div>
@@ -276,7 +278,7 @@ export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProp
                                   {typeof egg.serverCount === 'number' && egg.serverCount > 0 && (
                                     <span className="flex items-center gap-1 text-zinc-400">
                                       <Server size={10} />
-                                      {egg.serverCount} {egg.serverCount === 1 ? 'server' : 'servers'}
+                                      {egg.serverCount} {egg.serverCount === 1 ? t('server') : t('servers')}
                                     </span>
                                   )}
                                 </div>
@@ -302,8 +304,8 @@ export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProp
 
           {currentStep === 'location' && (
             <section className="animate-in fade-in slide-in-from-right-4 duration-300">
-              <h2 className="text-base font-semibold text-white">Location</h2>
-              <p className="mt-0.5 text-sm text-[#888]">Select the deployment location for your server</p>
+              <h2 className="text-base font-semibold text-white">{t('location')}</h2>
+              <p className="mt-0.5 text-sm text-[#888]">{t('selectDeploymentLoc')}</p>
   
               <div className="mt-5 border-t border-white/[0.06] divide-y divide-white/[0.06]">
                 {locations.map((loc) => {
@@ -367,7 +369,7 @@ export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProp
                           {typeof loc.serverCount === 'number' && (
                             <div className="text-[#888] flex items-center gap-1.5">
                               <Server size={12} className="opacity-70" />
-                              <span>{loc.serverCount}{loc.serverLimit ? ` / ${loc.serverLimit}` : ''} Servers</span>
+                              <span>{loc.serverCount}{loc.serverLimit ? ` / ${loc.serverLimit}` : ''} {t('servers')}</span>
                             </div>
                           )}
                         </div>
@@ -387,22 +389,22 @@ export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProp
 
           {currentStep === 'summary' && (
             <section className="animate-in fade-in slide-in-from-right-4 duration-300">
-              <h2 className="text-base font-semibold text-white">Summary</h2>
-              <p className="mt-0.5 text-sm text-[#888]">Review your server configuration before creating</p>
+              <h2 className="text-base font-semibold text-white">{t('summary')}</h2>
+              <p className="mt-0.5 text-sm text-[#888]">{t('reviewConfig')}</p>
               
               <div className="mt-6 space-y-8">
                 <div>
-                  <h2 className="text-[11px] font-medium uppercase tracking-[0.1em] text-zinc-500 mb-4">General Information</h2>
+                  <h2 className="text-[11px] font-medium uppercase tracking-[0.1em] text-zinc-500 mb-4">{t('generalInformation')}</h2>
                   <div className="grid border-y border-white/[0.07] sm:grid-cols-2">
                     {[
                       { 
-                        label: 'Server Name', 
-                        value: form.name || 'Unnamed Server', 
+                        label: t('serverName'), 
+                        value: form.name || t('unnamedServer'), 
                         icon: <Server size={14} strokeWidth={2} /> 
                       },
                       { 
-                        label: 'Software', 
-                        value: eggs.find(e => e._id === form.eggId)?.name || 'None selected', 
+                        label: t('software'), 
+                        value: eggs.find(e => e._id === form.eggId)?.name || t('noneSelected'), 
                         icon: eggs.find(e => e._id === form.eggId)?.icon ? (
                           <img 
                             src={eggs.find(e => e._id === form.eggId)!.icon!.startsWith('http') ? eggs.find(e => e._id === form.eggId)!.icon : `${process.env.NEXT_PUBLIC_API_BASE || ''}${eggs.find(e => e._id === form.eggId)!.icon!.startsWith('/') ? '' : '/'}${eggs.find(e => e._id === form.eggId)!.icon}`}
@@ -418,8 +420,8 @@ export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProp
                         ) : <Box size={14} strokeWidth={2} className="text-[#888]" style={{ display: eggs.find(e => e._id === form.eggId)?.icon ? 'none' : 'block' }} />
                       },
                       { 
-                        label: 'Location', 
-                        value: locations.find(l => l._id === form.locationId)?.name || 'None selected', 
+                        label: t('location'), 
+                        value: locations.find(l => l._id === form.locationId)?.name || t('noneSelected'), 
                         icon: (locations.find(l => l._id === form.locationId)?.flag || locations.find(l => l._id === form.locationId)?.flagUrl) ? (
                           <img 
                             src={(locations.find(l => l._id === form.locationId)!.flag || locations.find(l => l._id === form.locationId)!.flagUrl)!.startsWith('http') ? (locations.find(l => l._id === form.locationId)!.flag || locations.find(l => l._id === form.locationId)!.flagUrl) : `${process.env.NEXT_PUBLIC_API_BASE || ''}${(locations.find(l => l._id === form.locationId)!.flag || locations.find(l => l._id === form.locationId)!.flagUrl)!.startsWith('/') ? '' : '/'}${locations.find(l => l._id === form.locationId)!.flag || locations.find(l => l._id === form.locationId)!.flagUrl}`}
@@ -460,16 +462,16 @@ export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProp
                 </div>
                 
                 <div>
-                  <h2 className="text-[11px] font-medium uppercase tracking-[0.1em] text-zinc-500 mb-4">Included Resources</h2>
+                  <h2 className="text-[11px] font-medium uppercase tracking-[0.1em] text-zinc-500 mb-4">{t('includedResources')}</h2>
                   <div className="grid border-y border-white/[0.07] sm:grid-cols-2">
                     {[
-                      { label: 'CPU', value: `${form.cpuPercent}%`, icon: <Cpu size={14} strokeWidth={2} /> },
-                      { label: 'Memory', value: `${form.memoryMb} MB`, icon: <CircuitBoard size={14} strokeWidth={2} /> },
-                      { label: 'Disk', value: `${form.diskMb} MB`, icon: <HardDrive size={14} strokeWidth={2} /> },
-                      { label: 'Servers', value: '1', icon: <Server size={14} strokeWidth={2} /> },
-                      { label: 'Databases', value: form.databases.toString(), icon: <Database size={14} strokeWidth={2} /> },
-                      { label: 'Backups', value: form.backups.toString(), icon: <Archive size={14} strokeWidth={2} /> },
-                      { label: 'Ports', value: form.allocations.toString(), icon: <Network size={14} strokeWidth={2} /> },
+                      { label: t('cpu'), value: `${form.cpuPercent}%`, icon: <Cpu size={14} strokeWidth={2} /> },
+                      { label: t('memory'), value: `${form.memoryMb} MB`, icon: <CircuitBoard size={14} strokeWidth={2} /> },
+                      { label: t('disk'), value: `${form.diskMb} MB`, icon: <HardDrive size={14} strokeWidth={2} /> },
+                      { label: t('servers'), value: '1', icon: <Server size={14} strokeWidth={2} /> },
+                      { label: t('databases'), value: form.databases.toString(), icon: <Database size={14} strokeWidth={2} /> },
+                      { label: t('backups'), value: form.backups.toString(), icon: <Archive size={14} strokeWidth={2} /> },
+                      { label: t('ports'), value: form.allocations.toString(), icon: <Network size={14} strokeWidth={2} /> },
                     ].map((resource, index, arr) => {
                       const total = arr.length;
                       const isLastOdd = index === total - 1 && total % 2 !== 0;

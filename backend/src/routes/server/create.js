@@ -200,7 +200,7 @@ router.post('/', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) 
           pteroVariables[v.attributes.env_variable] = String(v.attributes.default_value || '');
         }
       }
-    // eslint-disable-next-line unused-imports/no-unused-vars
+     
     } catch (_) {
       // Non-fatal: panel may still accept defaults
     }
@@ -351,7 +351,7 @@ router.post('/', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) 
           dashboardUrl: frontendUrl + '/dashboard'
         },
       });
-    // eslint-disable-next-line unused-imports/no-unused-vars
+     
     } catch (_) {}
 
     // Invalidate user profile cache and server lists

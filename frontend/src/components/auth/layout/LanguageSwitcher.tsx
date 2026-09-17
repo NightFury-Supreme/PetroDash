@@ -76,7 +76,7 @@ export default function LanguageSwitcher({
         {variant === 'outline' && (
           <span className="hidden sm:inline leading-none">{current.flag}</span>
         )}
-        <span className={`hidden sm:inline leading-none ${variant === 'ghost' ? 'text-sm ml-0.5' : ''}`}>
+        <span className={`hidden sm:inline leading-none ${variant === 'ghost' ? 'text-sm ms-0.5' : ''}`}>
           {variant === 'ghost' ? current.label.slice(0, 3) : current.label}
         </span>
         <ChevronDown

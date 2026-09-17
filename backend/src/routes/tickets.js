@@ -43,7 +43,7 @@ router.post('/', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) 
       const s = await getSettings();
       if (s && Array.isArray(s.ticketCategories) && s.ticketCategories.length > 0)
         allowedCategories = s.ticketCategories.map((c) => String(c)).filter(Boolean);
-    // eslint-disable-next-line unused-imports/no-unused-vars
+     
     } catch (_) {}
 
     let effectivePriority = 'low';
@@ -53,7 +53,7 @@ router.post('/', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) 
       try {
         const activePlans = await mongoose.model('UserPlan').find({ userId, status: 'active' }).limit(1).lean();
         if (activePlans && activePlans.length > 0) effectivePriority = 'high';
-      // eslint-disable-next-line unused-imports/no-unused-vars
+       
       } catch (_) {}
     }
 
@@ -105,7 +105,7 @@ router.post('/', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) 
           } 
         });
       }
-    // eslint-disable-next-line unused-imports/no-unused-vars
+     
     } catch (_) {}
 
     // Invalidate user's ticket cache
@@ -206,7 +206,7 @@ router.get('/mine', requireAuth, async (req, res) => {
       }
     });
    
-  } catch (err) {
+  } catch (_err) {
     res.status(500).json({ error: 'Failed to fetch tickets' });
   }
 });
@@ -219,7 +219,7 @@ router.get('/categories', requireAuth, async (req, res) => {
       const s = await getSettings();
       if (s && Array.isArray(s.ticketCategories) && s.ticketCategories.length > 0)
         categories = s.ticketCategories.map((c) => String(c)).filter(Boolean);
-    // eslint-disable-next-line unused-imports/no-unused-vars
+     
     } catch (_) {}
     res.json({ categories });
    
@@ -410,7 +410,7 @@ router.post('/:id/messages', requireAuth, createRateLimiter(10, 60 * 1000), asyn
     await logUserActivity(req, 'ticket.reply', { ticketId: t._id });
     await writeAudit(req, 'ticket.reply', 'ticket', t._id.toString(), { messagePreview: message.substring(0, 50) });
     res.json({ ok: true, message: savedMsg, status: t.status });
-  } catch (err) {
+  } catch (_err) {
     console.error('Send message error:', err);
     res.status(500).json({ error: 'Failed to add message' });
   }
@@ -466,8 +466,8 @@ router.post('/:id/status', requireAuth, async (req, res) => {
     await logUserActivity(req, 'ticket.status_change', { ticketId: t._id, changes });
     await writeAudit(req, 'ticket.status_change', 'ticket', t._id.toString(), { changes });
     res.json({ ok: true, status: t.status });
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  } catch (err) {
+   
+  } catch (_err) {
     res.status(500).json({ error: 'Failed to update status' });
   }
 });

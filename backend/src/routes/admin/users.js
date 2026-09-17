@@ -95,7 +95,7 @@ router.get('/:id', requireAdmin, async (req, res) => {
           const panel = await getPanelServer(s.panelServerId);
           const identifier = panel?.attributes?.identifier || panel?.attributes?.uuid || panel?.identifier || panel?.uuid || null;
           if (identifier) clientUrl = `${base}/server/${identifier}`;
-          // eslint-disable-next-line unused-imports/no-unused-vars
+           
   } catch (_) {}
       }
       return { ...s, clientUrl };
@@ -296,7 +296,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
         }
       });
     }
-  // eslint-disable-next-line unused-imports/no-unused-vars
+   
   } catch (_) {}
   const { writeAudit } = require('../../middleware/audit');
   
@@ -374,10 +374,10 @@ router.post('/:id/ban', requireAdmin, async (req, res) => {
       const { suspendServer } = require('../../services/pterodactyl');
       for (const s of servers) {
         if (!s.panelServerId) continue;
-        // eslint-disable-next-line unused-imports/no-unused-vars
+         
         try { await suspendServer(s.panelServerId); } catch (_) {}
       }
-    // eslint-disable-next-line unused-imports/no-unused-vars
+     
     } catch (_) {}
   } else {
     // unban
@@ -390,10 +390,10 @@ router.post('/:id/ban', requireAdmin, async (req, res) => {
       const { unsuspendServer } = require('../../services/pterodactyl');
       for (const s of servers) {
         if (!s.panelServerId) continue;
-        // eslint-disable-next-line unused-imports/no-unused-vars
+         
         try { await unsuspendServer(s.panelServerId); } catch (_) {}
       }
-    // eslint-disable-next-line unused-imports/no-unused-vars
+     
     } catch (_) {}
   }
   await user.save();
@@ -520,7 +520,7 @@ router.get('/:id/servers/:serverId', requireAdmin, async (req, res) => {
       const hasChange = ['diskMb','memoryMb','cpuPercent','backups','databases','allocations'].some(k => Number(server.limits?.[k] || 0) !== Number(updatedLimits[k] || 0));
       if (hasChange) await Server.updateOne({ _id: server._id }, { $set: { limits: updatedLimits } });
       return res.json({ ...server, limits: updatedLimits, clientUrl });
-    // eslint-disable-next-line unused-imports/no-unused-vars
+     
     } catch (_) {
       return res.json({ ...server, clientUrl });
     }

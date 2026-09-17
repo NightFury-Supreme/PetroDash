@@ -54,7 +54,7 @@ export default function VerifyCoordinator() {
         setLoginMethod(data.loginMethod || "");
         setTfaEnabled(data.tfaEnabled || false);
         setInitialLoading(false);
-      } catch (err) {
+      } catch {
         if (mounted) router.replace('/login');
       }
     };
@@ -79,7 +79,7 @@ export default function VerifyCoordinator() {
         const data = await res.json().catch(() => ({}));
         showError(data.error || tErrors('invalidVerifyCode'));
       }
-    } catch (_e) {
+    } catch {
       showError(tErrors('invalidVerifyCode'));
     } finally {
       setLoading(false);
@@ -110,7 +110,7 @@ export default function VerifyCoordinator() {
            showError(data.error || tErrors('failedSendVerify'));
         }
       }
-    } catch (_e) {
+    } catch {
       showError(tErrors('failedSendVerify'));
     } finally {
       setResendLoading(false);

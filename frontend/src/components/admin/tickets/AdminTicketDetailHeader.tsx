@@ -3,14 +3,14 @@
 import { useState, useRef, useEffect } from "react";
 import { Select } from "@/components/ui/Select";
 
-// const STATUS_COLORS: Record<string, string> = {
+const _STATUS_COLORS: Record<string, string> = {
   open: "bg-green-600/20 text-green-300 border-green-700/50",
   pending: "bg-yellow-600/20 text-yellow-300 border-yellow-700/50",
   resolved: "bg-blue-600/20 text-blue-300 border-blue-700/50",
   closed: "bg-[#303030] text-[#AAAAAA] border-[#404040]",
 };
 
-// const PRIORITY_COLORS: Record<string, string> = {
+const _PRIORITY_COLORS: Record<string, string> = {
   high: "bg-[#FF3333]/10 text-[#FF3333] border-[#FF3333]/20",
   medium: "bg-[#FF9900]/10 text-[#FF9900] border-[#FF9900]/20",
   low: "bg-[#303030]/50 text-[#888] border-[#333]",

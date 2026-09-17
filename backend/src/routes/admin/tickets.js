@@ -162,7 +162,7 @@ router.get('/', requireAdmin, async (req, res) => {
     await setCache(cacheKey, responseData, 30);
 
     res.json(responseData);
-  // eslint-disable-next-line unused-imports/no-unused-vars
+   
   } catch (_err) {
     res.status(500).json({ error: 'Failed to list tickets' });
   }
@@ -225,7 +225,7 @@ router.get('/:id', requireAdmin, async (req, res) => {
 
     await setCache(cacheKey, t, 30);
     res.json(t);
-  // eslint-disable-next-line unused-imports/no-unused-vars
+   
   } catch (_err) {
     res.status(500).json({ error: 'Failed to load ticket' });
   }
@@ -301,7 +301,7 @@ router.post('/:id/messages', requireAdmin, async (req, res) => {
             }
           });
         }
-      // eslint-disable-next-line unused-imports/no-unused-vars
+       
       } catch (_) {}
     }
 
@@ -317,7 +317,7 @@ router.post('/:id/messages', requireAdmin, async (req, res) => {
     await writeAudit(req, 'admin.ticket.reply', 'ticket', t._id.toString(), { isInternal, messagePreview: body.substring(0, 50) });
 
     res.json({ ok: true, message: savedMsg, status: t.status });
-  // eslint-disable-next-line unused-imports/no-unused-vars
+   
   } catch (_err) {
     res.status(500).json({ error: 'Failed to add message' });
   }
@@ -420,7 +420,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     }
 
     res.json({ ok: true, status: t.status, priority: t.priority });
-  // eslint-disable-next-line unused-imports/no-unused-vars
+   
   } catch (_err) {
     res.status(500).json({ error: 'Failed to update ticket' });
   }
@@ -444,7 +444,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
     await writeAudit(req, 'admin.ticket.delete', 'ticket', result._id.toString(), { title: result.title });
 
     res.json({ ok: true });
-  // eslint-disable-next-line unused-imports/no-unused-vars
+   
   } catch (_err) {
     res.status(500).json({ error: 'Failed to delete ticket' });
   }
@@ -456,7 +456,7 @@ router.get('/settings/categories', requireAdmin, async (req, res) => {
     const s = await getSettings();
     const categories = (s && Array.isArray(s.ticketCategories) ? s.ticketCategories : []);
     res.json({ categories });
-  // eslint-disable-next-line unused-imports/no-unused-vars
+   
   } catch (_err) {
     res.status(500).json({ error: 'Failed to load categories' });
   }
@@ -472,7 +472,7 @@ router.get('/settings/categories/usage', requireAdmin, async (req, res) => {
     const usage = {};
     for (const row of agg) usage[row._id] = row.count;
     res.json({ usage });
-  // eslint-disable-next-line unused-imports/no-unused-vars
+   
   } catch (_err) {
     res.status(500).json({ error: 'Failed to load usage' });
   }
@@ -517,7 +517,7 @@ router.patch('/settings/categories', requireAdmin, async (req, res) => {
     }
 
     res.json({ ok: true, categories: s.ticketCategories });
-  // eslint-disable-next-line unused-imports/no-unused-vars
+   
   } catch (_err) {
     res.status(500).json({ error: 'Failed to update categories' });
   }

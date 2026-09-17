@@ -47,7 +47,7 @@ async function logUserActivity(req, action, metadata = {}, explicitUserId = null
           // Mark to prevent auditAuto from logging a duplicate
           req._auditLogged = true;
           writeAudit(req, action, resourceType, metadata?.resourceId || userId, safeMetadata).catch(() => {});
-        // eslint-disable-next-line unused-imports/no-unused-vars
+         
     } catch (_) {
           // silently ignore log write errors
         }

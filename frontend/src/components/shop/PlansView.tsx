@@ -41,7 +41,7 @@ export function PlansView({
   const groupedAvailablePlans = plans.reduce((acc, plan) => {
     const categoryName = typeof plan.category === 'string' 
       ? plan.category 
-      : (plan.category?.name || 'Uncategorized');
+      : (plan.category?.name || t('uncategorized'));
     if (!acc[categoryName]) acc[categoryName] = [];
     acc[categoryName].push(plan);
     return acc;
@@ -259,7 +259,7 @@ function PlanRow({
           {plan.lifetime && (
             <div className="flex items-center gap-1.5">
               <Check className="h-3.5 w-3.5 text-emerald-500" />
-              <span className="text-xs text-white/40">Lifetime access</span>
+              <span className="text-xs text-white/40">{t('lifetimeAccess')}</span>
             </div>
           )}
           {plan.stock > 0 && (
@@ -267,11 +267,11 @@ function PlanRow({
               <Package className={`h-3.5 w-3.5 ${plan.stockLeft === 0 ? 'text-red-500' : 'text-orange-400'}`} />
               <span className="text-xs text-white/40">
                 {plan.stockLeft === 0 ? (
-                  <span className="text-red-500 font-medium">Sold out</span>
+                  <span className="text-red-500 font-medium">{t('soldOut')}</span>
                 ) : plan.stockLeft <= 5 ? (
-                  <span className="text-orange-400 font-medium">{plan.stockLeft} {plan.stockLeft === 1 ? 'stock' : 'stocks'} left</span>
+                  <span className="text-orange-400 font-medium">{plan.stockLeft} {t('stock')} left</span>
                 ) : (
-                  <span>Limited stock</span>
+                  <span>{t('limitedStock')}</span>
                 )}
               </span>
             </div>

@@ -25,7 +25,7 @@ export function CategorySelect({
   const [editVal, setEditVal] = useState('');
   
   const [newCat, setNewCat] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 

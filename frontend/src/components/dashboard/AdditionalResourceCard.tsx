@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslations } from 'next-intl';
 
 interface AdditionalResourceCardProps {
   title: string;
@@ -8,6 +9,7 @@ interface AdditionalResourceCardProps {
 }
 
 export function AdditionalResourceCard({ title, used, limit, icon }: AdditionalResourceCardProps) {
+  const t = useTranslations('Dashboard');
   const percentage = limit > 0 ? Math.min(Math.round((used / limit) * 100), 100) : 0;
   
   return (
@@ -28,8 +30,8 @@ export function AdditionalResourceCard({ title, used, limit, icon }: AdditionalR
       </div>
       
       <div className="flex justify-between items-center text-xs">
-        <span className="text-[#666]">Used: <span className="text-[#AAA]">{used}</span></span>
-        <span className="text-[#666]">Limit: <span className="text-[#AAA]">{limit}</span></span>
+        <span className="text-[#666]">{t('used')}: <span className="text-[#AAA]">{used}</span></span>
+        <span className="text-[#666]">{t('limit')}: <span className="text-[#AAA]">{limit}</span></span>
       </div>
     </div>
   );
