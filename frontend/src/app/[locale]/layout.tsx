@@ -8,7 +8,7 @@ import LayoutWithAds from '@/components/ads/LayoutWithAds';
 
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
-import { notFound } from "@/i18n/routing";
+import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
@@ -18,10 +18,10 @@ export async function generateMetadata(): Promise<Metadata> {
   let title = 'PteroDash';
   let icons: Metadata['icons'] | undefined = undefined;
   try {
-    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/branding`, { cache: 'no-store' });
+    const res = await fetchWithRetry("/api/branding", { cache: 'no-store' });
     let s: any = {}; try { s = await res.json(); } catch {}
     if (s?.siteName) title = s.siteName;
-    if (s?.siteIcon) icons = { icon: `${process.env.NEXT_PUBLIC_API_BASE || ''}${s.siteIcon}` } as any;
+    if (s?.siteIcon) icons = { icon: s.siteIcon } as any;
   } catch {}
   if (!icons) icons = { icon: '/favicon.svg', shortcut: '/favicon.svg', apple: '/favicon.svg' };
   return { title, description: 'Premium Control Panel', icons } satisfies Metadata;

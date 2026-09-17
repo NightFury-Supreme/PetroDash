@@ -44,7 +44,7 @@ export default function LoginForm({ onSuccess, onRequires2FA }: { onSuccess: (to
     }
     setLoading(true);
     try {
-      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/login`, {
+      const res = await fetchWithRetry('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(parsed.data),

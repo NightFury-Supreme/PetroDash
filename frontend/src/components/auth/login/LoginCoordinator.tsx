@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { useRouter } from '@/i18n/routing';
+import { useRouter } from 'next/navigation';
 import LoginForm from './LoginForm';
 import TwoFactorForm from './TwoFactorForm';
 
