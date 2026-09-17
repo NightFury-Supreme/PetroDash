@@ -10,9 +10,9 @@ export default function ShopSkeleton() {
         
         {/* Top Nav + Header Skeleton */}
         <header className="flex items-start justify-between">
-          <div className="space-y-2">
+          <div>
             <div className="h-8 bg-[#202020] rounded w-32 animate-pulse"></div>
-            <div className="h-4 bg-[#202020] rounded w-64 animate-pulse"></div>
+            <div className="h-3.5 bg-[#202020] rounded w-64 animate-pulse mt-1"></div>
           </div>
         </header>
 
@@ -25,13 +25,13 @@ export default function ShopSkeleton() {
             </div>
             
             <nav className="space-y-1">
-              <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[#222]/50 border border-transparent">
-                <ShoppingCart className="h-4 w-4 text-[#555]" />
-                <div className="h-4 bg-[#202020] rounded w-24 animate-pulse"></div>
+              <div className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 bg-white/10 text-white">
+                <ShoppingCart size={17} strokeWidth={1.75} className="shrink-0" />
+                <div className="h-3.5 bg-white/20 rounded w-24 animate-pulse"></div>
               </div>
-              <div className="flex items-center gap-3 px-3 py-2 rounded-lg border border-transparent">
-                <CreditCard className="h-4 w-4 text-[#555]" />
-                <div className="h-4 bg-[#202020] rounded w-16 animate-pulse"></div>
+              <div className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-zinc-500">
+                <CreditCard size={17} strokeWidth={1.75} className="shrink-0" />
+                <div className="h-3.5 bg-zinc-800 rounded w-16 animate-pulse"></div>
               </div>
             </nav>
 
@@ -44,9 +44,9 @@ export default function ShopSkeleton() {
           {/* Main Content Skeleton (ShopItemsView mockup) */}
           <div className="flex-1 min-w-0 w-full">
             <section className="mt-8">
-              <div className="mb-3 space-y-2">
+              <div className="mb-3">
                 <div className="h-6 bg-[#202020] rounded w-32 animate-pulse"></div>
-                <div className="h-3 bg-[#202020] rounded w-56 animate-pulse"></div>
+                <div className="h-3 bg-[#202020] rounded w-56 animate-pulse mt-1"></div>
               </div>
 
               <div className="w-full">
