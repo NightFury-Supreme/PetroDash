@@ -18,7 +18,7 @@ export default function AuthCard({ title, subtitle, children, siteName = 'PteroD
     <div className="min-h-[100dvh] w-full flex flex-col lg:flex-row bg-[#0F0F0F] text-white font-sans overflow-hidden">
       
       {/* Left Side: Auth Form */}
-      <div className="w-full lg:w-[450px] xl:w-[500px] flex flex-col justify-center p-8 sm:p-12 lg:p-10 xl:p-12 overflow-y-auto z-10 custom-scrollbar shrink-0 border-r border-[#151515]">
+      <div className="w-full lg:w-[450px] xl:w-[500px] flex flex-col justify-center p-8 sm:p-12 lg:p-10 xl:p-12 overflow-y-auto z-10 custom-scrollbar shrink-0">
         <div className="w-full max-w-[360px] mx-auto my-auto py-8">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden bg-[#1A1A1A] border border-[#333]">
@@ -33,15 +33,16 @@ export default function AuthCard({ title, subtitle, children, siteName = 'PteroD
       </div>
 
       {/* Right Side: 4K Wallpaper (Full Bleed) */}
-      <div className="hidden lg:block flex-1 relative bg-[#050505]">
+      <div className="hidden lg:block flex-1 relative bg-[#0F0F0F]">
         <img 
           src={wallpaperUrl} 
           alt="Dashboard Wallpaper" 
-          className="absolute inset-0 w-full h-full object-cover opacity-90"
+          className="absolute inset-0 w-full h-full object-cover"
         />
-        {/* Subtle overlay gradient to blend nicely with the dark theme */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0F0F0F] via-transparent to-transparent opacity-80 pointer-events-none"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0F0F0F] via-transparent to-transparent opacity-40 pointer-events-none"></div>
+        {/* Seamless edge merging gradient - 100% opaque #0F0F0F at the very left edge, fading into the image */}
+        <div className="absolute inset-y-0 left-0 w-[150px] lg:w-[350px] xl:w-[450px] bg-gradient-to-r from-[#0F0F0F] via-[#0F0F0F]/60 to-transparent pointer-events-none z-10"></div>
+        {/* Subtle bottom gradient to blend the floor */}
+        <div className="absolute inset-x-0 bottom-0 h-[250px] bg-gradient-to-t from-[#0F0F0F] via-[#0F0F0F]/40 to-transparent pointer-events-none z-10"></div>
       </div>
       
     </div>
