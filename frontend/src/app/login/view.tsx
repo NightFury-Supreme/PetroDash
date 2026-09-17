@@ -129,7 +129,7 @@ export default function LoginClient() {
             placeholder={useBackupCode ? 'a1b2c3d4' : '123456'}
             className={`w-full h-[42px] rounded-[7px] px-[13px] bg-[#121212] border outline-none text-[#d5d5d5] transition-colors focus:bg-[#151515] font-mono text-center tracking-[0.2em] ${
               useBackupCode ? 'text-[14px]' : 'text-[16px]'
-            } ${error ? 'border-red-500/50 focus:border-red-500' : 'border-[#282828] focus:border-[#454545]'}`}
+            } border-[#282828] focus:border-[#454545]`}
             autoFocus
             autoComplete="one-time-code"
           />
