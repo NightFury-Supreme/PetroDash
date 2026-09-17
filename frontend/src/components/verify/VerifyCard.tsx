@@ -3,16 +3,17 @@ import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import AuthHeader from "@/components/auth/AuthHeader";
+import { useToast } from '@/components/ui/ToastProvider';
 
 export default function VerifyCard() {
   const router = useRouter();
+  const { showError, showSuccess } = useToast();
   const [email, setEmail] = useState<string>("");
   const [code, setCode] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  
+  
   const [codeSent, setCodeSent] = useState<boolean>(false);
   const [rateLimit, setRateLimit] = useState<number>(0);
   
@@ -70,13 +71,13 @@ export default function VerifyCard() {
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, '').slice(0, 8);
     setCode(value);
-    setError(null);
+    
   };
 
   const verifyCode = async () => {
-    if (code.length !== 8) { setError('Please enter an 8-digit verification code'); return; }
+    if (code.length !== 8) { showError('Please enter an 8-digit verification code'); return; }
     setLoading(true);
-    setError(null);
+    
     try {
       const token = localStorage.getItem("auth_token");
       if (!token) return;
@@ -88,15 +89,16 @@ export default function VerifyCard() {
       });
       if (res.ok) {
         try { sessionStorage.removeItem("verify_email"); } catch {}
-        setSuccess('Email verified successfully');
-        setError(null);
+        showSuccess('Email verified successfully');
+        setTimeout(() => router.replace('/dashboard'), 1500);
+        
       } else {
         const data = await res.json().catch(() => ({}));
-        setError(data.error || 'Invalid verification code');
+        showError(data.error || 'Invalid verification code');
       }
     // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_e) {
-      setError('Failed to verify code. Please try again.');
+      showError('Failed to verify code. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -105,8 +107,8 @@ export default function VerifyCard() {
   const resendCode = async () => {
     if (resendLoading || rateLimit > 0) return;
     setResendLoading(true);
-    setError(null);
-    setSuccess(null);
+    
+    
     try {
       const token = localStorage.getItem("auth_token");
       if (!token) return;
@@ -119,33 +121,33 @@ export default function VerifyCard() {
       if (res.ok) {
         setRateLimit(60);
         setCodeSent(true);
-        setSuccess('Verification code sent! Check your email.');
-        setError(null);
+        showSuccess('Verification code sent! Check your email.');
+        
       } else {
         const data = await res.json().catch(() => ({}));
         if (res.status === 429) {
            const retry = data.retryAfter || 60;
            setRateLimit(retry);
-           setError(data.message || `Rate limit exceeded. Please try again in ${Math.ceil(retry/60)} minute(s).`);
+           showError(data.message || `Rate limit exceeded. Please try again in ${Math.ceil(retry/60)} minute(s).`);
         } else {
-           setError(data.error || 'Failed to send verification code');
+           showError(data.error || 'Failed to send verification code');
         }
       }
     // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_e) {
-      setError('Failed to send verification code');
+      showError('Failed to send verification code');
     } finally {
       setResendLoading(false);
     }
   };
 
   const handleChangeEmail = async () => {
-    if (!newEmail || !newEmail.includes('@')) { setError('Please enter a valid email address'); return; }
-    if (loginMethod === 'email' && password.length < 6) { setError('Password must be at least 6 characters'); return; }
-    if (tfaEnabled && tfaCode.length !== 6) { setError('Please enter a valid 6-digit 2FA code'); return; }
+    if (!newEmail || !newEmail.includes('@')) { showError('Please enter a valid email address'); return; }
+    if (loginMethod === 'email' && password.length < 6) { showError('Password must be at least 6 characters'); return; }
+    if (tfaEnabled && tfaCode.length !== 6) { showError('Please enter a valid 6-digit 2FA code'); return; }
     
     setLoading(true);
-    setError(null);
+    
     try {
       const token = localStorage.getItem("auth_token");
       if (!token) return;
@@ -166,29 +168,18 @@ export default function VerifyCard() {
         setPassword("");
         setTfaCode("");
         setCode("");
-        setSuccess('Email updated successfully! A new verification code has been sent.');
+        showSuccess('Email updated successfully! A new verification code has been sent.');
         setCodeSent(true);
       } else {
         const data = await res.json().catch(() => ({}));
-        setError(data.error || 'Failed to update email');
+        showError(data.error || 'Failed to update email');
       }
     } catch {
-      setError('Network error while updating email.');
+      showError('Network error while updating email.');
     } finally {
       setLoading(false);
     }
   };
-
-  if (success && success.toLowerCase().includes('email verified')) {
-    return (
-      <div className="space-y-6 text-center">
-        <p className="text-[#AAAAAA] text-[14px]">Your email address has been successfully verified.</p>
-        <button onClick={() => router.replace('/dashboard')} className="w-full h-[42px] bg-[#FF5722] hover:bg-[#F4511E] text-white font-semibold rounded-[7px] transition-colors flex items-center justify-center gap-2">
-          <i className="fas fa-arrow-right"></i> Go to Dashboard
-        </button>
-      </div>
-    );
-  }
 
   if (changeMode) {
     return (
@@ -215,13 +206,13 @@ export default function VerifyCard() {
               </div>
             )}
 
-            {error && <div className="p-3 rounded-[7px] bg-red-900/20 border border-red-500/30 text-red-400 text-[13px] mt-4 text-center">{error}</div>}
+            
             
             <div className="space-y-3 mt-6">
               <button onClick={handleChangeEmail} disabled={loading} className="w-full h-[42px] bg-[#FF5722] hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-[7px] transition-colors flex items-center justify-center gap-2">
                 {loading ? <><i className="fas fa-spinner fa-spin"></i> Updating...</> : <><i className="fas fa-save"></i> Change Email</>}
               </button>
-              <button onClick={() => { setChangeMode(false); setError(null); }} disabled={loading} className="w-full h-[42px] bg-[#222] hover:bg-[#333] disabled:opacity-50 text-white font-semibold rounded-[7px] transition-colors flex items-center justify-center gap-2">
+              <button onClick={() => { setChangeMode(false);  }} disabled={loading} className="w-full h-[42px] bg-[#222] hover:bg-[#333] disabled:opacity-50 text-white font-semibold rounded-[7px] transition-colors flex items-center justify-center gap-2">
                 Cancel
               </button>
             </div>
@@ -239,7 +230,7 @@ export default function VerifyCard() {
           <span className="text-[#888888] block text-[10px] uppercase tracking-wider mb-0.5 font-medium">Email</span>
           <span className="font-medium text-[#d5d5d5] text-[13px]">{email}</span>
         </div>
-        <button onClick={() => { setChangeMode(true); setNewEmail(email); setError(null); }} className="shrink-0 px-3 h-[28px] bg-[#222] hover:bg-[#333] border border-[#333] rounded-[5px] text-[11px] font-medium text-[#aaa] hover:text-white transition-colors">
+        <button onClick={() => { setChangeMode(true); setNewEmail(email);  }} className="shrink-0 px-3 h-[28px] bg-[#222] hover:bg-[#333] border border-[#333] rounded-[5px] text-[11px] font-medium text-[#aaa] hover:text-white transition-colors">
           Edit
         </button>
       </div>
@@ -251,12 +242,8 @@ export default function VerifyCard() {
         </div>
       )}
 
-      {success && !success.toLowerCase().includes('email verified') && (
-        <div className="p-3 rounded-[7px] bg-emerald-900/20 border border-emerald-500/30 text-emerald-400 text-[13px] text-center">{success}</div>
-      )}
-      {error && (
-        <div className="p-3 rounded-[7px] bg-red-900/20 border border-red-500/30 text-red-400 text-[13px] text-center">{error}</div>
-      )}
+      
+      
 
       <div className="space-y-3 pt-2">
         {codeSent && (

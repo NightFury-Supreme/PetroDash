@@ -8,6 +8,7 @@ import AuthField from '@/components/auth/AuthField';
 import AuthSubmit from '@/components/auth/AuthSubmit';
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
 import { useAuthSettings } from '@/hooks/useAuthSettings';
+import { useToast } from '@/components/ui/ToastProvider';
 
 const strongPassword = z
   .string()
@@ -35,14 +36,13 @@ export default function RegisterClient({ _emailVerification }: { _emailVerificat
   const router = useRouter();
   const search = useSearchParams();
   const { settings, loading: settingsLoading } = useAuthSettings();
+  const { showError } = useToast();
   const [form, setForm] = useState<RegisterForm>({ email: '', username: '', firstName: '', lastName: '', password: '' });
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     setFieldErrors({});
     const parsed = schema.safeParse(form);
     if (!parsed.success) {
@@ -77,23 +77,11 @@ export default function RegisterClient({ _emailVerification }: { _emailVerificat
       localStorage.setItem('auth_token', data.token);
       router.push('/dashboard');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      showError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
       setLoading(false);
     }
   };
-
-  if (settingsLoading) {
-    return (
-      <div className="space-y-4">
-        <div className="h-[42px] bg-[#121212] border border-[#282828] rounded-[7px] animate-pulse"></div>
-        <div className="h-[42px] bg-[#121212] border border-[#282828] rounded-[7px] animate-pulse"></div>
-        <div className="h-[42px] bg-[#121212] border border-[#282828] rounded-[7px] animate-pulse"></div>
-        <div className="h-[42px] bg-[#121212] border border-[#282828] rounded-[7px] animate-pulse"></div>
-        <div className="h-[42px] bg-[#222] border border-[#333] rounded-[7px] animate-pulse"></div>
-      </div>
-    );
-  }
 
   const showEmailRegister = settings?.emailLogin ?? true;
   const showOAuth = (settings?.discord?.enabled || settings?.google?.enabled) ?? false;
@@ -109,7 +97,6 @@ export default function RegisterClient({ _emailVerification }: { _emailVerificat
             <AuthField label="Last name" value={form.lastName} onChange={(v) => setForm({ ...form, lastName: v })} placeholder="Doe" error={fieldErrors.lastName} />
           </div>
           <AuthField label="Password" type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} placeholder="••••••••" error={fieldErrors.password} />
-          {error && <div className="text-[13px] text-red-400 mb-2">{error}</div>}
           <AuthSubmit disabled={loading}>{loading ? 'Loading.' : 'Create account'}</AuthSubmit>
         </>
       )}
@@ -126,7 +113,7 @@ export default function RegisterClient({ _emailVerification }: { _emailVerificat
               </div>
             </div>
           )}
-          <OAuthButtons onError={setError} />
+          <OAuthButtons onError={showError} />
         </>
       )}
       

@@ -1,22 +1,20 @@
 "use client";
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
-
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import AuthHeader from "@/components/auth/AuthHeader";
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { fetchWithRetry } from '@/utils/fetchWithRetry';
+import { useToast } from '@/components/ui/ToastProvider';
 
 export default function ForgotCard() {
   const router = useRouter();
+  const { showError, showSuccess } = useToast();
+  const [email, setEmail] = useState("");
   const [step, setStep] = useState<"request" | "verify" | "success">("request");
-  const [email, setEmail] = useState<string>("");
-  const [code, setCode] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [confirm, setConfirm] = useState<string>("");
+  const [code, setCode] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
-  const [rateLimit, setRateLimit] = useState<number>(0);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [rateLimit, setRateLimit] = useState(0);
 
   useEffect(() => {
     if (rateLimit > 0) {
@@ -28,9 +26,7 @@ export default function ForgotCard() {
   const handleRequest = async () => {
     if (!email || loading) return;
     setLoading(true);
-    setError(null);
-    setSuccess(null);
-    try {
+            try {
       const base = process.env.NEXT_PUBLIC_API_BASE || "";
       const res = await fetchWithRetry(`${base}/api/auth/forgot`, {
         method: "POST",
@@ -38,16 +34,16 @@ export default function ForgotCard() {
         body: JSON.stringify({ email })
       });
       if (res.ok) {
-        setSuccess("Reset code sent! Check your email.");
+        showSuccess("Reset code sent! Check your email.");
         setRateLimit(60);
         setStep("verify");
       } else {
         const data = await res.json().catch(() => ({}));
-        setError(data.error || "Failed to send reset code");
+        showError(data.error || "Failed to send reset code");
       }
     // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_e) {
-      setError("Failed to send reset code");
+      showError("Failed to send reset code");
     } finally {
       setLoading(false);
     }
@@ -55,13 +51,11 @@ export default function ForgotCard() {
 
   const handleReset = async () => {
     if (loading) return;
-    if (code.length !== 8) { setError("Enter the 8-digit code"); return; }
-    if (!password || password.length < 12) { setError("Password must be at least 12 characters"); return; }
-    if (password !== confirm) { setError("Passwords do not match"); return; }
+    if (code.length !== 8) { showError("Enter the 8-digit code"); return; }
+    if (!password || password.length < 12) { showError("Password must be at least 12 characters"); return; }
+    if (password !== confirm) { showError("Passwords do not match"); return; }
     setLoading(true);
-    setError(null);
-    setSuccess(null);
-    try {
+            try {
       const base = process.env.NEXT_PUBLIC_API_BASE || "";
       const res = await fetchWithRetry(`${base}/api/auth/reset`, {
         method: "POST",
@@ -69,14 +63,15 @@ export default function ForgotCard() {
         body: JSON.stringify({ email, code, newPassword: password })
       });
       if (res.ok) {
-        setStep("success");
+        showSuccess('Password updated successfully!');
+        setTimeout(() => router.replace('/login'), 1500);
       } else {
         const data = await res.json().catch(() => ({}));
-        setError(data.error || "Failed to reset password");
+        showError(data.error || "Failed to reset password");
       }
     // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_e) {
-      setError("Failed to reset password");
+      showError("Failed to reset password");
     } finally {
       setLoading(false);
     }
@@ -85,9 +80,7 @@ export default function ForgotCard() {
   const resendCode = async () => {
     if (resendLoading || rateLimit > 0 || !email) return;
     setResendLoading(true);
-    setError(null);
-    setSuccess(null);
-    try {
+            try {
       const base = process.env.NEXT_PUBLIC_API_BASE || "";
       const res = await fetchWithRetry(`${base}/api/auth/forgot`, {
         method: "POST",
@@ -96,14 +89,14 @@ export default function ForgotCard() {
       });
       if (res.ok) {
         setRateLimit(60);
-        setSuccess("Reset code re-sent! Check your email.");
+        showSuccess("Reset code re-sent! Check your email.");
       } else {
         const data = await res.json().catch(() => ({}));
-        setError(data.error || "Failed to resend code");
+        showError(data.error || "Failed to resend code");
       }
     // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (_e) {
-      setError("Failed to resend code");
+      showError("Failed to resend code");
     } finally {
       setResendLoading(false);
     }
@@ -112,19 +105,9 @@ export default function ForgotCard() {
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, '').slice(0, 8);
     setCode(value);
-    setError(null);
-  };
+      };
 
-  if (step === "success") {
-    return (
-      <div className="space-y-6 text-center">
-        <p className="text-[#AAAAAA] text-[14px]">Your password has been updated successfully.</p>
-        <button onClick={() => router.replace('/login')} className="w-full h-[42px] bg-[#FF5722] hover:bg-[#F4511E] text-white font-semibold rounded-[7px] transition-colors flex items-center justify-center gap-2">
-          <i className="fas fa-arrow-right"></i> Go to Login
-        </button>
-      </div>
-    );
-  }
+  
 
   return (
     <div className="space-y-4">
@@ -147,12 +130,6 @@ export default function ForgotCard() {
             <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Re-enter password" className="w-full h-[42px] px-[13px] bg-[#121212] border border-[#282828] rounded-[7px] text-[#d5d5d5] placeholder-[#666] focus:outline-none focus:border-[#454545] focus:bg-[#151515] transition-colors" />
           </div>
         </>
-      )}
-      {success && (
-        <div className="p-3 rounded-[7px] bg-emerald-900/20 border border-emerald-500/30 text-emerald-400 text-[13px]">{success}</div>
-      )}
-      {error && (
-        <div className="p-3 rounded-[7px] bg-red-900/20 border border-red-500/30 text-red-400 text-[13px]">{error}</div>
       )}
       <div className="space-y-3 pt-2">
         {step === 'request' ? (

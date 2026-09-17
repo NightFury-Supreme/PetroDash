@@ -9,6 +9,7 @@ import AuthField from '@/components/auth/AuthField';
 import AuthSubmit from '@/components/auth/AuthSubmit';
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
 import { useAuthSettings } from '@/hooks/useAuthSettings';
+import { useToast } from '@/components/ui/ToastProvider';
 
 const schema = z.object({
   emailOrUsername: z.string().min(1, 'Email or username is required'),
@@ -21,13 +22,13 @@ type FieldErrors = Partial<Record<keyof LoginForm, string>>;
 
 export default function LoginClient() {
   const router = useRouter();
+  const { showError } = useToast();
   const { settings, loading: settingsLoading } = useAuthSettings();
 
   // All hooks declared unconditionally at the top
   const [form, setForm] = useState<LoginForm>({ emailOrUsername: '', password: '' });
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
   const [requires2FA, setRequires2FA] = useState(false);
   const [tempToken, setTempToken] = useState<string | null>(null);
   const [tfaCode, setTfaCode] = useState('');
@@ -40,7 +41,6 @@ export default function LoginClient() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     setFieldErrors({});
     const parsed = schema.safeParse(form);
     if (!parsed.success) {
@@ -70,7 +70,7 @@ export default function LoginClient() {
       localStorage.setItem('auth_token', data.token);
       router.push('/dashboard');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      showError(err instanceof Error ? err.message : 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -78,8 +78,7 @@ export default function LoginClient() {
 
   const on2FASubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    if (!tfaCode) { setError('Code is required'); return; }
+    if (!tfaCode) { showError('Code is required'); return; }
     setLoading(true);
     try {
       const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/login/2fa`, {
@@ -93,7 +92,7 @@ export default function LoginClient() {
       localStorage.setItem('auth_token', data.token);
       router.push('/dashboard');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : '2FA failed');
+      showError(err instanceof Error ? err.message : '2FA failed');
     } finally {
       setLoading(false);
     }
@@ -125,7 +124,6 @@ export default function LoginClient() {
             onChange={(e) => {
               const v = e.target.value;
               setTfaCode(useBackupCode ? v.toLowerCase().replace(/[^a-f0-9]/g, '') : v.replace(/\D/g, ''));
-              setError(null);
             }}
             maxLength={useBackupCode ? 8 : 6}
             placeholder={useBackupCode ? 'a1b2c3d4' : '123456'}
@@ -144,7 +142,6 @@ export default function LoginClient() {
               </span>
             </div>
           )}
-          {error && <p className="mt-2 text-[13px] text-red-400 text-left">{error}</p>}
         </div>
 
         <AuthSubmit disabled={loading || !codeReady}>
@@ -154,14 +151,14 @@ export default function LoginClient() {
         <div className="flex flex-col items-start gap-2 pt-1">
           <button
             type="button"
-            onClick={() => { setUseBackupCode(!useBackupCode); setTfaCode(''); setError(null); }}
+            onClick={() => { setUseBackupCode(!useBackupCode); setTfaCode(''); }}
             className="text-[12px] text-[#FF5722] hover:text-[#F4511E] transition-colors"
           >
             {useBackupCode ? 'Use authenticator app instead' : 'Use a backup code instead'}
           </button>
           <button
             type="button"
-            onClick={() => { setRequires2FA(false); setTempToken(null); setTfaCode(''); setError(null); setUseBackupCode(false); }}
+            onClick={() => { setRequires2FA(false); setTempToken(null); setTfaCode(''); setUseBackupCode(false); }}
             className="text-[12px] text-[#888888] hover:text-[#FF5722] transition-colors"
           >
             Return to login
@@ -199,7 +196,6 @@ export default function LoginClient() {
           <div className="text-right text-[12px] mt-1 mb-4">
             <Link href="/forgot" className="text-[#888888] hover:text-[#FF5722] transition-colors">Forgot password?</Link>
           </div>
-          {error && <div className="text-[13px] text-red-400 mb-2">{error}</div>}
           <AuthSubmit disabled={loading}>{loading ? 'Loading.' : 'Login'}</AuthSubmit>
         </>
       )}
@@ -216,7 +212,7 @@ export default function LoginClient() {
               </div>
             </div>
           )}
-          <OAuthButtons onError={setError} />
+          <OAuthButtons onError={showError} />
         </>
       )}
 
@@ -237,3 +233,4 @@ export default function LoginClient() {
     </div>
   );
 }
+
