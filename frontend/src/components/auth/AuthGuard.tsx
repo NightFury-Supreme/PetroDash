@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "@/i18n/routing";
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
+import { FullPageSkeleton } from "@/components/skeletons/layout/FullPageSkeleton";
 
 const PUBLIC_PATHS = [
   "/login",
@@ -179,9 +180,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   if (!isPublic && !isValidated) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-screen bg-[#0F0F0F]">
-        <div className="w-8 h-8 border-2 border-[#FF5722] border-t-transparent rounded-full animate-spin"></div>
-      </div>
+      <FullPageSkeleton />
     );
   }
 

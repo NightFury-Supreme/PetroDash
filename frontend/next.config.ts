@@ -15,4 +15,4 @@ const nextConfig: NextConfig = {
   ...(allowedDevOrigins.length > 0 && { allowedDevOrigins }),
 };
 
-export default withNextIntl(nextConfig);
+export default withNextIntl(nextConfig); 

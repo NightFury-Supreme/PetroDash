@@ -3,8 +3,7 @@ import React from 'react';
 export function EarnSkeleton() {
   const cols = "lg:grid-cols-[2fr_100px_100px_120px_150px]";
   return (
-    <div className="p-4 sm:p-6 bg-[#0f0f0f] min-h-screen text-white">
-      <div className="flex flex-col h-full space-y-6">
+    <div className="flex flex-col h-full space-y-6 text-white">
         <header>
           <div className="flex items-start justify-between gap-6">
             <div>
@@ -55,6 +54,5 @@ export function EarnSkeleton() {
           </div>
         </div>
       </div>
-    </div>
   );
 }
