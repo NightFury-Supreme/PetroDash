@@ -143,9 +143,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         checkingRef.current = false;
       }
     })();
-  // Only re-run when the stripped pathname actually changes
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, [pathname, router]);
 
   // — Direct /banned access without ban context → redirect —
   useEffect(() => {
@@ -161,8 +159,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     } catch {
       router.replace("/login");
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, [pathname, router]);
 
   // — Direct /verify access without verify context → redirect —
   useEffect(() => {
@@ -178,8 +175,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     } catch {
       router.replace("/login");
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, [pathname, router]);
 
   if (!isPublic && !isValidated) {
     return (
