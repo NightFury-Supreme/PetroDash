@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslations } from "next-intl";
 import {
   Check,
   Cpu,
@@ -25,6 +26,7 @@ export function PlansView({
   currency,
   onPurchasePlan,
 }: PlansViewProps) {
+  const t = useTranslations('Shop');
 
 
   // Group active plans
@@ -163,12 +165,13 @@ export function PlansView({
 function PlanRow({
   plan,
   currency,
-  onPurchase
+  onPurchase,
 }: {
   plan: any;
   currency: string;
-  onPurchase: () => void;
+  onPurchase: (plan: any) => void;
 }) {
+  const t = useTranslations('Shop');
   const res = plan.productContent?.recurrentResources || {};
   const cpu = res.cpuPercent > 0 ? `${res.cpuPercent}%` : "0%";
   const memory = res.memoryMb > 0 ? `${res.memoryMb} MB` : "0 MB";

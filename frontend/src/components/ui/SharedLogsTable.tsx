@@ -462,6 +462,7 @@ function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; m
 }
 
 function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: Variant; meta: LogMeta }) {
+  const t = useTranslations('UI');
   const hasChanges = meta.changes != null && Object.keys(meta.changes).length > 0;
   const hasChangedLegacy = meta.changed != null && Object.keys(meta.changed).length > 0;
   const hasCreated = meta.created != null && Object.keys(meta.created).length > 0;

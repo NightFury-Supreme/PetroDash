@@ -24,7 +24,7 @@ export function AdminLedgerFilters({
   onUserIdChange,
   onSortChange,
   onFilter,
-  _loading
+  loading: _loading
 }: AdminLedgerFiltersProps) {
   const statusOptions = [
     { value: '', label: 'All Statuses' },
