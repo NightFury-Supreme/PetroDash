@@ -151,7 +151,7 @@ export default function LoginClient() {
           {loading ? 'Verifying.' : 'Verify'}
         </AuthSubmit>
 
-        <div className="flex flex-col items-center gap-2 pt-1">
+        <div className="flex flex-col items-start gap-2 pt-1">
           <button
             type="button"
             onClick={() => { setUseBackupCode(!useBackupCode); setTfaCode(''); setError(null); }}
@@ -164,7 +164,7 @@ export default function LoginClient() {
             onClick={() => { setRequires2FA(false); setTempToken(null); setTfaCode(''); setError(null); setUseBackupCode(false); }}
             className="text-[12px] text-[#888888] hover:text-[#FF5722] transition-colors"
           >
-            Back to login
+            Return to login
           </button>
         </div>
       </form>
