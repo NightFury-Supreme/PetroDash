@@ -11,7 +11,7 @@ import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 
-const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
+const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin', 'latin-ext'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -40,9 +40,11 @@ export default async function RootLayout({
   }
 
   const messages = await getMessages();
+  // RTL support: Arabic uses right-to-left layout
+  const dir: 'ltr' | 'rtl' = locale === 'ar' ? 'rtl' : 'ltr';
 
   return (
-    <html lang={locale}>
+    <html lang={locale} dir={dir}>
       <head>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
       </head>
