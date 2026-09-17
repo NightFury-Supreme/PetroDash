@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 // Server component wrapper to fetch branding and render client form
-import AuthCard from '@/components/auth/AuthCard';
+import AuthCard from '@/components/auth/layout/AuthCard';
 import LoginClient from './view';
 
 async function fetchBranding() {
@@ -27,5 +27,6 @@ export default async function LoginPage() {
     </main>
   );
 }
+
 
 
