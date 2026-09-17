@@ -178,7 +178,7 @@ export function CouponDrawer({
             {loading || isPopupProcessing ? (
               <>
                 <Loader2 size={16} className="animate-spin" />
-                {isPopupProcessing ? "Processing Payment..." : "Processing..."}
+                {t('processing')}
               </>
             ) : (
               <>
@@ -276,7 +276,7 @@ export function CouponDrawer({
               </div>
               {appliedCoupon && (
                 <div className="flex items-center justify-between">
-                  <span className="text-[13px] text-[#666]">Discount ({appliedCoupon})</span>
+                  <span className="text-[13px] text-[#666]">{t('discount')} ({appliedCoupon})</span>
                   <span className="text-[13px] font-medium text-emerald-500">-{discountAmount.toFixed(2)} {currency}</span>
                 </div>
               )}
@@ -300,7 +300,7 @@ export function CouponDrawer({
                   setDiscountAmount(0);
                 }}
                 onKeyDown={handleKeyDown}
-                placeholder="Enter coupon code"
+                placeholder={t('enterCouponCode')}
                 disabled={loading || validating}
                 className="min-w-0 flex-1 bg-transparent px-4 text-[13px] text-white outline-none placeholder:text-[#555] disabled:opacity-50"
               />
@@ -310,7 +310,7 @@ export function CouponDrawer({
                 disabled={loading || validating || !couponCode || couponCode === appliedCoupon}
                 className="flex w-20 items-center justify-center text-[#666] border-l border-[#2A2A2A] transition-colors hover:bg-[#222] hover:text-white disabled:cursor-not-allowed disabled:opacity-30 text-xs font-medium"
               >
-                {validating ? <Loader2 size={14} className="animate-spin" /> : appliedCoupon ? "Applied" : "Apply"}
+                {validating ? <Loader2 size={14} className="animate-spin" /> : appliedCoupon ? t('applied') : t('apply')}
               </button>
             </div>
           </div>

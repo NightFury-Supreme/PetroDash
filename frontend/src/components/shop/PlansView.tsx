@@ -91,7 +91,7 @@ export function PlansView({
                 </div>
               </div>
             ))}
-            {plans.length === 0 && <div className="py-8 text-center text-xs text-[#666]">No available plans found.</div>}
+            {plans.length === 0 && <div className="py-8 text-center text-xs text-[#666]">{t('noAvailablePlans')}</div>}
           </div>
         </section>
 
@@ -108,7 +108,7 @@ export function PlansView({
           {/* ACTIVE PLAN LIST */}
           <div className="mt-4 divide-y divide-white/[0.06]">
             {groupedPlans.length === 0 ? (
-              <div className="py-8 text-center text-xs text-[#666]">No active plans.</div>
+              <div className="py-8 text-center text-xs text-[#666]">{t('noActivePlans')}</div>
             ) : (
               groupedPlans.map((g, i) => {
                 const res = g.planData?.productContent?.recurrentResources || {};

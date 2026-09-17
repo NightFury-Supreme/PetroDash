@@ -83,12 +83,12 @@ export function PurchaseDrawer({
             {buying ? (
               <>
                 <Loader2 size={16} className="animate-spin" />
-                Processing…
+                {t('processing')}
               </>
             ) : (
               <>
                 <Coins size={16} className="h-4 w-4" />
-                Purchase · {total} coins
+                Purchase &middot; {total} coins
               </>
             )}
           </button>
@@ -133,7 +133,7 @@ export function PurchaseDrawer({
             <section className="mt-9">
               <div className="mb-4 flex items-center justify-between">
                 <CheckoutSectionTitle>{t('quantity')}</CheckoutSectionTitle>
-                <span className="text-[10px] text-zinc-600">Maximum {maxQty}</span>
+                <span className="text-[10px] text-zinc-600">{t('maximum')} {maxQty}</span>
               </div>
               <div className="flex h-11 overflow-hidden rounded-lg border border-[#2A2A2A] bg-[#161616]">
                 <button

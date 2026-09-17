@@ -16,7 +16,7 @@ export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
     <section className="mt-8">
       <div className="mb-3">
         <h2 className="text-lg font-semibold text-white">{t('resources')}</h2>
-        <p className="mt-0.5 text-xs text-[#666]">Purchase additional resources for your servers.</p>
+        <p className="mt-0.5 text-xs text-[#666]">{t('purchaseHelpText')}</p>
       </div>
 
       {items.length === 0 ? (
@@ -105,8 +105,8 @@ export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
       )}
 
       <div className="mt-4 flex items-center justify-between px-1">
-        <p className="text-xs text-[#555]">Resources are added to your account instantly.</p>
-        <p className="text-xs text-[#555]">Max {MAX_QUANTITY} units per purchase</p>
+        <p className="text-xs text-[#555]">{t('resourcesAddedInstantly')}</p>
+        <p className="text-xs text-[#555]">{t('maxUnitsPerPurchase', { max: MAX_QUANTITY })}</p>
       </div>
     </section>
   );
