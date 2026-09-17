@@ -21,9 +21,7 @@ export default function AuthCard({ title, subtitle, children, siteName = 'PteroD
       <div className="w-full lg:w-[450px] xl:w-[500px] flex flex-col justify-center p-8 sm:p-12 lg:p-10 xl:p-12 overflow-y-auto z-10 custom-scrollbar shrink-0">
         <div className="w-full max-w-[360px] mx-auto my-auto py-8">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden bg-[#1A1A1A] border border-[#333]">
-              <img src={iconSrc} alt={siteName} className="w-full h-full object-cover" />
-            </div>
+            <img src={iconSrc} alt={siteName} className="h-10 w-auto object-contain" />
             <h1 className="text-xl font-bold tracking-tight">{siteName}</h1>
           </div>
           <h2 className="text-2xl font-bold mb-1.5 tracking-tight">{title}</h2>
