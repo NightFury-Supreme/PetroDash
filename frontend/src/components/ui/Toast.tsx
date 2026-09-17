@@ -38,10 +38,16 @@ export function Toast({ message, type = 'error', duration = 3500, onDismiss }: T
   return (
     <div
       style={{ left: isAuthPage ? '0px' : 'var(--sidebar-width, 16rem)' }}
-      className={\ixed bottom-0 right-0 z-[9999] transition-transform duration-300 ease-out max-md:!left-0 \\}
+      className={`fixed bottom-0 right-0 z-[9999] transition-transform duration-300 ease-out max-md:!left-0 ${
+        visible ? 'translate-y-0' : 'translate-y-full'
+      }`}
     >
       <div
-        className={\w-full flex items-center justify-between px-4 py-3 sm:px-6 sm:py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.5)] \\}
+        className={`w-full flex items-center justify-between px-4 py-3 sm:px-6 sm:py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.5)] ${
+          isError
+            ? 'bg-[#5f1313] text-[#ffbaba] border-t border-[#8c1c1c]'
+            : 'bg-[#10B981] text-white border-t border-[#059669]'
+        }`}
       >
         <div className="flex items-center gap-3">
           {isError ? (
