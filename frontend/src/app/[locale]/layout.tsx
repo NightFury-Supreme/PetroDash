@@ -18,7 +18,8 @@ export async function generateMetadata(): Promise<Metadata> {
   let title = 'PteroDash';
   let icons: Metadata['icons'] | undefined = undefined;
   try {
-    const res = await fetchWithRetry("/api/branding", { cache: 'no-store' });
+    const base = process.env.NEXT_PUBLIC_API_BASE || '';
+    const res = await fetchWithRetry(`${base}/api/branding`, { cache: 'no-store' });
     let s: any = {}; try { s = await res.json(); } catch {}
     if (s?.siteName) title = s.siteName;
     if (s?.siteIcon) icons = { icon: s.siteIcon } as any;

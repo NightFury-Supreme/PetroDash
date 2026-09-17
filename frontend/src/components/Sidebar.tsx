@@ -4,6 +4,7 @@ import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { Link } from "@/i18n/routing";
 import { usePathname, useRouter } from "@/i18n/routing";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import type { LucideIcon } from "lucide-react";
 import {
   LayoutDashboard,
@@ -25,33 +26,33 @@ import {
   LogOut
 } from "lucide-react";
 
-type NavLink = { href: string; label: string; icon: LucideIcon };
+type NavLink = { href: string; labelKey: string; icon: LucideIcon };
 
 const baseLinks: NavLink[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/shop", label: "Store", icon: Store },
-  { href: "/earn", label: "AFK Earn", icon: Coins },
-  { href: "/gift", label: "Redeem Gift", icon: Gift },
-  { href: "/referrals", label: "Affiliates", icon: Users },
+  { href: "/dashboard", labelKey: "dashboard", icon: LayoutDashboard },
+  { href: "/shop", labelKey: "store", icon: Store },
+  { href: "/earn", labelKey: "earn", icon: Coins },
+  { href: "/gift", labelKey: "gift", icon: Gift },
+  { href: "/referrals", labelKey: "affiliates", icon: Users },
 ];
 
 const supportLinks: NavLink[] = [
-  { href: "/panel", label: "Panel Credentials", icon: Key },
-  { href: "/tickets", label: "Help & Support", icon: Headphones },
-  { href: "/profile", label: "Settings", icon: Settings },
+  { href: "/panel", labelKey: "panelCredentials", icon: Key },
+  { href: "/tickets", labelKey: "helpSupport", icon: Headphones },
+  { href: "/profile", labelKey: "settings", icon: Settings },
 ];
 
 const adminOtherLinks: NavLink[] = [
-  { href: "/admin", label: "Admin", icon: Shield },
-  { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/servers", label: "Servers", icon: Server },
-  { href: "/admin/eggs", label: "Eggs", icon: Package },
-  { href: "/admin/locations", label: "Locations", icon: MapPin },
-  { href: "/admin/earn", label: "Earn", icon: Coins },
-  { href: "/admin/gift", label: "Gifts", icon: Gift },
-  { href: "/admin/tickets", label: "Tickets", icon: Ticket },
-  { href: "/admin/logs", label: "Logs", icon: List },
-  { href: "/admin/settings", label: "Settings", icon: Sliders },
+  { href: "/admin", labelKey: "admin", icon: Shield },
+  { href: "/admin/users", labelKey: "users", icon: Users },
+  { href: "/admin/servers", labelKey: "servers", icon: Server },
+  { href: "/admin/eggs", labelKey: "eggs", icon: Package },
+  { href: "/admin/locations", labelKey: "locations", icon: MapPin },
+  { href: "/admin/earn", labelKey: "adminEarn", icon: Coins },
+  { href: "/admin/gift", labelKey: "gifts", icon: Gift },
+  { href: "/admin/tickets", labelKey: "tickets", icon: Ticket },
+  { href: "/admin/logs", labelKey: "logs", icon: List },
+  { href: "/admin/settings", labelKey: "adminSettings", icon: Sliders },
 ];
 
 
@@ -59,16 +60,18 @@ function NavButton({
   item,
   collapsed,
   isActive,
+  label,
 }: {
   item: NavLink;
   collapsed: boolean;
   isActive: boolean;
+  label: string;
 }) {
   const Icon = item.icon;
   return (
     <Link href={item.href} className="block">
       <div
-        title={collapsed ? item.label : undefined}
+        title={collapsed ? label : undefined}
         aria-current={isActive ? "page" : undefined}
         className={`group flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/30 ${
           collapsed ? "justify-center" : ""
@@ -79,7 +82,7 @@ function NavButton({
         }`}
       >
         <Icon size={17} strokeWidth={1.75} className="shrink-0" />
-        {!collapsed && <span className="truncate">{item.label}</span>}
+        {!collapsed && <span className="truncate">{label}</span>}
       </div>
     </Link>
   );
@@ -88,6 +91,7 @@ function NavButton({
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const tNav = useTranslations('Nav');
   const [collapsed, setCollapsed] = useState(false);
   const [user, setUser] = useState<{ username?: string; email?: string; role?: string; coins?: number; hasActivePlans?: boolean; profilePicture?: string; firstName?: string; lastName?: string; name?: string } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -202,7 +206,7 @@ export default function Sidebar() {
         <div>
           {!collapsed && (
             <p className="mb-2 px-2.5 text-xs font-medium uppercase tracking-wider text-zinc-600">
-              Main Navigation
+              {tNav('mainNav')}
             </p>
           )}
           <nav className="flex flex-col gap-0.5">
@@ -212,6 +216,7 @@ export default function Sidebar() {
               <NavButton
                 key={item.href}
                 item={item}
+                label={tNav(item.labelKey)}
                 collapsed={collapsed}
                 isActive={checkIsActive(item.href)}
               />
@@ -223,13 +228,14 @@ export default function Sidebar() {
         {!collapsed && isAdmin && (
           <div>
             <p className="mb-2 px-2.5 text-xs font-medium uppercase tracking-wider text-zinc-600">
-              Admin
+              {tNav('admin')}
             </p>
             <nav className="flex flex-col gap-0.5">
               {adminOtherLinks.map((item) => (
                 <NavButton
                   key={item.href}
                   item={item}
+                  label={tNav(item.labelKey)}
                   collapsed={collapsed}
                   isActive={checkIsActive(item.href)}
                 />
@@ -237,7 +243,8 @@ export default function Sidebar() {
               
               {/* Store Section */}
               <NavButton
-                item={{ href: "/admin/store", label: "Store", icon: Store }}
+                item={{ href: "/admin/store", labelKey: "adminStore", icon: Store }}
+                label={tNav('adminStore')}
                 collapsed={collapsed}
                 isActive={checkIsActive("/admin/store")}
               />
@@ -250,7 +257,7 @@ export default function Sidebar() {
       <div className="px-3 pt-4 border-t border-white/5">
         {!collapsed && (
           <p className="mb-2 px-2.5 text-xs font-medium uppercase tracking-wider text-zinc-600">
-            Support
+            {tNav('support')}
           </p>
         )}
         <nav className="flex flex-col gap-0.5">
@@ -258,6 +265,7 @@ export default function Sidebar() {
             <NavButton
               key={item.href}
               item={item}
+              label={tNav(item.labelKey)}
               collapsed={collapsed}
               isActive={checkIsActive(item.href)}
             />
@@ -295,7 +303,7 @@ export default function Sidebar() {
                     <div className="flex items-center gap-1.5 mt-0.5 pr-2">
                       <div className="flex items-center gap-1 text-[11px] font-medium leading-tight text-zinc-300">
                         <Coins size={10} strokeWidth={2} />
-                        <span>{user?.coins ?? 0} coins</span>
+                        <span>{tNav('coins', { count: user?.coins ?? 0 })}</span>
                       </div>
                       {user?.role && (
                         <div className={`text-[9px] font-bold px-1.5 py-0.5 rounded-[4px] uppercase tracking-wider leading-none shrink-0 ${
@@ -332,7 +340,7 @@ export default function Sidebar() {
                   router.push('/login');
                 }
               }}
-              title="Sign Out"
+              title={tNav('signOut')}
             >
               <LogOut size={16} strokeWidth={1.75} />
             </button>

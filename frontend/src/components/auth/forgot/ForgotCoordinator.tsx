@@ -43,10 +43,10 @@ export default function ForgotCoordinator() {
         setStep("verify");
       } else {
         const data = await res.json().catch(() => ({}));
-        showError(data.error || "Failed to send reset code");
+        showError(data.error || tErrors('failedSendReset'));
       }
     } catch (_e) {
-      showError("Failed to send reset code");
+      showError(tErrors('failedSendReset'));
     } finally {
       setLoading(false);
     }
@@ -54,7 +54,7 @@ export default function ForgotCoordinator() {
 
   const handleReset = async () => {
     if (loading) return;
-    if (code.length !== 8) { showError("Enter the 8-digit code"); return; }
+    if (code.length !== 8) { showError(tErrors('enter8DigitCode')); return; }
     if (!password || password.length < 12) { showError(tErrors('passwordShort')); return; }
     if (password !== confirm) { showError(tErrors('passwordsDontMatch')); return; }
     setLoading(true);
@@ -68,10 +68,10 @@ export default function ForgotCoordinator() {
         setTimeout(() => router.replace('/login'), 1500);
       } else {
         const data = await res.json().catch(() => ({}));
-        showError(data.error || "Failed to reset password");
+        showError(data.error || tErrors('failedReset'));
       }
     } catch (_e) {
-      showError("Failed to reset password");
+      showError(tErrors('failedReset'));
     } finally {
       setLoading(false);
     }
@@ -90,10 +90,10 @@ export default function ForgotCoordinator() {
         showSuccess(t('successRequest'));
       } else {
         const data = await res.json().catch(() => ({}));
-        showError(data.error || "Failed to resend code");
+        showError(data.error || tErrors('failedResend'));
       }
     } catch (_e) {
-      showError("Failed to resend code");
+      showError(tErrors('failedResend'));
     } finally {
       setResendLoading(false);
     }

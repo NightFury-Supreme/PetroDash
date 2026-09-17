@@ -20,7 +20,8 @@ type FieldErrors = Partial<Record<keyof LoginForm, string>>;
 export default function LoginForm({ onSuccess, onRequires2FA }: { onSuccess: (token: string) => void; onRequires2FA: (tempToken: string) => void }) {
   const { settings } = useAuthSettings();
   const { showError } = useToast();
-  const t = useTranslations('Auth.login');
+  const t = useTranslations();
+  const tCommon = useTranslations('Auth.common');
   const tErrors = useTranslations('Auth.errors');
   const [form, setForm] = useState<LoginForm>({ emailOrUsername: '', password: '' });
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -44,7 +45,8 @@ export default function LoginForm({ onSuccess, onRequires2FA }: { onSuccess: (to
     }
     setLoading(true);
     try {
-      const res = await fetchWithRetry('/api/auth/login', {
+      const base = process.env.NEXT_PUBLIC_API_BASE || '';
+      const res = await fetchWithRetry(`${base}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(parsed.data),
@@ -73,8 +75,8 @@ export default function LoginForm({ onSuccess, onRequires2FA }: { onSuccess: (to
       <form onSubmit={onSubmit} className="space-y-4">
         {showEmailLogin && (
           <>
-            <AuthField label={t('emailLabel')} value={form.emailOrUsername} onChange={(v) => setForm({ ...form, emailOrUsername: v })} placeholder={t('emailPlaceholder')} error={fieldErrors.emailOrUsername} />
-            <AuthField label={t('passwordLabel')} type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} placeholder={t('passwordPlaceholder')} error={fieldErrors.password} />
+            <AuthField label={tCommon('emailLabel')} value={form.emailOrUsername} onChange={(v) => setForm({ ...form, emailOrUsername: v })} placeholder={tCommon('emailPlaceholder')} error={fieldErrors.emailOrUsername} />
+            <AuthField label={tCommon('passwordLabel')} type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} placeholder={tCommon('passwordPlaceholder')} error={fieldErrors.password} />
             <div className="text-right text-[12px] mt-1 mb-4">
               <Link href="/forgot" className="text-[#888888] hover:text-[#FF5722] transition-colors">{t('forgotPassword')}</Link>
             </div>
@@ -89,7 +91,7 @@ export default function LoginForm({ onSuccess, onRequires2FA }: { onSuccess: (to
                   <div className="w-full border-t border-[#222]" />
                 </div>
                 <div className="relative flex justify-center text-[11px] uppercase tracking-wider font-semibold">
-                  <span className="px-3 bg-[#0F0F0F] text-[#666]">Or continue with</span>
+                  <span className="px-3 bg-[#0F0F0F] text-[#666]">{tCommon('orContinueWith')}</span>
                 </div>
               </div>
             )}
@@ -98,8 +100,8 @@ export default function LoginForm({ onSuccess, onRequires2FA }: { onSuccess: (to
         )}
         {!showEmailLogin && !showOAuth && (
           <div className="text-center text-[#888888] text-[13px]">
-            <p>No login methods are currently available.</p>
-            <p className="text-[12px] mt-1">Please contact an administrator.</p>
+            <p>{t('noMethods')}</p>
+            <p className="text-[12px] mt-1">{tCommon('contactAdmin')}</p>
           </div>
         )}
         {showEmailLogin && (

@@ -20,7 +20,8 @@ interface ChangeEmailFormProps {
 export default function ChangeEmailForm({
   newEmail, setNewEmail, password = '', setPassword, tfaCode = '', setTfaCode, loginMethod, tfaEnabled, onSave, onCancel, loading
 }: ChangeEmailFormProps) {
-  const t = useTranslations('Auth.verify');
+  const t = useTranslations();
+  const tCommon = useTranslations('Auth.common');
 
   return (
     <div className="space-y-4">

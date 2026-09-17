@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ServerInfo } from "./types";
 import { Cpu, CircuitBoard, HardDrive, ChevronsUpDown, ExternalLink, Edit2, Trash2, ShieldAlert } from 'lucide-react';
 import { DeleteDrawer } from "@/components/ui/DeleteDrawer";
+import { useTranslations } from 'next-intl';
 
 interface ServersSectionProps {
   servers: ServerInfo[];
@@ -13,6 +14,7 @@ interface ServersSectionProps {
 }
 
 export function ServersSection({ servers, onDelete, onEdit }: ServersSectionProps) {
+  const t = useTranslations('Dashboard');
   const [deletingServer, setDeletingServer] = useState<ServerInfo | null>(null);
 
   const handleConfirmDelete = async () => {
@@ -24,29 +26,29 @@ export function ServersSection({ servers, onDelete, onEdit }: ServersSectionProp
     <section>
       <div className="mb-5 flex items-end justify-between pt-7 px-5">
         <div>
-          <h2 className="text-base font-semibold text-white">Servers</h2>
+          <h2 className="text-base font-semibold text-white">{t('servers')}</h2>
           <p className="mt-1 text-xs text-[#888888]">
-            Your deployed instances.
+            {t('serversSubtitle')}
           </p>
         </div>
       </div>
 
       <div className="w-full">
         <div className="hidden gap-4 grid-cols-[1.5fr_1fr_1fr_100px_80px_80px_80px_100px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 xl:grid">
-          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">Server Name <ChevronsUpDown size={12} className="opacity-70" /></span>
-          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">Node <ChevronsUpDown size={12} className="opacity-70" /></span>
-          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">Egg <ChevronsUpDown size={12} className="opacity-70" /></span>
-          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">Status <ChevronsUpDown size={12} className="opacity-70" /></span>
-          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">CPU <ChevronsUpDown size={12} className="opacity-70" /></span>
-          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">Memory <ChevronsUpDown size={12} className="opacity-70" /></span>
-          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">Disk <ChevronsUpDown size={12} className="opacity-70" /></span>
-          <span className="text-right">Action</span>
+          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">{t('colServerName')} <ChevronsUpDown size={12} className="opacity-70" /></span>
+          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">{t('colNode')} <ChevronsUpDown size={12} className="opacity-70" /></span>
+          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">{t('colEgg')} <ChevronsUpDown size={12} className="opacity-70" /></span>
+          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">{t('colStatus')} <ChevronsUpDown size={12} className="opacity-70" /></span>
+          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">{t('cpu')} <ChevronsUpDown size={12} className="opacity-70" /></span>
+          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">{t('memory')} <ChevronsUpDown size={12} className="opacity-70" /></span>
+          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">{t('disk')} <ChevronsUpDown size={12} className="opacity-70" /></span>
+          <span className="text-right">{t('colAction')}</span>
         </div>
 
         <div className="divide-y divide-white/[0.06]">
           {servers.length === 0 ? (
             <div className="text-center py-12 text-[#888] text-sm">
-              No servers found. Create your first server to get started.
+              {t('noServers')}
             </div>
           ) : (
             servers.map((server) => {
@@ -82,7 +84,7 @@ export function ServersSection({ servers, onDelete, onEdit }: ServersSectionProp
                 );
               }
 
-              const regionName = server.location || 'Unknown';
+              const regionName = server.location || t('unknown');
               const isDownOrUnreachable = server.unreachable || server.status?.toLowerCase() === 'unreachable' || server.status?.toLowerCase() === 'error';
 
               return (
@@ -117,7 +119,7 @@ export function ServersSection({ servers, onDelete, onEdit }: ServersSectionProp
                         onError={(e) => { e.currentTarget.style.display = 'none'; }}
                       />
                     )}
-                    {server.eggName || 'Unknown'}
+                    {server.eggName || t('unknown')}
                   </div>
 
                   <div>{statusBadge}</div>
@@ -152,26 +154,26 @@ export function ServersSection({ servers, onDelete, onEdit }: ServersSectionProp
                             <ExternalLink size={14} />
                           </button>
                         ) : (
-                          <a href={server.url} target="_blank" rel="noreferrer" className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors" title="Open server">
+                          <a href={server.url} target="_blank" rel="noreferrer" className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors" title={t('openServer')}>
                             <ExternalLink size={14} />
                           </a>
                         )}
                         
                         {/* Edit Server */}
                         {server.suspended || server.status?.toLowerCase() === 'suspended' ? (
-                          <button disabled className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/30 cursor-not-allowed transition-colors" title="Cannot edit suspended server">
+                          <button disabled className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/30 cursor-not-allowed transition-colors" title={t('cannotEditSuspended')}>
                             <ShieldAlert size={14} />
                           </button>
                         ) : server.status?.toLowerCase() === 'creating' ? (
-                          <button disabled className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/30 cursor-not-allowed transition-colors" title="Cannot edit server while creating">
+                          <button disabled className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/30 cursor-not-allowed transition-colors" title={t('cannotEditCreating')}>
                             <Edit2 size={14} />
                           </button>
                         ) : isDownOrUnreachable ? (
-                          <button disabled className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/30 cursor-not-allowed transition-colors" title="Cannot edit unreachable server">
+                          <button disabled className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/30 cursor-not-allowed transition-colors" title={t('cannotEditUnreachable')}>
                             <Edit2 size={14} />
                           </button>
                         ) : (
-                          <button onClick={() => onEdit?.(server._id)} className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors" title="Edit">
+                          <button onClick={() => onEdit?.(server._id)} className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors" title={t('editServer')}>
                             <Edit2 size={14} />
                           </button>
                         )}
@@ -182,7 +184,7 @@ export function ServersSection({ servers, onDelete, onEdit }: ServersSectionProp
                       onClick={() => setDeletingServer(server)}
                       disabled={server.suspended || server.status?.toLowerCase() === 'suspended' || server.status?.toLowerCase() === 'creating'}
                       className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/40 hover:text-red-400 hover:bg-red-400/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      title={server.status?.toLowerCase() === 'creating' ? "Cannot delete server while creating" : (server.suspended || server.status?.toLowerCase() === 'suspended' ? "Cannot delete suspended server" : "Delete")}
+                      title={server.status?.toLowerCase() === 'creating' ? t('cannotDeleteCreating') : (server.suspended || server.status?.toLowerCase() === 'suspended' ? t('cannotDeleteSuspended') : t('deleteServer'))}
                     >
                       <Trash2 size={14} />
                     </button>
@@ -199,9 +201,9 @@ export function ServersSection({ servers, onDelete, onEdit }: ServersSectionProp
         isOpen={!!deletingServer}
         onClose={() => setDeletingServer(null)}
         onConfirm={handleConfirmDelete}
-        entityType="Server"
+        entityType={t('deleteDrawerEntity')}
         entityName={deletingServer?.name || ''}
-        entitySubText={deletingServer ? `Node: ${deletingServer.location || 'Unknown'}` : ''}
+        entitySubText={deletingServer ? `Node: ${deletingServer.location || t('unknown')}` : ''}
         warningPoints={
           deletingServer?.status === 'queued' || deletingServer?.status === 'error'
             ? [

@@ -2,6 +2,7 @@
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { useDashboard } from '../../hooks/useDashboard';
 import { useProfile } from '../../hooks/useProfile';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -15,6 +16,7 @@ import { Plus, RefreshCw, Server, Cpu, HardDrive, Database } from 'lucide-react'
 
 export function DashboardContent() {
   const { showError, showSuccess } = useToast();
+  const t = useTranslations('Dashboard');
   const { servers, usage, resources, removeServer, loadDashboardData } = useDashboard();
   const { form } = useProfile();
   const [showCreateDrawer, setShowCreateDrawer] = useState(false);
@@ -35,7 +37,7 @@ export function DashboardContent() {
   const handleDelete = useCallback(async (serverId: string, serverName: string) => {
     const token = localStorage.getItem('auth_token');
     if (!token) {
-      showError('Authentication required');
+      showError(t('authRequired'));
       return;
     }
 
@@ -51,11 +53,11 @@ export function DashboardContent() {
       }
 
       removeServer(serverId);
-      showSuccess(`Server "${serverName}" deleted successfully`);
+      showSuccess(t('deleteServerSuccess', { name: serverName }));
     } catch (e: any) {
       throw e; // DeleteDrawer will catch this and call showError
     }
-  }, [removeServer, showError, showSuccess]);
+  }, [removeServer, showError, showSuccess, t]);
 
   return (
     <div className="flex flex-col h-full">
@@ -63,8 +65,8 @@ export function DashboardContent() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Welcome back, <span className="text-[#FF5722]">{username}</span></h1>
-          <p className="text-[#888888] mt-1 text-sm">Here's an overview of your servers and resources.</p>
+          <h1 className="text-2xl font-bold text-white tracking-tight">{t('welcomeBack')} <span className="text-[#FF5722]">{username}</span></h1>
+          <p className="text-[#888888] mt-1 text-sm">{t('subtitle')}</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -73,12 +75,12 @@ export function DashboardContent() {
             className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-colors bg-[#FF5722] text-white hover:bg-[#ff6939]"
           >
             <Plus size={12} />
-            Create Server
+            {t('createServer')}
           </button>
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            title="Refresh"
+            title={t('refresh')}
             className="flex items-center justify-center w-[30px] h-[30px] rounded-md border border-white/[0.06] bg-white/[0.02] text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors disabled:opacity-50"
           >
             <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
@@ -89,35 +91,35 @@ export function DashboardContent() {
       {/* Metrics Row */}
       <section className="grid grid-cols-1 border-y border-white/[0.06] divide-y divide-white/[0.06] sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4">
         <MetricCard
-          title="Servers"
+          title={t('servers')}
           value={usage?.servers || 0}
-          subtitle="Servers"
-          bottomLabel="Limit"
+          subtitle={t('servers')}
+          bottomLabel={t('limit')}
           bottomValue={resources?.serverSlots?.toString() || '0'}
           icon={<Server size={14} />}
         />
         <MetricCard
-          title="CPU"
+          title={t('cpu')}
           value={`${usage?.cpuPercent || 0}`}
-          subtitle="%"
-          bottomLabel="Limit"
-          bottomValue={`${resources?.cpuPercent || 0}%`}
+          subtitle={t('percent')}
+          bottomLabel={t('limit')}
+          bottomValue={`${resources?.cpuPercent || 0}${t('percent')}`}
           icon={<Cpu size={14} />}
         />
         <MetricCard
-          title="Memory"
+          title={t('memory')}
           value={usage?.memoryMb || 0}
-          subtitle="MB"
-          bottomLabel="Limit"
-          bottomValue={`${resources?.memoryMb?.toLocaleString() || 0} MB`}
+          subtitle={t('mb')}
+          bottomLabel={t('limit')}
+          bottomValue={`${resources?.memoryMb?.toLocaleString() || 0} ${t('mb')}`}
           icon={<Database size={14} />}
         />
         <MetricCard
-          title="Disk"
+          title={t('disk')}
           value={usage?.diskMb || 0}
-          subtitle="MB"
-          bottomLabel="Limit"
-          bottomValue={`${resources?.diskMb?.toLocaleString() || 0} MB`}
+          subtitle={t('mb')}
+          bottomLabel={t('limit')}
+          bottomValue={`${resources?.diskMb?.toLocaleString() || 0} ${t('mb')}`}
           icon={<HardDrive size={14} />}
         />
       </section>
@@ -132,7 +134,7 @@ export function DashboardContent() {
         </div>
       </section>
 
-      {/* Servers Section — handles delete drawer internally */}
+      {/* Servers Section - handles delete drawer internally */}
       <ServersSection
         servers={servers}
         onDelete={handleDelete}

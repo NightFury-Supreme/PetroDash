@@ -3,6 +3,7 @@ import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useState, useEffect } from 'react';
 import packageInfo from '../../package.json';
+import { useTranslations } from 'next-intl';
 
 interface BrandingInfo {
   siteName: string;
@@ -13,6 +14,7 @@ export default function Footer() {
   const [branding, setBranding] = useState<BrandingInfo>({ siteName: 'PteroDash', siteIcon: '' });
   const [sysStatus, setSysStatus] = useState<'loading' | 'online' | 'partial' | 'offline'>('loading');
   const currentYear = new Date().getFullYear();
+  const t = useTranslations('Footer');
 
   useEffect(() => {
     const fetchBranding = async () => {
@@ -74,31 +76,31 @@ export default function Footer() {
             {sysStatus === 'loading' && (
               <>
                 <span className="w-2 h-2 rounded-full bg-gray-500 animate-pulse"></span>
-                <span className="text-[#555]">Checking Systems...</span>
+                <span className="text-[#555]">{t('checkingSystems')}</span>
               </>
             )}
             {sysStatus === 'online' && (
               <>
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span className="hover:text-white transition-colors">All Systems Operational</span>
+                <span className="hover:text-white transition-colors">{t('allSystemsOperational')}</span>
               </>
             )}
             {sysStatus === 'partial' && (
               <>
                 <span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
-                <span className="hover:text-white transition-colors">Partial Outage</span>
+                <span className="hover:text-white transition-colors">{t('partialOutage')}</span>
               </>
             )}
             {sysStatus === 'offline' && (
               <>
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                <span className="hover:text-white transition-colors">Major Outage</span>
+                <span className="hover:text-white transition-colors">{t('majorOutage')}</span>
               </>
             )}
           </div>
           <span className="text-[#333]">•</span>
           <span>
-            Powered by{' '}
+            {t('poweredBy')}{' '}
             <a 
               href="https://github.com/NightFury-Supreme/PetroDash" 
               target="_blank" 

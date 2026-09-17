@@ -1,5 +1,6 @@
 import React from 'react';
 import { BarChart2, AlertTriangle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface ProgressBarProps {
   label: string;
@@ -41,6 +42,8 @@ interface ResourceUsagePanelProps {
 }
 
 export function ResourceUsagePanel({ usage, resources }: ResourceUsagePanelProps) {
+  const t = useTranslations('Dashboard');
+
   const dbLimit = resources?.databases || 0;
   const dbUsage = usage?.databases || 0;
   const dbPercent = dbLimit > 0 ? Math.round((dbUsage / dbLimit) * 100) : 0;
@@ -58,15 +61,15 @@ export function ResourceUsagePanel({ usage, resources }: ResourceUsagePanelProps
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-2 text-[#888888]">
           <BarChart2 size={16} />
-          <span className="font-medium text-sm tracking-wide text-white">Resource</span>
+          <span className="font-medium text-sm tracking-wide text-white">{t('resourceUsage')}</span>
         </div>
 
       </div>
 
       <div className="flex-1">
-        <SegmentedProgressBar label="Databases" percentage={dbPercent} valueText={`${dbUsage} / ${dbLimit}`} />
-        <SegmentedProgressBar label="Ports" percentage={portPercent} valueText={`${portUsage} / ${portLimit}`} />
-        <SegmentedProgressBar label="Backups" percentage={backupPercent} valueText={`${backupUsage} / ${backupLimit}`} />
+        <SegmentedProgressBar label={t('databases')} percentage={dbPercent} valueText={`${dbUsage} / ${dbLimit}`} />
+        <SegmentedProgressBar label={t('ports')} percentage={portPercent} valueText={`${portUsage} / ${portLimit}`} />
+        <SegmentedProgressBar label={t('backups')} percentage={backupPercent} valueText={`${backupUsage} / ${backupLimit}`} />
       </div>
 
       <div className="mt-6 bg-[#1A1A1A] border border-[#222] rounded-lg p-4 relative overflow-hidden">

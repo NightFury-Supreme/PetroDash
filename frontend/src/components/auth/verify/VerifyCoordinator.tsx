@@ -3,12 +3,15 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { fetchWithRetry } from '@/utils/fetchWithRetry';
 import { useToast } from '@/components/ui/ToastProvider';
+import { useTranslations } from 'next-intl';
 import VerifyCodeForm from './VerifyCodeForm';
 import ChangeEmailForm from './ChangeEmailForm';
 
 export default function VerifyCoordinator() {
   const router = useRouter();
   const { showError, showSuccess } = useToast();
+  const tErrors = useTranslations('Auth.errors');
+  const tVerify = useTranslations('Auth.verify');
   
   const [email, setEmail] = useState("");
   const [loginMethod, setLoginMethod] = useState("");
@@ -70,14 +73,14 @@ export default function VerifyCoordinator() {
         method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ code })
       });
       if (res.ok) {
-        showSuccess('Email verified successfully!');
+        showSuccess(tVerify('successVerified'));
         setTimeout(() => router.replace('/dashboard'), 1500);
       } else {
         const data = await res.json().catch(() => ({}));
-        showError(data.error || 'Invalid verification code');
+        showError(data.error || tErrors('invalidVerifyCode'));
       }
     } catch (_e) {
-      showError('Invalid verification code');
+      showError(tErrors('invalidVerifyCode'));
     } finally {
       setLoading(false);
     }
@@ -96,28 +99,28 @@ export default function VerifyCoordinator() {
       if (res.ok) {
         setRateLimit(60);
         setCodeSent(true);
-        showSuccess('Verification code sent successfully!');
+        showSuccess(tVerify('successSent'));
       } else {
         const data = await res.json().catch(() => ({}));
         if (res.status === 429) {
            const retry = data.retryAfter || 60;
            setRateLimit(retry);
-           showError(data.message || `Rate limit exceeded. Please try again in ${Math.ceil(retry/60)} minute(s).`);
+           showError(data.message || tErrors('rateLimitExceeded'));
         } else {
-           showError(data.error || 'Failed to send verification code');
+           showError(data.error || tErrors('failedSendVerify'));
         }
       }
     } catch (_e) {
-      showError('Failed to send verification code');
+      showError(tErrors('failedSendVerify'));
     } finally {
       setResendLoading(false);
     }
   };
 
   const handleChangeEmail = async () => {
-    if (!newEmail || !newEmail.includes('@')) { showError('Please enter a valid email address'); return; }
-    if (loginMethod === 'email' && password.length < 6) { showError('Password must be at least 6 characters'); return; }
-    if (tfaEnabled && tfaCode.length !== 6) { showError('Please enter a valid 6-digit 2FA code'); return; }
+    if (!newEmail || !newEmail.includes('@')) { showError(tErrors('validEmailRequired')); return; }
+    if (loginMethod === 'email' && password.length < 6) { showError(tErrors('password6Chars')); return; }
+    if (tfaEnabled && tfaCode.length !== 6) { showError(tErrors('valid2faCode')); return; }
     
     setLoading(true);
     try {
@@ -137,14 +140,14 @@ export default function VerifyCoordinator() {
         setPassword("");
         setTfaCode("");
         setCode("");
-        showSuccess('Email updated successfully! A new verification code has been sent.');
+        showSuccess(tVerify('successUpdated'));
         setCodeSent(true);
       } else {
         const data = await res.json().catch(() => ({}));
-        showError(data.error || 'Failed to update email');
+        showError(data.error || tErrors('failedUpdateEmail'));
       }
     } catch {
-      showError('Network error while updating email.');
+      showError(tErrors('networkErrorUpdateEmail'));
     } finally {
       setLoading(false);
     }

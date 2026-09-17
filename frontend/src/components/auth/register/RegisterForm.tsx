@@ -20,7 +20,8 @@ export default function RegisterForm() {
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof typeof form, string>>>({});
   const [loading, setLoading] = useState(false);
 
-  const t = useTranslations('Auth.register');
+  const t = useTranslations();
+  const tCommon = useTranslations('Auth.common');
   const tErrors = useTranslations('Auth.errors');
 
   const strongPassword = z
@@ -89,13 +90,13 @@ export default function RegisterForm() {
       <form onSubmit={onSubmit} className="space-y-4">
         {showEmailRegister && (
           <>
-            <AuthField label={t('emailLabel')} value={form.email} onChange={(v) => setForm({ ...form, email: v })} placeholder={t('emailPlaceholder')} error={fieldErrors.email} />
+            <AuthField label={tCommon('emailLabel')} value={form.email} onChange={(v) => setForm({ ...form, email: v })} placeholder={tCommon('emailPlaceholder')} error={fieldErrors.email} />
             <AuthField label={t('usernameLabel')} value={form.username} onChange={(v) => setForm({ ...form, username: v })} placeholder={t('usernamePlaceholder')} error={fieldErrors.username} />
             <div className="grid grid-cols-2 gap-3">
               <AuthField label={t('firstNameLabel')} value={form.firstName} onChange={(v) => setForm({ ...form, firstName: v })} placeholder={t('firstNamePlaceholder')} error={fieldErrors.firstName} />
               <AuthField label={t('lastNameLabel')} value={form.lastName} onChange={(v) => setForm({ ...form, lastName: v })} placeholder={t('lastNamePlaceholder')} error={fieldErrors.lastName} />
             </div>
-            <AuthField label={t('passwordLabel')} type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} placeholder={t('passwordPlaceholder')} error={fieldErrors.password} />
+            <AuthField label={tCommon('passwordLabel')} type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} placeholder={tCommon('passwordPlaceholder')} error={fieldErrors.password} />
             <AuthSubmit disabled={loading}>{loading ? t('submittingButton') : t('submitButton')}</AuthSubmit>
           </>
         )}
@@ -107,7 +108,7 @@ export default function RegisterForm() {
                   <div className="w-full border-t border-[#222]"></div>
                 </div>
                 <div className="relative flex justify-center text-[11px] uppercase tracking-wider font-semibold">
-                  <span className="px-3 bg-[#0F0F0F] text-[#666]">{t('orContinueWith')}</span>
+                  <span className="px-3 bg-[#0F0F0F] text-[#666]">{tCommon('orContinueWith')}</span>
                 </div>
               </div>
             )}
@@ -117,7 +118,7 @@ export default function RegisterForm() {
         {!showEmailRegister && !showOAuth && (
           <div className="text-center text-[#888888] text-[13px]">
             <p>{t('noMethods')}</p>
-            <p className="text-[12px] mt-1">{t('contactAdmin')}</p>
+            <p className="text-[12px] mt-1">{tCommon('contactAdmin')}</p>
           </div>
         )}
         {showEmailRegister && (

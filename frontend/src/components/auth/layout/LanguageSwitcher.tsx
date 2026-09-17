@@ -6,7 +6,15 @@ import { useParams } from 'next/navigation';
 import { localeLabels, type Locale } from '@/i18n/routing';
 import { Globe, ChevronDown, Check } from 'lucide-react';
 
-export default function LanguageSwitcher() {
+export default function LanguageSwitcher({ 
+  align = 'left', 
+  direction = 'up',
+  variant = 'outline'
+}: { 
+  align?: 'left' | 'right',
+  direction?: 'up' | 'down',
+  variant?: 'outline' | 'ghost'
+} = {}) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -57,20 +65,22 @@ export default function LanguageSwitcher() {
         aria-label="Select language"
         disabled={isPending}
         className={[
-          'flex items-center gap-1.5 px-2.5 py-1.5 rounded-[7px]',
-          'text-[12px] font-medium text-[#888]',
-          'border border-[#222] bg-[#0F0F0F]',
-          'hover:border-[#383838] hover:text-[#ccc]',
-          'transition-all duration-150 select-none',
-          'focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF5722]',
+          'flex items-center gap-1.5 transition-all duration-150 select-none focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF5722]',
+          variant === 'outline' 
+            ? 'px-2.5 py-1.5 rounded-[7px] text-[12px] font-medium text-[#888] border border-[#222] bg-[#0F0F0F] hover:border-[#383838] hover:text-[#ccc]'
+            : 'text-[#888] hover:text-[#D4D4D4] bg-transparent p-1',
           isPending ? 'opacity-50 cursor-wait' : 'cursor-pointer',
         ].join(' ')}
       >
-        <Globe size={13} className="shrink-0" />
-        <span className="hidden sm:inline leading-none">{current.flag}</span>
-        <span className="hidden sm:inline leading-none">{current.label}</span>
+        <Globe size={variant === 'ghost' ? 16 : 13} className="shrink-0" />
+        {variant === 'outline' && (
+          <span className="hidden sm:inline leading-none">{current.flag}</span>
+        )}
+        <span className={`hidden sm:inline leading-none ${variant === 'ghost' ? 'text-sm ml-0.5' : ''}`}>
+          {variant === 'ghost' ? current.label.slice(0, 3) : current.label}
+        </span>
         <ChevronDown
-          size={11}
+          size={variant === 'ghost' ? 14 : 11}
           className={`shrink-0 transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
         />
       </button>
@@ -81,14 +91,16 @@ export default function LanguageSwitcher() {
           role="listbox"
           aria-label="Language options"
           className={[
-            'absolute bottom-full mb-2',
-            // RTL: anchor to right edge; LTR: anchor to left edge
-            'right-0',
+            'absolute',
+            direction === 'up' ? 'bottom-full mb-2' : 'top-full mt-2',
+            align === 'right' ? 'end-0' : 'start-0',
             'z-50 min-w-[170px]',
             'rounded-[10px] border border-[#222] bg-[#111]',
             'shadow-2xl shadow-black/60',
             'py-1.5 overflow-hidden',
-            'animate-in fade-in slide-in-from-bottom-2 duration-150',
+            direction === 'up' 
+              ? 'animate-in fade-in slide-in-from-bottom-2 duration-150'
+              : 'animate-in fade-in slide-in-from-top-2 duration-150',
           ].join(' ')}
         >
           {localeEntries.map(([locale, meta]) => {
@@ -102,7 +114,7 @@ export default function LanguageSwitcher() {
                 onClick={() => switchLocale(locale)}
                 className={[
                   'w-full flex items-center gap-3 px-3 py-2',
-                  'text-[13px] text-left transition-colors duration-100',
+                  'text-[13px] text-start transition-colors duration-100',
                   'focus:outline-none',
                   isActive
                     ? 'text-white bg-[#FF5722]/10'

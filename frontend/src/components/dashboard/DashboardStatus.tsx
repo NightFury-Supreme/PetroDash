@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Activity } from 'lucide-react';
 import { useToast } from "@/components/ui/ToastProvider";
+import { useTranslations } from 'next-intl';
 
 interface StatusHistory {
   date: string;
@@ -34,7 +35,12 @@ interface StatusData {
   nodes: StatusNode[];
 }
 
-const UptimeBars = ({ history, uptime }: { history: StatusHistory[], uptime: number }) => {
+const UptimeBars = ({ history, uptime, labels, statusLabels }: { 
+  history: StatusHistory[], 
+  uptime: number, 
+  labels: { daysAgo: string; today: string; noDowntime: string; noDataDay: string; uptimeStr: string; hrsStr: string; minsStr: string },
+  statusLabels: Record<string, string>
+}) => {
   const [hoverData, setHoverData] = useState<{ day: StatusHistory, rect: DOMRect } | null>(null);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -76,21 +82,21 @@ const UptimeBars = ({ history, uptime }: { history: StatusHistory[], uptime: num
           <div className="w-max bg-[#1a1a1a] border border-[#2a2a2a] text-[#E0E0E0] text-xs rounded p-3 relative">
             <div className="font-medium text-[#AAAAAA] mb-2">{hoverData.day.date}</div>
             {hoverData.day.status === "No Data" ? (
-              <div className="text-[#888888]">No data recorded for this day.</div>
+              <div className="text-[#888888]">{labels.noDataDay}</div>
             ) : hoverData.day.uptime >= 100 ? (
-              <div className="text-[#888888]">No downtime recorded on this day.</div>
+              <div className="text-[#888888]">{labels.noDowntime}</div>
             ) : (
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <i className={`fas fa-${hoverData.day.status === 'Major Outage' ? 'times text-[#ef4444]' : 'exclamation-triangle text-[#f59e0b]'}`}></i>
-                  <span className="font-medium text-[#E0E0E0]">{hoverData.day.status}</span>
+                  <span className="font-medium text-[#E0E0E0]">{statusLabels[hoverData.day.status] || hoverData.day.status}</span>
                 </div>
                 <span className="text-[#888888]">
                   {hoverData.day.downtimeMinutes !== undefined && hoverData.day.downtimeMinutes > 0 ? (
                     (() => {
                       const hrs = Math.floor(hoverData.day.downtimeMinutes / 60);
                       const mins = Math.round(hoverData.day.downtimeMinutes % 60);
-                      return hrs > 0 ? `${hrs} hrs ${mins} mins` : `${mins} mins`;
+                      return hrs > 0 ? `${hrs} ${labels.hrsStr} ${mins} ${labels.minsStr}` : `${mins} ${labels.minsStr}`;
                     })()
                   ) : ''}
                 </span>
@@ -105,11 +111,11 @@ const UptimeBars = ({ history, uptime }: { history: StatusHistory[], uptime: num
 
       <div className="flex items-center justify-between h-4 mt-2 text-[11px]">
         <div className="flex items-center gap-2 w-full text-[#666666]">
-          <span>90 days ago</span>
+          <span>{labels.daysAgo}</span>
           <div className="flex-1 h-[1px] bg-[#333]"></div>
-          <span className="text-[#888] font-medium">{uptime.toFixed(2)} % uptime</span>
+          <span className="text-[#888] font-medium">{uptime.toFixed(2)} % {labels.uptimeStr}</span>
           <div className="flex-1 h-[1px] bg-[#333]"></div>
-          <span>Today</span>
+          <span>{labels.today}</span>
         </div>
       </div>
     </div>
@@ -121,13 +127,17 @@ const StatusCard = ({
   status, 
   history, 
   ping,
-  uptime
+  uptime,
+  labels,
+  statusLabels,
 }: { 
   name: string; 
   status: string; 
   history: StatusHistory[]; 
   ping?: number | null;
   uptime: number;
+  labels: { daysAgo: string; today: string; noDowntime: string; noDataDay: string; uptimeStr: string; hrsStr: string; minsStr: string };
+  statusLabels: Record<string, string>;
 }) => {
   let statusColor = "text-[#10b981]";
   if (status === "Major Outage") statusColor = "text-[#ef4444]";
@@ -144,10 +154,10 @@ const StatusCard = ({
           {ping !== undefined && ping !== null && (
             <span className="text-[#888] hidden sm:inline-block">{ping}ms</span>
           )}
-          <span className={`font-bold ${statusColor}`}>{status}</span>
+          <span className={`font-bold ${statusColor}`}>{statusLabels[status] || status}</span>
         </div>
       </div>
-      <UptimeBars history={history} uptime={uptime} />
+      <UptimeBars history={history} uptime={uptime} labels={labels} statusLabels={statusLabels} />
     </div>
   );
 };
@@ -156,17 +166,36 @@ export function DashboardStatus() {
   const [data, setData] = useState<StatusData | null>(null);
   const [loading, setLoading] = useState(true);
   const { showError } = useToast();
+  const t = useTranslations('Dashboard');
+
+  const uptimeLabels = {
+    daysAgo: t('daysAgo'),
+    today: t('today'),
+    noDowntime: t('noDowntime'),
+    noDataDay: t('noDataDay'),
+    uptimeStr: t('uptimeStr'),
+    hrsStr: t('hrsStr'),
+    minsStr: t('minsStr'),
+  };
+
+  const statusLabels: Record<string, string> = {
+    'Operational': t('operational'),
+    'Major Outage': t('majorOutageStatus'),
+    'Partial Outage': t('partialOutage'),
+    'Degraded': t('degraded'),
+    'No Data': t('noData'),
+  };
 
   useEffect(() => {
     let isMounted = true;
     const fetchStatus = async () => {
       try {
         const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/status`);
-        if (!res.ok) throw new Error('Failed to fetch status');
+        if (!res.ok) throw new Error(t('failedFetchStatus'));
         const jsonData = await res.json();
         if (isMounted) setData(jsonData);
       } catch (err: any) {
-        if (isMounted) showError(err.message || 'Failed to fetch status');
+        if (isMounted) showError(err.message || t('failedFetchStatus'));
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -177,29 +206,29 @@ export function DashboardStatus() {
       isMounted = false;
       clearInterval(interval);
     };
-  }, [showError]);
+  }, [showError, t]);
 
   return (
     <div className="flex flex-col h-full overflow-hidden p-6">
       <div className="flex justify-between items-center mb-6 shrink-0">
         <div className="flex items-center gap-2 text-[#888888]">
           <Activity size={16} />
-          <span className="font-medium text-sm tracking-wide text-white">System Status</span>
+          <span className="font-medium text-sm tracking-wide text-white">{t('systemStatus')}</span>
         </div>
         
         {data && (
           (() => {
-            let overallStatus = "All systems normal.";
+            let overallStatus = t('allNormal');
             let bannerClasses = "bg-[#10b981]/10 text-[#10b981]";
             let dotClass = "bg-[#10b981]";
 
             const allStatuses = [data.panel.status, ...data.nodes.map((n: any) => n.status)];
             if (allStatuses.some((s: string) => s === "Major Outage")) {
-              overallStatus = "Major system outage.";
+              overallStatus = t('majorOutage');
               bannerClasses = "bg-[#ef4444]/10 text-[#ef4444]";
               dotClass = "bg-[#ef4444]";
             } else if (allStatuses.some((s: string) => s === "Partial Outage" || s === "Degraded")) {
-              overallStatus = "Some systems experiencing issues.";
+              overallStatus = t('someIssues');
               bannerClasses = "bg-[#f59e0b]/10 text-[#f59e0b]";
               dotClass = "bg-[#f59e0b]";
             }
@@ -237,11 +266,13 @@ export function DashboardStatus() {
         ) : data ? (
           <>
             <StatusCard 
-              name="Panel" 
+              name={t('panel')} 
               status={data.panel.status} 
               history={data.panel.history} 
               ping={data.panel.ping} 
               uptime={data.panel.uptime}
+              labels={uptimeLabels}
+              statusLabels={statusLabels}
             />
             {data.nodes.map(node => (
               <StatusCard 
@@ -251,10 +282,12 @@ export function DashboardStatus() {
                 history={node.history} 
                 ping={node.ping} 
                 uptime={node.uptime}
+                labels={uptimeLabels}
+                statusLabels={statusLabels}
               />
             ))}
             {data.nodes.length === 0 && (
-              <div className="text-[#888] text-xs text-center py-4">No nodes configured</div>
+              <div className="text-[#888] text-xs text-center py-4">{t('noNodesConfigured')}</div>
             )}
           </>
         ) : null}
@@ -262,3 +295,4 @@ export function DashboardStatus() {
     </div>
   );
 }
+
