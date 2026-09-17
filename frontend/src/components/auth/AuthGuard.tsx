@@ -1,8 +1,7 @@
 "use client";
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
-
-import { useMemo, useLayoutEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
+import { usePathname, useRouter } from "@/i18n/routing";
 
 const PUBLIC_PATHS: readonly string[] = [
   "/login",
@@ -13,115 +12,138 @@ const PUBLIC_PATHS: readonly string[] = [
   "/forgot",
 ];
 
+function normalizePath(pathname: string): string {
+  let p = pathname;
+  if (p.startsWith("/en/")) p = p.substring(3);
+  else if (p === "/en") p = "/";
+  if (p.startsWith("/es/")) p = p.substring(3);
+  else if (p === "/es") p = "/";
+  return p || "/";
+}
+
+function isPublicPath(normalizedPath: string): boolean {
+  if (normalizedPath.startsWith("/banned")) {
+    try { return Boolean(sessionStorage.getItem("ban_reason")); } catch { return false; }
+  }
+  if (normalizedPath.startsWith("/verify")) {
+    try { return Boolean(sessionStorage.getItem("verify_email")); } catch { return false; }
+  }
+  if (normalizedPath.startsWith("/forgot")) return true;
+  if (normalizedPath === "/") return false;
+  return PUBLIC_PATHS.some((p) => normalizedPath.startsWith(p));
+}
+
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname() || "/";
+  const routerRef = useRef(router);
+  const inFlightRef = useRef(false);
+  const lastCheckedPathRef = useRef<string | null>(null);
 
-  const isPublic = useMemo(() => {
-    // Allow direct access to banned page only when ban context present
-    if (pathname.startsWith("/banned")) {
-      try { return Boolean(sessionStorage.getItem("ban_reason")); } catch { return false; }
-    }
-    // Allow direct access to verify page only when verification context present
-    if (pathname.startsWith("/verify")) {
-      try { return Boolean(sessionStorage.getItem("verify_email")); } catch { return false; }
-    }
-    // Allow /forgot publicly
-    if (pathname.startsWith("/forgot")) return true;
-    if (pathname === "/") return false; // treat home as protected (dashboard)
-    return PUBLIC_PATHS.some((p) => pathname.startsWith(p));
-  }, [pathname]);
+  // Keep routerRef current without causing re-renders
+  useEffect(() => {
+    routerRef.current = router;
+  });
 
-  useLayoutEffect(() => {
-    if (isPublic) return;
+  useEffect(() => {
+    const normalized = normalizePath(pathname);
+
+    // --- Guard: /banned without ban context ---
+    if (normalized.startsWith("/banned")) {
+      try {
+        const hasBan = Boolean(sessionStorage.getItem("ban_reason"));
+        if (!hasBan) {
+          const token = localStorage.getItem("auth_token");
+          routerRef.current.replace(token ? "/" : "/login");
+        }
+      } catch {
+        routerRef.current.replace("/login");
+      }
+      return;
+    }
+
+    // --- Guard: /verify without verify context ---
+    if (normalized.startsWith("/verify")) {
+      try {
+        const hasVerify = Boolean(sessionStorage.getItem("verify_email"));
+        if (!hasVerify) {
+          const token = localStorage.getItem("auth_token");
+          routerRef.current.replace(token ? "/" : "/login");
+        }
+      } catch {
+        routerRef.current.replace("/login");
+      }
+      return;
+    }
+
+    // --- Public path: no auth check needed ---
+    if (isPublicPath(normalized)) return;
+
+    // --- Protected path: only re-check if path changed ---
+    if (inFlightRef.current) return;
+    if (lastCheckedPathRef.current === normalized) return;
+
+    inFlightRef.current = true;
+    lastCheckedPathRef.current = normalized;
+
     (async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+        const token = localStorage.getItem("auth_token");
         if (!token) {
-          router.replace("/login");
+          routerRef.current.replace("/login");
           return;
         }
-        // Validate token and check ban state
+
         const base = process.env.NEXT_PUBLIC_API_BASE || "";
         const [res, brandingRes] = await Promise.all([
-          fetchWithRetry(`${base}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" }),
-          fetchWithRetry(`${base}/api/branding`, { cache: "no-store" })
+          fetchWithRetry(`${base}/api/auth/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+            cache: "no-store",
+          }),
+          fetchWithRetry(`${base}/api/branding`, { cache: "no-store" }),
         ]);
+
         if (res.status === 403) {
-          try {
-            let d: any = {}; try { d = await res.json(); } catch {}
-            if (typeof window !== "undefined") {
-              if (d?.reason) sessionStorage.setItem("ban_reason", d.reason);
-              if (d?.until) sessionStorage.setItem("ban_until", String(d.until)); else sessionStorage.removeItem("ban_until");
-            }
-          } catch {}
-          if (!pathname.startsWith("/banned")) router.replace("/banned");
+          let d: any = {};
+          try { d = await res.json(); } catch {}
+          if (d?.reason) sessionStorage.setItem("ban_reason", d.reason);
+          else sessionStorage.removeItem("ban_reason");
+          if (d?.until) sessionStorage.setItem("ban_until", String(d.until));
+          else sessionStorage.removeItem("ban_until");
+          routerRef.current.replace("/banned");
           return;
         }
+
+        if (res.status === 401) {
+          localStorage.removeItem("auth_token");
+          routerRef.current.replace("/login");
+          return;
+        }
+
         if (res.ok) {
-          let data: any = {}; try { data = await res.json(); } catch {}
-          let brandingData: any = {}; try { brandingData = await brandingRes.json(); } catch {}
-          // Require verification for all login methods
+          let data: any = {};
+          try { data = await res.json(); } catch {}
+          let brandingData: any = {};
+          try { brandingData = await brandingRes.json(); } catch {}
+
           if (brandingData.emailVerification && !data.emailVerified) {
-            if (typeof window !== "undefined") {
-              sessionStorage.setItem("verify_email", data.email || "");
-            }
-            if (!pathname.startsWith("/verify")) router.replace("/verify");
+            sessionStorage.setItem("verify_email", data.email || "");
+            routerRef.current.replace("/verify");
             return;
           }
+
+          // Auth OK — clear stale markers
+          sessionStorage.removeItem("ban_reason");
+          sessionStorage.removeItem("ban_until");
+          sessionStorage.removeItem("verify_email");
         }
-        if (!res.ok) {
-          // Invalid token or other error -> login
-          if (res.status === 401) {
-            if (typeof window !== "undefined") localStorage.removeItem("auth_token");
-            router.replace("/login");
-          }
-          return;
-        }
-        // Auth OK and not banned, clear any stale ban markers
-        try {
-          if (typeof window !== "undefined") {
-            sessionStorage.removeItem("ban_reason");
-            sessionStorage.removeItem("ban_until");
-            sessionStorage.removeItem("verify_email");
-          }
-        } catch {}
-      // eslint-disable-next-line unused-imports/no-unused-vars
-      } catch (err) {
-        // Network error - don't logout, just ignore
+      } catch {
+        // Network error — don't force logout
+      } finally {
+        inFlightRef.current = false;
       }
     })();
-  }, [isPublic, router, pathname]);
-
-  // If trying to access /banned directly with no ban context: block
-  useLayoutEffect(() => {
-    if (!pathname.startsWith("/banned")) return;
-    try {
-      const hasBan = typeof window !== "undefined" ? Boolean(sessionStorage.getItem("ban_reason")) : false;
-      if (!hasBan) {
-        const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-        router.replace(token ? "/" : "/login");
-      }
-    } catch {
-      router.replace("/login");
-    }
-  }, [pathname, router]);
-
-  // If trying to access /verify directly with no verification context: block
-  useLayoutEffect(() => {
-    if (!pathname.startsWith("/verify")) return;
-    try {
-      const hasVerify = typeof window !== "undefined" ? Boolean(sessionStorage.getItem("verify_email")) : false;
-      if (!hasVerify) {
-        const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-        router.replace(token ? "/" : "/login");
-      }
-    } catch {
-      router.replace("/login");
-    }
-  }, [pathname, router]);
+  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return <>{children}</>;
 }
-
-

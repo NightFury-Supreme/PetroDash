@@ -1,13 +1,14 @@
 'use client';
 import { useState } from 'react';
 import { z } from 'zod';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import AuthField from '@/components/auth/layout/AuthField';
 import AuthSubmit from '@/components/auth/layout/AuthSubmit';
 import { OAuthButtons } from '@/components/auth/layout/OAuthButtons';
 import { useAuthSettings } from '@/hooks/useAuthSettings';
 import { useToast } from '@/components/ui/ToastProvider';
 import { fetchWithRetry } from '@/utils/fetchWithRetry';
+import { useTranslations } from 'next-intl';
 
 const schema = z.object({
   emailOrUsername: z.string().min(1, 'Email or username is required'),
@@ -19,6 +20,8 @@ type FieldErrors = Partial<Record<keyof LoginForm, string>>;
 export default function LoginForm({ onSuccess, onRequires2FA }: { onSuccess: (token: string) => void; onRequires2FA: (tempToken: string) => void }) {
   const { settings } = useAuthSettings();
   const { showError } = useToast();
+  const t = useTranslations('Auth.login');
+  const tErrors = useTranslations('Auth.errors');
   const [form, setForm] = useState<LoginForm>({ emailOrUsername: '', password: '' });
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
@@ -47,7 +50,7 @@ export default function LoginForm({ onSuccess, onRequires2FA }: { onSuccess: (to
         body: JSON.stringify(parsed.data),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || 'Login failed');
+      if (!res.ok) throw new Error(data?.error || tErrors('loginFailed'));
       if (data.requires2FA && data.tempToken) {
         onRequires2FA(data.tempToken);
         return;
@@ -55,7 +58,7 @@ export default function LoginForm({ onSuccess, onRequires2FA }: { onSuccess: (to
       if (!data?.token) throw new Error('Invalid response');
       onSuccess(data.token);
     } catch (err: any) {
-      showError(err.message || 'Login failed');
+      showError(err.message || tErrors('loginFailed'));
     } finally {
       setLoading(false);
     }
@@ -64,18 +67,18 @@ export default function LoginForm({ onSuccess, onRequires2FA }: { onSuccess: (to
   return (
     <div className="w-full">
       <div className="text-left mb-8">
-        <h2 className="text-2xl font-bold mb-1.5 tracking-tight">Login</h2>
-        <p className="text-[13px] text-[#888888]">Enter your credentials to continue</p>
+        <h2 className="text-2xl font-bold mb-1.5 tracking-tight">{t('title')}</h2>
+        <p className="text-[13px] text-[#888888]">{t('subtitle')}</p>
       </div>
       <form onSubmit={onSubmit} className="space-y-4">
         {showEmailLogin && (
           <>
-            <AuthField label="Email or Username" value={form.emailOrUsername} onChange={(v) => setForm({ ...form, emailOrUsername: v })} placeholder="Email or username" error={fieldErrors.emailOrUsername} />
-            <AuthField label="Password" type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} placeholder="        " error={fieldErrors.password} />
+            <AuthField label={t('emailLabel')} value={form.emailOrUsername} onChange={(v) => setForm({ ...form, emailOrUsername: v })} placeholder={t('emailPlaceholder')} error={fieldErrors.emailOrUsername} />
+            <AuthField label={t('passwordLabel')} type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} placeholder={t('passwordPlaceholder')} error={fieldErrors.password} />
             <div className="text-right text-[12px] mt-1 mb-4">
-              <Link href="/forgot" className="text-[#888888] hover:text-[#FF5722] transition-colors">Forgot password?</Link>
+              <Link href="/forgot" className="text-[#888888] hover:text-[#FF5722] transition-colors">{t('forgotPassword')}</Link>
             </div>
-            <AuthSubmit disabled={loading}>{loading ? 'Loading.' : 'Login'}</AuthSubmit>
+            <AuthSubmit disabled={loading}>{loading ? t('submittingButton') : t('submitButton')}</AuthSubmit>
           </>
         )}
         {showOAuth && (
@@ -101,7 +104,7 @@ export default function LoginForm({ onSuccess, onRequires2FA }: { onSuccess: (to
         )}
         {showEmailLogin && (
           <div className="text-[12px] text-[#888888] text-left mt-6">
-            Don't have an account? <Link href="/register" className="text-[#FF5722] hover:text-[#F4511E] transition-colors font-medium">Create one</Link>
+            {t('noAccount')} <Link href="/register" className="text-[#FF5722] hover:text-[#F4511E] transition-colors font-medium">{t('registerLink')}</Link>
           </div>
         )}
       </form>

@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import LoginForm from './LoginForm';
 import TwoFactorForm from './TwoFactorForm';
 
@@ -25,7 +25,7 @@ export default function LoginCoordinator() {
   };
 
   if (requires2FA && tempToken) {
-    return <TwoFactorForm tempToken={tempToken} onSuccess={handleSuccess} onCancel={handleCancel2FA} />;
+    return <TwoFactorForm tempToken={tempToken} onSuccess={handleSuccess} onBack={handleCancel2FA} />;
   }
 
   return <LoginForm onSuccess={handleSuccess} onRequires2FA={handleRequires2FA} />;

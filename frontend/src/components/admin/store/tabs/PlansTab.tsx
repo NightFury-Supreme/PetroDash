@@ -114,13 +114,13 @@ export default function AdminPlansTab() {
   const filteredPlans = useMemo(() => {
     let result = plans;
     if (categoryFilter !== 'all') {
-      result = result.filter(p => (p.category?.name || 'Uncategorized') === categoryFilter);
+      result = result.filter(p => (p.category || 'Uncategorized') === categoryFilter);
     }
     if (searchQuery.trim()) {
       const lower = searchQuery.toLowerCase();
       result = result.filter(p => 
         p.name.toLowerCase().includes(lower) || 
-        (p.category?.name && p.category.name.toLowerCase().includes(lower))
+        (p.category && p.category.toLowerCase().includes(lower))
       );
     }
     return result;

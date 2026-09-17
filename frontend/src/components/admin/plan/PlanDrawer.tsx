@@ -135,7 +135,7 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan, preload
   
   useEffect(() => { loadPlan(planId); }, [planId, loadPlan]);
 
-  const isInvalid = !plan || !plan.name || !plan.category || !plan.description || plan.pricePerMonth === '' || plan.pricePerMonth === undefined || plan.pricePerMonth === null;
+  const isInvalid = !plan || !plan.name || !plan.category || !plan.description || plan.pricePerMonth === undefined || plan.pricePerMonth === null;
 
   return (
     <Drawer
@@ -269,7 +269,7 @@ function NewPlanWrapper({ onClose, onSaveSuccess, preloadedCategories }: { onClo
 
   const currentStep = STEPS[currentStepIndex].id;
 
-  const isInvalid = !formData.name || !formData.category || !formData.description || formData.pricePerMonth === '' || formData.pricePerMonth === undefined || formData.pricePerMonth === null;
+  const isInvalid = !formData.name || !formData.category || !formData.description || formData.pricePerMonth === undefined || formData.pricePerMonth === null;
 
   return (
     <Drawer
@@ -304,7 +304,7 @@ function NewPlanWrapper({ onClose, onSaveSuccess, preloadedCategories }: { onClo
               <button
                 type="button"
                 onClick={() => setCurrentStepIndex(i => i + 1)}
-                disabled={(currentStep === 'basics' && (!formData.name || !formData.category || !formData.description)) || (currentStep === 'pricing' && (formData.pricePerMonth === '' || formData.pricePerMonth === undefined || formData.pricePerMonth === null))}
+                disabled={(currentStep === 'basics' && (!formData.name || !formData.category || !formData.description)) || (currentStep === 'pricing' && (formData.pricePerMonth === undefined || formData.pricePerMonth === null))}
                 className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next Step

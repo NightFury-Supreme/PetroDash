@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { XCircle, CheckCircle2, X } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { usePathname } from '@/i18n/routing';
 
 type ToastType = 'error' | 'success';
 

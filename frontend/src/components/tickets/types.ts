@@ -1,7 +1,7 @@
 /* -- Ticket domain types ----------------------------------- */
 
 export type TicketStatus = 'open' | 'pending' | 'resolved' | 'closed';
-export type TicketAction = 'reopen' | 'resolved';
+export type TicketAction = 'reopen' | 'resolved' | 'resolve' | 'close' | 'delete' | 'restore';
 export type Priority     = 'Low' | 'Normal' | 'High';
 
 export interface SupportTicket {

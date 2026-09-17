@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { Select } from "@/components/ui/Select";
 
 const STATUS_COLORS: Record<string, string> = {
   open: "bg-green-600/20 text-green-300 border-green-700/50",
@@ -50,7 +51,7 @@ export default function AdminTicketDetailHeader({
           { label: "RESOLVED", value: "resolved" },
           { label: "CLOSED",   value: "closed"   },
         ]}
-        colors={STATUS_COLORS}
+        
         onChange={onStatusChange}
       />
       <Select size="sm"
@@ -60,7 +61,7 @@ export default function AdminTicketDetailHeader({
           { label: "MEDIUM", value: "medium" },
           { label: "HIGH",   value: "high"   },
         ]}
-        colors={PRIORITY_COLORS}
+        
         onChange={onPriorityChange}
       />
 

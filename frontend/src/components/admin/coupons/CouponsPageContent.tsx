@@ -2,7 +2,7 @@
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import CouponsHeader from '@/components/admin/coupons/CouponsHeader';
 import CouponsList from '@/components/admin/coupons/CouponsList';
 import { AdminCouponsSkeleton } from '@/components/skeletons/admin/coupons/AdminCouponsSkeleton';
@@ -56,7 +56,7 @@ export default function CouponsPageContent() {
 
   useEffect(() => {
     loadData(page);
-  }, [router, page]);
+  }, [ page]);
 
   const handleSaveCoupon = async (id: string | null, data: any) => {
     const token = localStorage.getItem('auth_token');

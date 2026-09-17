@@ -1,7 +1,7 @@
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useCallback } from 'react';
 
-interface PlanFormData {
+export interface PlanFormData {
   _id: string;
   name: string;
   description?: string;
@@ -14,6 +14,7 @@ interface PlanFormData {
   stock: number;
   limitPerCustomer: number;
   category: string;
+  totalPurchases: number;
   redirectionLink?: string;
   billingOptions: {
     renewable: boolean;

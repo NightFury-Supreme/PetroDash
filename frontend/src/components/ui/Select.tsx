@@ -15,6 +15,7 @@ interface SelectProps {
   className?: string;
   dropdownClassName?: string;
   size?: 'sm' | 'md';
+  disabled?: boolean;
   renderButtonContent?: (selectedLabel: string | undefined) => ReactNode;
   renderDropdown?: (props: { close: () => void }) => ReactNode;
 }
@@ -27,6 +28,7 @@ export function Select({
   className = '',
   dropdownClassName,
   size = 'md',
+  disabled = false,
   renderButtonContent,
   renderDropdown
 }: SelectProps) {
@@ -56,10 +58,11 @@ export function Select({
   const dropdownItemSizeClass = size === 'sm' ? 'h-8 px-2 text-xs' : 'h-9 px-3 text-sm';
 
   return (
-    <div className={`relative w-full ${className}`} ref={ref}>
+    <div className={`relative w-full ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`} ref={ref}>
       <button
         type="button"
-        onClick={() => setOpen(!open)}
+        disabled={disabled}
+        onClick={() => { if (!disabled) setOpen(!open); }}
         className={`flex w-full items-center justify-between gap-2 border transition-colors focus:outline-none ${buttonClass} ${sizeClass}`}
       >
         <span className="truncate text-left">

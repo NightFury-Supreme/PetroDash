@@ -2,7 +2,7 @@
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams } from '@/i18n/routing';
 
 interface OAuthProvider {
   name: string;

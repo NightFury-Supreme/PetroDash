@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import { ClipboardList } from 'lucide-react';
 import { RankBadge } from '@/components/ui/RankBadge';
 import { getFieldLabel, getCategoryLabel, getActionLabel } from '@/config/field-labels';

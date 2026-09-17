@@ -56,8 +56,8 @@ export function AdminTicketDetailSidebar({
                 { label: "High",   value: "high"   },
               ]}
               onChange={onUpdatePriority}
-              busy={actionBusy === "priority"}
-              done={actionDone === "priority"}
+              disabled={actionBusy === "priority"}
+              
             />
           </div>
 
@@ -73,8 +73,8 @@ export function AdminTicketDetailSidebar({
                 { label: "Closed",   value: "closed"   },
               ]}
               onChange={(v) => onUpdateStatus(v, "status-dropdown")}
-              busy={actionBusy === "status-dropdown"}
-              done={actionDone === "status-dropdown"}
+              disabled={actionBusy === "status-dropdown"}
+              
             />
           </div>
 

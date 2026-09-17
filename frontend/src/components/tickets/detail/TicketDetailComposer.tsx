@@ -6,7 +6,7 @@ import { Check, Loader2, RotateCcw, Send, Server, FileText } from 'lucide-react'
 import { TicketStatus } from '../types';
 import { API_BASE, getToken } from '../utils';
 import { useCurrency } from '@/hooks/useCurrency';
-import { useParams } from 'next/navigation';
+import { useParams } from '@/i18n/routing';
 
 interface TicketDetailComposerProps {
   status:      TicketStatus;

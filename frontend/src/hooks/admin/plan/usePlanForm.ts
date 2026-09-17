@@ -1,7 +1,7 @@
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect, useCallback } from 'react';
 
-interface PlanFormData {
+export interface PlanFormData {
   name: string;
   description: string;
   strikeThroughPrice: number;

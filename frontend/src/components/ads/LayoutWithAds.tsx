@@ -2,7 +2,7 @@
 
 import { HeaderAd, FooterAd, MobileAd } from './AdSense';
 import Footer from '@/components/Footer';
-import { usePathname } from 'next/navigation';
+import { usePathname } from '@/i18n/routing';
 
 interface LayoutWithAdsProps {
   children: React.ReactNode;

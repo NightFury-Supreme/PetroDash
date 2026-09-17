@@ -10,7 +10,7 @@ type Ticket = {
   _id: string; 
   title: string; 
   status: string; 
-  priority: string; 
+  priority?: string; 
   category?: string; 
   updatedAt: string; 
   deletedByUser?: boolean; 

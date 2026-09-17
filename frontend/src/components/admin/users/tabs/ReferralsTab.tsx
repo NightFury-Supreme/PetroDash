@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { InfoRow } from "@/components/admin/users/AdminInfoRow";
 import { Key, User } from "lucide-react";
 import { Pagination } from "@/components/Pagination";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 
 export function ReferralsTab({ referral, onSaveCode, referralPage, setReferralPage, REFERRAL_PAGE_SIZE }: any) {
   const [codeDraft, setCodeDraft] = useState(referral?.code || '');

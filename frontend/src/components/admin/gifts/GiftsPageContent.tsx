@@ -2,7 +2,7 @@
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { Plus } from 'lucide-react';
 import { AdminGiftsSkeleton } from '@/components/skeletons/admin/gifts/AdminGiftsSkeleton';
 import { Pagination } from '@/components/Pagination';
@@ -68,7 +68,7 @@ export default function GiftsPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, query, tab, sortBy, router]);
+  }, [currentPage, query, tab, sortBy]);
 
   useEffect(() => {
     fetchGifts();

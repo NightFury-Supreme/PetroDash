@@ -13,10 +13,15 @@ export interface EarnMethodSettings {
   maxClaimsPerDay: number;
   url?: string;
   antiBypassToken?: string;
+  adslotId?: string;
+  apiKey?: string;
 }
 
 export interface AdminEarnSettings {
   linkvertise: EarnMethodSettings;
+  ads?: EarnMethodSettings;
+  offerwall?: EarnMethodSettings;
+  surveywall?: EarnMethodSettings;
 }
 
 export function useAdminEarn() {

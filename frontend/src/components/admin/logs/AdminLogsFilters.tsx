@@ -12,7 +12,7 @@ interface AdminLogsFiltersProps {
     severity: string;
     requestId: string;
   };
-  onFilterChange: (key: string, value: string) => void;
+  onFilterChange: (key: keyof AdminLogsFiltersProps['filters'], value: string) => void;
   onSearchChange: (value: string) => void;
   onClearFilters: () => void;
   loading: boolean;

@@ -1,8 +1,8 @@
 "use client";
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { Link } from "@/i18n/routing";
+import { usePathname, useRouter } from "@/i18n/routing";
 import { useEffect, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {

@@ -1,6 +1,6 @@
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 
 export interface Egg {
   _id: string;
@@ -162,7 +162,7 @@ export function useServerCreate() {
     loadData();
 
     return () => { mounted = false; };
-  }, [router]);
+  }, []);
 
   const remaining = useMemo(() => {
     if (!resources) return { diskMb: 0, memoryMb: 0, cpuPercent: 0, backups: 0, databases: 0, allocations: 0, serverSlots: 0 };

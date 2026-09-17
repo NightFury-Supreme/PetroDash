@@ -35,7 +35,7 @@ export function AdsConfigDrawer({
       icon={<PlayCircle size={20} />}
       footer={
         <div className="flex items-center justify-between w-full">
-          {form.ads.enabled ? (
+          {form.ads?.enabled ? (
             <>
               <div className="flex items-center gap-2">
                 <ActionButton

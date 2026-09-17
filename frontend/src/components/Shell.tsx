@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { usePathname } from 'next/navigation';
+import { usePathname } from '@/i18n/routing';
 import Sidebar from "./Sidebar";
 import Footer from "./Footer";
 import Topbar from "./Topbar";

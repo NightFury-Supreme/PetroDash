@@ -1,6 +1,6 @@
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 
 interface ResourceLimits {
   diskMb: number;
@@ -164,7 +164,7 @@ export function useServerEdit(serverId: string): UseServerEditReturn {
       } finally {
         setLoading(false);
       }
-  }, [serverId, router]);
+  }, [serverId]);
 
   useEffect(() => {
     if (serverId) {

@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import EggForm from '@/components/admin/eggs/EggForm';
 import { Drawer } from '@/components/ui/Drawer';
 import { DeleteDrawer } from '@/components/ui/DeleteDrawer';
-import { Egg, Trash } from 'lucide-react';
+import { Egg, Trash, Loader2 } from 'lucide-react';
 
 type EnvVar = { key: string; value: string };
 

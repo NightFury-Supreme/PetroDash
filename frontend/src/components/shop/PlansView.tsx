@@ -66,6 +66,7 @@ export function PlansView({
         ================================================================= */}
         <section className="mt-8">
           <SectionTitle
+            icon={<Package className="text-orange-500" />}
             title="Available Plans"
             description={`${plans.length} ${
               plans.length === 1 ? "plan" : "plans"

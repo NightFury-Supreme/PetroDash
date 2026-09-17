@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { fetchWithRetry } from '@/utils/fetchWithRetry';
 import { useToast } from '@/components/ui/ToastProvider';
 import VerifyCodeForm from './VerifyCodeForm';
@@ -57,7 +57,7 @@ export default function VerifyCoordinator() {
     };
     fetchStatus();
     return () => { mounted = false; };
-  }, [router]);
+  }, []);
 
   const verifyCode = async () => {
     if (code.length !== 8 || loading) return;

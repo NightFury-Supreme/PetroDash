@@ -4,7 +4,7 @@ import { Drawer } from "@/components/ui/Drawer";
 import AdminGiftRedemptionsSkeleton from "@/components/skeletons/admin/gifts/AdminGiftRedemptionsSkeleton";
 import { Users, User } from "lucide-react";
 import { Pagination } from "@/components/Pagination";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 
 export function AdminGiftRedemptionsDrawer({
   giftId,

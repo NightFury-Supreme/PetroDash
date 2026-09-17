@@ -1,7 +1,8 @@
 'use client';
 
 import React, { ReactNode } from 'react';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 
 interface ErrorStateProps {
   icon: ReactNode;
@@ -23,6 +24,7 @@ export function ErrorState({
   errorString,
 }: ErrorStateProps) {
   const minHeightClass = fullScreen ? 'min-h-screen bg-[#0F0F0F]' : 'flex-1 min-h-0';
+  const t = useTranslations('ErrorState');
 
   let displayKicker = kicker;
   let displayTitle = title;
@@ -30,14 +32,14 @@ export function ErrorState({
   if (errorString) {
     const e = errorString.toLowerCase();
     if (e.includes('rate limit') || e.includes('too many requests')) {
-      displayKicker = "Rate Limited";
-      displayTitle = "Too Many Requests";
+      displayKicker = t('kickerRateLimited');
+      displayTitle = t('titleTooManyRequests');
     } else if (e.includes('forbidden') || e.includes('unauthorized') || e.includes('access denied')) {
-      displayKicker = "Access Denied";
-      displayTitle = "Forbidden";
+      displayKicker = t('kickerAccessDenied');
+      displayTitle = t('titleForbidden');
     } else if (e.includes('not found')) {
-      displayKicker = "404 Error";
-      displayTitle = "Not Found";
+      displayKicker = t('kickerNotFound');
+      displayTitle = t('titleNotFound');
     }
   }
 
@@ -72,18 +74,21 @@ export function DashboardButton({ variant = 'primary' }: { variant?: 'primary' |
   const className = isPrimary
     ? "flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
     : "flex items-center gap-2 bg-[#1A1A1A] border border-[#222] text-[#888] hover:text-white px-4 py-2 rounded-md text-[13px] font-medium transition-colors";
+  
+  const t = useTranslations('ErrorState');
 
   return (
     <Link href="/dashboard" className={className}>
       <svg xmlns="http://www.w3.org/2000/svg" className="w-[14px] h-[14px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
       </svg>
-      Dashboard
+      {t('btnDashboard')}
     </Link>
   );
 }
 
 export function GoBackButton() {
+  const t = useTranslations('ErrorState');
   return (
     <button
       onClick={() => window.history.back()}
@@ -92,31 +97,32 @@ export function GoBackButton() {
       <svg xmlns="http://www.w3.org/2000/svg" className="w-[14px] h-[14px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
       </svg>
-      Go Back
+      {t('btnGoBack')}
     </button>
   );
 }
 
 export function ErrorDescription({ error, topic }: { error: string; topic?: string }) {
+  const t = useTranslations('ErrorState');
   const e = typeof error === 'string' ? error.toLowerCase() : '';
   
-  let msg = `We encountered an issue while trying to load ${topic || 'this page'}.`;
+  let msg = t('descGeneric').replace('{topic}', topic || t('defaultTopic'));
   let matched = false;
   
   if (e.includes('forbidden') || e.includes('unauthorized') || e.includes('access denied')) {
-    msg = "You do not have permission to view this content. If you believe this is a mistake, please contact an administrator.";
+    msg = t('descForbidden');
     matched = true;
   } else if (e.includes('not found')) {
-    msg = `The requested ${topic ? topic.toLowerCase() : 'resource'} could not be found. It may have been deleted or you may have followed a broken link.`;
+    msg = t('descNotFound').replace('{topic}', topic ? topic.toLowerCase() : t('defaultResource'));
     matched = true;
   } else if (e.includes('failed to fetch') || e.includes('network') || e.includes('timeout')) {
-    msg = "Unable to connect to the server. Please try again in a few moments.";
+    msg = t('descNetwork');
     matched = true;
   } else if (e.includes('rate limit') || e.includes('too many requests')) {
-    msg = "You are making requests too quickly. Please wait a moment and try again.";
+    msg = t('descRateLimit');
     matched = true;
   } else if (e.includes('pending') || e.includes('provisioning')) {
-    msg = "Your account or resource is still being set up. Please wait a moment and refresh.";
+    msg = t('descPending');
     matched = true;
   }
 

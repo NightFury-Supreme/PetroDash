@@ -3,6 +3,7 @@ import { FieldLabel, FieldHint } from '@/components/admin/earn/EarnUI';
 import React from 'react';
 import { Select } from '@/components/ui/Select';
 import { PlanCategorySelect } from './PlanCategorySelect';
+import type { PlanFormData } from '@/hooks/admin/plan/usePlanEdit';
 
 interface PlanEditFormProps {
   plan: PlanFormData;

@@ -3,8 +3,8 @@ import { Select } from "@/components/ui/Select";
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import Link from 'next/link';
+import { useRouter, useParams } from '@/i18n/routing';
+import { Link } from '@/i18n/routing';
 import { AdminCouponEditSkeleton } from '@/components/skeletons/admin/coupons/AdminCouponEditSkeleton';
 import { useCurrency } from '@/hooks/useCurrency';
 
@@ -42,7 +42,7 @@ export default function EditCouponPageContent() {
         });
       })
       .finally(() => setLoading(false));
-  }, [params.id, router]);
+  }, [params.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

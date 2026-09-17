@@ -1,5 +1,5 @@
 import { Edit2, Trash2, Users, Coins, Cpu, MemoryStick, HardDrive, Server, User } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 
 export function AdminGiftTableRow({
   gift,

@@ -1,10 +1,11 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { fetchWithRetry } from '@/utils/fetchWithRetry';
 import { useToast } from '@/components/ui/ToastProvider';
 import ForgotRequestForm from './ForgotRequestForm';
 import ForgotResetForm from './ForgotResetForm';
+import { useTranslations } from 'next-intl';
 
 export default function ForgotCoordinator() {
   const router = useRouter();
@@ -17,6 +18,9 @@ export default function ForgotCoordinator() {
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [rateLimit, setRateLimit] = useState(0);
+
+  const t = useTranslations('Auth.forgot');
+  const tErrors = useTranslations('Auth.errors');
 
   useEffect(() => {
     if (rateLimit > 0) {
@@ -34,7 +38,7 @@ export default function ForgotCoordinator() {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email })
       });
       if (res.ok) {
-        showSuccess("Reset code sent! Check your email.");
+        showSuccess(t('successRequest'));
         setRateLimit(60);
         setStep("verify");
       } else {
@@ -51,8 +55,8 @@ export default function ForgotCoordinator() {
   const handleReset = async () => {
     if (loading) return;
     if (code.length !== 8) { showError("Enter the 8-digit code"); return; }
-    if (!password || password.length < 12) { showError("Password must be at least 12 characters"); return; }
-    if (password !== confirm) { showError("Passwords do not match"); return; }
+    if (!password || password.length < 12) { showError(tErrors('passwordShort')); return; }
+    if (password !== confirm) { showError(tErrors('passwordsDontMatch')); return; }
     setLoading(true);
     try {
       const base = process.env.NEXT_PUBLIC_API_BASE || "";
@@ -60,7 +64,7 @@ export default function ForgotCoordinator() {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, code, newPassword: password })
       });
       if (res.ok) {
-        showSuccess('Password updated successfully!');
+        showSuccess(t('successReset'));
         setTimeout(() => router.replace('/login'), 1500);
       } else {
         const data = await res.json().catch(() => ({}));
@@ -83,7 +87,7 @@ export default function ForgotCoordinator() {
       });
       if (res.ok) {
         setRateLimit(60);
-        showSuccess("Reset code re-sent! Check your email.");
+        showSuccess(t('successRequest'));
       } else {
         const data = await res.json().catch(() => ({}));
         showError(data.error || "Failed to resend code");
@@ -95,18 +99,24 @@ export default function ForgotCoordinator() {
     }
   };
 
-  if (step === 'request') {
-    return <ForgotRequestForm email={email} setEmail={setEmail} onRequest={handleRequest} loading={loading} />;
-  }
-
   return (
-    <ForgotResetForm
-      email={email} setEmail={setEmail}
-      code={code} setCode={setCode}
-      password={password} setPassword={setPassword}
-      confirm={confirm} setConfirm={setConfirm}
-      onReset={handleReset} onResend={resendCode}
-      loading={loading} resendLoading={resendLoading} rateLimit={rateLimit}
-    />
+    <div className="w-full">
+      <div className="text-left mb-8">
+        <h2 className="text-2xl font-bold mb-1.5 tracking-tight">{step === 'request' ? t('requestTitle') : t('resetTitle')}</h2>
+        <p className="text-[13px] text-[#888888]">{step === 'request' ? t('requestSubtitle') : t('resetSubtitle')}</p>
+      </div>
+      {step === 'request' ? (
+        <ForgotRequestForm email={email} setEmail={setEmail} onRequest={handleRequest} loading={loading} />
+      ) : (
+        <ForgotResetForm
+          email={email} setEmail={setEmail}
+          code={code} setCode={setCode}
+          password={password} setPassword={setPassword}
+          confirm={confirm} setConfirm={setConfirm}
+          onReset={handleReset} onResend={resendCode}
+          loading={loading} resendLoading={resendLoading} rateLimit={rateLimit}
+        />
+      )}
+    </div>
   );
 }
