@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "@/i18n/routing";
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
-import { FullPageSkeleton } from "@/components/skeletons/layout/FullPageSkeleton";
+import { RouteSkeleton } from "@/components/skeletons/layout/RouteSkeleton";
 
 const PUBLIC_PATHS = [
   "/login",
@@ -180,7 +180,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   if (!isPublic && !isValidated) {
     return (
-      <FullPageSkeleton />
+      <RouteSkeleton />
     );
   }
 

@@ -1,5 +1,5 @@
 // Export all layout skeleton components
-export { FullPageSkeleton } from './FullPageSkeleton';
+export { RouteSkeleton } from './RouteSkeleton';
 export { SidebarSkeleton } from './SidebarSkeleton';
 
 
