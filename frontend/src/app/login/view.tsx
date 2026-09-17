@@ -230,7 +230,7 @@ export default function LoginClient() {
       )}
 
       {showEmailLogin && (
-        <div className="text-[12px] text-[#888888] text-center mt-6">
+        <div className="text-[12px] text-[#888888] text-left mt-6">
           Don&apos;t have an account?{' '}
           <Link href="/register" className="text-[#FF5722] hover:text-[#F4511E] transition-colors font-medium">Create one</Link>
         </div>
