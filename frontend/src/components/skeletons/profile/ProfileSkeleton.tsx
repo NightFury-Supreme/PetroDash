@@ -2,7 +2,8 @@ import React from 'react';
 
 export default function ProfileSkeleton() {
   return (
-    <div className="flex flex-col h-full space-y-6">
+    <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen">
+      <div className="flex flex-col h-full space-y-6">
         <header>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
@@ -102,5 +103,6 @@ export default function ProfileSkeleton() {
           </div>
         </div>
       </div>
+    </div>
   );
 }

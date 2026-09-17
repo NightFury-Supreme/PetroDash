@@ -2,7 +2,8 @@ import React from 'react';
 
 export function DashboardSkeleton() {
   return (
-    <div className="flex flex-col h-full">
+    <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen">
+      <div className="flex flex-col h-full">
 
       {/* Header skeleton */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -170,6 +171,7 @@ export function DashboardSkeleton() {
         </div>
       </section>
 
+      </div>
     </div>
   );
 }

@@ -7,7 +7,8 @@ import { useTranslations } from 'next-intl';
 export default function ShopSkeleton() {
   const t = useTranslations('Shop');
   return (
-    <div className="flex flex-col h-full space-y-6">
+    <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen">
+      <div className="flex flex-col h-full space-y-6">
         
         {/* Top Nav + Header Skeleton */}
         <header className="flex items-start justify-between">
@@ -95,5 +96,6 @@ export default function ShopSkeleton() {
 
         </div>
       </div>
+    </div>
   );
 }

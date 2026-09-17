@@ -10,7 +10,8 @@ export default function TicketsSkeleton({ isAdmin = false }: { isAdmin?: boolean
     : 'md:grid-cols-[1fr_100px_90px_80px_60px_36px]';
 
   return (
-    <div className="border-0 p-0 w-full">
+    <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans flex flex-col gap-6 w-full max-w-full overflow-x-hidden relative">
+      <div className="border-0 p-0 w-full">
       {/* Table column headers */}
       <div className={`hidden ${headerGridClass} gap-4 border-b border-white/[0.06] pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30 md:grid`}>
         <span>Ticket</span>
@@ -97,6 +98,7 @@ export default function TicketsSkeleton({ isAdmin = false }: { isAdmin?: boolean
           <div className="h-8 w-8 rounded-md border border-white/[0.07] bg-[#161616] animate-pulse" />
         </div>
       </div>
+    </div>
     </div>
   );
 }
