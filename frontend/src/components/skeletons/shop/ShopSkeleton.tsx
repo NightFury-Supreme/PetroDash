@@ -1,8 +1,6 @@
 "use client";
 
 import React from 'react';
-import { ShoppingCart, CreditCard } from 'lucide-react';
-
 export default function ShopSkeleton() {
   return (
     <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen">
@@ -26,11 +24,11 @@ export default function ShopSkeleton() {
             
             <nav className="space-y-1">
               <div className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 bg-white/10 text-white">
-                <ShoppingCart size={17} strokeWidth={1.75} className="shrink-0" />
+                <div className="h-[17px] w-[17px] shrink-0 rounded bg-white/20 animate-pulse"></div>
                 <div className="h-3.5 bg-white/20 rounded w-24 animate-pulse"></div>
               </div>
               <div className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-zinc-500">
-                <CreditCard size={17} strokeWidth={1.75} className="shrink-0" />
+                <div className="h-[17px] w-[17px] shrink-0 rounded bg-zinc-800 animate-pulse"></div>
                 <div className="h-3.5 bg-zinc-800 rounded w-16 animate-pulse"></div>
               </div>
             </nav>
