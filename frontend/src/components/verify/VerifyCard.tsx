@@ -181,114 +181,97 @@ export default function VerifyCard() {
 
   if (success && success.toLowerCase().includes('email verified')) {
     return (
-      <div className="w-full max-w-md mx-auto rounded-2xl p-8 text-center" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-        <AuthHeader iconClass="fas fa-check" iconBg="bg-[#0d3a0d]" title="Email Verified!" />
-        <p className="text-[#AAAAAA] text-lg">Your email address has been successfully verified.</p>
-        <div className="mt-8">
-          <button onClick={() => router.replace('/dashboard')} className="w-full bg-white hover:bg-gray-100 text-black font-semibold py-3 px-6 rounded-xl transition-colors">
-            <span className="flex items-center justify-center gap-2">
-              <i className="fas fa-arrow-right text-black"></i>
-              Go to Dashboard
-            </span>
-          </button>
-        </div>
+      <div className="space-y-6 text-center">
+        <p className="text-[#AAAAAA] text-[14px]">Your email address has been successfully verified.</p>
+        <button onClick={() => router.replace('/dashboard')} className="w-full h-[42px] bg-[#FF5722] hover:bg-[#F4511E] text-white font-semibold rounded-[7px] transition-colors flex items-center justify-center gap-2">
+          <i className="fas fa-arrow-right"></i> Go to Dashboard
+        </button>
       </div>
     );
   }
 
   if (changeMode) {
     return (
-      <div className="w-full max-w-md mx-auto rounded-2xl p-8 text-center" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-        <AuthHeader iconClass="fas fa-envelope-open-text" iconBg="bg-[#3a200d]" title="Change Email" />
-        <p className="text-[#AAAAAA] mb-6">Update your account email address.</p>
-        
-        <div className="space-y-4 text-left">
-          <div className="space-y-2">
-            <label className="block text-[11px] uppercase tracking-wider text-[#888] font-medium">New Email Address</label>
-            <input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="new@example.com" className="w-full h-11 rounded-lg border border-[#303030] bg-[#161616] px-4 text-[13px] text-white outline-none focus:border-[#FF5722] transition-colors" />
-          </div>
+      <div className="space-y-4">
+        <p className="text-[13px] text-[#888888] mb-6 text-center">Update your account email address.</p>
           
-          {loginMethod === 'email' && (
+          <div className="space-y-4 text-left">
             <div className="space-y-2">
-              <label className="block text-[11px] uppercase tracking-wider text-[#888] font-medium">Current Password</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className="w-full h-11 rounded-lg border border-[#303030] bg-[#161616] px-4 text-[13px] text-white outline-none focus:border-[#FF5722] transition-colors" />
+              <label className="block text-[11px] font-medium text-[#888888] uppercase tracking-wider">New Email Address</label>
+              <input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="new@example.com" className="w-full h-[42px] px-[13px] bg-[#121212] border border-[#282828] rounded-[7px] text-[#d5d5d5] placeholder-[#666] focus:outline-none focus:border-[#454545] focus:bg-[#151515] transition-colors" />
             </div>
-          )}
-          
-          {tfaEnabled && (
-            <div className="space-y-2">
-              <label className="block text-[11px] uppercase tracking-wider text-[#888] font-medium">2FA Code</label>
-              <input type="text" maxLength={6} value={tfaCode} onChange={e => setTfaCode(e.target.value.replace(/\D/g, ''))} placeholder="123456" className="w-full h-11 rounded-lg border border-[#303030] bg-[#161616] px-4 text-[14px] text-white tracking-[0.2em] font-mono text-center outline-none focus:border-[#FF5722] transition-colors" />
-            </div>
-          )}
+            
+            {loginMethod === 'email' && (
+              <div className="space-y-2">
+                <label className="block text-[11px] font-medium text-[#888888] uppercase tracking-wider">Current Password</label>
+                <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className="w-full h-[42px] px-[13px] bg-[#121212] border border-[#282828] rounded-[7px] text-[#d5d5d5] placeholder-[#666] focus:outline-none focus:border-[#454545] focus:bg-[#151515] transition-colors" />
+              </div>
+            )}
+            
+            {tfaEnabled && (
+              <div className="space-y-2">
+                <label className="block text-[11px] font-medium text-[#888888] uppercase tracking-wider">2FA Code</label>
+                <input type="text" maxLength={6} value={tfaCode} onChange={e => setTfaCode(e.target.value.replace(/\D/g, ''))} placeholder="123456" className="w-full h-[42px] px-[13px] text-center font-mono tracking-[0.2em] bg-[#121212] border border-[#282828] rounded-[7px] text-[#d5d5d5] placeholder-[#666] focus:outline-none focus:border-[#454545] focus:bg-[#151515] transition-colors" />
+              </div>
+            )}
 
-          {error && <div className="p-3 rounded-lg bg-red-900/20 border border-red-500/30 text-red-400 text-sm mt-4 text-center">{error}</div>}
-          
-          <div className="space-y-3 mt-6">
-            <button onClick={handleChangeEmail} disabled={loading} className="w-full bg-[#FF5722] hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-colors">
-              {loading ? (
-                <span className="flex items-center justify-center gap-2"><i className="fas fa-spinner fa-spin"></i>Updating...</span>
-              ) : (
-                <span className="flex items-center justify-center gap-2"><i className="fas fa-save"></i>Change Email</span>
-              )}
-            </button>
-            <button onClick={() => { setChangeMode(false); setError(null); }} disabled={loading} className="w-full bg-[#222] hover:bg-[#333] disabled:opacity-50 text-white font-semibold py-3 px-6 rounded-xl transition-colors">
-              Cancel
-            </button>
+            {error && <div className="p-3 rounded-[7px] bg-red-900/20 border border-red-500/30 text-red-400 text-[13px] mt-4 text-center">{error}</div>}
+            
+            <div className="space-y-3 mt-6">
+              <button onClick={handleChangeEmail} disabled={loading} className="w-full h-[42px] bg-[#FF5722] hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-[7px] transition-colors flex items-center justify-center gap-2">
+                {loading ? <><i className="fas fa-spinner fa-spin"></i> Updating...</> : <><i className="fas fa-save"></i> Change Email</>}
+              </button>
+              <button onClick={() => { setChangeMode(false); setError(null); }} disabled={loading} className="w-full h-[42px] bg-[#222] hover:bg-[#333] disabled:opacity-50 text-white font-semibold rounded-[7px] transition-colors flex items-center justify-center gap-2">
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
-      </div>
     );
   }
 
   return (
-    <div className="w-full max-w-md mx-auto rounded-2xl p-8 text-center" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-      <AuthHeader iconClass="fas fa-envelope" iconBg="bg-[#0d3a3a]" title="Email Verification" />
-      <p className="text-[#AAAAAA] mb-6">{codeSent ? 'Enter the 8-digit verification code sent to your email address.' : 'Click the button below to send a verification code to your email address.'}</p>
-      <div className="space-y-4">
-        <div className="flex items-center justify-between bg-[#161616] border border-[#222] rounded-lg p-3">
-          <div className="text-sm text-left truncate pr-2">
-            <span className="text-[#AAAAAA] block text-[10px] uppercase tracking-wider mb-0.5">Email</span>
-            <span className="font-medium text-white">{email}</span>
-          </div>
-          <button onClick={() => { setChangeMode(true); setNewEmail(email); setError(null); }} className="shrink-0 px-3 py-1.5 bg-[#222] hover:bg-[#333] border border-[#333] rounded-md text-[11px] font-medium text-[#aaa] hover:text-white transition-colors">
-            Edit
-          </button>
+    <div className="space-y-4">
+      <p className="text-[13px] text-[#888888] mb-6 text-center">{codeSent ? 'Enter the 8-digit verification code sent to your email address.' : 'Click the button below to send a verification code to your email address.'}</p>
+      
+      <div className="flex items-center justify-between bg-[#121212] border border-[#282828] rounded-[7px] p-3">
+        <div className="text-left truncate pr-2">
+          <span className="text-[#888888] block text-[10px] uppercase tracking-wider mb-0.5 font-medium">Email</span>
+          <span className="font-medium text-[#d5d5d5] text-[13px]">{email}</span>
         </div>
-        {codeSent && (
-          <div className="space-y-2 pt-2">
-            <label className="block text-[11px] uppercase tracking-wider text-[#888] font-medium text-left">Verification Code</label>
-              <input type="text" value={code} onChange={handleCodeChange} placeholder="00000000" maxLength={8} className="w-full px-4 py-3 text-center text-2xl font-mono tracking-widest bg-[#161616] border border-[#303030] rounded-xl text-white placeholder-[#666] focus:outline-none focus:border-[#FF5722] transition-colors" style={{ letterSpacing: '0.5em' }} />
-          </div>
-        )}
-        {success && !success.toLowerCase().includes('email verified') && (
-          <div className="p-3 rounded-lg bg-emerald-900/20 border border-emerald-500/30 text-emerald-400 text-sm">{success}</div>
-        )}
-        {error && (
-          <div className="p-3 rounded-lg bg-red-900/20 border border-red-500/30 text-red-400 text-sm">{error}</div>
-        )}
-        <div className="space-y-3 pt-2">
-          {codeSent && (
-            <button onClick={verifyCode} disabled={loading || code.length !== 8} className="w-full bg-[#FF5722] hover:bg-[#F4511E] disabled:bg-[#333] disabled:text-[#888] disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-colors">
-              {loading ? (
-                <span className="flex items-center justify-center gap-2"><i className="fas fa-spinner fa-spin"></i>Verifying...</span>
-              ) : (
-                <span className="flex items-center justify-center gap-2"><i className="fas fa-check"></i>Verify Email</span>
-              )}
-            </button>
-          )}
-          <button onClick={resendCode} disabled={resendLoading || rateLimit > 0} className={`w-full font-semibold py-3 px-6 rounded-xl transition-colors ${codeSent ? 'bg-[#222] hover:bg-[#333] text-white disabled:opacity-50' : 'bg-[#FF5722] hover:bg-[#F4511E] text-white disabled:bg-[#333] disabled:text-[#888]'}`}>
-            {resendLoading ? (
-              <span className="flex items-center justify-center gap-2"><i className="fas fa-spinner fa-spin"></i>Sending...</span>
-            ) : rateLimit > 0 ? (
-              <span className="flex items-center justify-center gap-2"><i className="fas fa-clock"></i>Resend in {Math.floor(rateLimit / 60) > 0 ? `${Math.floor(rateLimit / 60)}m ` : ''}{rateLimit % 60}s</span>
-            ) : (
-              <span className="flex items-center justify-center gap-2"><i className="fas fa-paper-plane"></i>{codeSent ? 'Resend Code' : 'Send Verification Code'}</span>
-            )}
-          </button>
-        </div>
+        <button onClick={() => { setChangeMode(true); setNewEmail(email); setError(null); }} className="shrink-0 px-3 h-[28px] bg-[#222] hover:bg-[#333] border border-[#333] rounded-[5px] text-[11px] font-medium text-[#aaa] hover:text-white transition-colors">
+          Edit
+        </button>
       </div>
-      <div className="mt-6 text-xs text-[#888]">Check your email inbox and spam folder for the verification code. The code expires in 15 minutes.</div>
+
+      {codeSent && (
+        <div className="space-y-2 pt-2 text-left">
+          <label className="block text-[11px] font-medium text-[#888888] uppercase tracking-wider">Verification Code</label>
+          <input type="text" value={code} onChange={handleCodeChange} placeholder="00000000" maxLength={8} className="w-full h-[42px] px-[13px] text-center font-mono tracking-[0.2em] bg-[#121212] border border-[#282828] rounded-[7px] text-[#d5d5d5] placeholder-[#666] focus:outline-none focus:border-[#454545] focus:bg-[#151515] transition-colors" />
+        </div>
+      )}
+
+      {success && !success.toLowerCase().includes('email verified') && (
+        <div className="p-3 rounded-[7px] bg-emerald-900/20 border border-emerald-500/30 text-emerald-400 text-[13px] text-center">{success}</div>
+      )}
+      {error && (
+        <div className="p-3 rounded-[7px] bg-red-900/20 border border-red-500/30 text-red-400 text-[13px] text-center">{error}</div>
+      )}
+
+      <div className="space-y-3 pt-2">
+        {codeSent && (
+          <button onClick={verifyCode} disabled={loading || code.length !== 8} className="w-full h-[42px] bg-[#FF5722] hover:bg-[#F4511E] disabled:bg-[#333] disabled:text-[#888] disabled:cursor-not-allowed text-white font-semibold rounded-[7px] transition-colors flex items-center justify-center gap-2">
+            {loading ? <><i className="fas fa-spinner fa-spin"></i> Verifying...</> : <><i className="fas fa-check"></i> Verify Email</>}
+          </button>
+        )}
+        <button onClick={resendCode} disabled={resendLoading || rateLimit > 0} className={`w-full h-[42px] font-semibold rounded-[7px] transition-colors flex items-center justify-center gap-2 ${codeSent ? 'bg-[#222] hover:bg-[#333] text-white disabled:opacity-50 disabled:cursor-not-allowed' : 'bg-[#FF5722] hover:bg-[#F4511E] text-white disabled:bg-[#333] disabled:text-[#888] disabled:cursor-not-allowed'}`}>
+          {resendLoading ? <><i className="fas fa-spinner fa-spin"></i> Sending...</> : rateLimit > 0 ? <><i className="fas fa-clock"></i> Resend in {Math.floor(rateLimit / 60) > 0 ? `${Math.floor(rateLimit / 60)}m ` : ''}{rateLimit % 60}s</> : <><i className="fas fa-paper-plane"></i> {codeSent ? 'Resend Code' : 'Send Verification Code'}</>}
+        </button>
+      </div>
+
+      <div className="mt-6 text-[11px] text-[#888888] text-center">
+        Check your email inbox and spam folder for the verification code. The code expires in 15 minutes.
+      </div>
     </div>
   );
 }

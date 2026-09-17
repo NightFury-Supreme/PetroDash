@@ -117,67 +117,62 @@ export default function ForgotCard() {
 
   if (step === "success") {
     return (
-      <div className="w-full max-w-md mx-auto rounded-2xl p-8 text-center" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-        <AuthHeader iconClass="fas fa-check" iconBg="bg-[#0d3a0d]" title="Password Reset" />
-        <p className="text-[#AAAAAA] text-lg">Your password has been updated successfully.</p>
-        <div className="mt-8">
-          <button onClick={() => router.replace('/login')} className="w-full bg-white hover:bg-gray-100 text-black font-semibold py-3 px-6 rounded-xl transition-colors">
-            <span className="flex items-center justify-center gap-2"><i className="fas fa-arrow-right text-black"></i>Go to Login</span>
-          </button>
-        </div>
+      <div className="space-y-6 text-center">
+        <p className="text-[#AAAAAA] text-[14px]">Your password has been updated successfully.</p>
+        <button onClick={() => router.replace('/login')} className="w-full h-[42px] bg-[#FF5722] hover:bg-[#F4511E] text-white font-semibold rounded-[7px] transition-colors flex items-center justify-center gap-2">
+          <i className="fas fa-arrow-right"></i> Go to Login
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-md mx-auto rounded-2xl p-8 text-center" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-      <AuthHeader iconClass="fas fa-key" iconBg="bg-[#0d3a3a]" title="Forgot Password" />
-      <p className="text-[#AAAAAA] mb-6">{step === 'request' ? 'Enter your account email to receive a reset code.' : 'Enter the 8-digit code and your new password.'}</p>
-      <div className="space-y-4">
-        <div className="space-y-2 text-left">
-          <label className="block text-sm font-medium text-white">Email</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" className="w-full px-4 py-3 bg-[#202020] border border-[#303030] rounded-xl text-white placeholder-[#666] focus:outline-none focus:border-blue-500 transition-colors" />
-        </div>
-        {step === 'verify' && (
+    <div className="space-y-4">
+      <div className="space-y-2 text-left">
+        <label className="block text-[11px] font-medium text-[#888888] uppercase tracking-wider">Email</label>
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" className="w-full h-[42px] px-[13px] bg-[#121212] border border-[#282828] rounded-[7px] text-[#d5d5d5] placeholder-[#666] focus:outline-none focus:border-[#454545] focus:bg-[#151515] transition-colors" />
+      </div>
+      {step === 'verify' && (
+        <>
+          <div className="space-y-2 text-left">
+            <label className="block text-[11px] font-medium text-[#888888] uppercase tracking-wider">Verification Code</label>
+            <input type="text" value={code} onChange={handleCodeChange} placeholder="00000000" maxLength={8} className="w-full h-[42px] px-[13px] text-center font-mono tracking-widest bg-[#121212] border border-[#282828] rounded-[7px] text-[#d5d5d5] placeholder-[#666] focus:outline-none focus:border-[#454545] focus:bg-[#151515] transition-colors" style={{ letterSpacing: '0.5em' }} />
+          </div>
+          <div className="space-y-2 text-left">
+            <label className="block text-[11px] font-medium text-[#888888] uppercase tracking-wider">New Password</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 12 characters" className="w-full h-[42px] px-[13px] bg-[#121212] border border-[#282828] rounded-[7px] text-[#d5d5d5] placeholder-[#666] focus:outline-none focus:border-[#454545] focus:bg-[#151515] transition-colors" />
+          </div>
+          <div className="space-y-2 text-left">
+            <label className="block text-[11px] font-medium text-[#888888] uppercase tracking-wider">Confirm Password</label>
+            <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Re-enter password" className="w-full h-[42px] px-[13px] bg-[#121212] border border-[#282828] rounded-[7px] text-[#d5d5d5] placeholder-[#666] focus:outline-none focus:border-[#454545] focus:bg-[#151515] transition-colors" />
+          </div>
+        </>
+      )}
+      {success && (
+        <div className="p-3 rounded-[7px] bg-emerald-900/20 border border-emerald-500/30 text-emerald-400 text-[13px]">{success}</div>
+      )}
+      {error && (
+        <div className="p-3 rounded-[7px] bg-red-900/20 border border-red-500/30 text-red-400 text-[13px]">{error}</div>
+      )}
+      <div className="space-y-3 pt-2">
+        {step === 'request' ? (
+          <button onClick={handleRequest} disabled={loading || !email} className="w-full h-[42px] bg-[#FF5722] hover:bg-[#F4511E] disabled:bg-[#333] disabled:text-[#888] disabled:cursor-not-allowed text-white font-semibold rounded-[7px] transition-colors flex items-center justify-center gap-2">
+            {loading ? <><i className="fas fa-spinner fa-spin"></i> Sending...</> : <><i className="fas fa-paper-plane"></i> Send Reset Code</>}
+          </button>
+        ) : (
           <>
-            <div className="space-y-2 text-left">
-              <label className="block text-sm font-medium text-white">Verification Code</label>
-              <input type="text" value={code} onChange={handleCodeChange} placeholder="00000000" maxLength={8} className="w-full px-4 py-3 text-center text-2xl font-mono tracking-widest bg-[#202020] border border-[#303030] rounded-xl text-white placeholder-[#666] focus:outline-none focus:border-blue-500 transition-colors" style={{ letterSpacing: '0.5em' }} />
-            </div>
-            <div className="space-y-2 text-left">
-              <label className="block text-sm font-medium text-white">New Password</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 12 characters with letters, numbers, and symbols" className="w-full px-4 py-3 bg-[#202020] border border-[#303030] rounded-xl text-white placeholder-[#666] focus:outline-none focus:border-blue-500 transition-colors" />
-            </div>
-            <div className="space-y-2 text-left">
-              <label className="block text-sm font-medium text-white">Confirm Password</label>
-              <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Re-enter password" className="w-full px-4 py-3 bg-[#202020] border border-[#303030] rounded-xl text-white placeholder-[#666] focus:outline-none focus:border-blue-500 transition-colors" />
-            </div>
+            <button onClick={handleReset} disabled={loading || code.length !== 8 || !password || password !== confirm} className="w-full h-[42px] bg-[#FF5722] hover:bg-[#F4511E] disabled:bg-[#333] disabled:text-[#888] disabled:cursor-not-allowed text-white font-semibold rounded-[7px] transition-colors flex items-center justify-center gap-2">
+              {loading ? <><i className="fas fa-spinner fa-spin"></i> Updating...</> : <><i className="fas fa-check"></i> Reset Password</>}
+            </button>
+            <button onClick={resendCode} disabled={resendLoading || rateLimit > 0} className="w-full h-[42px] bg-[#222] hover:bg-[#333] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-[7px] transition-colors flex items-center justify-center gap-2">
+              {resendLoading ? <><i className="fas fa-spinner fa-spin"></i> Sending...</> : rateLimit > 0 ? <><i className="fas fa-clock"></i> Resend in {rateLimit}s</> : <><i className="fas fa-paper-plane"></i> Resend Code</>}
+            </button>
           </>
         )}
-        {success && (
-          <div className="p-3 rounded-lg bg-green-900/20 border border-green-500/30 text-green-400 text-sm">{success}</div>
-        )}
-        {error && (
-          <div className="p-3 rounded-lg bg-red-900/20 border border-red-500/30 text-red-400 text-sm">{error}</div>
-        )}
-        <div className="space-y-3">
-          {step === 'request' ? (
-            <button onClick={handleRequest} disabled={loading || !email} className="w-full bg-white hover:bg-gray-100 disabled:bg-gray-300 disabled:cursor-not-allowed text-black font-semibold py-3 px-6 rounded-xl transition-colors">
-              {loading ? (<span className="flex items-center justify-center gap-2"><i className="fas fa-spinner fa-spin text-black"></i>Sending...</span>) : (<span className="flex items-center justify-center gap-2"><i className="fas fa-paper-plane text-black"></i>Send Reset Code</span>)}
-            </button>
-          ) : (
-            <>
-              <button onClick={handleReset} disabled={loading || code.length !== 8 || !password || password !== confirm} className="w-full bg-white hover:bg-gray-100 disabled:bg-gray-300 disabled:cursor-not-allowed text-black font-semibold py-3 px-6 rounded-xl transition-colors">
-                {loading ? (<span className="flex items-center justify-center gap-2"><i className="fas fa-spinner fa-spin text-black"></i>Updating...</span>) : (<span className="flex items-center justify-center gap-2"><i className="fas fa-check text-black"></i>Reset Password</span>)}
-              </button>
-              <button onClick={resendCode} disabled={resendLoading || rateLimit > 0} className="w-full bg-white hover:bg-gray-100 disabled:bg-gray-300 disabled:cursor-not-allowed text-black font-semibold py-3 px-6 rounded-xl transition-colors">
-                {resendLoading ? (<span className="flex items-center justify-center gap-2"><i className="fas fa-spinner fa-spin text-black"></i>Sending...</span>) : rateLimit > 0 ? (<span className="flex items-center justify-center gap-2"><i className="fas fa-clock text-black"></i>Resend in {rateLimit}s</span>) : (<span className="flex items-center justify-center gap-2"><i className="fas fa-paper-plane text-black"></i>Resend Code</span>)}
-              </button>
-            </>
-          )}
-        </div>
       </div>
-      <div className="mt-6 text-xs text-[#888]">Remembered your password? <button onClick={() => router.replace('/login')} className="underline">Go to login</button></div>
+      <div className="mt-6 text-[12px] text-[#888888] text-left">
+        Remembered your password? <button onClick={() => router.replace('/login')} className="text-[#FF5722] hover:text-[#F4511E] transition-colors font-medium">Login</button>
+      </div>
     </div>
   );
 }

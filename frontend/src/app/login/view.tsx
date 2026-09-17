@@ -101,22 +101,14 @@ export default function LoginClient() {
 
   // --- Render ---
 
-  if (settingsLoading) {
-    return (
-      <div className="space-y-4">
-        <div className="h-12 bg-[#202020] rounded animate-pulse" />
-        <div className="h-12 bg-[#202020] rounded animate-pulse" />
-        <div className="h-10 bg-[#202020] rounded animate-pulse" />
-      </div>
-    );
-  }
+
 
   if (requires2FA) {
     return (
       <form onSubmit={on2FASubmit} className="space-y-5 text-center">
         <div>
           <h2 className="text-xl font-bold mb-1">Two-Factor Authentication</h2>
-          <p className="text-sm text-[#AAAAAA]">
+          <p className="text-[13px] text-[#888888]">
             {useBackupCode
               ? 'Enter one of your 8-character backup codes.'
               : 'Enter the 6-digit code from your authenticator app.'}
@@ -124,7 +116,7 @@ export default function LoginClient() {
         </div>
 
         <div className="text-left">
-          <label className="block text-xs uppercase tracking-wider text-[#888] mb-2 font-medium">
+          <label className="block text-[11px] font-medium text-[#888888] mb-1.5 uppercase tracking-wider">
             {useBackupCode ? 'Backup Code' : 'Authentication Code'}
           </label>
           <input
@@ -137,9 +129,9 @@ export default function LoginClient() {
             }}
             maxLength={useBackupCode ? 8 : 6}
             placeholder={useBackupCode ? 'a1b2c3d4' : '123456'}
-            className={`w-full h-11 rounded-lg border bg-[#161616] px-4 text-white outline-none transition-colors font-mono text-center tracking-[0.2em] ${
+            className={`w-full h-[42px] rounded-[7px] px-[13px] bg-[#121212] border outline-none text-[#d5d5d5] transition-colors focus:bg-[#151515] font-mono text-center tracking-[0.2em] ${
               useBackupCode ? 'text-[14px]' : 'text-[16px]'
-            } ${error ? 'border-red-500/50' : 'border-[#222] focus:border-[#FF5722]'}`}
+            } ${error ? 'border-red-500/50 focus:border-red-500' : 'border-[#282828] focus:border-[#454545]'}`}
             autoFocus
             autoComplete="one-time-code"
           />
@@ -148,29 +140,29 @@ export default function LoginClient() {
               {codeReady ? <Check size={11} /> : <AlertCircle size={11} />}
               <span>{codeReady
                 ? (useBackupCode ? 'Backup code ready.' : '6-digit code ready.')
-                : (useBackupCode ? 'Must be exactly 8 characters (a–f, 0–9).' : 'Must be exactly 6 digits.')}
+                : (useBackupCode ? 'Must be exactly 8 characters (a-f, 0-9).' : 'Must be exactly 6 digits.')}
               </span>
             </div>
           )}
-          {error && <p className="mt-2 text-sm text-red-400 text-left">{error}</p>}
+          {error && <p className="mt-2 text-[13px] text-red-400 text-left">{error}</p>}
         </div>
 
         <AuthSubmit disabled={loading || !codeReady}>
-          {loading ? 'Verifying…' : 'Verify'}
+          {loading ? 'Verifying.' : 'Verify'}
         </AuthSubmit>
 
         <div className="flex flex-col items-center gap-2 pt-1">
           <button
             type="button"
             onClick={() => { setUseBackupCode(!useBackupCode); setTfaCode(''); setError(null); }}
-            className="text-sm text-[#FF5722] hover:text-[#F4511E] transition-colors"
+            className="text-[12px] text-[#FF5722] hover:text-[#F4511E] transition-colors"
           >
-            {useBackupCode ? '← Use authenticator app instead' : 'Use a backup code instead'}
+            {useBackupCode ? 'Use authenticator app instead' : 'Use a backup code instead'}
           </button>
           <button
             type="button"
             onClick={() => { setRequires2FA(false); setTempToken(null); setTfaCode(''); setError(null); setUseBackupCode(false); }}
-            className="text-sm text-[#888] hover:text-white transition-colors"
+            className="text-[12px] text-[#888888] hover:text-[#FF5722] transition-colors"
           >
             Back to login
           </button>

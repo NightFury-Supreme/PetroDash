@@ -1,11 +1,14 @@
 "use client";
 
+import AuthCard from "@/components/auth/AuthCard";
 import VerifyCard from "@/components/verify/VerifyCard";
 
 export default function VerifyPage() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-6" style={{ background: 'var(--background)', color: 'var(--foreground)' }}>
-      <VerifyCard />
-    </div>
+    <main className="bg-[#0F0F0F] min-h-screen text-white">
+      <AuthCard title="Verify Email" subtitle="Secure your account">
+        <VerifyCard />
+      </AuthCard>
+    </main>
   );
 }
