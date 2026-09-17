@@ -15,14 +15,14 @@ export default function AuthCard({ title, subtitle, children, siteName = 'PteroD
   const wallpaperUrl = "https://r4.wallpaperflare.com/wallpaper/948/782/354/minecraft-minecraft-dungeons-ocean-view-minecraft-dungeons-hidden-depths-4k-hd-wallpaper-d8565d58c0f08c58c04c118e68f2d44a.jpg";
 
   return (
-    <section className="min-h-screen flex items-center justify-center p-6 bg-[#0F0F0F] text-white font-sans">
+    <section className="min-h-[100dvh] flex p-3 sm:p-5 lg:p-6 bg-[#0F0F0F] text-white font-sans">
       
       {/* Auth Card Container */}
-      <div className="w-full max-w-[950px] flex rounded-2xl bg-[#121212] border border-[#282828] shadow-2xl overflow-hidden min-h-[600px]">
+      <div className="w-full max-w-[1800px] mx-auto flex rounded-2xl lg:rounded-[2rem] bg-[#121212] border border-[#282828] shadow-2xl overflow-hidden">
         
         {/* Left Side: Auth Form */}
-        <div className="w-full lg:w-1/2 p-8 sm:p-12 flex flex-col justify-center z-10">
-          <div className="w-full max-w-sm mx-auto">
+        <div className="w-full lg:w-1/2 p-8 sm:p-12 flex flex-col justify-center overflow-y-auto z-10 custom-scrollbar">
+          <div className="w-full max-w-sm mx-auto my-auto py-8">
             <div className="flex items-center gap-3 mb-8">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden bg-[#1A1A1A] border border-[#333]">
                 <img src={iconSrc} alt={siteName} className="w-full h-full object-cover" />
