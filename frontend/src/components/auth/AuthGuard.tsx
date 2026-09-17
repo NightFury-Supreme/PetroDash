@@ -1,127 +1,193 @@
 "use client";
+
+import { useEffect, useRef, useState } from "react";
+import { usePathname, useRouter } from "@/i18n/routing";
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
-import { useMemo, useLayoutEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
-
-const PUBLIC_PATHS: readonly string[] = [
+const PUBLIC_PATHS = [
   "/login",
   "/register",
   "/auth/callback",
-  "/banned",
-  "/verify",
   "/forgot",
 ];
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  // next-intl usePathname already strips the locale prefix (e.g. /es/login -> /login)
   const pathname = usePathname() || "/";
 
-  const isPublic = useMemo(() => {
-    // Allow direct access to banned page only when ban context present
-    if (pathname.startsWith("/banned")) {
-      try { return Boolean(sessionStorage.getItem("ban_reason")); } catch { return false; }
-    }
-    // Allow direct access to verify page only when verification context present
-    if (pathname.startsWith("/verify")) {
-      try { return Boolean(sessionStorage.getItem("verify_email")); } catch { return false; }
-    }
-    // Allow /forgot publicly
-    if (pathname.startsWith("/forgot")) return true;
-    if (pathname === "/") return false; // treat home as protected (dashboard)
-    return PUBLIC_PATHS.some((p) => pathname.startsWith(p));
-  }, [pathname]);
+  // Tracks whether we've already validated for this pathname
+  const checkedPathRef = useRef<string | null>(null);
+  // Prevents concurrent validation calls
+  const checkingRef = useRef(false);
+  // Tracks current redirect target to avoid re-redirecting to the same path
+  const redirectingToRef = useRef<string | null>(null);
+  
+  // Actually block rendering of protected pages until validated
+  const [isValidated, setIsValidated] = useState(false);
+  const [, forceRender] = useState(0);
 
-  useLayoutEffect(() => {
-    if (isPublic) return;
+  const isPublic =
+    PUBLIC_PATHS.some((p) => pathname.startsWith(p)) ||
+    pathname.startsWith("/banned") ||
+    pathname.startsWith("/verify");
+
+  useEffect(() => {
+    // If we switch to a new non-public path, we need to validate again
+    if (checkedPathRef.current !== pathname && !isPublic) {
+      setIsValidated(false);
+    }
+
+    // Already checked this exact pathname in this session — skip
+    if (checkedPathRef.current === pathname) return;
+    // Already mid-check — skip
+    if (checkingRef.current) return;
+    // Public pages never need token validation
+    if (isPublic) {
+      checkedPathRef.current = pathname;
+      setIsValidated(true);
+      return;
+    }
+
+    checkingRef.current = true;
+
     (async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+        const token = typeof window !== "undefined"
+          ? localStorage.getItem("auth_token")
+          : null;
+
         if (!token) {
-          router.replace("/login");
-          return;
-        }
-        // Validate token and check ban state
-        const base = process.env.NEXT_PUBLIC_API_BASE || "";
-        const [res, brandingRes] = await Promise.all([
-          fetchWithRetry(`${base}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" }),
-          fetchWithRetry(`${base}/api/branding`, { cache: "no-store" })
-        ]);
-        if (res.status === 403) {
-          try {
-            let d: any = {}; try { d = await res.json(); } catch {}
-            if (typeof window !== "undefined") {
-              if (d?.reason) sessionStorage.setItem("ban_reason", d.reason);
-              if (d?.until) sessionStorage.setItem("ban_until", String(d.until)); else sessionStorage.removeItem("ban_until");
-            }
-          } catch {}
-          if (!pathname.startsWith("/banned")) router.replace("/banned");
-          return;
-        }
-        if (res.ok) {
-          let data: any = {}; try { data = await res.json(); } catch {}
-          let brandingData: any = {}; try { brandingData = await brandingRes.json(); } catch {}
-          // Require verification for all login methods
-          if (brandingData.emailVerification && !data.emailVerified) {
-            if (typeof window !== "undefined") {
-              sessionStorage.setItem("verify_email", data.email || "");
-            }
-            if (!pathname.startsWith("/verify")) router.replace("/verify");
-            return;
-          }
-        }
-        if (!res.ok) {
-          // Invalid token or other error -> login
-          if (res.status === 401) {
-            if (typeof window !== "undefined") localStorage.removeItem("auth_token");
+          if (redirectingToRef.current !== "/login") {
+            redirectingToRef.current = "/login";
             router.replace("/login");
           }
           return;
         }
-        // Auth OK and not banned, clear any stale ban markers
-        try {
-          if (typeof window !== "undefined") {
-            sessionStorage.removeItem("ban_reason");
-            sessionStorage.removeItem("ban_until");
-            sessionStorage.removeItem("verify_email");
+
+        const base = process.env.NEXT_PUBLIC_API_BASE || "";
+        const [meRes, brandingRes] = await Promise.all([
+          fetchWithRetry(`${base}/api/auth/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+            cache: "no-store",
+          }),
+          fetchWithRetry(`${base}/api/branding`, { cache: "no-store" }),
+        ]);
+
+        // — Banned —
+        if (meRes.status === 403) {
+          let d: any = {};
+          try { d = await meRes.json(); } catch {}
+          try {
+            if (d?.reason) sessionStorage.setItem("ban_reason", d.reason);
+            if (d?.until) sessionStorage.setItem("ban_until", String(d.until));
+            else sessionStorage.removeItem("ban_until");
+          } catch {}
+          if (redirectingToRef.current !== "/banned") {
+            redirectingToRef.current = "/banned";
+            router.replace("/banned");
           }
+          return;
+        }
+
+        // — Unauthorized (invalid token) —
+        if (meRes.status === 401) {
+          try { localStorage.removeItem("auth_token"); } catch {}
+          if (redirectingToRef.current !== "/login") {
+            redirectingToRef.current = "/login";
+            router.replace("/login");
+          }
+          return;
+        }
+
+        // — Other errors (network, 5xx) — don't kick user out —
+        if (!meRes.ok) {
+          checkedPathRef.current = pathname;
+          setIsValidated(true);
+          return;
+        }
+
+        // — Auth OK —
+        let userData: any = {};
+        let brandingData: any = {};
+        try { userData = await meRes.json(); } catch {}
+        try { brandingData = await brandingRes.json(); } catch {}
+
+        // — Email verification required —
+        if (brandingData?.emailVerification && !userData?.emailVerified) {
+          try { sessionStorage.setItem("verify_email", userData?.email || ""); } catch {}
+          if (redirectingToRef.current !== "/verify") {
+            redirectingToRef.current = "/verify";
+            router.replace("/verify");
+          }
+          return;
+        }
+
+        // — All good — clear any stale ban/verify context —
+        try {
+          sessionStorage.removeItem("ban_reason");
+          sessionStorage.removeItem("ban_until");
+          sessionStorage.removeItem("verify_email");
         } catch {}
-      // eslint-disable-next-line unused-imports/no-unused-vars
-      } catch (err) {
-        // Network error - don't logout, just ignore
+
+        // Reset redirect tracker since we're validated now
+        redirectingToRef.current = null;
+        checkedPathRef.current = pathname;
+        setIsValidated(true);
+        forceRender(n => n + 1); // allow children to paint
+      } catch {
+        // Network error — don't redirect, just mark as checked to stop retrying
+        checkedPathRef.current = pathname;
+        setIsValidated(true);
+      } finally {
+        checkingRef.current = false;
       }
     })();
-  }, [isPublic, router, pathname]);
+  // Only re-run when the stripped pathname actually changes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
-  // If trying to access /banned directly with no ban context: block
-  useLayoutEffect(() => {
+  // — Direct /banned access without ban context → redirect —
+  useEffect(() => {
     if (!pathname.startsWith("/banned")) return;
     try {
-      const hasBan = typeof window !== "undefined" ? Boolean(sessionStorage.getItem("ban_reason")) : false;
-      if (!hasBan) {
-        const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-        router.replace(token ? "/" : "/login");
+      const hasBan = Boolean(sessionStorage.getItem("ban_reason"));
+      if (!hasBan && redirectingToRef.current !== "/login") {
+        const token = localStorage.getItem("auth_token");
+        const dest = token ? "/" : "/login";
+        redirectingToRef.current = dest;
+        router.replace(dest);
       }
     } catch {
       router.replace("/login");
     }
-  }, [pathname, router]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
-  // If trying to access /verify directly with no verification context: block
-  useLayoutEffect(() => {
+  // — Direct /verify access without verify context → redirect —
+  useEffect(() => {
     if (!pathname.startsWith("/verify")) return;
     try {
-      const hasVerify = typeof window !== "undefined" ? Boolean(sessionStorage.getItem("verify_email")) : false;
-      if (!hasVerify) {
-        const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-        router.replace(token ? "/" : "/login");
+      const hasVerify = Boolean(sessionStorage.getItem("verify_email"));
+      if (!hasVerify && redirectingToRef.current !== "/login") {
+        const token = localStorage.getItem("auth_token");
+        const dest = token ? "/" : "/login";
+        redirectingToRef.current = dest;
+        router.replace(dest);
       }
     } catch {
       router.replace("/login");
     }
-  }, [pathname, router]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  if (!isPublic && !isValidated) {
+    return (
+      <div className="flex-1 flex items-center justify-center min-h-screen bg-[#0F0F0F]">
+        <div className="w-8 h-8 border-2 border-[#FF5722] border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return <>{children}</>;
 }
-
-
