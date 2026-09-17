@@ -12,6 +12,23 @@ export default function ReferralsSkeleton() {
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <div className="h-8 w-32 bg-[#1a1a1a] animate-pulse rounded" />
+              </div>
+              <div className="h-4 w-64 bg-[#1a1a1a] animate-pulse rounded" />
+            </div>
+          </div>
+        </header>
+
+        {/* SUMMARY */}
+        <section className="grid grid-cols-1 border-y border-white/[0.07] sm:grid-cols-3">
+          <SummaryItem icon={<Users size={16} />} label="Users Referred" value={0} suffix="users" loading={true} />
+          <SummaryItem icon={<Coins size={16} />} label="Coins Earned" value={0} suffix="coins" loading={true} />
+          <SummaryItem icon={<CheckCircle2 size={16} />} label="Successful" value={0} suffix="rewards" loading={true} />
+        </section>
+
+        {/* REFERRAL LINK */}
+        <section>
+          <div className="mb-3 flex items-center justify-between">
+            <div>
               <div className="h-3 w-24 bg-[#1a1a1a] animate-pulse rounded mb-2" />
               <div className="h-4 w-48 bg-[#1a1a1a] animate-pulse rounded" />
             </div>
