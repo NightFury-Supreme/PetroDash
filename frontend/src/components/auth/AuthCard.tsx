@@ -18,8 +18,8 @@ export default function AuthCard({ title, subtitle, children, siteName = 'PteroD
     <div className="min-h-[100dvh] w-full flex flex-col lg:flex-row bg-[#0F0F0F] text-white font-sans overflow-hidden">
       
       {/* Left Side: Auth Form */}
-      <div className="w-full lg:w-[40%] xl:w-[35%] flex flex-col justify-center p-8 sm:p-12 lg:p-16 xl:p-24 overflow-y-auto z-10 custom-scrollbar shrink-0">
-        <div className="w-full max-w-sm mx-auto my-auto py-8">
+      <div className="w-full lg:w-[450px] xl:w-[500px] flex flex-col justify-center p-8 sm:p-12 lg:p-10 xl:p-12 overflow-y-auto z-10 custom-scrollbar shrink-0 border-r border-[#151515]">
+        <div className="w-full max-w-[360px] mx-auto my-auto py-8">
           <div className="flex items-center gap-3 mb-8">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden bg-[#1A1A1A] border border-[#333]">
               <img src={iconSrc} alt={siteName} className="w-full h-full object-cover" />
@@ -33,7 +33,7 @@ export default function AuthCard({ title, subtitle, children, siteName = 'PteroD
       </div>
 
       {/* Right Side: 4K Wallpaper (Full Bleed) */}
-      <div className="hidden lg:block lg:w-[60%] xl:w-[65%] relative bg-[#050505] grow">
+      <div className="hidden lg:block flex-1 relative bg-[#050505]">
         <img 
           src={wallpaperUrl} 
           alt="Dashboard Wallpaper" 
