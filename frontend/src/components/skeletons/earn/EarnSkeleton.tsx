@@ -8,7 +8,7 @@ export function EarnSkeleton() {
         <header>
           <div className="flex items-start justify-between gap-6">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-[#FF5722]">Earn</h1>
+              <div className="h-8 bg-[#202020] rounded w-32 animate-pulse"></div>
               <p className="mt-1 text-sm text-white/40">
                 Watch rewarded videos and complete tasks to earn coins.
               </p>
@@ -17,11 +17,11 @@ export function EarnSkeleton() {
         </header>
         <div className="w-full">
           <div className={`hidden gap-4 lg:grid ${cols} border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30`}>
-            <span>Method</span>
-            <span>Reward</span>
-            <span>Daily Limit</span>
-            <span>Cooldown</span>
-            <span className="text-right">Action</span>
+            <div className="h-3 bg-[#202020] rounded w-16 animate-pulse"></div>
+            <div className="h-3 bg-[#202020] rounded w-16 animate-pulse"></div>
+            <div className="h-3 bg-[#202020] rounded w-20 animate-pulse"></div>
+            <div className="h-3 bg-[#202020] rounded w-20 animate-pulse"></div>
+            <div className="h-3 bg-[#202020] rounded w-16 animate-pulse ml-auto"></div>
           </div>
           <div className="divide-y divide-white/[0.06]">
             {[...Array(4)].map((_, i) => (

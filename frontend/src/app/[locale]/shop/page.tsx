@@ -256,7 +256,7 @@ export default function StorePage() {
           <aside className="w-full lg:w-48 shrink-0 pt-1">
             <div className="mb-4">
               <p className="text-[11px] font-medium uppercase tracking-widest text-[#555]">
-                Store
+                {t('storeTitle')}
               </p>
             </div>
 
@@ -266,7 +266,7 @@ export default function StorePage() {
                 onClick={() => setActiveTab("items")}
                 icon={ShoppingCart}
               >
-                Shop Items
+                {t('shopItems')}
               </StoreNavItem>
 
               <StoreNavItem
@@ -274,15 +274,14 @@ export default function StorePage() {
                 onClick={() => setActiveTab("plans")}
                 icon={CreditCard}
               >
-                Plans
+                {t('plans')}
               </StoreNavItem>
             </nav>
 
             {/* SMALL HELP */}
             <div className="mt-8 border-t border-[#333] pt-6">
               <p className="text-xs text-[#666]">
-                Purchase additional resources or upgrade your
-                account with a premium plan.
+                {t('purchaseHelpText')}
               </p>
             </div>
           </aside>

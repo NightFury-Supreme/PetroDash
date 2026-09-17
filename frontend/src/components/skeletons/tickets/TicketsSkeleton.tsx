@@ -14,12 +14,12 @@ export default function TicketsSkeleton({ isAdmin = false }: { isAdmin?: boolean
       <div className="border-0 p-0 w-full">
       {/* Table column headers */}
       <div className={`hidden ${headerGridClass} gap-4 border-b border-white/[0.06] pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30 md:grid`}>
-        <span>Ticket</span>
-        {isAdmin && <span>User</span>}
-        <span>Category</span>
-        <span>Updated</span>
-        <span>Status</span>
-        <span>Priority</span>
+        <div className="h-3 bg-[#202020] rounded w-16 animate-pulse"></div>
+        {isAdmin && <div className="h-3 bg-[#202020] rounded w-16 animate-pulse"></div>}
+        <div className="h-3 bg-[#202020] rounded w-20 animate-pulse"></div>
+        <div className="h-3 bg-[#202020] rounded w-20 animate-pulse"></div>
+        <div className="h-3 bg-[#202020] rounded w-16 animate-pulse"></div>
+        <div className="h-3 bg-[#202020] rounded w-16 animate-pulse"></div>
         <span />
       </div>
 
