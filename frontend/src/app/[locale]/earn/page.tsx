@@ -20,7 +20,7 @@ function EarnContent() {
   
   const [pendingLvSid, setPendingLvSid] = useState<string | null>(null);
 
-  const lvUrlKey = (sessionId: string) => `earn_lv_url_${sessionId}`;
+  const _lvUrlKey = (sessionId: string) => `earn_lv_url_${sessionId}`;
 
   const showLinkvertise = Boolean(data?.config?.linkvertise?.enabled);
 

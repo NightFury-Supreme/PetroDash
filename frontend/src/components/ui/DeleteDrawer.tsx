@@ -17,6 +17,7 @@ interface DeleteDrawerProps {
 }
 
 import { useToast } from "@/components/ui/ToastProvider";
+import { useTranslations } from "next-intl";
 
 export function DeleteDrawer({
   isOpen,
@@ -32,6 +33,7 @@ export function DeleteDrawer({
   const [confirmText, setConfirmText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const { showError } = useToast();
+  const t = useTranslations('UI.deleteDrawer');
 
   useEffect(() => {
     if (isOpen) {
@@ -48,7 +50,7 @@ export function DeleteDrawer({
       onClose();
     } catch (err: any) {
       console.error(err);
-      showError(err.message || `Failed to delete ${entityType.toLowerCase()}`);
+      showError(err.message || t('failedToDelete', { type: entityType.toLowerCase() }));
       setIsDeleting(false);
     }
   };
@@ -59,15 +61,15 @@ export function DeleteDrawer({
     <Drawer
       isOpen={isOpen}
       onClose={onClose}
-      title={`Delete ${entityType}`}
-      subtitle={`This will permanently remove the ${entityType.toLowerCase()} and its configuration.`}
+      title={t('title', { type: entityType })}
+      subtitle={t('subtitle', { type: entityType.toLowerCase() })}
       footer={
         <div className="flex items-center justify-between">
           <button
             onClick={onClose}
             className="flex items-center gap-2 rounded-lg border border-[#222] bg-transparent px-5 py-2 text-sm font-medium text-[#888] transition-colors hover:border-[#333] hover:text-[#D4D4D4]"
           >
-            Cancel
+            {t('cancel')}
           </button>
           
           <button
@@ -84,7 +86,7 @@ export function DeleteDrawer({
             ) : (
               <X size={16} />
             )}
-            Delete {entityType}
+            {t('deleteBtn', { type: entityType })}
           </button>
         </div>
       }
@@ -113,7 +115,7 @@ export function DeleteDrawer({
         <div className="border-l-2 border-red-500 pl-5 py-1 mb-10">
           <div className="flex items-center gap-2 text-red-500 mb-4">
             <AlertTriangle size={14} />
-            <span className="text-xs font-bold uppercase tracking-wider">BEFORE YOU CONTINUE</span>
+            <span className="text-xs font-bold uppercase tracking-wider">{t('beforeContinue')}</span>
           </div>
           <ul className="space-y-3">
             {warningPoints.map((point, i) => (
@@ -129,7 +131,7 @@ export function DeleteDrawer({
       {requireConfirmText && (
         <div>
           <h2 className="text-[11px] font-medium uppercase tracking-[0.1em] text-zinc-500 mb-4">
-            Type <span className="text-zinc-100">{entityName.toUpperCase()}</span> to confirm
+            {t.rich('typeToConfirm', { name: () => <span className="text-zinc-100">{entityName.toUpperCase()}</span> })}
           </h2>
           <div className="flex overflow-hidden rounded-lg border border-[#2A2A2A] bg-[#161616] focus-within:border-orange-500/50 transition-colors">
             <input

@@ -1,7 +1,7 @@
 const express = require('express');
 const { requireAuth } = require('../../middleware/auth');
 const Server = require('../../models/Server');
-const { getServer } = require('../../services/pterodactyl');
+// const { getServer } = require('../../services/pterodactyl');
 const { getCache, setCache } = require('../../lib/redis');
 const { deleteCachePattern, deleteCache } = require('../../lib/redis');
 

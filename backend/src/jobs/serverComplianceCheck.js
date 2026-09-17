@@ -11,7 +11,7 @@
 
 'use strict';
 
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -21,9 +21,9 @@ const mongoose = require('mongoose');
  */
 async function buildUserResourcePool(userId) {
   const User     = require('../models/User');
-  const UserPlan = require('../models/UserPlan');
+  // const UserPlan = require('../models/UserPlan');
 
-  const user = await User.findById(userId).lean();
+  // const User = await User.findById(userId).lean();
   if (!user) return null;
 
   const base = user.resources || {};
@@ -78,7 +78,7 @@ async function runComplianceSweep() {
   const User     = require('../models/User');
   const Location = require('../models/Location');
   const Egg      = require('../models/Egg');
-  const UserPlan = require('../models/UserPlan');
+  // const UserPlan = require('../models/UserPlan');
   const { writeAudit } = require('../middleware/audit');
 
   console.log('[Compliance] Starting server compliance sweep...');
@@ -99,7 +99,7 @@ async function runComplianceSweep() {
   for (const s of activeServers) {
     const ownerId = String(s.owner);
     if (!byOwner[ownerId]) byOwner[ownerId] = [];
-    byOwner[ownerId].push(s);
+    byOwner[ownerId].push();
   }
 
   // Pre-fetch all referenced locations and eggs in bulk
@@ -288,7 +288,7 @@ async function runComplianceSweep() {
     }
   }
 
-  console.log(`[Compliance] Sweep complete. Suspended ${totalSuspended} server(s).`);
+  console.log(`[Compliance] Sweep complete. Suspended ${totalSuspended} server().`);
 }
 
 // ─── Job lifecycle ───────────────────────────────────────────────────────────

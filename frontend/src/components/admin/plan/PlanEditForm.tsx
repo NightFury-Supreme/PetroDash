@@ -19,7 +19,7 @@ interface PlanEditFormProps {
 
 export function PlanEditForm({
   plan,
-  saving,
+  _saving,
   validationErrors = {},
   onInputChange,
   onSubmit,

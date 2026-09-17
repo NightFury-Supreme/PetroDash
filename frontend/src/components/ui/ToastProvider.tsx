@@ -10,25 +10,28 @@ type ToastContextType = {
 
 const ToastContext = createContext<ToastContextType | null>(null);
 
+import { useTranslations } from 'next-intl';
+
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success'; id: number } | null>(null);
+  const tError = useTranslations('ErrorState');
 
   const showError = useCallback((message: string) => {
     let expandedMessage = message;
     const e = message.toLowerCase();
     
     if (e === 'forbidden' || e === 'unauthorized' || e === 'access denied') {
-      expandedMessage = 'You do not have permission to perform this action. Please contact an administrator if you believe this is a mistake.';
+      expandedMessage = tError('descForbidden');
     } else if (e === 'not found') {
-      expandedMessage = 'The requested resource could not be found. It may have been deleted.';
+      expandedMessage = tError('descNotFound', { topic: tError('defaultResource') });
     } else if (e.includes('failed to fetch') || e.includes('network error')) {
-      expandedMessage = 'Unable to connect to the server. Please try again in a few moments.';
+      expandedMessage = tError('descNetwork');
     } else if (e.includes('too many requests') || e.includes('rate limit')) {
-      expandedMessage = 'You are making requests too quickly. Please wait a moment and try again.';
+      expandedMessage = tError('descRateLimit');
     }
 
     setToast({ message: expandedMessage, type: 'error', id: Date.now() });
-  }, []);
+  }, [tError]);
 
   const showSuccess = useCallback((message: string) => {
     setToast({ message, type: 'success', id: Date.now() });

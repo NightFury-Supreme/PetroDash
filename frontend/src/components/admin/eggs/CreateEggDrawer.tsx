@@ -46,7 +46,7 @@ export function CreateEggDrawer({ onClose, onSuccess, preloadedCategories }: Cre
     allowedPlans: [] as string[],
   });
   const [env, setEnv] = useState<Array<{ key: string; value: string }>>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [_error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [uploadingIcon, setUploadingIcon] = useState(false);
 

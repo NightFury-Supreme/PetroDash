@@ -6,14 +6,14 @@ import { Plus } from "lucide-react";
 export default function TicketsHeader({
   title = "Support Tickets",
   description = "Manage all user tickets and requests.",
-  loading,
-  onRefresh,
+  _loading,
+  _onRefresh,
   onNew
 }: {
   title?: string;
   description?: string;
   loading?: boolean;
-  onRefresh?: () => void;
+  _onRefresh?: () => void;
   onNew?: () => void;
 }) {
   return (

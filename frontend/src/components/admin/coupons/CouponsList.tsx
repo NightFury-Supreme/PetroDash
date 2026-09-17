@@ -1,9 +1,9 @@
- "use client";
+"use client";
 
 
 import { Edit2 } from 'lucide-react';
 
-export default function CouponsList({ coupons, onManage, onToggle, onDelete, plans, deletingId, currency = 'USD' }: any) {
+export default function CouponsList({ coupons, onManage, _onToggle, _onDelete, _plans, _deletingId, currency = 'USD' }: any) {
   const formatDate = (d?: string) => (d ? new Date(d).toLocaleDateString() : 'No limit');
 
   if (!coupons?.length) {

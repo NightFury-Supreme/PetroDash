@@ -248,5 +248,22 @@
     "partialOutage": "Panne Partielle",
     "majorOutage": "Panne Majeure",
     "poweredBy": "Propulsé par"
+  },
+  "UI": {
+    "deleteDrawer": {
+      "title": "Delete {type}",
+      "subtitle": "This will permanently remove the {type} and its configuration.",
+      "cancel": "Cancel",
+      "deleteBtn": "Delete {type}",
+      "beforeContinue": "BEFORE YOU CONTINUE",
+      "typeToConfirm": "Type {name} to confirm",
+      "failedToDelete": "Failed to delete {type}"
+    },
+    "toast": {
+      "success": "Success",
+      "error": "Error",
+      "warning": "Warning",
+      "info": "Info"
+    }
   }
 }
