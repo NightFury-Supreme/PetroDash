@@ -1,7 +1,7 @@
 "use client";
 
 export interface AuthCardProps {
-  title: string;
+  title?: string;
   subtitle?: string;
   children: React.ReactNode;
   siteName?: string;
@@ -24,7 +24,7 @@ export default function AuthCard({ title, subtitle, children, siteName = 'PteroD
             <img src={iconSrc} alt={siteName} className="h-10 w-auto object-contain" />
             <h1 className="text-xl font-bold tracking-tight">{siteName}</h1>
           </div>
-          <h2 className="text-2xl font-bold mb-1.5 tracking-tight">{title}</h2>
+          {title && <h2 className="text-2xl font-bold mb-1.5 tracking-tight">{title}</h2>}
           {subtitle && <p className="text-[13px] text-[#888888] mb-8">{subtitle}</p>}
           {children}
         </div>

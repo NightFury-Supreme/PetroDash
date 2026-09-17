@@ -106,8 +106,8 @@ export default function LoginClient() {
   if (requires2FA) {
     return (
       <form onSubmit={on2FASubmit} className="space-y-5 text-center">
-        <div>
-          <h2 className="text-xl font-bold mb-1">Two-Factor Authentication</h2>
+        <div className="text-left mb-8">
+          <h2 className="text-2xl font-bold mb-1.5 tracking-tight">Two-Factor Authentication</h2>
           <p className="text-[13px] text-[#888888]">
             {useBackupCode
               ? 'Enter one of your 8-character backup codes.'
@@ -172,11 +172,17 @@ export default function LoginClient() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      {showEmailLogin && (
-        <>
-          <AuthField
-            label="Email or Username"
+    <div className="w-full">
+      <div className="text-left mb-8">
+        <h2 className="text-2xl font-bold mb-1.5 tracking-tight">Login</h2>
+        <p className="text-[13px] text-[#888888]">Enter your credentials to continue</p>
+      </div>
+
+      <form onSubmit={onSubmit} className="space-y-4">
+        {showEmailLogin && (
+          <>
+            <AuthField
+              label="Email or Username"
             value={form.emailOrUsername}
             onChange={(v) => setForm({ ...form, emailOrUsername: v })}
             placeholder="Email or username"
@@ -227,6 +233,7 @@ export default function LoginClient() {
           <Link href="/register" className="text-[#FF5722] hover:text-[#F4511E] transition-colors font-medium">Create one</Link>
         </div>
       )}
-    </form>
+      </form>
+    </div>
   );
 }
