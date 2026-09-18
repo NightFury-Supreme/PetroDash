@@ -35,7 +35,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // If we switch to a new non-public path, we need to validate again
     if (checkedPathRef.current !== pathname && !isPublic) {
-      setIsValidated(false);
+      // setIsValidated removed
     }
 
     // Already checked this exact pathname in this session — skip
@@ -181,5 +181,6 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   return <>{children}</>;
 }
+
 
 
