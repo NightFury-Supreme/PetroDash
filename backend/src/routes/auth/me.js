@@ -2,8 +2,9 @@ const express = require('express');
 const { requireAuth } = require('../../middleware/auth');
 const User = require('../../models/User');
 const Server = require('../../models/Server');
-const { getSettings } = require('../../lib/settings');
+
 const { getCache, setCache, deleteCache } = require('../../lib/redis');
+const { logUserActivity } = require('../../middleware/userActivity');
 
 const router = express.Router();
 
@@ -47,12 +48,7 @@ router.get('/me', requireAuth, async (req, res) => {
       profilePicture = user.profilePicture;
     }
 
-    let emailVerification = false;
-    try {
-      const s = await getSettings();
-      emailVerification = s?.auth?.emailVerification ?? false;
-    // eslint-disable-next-line unused-imports/no-unused-vars
-    } catch (_) {}
+
     
     const responseData = { 
       id: user._id, 
@@ -69,7 +65,7 @@ router.get('/me', requireAuth, async (req, res) => {
       profilePicture: profilePicture,
       oauthProviders: user.oauthProviders || {},
       emailVerified: Boolean(user.emailVerified),
-      emailVerification: Boolean(emailVerification)
+      tfaEnabled: Boolean(user.tfaEnabled)
     };
     
     await setCache(cacheKey, responseData, 10); // Cache for 10 seconds to prevent F5 spam
@@ -99,6 +95,7 @@ router.patch('/me/profile-picture', requireAuth, async (req, res) => {
     }
     
     // Validate URL format if provided
+    const oldPicture = user.profilePicture;
     if (profilePicture && profilePicture.trim()) {
       // Use URL constructor for safe validation (no ReDoS)
       try {
@@ -129,6 +126,16 @@ router.patch('/me/profile-picture', requireAuth, async (req, res) => {
     }
     
     await user.save();
+    
+    if (oldPicture !== user.profilePicture) {
+      await logUserActivity(req, 'auth.account.update', { 
+        profilePicture: `${oldPicture || 'none'} to ${user.profilePicture || 'none'}` 
+      });
+      const { writeAudit } = require('../../middleware/audit');
+      await writeAudit(req, 'auth.account.update', 'user_profile', user._id.toString(), { 
+        profilePicture: `${oldPicture || 'none'} to ${user.profilePicture || 'none'}` 
+      });
+    }
     
     // Invalidate profile cache
     await deleteCache(`user:${req.user.sub}:profile`);

@@ -17,7 +17,7 @@ export default function LocationForm({ form, setForm, onSubmit, submitting, onDe
               {form.flag && (
                 <div className="relative w-12 h-12 bg-[#202020] border border-[#303030] rounded-lg overflow-hidden flex-shrink-0">
                   <img 
-                    src={`${process.env.NEXT_PUBLIC_API_BASE}${form.flag}`} 
+                    src={`${process.env.NEXT_PUBLIC_API_BASE || ''}${form.flag}`} 
                     alt="Flag icon" 
                     className="w-full h-full object-cover"
                   />
@@ -39,7 +39,7 @@ export default function LocationForm({ form, setForm, onSubmit, submitting, onDe
                     fd.append('icon', file);
                     
                     try {
-                      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/upload/icon`, {
+                      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/upload/icon`, {
                         method: 'POST',
                         headers: { Authorization: `Bearer ${token}` },
                         body: fd
@@ -59,7 +59,7 @@ export default function LocationForm({ form, setForm, onSubmit, submitting, onDe
                       
                       // Delete old flag file if it exists
                       if (oldFlag) {
-                        fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/upload/icon`, {
+                        fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/upload/icon`, {
                           method: 'DELETE',
                           headers: { 
                             'Content-Type': 'application/json',
@@ -92,7 +92,7 @@ export default function LocationForm({ form, setForm, onSubmit, submitting, onDe
                     // Delete file from server
                     if (flagToDelete) {
                       try {
-                        await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/upload/icon`, {
+                        await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/upload/icon`, {
                           method: 'DELETE',
                           headers: { 
                             'Content-Type': 'application/json',
@@ -160,7 +160,7 @@ function AllowedPlansSelect({ value, onChange }: { value: string[]; onChange: (v
 
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/plans`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/plans`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
       .then((r) => r.json())
       .then((d) => setPlans(Array.isArray(d) ? d : []))
       .catch((e) => setError(e.message))

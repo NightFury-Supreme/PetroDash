@@ -22,7 +22,8 @@ build/
 out/
 
 # Logs
-logs/
+/logs/
+/backend/logs/
 *.log
 
 # Runtime data

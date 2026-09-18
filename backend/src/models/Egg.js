@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+require('./EggCategory');
 
 const EnvironmentVarSchema = new mongoose.Schema(
     {
@@ -11,8 +12,8 @@ const EnvironmentVarSchema = new mongoose.Schema(
 const EggSchema = new mongoose.Schema(
     {
         name: { type: String, required: true },
-        category: { type: String, required: true },
-        icon: { type: String }, // Changed from iconUrl to icon - stores file path
+        category: { type: mongoose.Schema.Types.ObjectId, ref: 'EggCategory', required: true },
+        icon: { type: String, required: true }, // Changed from iconUrl to icon - stores file path
         pterodactylEggId: { type: Number, required: true },
         pterodactylNestId: { type: Number, required: true },
         recommended: { type: Boolean, default: false },
