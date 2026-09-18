@@ -1,1 +1,1 @@
-export { PanelSkeleton } from './PanelSkeleton';
+export * from './PanelSkeleton';
