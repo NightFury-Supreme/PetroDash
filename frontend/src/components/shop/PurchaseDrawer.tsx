@@ -65,7 +65,7 @@ export function PurchaseDrawer({
             onClick={onClose}
             className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
           >
-            Cancel
+            {t('cancel')}
           </button>
           <button
             type="button"

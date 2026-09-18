@@ -125,7 +125,7 @@ export function CouponDrawer({
       
       setDiscountAmount(data.discountAmount);
       setAppliedCoupon(couponCode);
-      showSuccess("Coupon applied successfully!");
+      showSuccess(t('couponAppliedSuccess'));
     } catch (e: any) {
       showError(e.message);
       setDiscountAmount(0);
