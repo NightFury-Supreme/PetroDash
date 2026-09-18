@@ -20,7 +20,7 @@ export default function RegisterForm() {
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof typeof form, string>>>({});
   const [loading, setLoading] = useState(false);
 
-  const t = useTranslations();
+  const t = useTranslations('Auth.register');
   const tCommon = useTranslations('Auth.common');
   const tErrors = useTranslations('Auth.errors');
 

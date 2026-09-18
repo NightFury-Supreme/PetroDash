@@ -24,7 +24,7 @@ export default function ForgotResetForm({
   email, setEmail, code, setCode, password, setPassword, confirm, setConfirm, onReset, onResend, loading, resendLoading, rateLimit
 }: ForgotResetFormProps) {
   const router = useRouter();
-  const t = useTranslations();
+  const t = useTranslations('Auth.forgot');
   const tCommon = useTranslations('Auth.common');
 
   return (

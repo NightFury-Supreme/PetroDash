@@ -12,7 +12,7 @@ export default function TwoFactorForm({ tempToken, onSuccess, onBack }: { tempTo
   const [loading, setLoading] = useState(false);
   const [useBackup, setUseBackup] = useState(false);
   const { showError } = useToast();
-  const t = useTranslations();
+  const t = useTranslations('Auth.twoFactor');
   const tCommon = useTranslations('Auth.common');
   const tErrors = useTranslations('Auth.errors');
 

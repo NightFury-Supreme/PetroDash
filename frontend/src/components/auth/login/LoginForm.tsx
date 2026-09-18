@@ -20,7 +20,7 @@ type FieldErrors = Partial<Record<keyof LoginForm, string>>;
 export default function LoginForm({ onSuccess, onRequires2FA }: { onSuccess: (token: string) => void; onRequires2FA: (tempToken: string) => void }) {
   const { settings } = useAuthSettings();
   const { showError } = useToast();
-  const t = useTranslations();
+  const t = useTranslations('Auth.login');
   const tCommon = useTranslations('Auth.common');
   const tErrors = useTranslations('Auth.errors');
   const [form, setForm] = useState<LoginForm>({ emailOrUsername: '', password: '' });

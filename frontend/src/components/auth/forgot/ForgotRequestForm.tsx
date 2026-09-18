@@ -13,7 +13,7 @@ interface ForgotRequestFormProps {
 
 export default function ForgotRequestForm({ email, setEmail, onRequest, loading }: ForgotRequestFormProps) {
   const router = useRouter();
-  const t = useTranslations();
+  const t = useTranslations('Auth.forgot');
   const tCommon = useTranslations('Auth.common');
   
   return (

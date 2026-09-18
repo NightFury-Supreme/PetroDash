@@ -18,7 +18,7 @@ interface VerifyCodeFormProps {
 export default function VerifyCodeForm({
   email, code, setCode, codeSent, onChangeEmailRequest, onVerify, onResend, loading, resendLoading, rateLimit
 }: VerifyCodeFormProps) {
-  const t = useTranslations();
+  const t = useTranslations('Auth.verify');
   const tCommon = useTranslations('Auth.common');
   
   return (
