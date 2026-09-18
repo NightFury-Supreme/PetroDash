@@ -298,6 +298,16 @@
   },
   "Shop": {
     "storeTitle": "Store",
+        "processing": "Processing",
+    "confirmingPayment": "Confirming Payment",
+    "confirmingPaymentDesc": "Please wait while we securely confirm your transaction. Do not close this window.",
+    "success": "Success",
+    "paymentCompleted": "Payment Completed",
+    "paymentCompletedDesc": "Your plan has been activated. You will be redirected to the dashboard in a few seconds.",
+    "goToDashboard": "Go to Dashboard",
+    "cancelled": "Cancelled",
+    "paymentCancelledDesc": "Your payment was not completed. No charges have been made to your account.",
+    "returnToShop": "Return to Shop",
     "paymentSuccess": "Payment processed successfully!",
     "paymentCancelled": "Payment was cancelled.",
     "paypalLinkNotFound": "PayPal redirect link not found",
@@ -424,3 +434,4 @@
     }
   }
 }
+

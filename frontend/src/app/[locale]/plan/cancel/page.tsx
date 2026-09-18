@@ -2,9 +2,11 @@
 
 import { useRouter } from "@/i18n/routing";
 import { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { X, LayoutDashboard, ArrowLeft } from 'lucide-react';
 
 export default function PlanCancelPage() {
+  const t = useTranslations('Shop');
   const router = useRouter();
 
   useEffect(() => {
@@ -20,13 +22,13 @@ export default function PlanCancelPage() {
           <X className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" strokeWidth={1.5} />
         </div>
         <p className="m-0 mb-2.5 text-[#FF5722] text-[10px] font-semibold tracking-[0.12em] uppercase">
-          Cancelled
+          {t('cancelled')}
         </p>
         <h1 className="m-0 text-[#ededed] text-[clamp(28px,4vw,38px)] leading-[1.15] font-semibold tracking-[-0.04em]">
-          Payment Cancelled
+          {t('paymentCancelled')}
         </h1>
         <p className="max-w-[500px] mx-auto mt-3.5 text-[#888888] text-[12px] sm:text-[13px] leading-[1.7]">
-          Your payment was not completed. No charges have been made to your account.
+          {t('paymentCancelledDesc')}
         </p>
         <div className="mt-[29px] flex justify-center gap-3">
           <button
@@ -34,7 +36,7 @@ export default function PlanCancelPage() {
             className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
           >
             <ArrowLeft className="w-[14px] h-[14px]" />
-            Return to Shop
+            {t('returnToShop')}
           </button>
           
           <button
@@ -42,10 +44,12 @@ export default function PlanCancelPage() {
             className="flex items-center gap-2 bg-[#1A1A1A] border border-[#222] text-[#888] hover:text-white px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
           >
             <LayoutDashboard className="w-[14px] h-[14px]" />
-            Go to Dashboard
+            {t('goToDashboard')}
           </button>
         </div>
       </section>
     </div>
   );
 }
+
+
