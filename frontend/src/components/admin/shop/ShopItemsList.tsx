@@ -81,7 +81,7 @@ export function ShopItemsList({
                 <p className="text-sm font-medium text-white/80 truncate">
                   {item.name}
                 </p>
-                <p className="text-xs text-white/30 truncate">{item.description || getDescriptionForKey(item.key, item.name)}</p>
+                <p className="text-xs text-white/30 truncate">{getDescriptionForKey(item.key, item.name)}</p>
               </div>
             </div>
 
@@ -131,3 +131,4 @@ export function ShopItemsList({
     </div>
   );
 }
+

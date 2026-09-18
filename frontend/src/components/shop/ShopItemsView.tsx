@@ -70,7 +70,7 @@ export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-white/80 truncate">{getLocalizedItemName(item.key, item.name, t)}</p>
-                      <p className="text-xs text-white/30 truncate">{item.description || getDescriptionForKey(item.key, item.name)}</p>
+                      <p className="text-xs text-white/30 truncate">{getDescriptionForKey(item.key, item.name)}</p>
                     </div>
                   </div>
 
@@ -113,4 +113,5 @@ export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
     </section>
   );
 }
+
 

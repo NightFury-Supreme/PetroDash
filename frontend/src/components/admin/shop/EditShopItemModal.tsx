@@ -29,7 +29,7 @@ export function EditShopItemModal({
       setFormData({
         amountPerUnit: item.amountPerUnit,
         pricePerUnit: item.pricePerUnit,
-        description: item.description,
+        
         enabled: item.enabled,
         maxPerPurchase: item.maxPerPurchase,
       });
@@ -167,3 +167,4 @@ export function EditShopItemModal({
     </Drawer>
   );
 }
+
