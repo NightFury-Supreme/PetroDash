@@ -1,64 +1,93 @@
+"use client";
+
 import React from "react";
+import { useTranslations } from "next-intl";
+
+import { Plus, Gift, Ticket } from "lucide-react";
 
 export function GiftHeaderSkeleton() {
+  const t = useTranslations("Gift");
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-      <div className="space-y-2">
-        <div className="h-7 bg-[#222] rounded w-48 animate-pulse"></div>
-        <div className="h-4 bg-[#222] rounded w-64 animate-pulse"></div>
+      <div>
+        <h1 className="text-2xl font-bold text-white tracking-tight">
+          {t("title")} <span className="text-[#FF5722]">{t("titleHighlight")}</span>
+        </h1>
+        <p className="text-[#888888] mt-1 text-sm">
+          {t("subtitle")}
+        </p>
       </div>
       <div className="flex items-center gap-4">
-        <div className="w-[110px] h-[34px] bg-[#FF5722]/50 rounded-md animate-pulse"></div>
+        <button
+          disabled
+          className="flex items-center gap-2 bg-[#FF5722]/50 text-white/50 px-3 py-1.5 rounded-md text-xs font-medium cursor-not-allowed"
+        >
+          <Plus size={12} />
+          {t("createCode")}
+        </button>
       </div>
     </div>
   );
 }
 
 export function GiftRedeemSkeleton() {
+  const t = useTranslations("Gift");
   return (
     <section className="border-y border-white/[0.06] divide-y divide-white/[0.06] sm:divide-y-0 sm:grid sm:grid-cols-2">
       <div className="flex flex-col p-6 sm:border-r sm:border-white/[0.06]">
         {/* Icon + label skeleton */}
         <div className="flex items-center gap-3 mb-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#2A2A2A] bg-[#222] animate-pulse"></div>
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#2A2A2A] bg-[#222]">
+            <Gift className="h-4 w-4 text-[#888888]" />
+          </div>
           <div>
-            <div className="h-4 bg-[#222] rounded w-32 animate-pulse mb-1"></div>
-            <div className="h-3 bg-[#222] rounded w-64 animate-pulse"></div>
+            <h2 className="text-base font-semibold tracking-tight text-[#eee]">{t("redeemTitle")}</h2>
+            <p className="mt-0.5 text-xs text-[#888888]">{t("redeemSubtitle")}</p>
           </div>
         </div>
 
         {/* Input row skeleton */}
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <div className="h-10 bg-[#151515] rounded-lg w-full animate-pulse border border-white/[0.06]"></div>
+            <Ticket className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#555]" />
+            <input
+              disabled
+              placeholder={t("redeemInputPlaceholder")}
+              className="h-10 w-full rounded-lg border border-white/[0.06] bg-[#151515] pl-9 pr-3 text-sm font-medium tracking-widest text-[#D4D4D4] outline-none placeholder:text-[#444] cursor-not-allowed"
+            />
           </div>
-          <div className="h-10 bg-[#FF5722]/50 rounded-lg w-24 animate-pulse"></div>
+          <button
+            disabled
+            className="flex items-center gap-2 rounded-lg px-4 text-xs font-medium transition bg-[#FF5722]/50 text-white/50 cursor-not-allowed"
+          >
+            {t("redeemButton")}
+          </button>
         </div>
       </div>
       
       <div className="flex flex-col justify-center p-6 bg-white/[0.01]">
-        <div className="h-[14px] w-24 bg-[#1a1a1a] rounded animate-pulse mb-2"></div>
-        <div className="space-y-2 mt-2">
-           <div className="h-[14px] bg-[#1a1a1a] rounded w-full animate-pulse"></div>
-           <div className="h-[14px] bg-[#1a1a1a] rounded w-full animate-pulse"></div>
-           <div className="h-[14px] bg-[#1a1a1a] rounded w-2/3 animate-pulse"></div>
-        </div>
+        <div className="text-[10px] font-medium uppercase tracking-widest text-[#555] mb-2">{t("howItWorksTitle")}</div>
+        <p className="text-sm text-[#888] leading-relaxed">
+          {t("howItWorksBody")}
+        </p>
       </div>
     </section>
   );
 }
 
 export function GiftCodesTableSkeleton() {
+  const t = useTranslations("Gift");
+  
   return (
     <div className="min-w-0 flex-1 flex flex-col">
       {/* Table header */}
       <div className="hidden gap-4 grid-cols-[1.8fr_1fr_1fr_70px_90px_80px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 lg:grid">
-        <span>Code</span>
-        <span>Reward</span>
-        <span>Expires</span>
-        <span>Uses</span>
-        <span>Status</span>
-        <span className="text-right">Action</span>
+        <span>{t("tableCode")}</span>
+        <span>{t("tableReward")}</span>
+        <span>{t("tableExpires")}</span>
+        <span>{t("tableUses")}</span>
+        <span>{t("tableStatus")}</span>
+        <span className="text-right">{t("tableAction")}</span>
       </div>
 
       <div className="divide-y divide-white/[0.06]">
@@ -106,32 +135,55 @@ export function GiftCodesTableSkeleton() {
 }
 
 export function GiftCodesSkeleton() {
+  const t = useTranslations("Gift");
+  
   return (
     <section>
       <div className="flex flex-col lg:flex-row gap-8 items-start pt-6">
         <aside className="w-full lg:w-48 shrink-0">
           <div className="sticky top-6">
             <div className="mb-4">
-              <div className="h-3 bg-[#222] rounded w-20 mb-4 animate-pulse"></div>
+              <p className="text-[11px] font-medium uppercase tracking-widest text-[#555]">{t("statusFilter")}</p>
             </div>
-            <div className="space-y-1">
-              <div className="h-9 bg-white/5 rounded-lg w-full animate-pulse"></div>
-              <div className="h-9 bg-transparent rounded-lg w-full animate-pulse"></div>
-            </div>
+            <nav className="space-y-1">
+              {/* Active Tab Skeleton */}
+              <button
+                type="button"
+                disabled
+                className="group flex items-center justify-between w-full rounded-lg px-2.5 py-2 text-sm transition-colors bg-white/10 text-white"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#00FF88]" />
+                  <span className="truncate">{t("statusActive")}</span>
+                </span>
+                <span className="text-xs text-zinc-400">...</span>
+              </button>
+              {/* Inactive Tab Skeleton */}
+              <button
+                type="button"
+                disabled
+                className="group flex items-center justify-between w-full rounded-lg px-2.5 py-2 text-sm transition-colors text-zinc-500"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="h-1.5 w-1.5 rounded-full bg-zinc-600" />
+                  <span className="truncate">{t("statusInactive")}</span>
+                </span>
+                <span className="text-xs text-zinc-600">...</span>
+              </button>
+            </nav>
             <div className="mt-8 pt-4">
-              <div className="space-y-2">
-                <div className="h-2 bg-[#222] rounded w-full animate-pulse"></div>
-                <div className="h-2 bg-[#222] rounded w-4/5 animate-pulse"></div>
-              </div>
+              <p className="text-xs leading-relaxed text-[#555]">
+                {t("codesAutoMove")}
+              </p>
             </div>
           </div>
         </aside>
         
         <div className="flex-1 min-w-0 w-full dashboard-content-wrapper mb-6">
           <div className="mb-4">
-            <div className="h-3 bg-[#222] rounded w-24 mb-1 animate-pulse"></div>
-            <div className="h-5 bg-[#222] rounded w-40 mt-1 animate-pulse"></div>
-            <div className="h-3 bg-[#222] rounded w-72 mt-2 animate-pulse"></div>
+            <div className="text-[10px] font-medium uppercase tracking-widest text-[#555] mb-1">{t("management")}</div>
+            <h2 className="text-base font-semibold tracking-tight text-[#eee]">{t("yourGiftCodes")}</h2>
+            <p className="text-xs text-[#888] mt-1">{t("yourGiftCodesSubtitle")}</p>
           </div>
           
           <div className="mt-4">

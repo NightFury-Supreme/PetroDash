@@ -91,15 +91,6 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
 
   const tabs: TabStatus[] = ["Active", "Inactive"];
 
-  if (loading) {
-    return (
-      <div className="space-y-3">
-        <div className="h-[42px] w-full animate-pulse rounded-lg bg-[#151515]" />
-        <div className="h-[42px] w-full animate-pulse rounded-lg bg-[#151515]" />
-      </div>
-    );
-  }
-
   return (
     <section>
       <div className="flex flex-col lg:flex-row gap-8 items-start pt-6">
