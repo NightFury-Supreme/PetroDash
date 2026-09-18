@@ -48,3 +48,18 @@ export function SummaryRow({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+export function getLocalizedItemName(itemKey: string, defaultName: string, t: any): string {
+  const map: Record<string, string> = {
+    'diskMb': 'nameDisk',
+    'memoryMb': 'nameMemory',
+    'cpuPercent': 'nameCpu',
+    'backups': 'nameBackups',
+    'databases': 'nameDatabases',
+    'allocations': 'nameAllocations',
+    'serverSlots': 'nameServerSlots'
+  };
+  const key = map[itemKey];
+  return key ? t(key) : defaultName;
+}
+

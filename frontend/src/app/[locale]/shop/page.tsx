@@ -10,6 +10,7 @@ import ShopSkeleton from "@/components/skeletons/shop/ShopSkeleton";
 import { useToast } from "@/components/ui/ToastProvider";
 import { useShop } from "@/hooks/useShop";
 import { StoreHeader } from "@/components/shop/StoreHeader";
+import { getLocalizedItemName } from "@/components/shop/shopUtils";
 import { ShopItemsView } from "@/components/shop/ShopItemsView";
 import { PlansView } from "@/components/shop/PlansView";
 import { PurchaseDrawer } from "@/components/shop/PurchaseDrawer";
@@ -103,7 +104,7 @@ export default function StorePage() {
         // Ignored error
       }
 
-      showSuccess(t('purchaseSuccess', { quantity, name: purchaseItem.name }));
+      showSuccess(t('purchaseSuccess', { quantity, name: getLocalizedItemName(purchaseItem.key, purchaseItem.name, t) }));
       return true;
     } catch (e: any) {
       const msg = String(e?.message || t('purchaseFailed'));
@@ -379,4 +380,5 @@ function StoreNavItem({
     </button>
   );
 }
+
 

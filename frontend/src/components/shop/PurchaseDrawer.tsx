@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Coins, Minus, Plus, Loader2 } from "lucide-react";
 import { Drawer } from "@/components/ui/Drawer";
 import { useTranslations } from "next-intl";
-import { getShopIcon, getTotalAmount, MAX_QUANTITY, SummaryRow } from "./shopUtils";
+import { getShopIcon, getTotalAmount, MAX_QUANTITY, SummaryRow, getLocalizedItemName } from "./shopUtils";
 
 interface PurchaseDrawerProps {
   item: any | null;
@@ -112,7 +112,7 @@ export function PurchaseDrawer({
                   </div>
                   <div className="flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-[14px] font-semibold text-zinc-200">{displayItem.name}</h2>
+                      <h2 className="text-[14px] font-semibold text-zinc-200">{getLocalizedItemName(displayItem.key, displayItem.name, t)}</h2>
                     </div>
                     <p className="mt-1.5 text-[10px] text-zinc-600">
                       +{displayItem.amountPerUnit} {displayItem.unit} {t('perUnit')}
@@ -200,4 +200,5 @@ export function PurchaseDrawer({
     </Drawer>
   );
 }
+
 

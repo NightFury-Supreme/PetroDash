@@ -38,18 +38,7 @@ export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
             {items.map((item) => {
               const Icon = getShopIcon(item.name);
               
-              const getTranslatedName = (key: string, defaultName: string) => {
-                  switch (key) {
-                    case 'allocations': return t('nameAllocations');
-                    case 'backups': return t('nameBackups');
-                    case 'cpuPercent': return t('nameCpu');
-                    case 'databases': return t('nameDatabases');
-                    case 'diskMb': return t('nameDisk');
-                    case 'memoryMb': return t('nameMemory');
-                    case 'serverSlots': return t('nameServerSlots');
-                    default: return defaultName;
-                  }
-                };
+              
 
                 const getDescriptionForKey = (key: string, name: string) => {
                   switch (key) {
@@ -80,7 +69,7 @@ export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
                       <Icon className="h-4 w-4 text-white/50" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-white/80 truncate">{getTranslatedName(item.key, item.name)}</p>
+                      <p className="text-sm font-medium text-white/80 truncate">{getLocalizedItemName(item.key, item.name, t)}</p>
                       <p className="text-xs text-white/30 truncate">{item.description || getDescriptionForKey(item.key, item.name)}</p>
                     </div>
                   </div>
@@ -124,3 +113,4 @@ export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
     </section>
   );
 }
+
