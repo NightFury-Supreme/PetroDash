@@ -10,7 +10,7 @@ export interface ShopItem {
   unit?: string;
   amountPerUnit: number;
   pricePerUnit: number;
-  description?: string;
+  
   enabled: boolean;
   maxPerPurchase: number;
   createdAt: string;
@@ -93,3 +93,4 @@ export function useAdminShop() {
     reload: loadItems
   };
 }
+

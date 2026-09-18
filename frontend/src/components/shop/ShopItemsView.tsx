@@ -2,7 +2,7 @@
 import { useTranslations } from 'next-intl';
 
 import { Coins, ShoppingBag } from "lucide-react";
-import { getShopIcon, MAX_QUANTITY } from "./shopUtils";
+import { getShopIcon, MAX_QUANTITY, getLocalizedItemName } from "./shopUtils";
 
 interface ShopItemsViewProps {
   items: any[];
@@ -113,5 +113,6 @@ export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
     </section>
   );
 }
+
 
 

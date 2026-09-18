@@ -154,17 +154,10 @@ export function EditShopItemModal({
           <p className="text-[11px] text-[#555] mt-2 font-mono">Maximum quantity a user can buy in one transaction.</p>
         </div>
 
-        <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Description</label>
-          <textarea
-            value={formData.description ?? ''}
-            onChange={(e) => handleInputChange('description', e.target.value)}
-            className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50 transition-colors disabled:opacity-50 min-h-[100px] resize-y"
-            placeholder="Item description..."
-          />
-        </div>
+        
       </div>
     </Drawer>
   );
 }
+
 
