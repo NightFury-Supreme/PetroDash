@@ -196,11 +196,16 @@ export function GiftCodesSkeleton() {
 }
 
 export function GiftSkeleton() {
+  const t = useTranslations("Gift");
+  
   return (
     <div className="flex flex-col h-full space-y-6">
       <GiftHeaderSkeleton />
       <GiftRedeemSkeleton />
       <GiftCodesSkeleton />
+      <p className="mt-3 text-xs text-[#555]">
+        {t("footerNote")}
+      </p>
     </div>
   );
 }

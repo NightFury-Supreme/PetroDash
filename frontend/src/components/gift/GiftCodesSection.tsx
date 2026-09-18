@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Ticket, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { GiftCodeRow } from "./GiftCodeRow";
-import { GiftCodesTableSkeleton } from "@/components/Skeleton";
+import { GiftCodesSkeleton } from "@/components/skeletons/gift/GiftSkeleton";
 import { useToast } from "@/components/ui/ToastProvider";
 
 type TabStatus = "Active" | "Inactive";
@@ -96,6 +96,10 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
     }
   };
 
+  if (loading) {
+    return <GiftCodesSkeleton />;
+  }
+
   const tabs: TabStatus[] = ["Active", "Inactive"];
 
   return (
@@ -154,9 +158,7 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
           </div>
 
           <div className="mt-4">
-            {loading ? (
-              <GiftCodesTableSkeleton />
-            ) : codes.length > 0 ? (
+            {codes.length > 0 ? (
               <>
                 <div className="hidden gap-4 grid-cols-[1.8fr_1fr_1fr_70px_90px_80px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 lg:grid">
                   <span>{t("tableCode")}</span>
