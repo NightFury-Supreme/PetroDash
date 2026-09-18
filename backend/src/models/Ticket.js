@@ -1,12 +1,5 @@
 const mongoose = require('mongoose');
 
-const TicketMessageSchema = new mongoose.Schema({
-  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  authorRole: { type: String, enum: ['user', 'admin'], required: true },
-  body: { type: String, required: true, trim: true, maxlength: 5000 },
-  internal: { type: Boolean, default: false }, // admin-only note, never visible to user
-  createdAt: { type: Date, default: Date.now }
-});
 // _id is enabled by default — each message now has a unique ID
 
 const TicketSchema = new mongoose.Schema({
@@ -16,7 +9,6 @@ const TicketSchema = new mongoose.Schema({
   category: { type: String, trim: true, maxlength: 100, default: 'general' },
   priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
   status: { type: String, enum: ['open', 'pending', 'resolved', 'closed'], default: 'open' },
-  messages: { type: [TicketMessageSchema], default: [] },
   tags: { type: [String], default: [] },
   deletedByUser: { type: Boolean, default: false },
   // Unread tracking: when was the last message sent by each party

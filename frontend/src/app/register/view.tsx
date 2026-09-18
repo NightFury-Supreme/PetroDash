@@ -30,7 +30,7 @@ type ApiError = { error?: string };
 
 type FieldErrors = Partial<Record<keyof RegisterForm, string>>;
 
-export default function RegisterClient() {
+export default function RegisterClient({ _emailVerification }: { _emailVerification?: any }) {
   const router = useRouter();
   const search = useSearchParams();
   const { settings, loading: settingsLoading } = useAuthSettings();
@@ -56,7 +56,7 @@ export default function RegisterClient() {
     setLoading(true);
     try {
       const ref = search?.get('ref') || undefined;
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/register`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...parsed.data, ...(ref ? { ref } : {}) }),
