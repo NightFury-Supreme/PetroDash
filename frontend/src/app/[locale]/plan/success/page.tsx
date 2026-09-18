@@ -4,7 +4,6 @@ import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useEffect, useState, useRef } from 'react';
 import { useToast } from "@/components/ui/ToastProvider";
 import { useTranslations } from 'next-intl';
-import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from "@/i18n/routing";
 import { Check, LayoutDashboard } from 'lucide-react';
 
@@ -126,6 +125,7 @@ export default function PlanSuccessPage() {
 
   return null;
 }
+
 
 
 
