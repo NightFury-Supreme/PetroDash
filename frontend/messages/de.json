@@ -186,7 +186,7 @@
     "databases": "Datenbanken", "anomaliesDetected": "kleinere Anomalien erkannt", "diskIoSpikes": "Festplatten-E/A-Spitzen um 03:22", "cpuFluctuation": "CPU-Schwankung in der SG-Region",
     "ports": "Ports",
     "backups": "Backups",
-    "systemStatus": "Systemstatus",
+      "systemStatus": "Systemstatus",
     "allNormal": "Alle Systeme normal.",
     "majorOutage": "Schwerwiegender Systemausfall.",
     "someIssues": "Einige Systeme haben Probleme.",
@@ -243,7 +243,6 @@
     "deleteDrawerEntity": "Server", "available": "Verfügbar", "warnQueueRemove": "Dadurch wird der Server dauerhaft aus der Warteschlange entfernt.", "warnRecreateManual": "Sie müssen den Server manuell neu erstellen.", "warnCannotUndo": "Diese Aktion kann nicht rückgängig gemacht werden.", "warnPermDelete": "Der Server wird dauerhaft aus dem Panel gelöscht.", "warnDataLost": "Alle zugehörigen Daten und Konfigurationen gehen verloren.", "exceedsLimit": "Überschreitet das verfügbare Limit um {num}"
   },
   "Footer": {
-    "checkingSystems": "Systeme werden überprüft...",
     "allSystemsOperational": "Alle Systeme betriebsbereit",
     "partialOutage": "Teilausfall",
     "majorOutage": "Schwerer Ausfall",

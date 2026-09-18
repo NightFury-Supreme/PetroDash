@@ -191,7 +191,6 @@
     "cpuFluctuation": "CPU fluctuation in SG region",
     "ports": "Ports",
     "backups": "Backups",
-    "checkingSystems": "Checking Systems...",
       "systemStatus": "System Status",
     "allNormal": "All systems normal.",
     "majorOutage": "Major system outage.",
@@ -292,7 +291,6 @@
     "exceedsLimit": "Exceeds available limit by {num}"
   },
   "Footer": {
-    "checkingSystems": "Checking Systems...",
     "allSystemsOperational": "All Systems Operational",
     "partialOutage": "Partial Outage",
     "majorOutage": "Major Outage",

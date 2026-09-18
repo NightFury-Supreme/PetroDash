@@ -186,7 +186,7 @@
     "databases": "Bases de données", "anomaliesDetected": "anomalies mineures détectées", "diskIoSpikes": "Pics d'E/S disque à 03h22", "cpuFluctuation": "Fluctuation du CPU dans la région SG",
     "ports": "Ports",
     "backups": "Sauvegardes",
-    "systemStatus": "État du système",
+      "systemStatus": "État du système",
     "allNormal": "Tous les systèmes normaux.",
     "majorOutage": "Panne majeure du système.",
     "someIssues": "Certains systèmes rencontrent des problèmes.",
@@ -243,7 +243,6 @@
     "deleteDrawerEntity": "Serveur", "available": "Disponible", "warnQueueRemove": "Cela supprimera définitivement le serveur de la file d'attente.", "warnRecreateManual": "Vous devrez recréer le serveur manuellement.", "warnCannotUndo": "Cette action ne peut pas être annulée.", "warnPermDelete": "Le serveur sera définitivement supprimé du panneau.", "warnDataLost": "Toutes les données et configurations associées seront perdues.", "exceedsLimit": "Dépasse la limite disponible de {num}"
   },
   "Footer": {
-    "checkingSystems": "Vérification des systèmes...",
     "allSystemsOperational": "Tous les systèmes sont opérationnels",
     "partialOutage": "Panne Partielle",
     "majorOutage": "Panne Majeure",

@@ -186,7 +186,7 @@
     "databases": "Bases de datos", "anomaliesDetected": "anomalías menores detectadas", "diskIoSpikes": "Picos de E/S de disco a las 03:22", "cpuFluctuation": "Fluctuación de CPU en la región SG",
     "ports": "Puertos",
     "backups": "Copias de seguridad",
-    "systemStatus": "Estado del sistema",
+      "systemStatus": "Estado del sistema",
     "allNormal": "Todos los sistemas normales.",
     "majorOutage": "Interrupción mayor del sistema.",
     "someIssues": "Algunos sistemas experimentan problemas.",
@@ -243,7 +243,6 @@
     "deleteDrawerEntity": "Servidor", "available": "Disponible", "warnQueueRemove": "Esto eliminará el servidor de la cola permanentemente.", "warnRecreateManual": "Tendrá que volver a crear el servidor manualmente.", "warnCannotUndo": "Esta acción no se puede deshacer.", "warnPermDelete": "El servidor se eliminará permanentemente del panel.", "warnDataLost": "Se perderán todos los datos y configuraciones asociados.", "exceedsLimit": "Supera el límite disponible por {num}"
   },
   "Footer": {
-    "checkingSystems": "Comprobando sistemas...",
     "allSystemsOperational": "Todos los sistemas operativos",
     "partialOutage": "Interrupción Parcial",
     "majorOutage": "Interrupción Mayor",

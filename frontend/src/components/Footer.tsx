@@ -67,11 +67,11 @@ export default function Footer() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5 cursor-default">
             {sysStatus === 'loading' && (
-              <>
-                <span className="w-2 h-2 rounded-full bg-gray-500 animate-pulse"></span>
-                <span className="text-[#555]">{tStatus('checkingSystems')}</span>
-              </>
-            )}
+                <>
+                  <span className="w-2 h-2 rounded-full bg-[#333] animate-pulse"></span>
+                  <div className="h-3 w-28 bg-[#222] rounded animate-pulse"></div>
+                </>
+              )}
             {sysStatus === 'online' && (
               <>
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>

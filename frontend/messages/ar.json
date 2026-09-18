@@ -186,7 +186,7 @@
     "databases": "قواعد البيانات", "anomaliesDetected": "تم اكتشاف شذوذ طفيف", "diskIoSpikes": "ارتفاعات في إدخال/إخراج القرص في 03:22", "cpuFluctuation": "تقلب وحدة المعالجة المركزية في منطقة SG",
     "ports": "المنافذ",
     "backups": "النسخ الاحتياطية",
-    "systemStatus": "حالة النظام",
+      "systemStatus": "حالة النظام",
     "allNormal": "جميع الأنظمة تعمل بشكل طبيعي.",
     "majorOutage": "انقطاع رئيسي في النظام.",
     "someIssues": "بعض الأنظمة تواجه مشكلات.",
@@ -243,7 +243,6 @@
     "deleteDrawerEntity": "خادم", "available": "متاح", "warnQueueRemove": "سيؤدي هذا إلى إزالة الخادم من قائمة الانتظار بشكل دائم.", "warnRecreateManual": "سوف تحتاج إلى إعادة إنشاء الخادم يدويًا.", "warnCannotUndo": "لا يمكن التراجع عن هذا الإجراء.", "warnPermDelete": "سيتم حذف الخادم بشكل دائم من اللوحة.", "warnDataLost": "سيتم فقد جميع البيانات والتكوينات المرتبطة.", "exceedsLimit": "يتجاوز الحد المتاح بمقدار {num}"
   },
   "Footer": {
-    "checkingSystems": "جاري فحص الأنظمة...",
     "allSystemsOperational": "جميع الأنظمة تعمل",
     "partialOutage": "انقطاع جزئي",
     "majorOutage": "انقطاع كبير",

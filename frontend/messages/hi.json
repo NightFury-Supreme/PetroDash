@@ -191,7 +191,6 @@
     "cpuFluctuation": "SG क्षेत्र में CPU उतार-चढ़ाव",
     "ports": "पोर्ट",
     "backups": "बैकअप",
-    "checkingSystems": "सिस्टम की जांच की जा रही है...",
       "systemStatus": "सिस्टम स्थिति",
     "allNormal": "सभी सिस्टम सामान्य।",
     "majorOutage": "प्रमुख सिस्टम आउटेज।",
@@ -292,7 +291,6 @@
     "exceedsLimit": "उपलब्ध सीमा से {num} अधिक है"
   },
   "Footer": {
-    "checkingSystems": "सिस्टम की जांच की जा रही है...",
     "allSystemsOperational": "सभी सिस्टम चालू हैं",
     "partialOutage": "आंशिक आउटेज",
     "majorOutage": "प्रमुख सिस्टम आउटेज।",
