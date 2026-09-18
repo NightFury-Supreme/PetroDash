@@ -90,7 +90,7 @@ export function PurchaseDrawer({
             ) : (
               <>
                 <Coins size={16} className="h-4 w-4" />
-                Purchase &middot; {total} coins
+                {t('purchase')} &middot; {total} {t('coins')}
               </>
             )}
           </button>
@@ -115,7 +115,7 @@ export function PurchaseDrawer({
                       <h2 className="text-[14px] font-semibold text-zinc-200">{displayItem.name}</h2>
                     </div>
                     <p className="mt-1.5 text-[10px] text-zinc-600">
-                      +{displayItem.amountPerUnit} {displayItem.unit} per unit
+                      +{displayItem.amountPerUnit} {displayItem.unit} {t('perUnit')}
                     </p>
                   </div>
                   <div className="text-left sm:text-right">
@@ -200,3 +200,4 @@ export function PurchaseDrawer({
     </Drawer>
   );
 }
+

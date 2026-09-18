@@ -163,7 +163,7 @@ export function CouponDrawer({
             onClick={onClose}
             className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
           >
-            Cancel
+            {t('cancel')}
           </button>
           <button
             type="button"
@@ -208,28 +208,28 @@ export function CouponDrawer({
                     {isPopular && (
                       <span className="flex items-center gap-1 rounded border border-[#FF5722]/30 bg-[#FF5722]/10 px-2 py-0.5 text-[9px] font-bold uppercase text-[#FF5722]">
                         <Flame className="h-3 w-3" />
-                        POPULAR
+                        {t('popular')}
                       </span>
                     )}
                     {isLifetime ? (
                       <span className="rounded border border-emerald-500/30 bg-emerald-500/[0.05] px-2 py-0.5 text-[9px] font-bold uppercase text-emerald-500">
-                        LIFETIME
+                        {t('lifetimeBadge')}
                       </span>
                     ) : (
                       <span className="rounded border border-blue-500/30 bg-blue-500/[0.05] px-2 py-0.5 text-[9px] font-bold uppercase text-blue-500">
-                        RECURRING
+                        {t('monthlyBadge')}
                       </span>
                     )}
                     {plan?.stock > 0 && (
                       <span className="flex items-center gap-1 rounded border border-orange-500/30 bg-orange-500/[0.05] px-2 py-0.5 text-[9px] font-bold uppercase text-orange-400">
                         <Package className="h-3 w-3" />
-                        {plan.stock <= 5 ? `${plan.stock} ${plan.stock === 1 ? 'STOCK' : 'STOCKS'} LEFT` : 'LIMITED STOCK'}
+                        {plan.stock <= 5 ? `${plan.stock} ${plan.stock === 1 ? t('stockLeft') : t('stocksLeft')}` : t('limitedStock')}
                       </span>
                     )}
                     {plan?.availableUntil && (
                       <span className="flex items-center gap-1 rounded border border-blue-500/30 bg-blue-500/[0.05] px-2 py-0.5 text-[9px] font-bold uppercase text-blue-400">
                         <Clock className="h-3 w-3" />
-                        ENDS {new Date(plan.availableUntil).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }).toUpperCase()}
+                        {t('ends').toUpperCase()} {new Date(plan.availableUntil).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }).toUpperCase()}
                       </span>
                     )}
                   </div>

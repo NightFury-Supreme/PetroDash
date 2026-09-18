@@ -103,10 +103,10 @@ export default function StorePage() {
         // Ignored error
       }
 
-      showSuccess(`Successfully purchased ${quantity}x ${purchaseItem.name}`);
+      showSuccess(t('purchaseSuccess', { quantity, name: purchaseItem.name }));
       return true;
     } catch (e: any) {
-      const msg = String(e?.message || "Purchase failed");
+      const msg = String(e?.message || t('purchaseFailed'));
       showError(msg);
       return false;
     } finally {
@@ -379,3 +379,4 @@ function StoreNavItem({
     </button>
   );
 }
+

@@ -24,7 +24,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const redirectingToRef = useRef<string | null>(null);
   
   // Actually block rendering of protected pages until validated
-  const [isValidated, setIsValidated] = useState(false);
+  // Removed unused isValidated state
   const [, forceRender] = useState(0);
 
   const isPublic =
@@ -45,7 +45,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     // Public pages never need token validation
     if (isPublic) {
       checkedPathRef.current = pathname;
-      setIsValidated(true);
+      
       return;
     }
 
@@ -103,7 +103,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         // — Other errors (network, 5xx) — don't kick user out —
         if (!meRes.ok) {
           checkedPathRef.current = pathname;
-          setIsValidated(true);
+          
           return;
         }
 
@@ -133,12 +133,12 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         // Reset redirect tracker since we're validated now
         redirectingToRef.current = null;
         checkedPathRef.current = pathname;
-        setIsValidated(true);
+        
         forceRender(n => n + 1); // allow children to paint
       } catch {
         // Network error — don't redirect, just mark as checked to stop retrying
         checkedPathRef.current = pathname;
-        setIsValidated(true);
+        
       } finally {
         checkingRef.current = false;
       }
@@ -181,4 +181,5 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   return <>{children}</>;
 }
+
 
