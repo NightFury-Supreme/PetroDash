@@ -1,8 +1,9 @@
 "use client";
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
-import { useEffect, useState } from "react";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
+import React, { useCallback, useEffect, useState } from "react";
 import { Ticket, ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { GiftCodeRow } from "./GiftCodeRow";
 import { GiftCodesTableSkeleton } from "@/components/Skeleton";
 import { useToast } from "@/components/ui/ToastProvider";
@@ -13,7 +14,7 @@ interface GiftCodesSectionProps {
   onRefreshRef?: (fn: () => void) => void;
 }
 
-function rewardLabel(g: any): string {
+function rewardLabel(g: any, t: (key: string) => string): string {
   const parts: string[] = [];
   if (g.rewards?.coins > 0) parts.push(`${g.rewards.coins} coins`);
   const r = g.rewards?.resources || {};
@@ -24,10 +25,11 @@ function rewardLabel(g: any): string {
   if (r.backups > 0) parts.push(`${r.backups} Backups`);
   if (r.databases > 0) parts.push(`${r.databases} DBs`);
   if (r.serverSlots > 0) parts.push(`${r.serverSlots} Slots`);
-  return parts.length ? parts.join(" · ") : "No rewards";
+  return parts.length ? parts.join(" · ") : t("noRewards");
 }
 
 export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
+  const t = useTranslations("Gift");
   const { showError, showSuccess } = useToast();
   const [codes, setCodes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,17 +42,18 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
   const [inactiveCount, setInactiveCount] = useState(0);
   const CODES_PER_PAGE = 10;
 
-  const loadCodes = async () => {
+  const loadCodes = useCallback(async () => {
     try {
       setLoading(true);
       const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
       if (!token) return;
       const statusParam = activeTab.toLowerCase();
-      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/gifts/mine?paginate=true&page=${page}&pageSize=${CODES_PER_PAGE}&status=${statusParam}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetchWithRetry(
+        `${process.env.NEXT_PUBLIC_API_BASE || ""}/api/gifts/mine?paginate=true&page=${page}&pageSize=${CODES_PER_PAGE}&status=${statusParam}`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
       let d: any = {};
-      try { d = await res.json(); } catch {}
+      try { d = await res.json(); } catch { /* ignore parse errors */ }
       if (d.data) {
         setCodes(d.data);
         setTotalCodes(d.meta?.total || 0);
@@ -60,14 +63,14 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
       } else if (Array.isArray(d)) {
         setCodes(d);
       } else if (!res.ok) {
-        throw new Error(d.error || "Failed to load gift codes");
+        throw new Error(d.error || t("failedToLoadCodes"));
       }
-    } catch (err: any) { 
-      showError(err.message || "Failed to load gift codes");
+    } catch (err: any) {
+      showError(err.message || t("failedToLoadCodes"));
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, activeTab, onRefreshRef, showError, t]);
 
   useEffect(() => {
     setPage(1);
@@ -75,20 +78,18 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
 
   useEffect(() => {
     loadCodes();
-    if (onRefreshRef) onRefreshRef(() => {
-      setPage(1);
-      loadCodes();
-    });
-  }, [page, activeTab]);
+  }, [loadCodes]);
 
   const copyCode = async (code: string) => {
     try {
       await navigator.clipboard.writeText(code);
-      showSuccess("Gift code copied to clipboard!");
+      showSuccess(t("codeCopied"));
     } catch {
-      showError("Failed to copy code.");
+      showError(t("copyFailed"));
     }
   };
+
+  const tabs: TabStatus[] = ["Active", "Inactive"];
 
   if (loading) {
     return (
@@ -102,14 +103,14 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
   return (
     <section>
       <div className="flex flex-col lg:flex-row gap-8 items-start pt-6">
-        {/* LEFT NAV — matches dashboard sidebar style */}
+        {/* LEFT NAV */}
         <aside className="w-full lg:w-48 shrink-0">
           <div className="sticky top-6">
             <div className="mb-4">
-              <p className="text-[11px] font-medium uppercase tracking-widest text-[#555]">Status Filter</p>
+              <p className="text-[11px] font-medium uppercase tracking-widest text-[#555]">{t("statusFilter")}</p>
             </div>
-            <nav className="space-y-1">
-              {(["Active", "Inactive"] as TabStatus[]).map((tab) => {
+            <nav className="space-y-1" aria-label={t("statusFilter")}>
+              {tabs.map((tab) => {
                 const count = tab === "Active" ? activeCount : inactiveCount;
                 const selected = activeTab === tab;
                 return (
@@ -117,6 +118,7 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
                     key={tab}
                     type="button"
                     onClick={() => setActiveTab(tab)}
+                    aria-pressed={selected}
                     className={`group flex items-center justify-between w-full rounded-lg px-2.5 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/30 ${
                       selected
                         ? "bg-white/10 text-white"
@@ -138,7 +140,7 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
             </nav>
             <div className="mt-8 pt-4">
               <p className="text-xs leading-relaxed text-[#555]">
-                Codes automatically move to inactive when they expire or reach their redemption limit.
+                {t("codesAutoMove")}
               </p>
             </div>
           </div>
@@ -147,23 +149,23 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
         {/* RIGHT */}
         <div className="flex-1 min-w-0 w-full dashboard-content-wrapper mb-6">
           <div className="mb-4">
-            <div className="text-[10px] font-medium uppercase tracking-widest text-[#555] mb-1">MANAGEMENT</div>
-            <h2 className="text-base font-semibold tracking-tight text-[#eee]">Your Gift Codes</h2>
-            <p className="text-xs text-[#888] mt-1">Review, monitor, and manage the gift codes you have created for others.</p>
+            <div className="text-[10px] font-medium uppercase tracking-widest text-[#555] mb-1">{t("management")}</div>
+            <h2 className="text-base font-semibold tracking-tight text-[#eee]">{t("yourGiftCodes")}</h2>
+            <p className="text-xs text-[#888] mt-1">{t("yourGiftCodesSubtitle")}</p>
           </div>
-          
+
           <div className="mt-4">
             {loading ? (
               <GiftCodesTableSkeleton />
             ) : codes.length > 0 ? (
               <>
                 <div className="hidden gap-4 grid-cols-[1.8fr_1fr_1fr_70px_90px_80px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 lg:grid">
-                  <span>Code</span>
-                  <span>Reward</span>
-                  <span>Expires</span>
-                  <span>Uses</span>
-                  <span>Status</span>
-                  <span className="text-right">Action</span>
+                  <span>{t("tableCode")}</span>
+                  <span>{t("tableReward")}</span>
+                  <span>{t("tableExpires")}</span>
+                  <span>{t("tableUses")}</span>
+                  <span>{t("tableStatus")}</span>
+                  <span className="text-right">{t("tableAction")}</span>
                 </div>
                 <div className="divide-y divide-white/[0.06]">
                   {codes.map((g) => (
@@ -171,10 +173,12 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
                       key={g._id}
                       code={g.code}
                       description={g.description}
-                      reward={rewardLabel(g)}
+                      reward={rewardLabel(g, t)}
                       expires={g.validUntil ? new Date(g.validUntil).toLocaleDateString() : "—"}
                       uses={`${g.redeemedCount || 0}${g.maxRedemptions ? ` / ${g.maxRedemptions}` : ""}`}
                       status={activeTab}
+                      copyLabel={t("copy")}
+                      copyCodeLabel={t("copyCode")}
                       onCopy={() => copyCode(g.code)}
                     />
                   ))}
@@ -187,24 +191,24 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
                     <Ticket className="h-4 w-4 text-[#555]" />
                   </div>
                   <p className="mt-3 text-sm font-medium text-[#888888]">
-                    No {activeTab.toLowerCase()} codes
+                    {t("noCodes", { status: activeTab.toLowerCase() })}
                   </p>
                   <p className="mt-1 text-xs text-[#555]">
-                    Codes with this status will appear here.
+                    {t("codesWillAppear")}
                   </p>
                 </div>
               </div>
             )}
           </div>
-          
+
           {totalPages > 1 && (
             <div className="mt-5 flex items-center justify-between border-t border-white/[0.06] pt-5">
               <p className="text-[10px] text-white/30">
-                Showing {codes.length > 0 ? (page - 1) * CODES_PER_PAGE + 1 : 0}
+                {codes.length > 0 ? (page - 1) * CODES_PER_PAGE + 1 : 0}
                 {"–"}
-                {Math.min(page * CODES_PER_PAGE, totalCodes)} of {totalCodes} codes
+                {Math.min(page * CODES_PER_PAGE, totalCodes)} {t("showingOf")} {totalCodes} {t("codes")}
               </p>
-              
+
               <div className="flex items-center gap-1">
                 <button
                   type="button"
@@ -215,9 +219,8 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
                 >
                   <ChevronLeft size={14} />
                 </button>
-                
+
                 {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => {
-                  // Only show a few pages around the current page to avoid clutter
                   if (
                     pageNumber === 1 ||
                     pageNumber === totalPages ||
@@ -238,15 +241,12 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
                         {pageNumber}
                       </button>
                     );
-                  } else if (
-                    pageNumber === page - 2 ||
-                    pageNumber === page + 2
-                  ) {
+                  } else if (pageNumber === page - 2 || pageNumber === page + 2) {
                     return <span key={pageNumber} className="text-white/20 text-xs px-1">...</span>;
                   }
                   return null;
                 })}
-                
+
                 <button
                   type="button"
                   disabled={page === totalPages || loading}

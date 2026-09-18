@@ -11,11 +11,13 @@ interface GiftCodeRowProps {
   expires: string;
   uses: string;
   status: TabStatus;
+  copyLabel: string;
+  copyCodeLabel: string;
   onCopy: () => void;
 }
 
 export function GiftCodeRow({
-  code, description, reward, expires, uses, status, onCopy,
+  code, description, reward, expires, uses, status, copyLabel, copyCodeLabel, onCopy,
 }: GiftCodeRowProps) {
   const active = status === "Active";
 
@@ -44,9 +46,10 @@ export function GiftCodeRow({
             type="button"
             onClick={onCopy}
             className="inline-flex items-center gap-1.5 text-xs text-white/30 transition-colors hover:text-white"
+            aria-label={copyLabel}
           >
             <Copy className="h-3 w-3" />
-            Copy
+            {copyLabel}
           </button>
         </div>
       </div>
@@ -65,20 +68,28 @@ export function GiftCodeRow({
           </span>
         </div>
         <div className="mt-3 grid grid-cols-3 gap-3">
-          {[{ label: "Reward", value: reward }, { label: "Expires", value: expires }, { label: "Uses", value: uses }].map(({ label, value }) => (
-            <div key={label}>
-              <p className="text-xs font-medium text-white/35">{label}</p>
-              <p className="mt-0.5 text-xs text-white/70">{value}</p>
-            </div>
-          ))}
+          {[{ label: reward, value: expires }, { label: uses, value: expires }].length > 0 && (
+            <>
+              <div>
+                <p className="text-xs font-medium text-white/35">{reward}</p>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-white/35">{expires}</p>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-white/35">{uses}</p>
+              </div>
+            </>
+          )}
         </div>
         <button
           type="button"
           onClick={onCopy}
           className="mt-3 flex h-8 w-full items-center justify-center gap-1.5 rounded border border-white/[0.06] bg-white/[0.02] text-xs text-white/50 transition hover:text-white"
+          aria-label={copyCodeLabel}
         >
           <Copy className="h-3 w-3" />
-          Copy Code
+          {copyCodeLabel}
         </button>
       </div>
     </div>
