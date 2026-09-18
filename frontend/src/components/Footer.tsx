@@ -15,6 +15,7 @@ export default function Footer() {
   const [sysStatus, setSysStatus] = useState<'loading' | 'online' | 'partial' | 'offline'>('loading');
   const currentYear = new Date().getFullYear();
   const t = useTranslations('Footer');
+    const tStatus = useTranslations('Dashboard');
 
   useEffect(() => {
     const fetchBranding = async () => {
@@ -35,24 +36,16 @@ export default function Footer() {
         if (!res.ok) throw new Error('Status fetch failed');
         const data = await res.json();
         
-        let offlineNodes = 0;
-        let totalNodes = 0;
-        if (data.nodes) {
-          totalNodes = data.nodes.length;
-          data.nodes.forEach((n: any) => {
-            if (n.status !== 'Operational') offlineNodes++;
-          });
-        }
-        
-        const isPanelOffline = data.panel?.status !== 'Operational';
-        
-        if (isPanelOffline && (offlineNodes === totalNodes && totalNodes > 0)) {
-          setSysStatus('offline');
-        } else if (isPanelOffline || offlineNodes > 0) {
-          setSysStatus('partial');
-        } else {
-          setSysStatus('online');
-        }
+                  const allStatuses = [data.panel?.status, ...(data.nodes || []).map((n: any) => n.status)];
+          if (allStatuses.some((s: string) => s === 'Major Outage')) {
+            setSysStatus('offline');
+          } else if (allStatuses.some((s: string) => s === 'Partial Outage' || s === 'Degraded')) {
+            setSysStatus('partial');
+          } else if (allStatuses.some((s: string) => s && s !== 'Operational')) {
+            setSysStatus('partial');
+          } else {
+            setSysStatus('online');
+          }
       } catch {
         setSysStatus('offline');
       }
@@ -76,25 +69,25 @@ export default function Footer() {
             {sysStatus === 'loading' && (
               <>
                 <span className="w-2 h-2 rounded-full bg-gray-500 animate-pulse"></span>
-                <span className="text-[#555]">{t('checkingSystems')}</span>
+                <span className="text-[#555]">{tStatus('checkingSystems')}</span>
               </>
             )}
             {sysStatus === 'online' && (
               <>
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span className="hover:text-white transition-colors">{t('allSystemsOperational')}</span>
+                <span className="hover:text-white transition-colors">{tStatus('allNormal')}</span>
               </>
             )}
             {sysStatus === 'partial' && (
               <>
                 <span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
-                <span className="hover:text-white transition-colors">{t('partialOutage')}</span>
+                <span className="hover:text-white transition-colors">{tStatus('someIssues')}</span>
               </>
             )}
             {sysStatus === 'offline' && (
               <>
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                <span className="hover:text-white transition-colors">{t('majorOutage')}</span>
+                <span className="hover:text-white transition-colors">{tStatus('majorOutage')}</span>
               </>
             )}
           </div>

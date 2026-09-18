@@ -191,7 +191,8 @@
     "cpuFluctuation": "SG क्षेत्र में CPU उतार-चढ़ाव",
     "ports": "पोर्ट",
     "backups": "बैकअप",
-    "systemStatus": "सिस्टम स्थिति",
+    "checkingSystems": "सिस्टम की जांच की जा रही है...",
+      "systemStatus": "सिस्टम स्थिति",
     "allNormal": "सभी सिस्टम सामान्य।",
     "majorOutage": "प्रमुख सिस्टम आउटेज।",
     "someIssues": "कुछ सिस्टम में समस्याएं हैं।",
@@ -291,10 +292,10 @@
     "exceedsLimit": "उपलब्ध सीमा से {num} अधिक है"
   },
   "Footer": {
-    "checkingSystems": "सिस्टम की जाँच हो रही है...",
-    "allSystemsOperational": "सभी सिस्टम सक्रिय हैं",
-    "partialOutage": "आंशिक खराबी",
-    "majorOutage": "बड़ी खराबी",
+    "checkingSystems": "सिस्टम की जांच की जा रही है...",
+    "allSystemsOperational": "सभी सिस्टम चालू हैं",
+    "partialOutage": "आंशिक आउटेज",
+    "majorOutage": "प्रमुख सिस्टम आउटेज।",
     "poweredBy": "द्वारा संचालित"
   },
   "Shop": {
