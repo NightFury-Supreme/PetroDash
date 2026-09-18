@@ -172,8 +172,7 @@ export default function StorePage() {
                 clearInterval(checkClosed);
                 setIsPopupProcessing((prev) => {
                   if (prev) { // If still processing when closed, it was cancelled
-                    showError(t('paymentCancelled'));
-                    // Notify backend to mark order as VOIDED
+                    setTimeout(() => { showError(t('paymentCancelled')); }, 0); // Notify backend to mark order as VOIDED
                     fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/paypal/cancel-order`, {
                       method: "POST",
                       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -380,5 +379,6 @@ function StoreNavItem({
     </button>
   );
 }
+
 
 
