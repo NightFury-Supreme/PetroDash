@@ -70,7 +70,14 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
     } finally {
       setLoading(false);
     }
-  }, [page, activeTab, onRefreshRef, showError, t]);
+  }, [page, activeTab]); // omitted t and showError and onRefreshRef to prevent unnecessary re-fetches
+
+  // Expose loadCodes to parent
+  useEffect(() => {
+    if (onRefreshRef) {
+      onRefreshRef(loadCodes);
+    }
+  }, [loadCodes, onRefreshRef]);
 
   useEffect(() => {
     setPage(1);
