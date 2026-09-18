@@ -537,6 +537,11 @@
     "validationInsufficientBalance": "अपर्याप्त बैलेंस। आपको {cost} सिक्कों की आवश्यकता है लेकिन आपके पास केवल {balance} हैं।",
     "failedToCreate": "कोड बनाने में विफल।",
     "createdSuccess": "{coins} सिक्कों के लिए उपहार कोड सफलतापूर्वक बनाया ({redemptions} रिडेम्पशन)।",
-    "loginFirst": "पहले कृपया लॉग इन करें।"
+    "loginFirst": "पहले कृपया लॉग इन करें।",
+    "statusActive": "सक्रिय",
+    "statusInactive": "निष्क्रिय",
+    "mobileRewardLabel": "पुरस्कार",
+    "mobileExpiresLabel": "समाप्ति",
+    "mobileUsesLabel": "उपयोग"
   }
 }

@@ -507,6 +507,11 @@
     "validationInsufficientBalance": "Solde insuffisant. Vous avez besoin de {cost} pièces mais n'avez que {balance}.",
     "failedToCreate": "Échec de la création du code.",
     "createdSuccess": "Code cadeau créé avec succès pour {coins} pièces ({redemptions} échanges).",
-    "loginFirst": "Veuillez d'abord vous connecter."
+    "loginFirst": "Veuillez d'abord vous connecter.",
+    "statusActive": "Actif",
+    "statusInactive": "Inactif",
+    "mobileRewardLabel": "Récompense",
+    "mobileExpiresLabel": "Expire",
+    "mobileUsesLabel": "Utilisations"
   }
 }

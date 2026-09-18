@@ -538,6 +538,11 @@
     "validationInsufficientBalance": "Insufficient balance. You need {cost} coins but only have {balance}.",
     "failedToCreate": "Failed to create code.",
     "createdSuccess": "Successfully created gift code for {coins} coins ({redemptions} redemptions).",
-    "loginFirst": "Please login first."
+    "loginFirst": "Please login first.",
+    "statusActive": "Active",
+    "statusInactive": "Inactive",
+    "mobileRewardLabel": "Reward",
+    "mobileExpiresLabel": "Expires",
+    "mobileUsesLabel": "Uses"
   }
 }

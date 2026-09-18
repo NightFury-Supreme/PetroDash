@@ -537,6 +537,11 @@
     "validationInsufficientBalance": "Unzureichendes Guthaben. Sie benötigen {cost} Münzen, haben aber nur {balance}.",
     "failedToCreate": "Code konnte nicht erstellt werden.",
     "createdSuccess": "Geschenkcode erfolgreich für {coins} Münzen erstellt ({redemptions} Einlösungen).",
-    "loginFirst": "Bitte melden Sie sich zuerst an."
+    "loginFirst": "Bitte melden Sie sich zuerst an.",
+    "statusActive": "Aktiv",
+    "statusInactive": "Inaktiv",
+    "mobileRewardLabel": "Belohnung",
+    "mobileExpiresLabel": "Läuft ab",
+    "mobileUsesLabel": "Verwendungen"
   }
 }

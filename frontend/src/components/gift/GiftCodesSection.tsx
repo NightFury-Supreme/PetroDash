@@ -16,7 +16,7 @@ interface GiftCodesSectionProps {
 
 function rewardLabel(g: any, t: (key: string) => string): string {
   const parts: string[] = [];
-  if (g.rewards?.coins > 0) parts.push(`${g.rewards.coins} coins`);
+  if (g.rewards?.coins > 0) parts.push(`${g.rewards.coins} ${t("coinsUnit")}`);
   const r = g.rewards?.resources || {};
   if (r.diskMb > 0) parts.push(`${r.diskMb} MB Disk`);
   if (r.memoryMb > 0) parts.push(`${r.memoryMb} MB RAM`);
@@ -113,6 +113,7 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
               {tabs.map((tab) => {
                 const count = tab === "Active" ? activeCount : inactiveCount;
                 const selected = activeTab === tab;
+                const tabLabel = tab === "Active" ? t("statusActive") : t("statusInactive");
                 return (
                   <button
                     key={tab}
@@ -131,7 +132,7 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
                           ? tab === "Active" ? "bg-[#00FF88]" : "bg-zinc-400"
                           : "bg-zinc-600"
                       }`} />
-                      <span className="truncate">{tab}</span>
+                      <span className="truncate">{tabLabel}</span>
                     </span>
                     <span className={`text-xs ${selected ? "text-zinc-400" : "text-zinc-600"}`}>{count}</span>
                   </button>
@@ -177,8 +178,12 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
                       expires={g.validUntil ? new Date(g.validUntil).toLocaleDateString() : "—"}
                       uses={`${g.redeemedCount || 0}${g.maxRedemptions ? ` / ${g.maxRedemptions}` : ""}`}
                       status={activeTab}
+                      statusLabel={activeTab === "Active" ? t("statusActive") : t("statusInactive")}
                       copyLabel={t("copy")}
                       copyCodeLabel={t("copyCode")}
+                      mobileRewardLabel={t("mobileRewardLabel")}
+                      mobileExpiresLabel={t("mobileExpiresLabel")}
+                      mobileUsesLabel={t("mobileUsesLabel")}
                       onCopy={() => copyCode(g.code)}
                     />
                   ))}

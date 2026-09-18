@@ -537,6 +537,11 @@
     "validationInsufficientBalance": "رصيد غير كافٍ. تحتاج إلى {cost} عملة لكن لديك فقط {balance}.",
     "failedToCreate": "فشل إنشاء الرمز.",
     "createdSuccess": "تم إنشاء رمز الهدية بنجاح لـ {coins} عملة ({redemptions} استرداد).",
-    "loginFirst": "يرجى تسجيل الدخول أولاً."
+    "loginFirst": "يرجى تسجيل الدخول أولاً.",
+    "statusActive": "نشط",
+    "statusInactive": "غير نشط",
+    "mobileRewardLabel": "المكافأة",
+    "mobileExpiresLabel": "ينتهي في",
+    "mobileUsesLabel": "الاستخدامات"
   }
 }

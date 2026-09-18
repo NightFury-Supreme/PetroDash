@@ -537,6 +537,11 @@
     "validationInsufficientBalance": "Saldo insuficiente. Necesitas {cost} monedas pero solo tienes {balance}.",
     "failedToCreate": "Error al crear el código.",
     "createdSuccess": "Código de regalo creado exitosamente para {coins} monedas ({redemptions} canjes).",
-    "loginFirst": "Por favor, inicia sesión primero."
+    "loginFirst": "Por favor, inicia sesión primero.",
+    "statusActive": "Activo",
+    "statusInactive": "Inactivo",
+    "mobileRewardLabel": "Recompensa",
+    "mobileExpiresLabel": "Vence",
+    "mobileUsesLabel": "Usos"
   }
 }
