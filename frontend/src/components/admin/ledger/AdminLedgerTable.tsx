@@ -1,16 +1,6 @@
 import { useState } from 'react';
 
-interface Payment {
-  _id: string;
-  provider?: string;
-  providerOrderId?: string;
-  userId: string;
-  planId: string;
-  amount: number;
-  currency?: string;
-  status: string;
-  createdAt: string;
-}
+
 
 interface AdminLedgerTableProps {
   items: any[];
@@ -48,9 +38,34 @@ export function AdminLedgerTable({
     );
   };
 
-  const getActionMenu = (item: Payment) => {
+  const getActionMenu = (item: any) => {
     const canRefund = item.status === 'COMPLETED' && item.provider === 'paypal';
     const canVoid = item.status === 'CREATED' && item.provider === 'paypal';
+    const canInvoice = item.status === 'COMPLETED';
+
+    const handleDownloadInvoice = async (paymentId: string) => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE || '';
+        const res = await fetch(`${baseUrl}/api/admin/payments/${paymentId}/invoice`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Failed to download invoice');
+        
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `invoice-${paymentId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+      } catch (err) {
+        console.error(err);
+        alert('Failed to download invoice');
+      }
+    };
 
     return (
       <div className="relative">
@@ -65,6 +80,18 @@ export function AdminLedgerTable({
         {showMenuFor === item._id && (
           <div className="absolute right-0 top-full mt-1 w-48 bg-[#181818] border border-[#303030] rounded-lg shadow-xl z-10">
             <div className="py-1">
+              {canInvoice && (
+                <button
+                  onClick={() => {
+                    handleDownloadInvoice(item._id);
+                    setShowMenuFor(null);
+                  }}
+                  className="w-full px-4 py-2 text-left text-sm text-[#AAAAAA] hover:text-white hover:bg-[#202020] transition-colors flex items-center gap-2"
+                >
+                  <i className="fas fa-file-pdf"></i>
+                  Download Invoice
+                </button>
+              )}
               {canRefund && (
                 <button
                   onClick={() => {
@@ -93,7 +120,7 @@ export function AdminLedgerTable({
                 </button>
               )}
               
-              {!canRefund && !canVoid && (
+              {!canRefund && !canVoid && !canInvoice && (
                 <div className="px-4 py-2 text-xs text-[#AAAAAA]">
                   No actions available
                 </div>
@@ -120,10 +147,12 @@ export function AdminLedgerTable({
   return (
     <div className="bg-[#181818] border border-[#303030] rounded-xl overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full min-w-[800px]">
           <thead>
             <tr className="bg-[#202020] border-b border-[#303030]">
               <th className="px-6 py-4 text-left text-xs font-medium text-[#AAAAAA] uppercase tracking-wider">Date</th>
+              <th className="px-6 py-4 text-left text-xs font-medium text-[#AAAAAA] uppercase tracking-wider">User</th>
+              <th className="px-6 py-4 text-left text-xs font-medium text-[#AAAAAA] uppercase tracking-wider">Item</th>
               <th className="px-6 py-4 text-left text-xs font-medium text-[#AAAAAA] uppercase tracking-wider">Provider</th>
               <th className="px-6 py-4 text-left text-xs font-medium text-[#AAAAAA] uppercase tracking-wider">Order ID</th>
               <th className="px-6 py-4 text-left text-xs font-medium text-[#AAAAAA] uppercase tracking-wider">Amount</th>
@@ -134,8 +163,17 @@ export function AdminLedgerTable({
           <tbody className="divide-y divide-[#303030]">
             {items.map((item) => (
               <tr key={item._id} className="hover:bg-[#202020] transition-colors">
-                <td className="px-6 py-4 text-sm text-white">
+                <td className="px-6 py-4 text-sm text-white whitespace-nowrap">
                   {new Date(item.createdAt).toLocaleString()}
+                </td>
+                <td className="px-6 py-4 text-sm text-[#AAAAAA]">
+                  <div className="flex flex-col">
+                    <span className="text-white font-medium">{item.userId?.username || 'Unknown'}</span>
+                    <span className="text-xs">{item.userId?.email || item.userId || ''}</span>
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-sm text-[#AAAAAA]">
+                  {item.planId?.name || item.planId || 'Unknown'}
                 </td>
                 <td className="px-6 py-4 text-sm text-[#AAAAAA]">
                   <span className="inline-flex items-center gap-2 px-2 py-1 bg-[#202020] rounded-lg text-xs">
@@ -143,13 +181,13 @@ export function AdminLedgerTable({
                     {item.provider}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-sm text-[#AAAAAA] font-mono">
+                <td className="px-6 py-4 text-sm text-[#AAAAAA] font-mono whitespace-nowrap">
                   {item.providerOrderId}
                 </td>
-                <td className="px-6 py-4 text-sm text-white font-medium">
+                <td className="px-6 py-4 text-sm text-white font-medium whitespace-nowrap">
                   {Number(item.amount || 0).toFixed(2)} {item.currency || 'USD'}
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 whitespace-nowrap">
                   {getStatusBadge(item.status)}
                 </td>
                 <td className="px-6 py-4">

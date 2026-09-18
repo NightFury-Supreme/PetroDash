@@ -4,6 +4,7 @@ const { requireAuth } = require('../middleware/auth');
 const ShopItem = require('../models/ShopItem');
 const User = require('../models/User');
 const { getCache, setCache, deleteCache } = require('../lib/redis');
+const { logUserActivity } = require('../middleware/userActivity');
 
 const router = express.Router();
 
@@ -59,7 +60,7 @@ router.post('/purchase', requireAuth, async (req, res) => {
   }
 
   const { writeAudit } = require('../middleware/audit');
-  await writeAudit(req, 'shop.purchase.completed', 'shop', item._id.toString(), {
+  await writeAudit(req, 'shop.purchase', 'shop', item._id.toString(), {
     itemKey,
     quantity,
     totalPrice,
@@ -74,6 +75,8 @@ router.post('/purchase', requireAuth, async (req, res) => {
     resourcesBefore: { ...updatedUser.resources, [keyToField]: updatedUser.resources[keyToField] - increment },
     resourcesAfter: { ...updatedUser.resources }
   });
+  
+  await logUserActivity(req, 'shop.purchase', { itemName: item.name, quantity, totalPrice });
 
   await deleteCache(`user:${updatedUser._id}:profile`);
 

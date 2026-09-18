@@ -8,7 +8,7 @@ const router = express.Router();
 // GET /api/admin/gifts
 router.get('/', requireAdmin, async (req, res) => {
   try {
-    const { search = '', tab = 'all', page = '1', limit = '10' } = req.query;
+    const { search = '', tab = 'all', page = '1', limit = '10', sort = 'newest' } = req.query;
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
 
@@ -28,20 +28,19 @@ router.get('/', requireAdmin, async (req, res) => {
         { validUntil: { $lte: new Date() } }
       ];
     }
-    // We cannot easily filter by (redeemedCount < maxRedemptions) in Mongoose when redeemedCount is dynamic/virtual,
-    // but assuming maxRedemptions is checked on usage, active/inactive base on dates/enabled is fine.
-    
-    // Fallback: If maxRedemptions exist and redemptions array size >= maxRedemptions, it's inactive
-    // Mongoose doesn't easily let us compare array size to a document field in a simple query without aggregate,
-    // so we'll do the simpler tab logic (enabled + dates).
+
+    let sortObj = { createdAt: -1 };
+    if (sort === 'oldest') {
+      sortObj = { createdAt: 1 };
+    }
 
     const total = await Gift.countDocuments(filter);
     const gifts = await Gift.find(filter)
-      .sort({ createdAt: -1 })
+      .sort(sortObj)
       .skip((pageNum - 1) * limitNum)
       .limit(limitNum)
-      .populate('createdBy', 'username email')
-      .populate('redemptions.user', 'username email')
+      .populate('createdBy', 'username email profilePicture')
+      .populate('redemptions.user', 'username email profilePicture')
       .lean();
 
     res.json({
@@ -61,14 +60,46 @@ router.get('/', requireAdmin, async (req, res) => {
 router.get('/:id', requireAdmin, async (req, res) => {
   try {
     const gift = await Gift.findById(String(req.params.id))
-      .populate('createdBy', 'username email')
-      .populate('redemptions.user', 'username email')
+      .select('-redemptions')
+      .populate('createdBy', 'username email profilePicture')
       .lean();
     if (!gift) return res.status(404).json({ error: 'Gift not found' });
     res.json(gift);
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch gift' });
+  }
+});
+
+// GET /api/admin/gifts/:id/redemptions
+router.get('/:id/redemptions', requireAdmin, async (req, res) => {
+  try {
+    const { page = '1', limit = '10' } = req.query;
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
+
+    const giftMeta = await Gift.findById(String(req.params.id)).select('redeemedCount code').lean();
+    if (!giftMeta) return res.status(404).json({ error: 'Gift not found' });
+
+    const giftRedemptions = await Gift.findById(String(req.params.id))
+      .select('redemptions')
+      .slice('redemptions', [(pageNum - 1) * limitNum, limitNum])
+      .populate('redemptions.user', 'username email profilePicture')
+      .lean();
+
+    res.json({
+      code: giftMeta.code,
+      redemptions: giftRedemptions ? giftRedemptions.redemptions : [],
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total: giftMeta.redeemedCount || 0,
+        totalPages: Math.ceil((giftMeta.redeemedCount || 0) / limitNum) || 1
+      }
+    });
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch gift redemptions' });
   }
 });
 
@@ -115,7 +146,7 @@ router.post('/', requireAdmin, async (req, res) => {
     });
 
     await gift.save();
-    writeAudit(req, 'admin.gifts.create', 'gift', gift._id.toString(), { code: gift.code });
+    await writeAudit(req, 'admin.gift.create', 'gift', gift._id.toString(), { code: gift.code });
     res.status(201).json(gift);
   } catch (error) {
     console.error('Gift creation error:', error);
@@ -154,7 +185,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     if (enabled !== undefined) gift.enabled = !!enabled;
 
     await gift.save();
-    writeAudit(req, 'admin.gifts.update', 'gift', gift._id.toString(), { code: gift.code });
+    await writeAudit(req, 'admin.gift.update', 'gift', gift._id.toString(), { code: gift.code });
     res.json(gift);
   } catch (error) {
     console.error('Gift update error:', error);
@@ -168,7 +199,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
     const gift = await Gift.findById(String(req.params.id));
     if (!gift) return res.status(404).json({ error: 'Gift not found' });
     await Gift.findByIdAndDelete(String(req.params.id));
-    writeAudit(req, 'admin.gifts.delete', 'gift', req.params.id, { code: gift.code });
+    await writeAudit(req, 'admin.gift.delete', 'gift', req.params.id, { code: gift.code });
     res.json({ message: 'Gift deleted' });
   } catch (error) {
     console.error('Gift delete error:', error);
