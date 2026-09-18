@@ -33,7 +33,7 @@ export function PlansView({
   const groups: Record<string, any> = {};
   for (const ap of activePlans) {
     const name: string = ap?.planId?.name || ap?.planId || "Plan";
-    const label: string = ap?.isLifetime ? "LIFETIME" : "MONTHLY";
+    const label: string = ap?.isLifetime ? t("lifetimeBadge") : t("monthlyBadge");
     const key = `${name}__${label}`;
     if (!groups[key]) groups[key] = { name, label, count: 0, planData: ap?.planId };
     groups[key].count += 1;
@@ -69,10 +69,10 @@ export function PlansView({
         <section className="mt-8">
           <SectionTitle
             icon={<Package className="text-orange-500" />}
-            title="Available Plans"
-            description={`${plans.length} ${
-              plans.length === 1 ? "plan" : "plans"
-            } available.`}
+            title={t("availablePlans")}
+            description={plans.length === 1 ? t("planAvailable", { count: plans.length }) : t("plansAvailable", { count: plans.length })}
+              
+            
           />
 
           <div className="mt-6 space-y-10">
@@ -103,8 +103,8 @@ export function PlansView({
         <section className="mt-10">
           <SectionTitle
             icon={<Check className="h-3.5 w-3.5" />}
-            title="Your Plan"
-            description="Your currently active subscriptions."
+            title={t("yourPlan")}
+            description={t("yourCurrentlyActiveSubscriptions")}
           />
 
           {/* ACTIVE PLAN LIST */}
@@ -114,10 +114,10 @@ export function PlansView({
             ) : (
               groupedPlans.map((g, i) => {
                 const res = g.planData?.productContent?.recurrentResources || {};
-                const cpu = res.cpuPercent > 0 ? `${res.cpuPercent}% CPU` : "";
-                const mem = res.memoryMb > 0 ? `${res.memoryMb} MB memory` : "";
-                const dsk = res.diskMb > 0 ? `${res.diskMb} MB disk` : "";
-                const srv = g.planData?.productContent?.serverLimit > 0 ? `${g.planData.productContent.serverLimit} server(s)` : "";
+                const cpu = res.cpuPercent > 0 ? t("cpuResource", { amount: res.cpuPercent }) : "";
+                const mem = res.memoryMb > 0 ? t("memoryResource", { amount: res.memoryMb }) : "";
+                const dsk = res.diskMb > 0 ? t("diskResource", { amount: res.diskMb }) : "";
+                const srv = g.planData?.productContent?.serverLimit > 0 ? t("serverResource", { amount: g.planData.productContent.serverLimit }) : "";
                 const resString = [cpu, mem, dsk, srv].filter(Boolean).join(" · ");
 
                 return (
@@ -179,7 +179,7 @@ function PlanRow({
   const servers = plan.productContent?.serverLimit > 0 ? `${plan.productContent.serverLimit}` : "0";
   const price = plan.pricePerMonth || plan.price;
   const planCurrency = plan.currency || currency;
-  const billing = plan.lifetime ? "One-time payment" : "per month";
+  const billing = plan.lifetime ? t("oneTimePayment") : t("perMonth");
 
   return (
     <article className="group relative flex flex-col gap-5 py-5 transition hover:bg-white/[0.015]">
@@ -187,7 +187,7 @@ function PlanRow({
         <div className="absolute right-0 top-0 z-10 flex items-center justify-center rounded-bl border-b border-l border-[#FF5722]/30 bg-[#FF5722]/10 px-3 py-1 shadow-sm backdrop-blur-md">
           <span className="flex items-center gap-1 text-[9px] font-bold tracking-wider text-[#FF5722]">
             <Flame className="h-3 w-3" />
-            POPULAR
+            {t("popular")}
           </span>
         </div>
       )}
@@ -211,18 +211,16 @@ function PlanRow({
 
         {/* RESOURCES */}
         <div className="grid flex-1 grid-cols-2 gap-4 sm:grid-cols-4 xl:min-w-0">
-          <Resource icon={<Cpu className="h-3.5 w-3.5" />} label="CPU" value={cpu} />
-          <Resource icon={<MemoryStick className="h-3.5 w-3.5" />} label="Memory" value={memory} />
-          <Resource icon={<HardDrive className="h-3.5 w-3.5" />} label="Disk" value={disk} />
-          <Resource icon={<Server className="h-3.5 w-3.5" />} label="Servers" value={servers} />
+          <Resource icon={<Cpu className="h-3.5 w-3.5" />} label={t("nameCpu")} value={cpu} />
+          <Resource icon={<MemoryStick className="h-3.5 w-3.5" />} label={t("nameMemory")} value={memory} />
+          <Resource icon={<HardDrive className="h-3.5 w-3.5" />} label={t("nameDisk")} value={disk} />
+          <Resource icon={<Server className="h-3.5 w-3.5" />} label={t("nameServerSlots")} value={servers} />
         </div>
 
         {/* PRICE + ACTION */}
         <div className="flex items-center justify-between gap-6 border-t border-white/[0.06] pt-5 sm:justify-end xl:border-l xl:border-t-0 xl:pl-7 xl:pt-0">
           <div className="text-left">
-            <p className="text-[9px] uppercase tracking-[0.13em] text-white/20">
-              Price
-            </p>
+            <p className="text-[9px] uppercase tracking-[0.13em] text-white/20">{t("price")}</p>
             <div className="mt-0.5 flex items-baseline">
               {plan.strikeThroughPrice > 0 && (
                 <span className="text-xs text-white/30 line-through mr-1">{plan.strikeThroughPrice} {planCurrency}</span>
@@ -249,7 +247,7 @@ function PlanRow({
                 : 'bg-[#FF5722] text-white hover:bg-[#E64D1F] focus:ring-[#FF5722]/40'
             }`}
           >
-            {plan.stock > 0 && plan.stockLeft === 0 ? "Out of Stock" : (plan.lifetime ? "Purchase" : "Subscribe")}
+            {plan.stock > 0 && plan.stockLeft === 0 ? t("soldOut") : (plan.lifetime ? t("purchase") : t("subscribe"))}
             {!(plan.stock > 0 && plan.stockLeft === 0) && (
               <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             )}
@@ -272,7 +270,7 @@ function PlanRow({
                 {plan.stockLeft === 0 ? (
                   <span className="text-red-500 font-medium">{t('soldOut')}</span>
                 ) : plan.stockLeft <= 5 ? (
-                  <span className="text-orange-400 font-medium">{plan.stockLeft} {t('stock')} left</span>
+                  <span className="text-orange-400 font-medium">{plan.stockLeft} {t('stock')} {t("left")}</span>
                 ) : (
                   <span>{t('limitedStock')}</span>
                 )}
@@ -283,13 +281,13 @@ function PlanRow({
             <div className="flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5 text-blue-400" />
               <span className="text-xs text-white/40">
-                Ends {new Date(plan.availableUntil).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
+                {t("ends")}{new Date(plan.availableUntil).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
               </span>
             </div>
           )}
         </div>
         <span className="text-[11px] text-white/20 shrink-0 ml-4 hidden sm:block">
-          {plan.lifetime ? "One-time purchase" : "Recurring subscription"}
+          {plan.lifetime ? t("oneTimePurchase") : t("recurringSubscription")}
         </span>
       </div>
     </article>
