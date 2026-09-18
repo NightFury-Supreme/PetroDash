@@ -5,13 +5,14 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Ticket, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { GiftCodeRow } from "./GiftCodeRow";
-import { GiftCodesSkeleton } from "@/components/skeletons/gift/GiftSkeleton";
+import { GiftCodesTableSkeleton } from "@/components/skeletons/gift/GiftSkeleton";
 import { useToast } from "@/components/ui/ToastProvider";
 
 type TabStatus = "Active" | "Inactive";
 
 interface GiftCodesSectionProps {
   onRefreshRef?: (fn: () => void) => void;
+  onInitialLoad?: () => void;
 }
 
 function rewardLabel(g: any, t: (key: string) => string): string {
@@ -28,11 +29,12 @@ function rewardLabel(g: any, t: (key: string) => string): string {
   return parts.length ? parts.join(" · ") : t("noRewards");
 }
 
-export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
+export function GiftCodesSection({ onRefreshRef, onInitialLoad }: GiftCodesSectionProps) {
   const t = useTranslations("Gift");
   const { showError, showSuccess } = useToast();
   const [codes, setCodes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [initialFetchDone, setInitialFetchDone] = useState(false);
   const [activeTab, setActiveTab] = useState<TabStatus>("Active");
 
   const [page, setPage] = useState(1);
@@ -69,8 +71,12 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
       showError(err.message || t("failedToLoadCodes"));
     } finally {
       setLoading(false);
+      if (!initialFetchDone) {
+        setInitialFetchDone(true);
+        onInitialLoad?.();
+      }
     }
-  }, [page, activeTab]); // omitted t and showError and onRefreshRef to prevent unnecessary re-fetches
+  }, [page, activeTab, initialFetchDone, onInitialLoad]); // omitted t and showError and onRefreshRef to prevent unnecessary re-fetches
 
   // Expose loadCodes to parent
   useEffect(() => {
@@ -95,10 +101,6 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
       showError(t("copyFailed"));
     }
   };
-
-  if (loading) {
-    return <GiftCodesSkeleton />;
-  }
 
   const tabs: TabStatus[] = ["Active", "Inactive"];
 
@@ -158,7 +160,9 @@ export function GiftCodesSection({ onRefreshRef }: GiftCodesSectionProps) {
           </div>
 
           <div className="mt-4">
-            {codes.length > 0 ? (
+            {loading ? (
+              <GiftCodesTableSkeleton />
+            ) : codes.length > 0 ? (
               <>
                 <div className="hidden gap-4 grid-cols-[1.8fr_1fr_1fr_70px_90px_80px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 lg:grid">
                   <span>{t("tableCode")}</span>

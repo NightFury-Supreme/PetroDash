@@ -12,6 +12,7 @@ export default function GiftCodesPage() {
   const t = useTranslations("Gift");
   const [mounted, setMounted] = useState(false);
   const [minLoadingTime, setMinLoadingTime] = useState(true);
+  const [initialCodesLoaded, setInitialCodesLoaded] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const refreshCodesRef = useRef<(() => void) | null>(null);
 
@@ -26,17 +27,17 @@ export default function GiftCodesPage() {
     refreshCodesRef.current?.();
   };
 
-  if (!mounted || minLoadingTime) {
-    return (
-      <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen">
-        <GiftSkeleton />
-      </div>
-    );
-  }
+  const showSkeleton = !mounted || minLoadingTime || !initialCodesLoaded;
 
   return (
-    <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen">
-      <div className="flex flex-col h-full space-y-6">
+    <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen relative">
+      {showSkeleton && (
+        <div className="absolute inset-0 z-10 bg-[#0F0F0F] p-4 sm:p-6">
+          <GiftSkeleton />
+        </div>
+      )}
+
+      <div className={`flex flex-col h-full space-y-6 ${showSkeleton ? 'invisible' : 'visible'}`}>
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -61,7 +62,10 @@ export default function GiftCodesPage() {
 
         <GiftRedeemSection />
 
-        <GiftCodesSection onRefreshRef={(fn) => { refreshCodesRef.current = fn; }} />
+        <GiftCodesSection
+          onRefreshRef={(fn) => { refreshCodesRef.current = fn; }}
+          onInitialLoad={() => setInitialCodesLoaded(true)}
+        />
 
         <p className="mt-3 text-xs text-[#555]">
           {t("footerNote")}
