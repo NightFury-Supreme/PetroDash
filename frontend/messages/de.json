@@ -400,7 +400,8 @@
     "checkoutRedirectText": "Sie werden sicher zu unserer Kassenseite weitergeleitet, um Ihre Zahlung abzuschließen.",
     "completePurchase": "Kauf abschließen",
     "oneTimePurchase": "Einmalkauf",
-    "popular": "BELIEBT"
+    "popular": "BELIEBT",
+    "notAuthenticated": "Nicht authentifiziert"
   },
   "UI": {
     "system": "System",

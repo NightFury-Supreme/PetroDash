@@ -400,7 +400,8 @@
     "couponAppliedSuccess": "कूपन सफलतापूर्वक लागू किया गया!",
     "perUnit": "प्रति यूनिट",
     "purchaseFailed": "खरीदारी विफल रही",
-    "invalidCoupon": "अमान्य कूपन"
+    "invalidCoupon": "अमान्य कूपन",
+    "notAuthenticated": "प्रमाणीकृत नहीं है"
   },
   "UI": {
     "system": "सिस्टम",

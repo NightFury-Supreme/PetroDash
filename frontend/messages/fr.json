@@ -370,7 +370,8 @@
     "checkoutRedirectText": "Vous serez redirigé en toute sécurité vers notre page de paiement.",
     "completePurchase": "Finalisez votre achat",
     "oneTimePurchase": "Achat unique",
-    "popular": "POPULAIRE"
+    "popular": "POPULAIRE",
+    "notAuthenticated": "Non authentifié"
   },
   "UI": {
     "system": "Système",

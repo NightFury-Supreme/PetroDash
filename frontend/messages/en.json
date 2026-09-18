@@ -400,7 +400,8 @@
     "cancel": "Cancel",
     "perUnit": "per unit",
     "stockLeft": "STOCK LEFT",
-    "stocksLeft": "STOCKS LEFT"
+    "stocksLeft": "STOCKS LEFT",
+    "notAuthenticated": "Not authenticated"
   },
   "UI": {
     "system": "System",

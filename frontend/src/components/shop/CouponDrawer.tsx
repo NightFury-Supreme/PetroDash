@@ -121,8 +121,8 @@ export function CouponDrawer({
         body: JSON.stringify({ code: couponCode, planId: plan?._id })
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Invalid coupon');
-      
+      if (!response.ok) throw new Error(t('invalidCoupon'));
+
       setDiscountAmount(data.discountAmount);
       setAppliedCoupon(couponCode);
       showSuccess(t('couponAppliedSuccess'));

@@ -400,7 +400,8 @@
     "checkoutRedirectText": "Será redirigido de forma segura a nuestra página de pago para completar su transacción.",
     "completePurchase": "Completa tu compra",
     "oneTimePurchase": "Compra única",
-    "popular": "POPULAR"
+    "popular": "POPULAR",
+    "notAuthenticated": "No autenticado"
   },
   "UI": {
     "system": "Sistema",

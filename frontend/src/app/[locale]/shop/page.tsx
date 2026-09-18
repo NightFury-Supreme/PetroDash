@@ -81,7 +81,7 @@ export default function StorePage() {
       });
       let d: any = {};
       try { d = await r.json(); } catch {}
-      if (!r.ok) throw new Error(d?.error || "Purchase failed");
+      if (!r.ok) throw new Error(d?.error || t('purchaseFailed'));
 
       setCoins(d.coins);
       try { window.dispatchEvent(new CustomEvent("coins:update", { detail: { coins: Number(d.coins ?? 0) } })); } catch {}
@@ -122,7 +122,7 @@ export default function StorePage() {
     
     try {
       const token = localStorage.getItem("auth_token");
-      if (!token) throw new Error("Not authenticated");
+      if (!token) throw new Error(t('notAuthenticated'));
 
       if (selectedPlan.redirectionLink) {
         router.push(selectedPlan.redirectionLink);

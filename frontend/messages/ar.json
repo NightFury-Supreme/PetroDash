@@ -400,7 +400,8 @@
     "checkoutRedirectText": "سيتم توجيهك بأمان إلى صفحة الدفع الخاصة بنا لإتمام عملية الدفع.",
     "completePurchase": "أكمل عملية الشراء",
     "oneTimePurchase": "شراء لمرة واحدة",
-    "popular": "شائع"
+    "popular": "شائع",
+    "notAuthenticated": "غير مصادق عليه"
   },
   "UI": {
     "system": "النظام",
