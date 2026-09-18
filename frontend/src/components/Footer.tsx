@@ -11,6 +11,7 @@ interface BrandingInfo {
 }
 
 export default function Footer() {
+  const tError = useTranslations('GlobalErrors');
   const [branding, setBranding] = useState<BrandingInfo>({ siteName: 'PteroDash', siteIcon: '' });
   const [sysStatus, setSysStatus] = useState<'loading' | 'online' | 'partial' | 'offline'>('loading');
   const currentYear = new Date().getFullYear();
@@ -33,7 +34,7 @@ export default function Footer() {
     const fetchStatus = async () => {
       try {
         const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/status`);
-        if (!res.ok) throw new Error('Status fetch failed');
+        if (!res.ok) throw new Error(tError('statusFetchFailed'));
         const data = await res.json();
         
                   const allStatuses = [data.panel?.status, ...(data.nodes || []).map((n: any) => n.status)];

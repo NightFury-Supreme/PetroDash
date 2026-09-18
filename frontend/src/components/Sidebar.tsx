@@ -89,6 +89,7 @@ function NavButton({
 }
 
 export default function Sidebar() {
+  const tError = useTranslations('GlobalErrors');
   const pathname = usePathname();
   const router = useRouter();
   const tNav = useTranslations('Nav');
@@ -116,7 +117,7 @@ export default function Sidebar() {
       fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
         .then(async (r) => { 
           let d: any = {}; try { d = await r.json(); } catch {} 
-          if (!r.ok) throw new Error(d?.error || 'Failed'); 
+          if (!r.ok) throw new Error(d?.error || tError('failed')); 
           // Check if user has active plans for premium badge
           try {
             const plansResponse = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/user/plans`, { 

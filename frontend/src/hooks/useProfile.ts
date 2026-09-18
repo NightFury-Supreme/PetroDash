@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from 'next-intl';
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useEffect, useState, useCallback } from 'react';
@@ -14,6 +15,7 @@ export type Session = {
 };
 
 export function useProfile() {
+  const tError = useTranslations('GlobalErrors');
   const [form, setForm] = useState({ username: '', firstName: '', lastName: '', email: '', coins: 0, joinedAt: '', loginMethod: 'email', oauthProviders: {}, emailVerified: false, emailVerification: true, profilePicture: '', tfaEnabled: false, pterodactylUserId: null as string | null });
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +40,7 @@ export function useProfile() {
           window.location.href = '/login';
           return;
         }
-        throw new Error(d?.error || 'Failed to load profile');
+        throw new Error(d?.error || tError('failedToLoadProfile'));
       }
       setForm({
         username: d.username || '',
@@ -154,7 +156,7 @@ export function useProfile() {
         body: JSON.stringify({ profilePicture }) 
       });
       let d: any = {}; try { d = await r.json(); } catch {} 
-      if (!r.ok) throw new Error(d?.error || d?.message || 'Failed to update profile picture');
+      if (!r.ok) throw new Error(d?.error || d?.message || tError('failedToUpdateProfilePicture'));
       setForm((f) => ({ ...f, profilePicture: d.profilePicture || '' }));
       setSuccess('Profile picture updated');
       // Reload to refresh sidebar
@@ -172,7 +174,7 @@ export function useProfile() {
       });
       if (!r.ok) {
         let d: any = {}; try { d = await r.json(); } catch {}
-        throw new Error(d?.error || 'Failed to revoke session');
+        throw new Error(d?.error || tError('failedToRevokeSession'));
       }
       setSessions(prev => prev.filter(s => s.id !== id));
       setSuccess('Session revoked successfully');
@@ -199,7 +201,7 @@ export function useProfile() {
           err.retryAfter = d?.retryAfter || 60;
           throw err;
         }
-        throw new Error(d?.error || 'Failed to send verification email');
+        throw new Error(d?.error || tError('failedToSendVerificationEmail'));
       }
       setSuccess('Verification email sent');
     } catch (e: any) {
@@ -220,7 +222,7 @@ export function useProfile() {
       });
       if (!r.ok) {
         let d: any = {}; try { d = await r.json(); } catch {}
-        throw new Error(d?.error || 'Failed to verify code');
+        throw new Error(d?.error || tError('failedToVerifyCode'));
       }
       setForm(f => ({ ...f, emailVerified: true }));
       setSuccess('Email verified successfully');

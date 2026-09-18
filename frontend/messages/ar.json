@@ -431,5 +431,35 @@
       "warning": "Warning",
       "info": "Info"
     }
+  },
+  "GlobalErrors": {
+    "notAuthenticated": "غير مصادق عليه",
+    "authenticationRequired": "المصادقة مطلوبة",
+    "failed": "فشل",
+    "failedToLoadUsageData": "فشل تحميل بيانات الاستخدام",
+    "failedToLoadUserResources": "فشل تحميل موارد المستخدم",
+    "failedToLoadServers": "فشل تحميل الخوادم",
+    "failedToLoadEarnInfo": "فشل تحميل المعلومات",
+    "failedToStart": "فشل البدء",
+    "failedToLoadPanelInformation": "فشل تحميل معلومات اللوحة",
+    "failedToResetPassword": "فشل إعادة تعيين كلمة المرور",
+    "failedToLoadProfile": "فشل تحميل الملف الشخصي",
+    "failedToUpdateProfilePicture": "فشل تحديث صورة الملف الشخصي",
+    "failedToRevokeSession": "فشل إبطال الجلسة",
+    "failedToSendVerificationEmail": "فشل إرسال البريد الإلكتروني",
+    "failedToVerifyCode": "فشل التحقق من الكود",
+    "failedToLoadTickets": "فشل تحميل التذاكر",
+    "serverNotFound": "الخادم غير موجود",
+    "updateFailed": "فشل التحديث",
+    "failedToLoadCreationData": "فشل تحميل بيانات الإنشاء",
+    "validationFixRequired": "يرجى إصلاح أخطاء التحقق قبل الحفظ",
+    "resourceLimitsExceeded": "تم تجاوز حدود الموارد. يرجى التحقق من الأخطاء.",
+    "statusFetchFailed": "فشل جلب الحالة",
+    "failedToLoadDashboardData": "فشل تحميل بيانات لوحة القيادة",
+    "failedToLoadData": "فشل تحميل البيانات",
+    "failedToCreateServer": "فشل إنشاء الخادم",
+    "failedToLoadItems": "فشل تحميل العناصر",
+    "failedToLoadPlans": "فشل تحميل الخطط",
+    "unknownError": "خطأ غير معروف"
   }
 }

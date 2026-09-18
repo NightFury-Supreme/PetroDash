@@ -431,5 +431,35 @@
       "warning": "Warning",
       "info": "Info"
     }
+  },
+  "GlobalErrors": {
+    "notAuthenticated": "प्रमाणीकृत नहीं है",
+    "authenticationRequired": "प्रमाणीकरण आवश्यक है",
+    "failed": "विफल",
+    "failedToLoadUsageData": "उपयोग डेटा लोड करने में विफल",
+    "failedToLoadUserResources": "उपयोगकर्ता संसाधन लोड करने में विफल",
+    "failedToLoadServers": "सर्वर लोड करने में विफल",
+    "failedToLoadEarnInfo": "कमाई की जानकारी लोड करने में विफल",
+    "failedToStart": "शुरू करने में विफल",
+    "failedToLoadPanelInformation": "पैनल जानकारी लोड करने में विफल",
+    "failedToResetPassword": "पासवर्ड रीसेट करने में विफल",
+    "failedToLoadProfile": "प्रोफ़ाइल लोड करने में विफल",
+    "failedToUpdateProfilePicture": "प्रोफ़ाइल चित्र अपडेट करने में विफल",
+    "failedToRevokeSession": "सत्र रद्द करने में विफल",
+    "failedToSendVerificationEmail": "सत्यापन ईमेल भेजने में विफल",
+    "failedToVerifyCode": "कोड सत्यापित करने में विफल",
+    "failedToLoadTickets": "टिकट लोड करने में विफल",
+    "serverNotFound": "सर्वर नहीं मिला",
+    "updateFailed": "अपडेट विफल",
+    "failedToLoadCreationData": "निर्माण डेटा लोड करने में विफल",
+    "validationFixRequired": "कृपया सहेजने से पहले सत्यापन त्रुटियों को ठीक करें",
+    "resourceLimitsExceeded": "संसाधन सीमा पार हो गई। कृपया नीचे सत्यापन त्रुटियों की जांच करें।",
+    "statusFetchFailed": "स्थिति लाने में विफल",
+    "failedToLoadDashboardData": "डैशबोर्ड डेटा लोड करने में विफल",
+    "failedToLoadData": "डेटा लोड करने में विफल",
+    "failedToCreateServer": "सर्वर बनाने में विफल",
+    "failedToLoadItems": "आइटम लोड करने में विफल",
+    "failedToLoadPlans": "प्लान लोड करने में विफल",
+    "unknownError": "अज्ञात त्रुटि"
   }
 }

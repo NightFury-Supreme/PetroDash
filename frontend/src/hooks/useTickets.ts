@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useCallback, useEffect, useState } from 'react';
 import { SupportTicket, TicketAction, TicketStatus } from '@/components/tickets/types';
@@ -16,6 +17,7 @@ interface UseTicketsReturn {
 }
 
 export function useTickets(): UseTicketsReturn {
+  const tError = useTranslations('GlobalErrors');
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +52,7 @@ export function useTickets(): UseTicketsReturn {
       const dCounts = await rCounts.json().catch(() => ({}));
       
       if (!rTickets.ok) {
-        throw new Error(d?.error || 'Failed to load tickets');
+        throw new Error(d?.error || tError('failedToLoadTickets'));
       }
       
       setTickets(Array.isArray(d?.tickets) ? d.tickets : (Array.isArray(d) ? d : []));
@@ -60,7 +62,7 @@ export function useTickets(): UseTicketsReturn {
         setCounts(dCounts);
       }
     } catch (e: any) {
-      setError(e.message || 'Failed to load tickets');
+      setError(e.message || tError('failedToLoadTickets'));
     } finally {
       setLoading(false);
     }

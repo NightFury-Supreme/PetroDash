@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect } from 'react';
 
@@ -13,6 +14,7 @@ interface AuthSettings {
 }
 
 export function useAuthSettings() {
+  const tError = useTranslations('GlobalErrors');
   const [settings, setSettings] = useState<AuthSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +29,7 @@ export function useAuthSettings() {
         let data: any = {}; try { data = await response.json(); } catch {}
         setSettings(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
+        setError(err instanceof Error  ? err.message : tError('unknownError'));
         // Default to allowing email login if settings can't be fetched
         setSettings({
           emailLogin: true,

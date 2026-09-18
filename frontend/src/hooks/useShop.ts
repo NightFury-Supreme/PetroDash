@@ -1,9 +1,11 @@
 "use client";
+import { useTranslations } from 'next-intl';
 
 import { useEffect, useState, useCallback } from 'react';
 import { fetchWithRetry } from '@/utils/fetchWithRetry';
 
 export function useShop() {
+  const tError = useTranslations('GlobalErrors');
   const [activeTab, setActiveTab] = useState<'items' | 'plans'>('items');
   const [items, setItems] = useState<any[]>([]);
   const [plans, setPlans] = useState<any[]>([]);
@@ -25,12 +27,12 @@ export function useShop() {
       try {
         const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/shop`, { headers: { Authorization: `Bearer ${token}` } });
         let d: any = {}; try { d = await r.json(); } catch {}
-        if (!r.ok) throw new Error(d?.error || 'Failed');
+        if (!r.ok) throw new Error(d?.error || tError('failed'));
         setItems(d || []);
         const initial: Record<string, number> = {};
         (d || []).forEach((it: any) => { initial[it.key] = 1; });
         setQuantities(initial);
-      } catch (e: any) { setError(e?.message || 'Failed to load items'); }
+      } catch (e: any) { setError(e?.message || tError('failedToLoadItems')); }
       finally { setItemsLoading(false); }
     };
 
@@ -38,9 +40,9 @@ export function useShop() {
       try {
         const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/plans`, { headers: { Authorization: `Bearer ${token}` } });
         let d: any = {}; try { d = await r.json(); } catch {}
-        if (!r.ok) throw new Error(d?.error || 'Failed');
+        if (!r.ok) throw new Error(d?.error || tError('failed'));
         setPlans(d || []);
-      } catch (e: any) { setError(e?.message || 'Failed to load plans'); }
+      } catch (e: any) { setError(e?.message || tError('failedToLoadPlans')); }
       finally { setPlansLoading(false); }
     };
 

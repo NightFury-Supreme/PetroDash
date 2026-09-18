@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect, useCallback } from 'react';
 
@@ -23,6 +24,7 @@ interface UsePanelReturn {
 }
 
 export function usePanel(): UsePanelReturn {
+  const tError = useTranslations('GlobalErrors');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<PanelInfo | null>(null);
@@ -37,7 +39,7 @@ export function usePanel(): UsePanelReturn {
       
       const token = localStorage.getItem('auth_token');
       if (!token) {
-        throw new Error('Authentication required');
+        throw new Error(tError('authenticationRequired'));
       }
 
       const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/panel`, {
@@ -49,13 +51,13 @@ export function usePanel(): UsePanelReturn {
 
       if (!response.ok) {
         let errorData: any = {}; try { errorData = await response.json(); } catch {}
-        throw new Error(errorData?.error || 'Failed to load panel information');
+        throw new Error(errorData?.error || tError('failedToLoadPanelInformation'));
       }
 
       let data: any = {}; try { data = await response.json(); } catch {}
       setInfo(data);
     } catch (err: any) {
-      setError(err.message || 'Failed to load panel information');
+      setError(err.message || tError('failedToLoadPanelInformation'));
     } finally {
       setLoading(false);
     }
@@ -70,7 +72,7 @@ export function usePanel(): UsePanelReturn {
 
       const token = localStorage.getItem('auth_token');
       if (!token) {
-        throw new Error('Authentication required');
+        throw new Error(tError('authenticationRequired'));
       }
 
       const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/panel/reset-password`, {
@@ -83,13 +85,13 @@ export function usePanel(): UsePanelReturn {
 
       if (!response.ok) {
         let errorData: any = {}; try { errorData = await response.json(); } catch {}
-        throw new Error(errorData?.error || 'Failed to reset password');
+        throw new Error(errorData?.error || tError('failedToResetPassword'));
       }
 
       let data: any = {}; try { data = await response.json(); } catch {}
       setNewPassword(data.password);
     } catch (err: any) {
-      setError(err.message || 'Failed to reset password');
+      setError(err.message || tError('failedToResetPassword'));
     } finally {
       setResetting(false);
     }

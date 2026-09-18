@@ -432,5 +432,35 @@
       "warning": "Warning",
       "info": "Info"
     }
+  },
+  "GlobalErrors": {
+    "notAuthenticated": "Not authenticated",
+    "authenticationRequired": "Authentication required",
+    "failed": "Failed",
+    "failedToLoadUsageData": "Failed to load usage data",
+    "failedToLoadUserResources": "Failed to load user resources",
+    "failedToLoadServers": "Failed to load servers",
+    "failedToLoadEarnInfo": "Failed to load earn info",
+    "failedToStart": "Failed to start",
+    "failedToLoadPanelInformation": "Failed to load panel information",
+    "failedToResetPassword": "Failed to reset password",
+    "failedToLoadProfile": "Failed to load profile",
+    "failedToUpdateProfilePicture": "Failed to update profile picture",
+    "failedToRevokeSession": "Failed to revoke session",
+    "failedToSendVerificationEmail": "Failed to send verification email",
+    "failedToVerifyCode": "Failed to verify code",
+    "failedToLoadTickets": "Failed to load tickets",
+    "serverNotFound": "Server not found",
+    "updateFailed": "Update failed",
+    "failedToLoadCreationData": "Failed to load creation data",
+    "validationFixRequired": "Please fix the validation errors before saving",
+    "resourceLimitsExceeded": "Resource limits exceeded. Please check the validation errors below.",
+    "statusFetchFailed": "Status fetch failed",
+    "failedToLoadDashboardData": "Failed to load dashboard data",
+    "failedToLoadData": "Failed to load data",
+    "failedToCreateServer": "Failed to create server",
+    "failedToLoadItems": "Failed to load items",
+    "failedToLoadPlans": "Failed to load plans",
+    "unknownError": "Unknown error"
   }
 }

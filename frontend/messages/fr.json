@@ -401,5 +401,35 @@
       "warning": "Warning",
       "info": "Info"
     }
+  },
+  "GlobalErrors": {
+    "notAuthenticated": "Non authentifié",
+    "authenticationRequired": "Authentification requise",
+    "failed": "Échoué",
+    "failedToLoadUsageData": "Échec du chargement des données",
+    "failedToLoadUserResources": "Échec du chargement des ressources",
+    "failedToLoadServers": "Échec du chargement des serveurs",
+    "failedToLoadEarnInfo": "Échec du chargement des informations",
+    "failedToStart": "Échec du démarrage",
+    "failedToLoadPanelInformation": "Échec du chargement des informations",
+    "failedToResetPassword": "Échec de la réinitialisation",
+    "failedToLoadProfile": "Échec du chargement du profil",
+    "failedToUpdateProfilePicture": "Échec de la mise à jour de la photo",
+    "failedToRevokeSession": "Échec de la révocation",
+    "failedToSendVerificationEmail": "Échec de l'envoi de l'email",
+    "failedToVerifyCode": "Échec de la vérification",
+    "failedToLoadTickets": "Échec du chargement des tickets",
+    "serverNotFound": "Serveur introuvable",
+    "updateFailed": "Mise à jour échouée",
+    "failedToLoadCreationData": "Échec du chargement des données",
+    "validationFixRequired": "Veuillez corriger les erreurs avant d'enregistrer",
+    "resourceLimitsExceeded": "Limites dépassées. Vérifiez les erreurs.",
+    "statusFetchFailed": "Échec de la récupération du statut",
+    "failedToLoadDashboardData": "Échec du chargement des données du tableau de bord",
+    "failedToLoadData": "Échec du chargement des données",
+    "failedToCreateServer": "Échec de la création du serveur",
+    "failedToLoadItems": "Échec du chargement des articles",
+    "failedToLoadPlans": "Échec du chargement des plans",
+    "unknownError": "Erreur inconnue"
   }
 }

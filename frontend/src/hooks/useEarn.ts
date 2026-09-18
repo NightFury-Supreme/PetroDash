@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from 'next-intl';
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
@@ -56,6 +57,7 @@ const lvSecretKey = (sessionId: string) => `earn_lv_secret_${sessionId}`;
 const lvUrlKey = (sessionId: string) => `earn_lv_url_${sessionId}`;
 
 export function useEarn() {
+  const tError = useTranslations('GlobalErrors');
   const [data, setData] = useState<EarnApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -74,7 +76,7 @@ export function useEarn() {
       const t = localStorage.getItem("auth_token");
       if (!t) {
         setData(null);
-        setError("Not authenticated");
+        setError(tError('notAuthenticated'));
         return;
       }
 
@@ -82,13 +84,13 @@ export function useEarn() {
         headers: { Authorization: `Bearer ${t}` },
       });
       const d = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(d?.error || "Failed to load earn info");
+      if (!r.ok) throw new Error(d?.error || tError('failedToLoadEarnInfo'));
       setData(d as EarnApiResponse);
       try {
         window.dispatchEvent(new CustomEvent('coins:update', { detail: { coins: Number((d as any)?.coins ?? 0) } }));
       } catch {}
     } catch (e: any) {
-      setError(String(e?.message || "Failed to load earn info"));
+      setError(String(e?.message || tError('failedToLoadEarnInfo')));
     } finally {
       setLoading(false);
     }
@@ -97,7 +99,7 @@ export function useEarn() {
   useEffect(() => {
     if (!token) {
       setLoading(false);
-      setError("Not authenticated");
+      setError(tError('notAuthenticated'));
       return;
     }
     refresh();
@@ -124,14 +126,14 @@ export function useEarn() {
     setStarting(method);
     try {
       const t = localStorage.getItem("auth_token");
-      if (!t) throw new Error("Not authenticated");
+      if (!t) throw new Error(tError('notAuthenticated'));
 
       const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/earn/${method}/start`, {
         method: "POST",
         headers: { Authorization: `Bearer ${t}` },
       });
       const d = (await r.json().catch(() => ({}))) as EarnStartResponse & { error?: string };
-      if (!r.ok) throw new Error((d as any)?.error || "Failed to start");
+      if (!r.ok) throw new Error((d as any)?.error || tError('failedToStart'));
 
       if (d?.linkvertise?.sessionSecret && d?.session?.id) {
         try {
@@ -158,7 +160,7 @@ export function useEarn() {
     setClaiming(method);
     try {
       const t = localStorage.getItem("auth_token");
-      if (!t) throw new Error("Not authenticated");
+      if (!t) throw new Error(tError('notAuthenticated'));
 
       const payload: any = { sessionId };
       if (method === "linkvertise") {

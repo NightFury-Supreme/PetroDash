@@ -431,5 +431,35 @@
       "warning": "Warning",
       "info": "Info"
     }
+  },
+  "GlobalErrors": {
+    "notAuthenticated": "Nicht authentifiziert",
+    "authenticationRequired": "Authentifizierung erforderlich",
+    "failed": "Fehlgeschlagen",
+    "failedToLoadUsageData": "Nutzungsdaten konnten nicht geladen werden",
+    "failedToLoadUserResources": "Ressourcen konnten nicht geladen werden",
+    "failedToLoadServers": "Server konnten nicht geladen werden",
+    "failedToLoadEarnInfo": "Informationen konnten nicht geladen werden",
+    "failedToStart": "Start fehlgeschlagen",
+    "failedToLoadPanelInformation": "Panel-Informationen konnten nicht geladen werden",
+    "failedToResetPassword": "Passwort konnte nicht zurückgesetzt werden",
+    "failedToLoadProfile": "Profil konnte nicht geladen werden",
+    "failedToUpdateProfilePicture": "Profilbild konnte nicht aktualisiert werden",
+    "failedToRevokeSession": "Sitzung konnte nicht widerrufen werden",
+    "failedToSendVerificationEmail": "Bestätigungs-E-Mail konnte nicht gesendet werden",
+    "failedToVerifyCode": "Code konnte nicht verifiziert werden",
+    "failedToLoadTickets": "Tickets konnten nicht geladen werden",
+    "serverNotFound": "Server nicht gefunden",
+    "updateFailed": "Aktualisierung fehlgeschlagen",
+    "failedToLoadCreationData": "Erstellungsdaten konnten nicht geladen werden",
+    "validationFixRequired": "Bitte beheben Sie die Validierungsfehler",
+    "resourceLimitsExceeded": "Ressourcenlimits überschritten. Bitte überprüfen Sie die Fehler.",
+    "statusFetchFailed": "Statusabruf fehlgeschlagen",
+    "failedToLoadDashboardData": "Dashboard-Daten konnten nicht geladen werden",
+    "failedToLoadData": "Daten konnten nicht geladen werden",
+    "failedToCreateServer": "Server konnte nicht erstellt werden",
+    "failedToLoadItems": "Artikel konnten nicht geladen werden",
+    "failedToLoadPlans": "Pläne konnten nicht geladen werden",
+    "unknownError": "Unbekannter Fehler"
   }
 }

@@ -1,8 +1,10 @@
+import { useTranslations } from 'next-intl';
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect, useCallback } from 'react';
 import { ServerInfo, ResourceLimits, ResourceUsage } from '../components/dashboard/types';
 
 export function useDashboard() {
+  const tError = useTranslations('GlobalErrors');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [servers, setServers] = useState<ServerInfo[]>([]);
@@ -32,7 +34,7 @@ export function useDashboard() {
           return;
         }
         let errorData: any = {}; try { errorData = await response.json(); } catch {}
-        throw new Error(errorData?.error || 'Failed to load usage data');
+        throw new Error(errorData?.error || tError('failedToLoadUsageData'));
       }
       
       let data: any = {}; try { data = await response.json(); } catch {}
@@ -65,7 +67,7 @@ export function useDashboard() {
           return;
         }
         let errorData: any = {}; try { errorData = await response.json(); } catch {}
-        throw new Error(errorData?.error || 'Failed to load user resources');
+        throw new Error(errorData?.error || tError('failedToLoadUserResources'));
       }
       
       let data: any = {}; try { data = await response.json(); } catch {}
@@ -90,7 +92,7 @@ export function useDashboard() {
           return;
         }
         let errorData: any = {}; try { errorData = await response.json(); } catch {}
-        throw new Error(errorData?.error || 'Failed to load servers');
+        throw new Error(errorData?.error || tError('failedToLoadServers'));
       }
       
       let data: any = {}; try { data = await response.json(); } catch {}
@@ -129,7 +131,7 @@ export function useDashboard() {
     try {
       const token = localStorage.getItem('auth_token');
       if (!token) {
-        setError('Authentication required');
+        setError(tError('authenticationRequired'));
         return;
       }
 
@@ -146,7 +148,7 @@ export function useDashboard() {
         loadServers(token)
       ]);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
+      setError(err instanceof Error  ? err.message : tError('failedToLoadDashboardData'));
     } finally {
       setLoading(false);
     }

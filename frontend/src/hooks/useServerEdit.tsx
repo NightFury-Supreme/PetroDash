@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from '@/i18n/routing';
@@ -71,6 +72,7 @@ interface UseServerEditReturn {
 }
 
 export function useServerEdit(serverId: string): UseServerEditReturn {
+  const tError = useTranslations('GlobalErrors');
   const router = useRouter();
   
   // State management
@@ -129,7 +131,7 @@ export function useServerEdit(serverId: string): UseServerEditReturn {
 }
         if (!serverResponse.ok) {
           let errorData: any = {}; try { errorData = await serverResponse.json(); } catch {}
-          throw new Error(errorData?.error || 'Server not found');
+          throw new Error(errorData?.error || tError('serverNotFound'));
         }
 
         const [me, usageData, serverData] = await Promise.all([
@@ -275,7 +277,7 @@ export function useServerEdit(serverId: string): UseServerEditReturn {
     if (saving) return false;
     
     if (!isFormValid) {
-      setError('Please fix the validation errors before saving');
+      setError(tError('validationFixRequired'));
       return false;
     }
 
@@ -315,9 +317,9 @@ export function useServerEdit(serverId: string): UseServerEditReturn {
       if (!response.ok) {
         if (data?.violations) {
           setViolations(data.violations);
-          throw new Error('Resource limits exceeded. Please check the validation errors below.');
+          throw new Error(tError('resourceLimitsExceeded'));
         }
-        throw new Error(data?.error || 'Update failed');
+        throw new Error(data?.error || tError('updateFailed'));
       }
 
       // Update the server data with the response first

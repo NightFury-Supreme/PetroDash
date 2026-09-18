@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from '@/i18n/routing';
@@ -60,6 +61,7 @@ interface Violations {
 }
 
 export function useServerCreate() {
+  const tError = useTranslations('GlobalErrors');
   const router = useRouter();
   
   const [loading, setLoading] = useState(true);
@@ -107,7 +109,7 @@ export function useServerCreate() {
         ]);
 
         if (!eggsRes.ok || !locsRes.ok || !authRes.ok || !usageRes.ok || !plansRes.ok) {
-          throw new Error('Failed to load creation data');
+          throw new Error(tError('failedToLoadCreationData'));
         }
 
         const [eggsData, locsData, authData, usageData, plansData] = await Promise.all([
@@ -153,7 +155,7 @@ export function useServerCreate() {
         }
 
       } catch (err: any) {
-        if (mounted) setError(err.message || 'Failed to load data');
+        if (mounted) setError(err.message || tError('failedToLoadData'));
       } finally {
         if (mounted) setLoading(false);
       }
@@ -233,7 +235,7 @@ export function useServerCreate() {
 
     try {
       const token = localStorage.getItem('auth_token');
-      if (!token) throw new Error('Not authenticated');
+      if (!token) throw new Error(tError('notAuthenticated'));
 
       const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers`, {
         method: 'POST',
@@ -273,7 +275,7 @@ export function useServerCreate() {
 
       return true;
     } catch (err: any) {
-      setError(err.message || 'Failed to create server');
+      setError(err.message || tError('failedToCreateServer'));
       return false;
     } finally {
       setSaving(false);
