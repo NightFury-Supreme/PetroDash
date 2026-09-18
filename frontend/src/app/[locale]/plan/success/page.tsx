@@ -12,7 +12,6 @@ export const runtime = 'edge';
 
 export default function PlanSuccessPage() {
   const t = useTranslations('Shop');
-  const t = useTranslations('Shop');
   const router = useRouter();
   const searchParams = useSearchParams();
     const { showError } = useToast();
@@ -127,6 +126,7 @@ export default function PlanSuccessPage() {
 
   return null;
 }
+
 
 
 
