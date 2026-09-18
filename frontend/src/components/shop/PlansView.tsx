@@ -131,7 +131,7 @@ export function PlansView({
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="text-sm font-medium text-white/70">
-                          {g.name} <span className="text-xs text-white/25 font-normal ml-1">({g.count} active)</span>
+                          {g.name} <span className="text-xs text-white/25 font-normal ml-1">{t("activeCount", { count: g.count })}</span>
                         </span>
                       </div>
                       {resString && (

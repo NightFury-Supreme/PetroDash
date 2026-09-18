@@ -56,8 +56,8 @@ export function PurchaseDrawer({
     <Drawer
       isOpen={!!item}
       onClose={onClose}
-      title="Checkout"
-      subtitle="Complete your purchase"
+      title={t("checkout")}
+      subtitle={t("completePurchase")}
       icon={<Coins className="text-[#D4D4D4]" size={22} />}
       footer={
         <div className="flex items-center justify-end gap-2 w-full">
@@ -173,11 +173,11 @@ export function PurchaseDrawer({
           <div className="space-y-6">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#555]">
-                Order Summary
+                {t("orderSummary")}
               </p>
               <div className="mt-4 space-y-3.5">
-                <SummaryRow label="Price per unit" value={`${displayItem.pricePerUnit} coins`} />
-                <SummaryRow label="Quantity" value={`× ${quantity}`} />
+                <SummaryRow label={t("pricePerUnit")} value={`${displayItem.pricePerUnit} ${t("coins")}`} />
+                <SummaryRow label={t("quantity")} value={`× ${quantity}`} />
                 <SummaryRow label={t("resource")} value={getTotalAmount(displayItem, quantity)} />
               </div>
             </div>

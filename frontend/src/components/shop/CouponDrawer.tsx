@@ -141,21 +141,21 @@ export function CouponDrawer({
   };
 
   const resources = [];
-  if (res.cpuPercent > 0) resources.push({ label: "CPU", value: cpu, icon: <Cpu className="h-3.5 w-3.5" /> });
-  if (res.memoryMb > 0) resources.push({ label: "Memory", value: memory, icon: <MemoryStick className="h-3.5 w-3.5" /> });
-  if (res.diskMb > 0) resources.push({ label: "Disk", value: disk, icon: <HardDrive className="h-3.5 w-3.5" /> });
-  if (plan?.productContent?.serverLimit > 0) resources.push({ label: "Servers", value: servers, icon: <Server className="h-3.5 w-3.5" /> });
-  if (plan?.productContent?.databases > 0) resources.push({ label: "Databases", value: String(plan.productContent.databases), icon: <Database className="h-3.5 w-3.5" /> });
-  if (plan?.productContent?.backups > 0) resources.push({ label: "Backups", value: String(plan.productContent.backups), icon: <Download className="h-3.5 w-3.5" /> });
-  if (plan?.productContent?.additionalAllocations > 0) resources.push({ label: "Ports", value: String(plan.productContent.additionalAllocations), icon: <Network className="h-3.5 w-3.5" /> });
-  if (plan?.productContent?.coins > 0) resources.push({ label: "Coins", value: String(plan.productContent.coins), icon: <Coins className="h-3.5 w-3.5" /> });
+  if (res.cpuPercent > 0) resources.push({ label: t("nameCpu"), value: cpu, icon: <Cpu className="h-3.5 w-3.5" /> });
+  if (res.memoryMb > 0) resources.push({ label: t("nameMemory"), value: memory, icon: <MemoryStick className="h-3.5 w-3.5" /> });
+  if (res.diskMb > 0) resources.push({ label: t("nameDisk"), value: disk, icon: <HardDrive className="h-3.5 w-3.5" /> });
+  if (plan?.productContent?.serverLimit > 0) resources.push({ label: t("nameServerSlots"), value: servers, icon: <Server className="h-3.5 w-3.5" /> });
+  if (plan?.productContent?.databases > 0) resources.push({ label: t("nameDatabases"), value: String(plan.productContent.databases), icon: <Database className="h-3.5 w-3.5" /> });
+  if (plan?.productContent?.backups > 0) resources.push({ label: t("nameBackups"), value: String(plan.productContent.backups), icon: <Download className="h-3.5 w-3.5" /> });
+  if (plan?.productContent?.additionalAllocations > 0) resources.push({ label: t("nameAllocations"), value: String(plan.productContent.additionalAllocations), icon: <Network className="h-3.5 w-3.5" /> });
+  if (plan?.productContent?.coins > 0) resources.push({ label: t("coins"), value: String(plan.productContent.coins), icon: <Coins className="h-3.5 w-3.5" /> });
 
   return (
     <Drawer
       isOpen={isOpen}
       onClose={onClose}
-      title="Checkout"
-      subtitle="Complete your plan purchase"
+      title={t("checkout")}
+      subtitle={t("completePlanPurchase")}
       icon={<Package className="text-[#D4D4D4]" size={22} />}
       footer={
         <div className="flex items-center justify-end gap-2 w-full">
@@ -182,7 +182,7 @@ export function CouponDrawer({
               </>
             ) : (
               <>
-                {redirectionLink ? 'Proceed to Checkout' : 'Pay with PayPal'}
+                {redirectionLink ? t('proceedToCheckout') : t('payWithPayPal')}
                 <ArrowRight className="h-4 w-4" />
               </>
             )}
@@ -234,7 +234,7 @@ export function CouponDrawer({
                     )}
                   </div>
                   <p className="mt-1.5 text-[10px] text-zinc-600">
-                    {isLifetime ? "One-time payment · Lifetime access" : "Recurring subscription"}
+                    {isLifetime ? `${t("oneTimePayment")} \u00B7 ${t("lifetimeAccess")}` : t("recurringSubscription")}
                   </p>
                 </div>
                 <div className="text-left sm:text-right">
@@ -330,9 +330,7 @@ export function CouponDrawer({
           <div className="mt-4 flex items-start gap-2 text-[#555]">
             <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             <p className="text-[10px] leading-relaxed">
-              {redirectionLink 
-                ? "You'll be securely redirected to our checkout page to complete your payment." 
-                : "You'll be securely redirected to PayPal to complete your payment. Your payment details are handled by PayPal."}
+              {redirectionLink ? t("checkoutRedirectText") : t("paypalRedirectText")}
             </p>
           </div>
         </div>

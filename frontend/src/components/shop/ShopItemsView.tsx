@@ -107,7 +107,7 @@ export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
                       onClick={() => onBuy(item)}
                       className="h-8 w-full md:w-auto rounded-md bg-[#FF5722]/10 px-4 text-xs font-semibold text-[#FF5722] transition-all hover:bg-[#FF5722]/20 disabled:cursor-not-allowed disabled:opacity-40"
                     >
-                      {buying === item.key ? "..." : "Buy"}
+                      {buying === item.key ? "..." : t("purchase")}
                     </button>
                   </div>
                 </div>
