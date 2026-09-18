@@ -22,7 +22,7 @@ router.get('/', requireAuth, async (req, res) => {
     let listQuery = Server.find(baseQuery)
       .sort({ createdAt: -1 })
       .populate('eggId', 'name icon')
-      .populate('locationId', 'name')
+      .populate('locationId', 'name flag')
       .lean();
 
     if (paginate) {
@@ -55,7 +55,25 @@ router.get('/', requireAuth, async (req, res) => {
         if (suspended) {
           status = 'suspended';
         } else if (panel) {
-          status = panel?.status || s.status || 'unknown';
+          const isInstalling = panel.status === 'installing' || (panel.container && panel.container.installed === false);
+          if (isInstalling) {
+            status = 'creating';
+          } else {
+            status = panel.status || s.status || 'unknown';
+          }
+        }
+        
+        let queuePosition = null;
+        if (status === 'queued') {
+          // Count servers ahead of this one in the queue
+          const aheadCount = await Server.countDocuments({
+            status: 'queued',
+            $or: [
+              { priority: { $gt: s.priority || 0 } },
+              { priority: s.priority || 0, createdAt: { $lt: s.createdAt } }
+            ]
+          });
+          queuePosition = aheadCount + 1;
         }
         
         // Ensure consistent data structure
@@ -63,6 +81,7 @@ router.get('/', requireAuth, async (req, res) => {
           _id: s._id,
           name: s.name || 'Unnamed Server',
           status: status,
+          queuePosition: queuePosition,
           limits: {
             diskMb: Number(s.limits?.diskMb || 0),
             memoryMb: Number(s.limits?.memoryMb || 0),
@@ -71,8 +90,10 @@ router.get('/', requireAuth, async (req, res) => {
             databases: Number(s.limits?.databases || 0),
             allocations: Number(s.limits?.allocations || 0)
           },
-          eggId: s.eggId || { name: 'Unknown', icon: null },
-          locationId: s.locationId || { name: 'Unknown' },
+          eggName: s.eggId?.name || 'Unknown',
+          eggIcon: s.eggId?.icon || undefined,
+          location: s.locationId?.name || 'Unknown',
+          locationFlag: s.locationId?.flag || undefined,
           clientUrl: identifier ? `${base}/server/${identifier}` : `${base}`,
           createdAt: s.createdAt || new Date(),
           suspended: suspended
@@ -85,6 +106,8 @@ router.get('/', requireAuth, async (req, res) => {
           deletedCount += 1;
           await Server.deleteOne({ _id: s._id });
           writeAudit(req, 'server.delete', 'server', s._id.toString(), {
+            serverName: s.name,
+            limits: s.limits,
             reason: 'panel_not_found',
             panelServerId: s.panelServerId,
             panelStatus,
@@ -105,8 +128,10 @@ router.get('/', requireAuth, async (req, res) => {
             databases: Number(s.limits?.databases || 0),
             allocations: Number(s.limits?.allocations || 0)
           },
-          eggId: s.eggId || { name: 'Unknown', icon: null },
-          locationId: s.locationId || { name: 'Unknown' },
+          eggName: s.eggId?.name || 'Unknown',
+          eggIcon: s.eggId?.icon || undefined,
+          location: s.locationId?.name || 'Unknown',
+          locationFlag: s.locationId?.flag || undefined,
           clientUrl: `${base}`,
           createdAt: s.createdAt || new Date(),
           unreachable: true,
@@ -115,11 +140,18 @@ router.get('/', requireAuth, async (req, res) => {
       }
     }));
     const filtered = enriched.filter(Boolean);
-    if (deletedCount > 0 && paginate) {
-      // Adjust total to reflect servers removed during enrichment
-      page = Math.max(1, Math.min(page, Math.ceil(Math.max(total - deletedCount, 0) / pageSize) || 1));
+    if (deletedCount > 0) {
+      const { deleteCachePattern, deleteCache } = require('../../lib/redis');
+      await deleteCachePattern(`server:usage:${req.user.sub}`);
+      await deleteCachePattern(`api:servers:${req.user.sub}:*`);
+      await deleteCachePattern('api:admin:servers:*');
+      await deleteCache('eggs:counts');
+      
+      if (paginate) {
+        // Adjust total to reflect servers removed during enrichment
+        page = Math.max(1, Math.min(page, Math.ceil(Math.max(total - deletedCount, 0) / pageSize) || 1));
+      }
     }
-    
     if (paginate) {
       const responseData = { data: filtered, meta: { total: Math.max(total - deletedCount, 0), page, pageSize } };
       await setCache(cacheKey, responseData, 30);

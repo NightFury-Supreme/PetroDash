@@ -19,7 +19,7 @@ export function useAuthSettings() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/`);
         if (!response.ok) {
           throw new Error('Failed to fetch auth settings');
         }
