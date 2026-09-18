@@ -298,7 +298,7 @@
   },
   "Shop": {
     "storeTitle": "Store",
-        "processing": "Processing",
+    "processing": "Processing...",
     "confirmingPayment": "Confirming Payment",
     "confirmingPaymentDesc": "Please wait while we securely confirm your transaction. Do not close this window.",
     "success": "Success",
@@ -341,7 +341,6 @@
     "quantity": "Quantity",
     "stock": "stock",
     "uncategorized": "Uncategorized",
-    "processing": "Processing...",
     "apply": "Apply",
     "applied": "Applied",
     "enterCouponCode": "Enter coupon code",
@@ -434,4 +433,3 @@
     }
   }
 }
-
