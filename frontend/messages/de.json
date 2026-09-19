@@ -643,6 +643,10 @@
     "ERR_PANEL_USER_NOT_FOUND": "Panel-Benutzer nicht gefunden",
     "ERR_PANEL_ACCESS_DENIED": "Panel-Zugriff verweigert",
     "ERR_PANEL_INVALID_PASSWORD": "Ungültiges Passwortformat",
-    "ERR_NETWORK": "Netzwerkfehler"
+    "ERR_NETWORK": "Netzwerkfehler",
+    "ERR_INVALID_QUERY_PARAMS": "Ungültige Abfrageparameter bereitgestellt",
+    "ERR_INVALID_PAYLOAD": "Ungültige Nutzlast bereitgestellt",
+    "ERR_NOT_ELIGIBLE": "Nicht berechtigt, benutzerdefinierten Code festzulegen",
+    "ERR_CODE_IN_USE": "Code bereits in Gebrauch"
   }
 }

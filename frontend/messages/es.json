@@ -643,6 +643,10 @@
     "ERR_PANEL_USER_NOT_FOUND": "Usuario del panel no encontrado",
     "ERR_PANEL_ACCESS_DENIED": "Acceso al panel denegado",
     "ERR_PANEL_INVALID_PASSWORD": "Formato de contraseña inválido",
-    "ERR_NETWORK": "Error de red"
+    "ERR_NETWORK": "Error de red",
+    "ERR_INVALID_QUERY_PARAMS": "Parámetros de consulta no válidos proporcionados",
+    "ERR_INVALID_PAYLOAD": "Carga útil no válida proporcionada",
+    "ERR_NOT_ELIGIBLE": "No elegible para establecer código personalizado",
+    "ERR_CODE_IN_USE": "Código ya en uso"
   }
 }

@@ -36,6 +36,7 @@ export function useReferralCode({
   onCodeUpdated,
 }: UseReferralCodeProps): UseReferralCodeResult {
   const t = useTranslations("Referrals");
+  const tError = useTranslations("BackendErrors");
   const { showError, showSuccess } = useToast();
 
   const [copied, setCopied] = useState(false);
@@ -108,26 +109,42 @@ export function useReferralCode({
         setEditingCode(false);
         showSuccess(t("codeUpdatedSuccess"));
       } else {
-        // Extract first field-level validation error if available
-        let errorMsg: string = data.error ?? t("failedToUpdateCode");
-        if (data.details?.fieldErrors) {
-          const fields = Object.keys(data.details.fieldErrors) as string[];
+        const code = data?.error?.code;
+        let errorMsg = data?.error?.message || data?.error || t("failedToUpdateCode");
+        
+        // Map standardized BackendErrors codes safely via try-catch fallback
+        try {
+          if (code) {
+             errorMsg = tError(code as any);
+          }
+        } catch(e) {
+             errorMsg = tError("ERR_INTERNAL_SERVER");
+        }
+
+        // Handle Zod validation fields (if ERR_INVALID_PAYLOAD with details)
+        if (code === "ERR_INVALID_PAYLOAD" && data?.error?.details?.fieldErrors) {
+          const fields = Object.keys(data.error.details.fieldErrors) as string[];
           if (fields.length > 0) {
             const firstField = fields[0];
-            const firstMsg = data.details.fieldErrors[firstField]?.[0];
-            if (firstMsg) errorMsg = firstMsg;
+            const firstMsg = data.error.details.fieldErrors[firstField]?.[0];
+            if (firstMsg) errorMsg = firstMsg; // e.g., "Code must be at least 3 characters"
           }
         }
+
         showError(errorMsg);
         setSaveStatus("error");
       }
     } catch {
-      showError(t("unexpectedError"));
+      try {
+        showError(tError("ERR_INTERNAL_SERVER"));
+      } catch (e) {
+        showError(t("unexpectedError"));
+      }
       setSaveStatus("error");
     } finally {
       setSaveStatus("idle");
     }
-  }, [draftCode, initialLink, initialCode, onCodeUpdated, showSuccess, showError, t]);
+  }, [draftCode, initialLink, initialCode, onCodeUpdated, showSuccess, showError, t, tError]);
 
   return {
     copied,

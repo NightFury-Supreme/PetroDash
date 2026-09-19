@@ -26,6 +26,7 @@ interface UseReferralUsersResult {
 
 export function useReferralUsers(): UseReferralUsersResult {
   const t = useTranslations("Referrals");
+  const tError = useTranslations("BackendErrors");
   const { showError } = useToast();
   const [users, setUsers] = useState<ReferralUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,18 +44,32 @@ export function useReferralUsers(): UseReferralUsersResult {
         { headers: { Authorization: `Bearer ${token}` } },
       );
 
-      if (!res.ok) throw new Error(t("failedToLoadUsers"));
+      if (!res.ok) {
+        let errorData: any = {}; try { errorData = await res.json(); } catch {}
+        const code = errorData?.error?.code;
+        const msg = errorData?.error?.message || errorData?.error;
+        throw new Error(code || msg || "failedToLoadUsers");
+      }
 
       const data = await res.json();
       setUsers(data.users ?? []);
       setTotalUsers(data.total ?? 0);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : t("unexpectedError");
+    } catch (err: any) {
+      let message = err.message || "failedToLoadUsers";
+      if (message === "failedToLoadUsers" || message === "unexpectedError") {
+         message = t(message as any);
+      } else {
+         try {
+            message = tError(message as any);
+         } catch(e) {
+            message = tError("ERR_INTERNAL_SERVER");
+         }
+      }
       showError(message);
     } finally {
       setLoading(false);
     }
-  }, [page, t, showError]);
+  }, [page, t, tError, showError]);
 
   useEffect(() => {
     fetchUsers();

@@ -643,6 +643,10 @@
     "ERR_PANEL_USER_NOT_FOUND": "مستخدم اللوحة غير موجود",
     "ERR_PANEL_ACCESS_DENIED": "تم رفض الوصول إلى اللوحة",
     "ERR_PANEL_INVALID_PASSWORD": "تنسيق كلمة المرور غير صالح",
-    "ERR_NETWORK": "خطأ في الشبكة"
+    "ERR_NETWORK": "خطأ في الشبكة",
+    "ERR_INVALID_QUERY_PARAMS": "تم توفير معلمات استعلام غير صالحة",
+    "ERR_INVALID_PAYLOAD": "تم توفير حمولة غير صالحة",
+    "ERR_NOT_ELIGIBLE": "غير مؤهل لتعيين رمز مخصص",
+    "ERR_CODE_IN_USE": "الرمز قيد الاستخدام بالفعل"
   }
 }

@@ -643,6 +643,10 @@
     "ERR_PANEL_USER_NOT_FOUND": "पैनल उपयोगकर्ता नहीं मिला",
     "ERR_PANEL_ACCESS_DENIED": "पैनल पहुँच अस्वीकृत",
     "ERR_PANEL_INVALID_PASSWORD": "अमान्य पासवर्ड प्रारूप",
-    "ERR_NETWORK": "नेटवर्क त्रुटि"
+    "ERR_NETWORK": "नेटवर्क त्रुटि",
+    "ERR_INVALID_QUERY_PARAMS": "प्रदान किए गए अमान्य क्वेरी पैरामीटर",
+    "ERR_INVALID_PAYLOAD": "प्रदान किया गया पेलोड अमान्य है",
+    "ERR_NOT_ELIGIBLE": "कस्टम कोड सेट करने के योग्य नहीं",
+    "ERR_CODE_IN_USE": "कोड पहले से उपयोग में है"
   }
 }

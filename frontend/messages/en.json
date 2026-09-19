@@ -646,6 +646,10 @@
     "ERR_PANEL_USER_NOT_FOUND": "Panel user not found",
     "ERR_PANEL_ACCESS_DENIED": "Panel access denied",
     "ERR_PANEL_INVALID_PASSWORD": "Invalid password format",
-    "ERR_NETWORK": "Network Error"
+    "ERR_NETWORK": "Network Error",
+    "ERR_INVALID_QUERY_PARAMS": "Invalid query parameters provided",
+    "ERR_INVALID_PAYLOAD": "Invalid payload provided",
+    "ERR_NOT_ELIGIBLE": "Not eligible to set custom code",
+    "ERR_CODE_IN_USE": "Code already in use"
   }
 }

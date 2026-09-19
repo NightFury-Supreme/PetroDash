@@ -22,6 +22,7 @@ interface UseReferralStatsResult {
 
 export function useReferralStats(): UseReferralStatsResult {
   const t = useTranslations("Referrals");
+  const tError = useTranslations("BackendErrors");
   const { showError } = useToast();
   const [stats, setStats] = useState<ReferralStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,7 +38,12 @@ export function useReferralStats(): UseReferralStatsResult {
         { headers: { Authorization: `Bearer ${token}` } },
       );
 
-      if (!res.ok) throw new Error(t("failedToLoadStats"));
+      if (!res.ok) {
+        let errorData: any = {}; try { errorData = await res.json(); } catch {}
+        const code = errorData?.error?.code;
+        const msg = errorData?.error?.message || errorData?.error;
+        throw new Error(code || msg || "failedToLoadStats");
+      }
 
       const data = await res.json();
       setStats({
@@ -49,13 +55,22 @@ export function useReferralStats(): UseReferralStatsResult {
         referredCount: data.referredCount ?? 0,
         referrerCoins: data.referrerCoins ?? 50,
       });
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : t("unexpectedError");
+    } catch (err: any) {
+      let message = err.message || "failedToLoadStats";
+      if (message === "failedToLoadStats" || message === "unexpectedError") {
+         message = t(message as any);
+      } else {
+         try {
+            message = tError(message as any);
+         } catch(e) {
+            message = tError("ERR_INTERNAL_SERVER");
+         }
+      }
       showError(message);
     } finally {
       setLoading(false);
     }
-  }, [t, showError]);
+  }, [t, tError, showError]);
 
   useEffect(() => {
     fetchStats();
