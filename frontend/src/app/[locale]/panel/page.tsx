@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { PanelContent } from "@/components/panel/PanelContent";
+import { PanelContent } from "@/components/panel";
 
 export default function ControlPanelPage() {
   return (

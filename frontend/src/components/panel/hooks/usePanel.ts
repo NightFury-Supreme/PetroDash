@@ -2,45 +2,36 @@ import { useTranslations } from 'next-intl';
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect, useCallback } from 'react';
 
-interface PanelInfo {
+interface PanelData {
   email: string;
-  username: string;
   panelUrl: string;
-  loginUrl: string;
 }
 
 interface UsePanelReturn {
-  // State
+  panelData: PanelData | null;
+  password: string;
   loading: boolean;
   error: string | null;
-  info: PanelInfo | null;
   resetting: boolean;
-  newPassword: string | null;
-  
-  // Actions
-  resetPassword: () => Promise<void>;
-  clearError: () => void;
-  clearNewPassword: () => void;
+  fetchPanelData: () => Promise<void>;
+  resetPassword: () => Promise<string | void>;
 }
 
 export function usePanel(): UsePanelReturn {
   const tError = useTranslations('GlobalErrors');
+  const [panelData, setPanelData] = useState<PanelData | null>(null);
+  const [password, setPassword] = useState("                ");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [info, setInfo] = useState<PanelInfo | null>(null);
   const [resetting, setResetting] = useState(false);
-  const [newPassword, setNewPassword] = useState<string | null>(null);
 
-  // Load panel info
-  const loadPanelInfo = useCallback(async () => {
+  const fetchPanelData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
       const token = localStorage.getItem('auth_token');
-      if (!token) {
-        throw new Error(tError('authenticationRequired'));
-      }
+      if (!token) return;
 
       const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/panel`, {
         headers: { 
@@ -54,28 +45,25 @@ export function usePanel(): UsePanelReturn {
         throw new Error(errorData?.error || tError('failedToLoadPanelInformation'));
       }
 
-      let data: any = {}; try { data = await response.json(); } catch {}
-      setInfo(data);
+      const data = await response.json();
+      setPanelData(data);
     } catch (err: any) {
       setError(err.message || tError('failedToLoadPanelInformation'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [tError]);
 
-  // Reset password
   const resetPassword = useCallback(async () => {
+    if (resetting) return;
     try {
-      setError(null);
-      setNewPassword(null);
       setResetting(true);
-
       const token = localStorage.getItem('auth_token');
       if (!token) {
         throw new Error(tError('authenticationRequired'));
       }
 
-      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/panel/reset-password`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/panel/reset`, {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${token}`,
@@ -88,41 +76,25 @@ export function usePanel(): UsePanelReturn {
         throw new Error(errorData?.error || tError('failedToResetPassword'));
       }
 
-      let data: any = {}; try { data = await response.json(); } catch {}
-      setNewPassword(data.password);
-    } catch (err: any) {
-      setError(err.message || tError('failedToResetPassword'));
+      const data = await response.json();
+      setPassword(data.password);
+      return data.password;
     } finally {
       setResetting(false);
     }
-  }, []);
+  }, [resetting, tError]);
 
-  // Clear error
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
-  // Clear new password
-  const clearNewPassword = useCallback(() => {
-    setNewPassword(null);
-  }, []);
-
-  // Load panel info on mount
   useEffect(() => {
-    loadPanelInfo();
-  }, [loadPanelInfo]);
+    fetchPanelData();
+  }, [fetchPanelData]);
 
   return {
-    // State
+    panelData,
+    password,
     loading,
     error,
-    info,
     resetting,
-    newPassword,
-    
-    // Actions
+    fetchPanelData,
     resetPassword,
-    clearError,
-    clearNewPassword,
   };
 }
