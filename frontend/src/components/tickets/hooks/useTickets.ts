@@ -18,6 +18,8 @@ interface UseTicketsReturn {
 
 export function useTickets(): UseTicketsReturn {
   const tError = useTranslations('GlobalErrors');
+  const tErrorBackend = useTranslations('BackendErrors');
+  
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +54,9 @@ export function useTickets(): UseTicketsReturn {
       const dCounts = await rCounts.json().catch(() => ({}));
       
       if (!rTickets.ok) {
-        throw new Error(d?.error || tError('failedToLoadTickets'));
+        const code = d?.error?.code;
+        const msg = d?.error?.message || d?.error;
+        throw new Error(code || msg || 'failedToLoadTickets');
       }
       
       setTickets(Array.isArray(d?.tickets) ? d.tickets : (Array.isArray(d) ? d : []));
@@ -62,11 +66,18 @@ export function useTickets(): UseTicketsReturn {
         setCounts(dCounts);
       }
     } catch (e: any) {
-      setError(e.message || tError('failedToLoadTickets'));
+      let msg = String(e.message || 'failedToLoadTickets');
+      try {
+        msg = tErrorBackend(msg as any);
+      } catch(err) {
+        if (msg === 'failedToLoadTickets') msg = tError(msg as any);
+        else msg = tErrorBackend('ERR_INTERNAL_SERVER');
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [tError, tErrorBackend]);
 
   /* -- Categories ----------------------------------- */
   useEffect(() => {
@@ -103,14 +114,20 @@ export function useTickets(): UseTicketsReturn {
       if (!res.ok) {
         // Revert
         setTickets(prevTickets);
-        return { ok: false, error: data.error || 'Failed to update ticket status' };
+        const code = data?.error?.code;
+        const msg = data?.error?.message || data?.error;
+        let errMsg = code || msg || 'ERR_INTERNAL_SERVER';
+        try { errMsg = tErrorBackend(errMsg as any); } catch { errMsg = tErrorBackend('ERR_INTERNAL_SERVER'); }
+        return { ok: false, error: errMsg };
       }
       return { ok: true };
     } catch (err: any) {
       setTickets(prevTickets);
-      return { ok: false, error: err.message || 'Network error' };
+      let errMsg = err.message || 'ERR_INTERNAL_SERVER';
+      try { errMsg = tErrorBackend(errMsg as any); } catch { errMsg = tErrorBackend('ERR_INTERNAL_SERVER'); }
+      return { ok: false, error: errMsg };
     }
-  }, [tickets]);
+  }, [tickets, tErrorBackend]);
 
   /* -- Create --------------------------------------- */
   const createTicket = useCallback(async (data: { title: string; message: string; category: string; priority?: string }) => {
@@ -121,12 +138,20 @@ export function useTickets(): UseTicketsReturn {
         body: JSON.stringify(data),
       });
       const d = await r.json().catch(() => ({}));
-      if (!r.ok) return { ok: false, error: d?.error || 'Failed to create ticket' };
+      if (!r.ok) {
+        const code = d?.error?.code;
+        const msg = d?.error?.message || d?.error;
+        let errMsg = code || msg || 'ERR_INTERNAL_SERVER';
+        try { errMsg = tErrorBackend(errMsg as any); } catch { errMsg = tErrorBackend('ERR_INTERNAL_SERVER'); }
+        return { ok: false, error: errMsg };
+      }
       return { ok: true };
     } catch (e: any) {
-      return { ok: false, error: e?.message || 'Failed to create ticket' };
+      let errMsg = e.message || 'ERR_INTERNAL_SERVER';
+      try { errMsg = tErrorBackend(errMsg as any); } catch { errMsg = tErrorBackend('ERR_INTERNAL_SERVER'); }
+      return { ok: false, error: errMsg };
     }
-  }, []);
+  }, [tErrorBackend]);
 
   return { tickets, loading, error, categories, fetchTickets, updateStatus, createTicket, pagination, counts };
 }

@@ -3,6 +3,7 @@
 import React from 'react';
 import { Filter } from 'lucide-react';
 import { Select } from '@/components/ui/Select';
+import { useTranslations } from 'next-intl';
 
 interface TicketCategoryFilterProps {
   categories: string[];
@@ -11,9 +12,11 @@ interface TicketCategoryFilterProps {
 }
 
 export function TicketCategoryFilter({ categories, value, onChange }: TicketCategoryFilterProps) {
+  const t = useTranslations('Tickets');
+  
   const options = [
-    { label: 'All Categories', value: '' },
-    ...categories.map(c => ({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c }))
+    { label: t('allCategories') || 'All Categories', value: '' },
+    ...categories.map(c => ({ label: (t as any)(`categories.${c}`) || c.charAt(0).toUpperCase() + c.slice(1), value: c }))
   ];
 
   return (
@@ -26,7 +29,7 @@ export function TicketCategoryFilter({ categories, value, onChange }: TicketCate
           <div className="flex items-center gap-[7px]">
             <Filter size={14} className="text-[#858585]" />
             <span className="text-[10px] text-[#858585]">
-              {value ? (value.charAt(0).toUpperCase() + value.slice(1)) : 'All Categories'}
+              {value ? ((t as any)(`categories.${value}`) || value.charAt(0).toUpperCase() + value.slice(1)) : t('allCategories') || 'All Categories'}
             </span>
           </div>
         )}

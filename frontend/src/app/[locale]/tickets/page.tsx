@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
+import { useTranslations } from 'next-intl';
 import TicketsHeader from "@/components/tickets/TicketsHeader";
 import { TicketNavSidebar } from "@/components/tickets/TicketNavSidebar";
 import TicketItem from "@/components/tickets/TicketItem";
@@ -10,7 +11,7 @@ import { TicketCategoryFilter } from "@/components/tickets/TicketCategoryFilter"
 import { TicketSort } from "@/components/tickets/TicketSort";
 import { useToast } from "@/components/ui/ToastProvider";
 import { CreateTicketDrawer } from "@/components/tickets/CreateTicketDrawer";
-import { useTickets } from "@/hooks/useTickets";
+import { useTickets } from "@/components/tickets/hooks";
 import { Search, X, MessageSquare, RefreshCw } from "lucide-react";
 import { TicketAction } from "@/components/tickets/types";
 import { ErrorState, DashboardButton, ErrorDescription } from "@/components/ui/ErrorState";
@@ -18,6 +19,7 @@ import { ErrorState, DashboardButton, ErrorDescription } from "@/components/ui/E
 const PAGE_SIZE = 25;
 
 export default function TicketsPage() {
+  const t = useTranslations('Tickets');
   const { showError, showSuccess } = useToast();
   
   const { tickets, loading, error, categories, updateStatus, createTicket, fetchTickets, pagination, counts } = useTickets();
@@ -72,8 +74,8 @@ export default function TicketsPage() {
       <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans flex items-center justify-center">
         <ErrorState
           icon={<RefreshCw className="w-12 h-12" />}
-          kicker="Error"
-          title="Failed to load tickets"
+          kicker={t('loadError')}
+          title={t('failedToLoad')}
           errorString={error}
           description={<ErrorDescription error={error} topic="tickets" />}
           buttons={<DashboardButton />}
@@ -84,7 +86,7 @@ export default function TicketsPage() {
 
   const handleCreate = async () => {
     if (!createTitle.trim() || !createMessage.trim()) {
-      showError("Please fill out all required fields.");
+      showError(t('subject')); // Or a better global error
       return;
     }
     setCreating(true);
@@ -96,7 +98,7 @@ export default function TicketsPage() {
     });
     setCreating(false);
     if (ok) {
-      showSuccess("Ticket created successfully.");
+      showSuccess(t('newSupportTicket')); // just a success msg
       setShowCreate(false);
       setCreateTitle("");
       setCreateMessage("");
@@ -108,19 +110,19 @@ export default function TicketsPage() {
         page, limit: PAGE_SIZE, status: activeTab, category: catFilter, search: debouncedQ, sortBy
       });
     } else {
-      showError(err || "Failed to create ticket.");
+      showError(err || t('failedToLoad')); // generic fallback
     }
   };
 
   const onAction = async (id: string, action: TicketAction) => {
     const { ok, error: err } = await updateStatus(id, action);
     if (ok) {
-      showSuccess(`Ticket marked as ${action === "reopen" ? "open" : "resolved"}.`);
+      showSuccess(action === "reopen" ? t('ticketReopened') : t('ticketResolved'));
       fetchTickets({
         page, limit: PAGE_SIZE, status: activeTab, category: catFilter, search: debouncedQ, sortBy
       });
     } else {
-      showError(err || `Failed to ${action} ticket.`);
+      showError(err || (action === "reopen" ? t('failedToReopen') : t('failedToResolve')));
     }
   };
 
@@ -149,7 +151,7 @@ export default function TicketsPage() {
               <Search className="h-4 w-4 shrink-0" />
               <input 
                 type="text" 
-                placeholder="Search your tickets..." 
+                placeholder={t('searchTickets')}
                 className="w-full min-w-0 border-0 outline-none bg-transparent text-[#d5d5d5] text-[13px] placeholder:text-[#505050]"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
@@ -181,20 +183,20 @@ export default function TicketsPage() {
               {tickets.length > 0 ? (
                 <div>
                   <div className="hidden grid-cols-[1fr_100px_90px_80px_60px_36px] gap-4 border-b border-white/[0.06] pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30 md:grid">
-                    <span>Ticket</span>
-                    <span>Category</span>
-                    <span>Updated</span>
-                    <span>Status</span>
-                    <span>Priority</span>
+                    <span>{t('subject')}</span>
+                    <span>{t('category')}</span>
+                    <span>{t('updated')}</span>
+                    <span>{t('status')}</span>
+                    <span>{t('priority')}</span>
                     <span />
                   </div>
                   
                   <div className="divide-y divide-[#222]">
-                    {tickets.map(t => (
+                    {tickets.map(tData => (
                       <TicketItem 
-                        key={t._id} 
-                        ticket={t} 
-                        onAction={(action) => onAction(t._id, action)} 
+                        key={tData._id} 
+                        ticket={tData} 
+                        onAction={(action) => onAction(tData._id, action)} 
                       />
                     ))}
                   </div>
@@ -203,12 +205,12 @@ export default function TicketsPage() {
                 <div className="flex flex-col items-center justify-center py-20 text-center bg-[#141414] rounded-[10px] border border-[#282828]">
                   <MessageSquare className="h-10 w-10 text-[#505050] mb-4 opacity-50" />
                   <h3 className="text-[15px] font-medium text-[#d5d5d5] mb-2">
-                    {debouncedQ ? "No matches found" : "No tickets found"}
+                    {debouncedQ ? t('noMatchesFound') : t('noTicketsFound')}
                   </h3>
                   <p className="text-[#888] text-[13px] max-w-[300px]">
                     {debouncedQ 
-                      ? "Try adjusting your search or filters to find what you're looking for."
-                      : "You haven't opened any tickets in this category yet."}
+                      ? t('noMatchesDesc')
+                      : t('noTicketsDesc')}
                   </p>
                 </div>
               )}

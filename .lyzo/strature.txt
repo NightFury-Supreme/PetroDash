@@ -7,10 +7,16 @@ also update backend for Removeing hardcoded JSON API errors to use Wrapped all e
 also make sure to check in audit thinks read and write audit, audit engine linksed etc etc all working 
 also make sure here redis is using properly everywhere as needed
 also make sure everything is optimzied, db optimized, smooth and profasnla and no any ducktaps
-Also use same language code for same messages, find if any found and use it in full
+Also use same language code for same messages, find if any found and use it in everywhere as needed
 
 
 Also complay with this much rule is must, fully strict, no drop any consideration
+
+pls use read and write tools of antigravity only no use python node js scripts to do antyhing ok bitch
+if use scripts use, scripts and its results should put in scarch folder in root of project dir, also after running script run lint and fix any issues if found
+also run lint and fix all warnings and errors in backend and frontend fully
+then push to git locally
+
 # File & Folder Structural Guidelines
 **Standard Operating Procedure (SOP) for Project Organization**
 

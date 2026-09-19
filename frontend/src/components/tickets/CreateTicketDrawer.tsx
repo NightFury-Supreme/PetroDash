@@ -7,6 +7,7 @@ import { Loader2, Server, FileText, Ticket } from 'lucide-react';
 import { Drawer } from '@/components/ui/Drawer';
 import { API_BASE, getToken } from './utils';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useTranslations } from 'next-intl';
 
 export interface CreateTicketDrawerProps {
   title:            string;
@@ -28,6 +29,7 @@ export function CreateTicketDrawer({
   onTitleChange, onMessageChange, onCategoryChange, onPriorityChange,
   onClose, onCreate,
 }: CreateTicketDrawerProps) {
+  const t = useTranslations('Tickets');
   const { currency } = useCurrency();
   const editorRef = useRef<HTMLDivElement>(null);
 
@@ -99,24 +101,25 @@ export function CreateTicketDrawer({
       const textNode = range.startContainer;
       if (textNode.nodeType === Node.TEXT_NODE) {
         const text = textNode.textContent || '';
-        const match = text.slice(0, range.startOffset).match(/@[a-zA-Z0-9_-]*$/);
-        if (match) {
-          range.setStart(textNode, range.startOffset - match[0].length);
+        const matchIndex = text.lastIndexOf('@');
+        if (matchIndex >= 0) {
+          range.setStart(textNode, matchIndex);
           range.deleteContents();
         }
       }
       
       const el = document.createElement('span');
-      el.contentEditable = 'false';
+      el.className = 'inline-flex items-center gap-1 bg-[#282828] text-[#D4D4D4] px-2 py-0.5 rounded text-xs font-medium border border-[#333] mx-1 select-all';
       el.dataset.type = type;
       el.dataset.id = itemId;
       el.dataset.name = name;
-      el.className = type === 'server' 
-        ? 'inline-flex items-center align-middle font-semibold text-[#FF5722]'
-        : 'inline-flex items-center align-middle font-semibold text-emerald-400';
-      el.innerHTML = type === 'server'
-        ? `<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" ry="2" stroke-width="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2" stroke-width="2"></rect><line x1="6" y1="6" x2="6.01" y2="6" stroke-width="2"></line><line x1="6" y1="18" x2="6.01" y2="18" stroke-width="2"></line></svg>${name}`
-        : `<svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>${name}`;
+      el.contentEditable = 'false';
+      
+      const iconHTML = type === 'server' 
+        ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#888]"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>`
+        : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#888]"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`;
+        
+      el.innerHTML = `${iconHTML} ${name}`;
       
       range.insertNode(el);
       range.setStartAfter(el);
@@ -146,8 +149,8 @@ export function CreateTicketDrawer({
     <Drawer
       isOpen={true}
       onClose={onClose}
-      title="New Support Ticket"
-      subtitle="Open a new request"
+      title={t('newSupportTicket')}
+      subtitle={t('openNewRequest')}
       icon={<Ticket className="text-[#D4D4D4]" size={22} />}
       footer={
         <div className="flex items-center justify-end gap-2 w-full">
@@ -157,7 +160,7 @@ export function CreateTicketDrawer({
             disabled={creating}
             className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50"
           >
-            Cancel
+            {t('cancel')}
           </button>
           <button
             type="button"
@@ -165,38 +168,38 @@ export function CreateTicketDrawer({
             disabled={creating}
             className={`flex min-w-[140px] items-center justify-center gap-2 rounded-lg border px-5 py-2 text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-[#FF5722] border-[#FF5722] hover:bg-[#F4511E]`}
           >
-            {creating ? <Loader2 size={16} className="animate-spin" /> : 'Create Ticket'}
+            {creating ? <Loader2 size={16} className="animate-spin" /> : t('createTicket')}
           </button>
         </div>
       }
     >
       <div className="flex flex-col">
-        <Field label="Subject">
+        <Field label={t('subject')}>
           <input
             value={title}
             onChange={e => onTitleChange(e.target.value)}
-            placeholder="Brief description of your issue"
+            placeholder={t('briefDescription')}
             className="w-full rounded-lg border border-[#222] bg-[#161616] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60"
           />
         </Field>
 
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Category">
+          <Field label={t('category')}>
             <Select
               value={category}
               onChange={onCategoryChange}
-              options={categories.map(c => ({ label: c.charAt(0).toUpperCase() + c.slice(1), value: c }))}
+              options={categories.map(c => ({ label: (t as any)(`categories.${c}`) || c.charAt(0).toUpperCase() + c.slice(1), value: c }))}
             />
           </Field>
 
-          <Field label="Priority">
+          <Field label={t('priority')}>
             <Select
               value={priority}
               onChange={onPriorityChange}
               options={[
-                { label: 'Low', value: 'low' },
-                { label: 'Normal', value: 'normal' },
-                { label: 'High', value: 'high' }
+                { label: t('priorities.low'), value: 'low' },
+                { label: t('priorities.normal'), value: 'normal' },
+                { label: t('priorities.high'), value: 'high' }
               ]}
             />
           </Field>
