@@ -87,7 +87,8 @@
       "btnEdit": "Edit",
       "sending": "Sending...",
       "sendVerifyBtn": "Send Verification Code",
-      "helpText": "Check your email inbox and spam folder for the verification code. The code expires in 15 minutes."
+      "helpText": "Check your email inbox and spam folder for the verification code. The code expires in 15 minutes.",
+      "subtitleCard": "Secure your account"
     },
     "errors": {
       "missingFields": "Please fill out all fields.",
@@ -443,36 +444,36 @@
     }
   },
   "Panel": {
-      "controlPanel": "Control Panel",
-      "controlPanelDesc": "Manage access to your Pterodactyl control panel.",
-      "colCredential": "Credential",
-      "colValue": "Value",
-      "colAction": "Action",
-      "emailAddress": "Email address",
-      "emailAddressDesc": "Your Pterodactyl login",
-      "noEmailLinked": "No email linked",
-      "copy": "Copy",
-      "password": "Password",
-      "passwordDesc": "Your panel authentication password",
-      "reset": "Reset",
-      "resetting": "Resetting...",
-      "resetPanelPasswordTitle": "Reset Panel Password",
-      "resetPanelPasswordBody": "Are you sure you want to reset your panel password? Your old password will stop working immediately.",
-      "resetPasswordConfirm": "Reset Password",
-      "panelUrl": "Panel URL",
-      "panelUrlDesc": "Open your Pterodactyl control panel",
-      "launch": "Launch",
-      "emailCopied": "Email copied to clipboard.",
-      "passwordCopied": "Password copied to clipboard.",
-      "failedToCopy": "Failed to copy to clipboard.",
-      "passwordResetSuccess": "Password reset successfully!",
-      "provisioning": "Provisioning",
-      "failedToFetch": "Failed to Fetch",
-      "provisioningDesc": "If you just registered, your account may still be provisioning. Please wait a moment and try refreshing the page.",
-      "fetchErrorDesc": "There was an issue retrieving your panel credentials. Please check your connection or contact support if the problem persists.",
-      "refresh": "Refresh"
-    },
-    "GlobalErrors": {
+    "controlPanel": "Control Panel",
+    "controlPanelDesc": "Manage access to your Pterodactyl control panel.",
+    "colCredential": "Credential",
+    "colValue": "Value",
+    "colAction": "Action",
+    "emailAddress": "Email address",
+    "emailAddressDesc": "Your Pterodactyl login",
+    "noEmailLinked": "No email linked",
+    "copy": "Copy",
+    "password": "Password",
+    "passwordDesc": "Your panel authentication password",
+    "reset": "Reset",
+    "resetting": "Resetting...",
+    "resetPanelPasswordTitle": "Reset Panel Password",
+    "resetPanelPasswordBody": "Are you sure you want to reset your panel password? Your old password will stop working immediately.",
+    "resetPasswordConfirm": "Reset Password",
+    "panelUrl": "Panel URL",
+    "panelUrlDesc": "Open your Pterodactyl control panel",
+    "launch": "Launch",
+    "emailCopied": "Email copied to clipboard.",
+    "passwordCopied": "Password copied to clipboard.",
+    "failedToCopy": "Failed to copy to clipboard.",
+    "passwordResetSuccess": "Password reset successfully!",
+    "provisioning": "Provisioning",
+    "failedToFetch": "Failed to Fetch",
+    "provisioningDesc": "If you just registered, your account may still be provisioning. Please wait a moment and try refreshing the page.",
+    "fetchErrorDesc": "There was an issue retrieving your panel credentials. Please check your connection or contact support if the problem persists.",
+    "refresh": "Refresh"
+  },
+  "GlobalErrors": {
     "notAuthenticated": "Not authenticated",
     "authenticationRequired": "Authentication required",
     "failed": "Failed",
@@ -627,6 +628,14 @@
     "codeUpdatedSuccess": "Referral code updated successfully!",
     "failedToUpdateCode": "Failed to update code",
     "unexpectedError": "An unexpected error occurred. Please try again."
+  },
+  "Banned": {
+    "title": "Account Banned",
+    "subtitle": "You cannot access the service at this time.",
+    "reasonLabel": "Reason:",
+    "statusLabel": "Status:",
+    "bannedUntil": "Banned until {date}",
+    "lifetimeBan": "Lifetime ban",
+    "contactSupport": "If you believe this is a mistake, please contact support."
   }
 }
-

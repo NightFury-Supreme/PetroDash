@@ -87,7 +87,8 @@
       "btnEdit": "Editar",
       "sending": "Enviando...",
       "sendVerifyBtn": "Enviar código de verificación",
-      "helpText": "Revise su bandeja de entrada y la carpeta de spam para encontrar el código. Caduca en 15 minutos."
+      "helpText": "Revise su bandeja de entrada y la carpeta de spam para encontrar el código. Caduca en 15 minutos.",
+      "subtitleCard": "Asegura tu cuenta"
     },
     "errors": {
       "missingFields": "Por favor completa todos los campos.",
@@ -624,6 +625,14 @@
     "codeUpdatedSuccess": "¡Código de referido actualizado exitosamente!",
     "failedToUpdateCode": "Error al actualizar el código",
     "unexpectedError": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo."
+  },
+  "Banned": {
+    "title": "Cuenta Prohibida",
+    "subtitle": "No puedes acceder al servicio en este momento.",
+    "reasonLabel": "Motivo:",
+    "statusLabel": "Estado:",
+    "bannedUntil": "Prohibido hasta {date}",
+    "lifetimeBan": "Prohibición de por vida",
+    "contactSupport": "Si crees que esto es un error, por favor contacta al soporte."
   }
 }
-

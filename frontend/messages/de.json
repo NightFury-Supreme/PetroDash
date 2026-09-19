@@ -87,7 +87,8 @@
       "btnEdit": "Bearbeiten",
       "sending": "Senden...",
       "sendVerifyBtn": "Bestätigungscode senden",
-      "helpText": "Überprüfen Sie Ihren Posteingang und Spam-Ordner. Der Code läuft in 15 Minuten ab."
+      "helpText": "Überprüfen Sie Ihren Posteingang und Spam-Ordner. Der Code läuft in 15 Minuten ab.",
+      "subtitleCard": "Sichern Sie Ihr Konto"
     },
     "errors": {
       "missingFields": "Bitte füllen Sie alle Felder aus.",
@@ -624,6 +625,14 @@
     "codeUpdatedSuccess": "Empfehlungscode erfolgreich aktualisiert!",
     "failedToUpdateCode": "Code konnte nicht aktualisiert werden",
     "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut."
+  },
+  "Banned": {
+    "title": "Konto Gesperrt",
+    "subtitle": "Sie können derzeit nicht auf den Dienst zugreifen.",
+    "reasonLabel": "Grund:",
+    "statusLabel": "Status:",
+    "bannedUntil": "Gesperrt bis {date}",
+    "lifetimeBan": "Lebenslange Sperre",
+    "contactSupport": "Wenn Sie glauben, dass dies ein Fehler ist, kontaktieren Sie bitte den Support."
   }
 }
-

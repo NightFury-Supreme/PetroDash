@@ -67,6 +67,13 @@ export function PanelContent() {
 
   if (error) {
     const isPending = error.toLowerCase().includes("pending");
+    
+    // Catch common raw English errors from browser/backend and translate them
+    let displayError = error;
+    if (error.toLowerCase() === "failed to fetch" || error.toLowerCase().includes("network error")) {
+      displayError = t("failedToFetchTitle", { defaultMessage: "Network Error" });
+    }
+
     return (
       <ErrorState
         icon={
@@ -77,7 +84,7 @@ export function PanelContent() {
           )
         }
         kicker={isPending ? t("provisioning") : t("failedToFetch")}
-        title={error}
+        title={displayError}
         description={
           <p>
             {isPending ? t("provisioningDesc") : t("fetchErrorDesc")}

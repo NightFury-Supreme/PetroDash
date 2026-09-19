@@ -1,17 +1,19 @@
 "use client";
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
+import { useTranslations } from "next-intl";
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "@/i18n/routing";
 
 export default function BannedPage() {
   const router = useRouter();
+  const t = useTranslations("Banned");
   const [reason, setReason] = useState<string>("");
   const [until, setUntil] = useState<string | null>(null);
 
   useEffect(() => {
     try {
-      const r = sessionStorage.getItem("ban_reason") || "Your account has been banned.";
+      const r = sessionStorage.getItem("ban_reason") || t("title");
       const u = sessionStorage.getItem("ban_until");
       setReason(r);
       setUntil(u);
@@ -38,7 +40,7 @@ export default function BannedPage() {
     check();
     const id = setInterval(check, 5000);
     return () => { active = false; clearInterval(id); };
-  }, []);
+  }, [router, t]);
 
   const untilText = useMemo(() => (until ? new Date(until).toLocaleString() : null), [until]);
 
@@ -49,22 +51,22 @@ export default function BannedPage() {
           <div className="w-14 h-14 rounded-2xl bg-[#3a0d0d] flex items-center justify-center">
             <i className="fas fa-ban text-red-400 text-2xl"></i>
           </div>
-          <h1 className="text-3xl font-extrabold text-white">Account Banned</h1>
+          <h1 className="text-3xl font-extrabold text-white">{t("title")}</h1>
         </div>
-        <p className="text-[#AAAAAA] mb-4">You cannot access the service at this time.</p>
+        <p className="text-[#AAAAAA] mb-4">{t("subtitle")}</p>
         <div className="space-y-2">
           <div className="text-sm">
-            <span className="text-[#AAAAAA]">Reason:</span> <span className="font-medium">{reason}</span>
+            <span className="text-[#AAAAAA]">{t("reasonLabel")}</span> <span className="font-medium">{reason}</span>
           </div>
           <div className="text-sm">
-            <span className="text-[#AAAAAA]">Status:</span> {untilText ? (
-              <span className="font-medium"> Banned until {untilText}</span>
+            <span className="text-[#AAAAAA]">{t("statusLabel")}</span> {untilText ? (
+              <span className="font-medium"> {t("bannedUntil", { date: untilText })}</span>
             ) : (
-              <span className="font-medium"> Lifetime ban</span>
+              <span className="font-medium"> {t("lifetimeBan")}</span>
             )}
           </div>
         </div>
-        <div className="mt-6 text-xs text-[#888]">If you believe this is a mistake, please contact support.</div>
+        <div className="mt-6 text-xs text-[#888]">{t("contactSupport")}</div>
       </div>
     </div>
   );

@@ -87,7 +87,8 @@
       "btnEdit": "Éditer",
       "sending": "Envoi en cours...",
       "sendVerifyBtn": "Envoyer le code de vérification",
-      "helpText": "Vérifiez votre boîte de réception et vos spams. Le code expire dans 15 minutes."
+      "helpText": "Vérifiez votre boîte de réception et vos spams. Le code expire dans 15 minutes.",
+      "subtitleCard": "Sécurisez votre compte"
     },
     "errors": {
       "missingFields": "Veuillez remplir tous les champs.",
@@ -594,6 +595,14 @@
     "codeUpdatedSuccess": "Code de parrainage mis à jour avec succès !",
     "failedToUpdateCode": "Échec de la mise à jour du code",
     "unexpectedError": "Une erreur inattendue s'est produite. Veuillez réessayer."
+  },
+  "Banned": {
+    "title": "Compte Banni",
+    "subtitle": "Vous ne pouvez pas accéder au service pour le moment.",
+    "reasonLabel": "Raison :",
+    "statusLabel": "Statut :",
+    "bannedUntil": "Banni jusqu'au {date}",
+    "lifetimeBan": "Bannissement à vie",
+    "contactSupport": "Si vous pensez que c'est une erreur, veuillez contacter le support."
   }
 }
-
