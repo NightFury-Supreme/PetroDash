@@ -1,11 +1,17 @@
-import React from 'react';
-import { Users, Coins, CheckCircle2, Link2, Pencil } from 'lucide-react';
-import { SummaryItem } from '@/components/referrals/SummaryItem';
+"use client";
+
+import React from "react";
+import { useTranslations } from "next-intl";
+import { Users, Coins, CheckCircle2, Link2, Pencil } from "lucide-react";
+import { SummaryItem } from "@/components/referrals/SummaryItem";
 
 export default function ReferralsSkeleton() {
+  const t = useTranslations("Referrals");
+
   return (
     <div className="p-4 sm:p-6 bg-[#0f0f0f] min-h-screen text-white">
       <div className="flex flex-col h-full space-y-6">
+
         {/* HEADER */}
         <header>
           <div className="flex items-start justify-between gap-6">
@@ -20,9 +26,9 @@ export default function ReferralsSkeleton() {
 
         {/* SUMMARY */}
         <section className="grid grid-cols-1 border-y border-white/[0.07] sm:grid-cols-3">
-          <SummaryItem icon={<Users size={16} />} label="Users Referred" value={0} suffix="users" loading={true} />
-          <SummaryItem icon={<Coins size={16} />} label="Coins Earned" value={0} suffix="coins" loading={true} />
-          <SummaryItem icon={<CheckCircle2 size={16} />} label="Successful" value={0} suffix="rewards" loading={true} />
+          <SummaryItem icon={<Users size={16} />} label={t("usersReferred")} value={0} suffix={t("suffixUsers")} loading={true} />
+          <SummaryItem icon={<Coins size={16} />} label={t("coinsEarned")} value={0} suffix={t("suffixCoins")} loading={true} />
+          <SummaryItem icon={<CheckCircle2 size={16} />} label={t("successful")} value={0} suffix={t("suffixRewards")} loading={true} />
         </section>
 
         {/* REFERRAL LINK */}
@@ -61,6 +67,7 @@ export default function ReferralsSkeleton() {
             <button
               type="button"
               disabled
+              aria-label={t("locked")}
               className="flex h-9 shrink-0 items-center justify-center gap-2 rounded-md border px-4 text-[11px] font-medium transition-all cursor-not-allowed border-white/[0.06] bg-transparent"
             >
               <div className="h-4 w-16 rounded bg-white/[0.04] animate-pulse" />
@@ -79,10 +86,10 @@ export default function ReferralsSkeleton() {
 
           {/* TABLE HEADER */}
           <div className="hidden grid-cols-[minmax(300px,1fr)_180px_140px] items-center border-b border-white/[0.06] px-5 pb-3 md:grid">
-            <div className="h-3 w-12 bg-[#1a1a1a] animate-pulse rounded" />
-            <div className="h-3 w-12 bg-[#1a1a1a] animate-pulse rounded" />
+            <div className="h-2 w-12 bg-[#1a1a1a] animate-pulse rounded" />
+            <div className="h-2 w-12 bg-[#1a1a1a] animate-pulse rounded" />
             <div className="flex justify-end">
-              <div className="h-3 w-12 bg-[#1a1a1a] animate-pulse rounded" />
+              <div className="h-2 w-12 bg-[#1a1a1a] animate-pulse rounded" />
             </div>
           </div>
 

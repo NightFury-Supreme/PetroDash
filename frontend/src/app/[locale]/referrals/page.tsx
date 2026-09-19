@@ -1,7 +1,8 @@
 "use client";
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { Pagination } from "@/components/Pagination";
 import {
   Users,
@@ -29,6 +30,7 @@ const USERS_PER_PAGE = 5;
 -------------------------------------------------------------------------- */
 
 export default function ReferralsPage() {
+  const t = useTranslations("Referrals");
   const [copied, setCopied] = React.useState(false);
   const [page, setPage] = React.useState(1);
 
@@ -37,7 +39,7 @@ export default function ReferralsPage() {
   const [users, setUsers] = useState<ReferralUser[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalCoins, setTotalCoins] = useState(0);
-  
+
   const [referralCode, setReferralCode] = useState("");
   const [referralLink, setReferralLink] = useState("");
   const [customCodeUnlocked, setCustomCodeUnlocked] = useState(false);
@@ -50,13 +52,16 @@ export default function ReferralsPage() {
   const [saveStatus, setSaveStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const { showError, showSuccess } = useToast();
 
-  // Fetch stats and user settings
-  const fetchMe = async () => {
+  /* -----------------------------------------------------------------------
+     FETCH ME
+  ----------------------------------------------------------------------- */
+
+  const fetchMe = useCallback(async () => {
     try {
       setMeLoading(true);
       const token = localStorage.getItem("auth_token");
       if (!token) return;
-      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/referrals/me`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/referrals/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -67,85 +72,81 @@ export default function ReferralsPage() {
         setReferralLink(data.link);
         setCustomCodeUnlocked(data.canCustomize);
         setReferralThreshold(data.minInvites);
-        setSuccessfulReferrals(data.referredCount); // Server tracks verified successful referrals here
+        setSuccessfulReferrals(data.referredCount);
         setReferrerCoins(data.referrerCoins || 50);
       } else {
-        throw new Error('Failed to load referral statistics');
+        throw new Error(t("failedToLoadStats"));
       }
     } catch (err: any) {
-      console.error(err); showError(err.message || 'An unexpected error occurred');
+      showError(err.message || t("unexpectedError"));
     } finally {
       setMeLoading(false);
     }
-  };
+  }, [t, showError]);
 
-  // Fetch paginated users
-  const fetchUsers = async () => {
+  /* -----------------------------------------------------------------------
+     FETCH USERS
+  ----------------------------------------------------------------------- */
+
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("auth_token");
       if (!token) return;
-      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/referrals/list?page=${page}&limit=${USERS_PER_PAGE}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetchWithRetry(
+        `${process.env.NEXT_PUBLIC_API_BASE || ""}/api/referrals/list?page=${page}&limit=${USERS_PER_PAGE}`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
       if (res.ok) {
         const data = await res.json();
         setUsers(data.users);
-        setTotalUsers(data.total); // Total registered users (pending + earned)
+        setTotalUsers(data.total);
       } else {
-        throw new Error('Failed to fetch referred users');
+        throw new Error(t("failedToLoadUsers"));
       }
     } catch (err: any) {
-      console.error(err);
-      showError(err.message || 'An unexpected error occurred');
+      showError(err.message || t("unexpectedError"));
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, t, showError]);
 
   useEffect(() => {
     fetchMe();
-  }, []);
+  }, [fetchMe]);
 
   useEffect(() => {
     fetchUsers();
-  }, [page]);
+  }, [fetchUsers]);
 
   const totalPages = Math.max(1, Math.ceil(totalUsers / USERS_PER_PAGE));
 
-
-  /* ------------------------------------------------------------------------
+  /* -----------------------------------------------------------------------
      COPY
-  ------------------------------------------------------------------------ */
+  ----------------------------------------------------------------------- */
 
   function handleCopy() {
     navigator.clipboard.writeText(referralLink);
     setCopied(true);
-    showSuccess("Copied to clipboard!");
+    showSuccess(t("copiedToClipboard"));
     setTimeout(() => setCopied(false), 2000);
   }
 
-
-  /* ------------------------------------------------------------------------
+  /* -----------------------------------------------------------------------
      EDIT CODE
-  ------------------------------------------------------------------------ */
+  ----------------------------------------------------------------------- */
 
   function startEditingCode() {
-    if (!customCodeUnlocked) {
-      return;
-    }
-
+    if (!customCodeUnlocked) return;
     setDraftCode(referralCode);
     setEditingCode(true);
   }
-
 
   function cancelEditingCode() {
     setDraftCode(referralCode);
     setEditingCode(false);
     setSaveStatus("idle");
   }
-
 
   async function saveReferralCode() {
     const normalized = draftCode
@@ -158,7 +159,7 @@ export default function ReferralsPage() {
     setSaveStatus("loading");
     try {
       const token = localStorage.getItem("auth_token");
-      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/referrals/code`, {
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/referrals/code`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -171,11 +172,11 @@ export default function ReferralsPage() {
         setReferralCode(data.code);
         setDraftCode(data.code);
         setReferralLink(referralLink.replace(/[^/]+$/, data.code));
-        showSuccess("Referral code updated successfully!");
+        showSuccess(t("codeUpdatedSuccess"));
         setEditingCode(false);
       } else {
-        let errorMsg = data.error || "Failed to update code";
-        if (data.details && data.details.fieldErrors) {
+        let errorMsg = data.error || t("failedToUpdateCode");
+        if (data.details?.fieldErrors) {
           const fields = Object.keys(data.details.fieldErrors);
           if (fields.length > 0) {
             errorMsg = data.details.fieldErrors[fields[0]][0];
@@ -183,9 +184,8 @@ export default function ReferralsPage() {
         }
         showError(errorMsg);
       }
-    } catch (err) {
-      console.error(err);
-      showError("An unexpected error occurred. Please try again.");
+    } catch {
+      showError(t("unexpectedError"));
     } finally {
       setSaveStatus("idle");
     }
@@ -206,11 +206,11 @@ export default function ReferralsPage() {
             <div>
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-semibold tracking-tight text-orange-500">
-                  Referrals
+                  {t("title")}
                 </h1>
               </div>
               <p className="mt-2 text-sm text-white/35">
-                Share your link to earn {referrerCoins} coins per user! New users also get a bonus.
+                {t("subtitle", { coins: referrerCoins })}
               </p>
             </div>
           </div>
@@ -223,21 +223,21 @@ export default function ReferralsPage() {
         <section className="grid grid-cols-1 border-y border-white/[0.07] sm:grid-cols-3">
           <SummaryItem
             icon={<Users size={16} />}
-            label="Users Referred"
+            label={t("usersReferred")}
             value={totalUsers}
-            suffix="users"
+            suffix={t("suffixUsers")}
           />
           <SummaryItem
             icon={<Coins size={16} />}
-            label="Coins Earned"
+            label={t("coinsEarned")}
             value={totalCoins}
-            suffix="coins"
+            suffix={t("suffixCoins")}
           />
           <SummaryItem
             icon={<CheckCircle2 size={16} />}
-            label="Successful"
+            label={t("successful")}
             value={successfulReferrals}
-            suffix="rewards"
+            suffix={t("suffixRewards")}
           />
         </section>
 
@@ -249,10 +249,10 @@ export default function ReferralsPage() {
           <div className="mb-3 flex items-center justify-between">
             <div>
               <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-white/25">
-                Your referral link
+                {t("yourReferralLink")}
               </p>
               <p className="mt-1 text-xs text-white/20">
-                Share this link with friends and communities.
+                {t("shareWithFriends")}
               </p>
             </div>
             <Link2 size={15} className="text-white/20" />
@@ -269,17 +269,18 @@ export default function ReferralsPage() {
             <button
               type="button"
               onClick={handleCopy}
+              aria-label={copied ? t("copied") : t("copy")}
               className="flex h-12 shrink-0 items-center gap-2 border-l border-white/[0.07] px-5 text-xs font-medium transition hover:bg-white/[0.04]"
             >
               {copied ? (
                 <>
                   <Check size={14} className="text-emerald-400" />
-                  <span className="text-emerald-400">Copied</span>
+                  <span className="text-emerald-400">{t("copied")}</span>
                 </>
               ) : (
                 <>
                   <Copy size={14} className="text-white/45" />
-                  <span className="text-white/55">Copy</span>
+                  <span className="text-white/55">{t("copy")}</span>
                 </>
               )}
             </button>
@@ -310,22 +311,22 @@ export default function ReferralsPage() {
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="text-sm font-semibold">
-                    Custom referral code
+                    {t("customCode")}
                   </h2>
                   {customCodeUnlocked && (
                     <span className="rounded-full bg-orange-500/[0.08] px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider text-orange-400">
-                      Unlocked
+                      {t("unlocked")}
                     </span>
                   )}
                 </div>
 
                 {customCodeUnlocked ? (
                   <p className="mt-1 text-xs text-white/30">
-                    You've reached {referralThreshold} referrals. You can now customize your referral code.
+                    {t("unlockedDescription", { threshold: referralThreshold })}
                   </p>
                 ) : (
                   <p className="mt-1 text-xs text-white/30">
-                    Refer {referralThreshold} users to unlock custom referral codes.
+                    {t("lockedDescription", { threshold: referralThreshold })}
                   </p>
                 )}
               </div>
@@ -335,6 +336,7 @@ export default function ReferralsPage() {
               type="button"
               disabled={!customCodeUnlocked}
               onClick={startEditingCode}
+              aria-label={customCodeUnlocked ? t("editCode") : t("locked")}
               className={`flex h-9 shrink-0 items-center justify-center gap-2 rounded-md border px-4 text-[11px] font-medium transition-all ${
                 customCodeUnlocked
                   ? "border-[#2A2A2A] bg-[#1A1A1A] text-[#888] hover:border-[#FF5722]/30 hover:bg-[#FF5722]/[0.06] hover:text-[#FF5722]"
@@ -343,11 +345,11 @@ export default function ReferralsPage() {
             >
               {customCodeUnlocked ? (
                 <>
-                  <Pencil size={13} /> Edit code
+                  <Pencil size={13} /> {t("editCode")}
                 </>
               ) : (
                 <>
-                  <Lock size={13} /> Locked
+                  <Lock size={13} /> {t("locked")}
                 </>
               )}
             </button>
@@ -359,7 +361,7 @@ export default function ReferralsPage() {
               <div className="flex flex-col gap-3 sm:flex-row">
                 <div className="flex flex-1 items-center overflow-hidden rounded-md border border-white/[0.08] bg-[#101010]">
                   <span className="border-r border-white/[0.06] px-3 text-xs text-white/20">
-                    CODE
+                    {t("codeLabel")}
                   </span>
                   <input
                     type="text"
@@ -371,8 +373,9 @@ export default function ReferralsPage() {
                     maxLength={20}
                     minLength={3}
                     autoFocus
+                    aria-label={t("codeLabel")}
                     className="h-10 min-w-0 flex-1 bg-transparent px-3 text-sm font-medium tracking-wider text-white outline-none placeholder:text-white/15"
-                    placeholder="ENTER-CODE"
+                    placeholder={t("codePlaceholder")}
                   />
                 </div>
 
@@ -383,7 +386,7 @@ export default function ReferralsPage() {
                     disabled={saveStatus === "loading"}
                     className="flex h-10 items-center gap-2 rounded-md border border-white/[0.07] px-4 text-xs text-white/40 transition hover:bg-white/[0.04] hover:text-white disabled:opacity-50"
                   >
-                    <X size={13} /> Cancel
+                    <X size={13} /> {t("cancel")}
                   </button>
 
                   <button
@@ -395,19 +398,19 @@ export default function ReferralsPage() {
                     {saveStatus === "loading" ? (
                       <>
                         <Loader2 size={13} className="animate-spin" />
-                        Saving...
+                        {t("saving")}
                       </>
                     ) : (
                       <>
                         <Save size={13} />
-                        Save code
+                        {t("saveCode")}
                       </>
                     )}
                   </button>
                 </div>
               </div>
               <p className="mt-3 text-[10px] text-white/20">
-                Your referral link will automatically use the new code.
+                {t("linkAutoUpdates")}
               </p>
             </div>
           )}
@@ -420,18 +423,18 @@ export default function ReferralsPage() {
         <section>
           <div className="mb-5 flex items-end justify-between border-t border-white/[0.07] pt-7">
             <div>
-              <h2 className="text-base font-semibold">Referred users</h2>
+              <h2 className="text-base font-semibold">{t("referredUsers")}</h2>
               <p className="mt-1 text-xs text-white/25">
-                Users who joined using your referral link.
+                {t("referredUsersSubtitle")}
               </p>
             </div>
           </div>
 
           {/* TABLE HEADER */}
           <div className="hidden grid-cols-[minmax(300px,1fr)_180px_140px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
-            <span>User</span>
-            <span>Joined</span>
-            <span className="text-right">Status</span>
+            <span>{t("tableUser")}</span>
+            <span>{t("tableJoined")}</span>
+            <span className="text-right">{t("tableStatus")}</span>
           </div>
 
           {/* USER LIST */}
@@ -459,8 +462,8 @@ export default function ReferralsPage() {
             ) : users.length === 0 ? (
               <div className="py-12 text-center flex flex-col items-center">
                 <Users className="w-8 h-8 text-white/10 mb-3" />
-                <p className="text-white/40 text-sm">No referrals yet</p>
-                <p className="text-white/20 text-xs mt-1">Share your link to get started</p>
+                <p className="text-white/40 text-sm">{t("noReferrals")}</p>
+                <p className="text-white/20 text-xs mt-1">{t("noReferralsHint")}</p>
               </div>
             ) : (
               users.map((user, index) => (
@@ -479,7 +482,7 @@ export default function ReferralsPage() {
             pageSize={USERS_PER_PAGE}
             onPageChange={setPage}
             loading={loading}
-            itemName="users"
+            itemName={t("suffixUsers")}
           />
         </section>
 

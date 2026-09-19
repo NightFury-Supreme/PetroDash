@@ -1,4 +1,7 @@
+"use client";
+
 import React from "react";
+import { useTranslations } from "next-intl";
 import { CheckCircle2, Clock3 } from "lucide-react";
 import { ReferralUser } from "./types";
 
@@ -6,25 +9,21 @@ import { ReferralUser } from "./types";
    PRIVACY HELPERS
 ========================================================================== */
 
-function maskName(name: string) {
+function maskName(name: string): string {
   return name
     .split(" ")
     .map((part) => {
       if (!part) return "";
-      if (part.length === 1) {
-        return "*";
-      }
+      if (part.length === 1) return "*";
       return `${part.charAt(0)}${"*".repeat(Math.min(part.length - 1, 3))}`;
     })
     .join(" ");
 }
 
-function maskEmail(email: string) {
+function maskEmail(email: string): string {
   const [local, domain] = email.split("@");
 
-  if (!local || !domain) {
-    return "***";
-  }
+  if (!local || !domain) return "***";
 
   const maskedLocal =
     local.length <= 1
@@ -46,7 +45,13 @@ function maskEmail(email: string) {
   return `${maskedLocal}@${maskedDomain}${extension}`;
 }
 
+/* ==========================================================================
+   COMPONENT
+========================================================================== */
+
 export function ReferralRow({ user }: { user: ReferralUser }) {
+  const t = useTranslations("Referrals");
+
   const initials = user.name
     .split(" ")
     .map((part) => part.charAt(0))
@@ -76,26 +81,26 @@ export function ReferralRow({ user }: { user: ReferralUser }) {
       {/* DATE */}
       <div className="ml-14 md:ml-0">
         <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">
-          Joined
+          {t("joined")}
         </p>
         <span className="text-xs text-white/35">{user.joinedAt}</span>
       </div>
 
-      {/* REWARD */}
+      {/* REWARD / STATUS */}
       <div className="ml-14 flex items-center justify-between md:ml-0 md:block md:text-right">
         <div className="md:inline-block">
           <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">
-            Status
+            {t("status")}
           </p>
           {earned ? (
             <div>
               <span className="text-sm font-semibold text-orange-400">
                 +{user.reward}
               </span>
-              <span className="ml-1 text-[10px] text-white/20">coins</span>
+              <span className="ml-1 text-[10px] text-white/20">{t("coinsUnit")}</span>
             </div>
           ) : (
-            <span className="text-xs text-amber-400/60">Pending</span>
+            <span className="text-xs text-amber-400/60">{t("pending")}</span>
           )}
         </div>
 
@@ -103,12 +108,12 @@ export function ReferralRow({ user }: { user: ReferralUser }) {
           {earned ? (
             <span className="flex items-center gap-1 text-[10px] text-emerald-400/70">
               <CheckCircle2 size={12} />
-              Earned
+              {t("earned")}
             </span>
           ) : (
             <span className="flex items-center gap-1 text-[10px] text-amber-400/60">
               <Clock3 size={12} />
-              Pending
+              {t("pending")}
             </span>
           )}
         </div>

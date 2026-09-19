@@ -1,5 +1,4 @@
 import React from "react";
-import { useTranslations } from "next-intl";
 
 export function GiftHeaderSkeleton() {
   return (
@@ -50,18 +49,16 @@ export function GiftRedeemSkeleton() {
 }
 
 export function GiftCodesTableSkeleton() {
-  const t = useTranslations("Gift");
-  
   return (
     <div className="min-w-0 flex-1 flex flex-col">
       {/* Table header */}
-      <div className="hidden gap-4 grid-cols-[1.8fr_1fr_1fr_70px_90px_80px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 lg:grid">
-        <span>{t("tableCode")}</span>
-        <span>{t("tableReward")}</span>
-        <span>{t("tableExpires")}</span>
-        <span>{t("tableUses")}</span>
-        <span>{t("tableStatus")}</span>
-        <span className="text-right">{t("tableAction")}</span>
+      <div className="hidden gap-4 grid-cols-[1.8fr_1fr_1fr_70px_90px_80px] border-b border-white/[0.06] px-5 pb-3 items-center lg:grid">
+        <div className="h-2 w-12 bg-[#222] rounded animate-pulse" />
+        <div className="h-2 w-16 bg-[#222] rounded animate-pulse" />
+        <div className="h-2 w-14 bg-[#222] rounded animate-pulse" />
+        <div className="h-2 w-10 bg-[#222] rounded animate-pulse" />
+        <div className="h-2 w-12 bg-[#222] rounded animate-pulse" />
+        <div className="h-2 w-12 bg-[#222] rounded animate-pulse justify-self-end" />
       </div>
 
       <div className="divide-y divide-white/[0.06]">
