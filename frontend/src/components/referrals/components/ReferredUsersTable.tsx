@@ -11,7 +11,7 @@ import { useTranslations } from "next-intl";
 import { Users } from "lucide-react";
 import { Pagination } from "@/components/Pagination";
 import { ReferralRow } from "../ReferralRow";
-import type { ReferralUser } from "../../types";
+import type { ReferralUser } from "../types";
 
 interface ReferredUsersTableProps {
   readonly users: ReferralUser[];

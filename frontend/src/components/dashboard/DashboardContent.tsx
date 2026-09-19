@@ -3,7 +3,7 @@ import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { useDashboard } from '../../hooks/useDashboard';
+import { useDashboard } from './hooks/useDashboard';
 import { useProfile } from '../../hooks/useProfile';
 import { useToast } from '@/components/ui/ToastProvider';
 import { MetricCard } from './MetricCard';

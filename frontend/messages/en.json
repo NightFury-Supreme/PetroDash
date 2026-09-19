@@ -288,7 +288,9 @@
     "warnCannotUndo": "This action cannot be undone.",
     "warnPermDelete": "The server will be permanently deleted from the panel.",
     "warnDataLost": "All associated data and configurations will be lost.",
-    "exceedsLimit": "Exceeds available limit by {num}"
+    "exceedsLimit": "Exceeds available limit by {num}",
+    "emailVerifiedSuccess": "Email address successfully verified! You now have full access.",
+    "failedToLoadDashboard": "Failed to Load Dashboard"
   },
   "Footer": {
     "allSystemsOperational": "All Systems Operational",
