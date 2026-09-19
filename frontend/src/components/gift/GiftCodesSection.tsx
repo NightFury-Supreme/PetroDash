@@ -1,14 +1,18 @@
+/* ==========================================================================
+   GiftCodesSection — Paginated view of active and inactive gift codes
+   WCAG 2.2: accessible pagination, proper list labeling
+========================================================================== */
+
 "use client";
 
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Ticket, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { GiftCodeRow } from "./GiftCodeRow";
 import { GiftCodesTableSkeleton } from "@/components/skeletons/gift/GiftSkeleton";
+import { useGiftCodes } from "./hooks/useGiftCodes";
 import { useToast } from "@/components/ui/ToastProvider";
-
-type TabStatus = "Active" | "Inactive";
+import type { TabStatus } from "./types";
 
 interface GiftCodesSectionProps {
   onRefreshRef?: (fn: () => void) => void;
@@ -31,67 +35,34 @@ function rewardLabel(g: any, t: (key: string) => string): string {
 
 export function GiftCodesSection({ onRefreshRef, onInitialLoad }: GiftCodesSectionProps) {
   const t = useTranslations("Gift");
-  const { showError, showSuccess } = useToast();
-  const [codes, setCodes] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [initialFetchDone, setInitialFetchDone] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabStatus>("Active");
+  const { showSuccess, showError } = useToast();
+  const {
+    codes,
+    loading,
+    page,
+    totalCodes,
+    totalPages,
+    activeCount,
+    inactiveCount,
+    activeTab,
+    pageSize,
+    setActiveTab,
+    setPage,
+    refetch,
+    initialFetchDone
+  } = useGiftCodes();
 
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalCodes, setTotalCodes] = useState(0);
-  const [activeCount, setActiveCount] = useState(0);
-  const [inactiveCount, setInactiveCount] = useState(0);
-  const CODES_PER_PAGE = 10;
+  // Expose refetch to parent (drawer)
+  useEffect(() => {
+    if (onRefreshRef) onRefreshRef(refetch);
+  }, [refetch, onRefreshRef]);
 
-  const loadCodes = useCallback(async () => {
-    try {
-      setLoading(true);
-      const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-      if (!token) return;
-      const statusParam = activeTab.toLowerCase();
-      const res = await fetchWithRetry(
-        `${process.env.NEXT_PUBLIC_API_BASE || ""}/api/gifts/mine?paginate=true&page=${page}&pageSize=${CODES_PER_PAGE}&status=${statusParam}`,
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-      let d: any = {};
-      try { d = await res.json(); } catch { /* ignore parse errors */ }
-      if (d.data) {
-        setCodes(d.data);
-        setTotalCodes(d.meta?.total || 0);
-        setTotalPages(Math.ceil((d.meta?.total || 0) / CODES_PER_PAGE) || 1);
-        setActiveCount(d.meta?.activeCount || 0);
-        setInactiveCount(d.meta?.inactiveCount || 0);
-      } else if (Array.isArray(d)) {
-        setCodes(d);
-      } else if (!res.ok) {
-        throw new Error(d.error || t("failedToLoadCodes"));
-      }
-    } catch (err: any) {
-      showError(err.message || t("failedToLoadCodes"));
-    } finally {
-      setLoading(false);
-      if (!initialFetchDone) {
-        setInitialFetchDone(true);
-        onInitialLoad?.();
-      }
+  // Expose initial load to parent (skeleton logic)
+  useEffect(() => {
+    if (initialFetchDone && onInitialLoad) {
+      onInitialLoad();
     }
-  }, [page, activeTab, initialFetchDone, onInitialLoad]); // omitted t and showError and onRefreshRef to prevent unnecessary re-fetches
-
-  // Expose loadCodes to parent
-  useEffect(() => {
-    if (onRefreshRef) {
-      onRefreshRef(loadCodes);
-    }
-  }, [loadCodes, onRefreshRef]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [activeTab]);
-
-  useEffect(() => {
-    loadCodes();
-  }, [loadCodes]);
+  }, [initialFetchDone, onInitialLoad]);
 
   const copyCode = async (code: string) => {
     try {
@@ -105,13 +76,13 @@ export function GiftCodesSection({ onRefreshRef, onInitialLoad }: GiftCodesSecti
   const tabs: TabStatus[] = ["Active", "Inactive"];
 
   return (
-    <section>
+    <section aria-label={t("management")}>
       <div className="flex flex-col lg:flex-row gap-8 items-start pt-6">
         {/* LEFT NAV */}
         <aside className="w-full lg:w-48 shrink-0">
           <div className="sticky top-6">
             <div className="mb-4">
-              <p className="text-[11px] font-medium uppercase tracking-widest text-[#555]">{t("statusFilter")}</p>
+              <h3 className="text-[11px] font-medium uppercase tracking-widest text-[#555]">{t("statusFilter")}</h3>
             </div>
             <nav className="space-y-1" aria-label={t("statusFilter")}>
               {tabs.map((tab) => {
@@ -135,7 +106,7 @@ export function GiftCodesSection({ onRefreshRef, onInitialLoad }: GiftCodesSecti
                         selected
                           ? tab === "Active" ? "bg-[#00FF88]" : "bg-zinc-400"
                           : "bg-zinc-600"
-                      }`} />
+                      }`} aria-hidden="true" />
                       <span className="truncate">{tabLabel}</span>
                     </span>
                     <span className={`text-xs ${selected ? "text-zinc-400" : "text-zinc-600"}`}>{count}</span>
@@ -154,25 +125,25 @@ export function GiftCodesSection({ onRefreshRef, onInitialLoad }: GiftCodesSecti
         {/* RIGHT */}
         <div className="flex-1 min-w-0 w-full dashboard-content-wrapper mb-6">
           <div className="mb-4">
-            <div className="text-[10px] font-medium uppercase tracking-widest text-[#555] mb-1">{t("management")}</div>
+            <div className="text-[10px] font-medium uppercase tracking-widest text-[#555] mb-1" aria-hidden="true">{t("management")}</div>
             <h2 className="text-base font-semibold tracking-tight text-[#eee]">{t("yourGiftCodes")}</h2>
             <p className="text-xs text-[#888] mt-1">{t("yourGiftCodesSubtitle")}</p>
           </div>
 
-          <div className="mt-4">
+          <div className="mt-4" aria-live="polite" aria-busy={loading}>
             {loading ? (
               <GiftCodesTableSkeleton />
             ) : codes.length > 0 ? (
               <>
-                <div className="hidden gap-4 grid-cols-[1.8fr_1fr_1fr_70px_90px_80px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 lg:grid">
-                  <span>{t("tableCode")}</span>
-                  <span>{t("tableReward")}</span>
-                  <span>{t("tableExpires")}</span>
-                  <span>{t("tableUses")}</span>
-                  <span>{t("tableStatus")}</span>
-                  <span className="text-right">{t("tableAction")}</span>
+                <div role="row" className="hidden gap-4 grid-cols-[1.8fr_1fr_1fr_70px_90px_80px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 lg:grid">
+                  <span role="columnheader">{t("tableCode")}</span>
+                  <span role="columnheader">{t("tableReward")}</span>
+                  <span role="columnheader">{t("tableExpires")}</span>
+                  <span role="columnheader">{t("tableUses")}</span>
+                  <span role="columnheader">{t("tableStatus")}</span>
+                  <span role="columnheader" className="text-right">{t("tableAction")}</span>
                 </div>
-                <div className="divide-y divide-white/[0.06]">
+                <div role="rowgroup" className="divide-y divide-white/[0.06]">
                   {codes.map((g) => (
                     <GiftCodeRow
                       key={g._id}
@@ -196,7 +167,7 @@ export function GiftCodesSection({ onRefreshRef, onInitialLoad }: GiftCodesSecti
             ) : (
               <div className="flex min-h-[260px] items-center justify-center">
                 <div className="text-center">
-                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.02]">
+                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.02]" aria-hidden="true">
                     <Ticket className="h-4 w-4 text-[#555]" />
                   </div>
                   <p className="mt-3 text-sm font-medium text-[#888888]">
@@ -210,23 +181,24 @@ export function GiftCodesSection({ onRefreshRef, onInitialLoad }: GiftCodesSecti
             )}
           </div>
 
+          {/* Pagination */}
           {totalPages > 1 && (
             <div className="mt-5 flex items-center justify-between border-t border-white/[0.06] pt-5">
               <p className="text-[10px] text-white/30">
-                {codes.length > 0 ? (page - 1) * CODES_PER_PAGE + 1 : 0}
+                {codes.length > 0 ? (page - 1) * pageSize + 1 : 0}
                 {"–"}
-                {Math.min(page * CODES_PER_PAGE, totalCodes)} {t("showingOf")} {totalCodes} {t("codes")}
+                {Math.min(page * pageSize, totalCodes)} {t("showingOf")} {totalCodes} {t("codes")}
               </p>
 
-              <div className="flex items-center gap-1">
+              <nav className="flex items-center gap-1" aria-label="Pagination">
                 <button
                   type="button"
                   disabled={page === 1 || loading}
                   onClick={() => setPage((current) => Math.max(1, current - 1))}
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.07] text-white/30 transition hover:bg-white/[0.04] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.07] text-white/30 transition hover:bg-white/[0.04] hover:text-white disabled:cursor-not-allowed disabled:opacity-30 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
                   aria-label="Previous page"
                 >
-                  <ChevronLeft size={14} />
+                  <ChevronLeft size={14} aria-hidden="true" />
                 </button>
 
                 {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => {
@@ -241,7 +213,8 @@ export function GiftCodesSection({ onRefreshRef, onInitialLoad }: GiftCodesSecti
                         type="button"
                         onClick={() => setPage(pageNumber)}
                         disabled={loading}
-                        className={`flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-xs transition ${
+                        aria-current={page === pageNumber ? "page" : undefined}
+                        className={`flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-xs transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/30 ${
                           page === pageNumber
                             ? "bg-orange-500 text-black font-medium"
                             : "text-white/30 hover:bg-white/[0.04] hover:text-white disabled:opacity-50"
@@ -251,7 +224,7 @@ export function GiftCodesSection({ onRefreshRef, onInitialLoad }: GiftCodesSecti
                       </button>
                     );
                   } else if (pageNumber === page - 2 || pageNumber === page + 2) {
-                    return <span key={pageNumber} className="text-white/20 text-xs px-1">...</span>;
+                    return <span key={pageNumber} className="text-white/20 text-xs px-1" aria-hidden="true">...</span>;
                   }
                   return null;
                 })}
@@ -260,12 +233,12 @@ export function GiftCodesSection({ onRefreshRef, onInitialLoad }: GiftCodesSecti
                   type="button"
                   disabled={page === totalPages || loading}
                   onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.07] text-white/30 transition hover:bg-white/[0.04] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.07] text-white/30 transition hover:bg-white/[0.04] hover:text-white disabled:cursor-not-allowed disabled:opacity-30 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
                   aria-label="Next page"
                 >
-                  <ChevronRight size={14} />
+                  <ChevronRight size={14} aria-hidden="true" />
                 </button>
-              </div>
+              </nav>
             </div>
           )}
         </div>

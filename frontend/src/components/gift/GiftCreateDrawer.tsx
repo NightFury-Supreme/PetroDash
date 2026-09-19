@@ -1,12 +1,15 @@
+/* ==========================================================================
+   GiftCreateDrawer — Slide-out drawer for creating gift codes
+   Separates UI completely from API submission logic
+========================================================================== */
+
 "use client";
 
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
-import React, { useState } from "react";
+import React from "react";
 import { Gift, Coins, Check, Copy } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Drawer } from "@/components/ui/Drawer";
-import { useProfile } from "@/hooks/useProfile";
-import { useToast } from "@/components/ui/ToastProvider";
+import { useCreateGift } from "./hooks/useCreateGift";
 
 interface GiftCreateDrawerProps {
   isOpen: boolean;
@@ -16,103 +19,31 @@ interface GiftCreateDrawerProps {
 
 export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawerProps) {
   const t = useTranslations("Gift");
-  const { form: profile } = useProfile();
-  const { showError, showSuccess } = useToast();
-  const [coins, setCoins] = useState("");
-  const [maxRedemptions, setMaxRedemptions] = useState("1");
-  const [expiresInDays, setExpiresInDays] = useState("30");
-  const [description, setDescription] = useState("");
-  const [creating, setCreating] = useState(false);
-  const [createdCode, setCreatedCode] = useState<string | null>(null);
-
-  const coinValue = Number(coins) || 0;
-  const redemptionValue = Number(maxRedemptions) || 0;
-  const totalCost = coinValue * redemptionValue;
-
-  function validate(): boolean {
-    if (!coins.trim() || coinValue <= 0) {
-      showError(t("validationCoins"));
-      return false;
-    }
-    if (coinValue > 1_000_000) {
-      showError(t("validationMaxCoins"));
-      return false;
-    }
-    if (!maxRedemptions.trim() || redemptionValue < 1 || redemptionValue > 100) {
-      showError(t("validationRedemptions"));
-      return false;
-    }
-    if (!expiresInDays.trim() || Number(expiresInDays) < 1) {
-      showError(t("validationExpiration"));
-      return false;
-    }
-    if (totalCost > (profile.coins || 0)) {
-      showError(
-        t("validationInsufficientBalance", {
-          cost: totalCost.toLocaleString(),
-          balance: (profile.coins || 0).toLocaleString(),
-        }),
-      );
-      return false;
-    }
-    return true;
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
-    try {
-      setCreating(true);
-      const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
-      if (!token) { showError(t("loginFirst")); return; }
-
-      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/gifts/create`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          coins: coinValue,
-          maxRedemptions: redemptionValue,
-          expiresInDays: Number(expiresInDays),
-          description,
-        }),
-      });
-
-      let d: any = {};
-      try { d = await res.json(); } catch { /* ignore parse errors */ }
-      if (!res.ok) throw new Error(d?.error || t("failedToCreate"));
-
-      setCreatedCode(d.code);
-      showSuccess(t("createdSuccess", { coins: coinValue.toLocaleString(), redemptions: redemptionValue }));
-    } catch (err: any) {
-      showError(err?.message || t("failedToCreate"));
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const copyCreatedCode = async () => {
-    if (!createdCode) return;
-    try {
-      await navigator.clipboard.writeText(createdCode);
-      showSuccess(t("codeCopied"));
-    } catch {
-      showError(t("copyFailed"));
-    }
-  };
-
-  const reset = () => {
-    setCoins("");
-    setMaxRedemptions("1");
-    setExpiresInDays("30");
-    setDescription("");
-    setCreatedCode(null);
-  };
+  const {
+    coins,
+    maxRedemptions,
+    expiresInDays,
+    description,
+    creating,
+    createdCode,
+    coinValue,
+    redemptionValue,
+    totalCost,
+    profileCoins,
+    setCoins,
+    setMaxRedemptions,
+    setExpiresInDays,
+    setDescription,
+    handleSubmit,
+    reset,
+    copyCreatedCode,
+  } = useCreateGift();
 
   const handleClose = () => { reset(); onClose(); };
   const handleDone = () => { reset(); onCreated(); onClose(); };
 
   const inputCls =
-    "w-full rounded-lg border border-[#222] bg-[#161616] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60";
+    "w-full rounded-lg border border-[#222] bg-[#161616] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus-visible:ring-1 focus-visible:ring-[#FF5722]";
 
   /* ---- Success body ---- */
   const successBody = createdCode ? (
@@ -131,9 +62,10 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
             type="button"
             onClick={copyCreatedCode}
             aria-label={t("copy")}
-            className="inline-flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium transition bg-[#1A0F0C] text-[#FF5722] hover:bg-[#FF5722]/10"
+            className="inline-flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium transition bg-[#1A0F0C] text-[#FF5722] hover:bg-[#FF5722]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5722]/50"
           >
-            <Copy className="h-4 w-4" />{t("copy")}
+            <Copy className="h-4 w-4" aria-hidden="true" />
+            {t("copy")}
           </button>
         </div>
       </div>
@@ -172,7 +104,7 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
 
       <div>
         <label className="mb-2 mt-5 block text-sm font-medium text-[#D4D4D4]">
-          {t("coinsToShare")} <span className="text-[#FF5722]">*</span>
+          {t("coinsToShare")} <span className="text-[#FF5722]" aria-hidden="true">*</span>
         </label>
         <input
           type="number"
@@ -186,12 +118,13 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
           }}
           placeholder={t("coinsPlaceholder")}
           className={inputCls}
+          required
         />
       </div>
 
       <div>
         <label className="mb-2 mt-5 block text-sm font-medium text-[#D4D4D4]">
-          {t("maxRedemptions")} <span className="text-[#FF5722]">*</span>
+          {t("maxRedemptions")} <span className="text-[#FF5722]" aria-hidden="true">*</span>
         </label>
         <input
           type="number"
@@ -205,12 +138,13 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
           }}
           placeholder="e.g. 1"
           className={inputCls}
+          required
         />
       </div>
 
       <div>
         <label className="mb-2 mt-5 block text-sm font-medium text-[#D4D4D4]">
-          {t("expiresInDays")} <span className="text-[#FF5722]">*</span>
+          {t("expiresInDays")} <span className="text-[#FF5722]" aria-hidden="true">*</span>
         </label>
         <input
           type="number"
@@ -224,6 +158,7 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
           }}
           placeholder="e.g. 30"
           className={inputCls}
+          required
         />
       </div>
 
@@ -258,17 +193,17 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
         </div>
         <div className="mt-3 flex items-center justify-between">
           <div className="flex items-center gap-2 shrink-0">
-            <Coins className="h-5 w-5 text-[#FF5722]" />
+            <Coins className="h-5 w-5 text-[#FF5722]" aria-hidden="true" />
             <span className="text-base text-[#D4D4D4]">{t("coinsReserved")}</span>
           </div>
-          <span className={`text-2xl font-semibold truncate ml-4 ${totalCost > (profile.coins || 0) ? "text-red-400" : "text-white"}`}>
+          <span className={`text-2xl font-semibold truncate ml-4 ${totalCost > profileCoins ? "text-red-400" : "text-white"}`}>
             {totalCost.toLocaleString()}
           </span>
         </div>
         <div className="mt-3 flex items-center justify-between text-xs">
           <span className="text-[#555] shrink-0">{t("yourBalance")}</span>
-          <span className={`truncate ml-4 ${totalCost > (profile.coins || 0) ? "text-red-400 font-medium" : "text-[#888]"}`}>
-            {(profile.coins || 0).toLocaleString()} {t("coinsUnit")}
+          <span className={`truncate ml-4 ${totalCost > profileCoins ? "text-red-400 font-medium" : "text-[#888]"}`}>
+            {profileCoins.toLocaleString()} {t("coinsUnit")}
           </span>
         </div>
       </div>
@@ -281,7 +216,7 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
       {createdCode ? (
         <button
           onClick={handleDone}
-          className="flex w-full items-center justify-center rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E]"
+          className="flex w-full items-center justify-center rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
         >
           {t("close")}
         </button>
@@ -289,7 +224,8 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
         <>
           <button
             onClick={onClose}
-            className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
+            type="button"
+            className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
           >
             {t("cancel")}
           </button>
@@ -297,7 +233,7 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
             form="gift-create-form"
             type="submit"
             disabled={creating}
-            className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
           >
             {creating ? t("creating") : t("createGift")}
           </button>
@@ -314,8 +250,8 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
       subtitle={createdCode ? t("drawerCreatedSubtitle") : t("drawerCreateSubtitle")}
       icon={
         createdCode
-          ? <Check className="text-[#00FF88]" size={22} />
-          : <Gift className="text-[#D4D4D4]" size={22} />
+          ? <Check className="text-[#00FF88]" size={22} aria-hidden="true" />
+          : <Gift className="text-[#D4D4D4]" size={22} aria-hidden="true" />
       }
       footer={footer}
     >
