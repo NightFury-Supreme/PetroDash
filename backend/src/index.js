@@ -168,7 +168,8 @@ app.use('/api/gifts', require('./routes/gifts'));
 app.use('/api/tickets', require('./routes/tickets'));
 app.use('/api/paypal', paypalRoutes);
 app.post('/api/paypal/webhook', paypalWebhook);
-app.use('/api/plans', require('./routes/plans'));
+
+app.use('/api/plans', require('./modules/plan/plan.routes'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/user/plans', require('./routes/userPlans'));
 app.use('/api/referrals', require('./routes/referrals'));
@@ -176,7 +177,7 @@ app.use('/api/earn', earnRoutes);
 app.use('/api/oauth', oauthRoutes);
 app.use('/api/activity', require('./routes/activity'));
 app.use('/api/status', require('./routes/status'));
-app.use('/api/coupons', require('./routes/coupons'));
+app.use('/api/coupons', require('./modules/coupon/coupon.routes'));
 app.use('/api/subscriptions', require('./routes/subscriptions'));
 
 const port = process.env.PORT || 4000;
