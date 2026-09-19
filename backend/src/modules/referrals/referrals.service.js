@@ -6,6 +6,7 @@
 const crypto = require('crypto');
 const User = require('../../models/User');
 const { getSettings } = require('../../lib/settings');
+const { getCache, setCache, deleteCache } = require('../../lib/redis');
 
 function generateCode() {
   return (crypto.randomBytes(4).toString('hex') + Date.now().toString(36).slice(-4)).toUpperCase();
@@ -32,9 +33,14 @@ class ReferralsService {
    * Fetch current user's referral stats and ensure they have a code.
    */
   async getReferralStats(userId) {
+    const cacheKey = `referrals:stats:${userId}`;
+    const cached = await getCache(cacheKey);
+    if (cached) return cached;
+
     const user = await User.findById(userId);
     if (!user) throw new Error('NOT_FOUND');
 
+    let isModified = false;
     if (!user.referralCode) {
       for (let i = 0; i < 5; i++) {
         const code = generateCode();
@@ -42,6 +48,10 @@ class ReferralsService {
         if (!exists) { user.referralCode = code; break; }
       }
       if (!user.referralCode) user.referralCode = generateCode();
+      isModified = true;
+    }
+
+    if (isModified) {
       await user.save();
     }
 
@@ -55,7 +65,7 @@ class ReferralsService {
     const referredCoins = Number(s?.referrals?.referredCoins ?? 25);
     const canCustomize = Number(stats.referredCount || 0) >= minInvites;
 
-    return {
+    const result = {
       code: user.referralCode,
       link,
       referredCount: Number(stats.referredCount || 0),
@@ -65,12 +75,19 @@ class ReferralsService {
       referredCoins,
       minInvites
     };
+
+    await setCache(cacheKey, result, 60);
+    return result;
   }
 
   /**
    * Fetch paginated list of users referred by the given user.
    */
   async getReferredUsersList(userId, { page, limit }) {
+    const cacheKey = `referrals:list:${userId}:${page}:${limit}`;
+    const cached = await getCache(cacheKey);
+    if (cached) return cached;
+
     const skip = (page - 1) * limit;
 
     const [users, total] = await Promise.all([
@@ -92,7 +109,9 @@ class ReferralsService {
       };
     });
 
-    return { users: data, total };
+    const result = { users: data, total };
+    await setCache(cacheKey, result, 60);
+    return result;
   }
 
   /**
@@ -119,6 +138,7 @@ class ReferralsService {
     
     try {
       await user.save();
+      await deleteCache(`referrals:stats:${userId}`);
     } catch (saveError) {
       if (saveError.code === 11000) throw new Error('CODE_IN_USE');
       throw saveError;

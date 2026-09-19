@@ -21,8 +21,8 @@ class GiftController {
       
       const changes = { coins: { old: user.coins + totalCost, new: user.coins } };
       const created = { code: gift.code, coins, maxRedemptions, validUntil: gift.validUntil };
-      
       await logUserActivity(req, 'gift.create', { coins, maxRedemptions, changes, created });
+      await writeAudit(req, 'gift.create', 'gift', gift._id.toString(), { code: gift.code, coins, maxRedemptions });
       
       return res.status(201).json({ code: gift.code, coins, maxRedemptions, validUntil: gift.validUntil });
     } catch (error) {
