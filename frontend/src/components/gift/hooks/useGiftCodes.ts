@@ -33,6 +33,7 @@ interface UseGiftCodesResult {
 
 export function useGiftCodes(): UseGiftCodesResult {
   const t = useTranslations("Gift");
+  const tError = useTranslations("BackendErrors");
   const { showError } = useToast();
   
   const [codes, setCodes] = useState<GiftCode[]>([]);
@@ -71,16 +72,27 @@ export function useGiftCodes(): UseGiftCodesResult {
       } else if (Array.isArray(d)) {
         setCodes(d);
       } else if (!res.ok) {
-        throw new Error(d.error || t("failedToLoadCodes"));
+        const code = d?.error?.code;
+        const msg = d?.error?.message || d?.error;
+        throw new Error(code || msg || "failedToLoadCodes");
       }
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : t("failedToLoadCodes");
+    } catch (err: any) {
+      let message = err.message || "failedToLoadCodes";
+      if (message === "failedToLoadCodes") {
+         message = t(message as any);
+      } else {
+         try {
+            message = tError(message as any);
+         } catch(e) {
+            message = tError("ERR_INTERNAL_SERVER");
+         }
+      }
       showError(message);
     } finally {
       setLoading(false);
       setInitialFetchDone(true);
     }
-  }, [page, activeTab, t, showError]);
+  }, [page, activeTab, t, tError, showError]);
 
   useEffect(() => {
     setPage(1);

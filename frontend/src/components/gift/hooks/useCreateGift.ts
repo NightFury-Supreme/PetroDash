@@ -33,6 +33,7 @@ interface UseCreateGiftResult {
 
 export function useCreateGift(): UseCreateGiftResult {
   const t = useTranslations("Gift");
+  const tError = useTranslations("BackendErrors");
   const { form: profile } = useProfile();
   const { showError, showSuccess } = useToast();
 
@@ -105,18 +106,29 @@ export function useCreateGift(): UseCreateGiftResult {
       try { d = await res.json(); } catch { /* ignore parse errors */ }
       
       if (!res.ok) {
-        throw new Error(d?.error || t("failedToCreate"));
+        const code = d?.error?.code;
+        const msg = d?.error?.message || d?.error;
+        throw new Error(code || msg || "failedToCreate");
       }
 
       setCreatedCode(d.code);
       showSuccess(t("createdSuccess", { coins: coinValue.toLocaleString(), redemptions: redemptionValue }));
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : t("failedToCreate");
+    } catch (err: any) {
+      let message = err.message || "failedToCreate";
+      if (message === "failedToCreate" || message === "loginFirst") {
+         message = t(message as any);
+      } else {
+         try {
+            message = tError(message as any);
+         } catch(e) {
+            message = tError("ERR_INTERNAL_SERVER");
+         }
+      }
       showError(message);
     } finally {
       setCreating(false);
     }
-  }, [validate, coinValue, redemptionValue, expiresInDays, description, t, showError, showSuccess]);
+  }, [validate, coinValue, redemptionValue, expiresInDays, description, t, tError, showError, showSuccess]);
 
   const copyCreatedCode = useCallback(async () => {
     if (!createdCode) return;

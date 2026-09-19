@@ -647,6 +647,14 @@
     "ERR_INVALID_QUERY_PARAMS": "Parámetros de consulta no válidos proporcionados",
     "ERR_INVALID_PAYLOAD": "Carga útil no válida proporcionada",
     "ERR_NOT_ELIGIBLE": "No elegible para establecer código personalizado",
-    "ERR_CODE_IN_USE": "Código ya en uso"
+    "ERR_CODE_IN_USE": "Código ya en uso",
+    "ERR_TOO_MANY_ACTIVE_CODES": "Demasiados códigos activos",
+    "ERR_INSUFFICIENT_COINS": "Monedas insuficientes para crear este regalo",
+    "ERR_INVALID_CODE_FORMAT": "Formato de código no válido",
+    "ERR_GIFT_INVALID": "El código de regalo que ingresaste es inválido o está deshabilitado.",
+    "ERR_GIFT_NOT_ACTIVE": "Este código de regalo aún no está activo.",
+    "ERR_GIFT_EXPIRED": "Este código de regalo ha caducado.",
+    "ERR_GIFT_LIMIT_REACHED": "Este código de regalo ha alcanzado su límite máximo de canje.",
+    "ERR_GIFT_ALREADY_REDEEMED": "Ya has canjeado este código de regalo."
   }
 }

@@ -19,6 +19,7 @@ interface UseRedeemGiftResult {
 
 export function useRedeemGift(): UseRedeemGiftResult {
   const t = useTranslations("Gift");
+  const tError = useTranslations("BackendErrors");
   const { showError, showSuccess } = useToast();
   const [redeemCode, setRedeemCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -53,7 +54,9 @@ export function useRedeemGift(): UseRedeemGiftResult {
       try { d = await r.json(); } catch { /* ignore parse errors */ }
       
       if (!r.ok) {
-        throw new Error(d?.error || t("redeemFailed"));
+        const code = d?.error?.code;
+        const msg = d?.error?.message || d?.error;
+        throw new Error(code || msg || "redeemFailed");
       }
 
       const rewards = d?.rewards || {};
@@ -77,13 +80,22 @@ export function useRedeemGift(): UseRedeemGiftResult {
 
       setRedeemCode("");
       showSuccess(parts.join(""));
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : t("redeemFailed");
+    } catch (err: any) {
+      let message = err.message || "redeemFailed";
+      if (message === "redeemFailed" || message === "loginToRedeem") {
+         message = t(message as any);
+      } else {
+         try {
+            message = tError(message as any);
+         } catch(e) {
+            message = tError("ERR_INTERNAL_SERVER");
+         }
+      }
       showError(message);
     } finally {
       setSubmitting(false);
     }
-  }, [redeemCode, t, showError, showSuccess]);
+  }, [redeemCode, t, tError, showError, showSuccess]);
 
   return {
     redeemCode,

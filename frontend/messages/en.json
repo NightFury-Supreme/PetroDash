@@ -650,6 +650,14 @@
     "ERR_INVALID_QUERY_PARAMS": "Invalid query parameters provided",
     "ERR_INVALID_PAYLOAD": "Invalid payload provided",
     "ERR_NOT_ELIGIBLE": "Not eligible to set custom code",
-    "ERR_CODE_IN_USE": "Code already in use"
+    "ERR_CODE_IN_USE": "Code already in use",
+    "ERR_TOO_MANY_ACTIVE_CODES": "Too many active codes",
+    "ERR_INSUFFICIENT_COINS": "Insufficient coins to create this gift",
+    "ERR_INVALID_CODE_FORMAT": "Invalid code format",
+    "ERR_GIFT_INVALID": "The gift code you entered is invalid or disabled.",
+    "ERR_GIFT_NOT_ACTIVE": "This gift code is not active yet.",
+    "ERR_GIFT_EXPIRED": "This gift code has expired.",
+    "ERR_GIFT_LIMIT_REACHED": "This gift code has reached its maximum redemption limit.",
+    "ERR_GIFT_ALREADY_REDEEMED": "You have already redeemed this gift code."
   }
 }

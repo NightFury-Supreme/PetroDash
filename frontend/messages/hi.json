@@ -647,6 +647,14 @@
     "ERR_INVALID_QUERY_PARAMS": "प्रदान किए गए अमान्य क्वेरी पैरामीटर",
     "ERR_INVALID_PAYLOAD": "प्रदान किया गया पेलोड अमान्य है",
     "ERR_NOT_ELIGIBLE": "कस्टम कोड सेट करने के योग्य नहीं",
-    "ERR_CODE_IN_USE": "कोड पहले से उपयोग में है"
+    "ERR_CODE_IN_USE": "कोड पहले से उपयोग में है",
+    "ERR_TOO_MANY_ACTIVE_CODES": "बहुत सारे सक्रिय कोड हैं",
+    "ERR_INSUFFICIENT_COINS": "इस उपहार को बनाने के लिए अपर्याप्त सिक्के हैं",
+    "ERR_INVALID_CODE_FORMAT": "अमान्य कोड प्रारूप",
+    "ERR_GIFT_INVALID": "आपके द्वारा दर्ज किया गया उपहार कोड अमान्य या अक्षम है।",
+    "ERR_GIFT_NOT_ACTIVE": "यह उपहार कोड अभी तक सक्रिय नहीं है।",
+    "ERR_GIFT_EXPIRED": "यह उपहार कोड समाप्त हो गया है।",
+    "ERR_GIFT_LIMIT_REACHED": "यह उपहार कोड अपनी अधिकतम मोचन सीमा तक पहुंच गया है।",
+    "ERR_GIFT_ALREADY_REDEEMED": "आप पहले ही इस उपहार कोड को भुना चुके हैं।"
   }
 }

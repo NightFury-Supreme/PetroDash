@@ -617,6 +617,14 @@
     "ERR_INVALID_QUERY_PARAMS": "Paramètres de requête non valides fournis",
     "ERR_INVALID_PAYLOAD": "Charge utile non valide fournie",
     "ERR_NOT_ELIGIBLE": "Non éligible pour définir un code personnalisé",
-    "ERR_CODE_IN_USE": "Code déjà utilisé"
+    "ERR_CODE_IN_USE": "Code déjà utilisé",
+    "ERR_TOO_MANY_ACTIVE_CODES": "Trop de codes actifs",
+    "ERR_INSUFFICIENT_COINS": "Pièces insuffisantes pour créer ce cadeau",
+    "ERR_INVALID_CODE_FORMAT": "Format de code non valide",
+    "ERR_GIFT_INVALID": "Le code cadeau que vous avez saisi est invalide ou désactivé.",
+    "ERR_GIFT_NOT_ACTIVE": "Ce code cadeau n'est pas encore actif.",
+    "ERR_GIFT_EXPIRED": "Ce code cadeau a expiré.",
+    "ERR_GIFT_LIMIT_REACHED": "Ce code cadeau a atteint sa limite maximale d'échange.",
+    "ERR_GIFT_ALREADY_REDEEMED": "Vous avez déjà échangé ce code cadeau."
   }
 }

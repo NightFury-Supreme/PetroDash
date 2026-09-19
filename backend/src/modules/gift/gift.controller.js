@@ -7,12 +7,13 @@ const giftService = require('./gift.service');
 const { createGiftSchema, getMyGiftsSchema, redeemGiftSchema } = require('./gift.schema');
 const { logUserActivity } = require('../../middleware/userActivity');
 const { writeAudit } = require('../../middleware/audit');
+const AppError = require('../../utils/AppError');
 
 class GiftController {
   async createGift(req, res, next) {
     try {
       const parsed = createGiftSchema.safeParse(req.body);
-      if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
+      if (!parsed.success) return next(new AppError('Invalid payload', 400, 'ERR_INVALID_PAYLOAD', parsed.error.flatten()));
       
       const { coins, maxRedemptions, expiresInDays, description } = parsed.data;
       const userId = req.user.sub || req.user.userId || req.user._id || req.user.id;
@@ -26,10 +27,10 @@ class GiftController {
       
       return res.status(201).json({ code: gift.code, coins, maxRedemptions, validUntil: gift.validUntil });
     } catch (error) {
-      if (error.message === 'TOO_MANY_ACTIVE_CODES') return res.status(400).json({ error: 'Too many active codes' });
+      if (error.message === 'TOO_MANY_ACTIVE_CODES') return next(new AppError('Too many active codes', 400, 'ERR_TOO_MANY_ACTIVE_CODES'));
       if (error.message.startsWith('INSUFFICIENT_COINS:')) {
         const [, total, c, m] = error.message.split(':');
-        return res.status(400).json({ error: `Insufficient coins. Creating a gift code for ${m} users with ${c} coins requires ${total} coins in total.` });
+        return next(new AppError(`Insufficient coins. Creating a gift code for ${m} users with ${c} coins requires ${total} coins in total.`, 400, 'ERR_INSUFFICIENT_COINS', { total, coins: c, users: m }));
       }
       next(error);
     }
@@ -38,7 +39,7 @@ class GiftController {
   async getMyGifts(req, res, next) {
     try {
       const parsed = getMyGiftsSchema.safeParse(req.query);
-      if (!parsed.success) return res.status(400).json({ error: 'Invalid query params' });
+      if (!parsed.success) return next(new AppError('Invalid query params', 400, 'ERR_INVALID_QUERY_PARAMS'));
       
       const userId = req.user.sub || req.user.userId || req.user._id || req.user.id;
       const result = await giftService.getUserGifts(userId, parsed.data);
@@ -52,7 +53,7 @@ class GiftController {
   async redeemGift(req, res, next) {
     try {
       const parsed = redeemGiftSchema.safeParse(req.body);
-      if (!parsed.success) return res.status(400).json({ error: 'Invalid code format' });
+      if (!parsed.success) return next(new AppError('Invalid code format', 400, 'ERR_INVALID_CODE_FORMAT'));
       
       const userId = req.user.sub || req.user.userId || req.user._id || req.user.id;
       const result = await giftService.redeemGift(userId, parsed.data.code);
@@ -70,26 +71,18 @@ class GiftController {
         user: result.user 
       });
     } catch (error) {
-      const msgMap = {
-        INVALID: 'The gift code you entered is invalid or disabled.',
-        NOT_ACTIVE: 'This gift code is not active yet.',
-        EXPIRED: 'This gift code has expired.',
-        LIMIT: 'This gift code has reached its maximum redemption limit.',
-        DUP: 'You have already redeemed this gift code.',
-        NOUSER: 'Your user account could not be found.',
-      };
-      const statusMap = {
-        INVALID: 404,
-        NOT_ACTIVE: 400,
-        EXPIRED: 400,
-        LIMIT: 400,
-        DUP: 400,
-        NOUSER: 404,
+      const errorMap = {
+        INVALID: { msg: 'The gift code you entered is invalid or disabled.', status: 404, code: 'ERR_GIFT_INVALID' },
+        NOT_ACTIVE: { msg: 'This gift code is not active yet.', status: 400, code: 'ERR_GIFT_NOT_ACTIVE' },
+        EXPIRED: { msg: 'This gift code has expired.', status: 400, code: 'ERR_GIFT_EXPIRED' },
+        LIMIT: { msg: 'This gift code has reached its maximum redemption limit.', status: 400, code: 'ERR_GIFT_LIMIT_REACHED' },
+        DUP: { msg: 'You have already redeemed this gift code.', status: 400, code: 'ERR_GIFT_ALREADY_REDEEMED' },
+        NOUSER: { msg: 'Your user account could not be found.', status: 404, code: 'ERR_USER_NOT_FOUND' },
       };
       
       const key = error.message;
-      if (msgMap[key]) {
-        return res.status(statusMap[key]).json({ error: msgMap[key] });
+      if (errorMap[key]) {
+        return next(new AppError(errorMap[key].msg, errorMap[key].status, errorMap[key].code));
       }
       next(error);
     }
