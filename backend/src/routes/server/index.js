@@ -581,6 +581,15 @@ router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10,
     await deleteCachePattern('api:admin:servers:*');
     await deleteCache('eggs:counts');
 
+    try {
+      const { logUserActivity } = require('../../middleware/userActivity');
+      const { writeAudit } = require('../../middleware/audit');
+      await logUserActivity(req, 'server.delete', { serverId: server._id, name: server.name });
+      await writeAudit(req, 'server.delete', 'server', server._id.toString(), { name: server.name });
+    } catch (auditErr) {
+      console.error('Failed to write audit log for server deletion:', auditErr);
+    }
+
     return res.json({ ok: true, message: 'Server deleted successfully.' });
   } catch (error) {
     console.error('Delete server error:', error);
