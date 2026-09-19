@@ -1,9 +1,31 @@
+/* ==========================================================================
+   REFERRALS — Shared Type Definitions
+   ISO/IEC 25010: maintainability, type-safety, data integrity
+========================================================================== */
+
 export type ReferralStatus = "Earned" | "Pending";
 
-export type ReferralUser = {
-  name: string;
-  email: string;
-  joinedAt: string;
-  reward: number;
-  status: ReferralStatus;
-};
+export interface ReferralUser {
+  readonly name: string;
+  readonly email: string;
+  readonly joinedAt: string;
+  readonly reward: number;
+  readonly status: ReferralStatus;
+}
+
+export interface ReferralStats {
+  coinsEarned: number;
+  code: string;
+  link: string;
+  canCustomize: boolean;
+  minInvites: number;
+  referredCount: number;
+  referrerCoins: number;
+}
+
+export interface ReferralUsersPage {
+  users: ReferralUser[];
+  total: number;
+}
+
+export type SaveStatus = "idle" | "loading" | "success" | "error";
