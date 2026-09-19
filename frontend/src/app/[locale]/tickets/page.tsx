@@ -20,6 +20,7 @@ const PAGE_SIZE = 25;
 
 export default function TicketsPage() {
   const t = useTranslations('Tickets');
+  const tError = useTranslations('GlobalErrors');
   const { showError, showSuccess } = useToast();
   
   const { tickets, loading, error, categories, updateStatus, createTicket, fetchTickets, pagination, counts } = useTickets();
@@ -75,7 +76,7 @@ export default function TicketsPage() {
         <ErrorState
           icon={<RefreshCw className="w-12 h-12" />}
           kicker={t('loadError')}
-          title={t('failedToLoad')}
+          title={tError("failedToLoadTickets")}
           errorString={error}
           description={<ErrorDescription error={error} topic="tickets" />}
           buttons={<DashboardButton />}
@@ -98,7 +99,7 @@ export default function TicketsPage() {
     });
     setCreating(false);
     if (ok) {
-      showSuccess(t('newSupportTicket')); // just a success msg
+      showSuccess(t("createTicket")); // just a success msg
       setShowCreate(false);
       setCreateTitle("");
       setCreateMessage("");
@@ -110,7 +111,7 @@ export default function TicketsPage() {
         page, limit: PAGE_SIZE, status: activeTab, category: catFilter, search: debouncedQ, sortBy
       });
     } else {
-      showError(err || t('failedToLoad')); // generic fallback
+      showError(err || tError("failedToLoadTickets")); // generic fallback
     }
   };
 
@@ -205,11 +206,11 @@ export default function TicketsPage() {
                 <div className="flex flex-col items-center justify-center py-20 text-center bg-[#141414] rounded-[10px] border border-[#282828]">
                   <MessageSquare className="h-10 w-10 text-[#505050] mb-4 opacity-50" />
                   <h3 className="text-[15px] font-medium text-[#d5d5d5] mb-2">
-                    {debouncedQ ? t('noMatchesFound') : t('noTicketsFound')}
+                    {debouncedQ ? noTicketsFound : t('noTicketsFound')}
                   </h3>
                   <p className="text-[#888] text-[13px] max-w-[300px]">
                     {debouncedQ 
-                      ? t('noMatchesDesc')
+                      ? noTicketsDesc
                       : t('noTicketsDesc')}
                   </p>
                 </div>

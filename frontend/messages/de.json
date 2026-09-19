@@ -672,8 +672,6 @@
     "ERR_SERVER_LOCKED": "Ein weiterer Servervorgang ist im Gange. Bitte warten Sie einen Moment."
   },
   "Tickets": {
-    "newSupportTicket": "Neues Support-Ticket",
-    "openNewRequest": "Neue Anfrage öffnen",
     "cancel": "Abbrechen",
     "createTicket": "Ticket erstellen",
     "subject": "Betreff",
@@ -696,8 +694,6 @@
       "other": "Sonstiges"
     },
     "searchTickets": "Ihre Tickets durchsuchen...",
-    "noMatchesFound": "Keine Treffer gefunden",
-    "noMatchesDesc": "Versuchen Sie, Ihre Suche oder Filter anzupassen.",
     "noTicketsFound": "Keine Tickets gefunden",
     "noTicketsDesc": "Sie haben in dieser Kategorie noch keine Tickets eröffnet.",
     "status": "Status",
@@ -715,7 +711,6 @@
       "createdAsc": "Älteste zuerst"
     },
     "loadError": "Ladefehler",
-    "failedToLoad": "Ticket konnte nicht geladen werden",
     "retry": "Wiederholen",
     "ticketReopened": "Ticket wieder geöffnet",
     "failedToReopen": "Ticket konnte nicht wieder geöffnet werden",

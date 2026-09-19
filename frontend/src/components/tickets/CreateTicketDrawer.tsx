@@ -149,8 +149,8 @@ export function CreateTicketDrawer({
     <Drawer
       isOpen={true}
       onClose={onClose}
-      title={t('newSupportTicket')}
-      subtitle={t('openNewRequest')}
+      title={createTicket}
+      subtitle={createTicket}
       icon={<Ticket className="text-[#D4D4D4]" size={22} />}
       footer={
         <div className="flex items-center justify-end gap-2 w-full">

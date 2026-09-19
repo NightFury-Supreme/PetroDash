@@ -1341,6 +1341,51 @@ The implementation is **not complete** if any of the following remain within the
 
 ---
 
+### Code Comment Hygiene — Strict Rule
+
+Do **not** add comments that look like an AI coding agent talking to itself, explaining its actions, reasoning, intentions, or implementation process.
+
+The codebase must **never** contain comments such as:
+
+```ts
+// AI: fix this later
+// Agent note: ...
+// I changed this because...
+// This should work now
+// We need to...
+// Let's handle...
+// TODO: implement this
+// Temporary fix
+// This is a workaround
+// Added by AI
+// Claude/Gemini/Codex note
+// The user requested...
+// Important: I think...
+// Here we...
+```
+
+Do not add verbose comments that simply restate obvious code, narrate implementation steps, describe what the agent just changed, or explain trivial logic.
+
+Comments must be **professional, concise, technically meaningful, and written as permanent codebase documentation**, not as development-session notes.
+
+Allowed comments should be limited to cases where they provide genuine long-term value, such as:
+
+* Non-obvious business rules
+* Security considerations
+* Important architectural constraints
+* Complex algorithms
+* External protocol/API behavior
+* Intentional performance decisions
+* Compatibility requirements
+* Necessary rationale for unusual implementation decisions
+
+Prefer self-documenting code, clear naming, modular functions, and appropriate abstractions instead of explanatory comments.
+
+Before completion, perform a repository-wide review of modified files and **remove any newly introduced AI-style, conversational, redundant, temporary, debugging, or unnecessary comments**.
+
+The final code should read as if it was written and maintained by a professional software engineering team, without any obvious AI-generation artifacts.
+
+
 # EXECUTION PRINCIPLE
 
 Treat this as a **full production engineering task**, not a UI cleanup.

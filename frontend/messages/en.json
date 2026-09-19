@@ -675,8 +675,6 @@
     "ERR_SERVER_LOCKED": "Another server operation is in progress. Please wait a moment."
   },
   "Tickets": {
-    "newSupportTicket": "New Support Ticket",
-    "openNewRequest": "Open a new request",
     "cancel": "Cancel",
     "createTicket": "Create Ticket",
     "subject": "Subject",
@@ -699,8 +697,6 @@
       "other": "Other"
     },
     "searchTickets": "Search your tickets...",
-    "noMatchesFound": "No matches found",
-    "noMatchesDesc": "Try adjusting your search or filters to find what you're looking for.",
     "noTicketsFound": "No tickets found",
     "noTicketsDesc": "You haven't opened any tickets in this category yet.",
     "status": "Status",
@@ -718,7 +714,6 @@
       "createdAsc": "Oldest First"
     },
     "loadError": "Load Error",
-    "failedToLoad": "Failed to Load Ticket",
     "retry": "Retry",
     "ticketReopened": "Ticket reopened",
     "failedToReopen": "Failed to reopen ticket",

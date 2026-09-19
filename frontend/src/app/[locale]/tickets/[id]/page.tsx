@@ -22,6 +22,7 @@ import { useTicketDetail } from '@/components/tickets/hooks';
 
 export default function TicketDetailPage() {
   const t = useTranslations('Tickets');
+  const tError = useTranslations('GlobalErrors');
   const { showError, showSuccess } = useToast();
   const { id } = useParams() as { id: string };
 
@@ -128,7 +129,7 @@ export default function TicketDetailPage() {
         <ErrorState
           icon={<MessageSquare strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
           kicker={t('loadError')}
-          title={t('failedToLoad')}
+          title={tError("failedToLoadTickets")}
           errorString={error}
           description={<ErrorDescription error={error} topic="Ticket" />}
           buttons={

@@ -672,8 +672,6 @@
     "ERR_SERVER_LOCKED": "هناك عملية خادم أخرى قيد التقدم. يرجى الانتظار لحظة."
   },
   "Tickets": {
-    "newSupportTicket": "تذكرة دعم جديدة",
-    "openNewRequest": "فتح طلب جديد",
     "cancel": "إلغاء",
     "createTicket": "إنشاء تذكرة",
     "subject": "الموضوع",
@@ -696,8 +694,6 @@
       "other": "أخرى"
     },
     "searchTickets": "البحث في التذاكر الخاصة بك...",
-    "noMatchesFound": "لم يتم العثور على نتائج",
-    "noMatchesDesc": "حاول تعديل البحث أو عوامل التصفية.",
     "noTicketsFound": "لم يتم العثور على تذاكر",
     "noTicketsDesc": "لم تقم بفتح أي تذاكر في هذه الفئة بعد.",
     "status": "الحالة",
@@ -715,7 +711,6 @@
       "createdAsc": "الأقدم أولاً"
     },
     "loadError": "خطأ في التحميل",
-    "failedToLoad": "فشل تحميل التذكرة",
     "retry": "إعادة المحاولة",
     "ticketReopened": "تمت إعادة فتح التذكرة",
     "failedToReopen": "فشل في إعادة فتح التذكرة",

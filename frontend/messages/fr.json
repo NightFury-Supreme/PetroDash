@@ -642,8 +642,6 @@
     "ERR_SERVER_LOCKED": "Une autre opération du serveur est en cours. Veuillez patienter."
   },
   "Tickets": {
-    "newSupportTicket": "Nouveau ticket de support",
-    "openNewRequest": "Ouvrir une nouvelle demande",
     "cancel": "Annuler",
     "createTicket": "Créer le ticket",
     "subject": "Sujet",
@@ -666,8 +664,6 @@
       "other": "Autre"
     },
     "searchTickets": "Rechercher vos tickets...",
-    "noMatchesFound": "Aucune correspondance trouvée",
-    "noMatchesDesc": "Essayez d'ajuster votre recherche ou vos filtres.",
     "noTicketsFound": "Aucun ticket trouvé",
     "noTicketsDesc": "Vous n'avez pas encore ouvert de ticket dans cette catégorie.",
     "status": "Statut",
@@ -685,7 +681,6 @@
       "createdAsc": "Plus ancien en premier"
     },
     "loadError": "Erreur de chargement",
-    "failedToLoad": "Échec du chargement du ticket",
     "retry": "Réessayer",
     "ticketReopened": "Ticket rouvert",
     "failedToReopen": "Échec de la réouverture du ticket",
