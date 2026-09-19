@@ -3,9 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { GiftRedeemSection } from "@/components/gift/GiftRedeemSection";
-import { GiftCodesSection } from "@/components/gift/GiftCodesSection";
-import { GiftCreateDrawer } from "@/components/gift/GiftCreateDrawer";
+import { GiftRedeemSection, GiftCodesSection, GiftCreateDrawer } from "@/components/gift";
 import { GiftSkeleton } from "@/components/Skeleton";
 
 export default function GiftCodesPage() {
