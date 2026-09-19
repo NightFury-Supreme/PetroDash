@@ -1,7 +1,11 @@
 const express = require('express');
 const { createRateLimiter } = require('../middleware/rateLimit');
+// const crypto = require('crypto');
 const axios = require('axios');
+// const { getSettings } = require('../lib/settings');
 const { requireAuth } = require('../middleware/auth');
+const { writeAudit } = require('../middleware/audit');
+const { logUserActivity } = require('../middleware/userActivity');
 const Plan = require('../models/Plan');
  
 const UserPlan = require('../models/UserPlan');
@@ -162,7 +166,9 @@ router.post('/create-order', requireAuth, createRateLimiter(10, 60 * 1000), asyn
           billingCycle,
           couponCode: couponCode || null,
           discountAmount,
-          isLifetime: billingCycle === 'lifetime' || Boolean(plan.billingOptions?.lifetime)
+          isLifetime: billingCycle === 'lifetime' || Boolean(plan.billingOptions?.lifetime),
+          ip: req.ip,
+          userAgent: req.get('User-Agent')
         }
       });
       
@@ -172,6 +178,8 @@ router.post('/create-order', requireAuth, createRateLimiter(10, 60 * 1000), asyn
         return res.status(400).json({ error: result.error });
       }
       
+      await logUserActivity(req, 'shop.payment.capture', { orderId: freeOrderId, status: 'COMPLETED', bypassPaypal: true });
+      await writeAudit(req, 'shop.payment.capture', 'payment', payment._id.toString(), { orderId: freeOrderId, status: 'COMPLETED', bypassPaypal: true });
       return res.json({ id: freeOrderId, status: 'COMPLETED', bypassPaypal: true });
     }
 
@@ -221,10 +229,14 @@ router.post('/create-order', requireAuth, createRateLimiter(10, 60 * 1000), asyn
         billingCycle,
         couponCode: couponCode || null,
         discountAmount,
-        isLifetime: billingCycle === 'lifetime' || Boolean(plan.billingOptions?.lifetime)
+        isLifetime: billingCycle === 'lifetime' || Boolean(plan.billingOptions?.lifetime),
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
       }
     });
 
+    await logUserActivity(req, 'shop.payment.create', { orderId: order.id, planId: plan._id, billingCycle, price: Number(amountStr) });
+    await writeAudit(req, 'shop.payment.create', 'payment', order.id, { planId: plan._id, billingCycle, price: Number(amountStr) });
     return res.json(order);
   } catch (e) {
     console.error('[PayPal] create-order unexpected error:', e.message);
@@ -232,7 +244,30 @@ router.post('/create-order', requireAuth, createRateLimiter(10, 60 * 1000), asyn
   }
 });
 
-// POST /api/paypal/capture-order
+// POST /api/paypal/cancel-order
+router.post('/cancel-order', requireAuth, createRateLimiter(20, 60 * 1000), async (req, res) => {
+  try {
+    const userId = String(req.user?.sub || '');
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const { orderId } = req.body || {};
+    if (!orderId) return res.status(400).json({ error: 'orderId is required' });
+
+    const payment = await Payment.findOne({ providerOrderId: orderId, userId, status: 'CREATED' });
+    if (payment) {
+      payment.status = 'VOIDED';
+      await payment.save();
+    }
+    
+    await logUserActivity(req, 'shop.payment.cancel', { orderId });
+    await writeAudit(req, 'shop.payment.cancel', 'payment', orderId, {});
+    return res.json({ success: true });
+  } catch (e) {
+    console.error('[PayPal] cancel-order error:', e.message);
+    return res.status(500).json({ error: 'Failed to cancel order' });
+  }
+});
+
 router.post('/capture-order', requireAuth, createRateLimiter(10, 60 * 1000), async (req, res) => {
   try {
     const userId = String(req.user?.sub || '');
@@ -291,6 +326,8 @@ router.post('/capture-order', requireAuth, createRateLimiter(10, 60 * 1000), asy
       return res.status(500).json({ error: result.error });
     }
 
+    await logUserActivity(req, 'shop.payment.capture', { orderId: sanitizedOrderId, status: 'COMPLETED' });
+    await writeAudit(req, 'shop.payment.capture', 'payment', payment._id.toString(), { orderId: sanitizedOrderId, status: 'COMPLETED' });
     return res.json({ ok: true, order: captureData, user: { coins: result.user.coins, resources: result.user.resources } });
   } catch (e) {
     console.error('[PayPal] capture-order unexpected error:', e.message);

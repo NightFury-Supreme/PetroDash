@@ -1,6 +1,9 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import { RefreshCw, CheckCircle, AlertTriangle, XCircle, Github } from 'lucide-react';
 
 interface UpdateInfo {
   currentVersion: string;
@@ -31,13 +34,12 @@ export default function UpdateSystem() {
   const [, _setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Check for updates
   const checkForUpdates = async () => {
     setIsChecking(true);
     setError(null);
-    
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/updates/check`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/updates/check`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -57,8 +59,6 @@ export default function UpdateSystem() {
     }
   };
 
-
-  // Get token on component mount
   useEffect(() => {
     const getToken = () => {
       try {
@@ -69,150 +69,119 @@ export default function UpdateSystem() {
         setToken(null);
       }
     };
-
     getToken();
   }, []);
 
-  // Check for updates on component mount
   useEffect(() => {
     if (token) {
       checkForUpdates();
     }
   }, [token]);
 
-
   return (
-    <div className="bg-[#181818] border border-[#303030] rounded-xl p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 bg-[#202020] rounded-xl flex items-center justify-center">
-          <i className="fas fa-sync-alt text-white text-lg"></i>
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-white">System Version</h2>
-          <p className="text-[#AAAAAA] text-sm">Check current and latest versions</p>
-        </div>
+    <section className="space-y-6">
+      {/* Header */}
+      <div>
+        <h3 className="text-lg font-semibold text-white">System Updates</h3>
+        <p className="mt-1 text-sm text-[#888888]">Check current and latest versions</p>
       </div>
 
-      {/* Current Version Info */}
+      {/* Version Info Row */}
       {updateInfo && (
-        <div className="mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div className="bg-[#202020] border border-[#303030] rounded-lg p-4">
-              <h3 className="text-white font-medium mb-2">Current Version</h3>
-              <p className="text-[#AAAAAA] text-sm">v{updateInfo.currentVersion}</p>
-            </div>
-            <div className="bg-[#202020] border border-[#303030] rounded-lg p-4">
-              <h3 className="text-white font-medium mb-2">Latest Version</h3>
-              <p className="text-[#AAAAAA] text-sm">v{updateInfo.latestVersion}</p>
-            </div>
-          </div>
+        <div>
+          {updateInfo.isUpdateAvailable ? (
+            <div className="flex items-start gap-3 py-4 border-t border-b border-white/[0.06]">
+              <AlertTriangle className="w-4 h-4 text-[#FF5722] mt-0.5 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-4">
+                  <p className="text-sm font-medium text-white">Update Available</p>
+                  <span className="text-xs font-mono text-white">v{updateInfo.currentVersion} → v{updateInfo.latestVersion}</span>
+                </div>
+                <p className="text-xs text-[#888] mt-0.5">
+                  Published on {new Date(updateInfo.publishedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+                </p>
 
-          {/* Update Available */}
-          {updateInfo.isUpdateAvailable && (
-            <div className="bg-[#202020] border border-blue-500 rounded-lg p-4 mb-4">
-              <div className="flex items-center gap-3 mb-3">
-                <i className="fas fa-exclamation-triangle text-blue-500"></i>
-                <h3 className="text-white font-medium">Update Available!</h3>
-              </div>
-              <p className="text-[#AAAAAA] text-sm mb-3">
-                A new version (v{updateInfo.latestVersion}) is available. 
-                Published on {new Date(updateInfo.publishedAt).toLocaleDateString()}
-              </p>
-              
-              {/* Package Information */}
-              {updateInfo.fullPackageName && (
-                <div className="mb-4">
-                  <h4 className="text-white font-medium mb-2">Package Information:</h4>
-                  <div className="bg-[#0f0f0f] border border-[#303030] rounded-lg p-3">
-                    <div className="grid grid-cols-1 gap-2 text-sm">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-[#AAAAAA]">Full Package</div>
-                          <div className="text-white">{updateInfo.fullPackageName}</div>
-                        </div>
-                        {updateInfo.fullPackageSize && (
-                          <div className="text-[#AAAAAA]">{(updateInfo.fullPackageSize / 1024 / 1024).toFixed(2)} MB</div>
-                        )}
-                      </div>
+                {updateInfo.releaseNotes && (
+                  <div className="mt-3">
+                    <div className="prose prose-invert prose-sm max-w-none text-[#888]
+                      [&_h1]:text-[#D4D4D4] [&_h1]:text-base [&_h1]:font-semibold [&_h1]:mb-2 [&_h1]:mt-4
+                      [&_h2]:text-[#D4D4D4] [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mb-2 [&_h2]:mt-4
+                      [&_h3]:text-[#C4C4C4] [&_h3]:text-xs [&_h3]:font-semibold [&_h3]:mb-1.5 [&_h3]:mt-3
+                      [&_p]:text-[#888] [&_p]:text-xs [&_p]:leading-relaxed [&_p]:mb-2
+                      [&_ul]:text-[#888] [&_ul]:text-xs [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:space-y-1 [&_ul]:mb-2
+                      [&_ol]:text-[#888] [&_ol]:text-xs [&_ol]:list-decimal [&_ol]:pl-4 [&_ol]:space-y-1 [&_ol]:mb-2
+                      [&_li]:text-[#888] [&_li]:text-xs
+                      [&_strong]:text-[#C4C4C4] [&_strong]:font-semibold
+                      [&_a]:text-[#FF5722] [&_a]:hover:underline
+                      [&_code]:text-[#D4D4D4] [&_code]:bg-white/[0.05] [&_code]:px-1 [&_code]:rounded [&_code]:text-[11px]
+                      [&_pre]:bg-black/20 [&_pre]:rounded-md [&_pre]:p-3 [&_pre]:border [&_pre]:border-white/[0.04]
+                      [&_hr]:border-white/[0.06]">
+                      <ReactMarkdown>{updateInfo.releaseNotes}</ReactMarkdown>
                     </div>
                   </div>
+                )}
+
+                <div className="flex justify-end mt-4">
+                  <a
+                    href={updateInfo.releaseUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 h-8 px-4 rounded-md bg-[#FF5722] text-white text-xs font-medium hover:bg-[#ff6939] transition-colors"
+                  >
+                    <Github className="w-3.5 h-3.5" />
+                    View on GitHub
+                  </a>
                 </div>
-              )}
-
-              {/* Release Notes */}
-              {updateInfo.releaseNotes && (
-                <div className="mb-4">
-                  <h4 className="text-white font-medium mb-2">Release Notes:</h4>
-                  <div className="bg-[#0f0f0f] border border-[#303030] rounded-lg p-3 max-h-32 overflow-y-auto">
-                    <pre className="text-[#AAAAAA] text-xs whitespace-pre-wrap">{updateInfo.releaseNotes}</pre>
-                  </div>
-                </div>
-              )}
-
-              <a
-                href={updateInfo.releaseUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center px-4 py-2 bg-[#303030] text-white rounded-lg font-medium hover:bg-[#404040] transition-colors"
-              >
-                <i className="fab fa-github mr-2"></i>
-                View on GitHub
-              </a>
-            </div>
-          )}
-
-          {/* No Update Available */}
-          {!updateInfo.isUpdateAvailable && (
-            <div className="bg-[#202020] border border-green-500 rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <i className="fas fa-check-circle text-green-500"></i>
-                <h3 className="text-white font-medium">You're up to date!</h3>
               </div>
-              <p className="text-[#AAAAAA] text-sm mt-1">
-                You are running the latest version (v{updateInfo.currentVersion})
-              </p>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 py-4 border-t border-b border-white/[0.06]">
+              <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+              <div className="flex-1">
+                <div className="flex items-center justify-between gap-4">
+                  <p className="text-sm font-medium text-white">You&apos;re up to date!</p>
+                  <span className="text-xs font-mono text-white">v{updateInfo.currentVersion}</span>
+                </div>
+                <p className="text-xs text-[#888] mt-0.5">You are running the latest version</p>
+              </div>
             </div>
           )}
         </div>
       )}
 
-      {/* Update progress removed */}
-
-      {/* Error Message */}
-      {error && (
-        <div className="mb-6">
-          <div className="bg-[#202020] border border-red-500 rounded-lg p-4">
-            <div className="flex items-center gap-3">
-              <i className="fas fa-exclamation-circle text-red-500"></i>
-              <h3 className="text-white font-medium">Error</h3>
+      {/* Skeleton Loading State */}
+      {isChecking && !updateInfo && (
+        <div className="flex items-center gap-3 py-4 border-t border-b border-white/[0.06]">
+          <div className="w-4 h-4 rounded-full bg-white/5 animate-pulse shrink-0" />
+          <div className="flex-1">
+            <div className="flex items-center justify-between gap-4">
+              <div className="h-[20px] w-32 bg-white/5 rounded animate-pulse" />
+              <div className="h-[16px] w-12 bg-white/5 rounded animate-pulse" />
             </div>
-            <p className="text-[#AAAAAA] text-sm mt-1">{error}</p>
+            <div className="mt-1 h-[16px] w-48 bg-white/5 rounded animate-pulse" />
           </div>
         </div>
       )}
 
-      {/* Actions */}
-      <div className="flex gap-3">
-        <button
-          onClick={checkForUpdates}
-          disabled={isChecking}
-          className="px-4 py-2 bg-[#303030] text-white rounded-lg font-medium hover:bg-[#404040] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isChecking ? (
-            <>
-              <i className="fas fa-spinner fa-spin mr-2"></i>
-              Checking...
-            </>
-          ) : (
-            <>
-              <i className="fas fa-sync-alt mr-2"></i>
-              Check for Updates
-            </>
-          )}
-        </button>
-      </div>
+      {/* Empty state when no data yet */}
+      {!updateInfo && !isChecking && !error && (
+        <div className="py-10 flex flex-col items-center justify-center text-center border-t border-b border-white/[0.06]">
+          <RefreshCw className="w-8 h-8 text-[#333] mb-3" />
+          <p className="text-[#666] text-sm">Click &quot;Check for Updates&quot; to see if a newer version is available.</p>
+        </div>
+      )}
 
-      {/* Important notice removed */}
-    </div>
+      {/* Error State */}
+      {error && (
+        <div className="flex items-start gap-3 p-4 rounded-lg bg-red-500/[0.06] border border-red-500/20">
+          <XCircle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-white">Failed to check for updates</p>
+            <p className="text-xs text-[#888] mt-0.5">{error}</p>
+          </div>
+        </div>
+      )}
+
+    </section>
   );
 }

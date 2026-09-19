@@ -1,16 +1,7 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
-interface Payment {
-  _id: string;
-  provider?: string;
-  providerOrderId?: string;
-  userId: string;
-  planId: string;
-  amount: number;
-  currency?: string;
-  status: string;
-  createdAt: string;
-}
+
 
 interface AdminLedgerTableProps {
   items: any[];
@@ -27,79 +18,99 @@ export function AdminLedgerTable({
   refunding,
   voiding
 }: AdminLedgerTableProps) {
-  const [showMenuFor, setShowMenuFor] = useState<string | null>(null);
-
+  const [downloading, setDownloading] = useState<string | null>(null);
+  
   const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      'CREATED': { color: 'bg-blue-500/20 text-blue-400 border-blue-500/30', icon: 'fa-clock' },
-      'COMPLETED': { color: 'bg-green-500/20 text-green-400 border-green-500/30', icon: 'fa-check-circle' },
-      'FAILED': { color: 'bg-red-500/20 text-red-400 border-red-500/30', icon: 'fa-times-circle' },
-      'REFUNDED': { color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30', icon: 'fa-undo' },
-      'VOIDED': { color: 'bg-gray-500/20 text-gray-400 border-gray-500/30', icon: 'fa-ban' }
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig['CREATED'];
+    const normStatus = String(status || "").toUpperCase();
+    
+    let styles = "border-gray-500/20 bg-gray-500/[0.04] text-gray-400";
+    
+    if (normStatus === "COMPLETED" || normStatus === "PAID") {
+      styles = "border-emerald-500/20 bg-emerald-500/[0.04] text-emerald-500";
+    } else if (normStatus === "FAILED") {
+      styles = "border-red-500/20 bg-red-500/[0.04] text-red-500";
+    } else if (normStatus === "REFUNDED") {
+      styles = "border-yellow-500/20 bg-yellow-500/[0.04] text-yellow-500";
+    } else if (normStatus === "VOIDED") {
+      styles = "border-gray-500/20 bg-gray-500/[0.04] text-gray-500";
+    } else if (normStatus === "CREATED" || normStatus === "PENDING") {
+      styles = "border-blue-500/20 bg-blue-500/[0.04] text-blue-500";
+    }
 
     return (
-      <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border ${config.color}`}>
-        <i className={`fas ${config.icon}`}></i>
-        {status}
+      <span className={`inline-flex w-fit rounded border px-2 py-1 text-xs font-medium uppercase ${styles}`}>
+        {normStatus}
       </span>
     );
   };
 
-  const getActionMenu = (item: Payment) => {
+  const getActionMenu = (item: any) => {
     const canRefund = item.status === 'COMPLETED' && item.provider === 'paypal';
     const canVoid = item.status === 'CREATED' && item.provider === 'paypal';
+    const canInvoice = item.status === 'COMPLETED';
+
+    const handleDownloadInvoice = async (paymentId: string) => {
+      setDownloading(paymentId);
+      try {
+        const token = localStorage.getItem('auth_token');
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE || '';
+        const res = await fetchWithRetry(`${baseUrl}/api/admin/payments/${paymentId}/invoice`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Failed to download invoice');
+        
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `invoice-${paymentId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+      } catch (err) {
+        console.error(err);
+        alert('Failed to download invoice');
+      } finally {
+        setDownloading(null);
+      }
+    };
+
+    if (!canRefund && !canVoid && !canInvoice) {
+      return <span className="text-white/20 text-xs">-</span>;
+    }
 
     return (
-      <div className="relative">
-        <button
-          onClick={() => setShowMenuFor(showMenuFor === item._id ? null : item._id)}
-          className="w-8 h-8 bg-[#202020] hover:bg-[#272727] border border-[#303030] hover:border-[#404040] rounded-lg flex items-center justify-center transition-colors"
-          title="Actions"
-        >
-          <i className="fas fa-ellipsis-v text-[#AAAAAA] text-sm"></i>
-        </button>
-
-        {showMenuFor === item._id && (
-          <div className="absolute right-0 top-full mt-1 w-48 bg-[#181818] border border-[#303030] rounded-lg shadow-xl z-10">
-            <div className="py-1">
-              {canRefund && (
-                <button
-                  onClick={() => {
-                    onRefund(item._id);
-                    setShowMenuFor(null);
-                  }}
-                  disabled={refunding === item._id}
-                  className="w-full px-4 py-2 text-left text-sm text-yellow-400 hover:bg-[#202020] transition-colors flex items-center gap-2 disabled:opacity-50"
-                >
-                  <i className="fas fa-undo"></i>
-                  {refunding === item._id ? 'Refunding...' : 'Refund'}
-                </button>
-              )}
-              
-              {canVoid && (
-                <button
-                  onClick={() => {
-                    onVoid(item._id);
-                    setShowMenuFor(null);
-                  }}
-                  disabled={voiding === item._id}
-                  className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-[#202020] transition-colors flex items-center gap-2 disabled:opacity-50"
-                >
-                  <i className="fas fa-ban"></i>
-                  {voiding === item._id ? 'Voiding...' : 'Void'}
-                </button>
-              )}
-              
-              {!canRefund && !canVoid && (
-                <div className="px-4 py-2 text-xs text-[#AAAAAA]">
-                  No actions available
-                </div>
-              )}
-            </div>
-          </div>
+      <div className="flex items-center gap-1.5 justify-end">
+        {canInvoice && (
+          <button
+            onClick={() => handleDownloadInvoice(item._id)}
+            disabled={downloading === item._id}
+            title="Download Invoice"
+            className="w-7 h-7 rounded border flex items-center justify-center bg-white/[0.02] border-white/[0.04] text-white/40 hover:text-white hover:bg-white/[0.06] hover:border-white/[0.08] transition-colors disabled:opacity-50"
+          >
+            {downloading === item._id ? <i className="fas fa-spinner fa-spin text-[12px]"></i> : <i className="fas fa-download text-[12px]"></i>}
+          </button>
+        )}
+        {canRefund && (
+          <button
+            onClick={() => onRefund(item._id)}
+            disabled={refunding === item._id}
+            title="Refund Payment"
+            className="w-7 h-7 rounded border flex items-center justify-center bg-white/[0.02] border-white/[0.04] text-yellow-500/80 hover:text-yellow-500 hover:bg-yellow-500/10 hover:border-yellow-500/20 transition-colors disabled:opacity-50"
+          >
+            {refunding === item._id ? <i className="fas fa-spinner fa-spin text-[12px]"></i> : <i className="fas fa-undo text-[12px]"></i>}
+          </button>
+        )}
+        {canVoid && (
+          <button
+            onClick={() => onVoid(item._id)}
+            disabled={voiding === item._id}
+            title="Void Checkout"
+            className="w-7 h-7 rounded border flex items-center justify-center bg-white/[0.02] border-white/[0.04] text-red-500/80 hover:text-red-500 hover:bg-red-500/10 hover:border-red-500/20 transition-colors disabled:opacity-50"
+          >
+            {voiding === item._id ? <i className="fas fa-spinner fa-spin text-[12px]"></i> : <i className="fas fa-ban text-[12px]"></i>}
+          </button>
         )}
       </div>
     );
@@ -107,58 +118,102 @@ export function AdminLedgerTable({
 
   if (items.length === 0) {
     return (
-      <div className="bg-[#181818] border border-[#303030] rounded-xl p-8 text-center">
-        <div className="w-16 h-16 bg-[#202020] rounded-full flex items-center justify-center mx-auto mb-4">
-          <i className="fas fa-inbox text-[#AAAAAA] text-xl"></i>
-        </div>
-        <h3 className="text-white font-medium mb-2">No payments found</h3>
-        <p className="text-[#AAAAAA] text-sm">Try adjusting your filters or check back later.</p>
+      <div className="flex flex-col items-center justify-center py-16 text-center border border-white/[0.06] rounded-xl">
+        <i className="fas fa-inbox mb-3 text-2xl text-white/20"></i>
+        <p className="text-sm text-white/40">No payments found</p>
+        <p className="text-xs text-white/30 mt-1">Try adjusting your filters or check back later.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-[#181818] border border-[#303030] rounded-xl overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-[#202020] border-b border-[#303030]">
-              <th className="px-6 py-4 text-left text-xs font-medium text-[#AAAAAA] uppercase tracking-wider">Date</th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-[#AAAAAA] uppercase tracking-wider">Provider</th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-[#AAAAAA] uppercase tracking-wider">Order ID</th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-[#AAAAAA] uppercase tracking-wider">Amount</th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-[#AAAAAA] uppercase tracking-wider">Status</th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-[#AAAAAA] uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#303030]">
-            {items.map((item) => (
-              <tr key={item._id} className="hover:bg-[#202020] transition-colors">
-                <td className="px-6 py-4 text-sm text-white">
-                  {new Date(item.createdAt).toLocaleString()}
-                </td>
-                <td className="px-6 py-4 text-sm text-[#AAAAAA]">
-                  <span className="inline-flex items-center gap-2 px-2 py-1 bg-[#202020] rounded-lg text-xs">
-                    <i className="fas fa-credit-card"></i>
-                    {item.provider}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-[#AAAAAA] font-mono">
-                  {item.providerOrderId}
-                </td>
-                <td className="px-6 py-4 text-sm text-white font-medium">
-                  {Number(item.amount || 0).toFixed(2)} {item.currency || 'USD'}
-                </td>
-                <td className="px-6 py-4">
-                  {getStatusBadge(item.status)}
-                </td>
-                <td className="px-6 py-4">
-                  {getActionMenu(item)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="w-full">
+      {/* Column headers */}
+      <div className="hidden gap-4 grid-cols-[1.5fr_1.5fr_1fr_1fr_1fr_80px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
+        <span>User</span>
+        <span>Order Info</span>
+        <span>Provider</span>
+        <span>Amount</span>
+        <span>Status</span>
+        <span className="text-right">Action</span>
+      </div>
+
+      <div className="divide-y divide-white/[0.06]">
+        {items.map((item) => (
+          <div
+            key={item._id}
+            className="flex flex-col gap-4 px-5 py-4 transition hover:bg-white/[0.015] md:grid md:grid-cols-[1.5fr_1.5fr_1fr_1fr_1fr_80px] md:items-center"
+          >
+            {/* User */}
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center text-[#D4D4D4] overflow-hidden rounded-lg bg-white/[0.035]">
+                {(() => {
+                  const avatarUrl =
+                    item.userId?.profilePicture ||
+                    item.userId?.oauthProviders?.discord?.avatar ||
+                    item.userId?.oauthProviders?.google?.picture;
+                  return avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={item.userId?.username || 'User'}
+                      className="h-full w-full object-cover rounded-lg"
+                      onError={(e) => {
+                        const parent = (e.target as HTMLImageElement).parentElement;
+                        if (parent) {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                          parent.innerHTML = `<span class="text-xs font-bold text-[#D4D4D4]">${(item.userId?.username?.charAt(0) || 'U').toUpperCase()}</span>`;
+                        }
+                      }}
+                    />
+                  ) : (
+                    <span className="text-xs font-bold text-[#D4D4D4]">
+                      {item.userId?.username?.charAt(0).toUpperCase() || 'U'}
+                    </span>
+                  );
+                })()}
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-[#D4D4D4]">{item.userId?.username || 'Unknown'}</p>
+                <p className="mt-0.5 truncate text-[13px] text-[#888]">{item.userId?.email || item.userId || ''}</p>
+              </div>
+            </div>
+
+            {/* Order Info */}
+            <div className="flex flex-col justify-center">
+              <span className="block truncate font-mono text-xs text-white/60" title={item._id}>
+                {item._id.substring(0, 16)}...
+              </span>
+              <span className="text-[10px] text-white/30 tracking-wide mt-0.5">
+                {new Date(item.createdAt).toLocaleString()}
+              </span>
+            </div>
+
+            {/* Item & Provider */}
+            <div className="flex flex-col justify-center">
+              <span className="text-sm font-semibold text-white/80 truncate">
+                {item.planId?.name || item.planId || 'Unknown'}
+              </span>
+              <span className="text-[10px] text-white/30 uppercase tracking-wide mt-0.5">
+                {item.provider || 'system'}
+              </span>
+            </div>
+
+            {/* Amount */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-semibold text-white/80">{Number(item.amount || 0).toFixed(2)} {item.currency || 'USD'}</span>
+            </div>
+
+            {/* Status */}
+            <div className="flex items-center">
+              {getStatusBadge(item.status)}
+            </div>
+
+            {/* Action */}
+            <div className="flex justify-end mt-2 md:mt-0">
+              {getActionMenu(item)}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

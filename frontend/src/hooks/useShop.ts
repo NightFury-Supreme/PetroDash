@@ -11,7 +11,6 @@ export function useShop() {
   const [buying, setBuying] = useState<string | null>(null);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [coins, setCoins] = useState<number | null>(null);
-  const [payments, setPayments] = useState<any[]>([]);
   const [activePlans, setActivePlans] = useState<any[]>([]);
   const [itemsLoading, setItemsLoading] = useState(true);
   const [plansLoading, setPlansLoading] = useState(true);
@@ -22,61 +21,67 @@ export function useShop() {
     const token = localStorage.getItem('auth_token');
     if (!token) { setItemsLoading(false); setPlansLoading(false); setBootstrapDone(true); return; }
 
-    // Items
-    try {
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/shop`, { headers: { Authorization: `Bearer ${token}` } });
-      let d: any = {}; try { d = await r.json(); } catch {}
-      if (!r.ok) throw new Error(d?.error || 'Failed');
-      setItems(d || []);
-      const initial: Record<string, number> = {};
-      (d || []).forEach((it: any) => { initial[it.key] = 1; });
-      setQuantities(initial);
-    } catch (e: any) { setError(e?.message || 'Failed to load items'); }
-    finally { setItemsLoading(false); }
+    const fetchItems = async () => {
+      try {
+        const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/shop`, { headers: { Authorization: `Bearer ${token}` } });
+        let d: any = {}; try { d = await r.json(); } catch {}
+        if (!r.ok) throw new Error(d?.error || 'Failed');
+        setItems(d || []);
+        const initial: Record<string, number> = {};
+        (d || []).forEach((it: any) => { initial[it.key] = 1; });
+        setQuantities(initial);
+      } catch (e: any) { setError(e?.message || 'Failed to load items'); }
+      finally { setItemsLoading(false); }
+    };
 
-    // Plans
-    try {
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/plans`, { headers: { Authorization: `Bearer ${token}` } });
-      let d: any = {}; try { d = await r.json(); } catch {}
-      if (!r.ok) throw new Error(d?.error || 'Failed');
-      setPlans(d || []);
-    } catch (e: any) { setError(e?.message || 'Failed to load plans'); }
-    finally { setPlansLoading(false); }
+    const fetchPlans = async () => {
+      try {
+        const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/plans`, { headers: { Authorization: `Bearer ${token}` } });
+        let d: any = {}; try { d = await r.json(); } catch {}
+        if (!r.ok) throw new Error(d?.error || 'Failed');
+        setPlans(d || []);
+      } catch (e: any) { setError(e?.message || 'Failed to load plans'); }
+      finally { setPlansLoading(false); }
+    };
 
-    // Coins
-    try {
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
-      let d: any = {}; try { d = await r.json(); } catch {}
-      if (r.ok) {
-        const nextCoins = Number(d?.coins ?? 0);
-        setCoins(nextCoins);
-        try {
-          window.dispatchEvent(new CustomEvent('coins:update', { detail: { coins: nextCoins } }));
-        } catch {}
-      }
-    } catch {}
+    const fetchCoins = async () => {
+      try {
+        const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+        let d: any = {}; try { d = await r.json(); } catch {}
+        if (r.ok) {
+          const nextCoins = Number(d?.coins ?? 0);
+          setCoins(nextCoins);
+          try {
+            window.dispatchEvent(new CustomEvent('coins:update', { detail: { coins: nextCoins } }));
+          } catch {}
+        }
+      } catch {}
+    };
 
-    // Payments
-    try {
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/payments`, { headers: { Authorization: `Bearer ${token}` } });
-      let d: any = {}; try { d = await r.json(); } catch {}
-      if (r.ok) setPayments(d || []);
-    } catch {}
+    const fetchActivePlans = async () => {
+      try {
+        const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/user/plans`, { headers: { Authorization: `Bearer ${token}` } });
+        let d: any = {}; try { d = await r.json(); } catch {}
+        if (r.ok) setActivePlans(d || []);
+      } catch {}
+    };
 
-    // Active user plans
-    try {
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/user/plans`, { headers: { Authorization: `Bearer ${token}` } });
-      let d: any = {}; try { d = await r.json(); } catch {}
-      if (r.ok) setActivePlans(d || []);
-    } catch {}
+    const fetchBranding = async () => {
+      try {
+        const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/branding`);
+        let d: any = {}; try { d = await r.json(); } catch {}
+        if (r.ok && d?.currency) setCurrency(d.currency);
+      } catch {}
+    };
 
-    // Branding (for currency)
-    try {
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/branding`);
-      let d: any = {}; try { d = await r.json(); } catch {}
-      if (r.ok && d?.currency) setCurrency(d.currency);
-    } catch {}
-
+    // Parallelize all network requests to avoid waterfall loading (Optimization)
+    await Promise.allSettled([
+      fetchItems(),
+      fetchPlans(),
+      fetchCoins(),
+      fetchActivePlans(),
+      fetchBranding()
+    ]);
   }, []);
 
   useEffect(() => { loadAll(); }, [loadAll]);
@@ -94,7 +99,7 @@ export function useShop() {
     items, plans, error, setError,
     buying, setBuying,
     quantities, setQuantities,
-    coins, setCoins, payments, activePlans,
+    coins, setCoins, activePlans,
     itemsLoading, plansLoading, bootstrapDone,
     currency,
     // helpers

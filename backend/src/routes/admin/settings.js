@@ -33,18 +33,53 @@ router.get('/', requireAdmin, async (req, res) => {
     const cached = await getCache('admin:settings');
     if (cached) return res.json(cached);
 
-    const settings = await getOrCreate();
-    const out = settings.toObject();
-    out.auth = out.auth || {};
-    out.auth.emailLogin = out.auth.emailLogin ?? true;
-    out.auth.emailVerification = out.auth.emailVerification ?? false;
+    // Fetch Global Settings and SMTP settings in parallel for optimized latency (ISO 25010)
+    const Email = require('../../models/Email');
+    const [settings, emailSettings] = await Promise.all([
+      getOrCreate(),
+      Email.getOrCreate()
+    ]);
+
+    const {
+      __v: _v,
+      themePrimary: _themePrimary,
+      earn: _earn,
+      ticketCategories: _ticketCategories,
+      ...apiSettings
+    } = settings.toObject();
+
+    // Construct immutable Data Transfer Object (DTO) for API response
+    const responseDto = {
+      ...apiSettings,
+      payments: {
+        ...(apiSettings.payments || {}),
+        paypal: {
+          ...(apiSettings.payments?.paypal || {}),
+          clientSecret: apiSettings.payments?.paypal?.clientSecret ? '***' : ''
+        },
+        smtp: {
+          ...(emailSettings.smtp || {}),
+          pass: emailSettings.smtp?.pass ? '***' : ''
+        }
+      },
+      auth: {
+        ...(apiSettings.auth || {}),
+        emailLogin: apiSettings.auth?.emailLogin ?? true,
+        emailVerification: apiSettings.auth?.emailVerification ?? false,
+        discord: {
+          ...(apiSettings.auth?.discord || {}),
+          clientSecret: apiSettings.auth?.discord?.clientSecret ? '***' : '',
+          botToken: apiSettings.auth?.discord?.botToken ? '***' : ''
+        },
+        google: {
+          ...(apiSettings.auth?.google || {}),
+          clientSecret: apiSettings.auth?.google?.clientSecret ? '***' : ''
+        }
+      }
+    };
     
-    // Hide deprecated and sensitive fields
-    delete out.themePrimary;
-    delete out.__v;
-    
-    await setCache('admin:settings', out, 30);
-    return res.json(out);
+    await setCache('admin:settings', responseDto, 30);
+    return res.json(responseDto);
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
     return res.status(500).json({
@@ -56,7 +91,7 @@ router.get('/', requireAdmin, async (req, res) => {
 
 // Validation schema for settings payload
 const settingsPayloadSchema = z.object({
-  siteName: z.string().min(1, 'Site name must be at least 1 character').max(100, 'Site name must be less than 100 characters').optional(),
+  siteName: z.string().min(1, 'Site name must be at least 1 character').max(100, 'Site name must be less than 100 characters').regex(/^[^<>]*$/, 'Site name cannot contain HTML tags').optional(),
   siteIcon: z.string().max(500, 'Icon path must be less than 500 characters').optional(), // Changed from siteIconUrl
   referrals: z.object({
     referrerCoins: z.coerce.number().int().min(0).max(1000000).optional(),
@@ -84,8 +119,26 @@ const settingsPayloadSchema = z.object({
   }).optional(),
   localization: z.object({
     currency: z.string().min(3, 'Currency must be at least 3 characters').max(3, 'Currency must be exactly 3 characters').optional(),
+    timezone: z.string().refine((tz) => {
+      try {
+        Intl.DateTimeFormat(undefined, { timeZone: tz });
+        return true;
+      // eslint-disable-next-line unused-imports/no-unused-vars
+      } catch (e) {
+        return false;
+      }
+    }, 'Invalid IANA timezone').optional(),
   }).optional(),
   payments: z.object({
+    smtp: z.object({
+      enabled: z.coerce.boolean().optional(),
+      host: z.string().min(1).max(200).optional(),
+      port: z.coerce.number().int().min(1).max(65535).optional(),
+      secure: z.coerce.boolean().optional(),
+      user: z.string().max(200).optional(),
+      pass: z.string().max(500).optional(),
+      fromEmail: z.string().email().optional(),
+    }).optional(),
     paypal: z.object({
       enabled: z.coerce.boolean().optional(),
       mode: z.enum(['sandbox', 'live'], 'Invalid PayPal mode').optional(),
@@ -97,14 +150,14 @@ const settingsPayloadSchema = z.object({
     }).optional(),
   }).optional(),
   defaults: z.object({
-    cpuPercent: z.coerce.number().int('CPU percent must be a whole number').min(0, 'CPU percent cannot be negative').max(100, 'CPU percent cannot exceed 100%').optional(),
-    memoryMb: z.coerce.number().int('Memory must be a whole number').min(0, 'Memory cannot be negative').max(1000000, 'Memory cannot exceed 1TB').optional(),
-    diskMb: z.coerce.number().int('Disk must be a whole number').min(0, 'Disk cannot be negative').max(10000000, 'Disk cannot exceed 10TB').optional(),
-    serverSlots: z.coerce.number().int('Server slots must be a whole number').min(0, 'Server slots cannot be negative').max(1000, 'Server slots cannot exceed 1000').optional(),
-    backups: z.coerce.number().int('Backups must be a whole number').min(0, 'Backups cannot be negative').max(1000, 'Backups cannot exceed 1000').optional(),
-    allocations: z.coerce.number().int('Allocations must be a whole number').min(0, 'Allocations cannot be negative').max(10000, 'Allocations cannot exceed 10000').optional(),
-    databases: z.coerce.number().int('Databases must be a whole number').min(0, 'Databases cannot be negative').max(1000, 'Databases cannot exceed 1000').optional(),
-    coins: z.coerce.number().int('Coins must be a whole number').min(0, 'Coins cannot be negative').max(1000000, 'Coins cannot exceed 1 million').optional(),
+    cpuPercent: z.coerce.number().int('CPU percent must be a whole number').min(0, 'CPU percent cannot be negative').max(1000000, 'CPU percent exceeds maximum allowed').optional(),
+    memoryMb: z.coerce.number().int('Memory must be a whole number').min(0, 'Memory cannot be negative').max(100000000, 'Memory exceeds maximum allowed').optional(),
+    diskMb: z.coerce.number().int('Disk must be a whole number').min(0, 'Disk cannot be negative').max(100000000, 'Disk exceeds maximum allowed').optional(),
+    serverSlots: z.coerce.number().int('Server slots must be a whole number').min(0, 'Server slots cannot be negative').max(100000, 'Server slots exceeds maximum allowed').optional(),
+    backups: z.coerce.number().int('Backups must be a whole number').min(0, 'Backups cannot be negative').max(100000, 'Backups exceeds maximum allowed').optional(),
+    allocations: z.coerce.number().int('Allocations must be a whole number').min(0, 'Allocations cannot be negative').max(100000, 'Allocations exceeds maximum allowed').optional(),
+    databases: z.coerce.number().int('Databases must be a whole number').min(0, 'Databases cannot be negative').max(100000, 'Databases exceeds maximum allowed').optional(),
+    coins: z.coerce.number().int('Coins must be a whole number').min(0, 'Coins cannot be negative').max(1000000000, 'Coins exceeds maximum allowed').optional(),
   }).optional(),
   adsense: z.object({
     enabled: z.coerce.boolean().optional(),
@@ -157,7 +210,15 @@ router.patch('/', requireAdmin, async (req, res) => {
       });
     }
 
+    // Strip masked secrets so we don't accidentally overwrite real secrets with '***'
+    if (parsed.data.auth?.discord?.clientSecret === '***') delete parsed.data.auth.discord.clientSecret;
+    if (parsed.data.auth?.discord?.botToken === '***') delete parsed.data.auth.discord.botToken;
+    if (parsed.data.auth?.google?.clientSecret === '***') delete parsed.data.auth.google.clientSecret;
+    if (parsed.data.payments?.paypal?.clientSecret === '***') delete parsed.data.payments.paypal.clientSecret;
+    if (parsed.data.payments?.smtp?.pass === '***') delete parsed.data.payments.smtp.pass;
+
     const settings = await getOrCreate();
+    const originalSettings = settings.toObject();
     const update = { ...parsed.data };
     let authUpdated = false;
 
@@ -165,10 +226,24 @@ router.patch('/', requireAdmin, async (req, res) => {
     delete update.themePrimary;
 
     // Deep-merge payments.paypal to avoid clobbering other fields
-    if (update.payments && update.payments.paypal) {
-      settings.payments = settings.payments || {};
-      settings.payments.paypal = { ...(settings.payments.paypal || {}), ...update.payments.paypal };
-      delete update.payments.paypal;
+    if (update.payments) {
+      if (update.payments.paypal) {
+        settings.payments = settings.payments || {};
+        settings.payments.paypal = { ...(originalSettings.payments?.paypal || {}), ...update.payments.paypal };
+        delete update.payments.paypal;
+      }
+      if (update.payments.smtp) {
+        const Email = require('../../models/Email');
+        let emailSettings = await Email.findOne({});
+        if (!emailSettings) emailSettings = await Email.create({});
+        const originalEmailSettings = emailSettings.toObject();
+        emailSettings.smtp = { ...(originalEmailSettings.smtp || {}), ...update.payments.smtp };
+        await emailSettings.save();
+        const { deleteCachePattern } = require('../../lib/redis');
+        await deleteCachePattern('email:settings');
+        await deleteCachePattern('api:email:settings');
+        delete update.payments.smtp;
+      }
     }
     if (update.payments && Object.keys(update.payments).length === 0) {
       delete update.payments;
@@ -185,10 +260,10 @@ router.patch('/', requireAdmin, async (req, res) => {
         settings.auth.emailVerification = update.auth.emailVerification;
       }
       if (update.auth.discord) {
-        settings.auth.discord = { ...(settings.auth.discord || {}), ...update.auth.discord };
+        settings.auth.discord = { ...(originalSettings.auth?.discord || {}), ...update.auth.discord };
       }
       if (update.auth.google) {
-        settings.auth.google = { ...(settings.auth.google || {}), ...update.auth.google };
+        settings.auth.google = { ...(originalSettings.auth?.google || {}), ...update.auth.google };
       }
       delete update.auth;
     }
@@ -203,10 +278,10 @@ router.patch('/', requireAdmin, async (req, res) => {
         settings.adsense.publisherId = update.adsense.publisherId;
       }
       if (update.adsense.adSlots) {
-        settings.adsense.adSlots = { ...(settings.adsense.adSlots || {}), ...update.adsense.adSlots };
+        settings.adsense.adSlots = { ...(originalSettings.adsense?.adSlots || {}), ...update.adsense.adSlots };
       }
       if (update.adsense.adTypes) {
-        settings.adsense.adTypes = { ...(settings.adsense.adTypes || {}), ...update.adsense.adTypes };
+        settings.adsense.adTypes = { ...(originalSettings.adsense?.adTypes || {}), ...update.adsense.adTypes };
       }
       delete update.adsense;
     }
@@ -242,30 +317,6 @@ router.patch('/', requireAdmin, async (req, res) => {
     }
 
     
-    // Validate business logic
-    if (update.defaults) {
-      if (update.defaults.cpuPercent && update.defaults.cpuPercent > 100) {
-        return res.status(400).json({
-          error: 'Invalid CPU percentage',
-          message: 'CPU percentage cannot exceed 100%'
-        });
-      }
-      
-      if (update.defaults.memoryMb && update.defaults.memoryMb < 128) {
-        return res.status(400).json({
-          error: 'Invalid memory allocation',
-          message: 'Memory must be at least 128MB'
-        });
-      }
-      
-      if (update.defaults.diskMb && update.defaults.diskMb < 512) {
-        return res.status(400).json({
-          error: 'Invalid disk allocation',
-          message: 'Disk must be at least 512MB'
-        });
-      }
-    }
-
     // Save settings
     await settings.save();
     await clearSettingsCache();
@@ -302,7 +353,44 @@ router.patch('/', requireAdmin, async (req, res) => {
 
     // Return updated settings (excluding sensitive fields)
     const response = settings.toObject();
+    
+    // Attach SMTP to response
+    const EmailResponse = require('../../models/Email');
+    const updatedEmailSettings = await EmailResponse.getOrCreate();
+    response.payments = response.payments || {};
+    response.payments.smtp = updatedEmailSettings.smtp || {};
+
     delete response.__v;
+    
+    // Mask secrets for API transport (OWASP ASVS Write-Only Pattern)
+    if (response.auth?.discord?.clientSecret) response.auth.discord.clientSecret = '***';
+    if (response.auth?.discord?.botToken) response.auth.discord.botToken = '***';
+    if (response.auth?.google?.clientSecret) response.auth.google.clientSecret = '***';
+    if (response.payments?.paypal?.clientSecret) response.payments.paypal.clientSecret = '***';
+    if (response.payments?.smtp?.pass) response.payments.smtp.pass = '***';
+    
+    const changes = {};
+    const sensitiveKeys = ['clientSecret', 'botToken', 'pass', 'webhookId', 'apiKey'];
+    const checkDiff = (target, source, original, prefix = '') => {
+      for (const k of Object.keys(source || {})) {
+        if (typeof source[k] === 'object' && source[k] !== null && !Array.isArray(source[k])) {
+          checkDiff(target, source[k], (original[k] || {}), prefix ? `${prefix}.${k}` : k);
+        } else {
+          const keyName = prefix ? `${prefix}.${k}` : k;
+          if (JSON.stringify(original[k]) !== JSON.stringify(source[k])) {
+            const isSensitive = sensitiveKeys.includes(k);
+            target[keyName] = { 
+              old: isSensitive ? (original[k] ? '***' : null) : original[k], 
+              new: isSensitive ? (source[k] ? '***' : null) : source[k] 
+            };
+          }
+        }
+      }
+    };
+    checkDiff(changes, parsed.data, originalSettings);
+
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.settings.update', 'settings', settings._id.toString(), { changes });
     
     return res.json(response);
 

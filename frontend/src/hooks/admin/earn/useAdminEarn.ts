@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
-export type EarnMethod = "ads" | "linkvertise";
+export type EarnMethod = "linkvertise";
 
 export interface EarnMethodSettings {
   enabled: boolean;
@@ -13,15 +13,15 @@ export interface EarnMethodSettings {
   maxClaimsPerDay: number;
   url?: string;
   antiBypassToken?: string;
-  ayetPlacementId?: number;
-  ayetAdslotName?: string;
-  ayetApiKey?: string;
+  adslotId?: string;
+  apiKey?: string;
 }
 
 export interface AdminEarnSettings {
-  enabled: boolean;
-  ads: EarnMethodSettings;
   linkvertise: EarnMethodSettings;
+  ads?: EarnMethodSettings;
+  offerwall?: EarnMethodSettings;
+  surveywall?: EarnMethodSettings;
 }
 
 export function useAdminEarn() {
@@ -38,7 +38,7 @@ export function useAdminEarn() {
       const token = localStorage.getItem("auth_token");
       if (!token) throw new Error("No auth token");
 
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/earn`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/earn`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -61,7 +61,7 @@ export function useAdminEarn() {
       const token = localStorage.getItem("auth_token");
       if (!token) throw new Error("No auth token");
 
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/earn`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/earn`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

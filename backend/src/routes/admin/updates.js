@@ -30,17 +30,6 @@ router.get('/check', requireAdmin, async (req, res) => {
     const latestRelease = response.data;
     const latestVersion = latestRelease.tag_name.replace('v', '');
 
-    // Find full package asset
-    const fullAsset = latestRelease.assets.find(asset => 
-      asset.name.includes('full-') && asset.name.endsWith('.tar.gz')
-    );
-
-    if (!fullAsset) {
-      return res.status(404).json({
-        error: 'Full package not found in latest release',
-        message: 'The latest release does not contain a full package'
-      });
-    }
 
     // Compare versions
     const isUpdateAvailable = compareVersions(latestVersion, currentVersion) > 0;
@@ -51,11 +40,7 @@ router.get('/check', requireAdmin, async (req, res) => {
       isUpdateAvailable,
       releaseNotes: latestRelease.body,
       publishedAt: latestRelease.published_at,
-      releaseUrl: latestRelease.html_url,
-      // full package info only
-      fullDownloadUrl: fullAsset.browser_download_url,
-      fullPackageSize: fullAsset.size,
-      fullPackageName: fullAsset.name
+      releaseUrl: latestRelease.html_url
     });
 
   } catch (error) {

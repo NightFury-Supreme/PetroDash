@@ -1,56 +1,59 @@
 export function AdminLedgerTableSkeleton() {
   return (
-    <div className="bg-[#181818] border border-[#303030] rounded-xl overflow-hidden shadow-lg">
-      {/* Table Header */}
-      <div className="p-6 border-b border-[#303030] bg-[#202020]">
-        <div className="grid grid-cols-6 gap-6">
-          {['Date', 'Provider', 'Order ID', 'Amount', 'Status', 'Actions'].map((header, i) => (
-            <div 
-              key={i} 
-              className="h-4 bg-gradient-to-r from-[#303030] to-[#404040] rounded-lg animate-pulse" 
-              style={{ 
-                animationDelay: `${i * 100}ms`,
-                animationDuration: '1.5s'
-              }}
-            ></div>
-          ))}
-        </div>
+    <div className="w-full">
+      {/* Column headers */}
+      <div className="hidden gap-4 grid-cols-[1.5fr_1.5fr_1fr_1fr_1fr_80px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
+        <span>User</span>
+        <span>Order Info</span>
+        <span>Provider</span>
+        <span>Amount</span>
+        <span>Status</span>
+        <span className="text-right">Action</span>
       </div>
 
-      {/* Table Rows */}
-      <div className="divide-y divide-[#303030]">
-        {[...Array(8)].map((_, rowIndex) => (
-          <div key={rowIndex} className="p-6 hover:bg-[#202020] transition-colors">
-            <div className="grid grid-cols-6 gap-6">
-              {/* Date */}
-              <div className="h-5 w-32 bg-gradient-to-r from-[#202020] to-[#303030] rounded-lg animate-pulse"></div>
-              
-              {/* Provider */}
-              <div className="h-5 w-20 bg-gradient-to-r from-[#202020] to-[#303030] rounded-lg animate-pulse"></div>
-              
-              {/* Order ID */}
-              <div className="h-5 w-40 bg-gradient-to-r from-[#202020] to-[#303030] rounded-lg animate-pulse"></div>
-              
-              {/* Amount */}
-              <div className="h-5 w-24 bg-gradient-to-r from-[#202020] to-[#303030] rounded-lg animate-pulse"></div>
-              
-              {/* Status */}
-              <div className="h-5 w-20 bg-gradient-to-r from-[#202020] to-[#303030] rounded-lg animate-pulse"></div>
-              
-              {/* Actions */}
-              <div className="h-5 w-12 bg-gradient-to-r from-[#202020] to-[#303030] rounded-lg animate-pulse"></div>
+      <div className="divide-y divide-white/[0.06]">
+        {[...Array(6)].map((_, rowIndex) => (
+          <div
+            key={rowIndex}
+            className="flex flex-col gap-4 px-5 py-4 transition hover:bg-white/[0.015] md:grid md:grid-cols-[1.5fr_1.5fr_1fr_1fr_1fr_80px] md:items-center"
+          >
+            {/* User */}
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center text-[#D4D4D4] overflow-hidden rounded-lg bg-white/[0.035] animate-pulse"></div>
+              <div className="min-w-0">
+                <div className="h-4 w-28 bg-[#202020] rounded animate-pulse"></div>
+                <div className="h-3 w-36 bg-[#202020] rounded animate-pulse mt-1"></div>
+              </div>
+            </div>
+
+            {/* Order Info */}
+            <div className="flex flex-col justify-center">
+              <div className="h-3 w-32 bg-[#202020] rounded animate-pulse"></div>
+              <div className="h-2 w-24 bg-[#202020] rounded animate-pulse mt-1"></div>
+            </div>
+
+            {/* Provider */}
+            <div className="flex flex-col justify-center">
+              <div className="h-4 w-20 bg-[#202020] rounded animate-pulse"></div>
+              <div className="h-2.5 w-12 bg-[#202020] rounded animate-pulse mt-1"></div>
+            </div>
+
+            {/* Amount */}
+            <div className="flex items-center gap-1.5">
+              <div className="h-4 w-16 bg-[#202020] rounded animate-pulse"></div>
+            </div>
+
+            {/* Status */}
+            <div className="flex items-center">
+              <div className="h-5 w-16 bg-[#202020] rounded animate-pulse"></div>
+            </div>
+
+            {/* Action */}
+            <div className="flex items-center gap-1.5 justify-end mt-2 md:mt-0">
+              <div className="h-7 w-7 bg-[#202020] rounded border border-white/[0.04] animate-pulse"></div>
             </div>
           </div>
         ))}
-      </div>
-
-      {/* Loading Footer */}
-      <div className="p-6 border-t border-[#303030] bg-[#202020]">
-        <div className="flex items-center justify-center gap-3">
-          <div className="w-4 h-4 bg-gradient-to-r from-[#404040] to-[#505050] rounded-full animate-pulse" style={{ animationDuration: '1s' }}></div>
-          <div className="w-4 h-4 bg-gradient-to-r from-[#404040] to-[#505050] rounded-full animate-pulse" style={{ animationDuration: '1s', animationDelay: '0.2s' }}></div>
-          <div className="w-4 h-4 bg-gradient-to-r from-[#404040] to-[#505050] rounded-full animate-pulse" style={{ animationDuration: '1s', animationDelay: '0.4s' }}></div>
-        </div>
       </div>
     </div>
   );

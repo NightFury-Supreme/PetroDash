@@ -11,6 +11,11 @@ const UserSchema = new mongoose.Schema(
         // Profile picture (for email/password users)
         profilePicture: { type: String, default: '' }, // URL to profile picture
         
+        // Two-Factor Authentication
+        tfaSecret: { type: String, default: null },
+        tfaEnabled: { type: Boolean, default: false },
+        tfaBackupCodes: [{ type: String }],
+        
         oauthProviders: {
             discord: {
                 id: { type: String },
@@ -58,6 +63,8 @@ const UserSchema = new mongoose.Schema(
     },
     { timestamps: true }
 );
+
+UserSchema.index({ referredBy: 1 });
 
 module.exports = mongoose.model('User', UserSchema);
 

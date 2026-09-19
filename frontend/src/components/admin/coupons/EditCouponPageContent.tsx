@@ -1,8 +1,10 @@
+import { Select } from "@/components/ui/Select";
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import Link from 'next/link';
+import { useRouter, useParams } from '@/i18n/routing';
+import { Link } from '@/i18n/routing';
 import { AdminCouponEditSkeleton } from '@/components/skeletons/admin/coupons/AdminCouponEditSkeleton';
 import { useCurrency } from '@/hooks/useCurrency';
 
@@ -19,8 +21,8 @@ export default function EditCouponPageContent() {
     const token = localStorage.getItem('auth_token');
     if (!token) { router.replace('/login'); return; }
     Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/coupons/${params.id}`, { headers: { Authorization: `Bearer ${token}` } }),
-      fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans`, { headers: { Authorization: `Bearer ${token}` } })
+      fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons/${params.id}`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans`, { headers: { Authorization: `Bearer ${token}` } })
     ])
       .then(async ([cR, pR]) => {
         if (pR.ok) setPlans(await pR.json());
@@ -40,14 +42,14 @@ export default function EditCouponPageContent() {
         });
       })
       .finally(() => setLoading(false));
-  }, [params.id, router]);
+  }, [params.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form) return;
     setSaving(true);
     const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/coupons/${params.id}`, {
+    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons/${params.id}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({
         ...form,
@@ -84,10 +86,7 @@ export default function EditCouponPageContent() {
             </label>
             <label>
               <div className="label">Type *</div>
-              <select className="input" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
-                <option value="percentage">Percentage (%)</option>
-                <option value="fixed">Fixed amount ({currency})</option>
-              </select>
+              <Select value={form.type} onChange={(val) => setForm({ ...form, type: val })} options={[{label: "Percentage (%)", value: "percentage"}, {label: `Fixed amount (${currency})`, value: "fixed"}]} size="md" />
             </label>
             <label>
               <div className="label">Value *</div>

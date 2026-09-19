@@ -1,6 +1,6 @@
 "use client";
 
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 
 // eslint-disable-next-line unused-imports/no-unused-vars
 export default function LocationsHeader({ total }: { total: number }) {

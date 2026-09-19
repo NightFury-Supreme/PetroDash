@@ -4,6 +4,8 @@ const { requireAuth } = require('../middleware/auth');
 const ShopItem = require('../models/ShopItem');
 const User = require('../models/User');
 const { getCache, setCache, deleteCache } = require('../lib/redis');
+const { logUserActivity } = require('../middleware/userActivity');
+const { writeAudit } = require('../middleware/audit');
 
 const router = express.Router();
 
@@ -58,21 +60,30 @@ router.post('/purchase', requireAuth, async (req, res) => {
     return res.status(400).json({ error: 'Insufficient coins' });
   }
 
-  const { writeAudit } = require('../middleware/audit');
-  await writeAudit(req, 'shop.purchase.completed', 'shop', item._id.toString(), {
+  const changes = {
+    coins: {
+      old: updatedUser.coins + totalPrice,
+      new: updatedUser.coins
+    },
+    [itemKey]: {
+      old: updatedUser.resources[keyToField] - increment,
+      new: updatedUser.resources[keyToField]
+    }
+  };
+
+  await writeAudit(req, 'shop.purchase', 'shop', item._id.toString(), {
     itemKey,
     quantity,
     totalPrice,
     itemName: item.name,
-    amountPerUnit: item.amountPerUnit,
-    pricePerUnit: item.pricePerUnit,
-    userId: updatedUser._id.toString(),
-    username: updatedUser.username,
-    purchaseDate: new Date().toISOString(),
-    coinsBefore: updatedUser.coins + totalPrice,
-    coinsAfter: updatedUser.coins,
-    resourcesBefore: { ...updatedUser.resources, [keyToField]: updatedUser.resources[keyToField] - increment },
-    resourcesAfter: { ...updatedUser.resources }
+    changes
+  });
+  
+  await logUserActivity(req, 'shop.purchase', { 
+    itemName: item.name, 
+    quantity, 
+    totalPrice,
+    changes
   });
 
   await deleteCache(`user:${updatedUser._id}:profile`);

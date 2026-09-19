@@ -1,6 +1,7 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect, useCallback } from 'react';
 
-interface PlanFormData {
+export interface PlanFormData {
   name: string;
   description: string;
   strikeThroughPrice: number;
@@ -119,10 +120,10 @@ export function usePlanForm(): UsePlanFormReturn {
       }
 
       const [eggsRes, locationsRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/eggs`, { 
+        fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs`, { 
           headers: { Authorization: `Bearer ${token}` } 
         }),
-        fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/locations`, { 
+        fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations`, { 
           headers: { Authorization: `Bearer ${token}` } 
         })
       ]);
@@ -191,71 +192,68 @@ export function usePlanForm(): UsePlanFormReturn {
   const resetForm = useCallback(() => {
     setFormDataState(initialFormData);
     setError(null);
+    setValidationErrors({});
   }, []);
 
-  // Validation
-  const validationErrors: Record<string, string> = {};
-  
-  if (!formData.name.trim()) {
-    validationErrors.name = 'Plan name is required';
-  }
-  
-  if (!formData.description.trim()) {
-    validationErrors.description = 'Description is required';
-  }
-  
-  if (!formData.category.trim()) {
-    validationErrors.category = 'Category is required';
-  }
-  
-  if (!formData.availableAt) {
-    validationErrors.availableAt = 'Available at date is required';
-  }
-  
-  // availableUntil is optional; when Forever is checked it will be null
-  
-  if (formData.pricePerMonth < 0) {
-    validationErrors.pricePerMonth = 'Monthly price must be 0 or greater';
-  }
-  
-
-  
-  if (formData.productContent.recurrentResources.cpuPercent < 0) {
-    validationErrors.cpuPercent = 'CPU percentage must be 0 or greater';
-  }
-  
-  if (formData.productContent.recurrentResources.memoryMb < 0) {
-    validationErrors.memoryMb = 'Memory must be 0 or greater';
-  }
-  
-  if (formData.productContent.recurrentResources.diskMb < 0) {
-    validationErrors.diskMb = 'Disk must be 0 or greater';
-  }
-  
-  if (formData.productContent.backups < 0) {
-    validationErrors.backups = 'Backups must be 0 or greater';
-  }
-  
-  if (formData.productContent.databases < 0) {
-    validationErrors.databases = 'Databases must be 0 or greater';
-  }
-  
-  if (formData.productContent.serverLimit < 1) {
-    validationErrors.serverLimit = 'Server limit must be 1 or greater';
-  }
-  
-  if (!formData.billingOptions.lifetime && formData.availableBillingCycles.length === 0) {
-    validationErrors.billingCycles = 'Please select at least one billing cycle';
-  }
-
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const isFormValid = Object.keys(validationErrors).length === 0;
 
   // Handle form submission
   const handleSubmit = useCallback(async () => {
-    if (!isFormValid) {
-      setError('Please fix validation errors before submitting');
-      return;
+    const errors: Record<string, string> = {};
+  
+    if (!formData.name.trim()) {
+      errors.name = 'Plan name is required';
     }
+    
+    if (!formData.description.trim()) {
+      errors.description = 'Description is required';
+    }
+    
+    if (!formData.category.trim()) {
+      errors.category = 'Category is required';
+    }
+    
+    
+    if (formData.pricePerMonth < 0) {
+      errors.pricePerMonth = 'Monthly price must be 0 or greater';
+    }
+    
+    if (formData.productContent.recurrentResources.cpuPercent < 0) {
+      errors.cpuPercent = 'CPU percentage must be 0 or greater';
+    }
+    
+    if (formData.productContent.recurrentResources.memoryMb < 0) {
+      errors.memoryMb = 'Memory must be 0 or greater';
+    }
+    
+    if (formData.productContent.recurrentResources.diskMb < 0) {
+      errors.diskMb = 'Disk must be 0 or greater';
+    }
+    
+    if (formData.productContent.backups < 0) {
+      errors.backups = 'Backups must be 0 or greater';
+    }
+    
+    if (formData.productContent.databases < 0) {
+      errors.databases = 'Databases must be 0 or greater';
+    }
+    
+    if (formData.productContent.serverLimit < 1) {
+      errors.serverLimit = 'Server limit must be 1 or greater';
+    }
+    
+    if (!formData.billingOptions.lifetime && formData.availableBillingCycles.length === 0) {
+      errors.billingCycles = 'Please select at least one billing cycle';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      setError('Please fix validation errors before submitting');
+      throw new Error('Please fix validation errors before submitting');
+    }
+
+    setValidationErrors({});
 
     try {
       setSaving(true);
@@ -305,7 +303,7 @@ export function usePlanForm(): UsePlanFormReturn {
         sortOrder: formData.sortOrder,
       };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

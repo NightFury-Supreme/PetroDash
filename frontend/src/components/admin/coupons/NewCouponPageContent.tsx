@@ -1,8 +1,10 @@
+import { Select } from "@/components/ui/Select";
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useRouter } from '@/i18n/routing';
+import { Link } from '@/i18n/routing';
 import { AdminCouponEditSkeleton } from '@/components/skeletons/admin/coupons/AdminCouponEditSkeleton';
 import { useCurrency } from '@/hooks/useCurrency';
 
@@ -26,16 +28,16 @@ export default function NewCouponPageContent() {
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
     if (!token) { router.replace('/login'); return; }
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans`, { headers: { Authorization: `Bearer ${token}` }})
+    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans`, { headers: { Authorization: `Bearer ${token}` }})
       .then(async (r) => { if (r.ok) setPlans(await r.json()); })
       .finally(() => setInitialLoading(false));
-  }, [router]);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/coupons`, {
+    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons`, {
       method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({
         ...form,
@@ -71,10 +73,7 @@ export default function NewCouponPageContent() {
             </label>
             <label>
               <div className="label">Type *</div>
-              <select className="input" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
-                <option value="percentage">Percentage (%)</option>
-                <option value="fixed">Fixed amount ({currency})</option>
-              </select>
+              <Select value={form.type} onChange={(val) => setForm({ ...form, type: val })} options={[{label: "Percentage (%)", value: "percentage"}, {label: `Fixed amount (${currency})`, value: "fixed"}]} size="md" />
             </label>
             <label>
               <div className="label">Value *</div>

@@ -69,7 +69,7 @@ async function getEggDetails(nestId, eggId) {
     const cached = await getCache(cacheKey);
     if (cached) return cached;
     
-    const { data } = await withRetry(() => api.get(`/nests/${nestId}/eggs/${eggId}`));
+    const { data } = await withRetry(() => api.get(`/nests/${nestId}/eggs/${eggId}?include=variables`));
     const attributes = data?.attributes;
     
     if (attributes) {
@@ -164,21 +164,27 @@ async function deletePanelUser(userId) {
     return true;
 }
 
-async function checkUserExists(email, username) {
+async function checkUserExists(email, username, excludeId = null) {
     try {
-        // Check if email exists
-        const emailResponse = await withRetry(() => api.get(`/users?filter[email]=${encodeURIComponent(email)}`));
-        const emailExists = emailResponse.data?.data?.length > 0;
+        let emailExists = false;
+        if (email) {
+            const emailResponse = await withRetry(() => api.get(`/users?filter[email]=${encodeURIComponent(email)}`));
+            const matches = emailResponse.data?.data || [];
+            emailExists = matches.some(u => u.attributes.email.toLowerCase() === email.toLowerCase() && u.attributes.id !== excludeId);
+        }
         
-        // Check if username exists
-        const usernameResponse = await withRetry(() => api.get(`/users?filter[username]=${encodeURIComponent(username)}`));
-        const usernameExists = usernameResponse.data?.data?.length > 0;
+        let usernameExists = false;
+        if (username) {
+            const usernameResponse = await withRetry(() => api.get(`/users?filter[username]=${encodeURIComponent(username)}`));
+            const matches = usernameResponse.data?.data || [];
+            usernameExists = matches.some(u => u.attributes.username.toLowerCase() === username.toLowerCase() && u.attributes.id !== excludeId);
+        }
         
         return { emailExists, usernameExists };
     // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (error) {
         // If API is down, assume no conflicts to avoid blocking registration
-                return { emailExists: false, usernameExists: false };
+        return { emailExists: false, usernameExists: false };
     }
 }
 

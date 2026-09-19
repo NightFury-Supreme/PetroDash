@@ -8,14 +8,30 @@ const router = express.Router();
 // GET /api/admin/coupons - list all coupons
 router.get('/', requireAdmin, async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
     const { getCache, setCache } = require('../../lib/redis');
-    const cached = await getCache('admin:coupons');
+    const cacheKey = `admin:coupons:page:${page}:limit:${limit}`;
+    const cached = await getCache(cacheKey);
     if (cached) return res.json(cached);
 
-    const coupons = await Coupon.find({}).sort({ createdAt: -1 }).lean();
+    const [coupons, total] = await Promise.all([
+      Coupon.find({}).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Coupon.countDocuments({})
+    ]);
     
-    await setCache('admin:coupons', coupons, 30);
-    res.json(coupons);
+    const response = {
+      coupons,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    };
+
+    await setCache(cacheKey, response, 30);
+    res.json(response);
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch coupons' });
@@ -91,7 +107,7 @@ router.post('/', requireAdmin, async (req, res) => {
     await coupon.save();
 
     // Audit log
-    writeAudit(req, 'admin.coupons.create', 'coupon', coupon._id.toString(), { code: coupon.code });
+    await writeAudit(req, 'admin.coupon.create', 'coupon', coupon._id.toString(), { created: req.body });
 
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:coupons');
@@ -121,6 +137,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     if (!coupon) {
       return res.status(404).json({ error: 'Coupon not found' });
     }
+    const originalCoupon = coupon.toObject();
 
     // Validate type if provided
     if (type && !['percentage', 'fixed'].includes(type)) {
@@ -156,9 +173,27 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     if (enabled !== undefined) coupon.enabled = enabled;
 
     await coupon.save();
+    
+    const changes = {};
+    const newCoupon = coupon.toObject();
+    
+    const checkDiff = (target, sourceObj, origObj, newObj, prefix = '') => {
+      for (const k of Object.keys(sourceObj || {})) {
+        if (typeof sourceObj[k] === 'object' && sourceObj[k] !== null && !Array.isArray(sourceObj[k])) {
+          checkDiff(target, sourceObj[k], (origObj[k] || {}), (newObj[k] || {}), prefix ? `${prefix}.${k}` : k);
+        } else {
+          const keyName = prefix ? `${prefix}.${k}` : k;
+          if (JSON.stringify(origObj[k]) !== JSON.stringify(newObj[k])) {
+            target[keyName] = { old: origObj[k], new: newObj[k] };
+          }
+        }
+      }
+    };
+    
+    checkDiff(changes, req.body, originalCoupon, newCoupon);
 
     // Audit log
-    writeAudit(req, 'admin.coupons.update', 'coupon', coupon._id.toString(), { code: coupon.code });
+    await writeAudit(req, 'admin.coupon.update', 'coupon', coupon._id.toString(), { changes: Object.keys(changes).length > 0 ? changes : undefined });
 
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:coupons');
@@ -180,13 +215,18 @@ router.delete('/:id', requireAdmin, async (req, res) => {
 
     // Check if coupon has been used
     if (coupon.redeemedCount > 0) {
-      return res.status(400).json({ error: 'Cannot delete coupon that has been used' });
+      return res.status(400).json({ 
+        error: 'Cannot delete coupon',
+        reason: 'Coupon has already been used by users',
+        redeemedCount: coupon.redeemedCount,
+        suggestion: 'Disable the coupon instead of deleting it'
+      });
     }
 
     await Coupon.findByIdAndDelete(String(req.params.id));
 
     // Audit log
-    writeAudit(req, 'admin.coupons.delete', 'coupon', req.params.id, { code: coupon.code });
+    await writeAudit(req, 'admin.coupon.delete', 'coupon', req.params.id, { code: coupon.code });
 
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:coupons');
