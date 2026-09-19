@@ -655,6 +655,10 @@
     "ERR_GIFT_NOT_ACTIVE": "यह उपहार कोड अभी तक सक्रिय नहीं है।",
     "ERR_GIFT_EXPIRED": "यह उपहार कोड समाप्त हो गया है।",
     "ERR_GIFT_LIMIT_REACHED": "यह उपहार कोड अपनी अधिकतम मोचन सीमा तक पहुंच गया है।",
-    "ERR_GIFT_ALREADY_REDEEMED": "आप पहले ही इस उपहार कोड को भुना चुके हैं।"
+    "ERR_GIFT_ALREADY_REDEEMED": "आप पहले ही इस उपहार कोड को भुना चुके हैं।",
+    "ERR_SHOP_INVALID_ITEM": "अमान्य दुकान आइटम चुना गया।",
+    "ERR_SHOP_ITEM_NOT_FOUND": "अनुरोधित दुकान आइटम नहीं मिला।",
+    "ERR_SHOP_MAX_PER_PURCHASE": "इस आइटम के लिए अधिकतम खरीद सीमा पार हो गई।",
+    "ERR_SHOP_INSUFFICIENT_COINS": "इस खरीद को पूरा करने के लिए आपके पास पर्याप्त सिक्के नहीं हैं।"
   }
 }

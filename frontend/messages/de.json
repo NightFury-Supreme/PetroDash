@@ -655,6 +655,10 @@
     "ERR_GIFT_NOT_ACTIVE": "Dieser Geschenkcode ist noch nicht aktiv.",
     "ERR_GIFT_EXPIRED": "Dieser Geschenkcode ist abgelaufen.",
     "ERR_GIFT_LIMIT_REACHED": "Dieser Geschenkcode hat sein maximales Einlösungslimit erreicht.",
-    "ERR_GIFT_ALREADY_REDEEMED": "Sie haben diesen Geschenkcode bereits eingelöst."
+    "ERR_GIFT_ALREADY_REDEEMED": "Sie haben diesen Geschenkcode bereits eingelöst.",
+    "ERR_SHOP_INVALID_ITEM": "Ungültiger Shop-Artikel ausgewählt.",
+    "ERR_SHOP_ITEM_NOT_FOUND": "Der angeforderte Shop-Artikel konnte nicht gefunden werden.",
+    "ERR_SHOP_MAX_PER_PURCHASE": "Maximale Kauflimit für diesen Artikel überschritten.",
+    "ERR_SHOP_INSUFFICIENT_COINS": "Sie haben nicht genug Münzen, um diesen Kauf abzuschließen."
   }
 }

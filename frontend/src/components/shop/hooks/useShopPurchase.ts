@@ -14,6 +14,7 @@ import { useShop } from "./useShop"; // using the context one for state
 
 export function useShopPurchase() {
   const t = useTranslations("Shop");
+  const tError = useTranslations("BackendErrors");
   const { showError, showSuccess } = useToast();
   const [purchaseItem, setPurchaseItem] = useState<any | null>(null);
   const [drawerQty, setDrawerQty] = useState(1);
@@ -35,7 +36,11 @@ export function useShopPurchase() {
       });
       let d: any = {};
       try { d = await r.json(); } catch {}
-      if (!r.ok) throw new Error(d?.error || t("purchaseFailed"));
+      if (!r.ok) {
+         const code = d?.error?.code;
+         const msg = d?.error?.message || d?.error;
+         throw new Error(code || msg || "purchaseFailed");
+      }
 
       setCoins(d.coins);
       try { window.dispatchEvent(new CustomEvent("coins:update", { detail: { coins: Number(d.coins ?? 0) } })); } catch {}
@@ -60,7 +65,16 @@ export function useShopPurchase() {
       showSuccess(t("purchaseSuccess", { quantity, name: getLocalizedItemName(purchaseItem.key, purchaseItem.name, t) }));
       return true;
     } catch (e: any) {
-      const msg = String(e?.message || t("purchaseFailed"));
+      let msg = String(e?.message || "purchaseFailed");
+      if (msg === "purchaseFailed") {
+         msg = t(msg as any);
+      } else {
+         try {
+            msg = tError(msg as any);
+         } catch(err) {
+            msg = tError("ERR_INTERNAL_SERVER");
+         }
+      }
       showError(msg);
       return false;
     } finally {

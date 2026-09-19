@@ -7,6 +7,7 @@ const shopService = require('./shop.service');
 const { purchaseSchema } = require('./shop.schema');
 const { logUserActivity } = require('../../middleware/userActivity');
 const { writeAudit } = require('../../middleware/audit');
+const AppError = require('../../utils/AppError');
 
 class ShopController {
   /**
@@ -29,10 +30,7 @@ class ShopController {
       // 1. Input Validation
       const parsed = purchaseSchema.safeParse(req.body);
       if (!parsed.success) {
-        return res.status(400).json({ 
-          error: 'Invalid payload', 
-          details: parsed.error.flatten() 
-        });
+        return next(new AppError('Invalid payload', 400, 'ERR_INVALID_PAYLOAD', parsed.error.flatten()));
       }
 
       const { itemKey, quantity } = parsed.data;
@@ -67,17 +65,17 @@ class ShopController {
     } catch (error) {
       // Handle domain-specific errors
       if (error.message === 'INVALID_ITEM_KEY') {
-        return res.status(400).json({ error: 'Invalid item key' });
+        return next(new AppError('Invalid item key', 400, 'ERR_SHOP_INVALID_ITEM'));
       }
       if (error.message === 'ITEM_NOT_FOUND') {
-        return res.status(404).json({ error: 'Item not found' });
+        return next(new AppError('Item not found', 404, 'ERR_SHOP_ITEM_NOT_FOUND'));
       }
       if (error.message.startsWith('MAX_PER_PURCHASE_EXCEEDED:')) {
         const max = error.message.split(':')[1];
-        return res.status(400).json({ error: `Max ${max} per purchase` });
+        return next(new AppError(`Max ${max} per purchase`, 400, 'ERR_SHOP_MAX_PER_PURCHASE', { max }));
       }
       if (error.message === 'INSUFFICIENT_COINS') {
-        return res.status(400).json({ error: 'Insufficient coins' });
+        return next(new AppError('Insufficient coins', 400, 'ERR_SHOP_INSUFFICIENT_COINS'));
       }
 
       // Propagate unexpected errors

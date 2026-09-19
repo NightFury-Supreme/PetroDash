@@ -658,6 +658,10 @@
     "ERR_GIFT_NOT_ACTIVE": "This gift code is not active yet.",
     "ERR_GIFT_EXPIRED": "This gift code has expired.",
     "ERR_GIFT_LIMIT_REACHED": "This gift code has reached its maximum redemption limit.",
-    "ERR_GIFT_ALREADY_REDEEMED": "You have already redeemed this gift code."
+    "ERR_GIFT_ALREADY_REDEEMED": "You have already redeemed this gift code.",
+    "ERR_SHOP_INVALID_ITEM": "Invalid shop item selected.",
+    "ERR_SHOP_ITEM_NOT_FOUND": "The requested shop item could not be found.",
+    "ERR_SHOP_MAX_PER_PURCHASE": "Maximum purchase limit exceeded for this item.",
+    "ERR_SHOP_INSUFFICIENT_COINS": "You do not have enough coins to complete this purchase."
   }
 }

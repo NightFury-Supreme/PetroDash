@@ -625,6 +625,10 @@
     "ERR_GIFT_NOT_ACTIVE": "Ce code cadeau n'est pas encore actif.",
     "ERR_GIFT_EXPIRED": "Ce code cadeau a expiré.",
     "ERR_GIFT_LIMIT_REACHED": "Ce code cadeau a atteint sa limite maximale d'échange.",
-    "ERR_GIFT_ALREADY_REDEEMED": "Vous avez déjà échangé ce code cadeau."
+    "ERR_GIFT_ALREADY_REDEEMED": "Vous avez déjà échangé ce code cadeau.",
+    "ERR_SHOP_INVALID_ITEM": "Article de boutique non valide sélectionné.",
+    "ERR_SHOP_ITEM_NOT_FOUND": "L'article de boutique demandé est introuvable.",
+    "ERR_SHOP_MAX_PER_PURCHASE": "Limite d'achat maximale dépassée pour cet article.",
+    "ERR_SHOP_INSUFFICIENT_COINS": "Vous n'avez pas assez de pièces pour effectuer cet achat."
   }
 }
