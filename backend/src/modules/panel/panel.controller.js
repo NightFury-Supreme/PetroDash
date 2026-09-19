@@ -1,6 +1,7 @@
 const panelService = require('./panel.service');
 const { logUserActivity } = require('../../middleware/userActivity');
 const { writeAudit } = require('../../middleware/audit');
+const AppError = require('../../utils/AppError');
 
 class PanelController {
   async getPanelInfo(req, res, next) {
@@ -9,13 +10,11 @@ class PanelController {
       const result = await panelService.getPanelInfo(userId);
       return res.json(result);
     } catch (error) {
-      if (error.message === 'NOT_FOUND') return res.status(404).json({ error: 'User not found' });
-      if (error.message === 'PROVISIONING_PENDING') return res.status(503).json({ error: 'Account Provisioning Pending', details: 'Your panel account is currently pending creation because the control panel is temporarily unavailable. We are automatically retrying in the background. Please check back in a few minutes.' });
-      if (error.message === 'CONFIG_ERROR') return res.status(500).json({ error: 'Panel configuration error', details: 'Panel URL is not configured properly.' });
-      if (error.message === 'PANEL_USER_NOT_FOUND') return res.status(404).json({ error: 'Panel user not found', details: 'Your panel account could not be located. Please contact support.' });
-      
-      if (error.response?.status === 404) return res.status(404).json({ error: 'Panel user not found', details: 'Your panel account could not be located. Please contact support.' });
-      if (error.response?.status === 403) return res.status(403).json({ error: 'Panel access denied', details: 'You do not have permission to access the panel.' });
+      if (error.message === 'NOT_FOUND') return next(new AppError('User not found', 404, 'ERR_USER_NOT_FOUND'));
+      if (error.message === 'PROVISIONING_PENDING') return next(new AppError('Account Provisioning Pending', 503, 'ERR_PROVISIONING_PENDING', 'Your panel account is currently pending creation because the control panel is temporarily unavailable. We are automatically retrying in the background. Please check back in a few minutes.'));
+      if (error.message === 'CONFIG_ERROR') return next(new AppError('Panel configuration error', 500, 'ERR_PANEL_CONFIG'));
+      if (error.message === 'PANEL_USER_NOT_FOUND' || error.response?.status === 404) return next(new AppError('Panel user not found', 404, 'ERR_PANEL_USER_NOT_FOUND', 'Your panel account could not be located. Please contact support.'));
+      if (error.response?.status === 403) return next(new AppError('Panel access denied', 403, 'ERR_PANEL_ACCESS_DENIED', 'You do not have permission to access the panel.'));
 
       next(error);
     }
@@ -31,13 +30,11 @@ class PanelController {
 
       return res.json({ password: newPassword, message: 'Password reset successfully' });
     } catch (error) {
-      if (error.message === 'NOT_FOUND') return res.status(404).json({ error: 'User not found' });
-      if (error.message === 'PROVISIONING_PENDING') return res.status(503).json({ error: 'Account Provisioning Pending', details: 'Your panel account is currently pending creation because the control panel is temporarily unavailable. We are automatically retrying in the background. Please check back in a few minutes.' });
-      if (error.message === 'PANEL_USER_NOT_FOUND') return res.status(404).json({ error: 'Panel user not found', details: 'Your panel account could not be located.' });
-
-      if (error.response?.status === 404) return res.status(404).json({ error: 'Panel user not found', details: 'Your panel account could not be located.' });
-      if (error.response?.status === 403) return res.status(403).json({ error: 'Panel access denied', details: 'You do not have permission to reset the panel password.' });
-      if (error.response?.status === 422) return res.status(422).json({ error: 'Invalid password format', details: 'The generated password does not meet panel requirements.' });
+      if (error.message === 'NOT_FOUND') return next(new AppError('User not found', 404, 'ERR_USER_NOT_FOUND'));
+      if (error.message === 'PROVISIONING_PENDING') return next(new AppError('Account Provisioning Pending', 503, 'ERR_PROVISIONING_PENDING', 'Your panel account is currently pending creation because the control panel is temporarily unavailable. We are automatically retrying in the background. Please check back in a few minutes.'));
+      if (error.message === 'PANEL_USER_NOT_FOUND' || error.response?.status === 404) return next(new AppError('Panel user not found', 404, 'ERR_PANEL_USER_NOT_FOUND', 'Your panel account could not be located.'));
+      if (error.response?.status === 403) return next(new AppError('Panel access denied', 403, 'ERR_PANEL_ACCESS_DENIED', 'You do not have permission to reset the panel password.'));
+      if (error.response?.status === 422) return next(new AppError('Invalid password format', 422, 'ERR_PANEL_INVALID_PASSWORD', 'The generated password does not meet panel requirements.'));
 
       next(error);
     }

@@ -634,5 +634,15 @@
     "bannedUntil": "{date} तक प्रतिबंधित",
     "lifetimeBan": "आजीवन प्रतिबंध",
     "contactSupport": "यदि आपको लगता है कि यह एक गलती है, तो कृपया समर्थन से संपर्क करें।"
+  },
+  "BackendErrors": {
+    "ERR_INTERNAL_SERVER": "आंतरिक सर्वर त्रुटि",
+    "ERR_USER_NOT_FOUND": "उपयोगकर्ता नहीं मिला",
+    "ERR_PROVISIONING_PENDING": "खाता प्रावधान लंबित है",
+    "ERR_PANEL_CONFIG": "पैनल कॉन्फ़िगरेशन त्रुटि",
+    "ERR_PANEL_USER_NOT_FOUND": "पैनल उपयोगकर्ता नहीं मिला",
+    "ERR_PANEL_ACCESS_DENIED": "पैनल पहुँच अस्वीकृत",
+    "ERR_PANEL_INVALID_PASSWORD": "अमान्य पासवर्ड प्रारूप",
+    "ERR_NETWORK": "नेटवर्क त्रुटि"
   }
 }

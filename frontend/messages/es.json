@@ -634,5 +634,15 @@
     "bannedUntil": "Prohibido hasta {date}",
     "lifetimeBan": "Prohibición de por vida",
     "contactSupport": "Si crees que esto es un error, por favor contacta al soporte."
+  },
+  "BackendErrors": {
+    "ERR_INTERNAL_SERVER": "Error de servidor interno",
+    "ERR_USER_NOT_FOUND": "Usuario no encontrado",
+    "ERR_PROVISIONING_PENDING": "Aprovisionamiento de cuenta pendiente",
+    "ERR_PANEL_CONFIG": "Error de configuración del panel",
+    "ERR_PANEL_USER_NOT_FOUND": "Usuario del panel no encontrado",
+    "ERR_PANEL_ACCESS_DENIED": "Acceso al panel denegado",
+    "ERR_PANEL_INVALID_PASSWORD": "Formato de contraseña inválido",
+    "ERR_NETWORK": "Error de red"
   }
 }

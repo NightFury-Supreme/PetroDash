@@ -637,5 +637,15 @@
     "bannedUntil": "Banned until {date}",
     "lifetimeBan": "Lifetime ban",
     "contactSupport": "If you believe this is a mistake, please contact support."
+  },
+  "BackendErrors": {
+    "ERR_INTERNAL_SERVER": "Internal Server Error",
+    "ERR_USER_NOT_FOUND": "User not found",
+    "ERR_PROVISIONING_PENDING": "Account Provisioning Pending",
+    "ERR_PANEL_CONFIG": "Panel configuration error",
+    "ERR_PANEL_USER_NOT_FOUND": "Panel user not found",
+    "ERR_PANEL_ACCESS_DENIED": "Panel access denied",
+    "ERR_PANEL_INVALID_PASSWORD": "Invalid password format",
+    "ERR_NETWORK": "Network Error"
   }
 }

@@ -1,0 +1,615 @@
+so we are working on pages having support of multiple languages so
+https://dashboard.auto-manager.tk/hi/panel
+
+scan full this page its subsidary page, it and its subsidary page drawer and toastr for hardedcoded values and untranslated text and transalate all of it and remove all hardcoded ones and trnsalate to all languagfes
+
+strict rules
+
+pls use read and write tools of antigravity only no use python node js scripts to do antyhing ok bitch
+if use scripts use, scripts and its results should put in scarch folder in root of project dir
+also run lint and fix all wanering and errors in backend and frontend fully
+then push to git locally
+
+Also use same language code for same messages, find if any found and use it in full
+
+make sure all codes are written profasnaly, industrial standared, not using amature code or desine or style, fully profsnal and strandard, well optimized, no errors or issues or bugs or gliths or vanrability or safty issues or vaalidation issues or sanitisation or any issues occor, all profasnally handled, check full backend and frontend fully
+
+Also complay with this much fully strict
+
+## 1. Software Engineering & SDLC
+* ISO/IEC/IEEE 12207 — Software life-cycle processes
+* ISO/IEC/IEEE 15288 — System life-cycle processes
+* ISO/IEC/IEEE 29148 — Requirements engineering
+* ISO/IEC 25010 — Software/product quality
+* ISO/IEC 25019 — Quality-in-use
+* ISO/IEC 25023 — Software quality measurement
+* ISO/IEC 25030 — Quality requirements
+* ISO/IEC 25040 — Quality evaluation
+* ISO/IEC 330xx — Process assessment
+* ISO/IEC 15504 — SPICE
+* CMMI
+* IEEE software engineering standards
+* Agile practices
+* Scrum
+* Kanban
+* DevOps
+* DevSecOps
+* SRE
+## 2. Software Testing & Verification
+* ISO/IEC/IEEE 29119 — Software testing
+* ISO/IEC/IEEE 1012 — Verification and validation
+* ISO/IEC/IEEE 1028 — Software reviews
+* ISTQB
+* TMMi
+* Unit testing
+* Integration testing
+* System testing
+* Acceptance testing
+* Regression testing
+* Smoke testing
+* Sanity testing
+* Performance testing
+* Load testing
+* Stress testing
+* Security testing
+* Penetration testing
+* Fuzz testing
+* Mutation testing
+* Property-based testing
+* Static analysis
+* Dynamic analysis
+* SAST
+* DAST
+* IAST
+* RASP
+## 3. Information Security
+* ISO/IEC 27001
+* ISO/IEC 27002
+* ISO/IEC 27003
+* ISO/IEC 27004
+* ISO/IEC 27005
+* ISO/IEC 27017
+* ISO/IEC 27018
+* ISO/IEC 27019
+* ISO/IEC 27031
+* ISO/IEC 27032
+* ISO/IEC 27033
+* ISO/IEC 27034
+* ISO/IEC 27035
+* ISO/IEC 27036
+* ISO/IEC 27040
+* ISO/IEC 27041
+* ISO/IEC 27042
+* ISO/IEC 27043
+* ISO/IEC 27050
+* ISO/IEC 27701
+* NIST Cybersecurity Framework
+* NIST SP 800-53
+* NIST SP 800-61
+* NIST SP 800-63
+* NIST SP 800-115
+* NIST SP 800-171
+* CIS Controls
+* CIS Benchmarks
+* SOC 1
+* SOC 2
+* SOC 3
+* Common Criteria / ISO/IEC 15408
+## 4. Application Security
+* OWASP Top 10
+* OWASP ASVS
+* OWASP SAMM
+* OWASP API Security Top 10
+* OWASP Mobile Top 10
+* OWASP IoT Top 10
+* OWASP LLM Top 10
+* OWASP MASVS
+* OWASP MSTG
+* CWE
+* CVE
+* CVSS
+* CAPEC
+* SSDF
+* SLSA
+* Secure SDLC
+* Threat modeling
+* STRIDE
+* Attack trees
+* Software supply-chain security
+## 5. Identity & Authentication
+* OAuth 2.0
+* OAuth 2.1
+* OpenID Connect
+* SAML 2.0
+* LDAP
+* Kerberos
+* SCIM
+* FIDO
+* FIDO2
+* WebAuthn
+* CTAP
+* Passkeys
+* JWT
+* JOSE
+* JWS
+* JWE
+* JWK
+* PKI
+* X.509
+* mTLS
+* RBAC
+* ABAC
+* PBAC
+* Zero Trust
+* NIST Zero Trust Architecture
+## 6. Cryptography
+* AES
+* RSA
+* ECC
+* ECDSA
+* EdDSA
+* Diffie-Hellman
+* ECDH
+* SHA-2
+* SHA-3
+* HMAC
+* HKDF
+* PBKDF2
+* Argon2
+* bcrypt
+* scrypt
+* TLS 1.2
+* TLS 1.3
+* QUIC
+* PGP/OpenPGP
+* CMS
+* Post-quantum cryptography standards
+## 7. Web Standards
+* HTML
+* HTML5
+* CSS
+* JavaScript ECMAScript
+* DOM
+* Web Components
+* WebAssembly
+* HTTP/1.1
+* HTTP/2
+* HTTP/3
+* HTTPS
+* WebSocket
+* WebTransport
+* WebRTC
+* URL
+* URI
+* DNS
+* MIME
+* CORS
+* CSP
+* HSTS
+* SRI
+* Permissions Policy
+* Service Workers
+* Web Storage
+* IndexedDB
+* Cookies
+* SameSite
+* Content Negotiation
+## 8. API Standards
+* REST
+* OpenAPI
+* JSON
+* JSON Schema
+* XML
+* XML Schema
+* SOAP
+* GraphQL
+* gRPC
+* Protocol Buffers
+* Webhooks
+* AsyncAPI
+* JSON-RPC
+* XML-RPC
+* OData
+* RFC 7807 / Problem Details
+* API versioning conventions
+## 9. Internet / Networking
+* TCP/IP
+* IPv4
+* IPv6
+* UDP
+* QUIC
+* DNS
+* DNSSEC
+* DHCP
+* BGP
+* OSPF
+* SMTP
+* IMAP
+* POP3
+* FTP
+* SFTP
+* SSH
+* SNMP
+* NTP
+* PTP
+* ICMP
+* IPsec
+* VPN
+* MPLS
+## 10. Cloud & Infrastructure
+* ISO/IEC 27017
+* ISO/IEC 27018
+* ISO/IEC 22123
+* CSA Cloud Controls Matrix
+* CSA STAR
+* CIS Cloud Benchmarks
+* NIST cloud architecture
+* Kubernetes standards/practices
+* OCI
+* Open Container Initiative
+* Docker/container standards
+* Terraform practices
+* Infrastructure as Code
+* GitOps
+* Cloud security architecture
+* Multi-cloud architecture
+* Disaster recovery
+* Backup standards
+## 11. DevOps / CI/CD
+* Git
+* GitOps
+* CI/CD
+* DevSecOps
+* Infrastructure as Code
+* Configuration as Code
+* SBOM
+* SPDX
+* CycloneDX
+* SLSA
+* Software signing
+* Artifact signing
+* Reproducible builds
+* Supply-chain security
+* Semantic Versioning
+* Conventional Commits
+* Release management
+## 12. Privacy & Data Protection
+* GDPR
+* India Digital Personal Data Protection Act
+* CCPA
+* CPRA
+* LGPD
+* PIPEDA
+* HIPAA Privacy Rule
+* ISO/IEC 27701
+* ISO/IEC 29100
+* ISO/IEC 27018
+* Privacy by Design
+* Data minimization
+* Data retention
+* Data deletion
+* Data subject rights
+* Consent management
+* Data Processing Agreements
+* Data Protection Impact Assessments
+## 13. Accessibility
+* WCAG 2.0
+* WCAG 2.1
+* WCAG 2.2
+* WAI-ARIA
+* Section 508
+* EN 301 549
+* ADA-related accessibility requirements
+* ATAG
+* UAAG
+* Keyboard accessibility
+* Screen-reader compatibility
+* Focus management
+* Color/contrast requirements
+## 14. Reliability & Availability
+* ISO 22301 — Business continuity
+* ISO/IEC 27031 — ICT readiness
+* Disaster Recovery
+* Business Continuity Planning
+* High Availability
+* Fault tolerance
+* Failover
+* Graceful degradation
+* Circuit breakers
+* Retry policies
+* Idempotency
+* Chaos engineering
+* SRE
+* Error budgets
+* RTO
+* RPO
+* SLA
+* SLO
+* SLI
+## 15. Observability
+* OpenTelemetry
+* OpenMetrics
+* Prometheus ecosystem
+* Distributed tracing
+* Structured logging
+* Metrics
+* Logs
+* Traces
+* Audit logging
+* SIEM
+* SOAR
+* Incident management
+* Alert management
+## 16. Databases & Data
+* SQL
+* SQL: 2016 / SQL standards
+* ACID
+* CAP theorem
+* BASE
+* ANSI SQL
+* PostgreSQL conventions
+* MySQL conventions
+* NoSQL design principles
+* Data modeling
+* Database normalization
+* OLTP
+* OLAP
+* Data warehouses
+* Data lakes
+* Data governance
+* Master Data Management
+* Data quality
+* Data lineage
+* Data catalogs
+## 17. Payments & Financial Systems
+* PCI DSS
+* PCI SSLC
+* PCI PTS
+* PCI P2PE
+* EMV
+* EMVCo
+* ISO 8583
+* ISO 20022
+* 3-D Secure
+* FIDO
+* PSD2
+* Strong Customer Authentication
+* SWIFT standards
+* Open Banking standards
+## 18. Healthcare
+* HIPAA
+* HITECH
+* HL7
+* HL7 FHIR
+* DICOM
+* ICD
+* SNOMED CT
+* LOINC
+* CDA
+* USCDI
+* ISO 27799
+* IEC 62304
+* IEC 82304
+* ISO 14971
+## 19. Automotive
+* ISO 26262
+* ISO/SAE 21434
+* UNECE R155
+* UNECE R156
+* AUTOSAR
+* Automotive SPICE
+* ISO 21448 / SOTIF
+* MISRA C
+* MISRA C++
+* CAN
+* CAN FD
+* LIN
+* FlexRay
+* Automotive Ethernet
+## 20. Industrial / Embedded
+* IEC 61508
+* IEC 62443
+* IEC 61131
+* IEC 62304
+* MISRA
+* CERT C
+* CERT C++
+* DO-178C
+* DO-254
+* ARINC standards
+* POSIX
+* RTOS safety standards
+## 21. Aviation
+* DO-178C
+* DO-254
+* DO-160
+* ARP4754A
+* ARP4761
+* ED-12C
+* ED-80
+* Safety-critical software assurance
+## 22. AI / Machine Learning
+* ISO/IEC 42001
+* ISO/IEC 23894
+* ISO/IEC 22989
+* ISO/IEC 23053
+* ISO/IEC 24027
+* ISO/IEC 24028
+* ISO/IEC 24029
+* ISO/IEC 25059
+* NIST AI RMF
+* NIST Generative AI Profile
+* OWASP Top 10 for LLM Applications
+* Model Cards
+* Datasheets for Datasets
+* AI risk management
+* AI governance
+* AI security
+* AI privacy
+* AI transparency
+* AI robustness
+* AI evaluation
+## 23. Mobile Applications
+* OWASP MASVS
+* OWASP MSTG
+* Android security guidelines
+* Android application architecture guidelines
+* Apple platform security requirements
+* iOS privacy requirements
+* Mobile accessibility
+* Mobile secure-storage practices
+* Mobile authentication standards
+## 24. IoT
+* ISO/IEC 27400
+* ISO/IEC 30141
+* ETSI EN 303 645
+* NIST IoT cybersecurity guidance
+* Matter
+* MQTT
+* CoAP
+* Thread
+* Zigbee
+* Bluetooth
+* OPC UA
+## 25. Enterprise Architecture
+* TOGAF
+* ArchiMate
+* Zachman Framework
+* FEAF
+* Gartner architecture practices
+* Domain-Driven Design
+* Enterprise integration patterns
+* Microservices architecture
+* Event-driven architecture
+* Hexagonal architecture
+* Clean Architecture
+## 26. IT Service Management
+* ISO/IEC 20000-1
+* ITIL
+* COBIT
+* ISO 38500
+* Service management
+* Incident management
+* Problem management
+* Change management
+* Configuration management
+* Asset management
+## 27. Governance / Risk / Compliance
+* COBIT
+* COSO
+* ISO 31000
+* ISO 37301
+* ISO 37001
+* GRC frameworks
+* Risk registers
+* Control frameworks
+* Internal controls
+* Audit trails
+* Compliance management
+## 28. Security Certifications / Assurance
+
+
+* ISO 27001 certification
+
+* SOC 2 Type I
+
+* SOC 2 Type II
+
+* SOC 3
+
+* PCI DSS assessment
+
+* HITRUST
+
+* FedRAMP
+
+* Common Criteria
+
+* CSA STAR
+
+* FIPS 140-3
+
+
+
+## 29. Documentation & Engineering Practices
+
+
+
+* IEEE documentation standards
+
+* Architecture Decision Records
+
+* RFCs
+
+* API documentation
+
+* OpenAPI documentation
+
+* Threat models
+
+* Data-flow diagrams
+
+* Architecture diagrams
+
+* Runbooks
+
+* Disaster-recovery documentation
+
+* Incident-response documentation
+
+* Change logs
+
+* Release notes
+
+* SBOM
+
+* Software Bill of Materials
+
+
+
+## 30. Legal / Regulatory / Product Compliance
+
+
+
+Depending on where and what you sell:
+
+
+
+* GDPR
+
+* India DPDP Act
+
+* CCPA/CPRA
+
+* EU AI Act
+
+* NIS2
+
+* DORA
+
+* Cyber Resilience Act
+
+* HIPAA
+
+* PCI DSS
+
+* SOX
+
+* GLBA
+
+* COPPA
+
+* FERPA
+
+* FedRAMP
+
+* SEC requirements
+
+* FINRA requirements
+
+* Industry-specific regulations
+
+* Consumer-protection laws
+
+* Data-localization requirements
+

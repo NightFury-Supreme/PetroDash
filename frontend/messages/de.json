@@ -634,5 +634,15 @@
     "bannedUntil": "Gesperrt bis {date}",
     "lifetimeBan": "Lebenslange Sperre",
     "contactSupport": "Wenn Sie glauben, dass dies ein Fehler ist, kontaktieren Sie bitte den Support."
+  },
+  "BackendErrors": {
+    "ERR_INTERNAL_SERVER": "Interner Serverfehler",
+    "ERR_USER_NOT_FOUND": "Benutzer nicht gefunden",
+    "ERR_PROVISIONING_PENDING": "Kontobereitstellung ausstehend",
+    "ERR_PANEL_CONFIG": "Panel-Konfigurationsfehler",
+    "ERR_PANEL_USER_NOT_FOUND": "Panel-Benutzer nicht gefunden",
+    "ERR_PANEL_ACCESS_DENIED": "Panel-Zugriff verweigert",
+    "ERR_PANEL_INVALID_PASSWORD": "Ungültiges Passwortformat",
+    "ERR_NETWORK": "Netzwerkfehler"
   }
 }

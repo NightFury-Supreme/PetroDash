@@ -604,5 +604,15 @@
     "bannedUntil": "Banni jusqu'au {date}",
     "lifetimeBan": "Bannissement à vie",
     "contactSupport": "Si vous pensez que c'est une erreur, veuillez contacter le support."
+  },
+  "BackendErrors": {
+    "ERR_INTERNAL_SERVER": "Erreur de serveur interne",
+    "ERR_USER_NOT_FOUND": "Utilisateur introuvable",
+    "ERR_PROVISIONING_PENDING": "Approvisionnement du compte en attente",
+    "ERR_PANEL_CONFIG": "Erreur de configuration du panneau",
+    "ERR_PANEL_USER_NOT_FOUND": "Utilisateur du panneau introuvable",
+    "ERR_PANEL_ACCESS_DENIED": "Accès au panneau refusé",
+    "ERR_PANEL_INVALID_PASSWORD": "Format de mot de passe invalide",
+    "ERR_NETWORK": "Erreur réseau"
   }
 }

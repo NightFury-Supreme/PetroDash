@@ -42,7 +42,9 @@ export function usePanel(): UsePanelReturn {
 
       if (!response.ok) {
         let errorData: any = {}; try { errorData = await response.json(); } catch {}
-        throw new Error(errorData?.error || tError('failedToLoadPanelInformation'));
+        const code = errorData?.error?.code;
+        const msg = errorData?.error?.message || errorData?.error;
+        throw new Error(code || msg || tError('failedToLoadPanelInformation'));
       }
 
       const data = await response.json();
@@ -73,7 +75,9 @@ export function usePanel(): UsePanelReturn {
 
       if (!response.ok) {
         let errorData: any = {}; try { errorData = await response.json(); } catch {}
-        throw new Error(errorData?.error || tError('failedToResetPassword'));
+        const code = errorData?.error?.code;
+        const msg = errorData?.error?.message || errorData?.error;
+        throw new Error(code || msg || tError('failedToResetPassword'));
       }
 
       const data = await response.json();

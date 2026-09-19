@@ -12,6 +12,7 @@ import { usePanel } from "./hooks/usePanel";
 
 export function PanelContent() {
   const t = useTranslations("Panel");
+  const tError = useTranslations("BackendErrors");
   const { showSuccess, showError } = useToast();
   const modal = useModal();
   
@@ -59,20 +60,31 @@ export function PanelContent() {
       await hookResetPassword();
       showSuccess(t("passwordResetSuccess"));
     } catch (err: any) {
-      showError(err.message || t("failedToCopy")); // Fallback if no error message
+      try {
+        showError(tError(err.message as any));
+      } catch (e) {
+        showError(tError("ERR_INTERNAL_SERVER"));
+      }
     }
   };
 
   if (loading) return <PanelSkeleton />;
 
   if (error) {
-    const isPending = error.toLowerCase().includes("pending");
+    const isPending = error === "ERR_PROVISIONING_PENDING" || error.toLowerCase().includes("pending");
     
-    // Catch common raw English errors from browser/backend and translate them
-    let displayError = error;
-    if (error.toLowerCase() === "failed to fetch" || error.toLowerCase().includes("network error")) {
-      displayError = t("failedToFetchTitle", { defaultMessage: "Network Error" });
-    }
+    // Safely map standardized backend error codes, fallback to generic if unknown
+    const displayError = (() => {
+      try {
+        return tError(error as any);
+      } catch (e) {
+        // If code doesn't exist in translation, or is a raw English network error
+        if (error.toLowerCase() === "failed to fetch" || error.toLowerCase().includes("network error") || error === "ERR_NETWORK") {
+          return tError("ERR_NETWORK");
+        }
+        return tError("ERR_INTERNAL_SERVER");
+      }
+    })();
 
     return (
       <ErrorState

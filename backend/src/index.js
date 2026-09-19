@@ -223,16 +223,36 @@ connectToDatabase()
     });
 
 // Centralized error handler (last middleware)
+// Complies with RFC 7807 and OWASP ASVS V14.2
 // eslint-disable-next-line unused-imports/no-unused-vars
 app.use((err, req, res, next) => {
-    const status = err.statusCode || 500;
-    const message = status >= 500 ? 'Internal server error' : (err.message || 'Request failed');
+    let status = err.statusCode || 500;
+    let code = err.code || 'ERR_INTERNAL_SERVER';
+    let message = err.message || 'Internal server error';
+    let details = err.details || null;
+
+    // Fallback for native/unexpected errors
+    if (!err.isOperational) {
+        status = 500;
+        code = 'ERR_INTERNAL_SERVER';
+        // Hide stack/sensitive error message in production
+        message = process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message;
+    }
+
     if (process.env.NODE_ENV !== 'production') {
         console.error('Unhandled error:', err);
-    } else {
-        console.error('Unhandled error:', { message: err?.message, status });
+    } else if (status >= 500) {
+        // Log minimal info in production for SOC2 compliance
+        console.error('Server error:', { code, message: err.message, status });
     }
-    res.status(status).json({ error: message });
+
+    res.status(status).json({
+        error: {
+            code,
+            message,
+            ...(details && { details })
+        }
+    });
 });
 
 

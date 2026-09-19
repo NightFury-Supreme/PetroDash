@@ -634,5 +634,15 @@
     "bannedUntil": "محظور حتى {date}",
     "lifetimeBan": "حظر مدى الحياة",
     "contactSupport": "إذا كنت تعتقد أن هذا خطأ، يرجى الاتصال بالدعم."
+  },
+  "BackendErrors": {
+    "ERR_INTERNAL_SERVER": "خطأ في الخادم الداخلي",
+    "ERR_USER_NOT_FOUND": "المستخدم غير موجود",
+    "ERR_PROVISIONING_PENDING": "تجهيز الحساب قيد الانتظار",
+    "ERR_PANEL_CONFIG": "خطأ في تكوين اللوحة",
+    "ERR_PANEL_USER_NOT_FOUND": "مستخدم اللوحة غير موجود",
+    "ERR_PANEL_ACCESS_DENIED": "تم رفض الوصول إلى اللوحة",
+    "ERR_PANEL_INVALID_PASSWORD": "تنسيق كلمة المرور غير صالح",
+    "ERR_NETWORK": "خطأ في الشبكة"
   }
 }
