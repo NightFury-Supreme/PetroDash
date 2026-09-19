@@ -11,14 +11,12 @@ const { deleteCache, deleteCachePattern } = require('../../lib/redis');
 const { logUserActivity } = require('../../middleware/userActivity');
 
 // Import route handlers
-const listRouter = require('./list');
 const createRouter = require('./create');
-const usageRouter = require('./usage');
+const newServerModuleRoutes = require('../../modules/server/server.routes');
 
 // Mount base routes
-router.use('/', listRouter);           // GET /api/servers
+router.use('/', newServerModuleRoutes); // GET /api/servers and GET /api/servers/usage
 router.use('/', createRouter);         // POST /api/servers
-router.use('/usage', usageRouter);     // GET /api/servers/usage
 
 // Handle ID-specific routes directly in this file to avoid conflicts
 router.get('/:id', requireAuth, validateObjectId('id'), async (req, res) => {

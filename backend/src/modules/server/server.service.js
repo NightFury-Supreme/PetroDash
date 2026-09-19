@@ -1,25 +1,57 @@
-const express = require('express');
-const { requireAuth } = require('../../middleware/auth');
+/**
+ * Server Service Layer (Dashboard Focus)
+ * Optimized DB queries, strictly no Pterodactyl blocking calls.
+ */
+
 const Server = require('../../models/Server');
-// const { getServer } = require('../../services/pterodactyl');
 const { getCache, setCache } = require('../../lib/redis');
-const { deleteCachePattern, deleteCache } = require('../../lib/redis');
+const mongoose = require('mongoose');
 
-const router = express.Router();
-
-// GET /api/servers - list servers for the authenticated user
-router.get('/', requireAuth, async (req, res) => {
-  try {
-    const paginate = String(req.query.paginate || '').toLowerCase() === 'true';
-    let page = Math.max(1, parseInt(String(req.query.page || '1')) || 1);
-    let pageSize = Math.max(1, Math.min(100, parseInt(String(req.query.pageSize || '10')) || 10));
-
-    const cacheKey = `api:servers:${req.user.sub}:${paginate}:${page}:${pageSize}`;
+class ServerService {
+  /**
+   * DB-Optimized Aggregation for Server Resource Usage
+   */
+  async getUsage(userId) {
+    const cacheKey = `server:usage:${userId}`;
     const cached = await getCache(cacheKey);
-    if (cached) return res.json(cached);
+    if (cached) return cached;
 
-    const baseQuery = { owner: req.user.sub };
+    // Use MongoDB aggregation instead of pulling all documents and looping
+    const result = await Server.aggregate([
+      { $match: { owner: new mongoose.Types.ObjectId(userId) } },
+      { $group: {
+          _id: null,
+          diskMb: { $sum: "$limits.diskMb" },
+          memoryMb: { $sum: "$limits.memoryMb" },
+          cpuPercent: { $sum: "$limits.cpuPercent" },
+          backups: { $sum: "$limits.backups" },
+          databases: { $sum: "$limits.databases" },
+          allocations: { $sum: "$limits.allocations" },
+          servers: { $sum: 1 }
+      }}
+    ]);
 
+    const usage = result[0] || {
+      diskMb: 0, memoryMb: 0, cpuPercent: 0, backups: 0, databases: 0, allocations: 0, servers: 0
+    };
+
+    // Remove _id from result
+    delete usage._id;
+
+    await setCache(cacheKey, usage, 60);
+    return usage;
+  }
+
+  /**
+   * DB-Optimized Server Listing
+   */
+  async listServers(userId, paginate, page, pageSize) {
+    const cacheKey = `api:servers:${userId}:${paginate}:${page}:${pageSize}`;
+    const cached = await getCache(cacheKey);
+    if (cached) return cached;
+
+    const baseQuery = { owner: userId };
+    
     let listQuery = Server.find(baseQuery)
       .sort({ createdAt: -1 })
       .populate('eggId', 'name icon')
@@ -34,14 +66,13 @@ router.get('/', requireAuth, async (req, res) => {
       listQuery,
       paginate ? Server.countDocuments(baseQuery) : Promise.resolve(0)
     ]);
-    
+
     if (!list || list.length === 0) {
-      return res.json([]);
+      const emptyRes = paginate ? { data: [], meta: { total: 0, page, pageSize } } : [];
+      return emptyRes;
     }
-    
-  const base = (process.env.PTERO_BASE_URL || '').replace(/\/$/, '');
-  let deletedCount = 0;
-  
+
+    const base = (process.env.PTERO_BASE_URL || '').replace(/\/$/, '');
     const panelPingData = await getCache('ping:panel');
     const isPanelDown = !panelPingData || panelPingData.ping === -1 || panelPingData.ping === null;
     const locationPingCache = {};
@@ -97,33 +128,16 @@ router.get('/', requireAuth, async (req, res) => {
           unreachable: isUnreachable
         };
     }));
-    const filtered = enriched.filter(Boolean);
-    if (deletedCount > 0) {
-      
-      await deleteCachePattern(`server:usage:${req.user.sub}`);
-      await deleteCachePattern(`api:servers:${req.user.sub}:*`);
-      await deleteCachePattern('api:admin:servers:*');
-      await deleteCache('eggs:counts');
-      
-      if (paginate) {
-        // Adjust total to reflect servers removed during enrichment
-        page = Math.max(1, Math.min(page, Math.ceil(Math.max(total - deletedCount, 0) / pageSize) || 1));
-      }
-    }
+
     if (paginate) {
-      const responseData = { data: filtered, meta: { total: Math.max(total - deletedCount, 0), page, pageSize } };
+      const responseData = { data: enriched, meta: { total, page, pageSize } };
       await setCache(cacheKey, responseData, 30);
-      return res.json(responseData);
+      return responseData;
     }
-    await setCache(cacheKey, filtered, 30);
-    return res.json(filtered);
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  } catch (e) {
-    return res.status(500).json({ error: 'Failed to list servers' });
+
+    await setCache(cacheKey, enriched, 30);
+    return enriched;
   }
-});
+}
 
-module.exports = router;
-
-
-
+module.exports = new ServerService();
