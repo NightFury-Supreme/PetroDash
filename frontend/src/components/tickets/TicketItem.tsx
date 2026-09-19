@@ -5,6 +5,7 @@ import { CheckCircle2, Inbox, MoreHorizontal, ShieldOff, RotateCcw, XCircle, Loa
 import { TicketStatusBadge } from "@/components/tickets/TicketStatusBadge";
 import { formatRelative, shortId } from "@/components/tickets/utils";
 import { useToast } from "@/components/ui/ToastProvider";
+import { useTranslations } from "next-intl";
 
 type Ticket = { 
   _id: string; 
@@ -22,6 +23,7 @@ export default function TicketItem({ ticket: t, onAction, isAdmin = false }:{ ti
   const [menu, setMenu] = useState(false);
   const [actionStatus, setActionStatus] = useState<'idle' | 'loading'>('idle');
   const { showError, showSuccess } = useToast();
+  const tr = useTranslations('Tickets');
 
   const handleContextAction = async (action: 'close'|'resolve'|'delete'|'restore'|'reopen') => {
     setActionStatus('loading');
@@ -110,7 +112,7 @@ export default function TicketItem({ ticket: t, onAction, isAdmin = false }:{ ti
               t.priority === 'medium' ? 'bg-[#FF9900]/10 text-[#FF9900] border-[#FF9900]/20' : 
               'bg-[#303030]/50 text-[#888] border-[#333]'}
           `}>
-            {t.priority}
+            {(tr as any)(`priorities.${t.priority?.toLowerCase() || 'low'}`) || t.priority}
           </span>
         </span>
 
@@ -143,40 +145,38 @@ export default function TicketItem({ ticket: t, onAction, isAdmin = false }:{ ti
           )}
         </div>
       </div>
+      {menu && <div className="fixed inset-0 z-40" onClick={() => setMenu(false)} />}
     </div>
   );
 }
 
-function TicketContextMenu({ ticket: t, onAction, onClose, isAdmin }: {
+function TicketContextMenu({ ticket: t, onAction, isAdmin = false }: {
   ticket: Ticket;
   onAction: (a: 'close'|'resolve'|'delete'|'restore'|'reopen') => void;
-  onClose: () => void;
   isAdmin?: boolean;
 }) {
+  const tr = useTranslations('Tickets');
   return (
-    <>
-      <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); onClose(); }} />
-      <div
-        className="absolute right-0 top-9 z-50 w-44 overflow-hidden rounded-xl border border-[#2A2A2A] bg-[#161616] py-1 shadow-xl"
-        onClick={e => e.stopPropagation()}
-      >
-        {!t.deletedByUser ? (
-          <>
-            {(t.status === 'closed' || t.status === 'resolved') ? (
-              <CtxItem icon={<Inbox size={12} />} label="Reopen Ticket" onClick={() => onAction('reopen')} />
-              ) : (
-                <>
-                  <CtxItem icon={<CheckCircle2 size={12} />} label="Resolve" onClick={() => onAction('resolve')} />
-                  {isAdmin && <CtxItem icon={<XCircle size={12} />} label="Close Ticket" onClick={() => onAction('close')} />}
-                </>
-              )}
-            {isAdmin && <CtxItem icon={<ShieldOff size={12} />} label="Soft Delete" danger onClick={() => onAction('delete')} />}
-          </>
-        ) : isAdmin ? (
-          <CtxItem icon={<RotateCcw size={12} />} label="Restore" onClick={() => onAction('restore')} />
-        ) : null}
-      </div>
-    </>
+    <div
+      className="absolute right-0 top-9 z-50 w-44 overflow-hidden rounded-xl border border-[#2A2A2A] bg-[#161616] py-1 shadow-xl"
+      onClick={e => e.stopPropagation()}
+    >
+      {!t.deletedByUser ? (
+        <>
+          {(t.status === 'closed' || t.status === 'resolved') ? (
+            <CtxItem icon={<Inbox size={12} />} label={tr('reopenTicket') || "Reopen Ticket"} onClick={() => onAction('reopen')} />
+            ) : (
+              <>
+                <CtxItem icon={<CheckCircle2 size={12} />} label={tr('resolve') || "Resolve"} onClick={() => onAction('resolve')} />
+                {isAdmin && <CtxItem icon={<XCircle size={12} />} label={tr('closeTicket') || "Close Ticket"} onClick={() => onAction('close')} />}
+              </>
+            )}
+          {isAdmin && <CtxItem icon={<ShieldOff size={12} />} label={tr('softDelete') || "Soft Delete"} danger onClick={() => onAction('delete')} />}
+        </>
+      ) : isAdmin ? (
+        <CtxItem icon={<RotateCcw size={12} />} label={tr('restore') || "Restore"} onClick={() => onAction('restore')} />
+      ) : null}
+    </div>
   );
 }
 

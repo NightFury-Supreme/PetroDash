@@ -653,7 +653,22 @@
     "you": "Vous",
     "supportStaff": "Personnel de support",
     "loadMore": "Charger les messages précédents",
-    "allCategories": "Toutes les catégories"
+    "allCategories": "Toutes les catégories",
+    "supportTickets": "Tickets de support",
+    "manageTicketsDesc": "Gérer tous les tickets et demandes des utilisateurs.",
+    "ticketsTitle": "TICKETS",
+    "resolve": "Résoudre",
+    "deleted": "Supprimé",
+    "sortTitle": "Trier",
+    "sortUpdatedNewest": "Mis à jour - Plus récent",
+    "sortUpdatedOldest": "Mis à jour - Plus ancien",
+    "sortCreatedNewest": "Créé - Plus récent",
+    "sortCreatedOldest": "Créé - Plus ancien",
+    "sortPriorityHigh": "Priorité - Haute en premier",
+    "sortPriorityLow": "Priorité - Basse en premier",
+    "closeTicket": "Fermer le ticket",
+    "softDelete": "Suppression douce",
+    "restore": "Restaurer"
   },
   "Common": {
     "cancel": "Annuler",
@@ -675,6 +690,7 @@
     "refresh": "Actualiser",
     "back": "Retour",
     "unknown": "Inconnu",
-    "verificationCode": "Code de vérification"
+    "verificationCode": "Code de vérification",
+    "delete": "Supprimer"
   }
 }

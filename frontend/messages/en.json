@@ -683,7 +683,22 @@
     "you": "You",
     "supportStaff": "Support Staff",
     "loadMore": "Load previous messages",
-    "allCategories": "All Categories"
+    "allCategories": "All Categories",
+    "supportTickets": "Support Tickets",
+    "manageTicketsDesc": "Manage all user tickets and requests.",
+    "ticketsTitle": "TICKETS",
+    "resolve": "Resolve",
+    "deleted": "Deleted",
+    "sortTitle": "Sort",
+    "sortUpdatedNewest": "Updated - Newest",
+    "sortUpdatedOldest": "Updated - Oldest",
+    "sortCreatedNewest": "Created - Newest",
+    "sortCreatedOldest": "Created - Oldest",
+    "sortPriorityHigh": "Priority - High first",
+    "sortPriorityLow": "Priority - Low first",
+    "closeTicket": "Close Ticket",
+    "softDelete": "Soft Delete",
+    "restore": "Restore"
   },
   "Common": {
     "cancel": "Cancel",
@@ -705,6 +720,7 @@
     "refresh": "Refresh",
     "back": "Back",
     "unknown": "Unknown",
-    "verificationCode": "Verification Code"
+    "verificationCode": "Verification Code",
+    "delete": "Delete"
   }
 }

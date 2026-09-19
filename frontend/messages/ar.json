@@ -680,7 +680,22 @@
     "you": "أنت",
     "supportStaff": "طاقم الدعم",
     "loadMore": "تحميل الرسائل السابقة",
-    "allCategories": "جميع الفئات"
+    "allCategories": "جميع الفئات",
+    "supportTickets": "تذاكر الدعم",
+    "manageTicketsDesc": "إدارة جميع تذاكر وطلبات المستخدمين.",
+    "ticketsTitle": "تذاكر",
+    "resolve": "حل",
+    "deleted": "محذوف",
+    "sortTitle": "ترتيب",
+    "sortUpdatedNewest": "تم التحديث - الأحدث",
+    "sortUpdatedOldest": "تم التحديث - الأقدم",
+    "sortCreatedNewest": "تم الإنشاء - الأحدث",
+    "sortCreatedOldest": "تم الإنشاء - الأقدم",
+    "sortPriorityHigh": "الأولوية - عالية أولاً",
+    "sortPriorityLow": "الأولوية - منخفضة أولاً",
+    "closeTicket": "إغلاق التذكرة",
+    "softDelete": "حذف ناعم",
+    "restore": "استعادة"
   },
   "Common": {
     "cancel": "إلغاء",
@@ -702,6 +717,7 @@
     "refresh": "تحديث",
     "back": "رجوع",
     "unknown": "غير معروف",
-    "verificationCode": "رمز التحقق"
+    "verificationCode": "رمز التحقق",
+    "delete": "حذف"
   }
 }

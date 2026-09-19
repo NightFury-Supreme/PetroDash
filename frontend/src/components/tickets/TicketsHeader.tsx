@@ -21,8 +21,8 @@ export default function TicketsHeader({
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
-        <h1 className="text-2xl font-bold text-[#FF5722] tracking-tight">{title || 'Support Tickets'}</h1>
-        <p className="mt-1 text-sm text-[#888888]">{description || 'Manage all user tickets and requests.'}</p>
+        <h1 className="text-2xl font-bold text-[#FF5722] tracking-tight">{title || t('supportTickets') || 'Support Tickets'}</h1>
+        <p className="mt-1 text-sm text-[#888888]">{description || t('manageTicketsDesc') || 'Manage all user tickets and requests.'}</p>
       </div>
       {onNew && (
         <div className="flex items-center gap-3">

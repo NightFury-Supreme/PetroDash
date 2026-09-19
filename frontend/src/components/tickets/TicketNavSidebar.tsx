@@ -4,6 +4,7 @@ import React from 'react';
 import {
   CheckCircle2, Clock3, Inbox, Trash2, Ticket, MailOpen
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface Counts {
   all: number;
@@ -27,19 +28,21 @@ export function TicketNavSidebar({
   loading?: boolean;
   onOpenSettings?: () => void;
 }) {
+  const t = useTranslations('Tickets');
+  const tCommon = useTranslations('Common');
 
   return (
     <aside className="w-full lg:w-48 shrink-0 pt-1">
       <div className="sticky top-6 flex flex-col gap-6">
         <div>
-          <p className="mb-3 text-[11px] font-medium uppercase tracking-widest text-[#555]">Tickets</p>
+          <p className="mb-3 text-[11px] font-medium uppercase tracking-widest text-[#555]">{t('ticketsTitle')}</p>
           <nav className="space-y-0.5 pr-1">
-            <NavItem icon={Inbox} label="All tickets" count={counts.all} active={activeStatus === 'all'} loading={loading} onClick={() => onStatusChange('all')} />
-            <NavItem icon={MailOpen} label="Open" count={counts.open} active={activeStatus === 'open'} loading={loading} onClick={() => onStatusChange('open')} />
-            <NavItem icon={Clock3} label="Pending" count={counts.pending} active={activeStatus === 'pending'} loading={loading} onClick={() => onStatusChange('pending')} />
-            <NavItem icon={CheckCircle2} label="Resolved" count={counts.resolved} active={activeStatus === 'resolved'} loading={loading} onClick={() => onStatusChange('resolved')} />
-            <NavItem icon={Ticket} label="Closed" count={counts.closed} active={activeStatus === 'closed'} loading={loading} onClick={() => onStatusChange('closed')} />
-            <NavItem icon={Trash2} label="Deleted" count={counts.deleted} active={activeStatus === 'deleted'} loading={loading} onClick={() => onStatusChange('deleted')} />
+            <NavItem icon={Inbox} label={t('allTickets')} count={counts.all} active={activeStatus === 'all'} loading={loading} onClick={() => onStatusChange('all')} />
+            <NavItem icon={MailOpen} label={t('open')} count={counts.open} active={activeStatus === 'open'} loading={loading} onClick={() => onStatusChange('open')} />
+            <NavItem icon={Clock3} label={tCommon('pending')} count={counts.pending} active={activeStatus === 'pending'} loading={loading} onClick={() => onStatusChange('pending')} />
+            <NavItem icon={CheckCircle2} label={t('resolved')} count={counts.resolved} active={activeStatus === 'resolved'} loading={loading} onClick={() => onStatusChange('resolved')} />
+            <NavItem icon={Ticket} label={t('closed')} count={counts.closed} active={activeStatus === 'closed'} loading={loading} onClick={() => onStatusChange('closed')} />
+            <NavItem icon={Trash2} label={t('deleted')} count={counts.deleted} active={activeStatus === 'deleted'} loading={loading} onClick={() => onStatusChange('deleted')} />
           </nav>
         </div>
 

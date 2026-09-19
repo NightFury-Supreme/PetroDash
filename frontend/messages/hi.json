@@ -680,7 +680,22 @@
     "you": "आप",
     "supportStaff": "सहायता कर्मचारी",
     "loadMore": "पिछले संदेश लोड करें",
-    "allCategories": "सभी श्रेणियां"
+    "allCategories": "सभी श्रेणियां",
+    "supportTickets": "सहायता टिकट",
+    "manageTicketsDesc": "सभी उपयोगकर्ता टिकटों और अनुरोधों को प्रबंधित करें।",
+    "ticketsTitle": "टिकट",
+    "resolve": "समाधान करें",
+    "deleted": "हटा दिया गया",
+    "sortTitle": "क्रमबद्ध करें",
+    "sortUpdatedNewest": "अद्यतित - नवीनतम",
+    "sortUpdatedOldest": "अद्यतित - सबसे पुराना",
+    "sortCreatedNewest": "निर्मित - नवीनतम",
+    "sortCreatedOldest": "निर्मित - सबसे पुराना",
+    "sortPriorityHigh": "प्राथमिकता - उच्च पहले",
+    "sortPriorityLow": "प्राथमिकता - निम्न पहले",
+    "closeTicket": "टिकट बंद करें",
+    "softDelete": "सॉफ्ट डिलीट",
+    "restore": "पुनर्स्थापित करें"
   },
   "Common": {
     "cancel": "रद्द करें",
@@ -702,6 +717,7 @@
     "refresh": "रीफ्रेश",
     "back": "पीछे",
     "unknown": "अज्ञात",
-    "verificationCode": "सत्यापन कोड"
+    "verificationCode": "सत्यापन कोड",
+    "delete": "हटाएं"
   }
 }

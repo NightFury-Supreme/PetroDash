@@ -680,7 +680,22 @@
     "you": "Du",
     "supportStaff": "Support-Mitarbeiter",
     "loadMore": "Vorherige Nachrichten laden",
-    "allCategories": "Alle Kategorien"
+    "allCategories": "Alle Kategorien",
+    "supportTickets": "Support-Tickets",
+    "manageTicketsDesc": "Verwalten Sie alle Benutzertickets und Anfragen.",
+    "ticketsTitle": "TICKETS",
+    "resolve": "Lösen",
+    "deleted": "Gelöscht",
+    "sortTitle": "Sortieren",
+    "sortUpdatedNewest": "Aktualisiert - Neueste",
+    "sortUpdatedOldest": "Aktualisiert - Älteste",
+    "sortCreatedNewest": "Erstellt - Neueste",
+    "sortCreatedOldest": "Erstellt - Älteste",
+    "sortPriorityHigh": "Priorität - Hoch zuerst",
+    "sortPriorityLow": "Priorität - Niedrig zuerst",
+    "closeTicket": "Ticket schließen",
+    "softDelete": "Soft Delete",
+    "restore": "Wiederherstellen"
   },
   "Common": {
     "cancel": "Abbrechen",
@@ -702,6 +717,7 @@
     "refresh": "Aktualisieren",
     "back": "Zurück",
     "unknown": "Unbekannt",
-    "verificationCode": "Bestätigungscode"
+    "verificationCode": "Bestätigungscode",
+    "delete": "Löschen"
   }
 }
