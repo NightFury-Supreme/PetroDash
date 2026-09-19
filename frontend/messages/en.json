@@ -143,7 +143,14 @@
     "descGeneric": "We encountered an issue while trying to load {topic}.",
     "kickerNotFound": "404 Error",
     "descNetwork": "Unable to connect to the server. Please try again in a few moments.",
-    "defaultTopic": "this page"
+    "defaultTopic": "this page",
+    "applicationError": "Application Error",
+    "somethingWentWrong": "Something went wrong",
+    "unexpectedIssue": "We encountered an unexpected issue while loading this page. Please try again or return to the dashboard.",
+    "tryAgain": "Try Again",
+    "notFound404": "404 Not Found",
+    "pageNotFound": "Page Not Found",
+    "pageNotFoundDesc": "The page you are looking for doesn't exist, has been moved, or you don't have permission to view it."
   },
   "Nav": {
     "mainNav": "Main Navigation",

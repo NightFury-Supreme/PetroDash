@@ -143,7 +143,14 @@
     "descGeneric": "Beim Laden von {topic} ist ein Problem aufgetreten.",
     "kickerNotFound": "404-Fehler",
     "descNetwork": "Verbindung zum Server nicht möglich. Bitte versuchen Sie es in ein paar Augenblicken erneut.",
-    "defaultTopic": "diese Seite"
+    "defaultTopic": "diese Seite",
+    "applicationError": "Anwendungsfehler",
+    "somethingWentWrong": "Etwas ist schief gelaufen",
+    "unexpectedIssue": "Beim Laden dieser Seite ist ein unerwartetes Problem aufgetreten. Bitte versuchen Sie es erneut oder kehren Sie zum Dashboard zurück.",
+    "tryAgain": "Erneut versuchen",
+    "notFound404": "404 Nicht gefunden",
+    "pageNotFound": "Seite nicht gefunden",
+    "pageNotFoundDesc": "Die gesuchte Seite existiert nicht, wurde verschoben oder Sie haben keine Berechtigung, sie anzuzeigen."
   },
   "Nav": {
     "mainNav": "Hauptnavigation",

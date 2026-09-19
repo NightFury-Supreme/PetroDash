@@ -143,7 +143,14 @@
     "descGeneric": "Nous avons rencontré un problème lors du chargement de {topic}.",
     "kickerNotFound": "Erreur 404",
     "descNetwork": "Impossible de se connecter au serveur. Réessayez dans quelques instants.",
-    "defaultTopic": "cette page"
+    "defaultTopic": "cette page",
+    "applicationError": "Erreur d'application",
+    "somethingWentWrong": "Quelque chose s'est mal passé",
+    "unexpectedIssue": "Nous avons rencontré un problème inattendu lors du chargement de cette page. Veuillez réessayer ou retourner au tableau de bord.",
+    "tryAgain": "Réessayer",
+    "notFound404": "404 Non Trouvé",
+    "pageNotFound": "Page non trouvée",
+    "pageNotFoundDesc": "La page que vous recherchez n'existe pas, a été déplacée ou vous n'avez pas l'autorisation de la consulter."
   },
   "Nav": {
     "mainNav": "Navigation principale",

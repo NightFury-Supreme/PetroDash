@@ -1,9 +1,11 @@
 "use client";
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import { ErrorState, DashboardButton, GoBackButton } from '@/components/ui/ErrorState';
 
 export default function NotFound() {
+  const t = useTranslations('ErrorState');
   return (
     <ErrorState
       fullScreen={true}
@@ -16,11 +18,11 @@ export default function NotFound() {
           <path d="m13 6-4 6h6l-4 6"/>
         </svg>
       }
-      kicker="404 Not Found"
-      title="Page Not Found"
+      kicker={t('notFound404')}
+      title={t('pageNotFound')}
       description={
         <p>
-          The page you are looking for doesn't exist, has been moved, or you don't have permission to view it.
+          {t('pageNotFoundDesc')}
         </p>
       }
       buttons={
