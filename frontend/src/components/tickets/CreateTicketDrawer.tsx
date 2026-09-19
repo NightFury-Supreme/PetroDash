@@ -30,6 +30,7 @@ export function CreateTicketDrawer({
   onClose, onCreate,
 }: CreateTicketDrawerProps) {
   const t = useTranslations('Tickets');
+  const tCommon = useTranslations('Common');
   const { currency } = useCurrency();
   const editorRef = useRef<HTMLDivElement>(null);
 
@@ -160,7 +161,7 @@ export function CreateTicketDrawer({
             disabled={creating}
             className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50"
           >
-            {t('cancel')}
+            {tCommon('cancel')}
           </button>
           <button
             type="button"

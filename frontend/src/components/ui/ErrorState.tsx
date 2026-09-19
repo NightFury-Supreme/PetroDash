@@ -25,6 +25,7 @@ export function ErrorState({
 }: ErrorStateProps) {
   const minHeightClass = fullScreen ? 'min-h-screen bg-[#0F0F0F]' : 'flex-1 min-h-0';
   const t = useTranslations('ErrorState');
+  const tCommon = useTranslations('Common');
 
   let displayKicker = kicker;
   let displayTitle = title;
@@ -113,7 +114,7 @@ export function ErrorDescription({ error, topic }: { error: string; topic?: stri
     msg = t('descForbidden');
     matched = true;
   } else if (e.includes('not found')) {
-    msg = t('descNotFound').replace('{topic}', topic ? topic.toLowerCase() : t('defaultResource'));
+    msg = t('descNotFound').replace('{topic}', topic ? topic.toLowerCase() : tCommon('resource'));
     matched = true;
   } else if (e.includes('failed to fetch') || e.includes('network') || e.includes('timeout')) {
     msg = t('descNetwork');

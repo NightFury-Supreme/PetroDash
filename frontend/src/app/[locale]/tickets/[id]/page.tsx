@@ -22,6 +22,7 @@ import { useTicketDetail } from '@/components/tickets/hooks';
 
 export default function TicketDetailPage() {
   const t = useTranslations('Tickets');
+  const tCommon = useTranslations('Common');
   const tError = useTranslations('GlobalErrors');
   const { showError, showSuccess } = useToast();
   const { id } = useParams() as { id: string };
@@ -139,7 +140,7 @@ export default function TicketDetailPage() {
                 className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
               >
                 <RefreshCw className="w-[14px] h-[14px]" />
-                {t('retry')}
+                {tCommon('retry')}
               </button>
               <DashboardButton variant="secondary" />
             </>

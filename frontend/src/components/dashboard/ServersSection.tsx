@@ -15,6 +15,7 @@ interface ServersSectionProps {
 
 export function ServersSection({ servers, onDelete, onEdit }: ServersSectionProps) {
   const t = useTranslations('Dashboard');
+  const tCommon = useTranslations('Common');
   const [deletingServer, setDeletingServer] = useState<ServerInfo | null>(null);
 
   const handleConfirmDelete = async () => {
@@ -38,11 +39,11 @@ export function ServersSection({ servers, onDelete, onEdit }: ServersSectionProp
           <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">{t('colServerName')} <ChevronsUpDown size={12} className="opacity-70" /></span>
           <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">{t('colNode')} <ChevronsUpDown size={12} className="opacity-70" /></span>
           <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">{t('colEgg')} <ChevronsUpDown size={12} className="opacity-70" /></span>
-          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">{t('colStatus')} <ChevronsUpDown size={12} className="opacity-70" /></span>
+          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">{tCommon('status')} <ChevronsUpDown size={12} className="opacity-70" /></span>
           <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">{t('cpu')} <ChevronsUpDown size={12} className="opacity-70" /></span>
           <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">{t('memory')} <ChevronsUpDown size={12} className="opacity-70" /></span>
           <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">{t('disk')} <ChevronsUpDown size={12} className="opacity-70" /></span>
-          <span className="text-right">{t('colAction')}</span>
+          <span className="text-right">{tCommon('action')}</span>
         </div>
 
         <div className="divide-y divide-white/[0.06]">
@@ -54,7 +55,7 @@ export function ServersSection({ servers, onDelete, onEdit }: ServersSectionProp
             servers.map((server) => {
               let statusBadge = (
                 <span className="inline-flex rounded border border-emerald-500/20 bg-emerald-500/[0.04] px-2 py-1 text-[10px] font-medium text-emerald-500">
-                  {t('statusActive')}
+                  {tCommon('active')}
                 </span>
               );
 
@@ -84,7 +85,7 @@ export function ServersSection({ servers, onDelete, onEdit }: ServersSectionProp
                 );
               }
 
-              const regionName = server.location || t('unknown');
+              const regionName = server.location || tCommon('unknown');
               const isDownOrUnreachable = server.unreachable || server.status?.toLowerCase() === 'unreachable' || server.status?.toLowerCase() === 'error';
 
               return (
@@ -119,7 +120,7 @@ export function ServersSection({ servers, onDelete, onEdit }: ServersSectionProp
                         onError={(e) => { e.currentTarget.style.display = 'none'; }}
                       />
                     )}
-                    {server.eggName || t('unknown')}
+                    {server.eggName || tCommon('unknown')}
                   </div>
 
                   <div>{statusBadge}</div>
@@ -203,7 +204,7 @@ export function ServersSection({ servers, onDelete, onEdit }: ServersSectionProp
         onConfirm={handleConfirmDelete}
         entityType={t('deleteDrawerEntity')}
         entityName={deletingServer?.name || ''}
-        entitySubText={deletingServer ? `Node: ${deletingServer.location || t('unknown')}` : ''}
+        entitySubText={deletingServer ? `Node: ${deletingServer.location || tCommon('unknown')}` : ''}
         warningPoints={
           deletingServer?.status === 'queued' || deletingServer?.status === 'error'
             ? [

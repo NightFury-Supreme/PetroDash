@@ -21,6 +21,7 @@ export default function RegisterForm() {
   const [loading, setLoading] = useState(false);
 
   const t = useTranslations('Auth.register');
+  const tCommon = useTranslations('Common');
   const tCommon = useTranslations('Auth.common');
   const tErrors = useTranslations('Auth.errors');
 
@@ -97,7 +98,7 @@ export default function RegisterForm() {
               <AuthField label={t('lastNameLabel')} value={form.lastName} onChange={(v) => setForm({ ...form, lastName: v })} placeholder={t('lastNamePlaceholder')} error={fieldErrors.lastName} />
             </div>
             <AuthField label={tCommon('passwordLabel')} type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} placeholder={tCommon('passwordPlaceholder')} error={fieldErrors.password} />
-            <AuthSubmit disabled={loading}>{loading ? t('submittingButton') : t('submitButton')}</AuthSubmit>
+            <AuthSubmit disabled={loading}>{loading ? tCommon('loading') : t('submitButton')}</AuthSubmit>
           </>
         )}
         {showOAuth && (

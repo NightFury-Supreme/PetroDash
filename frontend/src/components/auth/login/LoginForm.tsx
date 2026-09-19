@@ -21,6 +21,7 @@ export default function LoginForm({ onSuccess, onRequires2FA }: { onSuccess: (to
   const { settings } = useAuthSettings();
   const { showError } = useToast();
   const t = useTranslations('Auth.login');
+  const tCommon = useTranslations('Common');
   const tCommon = useTranslations('Auth.common');
   const tErrors = useTranslations('Auth.errors');
   const [form, setForm] = useState<LoginForm>({ emailOrUsername: '', password: '' });
@@ -80,7 +81,7 @@ export default function LoginForm({ onSuccess, onRequires2FA }: { onSuccess: (to
             <div className="text-right text-[12px] mt-1 mb-4">
               <Link href="/forgot" className="text-[#888888] hover:text-[#FF5722] transition-colors">{t('forgotPassword')}</Link>
             </div>
-            <AuthSubmit disabled={loading}>{loading ? t('submittingButton') : t('submitButton')}</AuthSubmit>
+            <AuthSubmit disabled={loading}>{loading ? tCommon('loading') : t('submitButton')}</AuthSubmit>
           </>
         )}
         {showOAuth && (

@@ -62,6 +62,7 @@ export function ReferredUsersTable({
   onPageChange,
 }: ReferredUsersTableProps) {
   const t = useTranslations("Referrals");
+  const tCommon = useTranslations('Common');
 
   return (
     <section aria-label={t("referredUsers")}>
@@ -78,9 +79,9 @@ export function ReferredUsersTable({
         role="row"
         className="hidden grid-cols-[minmax(300px,1fr)_180px_140px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid"
       >
-        <span role="columnheader">{t("tableUser")}</span>
+        <span role="columnheader">{tCommon('user')}</span>
         <span role="columnheader">{t("tableJoined")}</span>
-        <span role="columnheader" className="text-right">{t("tableStatus")}</span>
+        <span role="columnheader" className="text-right">{tCommon('status')}</span>
       </div>
 
       {/* Rows */}

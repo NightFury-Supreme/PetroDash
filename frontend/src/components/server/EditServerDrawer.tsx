@@ -21,6 +21,7 @@ interface EditServerDrawerProps {
 export function EditServerDrawer({ serverId, onClose, onUpdate }: EditServerDrawerProps) {
   const { showError, showSuccess } = useToast();
   const t = useTranslations('Dashboard');
+  const tCommon = useTranslations('Common');
 
   const {
     loading,
@@ -61,7 +62,7 @@ export function EditServerDrawer({ serverId, onClose, onUpdate }: EditServerDraw
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
         )}
-        <span className="truncate max-w-[120px]">{server.location || t('unknown')}</span>
+        <span className="truncate max-w-[120px]">{server.location || tCommon('unknown')}</span>
       </span>
 
       <span className="text-[#333]">|</span>
@@ -77,7 +78,7 @@ export function EditServerDrawer({ serverId, onClose, onUpdate }: EditServerDraw
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
         )}
-        <span className="truncate max-w-[120px]">{server.eggName || t('unknown')}</span>
+        <span className="truncate max-w-[120px]">{server.eggName || tCommon('unknown')}</span>
       </span>
     </div>
   ) : null;
@@ -98,7 +99,7 @@ export function EditServerDrawer({ serverId, onClose, onUpdate }: EditServerDraw
             disabled={saving}
             className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50"
           >
-            {t('cancel')}
+            {tCommon('cancel')}
           </button>
           <button
             onClick={async (e) => {
@@ -117,7 +118,7 @@ export function EditServerDrawer({ serverId, onClose, onUpdate }: EditServerDraw
             }`}
           >
             {saving ? (
-              <><Loader2 size={16} className="animate-spin" /> {t('saving')}</>
+              <><Loader2 size={16} className="animate-spin" /> {tCommon('saving')}</>
             ) : (
               t('saveChanges')
             )}

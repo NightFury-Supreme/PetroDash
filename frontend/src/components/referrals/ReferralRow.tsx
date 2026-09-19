@@ -51,6 +51,7 @@ function maskEmail(email: string): string {
 
 export function ReferralRow({ user }: { user: ReferralUser }) {
   const t = useTranslations("Referrals");
+  const tCommon = useTranslations('Common');
 
   const initials = user.name
     .split(" ")
@@ -90,7 +91,7 @@ export function ReferralRow({ user }: { user: ReferralUser }) {
       <div className="ml-14 flex items-center justify-between md:ml-0 md:block md:text-right">
         <div className="md:inline-block">
           <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">
-            {t("status")}
+            {tCommon('status')}
           </p>
           {earned ? (
             <div>
@@ -100,7 +101,7 @@ export function ReferralRow({ user }: { user: ReferralUser }) {
               <span className="ml-1 text-[10px] text-white/20">{t("coinsUnit")}</span>
             </div>
           ) : (
-            <span className="text-xs text-amber-400/60">{t("pending")}</span>
+            <span className="text-xs text-amber-400/60">{tCommon('pending')}</span>
           )}
         </div>
 
@@ -113,7 +114,7 @@ export function ReferralRow({ user }: { user: ReferralUser }) {
           ) : (
             <span className="flex items-center gap-1 text-[10px] text-amber-400/60">
               <Clock3 size={12} />
-              {t("pending")}
+              {tCommon('pending')}
             </span>
           )}
         </div>

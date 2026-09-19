@@ -463,6 +463,7 @@ function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; m
 
 function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: Variant; meta: LogMeta }) {
   const t = useTranslations('UI');
+  const tCommon = useTranslations('Common');
   const hasChanges = meta.changes != null && Object.keys(meta.changes).length > 0;
   const hasChangedLegacy = meta.changed != null && Object.keys(meta.changed).length > 0;
   const hasCreated = meta.created != null && Object.keys(meta.created).length > 0;
@@ -554,9 +555,9 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
 
       {/* Column headers */}
       <div className="hidden md:grid grid-cols-[2fr_1.5fr_110px_140px_44px] gap-4 px-5 pb-3 border-b border-white/[0.06] text-[9px] uppercase tracking-[0.13em] text-white/40">
-        <span>{t('action')}</span>
+        <span>{tCommon('action')}</span>
         <span>Device / Browser</span>
-        <span>{t('status')}</span>
+        <span>{tCommon('status')}</span>
         <span>{t('date')}</span>
         <span />
       </div>
@@ -610,7 +611,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
 
                 {/* Status */}
                 <div className="min-w-0">
-                  <p className="mb-1 text-[9px] uppercase tracking-wider text-white/30 md:hidden">{t('status')}</p>
+                  <p className="mb-1 text-[9px] uppercase tracking-wider text-white/30 md:hidden">{tCommon('status')}</p>
                   <StatusBadge log={log} />
                 </div>
 

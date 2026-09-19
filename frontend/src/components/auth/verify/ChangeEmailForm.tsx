@@ -21,6 +21,7 @@ export default function ChangeEmailForm({
   newEmail, setNewEmail, password = '', setPassword, tfaCode = '', setTfaCode, loginMethod, tfaEnabled, onSave, onCancel, loading
 }: ChangeEmailFormProps) {
   const t = useTranslations('Auth.verify');
+  const tCommon = useTranslations('Common');
   // const tCommon = useTranslations('Auth.common');
 
   return (
@@ -43,10 +44,10 @@ export default function ChangeEmailForm({
         
         <div className="space-y-3 mt-6">
           <AuthSubmit disabled={loading} onClick={onSave}>
-            {loading ? t('updatingButton') : t('changeEmailButton')}
+            {loading ? tCommon('updating') : t('changeEmailButton')}
           </AuthSubmit>
           <button onClick={onCancel} disabled={loading} className="w-full h-[42px] bg-[#222] hover:bg-[#333] disabled:opacity-50 text-white font-semibold rounded-[7px] transition-colors flex items-center justify-center gap-2">
-            {t('cancelButton')}
+            {tCommon('cancel')}
           </button>
         </div>
       </div>

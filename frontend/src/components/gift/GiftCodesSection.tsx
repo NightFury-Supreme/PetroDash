@@ -35,6 +35,7 @@ function rewardLabel(g: any, t: (key: string) => string): string {
 
 export function GiftCodesSection({ onRefreshRef, onInitialLoad }: GiftCodesSectionProps) {
   const t = useTranslations("Gift");
+  const tCommon = useTranslations('Common');
   const { showSuccess, showError } = useToast();
   const {
     codes,
@@ -88,7 +89,7 @@ export function GiftCodesSection({ onRefreshRef, onInitialLoad }: GiftCodesSecti
               {tabs.map((tab) => {
                 const count = tab === "Active" ? activeCount : inactiveCount;
                 const selected = activeTab === tab;
-                const tabLabel = tab === "Active" ? t("statusActive") : t("statusInactive");
+                const tabLabel = tab === "Active" ? tCommon('active') : t("statusInactive");
                 return (
                   <button
                     key={tab}
@@ -140,8 +141,8 @@ export function GiftCodesSection({ onRefreshRef, onInitialLoad }: GiftCodesSecti
                   <span role="columnheader">{t("tableReward")}</span>
                   <span role="columnheader">{t("tableExpires")}</span>
                   <span role="columnheader">{t("tableUses")}</span>
-                  <span role="columnheader">{t("tableStatus")}</span>
-                  <span role="columnheader" className="text-right">{t("tableAction")}</span>
+                  <span role="columnheader">{tCommon('status')}</span>
+                  <span role="columnheader" className="text-right">{tCommon('action')}</span>
                 </div>
                 <div role="rowgroup" className="divide-y divide-white/[0.06]">
                   {codes.map((g) => (
@@ -153,8 +154,8 @@ export function GiftCodesSection({ onRefreshRef, onInitialLoad }: GiftCodesSecti
                       expires={g.validUntil ? new Date(g.validUntil).toLocaleDateString() : "—"}
                       uses={`${g.redeemedCount || 0}${g.maxRedemptions ? ` / ${g.maxRedemptions}` : ""}`}
                       status={activeTab}
-                      statusLabel={activeTab === "Active" ? t("statusActive") : t("statusInactive")}
-                      copyLabel={t("copy")}
+                      statusLabel={activeTab === "Active" ? tCommon('active') : t("statusInactive")}
+                      copyLabel={tCommon('copy')}
                       copyCodeLabel={t("copyCode")}
                       mobileRewardLabel={t("mobileRewardLabel")}
                       mobileExpiresLabel={t("mobileExpiresLabel")}

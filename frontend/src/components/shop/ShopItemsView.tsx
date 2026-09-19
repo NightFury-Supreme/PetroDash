@@ -12,6 +12,7 @@ interface ShopItemsViewProps {
 
 export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
   const t = useTranslations('Shop');
+  const tCommon = useTranslations('Common');
   return (
     <section className="mt-8">
       <div className="mb-3">
@@ -28,10 +29,10 @@ export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
         <div className="w-full">
           {/* Column headers */}
           <div className="hidden gap-4 grid-cols-[2fr_1fr_1fr_80px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
-            <span>{t('resource')}</span>
+            <span>{tCommon('resource')}</span>
             <span>{t('included')}</span>
             <span>{t('price')}</span>
-            <span className="text-right">{t('action')}</span>
+            <span className="text-right">{tCommon('action')}</span>
           </div>
 
           <div className="divide-y divide-white/[0.06]">

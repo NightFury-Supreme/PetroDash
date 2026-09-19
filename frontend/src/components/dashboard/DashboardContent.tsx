@@ -17,6 +17,7 @@ import { Plus, RefreshCw, Server, Cpu, HardDrive, Database } from 'lucide-react'
 export function DashboardContent() {
   const { showError, showSuccess } = useToast();
   const t = useTranslations('Dashboard');
+  const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
   const { servers, usage, resources, removeServer, loadDashboardData } = useDashboard();
   const { form } = useProfile();
@@ -24,7 +25,7 @@ export function DashboardContent() {
   const [editingServerId, setEditingServerId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  const username = form?.username || t('user');
+  const username = form?.username || tCommon('user');
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -93,7 +94,7 @@ export function DashboardContent() {
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            title={t('refresh')}
+            title={tCommon('refresh')}
             className="flex items-center justify-center w-[30px] h-[30px] rounded-md border border-white/[0.06] bg-white/[0.02] text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors disabled:opacity-50"
           >
             <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />

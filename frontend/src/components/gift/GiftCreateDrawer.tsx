@@ -19,6 +19,7 @@ interface GiftCreateDrawerProps {
 
 export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawerProps) {
   const t = useTranslations("Gift");
+  const tCommon = useTranslations('Common');
   const {
     coins,
     maxRedemptions,
@@ -61,11 +62,11 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
           <button
             type="button"
             onClick={copyCreatedCode}
-            aria-label={t("copy")}
+            aria-label={tCommon('copy')}
             className="inline-flex h-[52px] shrink-0 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium transition bg-[#1A0F0C] text-[#FF5722] hover:bg-[#FF5722]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5722]/50"
           >
             <Copy className="h-4 w-4" aria-hidden="true" />
-            {t("copy")}
+            {tCommon('copy')}
           </button>
         </div>
       </div>
@@ -227,7 +228,7 @@ export function GiftCreateDrawer({ isOpen, onClose, onCreated }: GiftCreateDrawe
             type="button"
             className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
           >
-            {t("cancel")}
+            {tCommon('cancel')}
           </button>
           <button
             form="gift-create-form"

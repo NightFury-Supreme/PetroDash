@@ -11,6 +11,7 @@ export const runtime = 'edge';
 
 export default function PlanSuccessPage() {
   const t = useTranslations('Shop');
+  const tCommon = useTranslations('Common');
   const router = useRouter();
   const searchParams = useSearchParams();
     const { showError } = useToast();
@@ -101,7 +102,7 @@ export default function PlanSuccessPage() {
             <Check className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" strokeWidth={1.5} />
           </div>
           <p className="m-0 mb-2.5 text-emerald-500 text-[10px] font-semibold tracking-[0.12em] uppercase">
-          {t('success')}
+          {tCommon('success')}
           </p>
           <h1 className="m-0 text-[#ededed] text-[clamp(28px,4vw,38px)] leading-[1.15] font-semibold tracking-[-0.04em]">
           {t('paymentCompleted')}

@@ -43,6 +43,7 @@ interface ResourceUsagePanelProps {
 
 export function ResourceUsagePanel({ usage, resources }: ResourceUsagePanelProps) {
   const t = useTranslations('Dashboard');
+  const tCommon = useTranslations('Common');
 
   const dbLimit = resources?.databases || 0;
   const dbUsage = usage?.databases || 0;
@@ -61,7 +62,7 @@ export function ResourceUsagePanel({ usage, resources }: ResourceUsagePanelProps
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-2 text-[#888888]">
           <BarChart2 size={16} />
-          <span className="font-medium text-sm tracking-wide text-white">{t('resourceUsage')}</span>
+          <span className="font-medium text-sm tracking-wide text-white">{tCommon('resource')}</span>
         </div>
 
       </div>

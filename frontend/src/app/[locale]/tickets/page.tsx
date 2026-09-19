@@ -20,6 +20,7 @@ const PAGE_SIZE = 25;
 
 export default function TicketsPage() {
   const t = useTranslations('Tickets');
+  const tCommon = useTranslations('Common');
   const tError = useTranslations('GlobalErrors');
   const { showError, showSuccess } = useToast();
   
@@ -187,7 +188,7 @@ export default function TicketsPage() {
                     <span>{t('subject')}</span>
                     <span>{t('category')}</span>
                     <span>{t('updated')}</span>
-                    <span>{t('status')}</span>
+                    <span>{tCommon('status')}</span>
                     <span>{t('priority')}</span>
                     <span />
                   </div>

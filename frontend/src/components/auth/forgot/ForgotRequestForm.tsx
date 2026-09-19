@@ -14,6 +14,7 @@ interface ForgotRequestFormProps {
 export default function ForgotRequestForm({ email, setEmail, onRequest, loading }: ForgotRequestFormProps) {
   const router = useRouter();
   const t = useTranslations('Auth.forgot');
+  const tCommon = useTranslations('Common');
   const tCommon = useTranslations('Auth.common');
   
   return (
@@ -21,7 +22,7 @@ export default function ForgotRequestForm({ email, setEmail, onRequest, loading 
       <AuthField label={tCommon('emailLabel')} value={email} onChange={setEmail} placeholder={tCommon('emailPlaceholder')} />
       <div className="space-y-3 pt-2">
         <AuthSubmit disabled={loading || !email} onClick={onRequest}>
-          {loading ? t('submitting') : t('submitRequest')}
+          {loading ? tCommon('sending') : t('submitRequest')}
         </AuthSubmit>
       </div>
       <div className="mt-6 text-[12px] text-[#888888] text-start">

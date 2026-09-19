@@ -25,6 +25,7 @@ export default function ForgotResetForm({
 }: ForgotResetFormProps) {
   const router = useRouter();
   const t = useTranslations('Auth.forgot');
+  const tCommon = useTranslations('Common');
   const tCommon = useTranslations('Auth.common');
 
   return (
@@ -36,15 +37,15 @@ export default function ForgotResetForm({
         <input type="text" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 8))} placeholder="00000000" maxLength={8} className="w-full h-[42px] px-[13px] text-center font-mono tracking-widest bg-[#121212] border border-[#282828] rounded-[7px] text-[#d5d5d5] placeholder-[#666] focus:outline-none focus:border-[#454545] focus:bg-[#151515] transition-colors" style={{ letterSpacing: '0.5em' }} />
       </div>
       
-      <AuthField type="password" label={t('passwordLabel')} value={password} onChange={setPassword} placeholder={t('passwordPlaceholder')} />
+      <AuthField type="password" label={tCommon('password')} value={password} onChange={setPassword} placeholder={t('passwordPlaceholder')} />
       <AuthField type="password" label={t('confirmLabel')} value={confirm} onChange={setConfirm} placeholder={t('confirmPlaceholder')} />
 
       <div className="space-y-3 pt-2">
         <AuthSubmit disabled={loading || code.length !== 8 || !password || password !== confirm} onClick={onReset}>
-          {loading ? t('updating') : t('submitReset')}
+          {loading ? tCommon('updating') : t('submitReset')}
         </AuthSubmit>
         <button onClick={onResend} disabled={resendLoading || rateLimit > 0} className="w-full h-[42px] bg-[#222] hover:bg-[#333] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-[7px] transition-colors flex items-center justify-center gap-2">
-          {resendLoading ? t('submitting') : rateLimit > 0 ? tCommon('resendIn', { time: `${rateLimit}s` }) : t('resendCode')}
+          {resendLoading ? tCommon('sending') : rateLimit > 0 ? tCommon('resendIn', { time: `${rateLimit}s` }) : t('resendCode')}
         </button>
       </div>
       

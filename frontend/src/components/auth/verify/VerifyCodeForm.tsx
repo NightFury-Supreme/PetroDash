@@ -19,6 +19,7 @@ export default function VerifyCodeForm({
   email, code, setCode, codeSent, onChangeEmailRequest, onVerify, onResend, loading, resendLoading, rateLimit
 }: VerifyCodeFormProps) {
   const t = useTranslations('Auth.verify');
+  const tCommon = useTranslations('Common');
   const tCommon = useTranslations('Auth.common');
   
   return (
@@ -47,11 +48,11 @@ export default function VerifyCodeForm({
       <div className="space-y-3 pt-2">
         {codeSent && (
           <AuthSubmit disabled={loading || code.length !== 8} onClick={onVerify}>
-            {loading ? t('submittingButton') : t('submitButton')}
+            {loading ? tCommon('loading') : t('submitButton')}
           </AuthSubmit>
         )}
         <button onClick={onResend} disabled={resendLoading || rateLimit > 0} className={`w-full h-[42px] font-semibold rounded-[7px] transition-colors flex items-center justify-center gap-2 ${codeSent ? 'bg-[#222] hover:bg-[#333] text-white disabled:opacity-50 disabled:cursor-not-allowed' : 'bg-[#FF5722] hover:bg-[#F4511E] text-white disabled:bg-[#333] disabled:text-[#888] disabled:cursor-not-allowed'}`}>
-          {resendLoading ? t('sending') : rateLimit > 0 ? tCommon('resendIn', { time: `${Math.floor(rateLimit / 60) > 0 ? `${Math.floor(rateLimit / 60)}m ` : ''}${rateLimit % 60}s` }) : (codeSent ? t('resendLink') : t('sendVerifyBtn'))}
+          {resendLoading ? tCommon('sending') : rateLimit > 0 ? tCommon('resendIn', { time: `${Math.floor(rateLimit / 60) > 0 ? `${Math.floor(rateLimit / 60)}m ` : ''}${rateLimit % 60}s` }) : (codeSent ? t('resendLink') : t('sendVerifyBtn'))}
         </button>
       </div>
 

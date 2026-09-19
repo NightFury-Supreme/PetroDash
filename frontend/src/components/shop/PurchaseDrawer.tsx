@@ -40,6 +40,7 @@ export function PurchaseDrawer({
   
 }: PurchaseDrawerProps) {
   const t = useTranslations('Shop');
+  const tCommon = useTranslations('Common');
     // Track last item so the drawer doesn't instantly empty out during slide-out animation
   const [lastItem, setLastItem] = useState<any | null>(null);
   
@@ -65,7 +66,7 @@ export function PurchaseDrawer({
             onClick={onClose}
             className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
           >
-            {t('cancel')}
+            {tCommon('cancel')}
           </button>
           <button
             type="button"
@@ -178,7 +179,7 @@ export function PurchaseDrawer({
               <div className="mt-4 space-y-3.5">
                 <SummaryRow label={t("pricePerUnit")} value={`${displayItem.pricePerUnit} ${t("coins")}`} />
                 <SummaryRow label={t("quantity")} value={`× ${quantity}`} />
-                <SummaryRow label={t("resource")} value={getTotalAmount(displayItem, quantity)} />
+                <SummaryRow label={tCommon('resource')} value={getTotalAmount(displayItem, quantity)} />
               </div>
             </div>
 

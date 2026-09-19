@@ -41,6 +41,7 @@ interface CreateServerDrawerProps {
 export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProps) {
   const { showError, showSuccess } = useToast();
   const t = useTranslations('Dashboard');
+  const tCommon = useTranslations('Common');
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   const currentStep = STEPS[currentStepIndex].id;
@@ -94,14 +95,14 @@ export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProp
               onClick={() => setCurrentStepIndex(i => i - 1)}
               className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
             >
-              {t('back')}
+              {tCommon('back')}
             </button>
           ) : (
             <button
               onClick={onClose}
               className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
             >
-              {t('cancel')}
+              {tCommon('cancel')}
             </button>
           )}
           

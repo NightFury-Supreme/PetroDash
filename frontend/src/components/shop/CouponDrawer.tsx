@@ -90,6 +90,7 @@ export function CouponDrawer({
   isPopupProcessing = false,
 }: CouponDrawerProps) {
   const t = useTranslations('Shop');
+  const tCommon = useTranslations('Common');
   const { currency } = useCurrency();
   const { showError, showSuccess } = useToast();
   const [couponCode, setCouponCode] = useState('');
@@ -163,7 +164,7 @@ export function CouponDrawer({
             onClick={onClose}
             className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
           >
-            {t('cancel')}
+            {tCommon('cancel')}
           </button>
           <button
             type="button"

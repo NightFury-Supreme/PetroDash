@@ -13,6 +13,7 @@ export default function TwoFactorForm({ tempToken, onSuccess, onBack }: { tempTo
   const [useBackup, setUseBackup] = useState(false);
   const { showError } = useToast();
   const t = useTranslations('Auth.twoFactor');
+  const tCommon = useTranslations('Common');
   const tCommon = useTranslations('Auth.common');
   const tErrors = useTranslations('Auth.errors');
 
@@ -83,7 +84,7 @@ export default function TwoFactorForm({ tempToken, onSuccess, onBack }: { tempTo
           placeholder={useBackup ? t('backupCodePlaceholder') : t('codePlaceholder')} 
         />
         <AuthSubmit disabled={isSubmitDisabled}>
-          {loading ? t('submittingButton') : t('submitButton')}
+          {loading ? tCommon('loading') : t('submitButton')}
         </AuthSubmit>
         
         <div className="text-start mt-6">

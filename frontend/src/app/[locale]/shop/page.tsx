@@ -18,6 +18,7 @@ import { useToast } from "@/components/ui/ToastProvider";
 
 export default function StorePage() {
   const t = useTranslations("Shop");
+  const tCommon = useTranslations('Common');
   const { showError } = useToast();
 
   const {
@@ -61,7 +62,7 @@ export default function StorePage() {
                 className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
               >
                 <RefreshCw className="w-[14px] h-[14px]" />
-                {t("retry")}
+                {tCommon('retry')}
               </button>
               <DashboardButton variant="secondary" />
             </>

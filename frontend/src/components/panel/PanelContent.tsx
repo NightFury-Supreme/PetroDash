@@ -12,6 +12,7 @@ import { usePanel } from "./hooks/usePanel";
 
 export function PanelContent() {
   const t = useTranslations("Panel");
+  const tCommon = useTranslations('Common');
   const tError = useTranslations("BackendErrors");
   const { showSuccess, showError } = useToast();
   const modal = useModal();
@@ -109,7 +110,7 @@ export function PanelContent() {
               className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
             >
               <RefreshCw className="w-[14px] h-[14px]" />
-              {t("refresh")}
+              {tCommon('refresh')}
             </button>
             <DashboardButton variant="secondary" />
           </>
@@ -133,14 +134,14 @@ export function PanelContent() {
         <div className="hidden gap-4 grid-cols-[minmax(250px,1fr)_1fr_120px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
           <span>{t("colCredential")}</span>
           <span>{t("colValue")}</span>
-          <span className="text-right">{t("colAction")}</span>
+          <span className="text-right">{tCommon('action')}</span>
         </div>
 
         <div className="divide-y divide-white/[0.06]">
               {/* EMAIL */}
               <CredentialRow
                 icon={<Mail className="h-4 w-4" />}
-                label={t("emailAddress")}
+                label={tCommon('email')}
                 description={t("emailAddressDesc")}
                 value={panelData?.email || t("noEmailLinked")}
                 action={
@@ -150,7 +151,7 @@ export function PanelContent() {
                     className="inline-flex h-8 items-center gap-2 rounded-md border border-[#222] bg-[#1a1a1a] px-3 text-[11px] font-medium text-[#888888] transition hover:border-[#333] hover:text-[#E0E0E0]"
                   >
                     <Copy className="h-3.5 w-3.5" />
-                    {t("copy")}
+                    {tCommon('copy')}
                   </button>
                 }
               />
@@ -158,7 +159,7 @@ export function PanelContent() {
               {/* PASSWORD */}
               <CredentialRow
                 icon={<KeyRound className="h-4 w-4" />}
-                label={t("password")}
+                label={tCommon('password')}
                 description={t("passwordDesc")}
                 value={password}
                 action={
@@ -170,7 +171,7 @@ export function PanelContent() {
                         className="inline-flex h-8 items-center gap-2 rounded-md border border-[#222] bg-[#1a1a1a] px-3 text-[11px] font-medium text-[#888888] transition hover:border-[#333] hover:text-[#E0E0E0]"
                       >
                         <Copy className="h-3.5 w-3.5" />
-                        {t("copy")}
+                        {tCommon('copy')}
                       </button>
                     )}
                     <button

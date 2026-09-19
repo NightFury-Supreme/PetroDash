@@ -34,6 +34,7 @@ export function DeleteDrawer({
   const [isDeleting, setIsDeleting] = useState(false);
   const { showError } = useToast();
   const t = useTranslations('UI.deleteDrawer');
+  const tCommon = useTranslations('Common');
 
   useEffect(() => {
     if (isOpen) {
@@ -69,7 +70,7 @@ export function DeleteDrawer({
             onClick={onClose}
             className="flex items-center gap-2 rounded-lg border border-[#222] bg-transparent px-5 py-2 text-sm font-medium text-[#888] transition-colors hover:border-[#333] hover:text-[#D4D4D4]"
           >
-            {t('cancel')}
+            {tCommon('cancel')}
           </button>
           
           <button

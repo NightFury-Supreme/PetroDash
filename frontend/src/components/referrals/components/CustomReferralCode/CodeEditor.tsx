@@ -27,6 +27,7 @@ export function CodeEditor({
   onSave,
 }: CodeEditorProps) {
   const t = useTranslations("Referrals");
+  const tCommon = useTranslations('Common');
   const isSaving = saveStatus === "loading";
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -67,7 +68,7 @@ export function CodeEditor({
             className="flex h-10 items-center gap-2 rounded-md border border-white/[0.07] px-4 text-xs text-white/40 transition hover:bg-white/[0.04] hover:text-white disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
           >
             <X size={13} aria-hidden="true" />
-            {t("cancel")}
+            {tCommon('cancel')}
           </button>
 
           <button
@@ -79,7 +80,7 @@ export function CodeEditor({
             {isSaving ? (
               <>
                 <Loader2 size={13} className="animate-spin" aria-hidden="true" />
-                {t("saving")}
+                {tCommon('saving')}
               </>
             ) : (
               <>

@@ -18,6 +18,7 @@ interface ReferralLinkCardProps {
 
 export function ReferralLinkCard({ link, copied, onCopy }: ReferralLinkCardProps) {
   const t = useTranslations("Referrals");
+  const tCommon = useTranslations('Common');
 
   return (
     <section aria-label={t("yourReferralLink")}>
@@ -42,7 +43,7 @@ export function ReferralLinkCard({ link, copied, onCopy }: ReferralLinkCardProps
         <button
           type="button"
           onClick={onCopy}
-          aria-label={copied ? t("copied") : t("copy")}
+          aria-label={copied ? t("copied") : tCommon('copy')}
           className="flex h-12 shrink-0 items-center gap-2 border-l border-white/[0.07] px-5 text-xs font-medium transition hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/50"
         >
           {copied ? (
@@ -53,7 +54,7 @@ export function ReferralLinkCard({ link, copied, onCopy }: ReferralLinkCardProps
           ) : (
             <>
               <Copy size={14} className="text-white/45" aria-hidden="true" />
-              <span className="text-white/55">{t("copy")}</span>
+              <span className="text-white/55">{tCommon('copy')}</span>
             </>
           )}
         </button>
