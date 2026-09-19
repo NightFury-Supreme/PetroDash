@@ -1,12 +1,16 @@
 make sure https://dashboard.auto-manager.tk/gift is fully componised, stratured, organised, module foldered and file
 
-
-also make sure that if a think is not transalated transalet it fully in this modulisation also, include toast, drawer, page and everything here
-also make sure to check in audit thinks also 
-make sure here redis is using properly
+make sure all codes are written profasnaly, industrial standared, not using amature code or desine or style, fully profsnal and strandard, well optimized, no errors or issues or bugs or gliths or vanrability or safty issues or vaalidation issues or sanitisation or any issues occor, all profasnally handled, check full backend and frontend fully
+scan full this page its subsidary page, it and its subsidary page drawer and toastr for hardedcoded values and untranslated text and transalate all of it and remove all hardcoded ones and transalate to all languagfes
+also make sure that if a think is not transalated transalate it fully in this modulisation also, include toast, drawer, page and everything which comes in this domain and its related areas
+also update backend for Removeing hardcoded JSON API errors to use Wrapped all endpoint failures in standard AppError payloads, emitting predictable error codes globally handled by our new middleware and update frontend with it to show errors in all language 
+also make sure to check in audit thinks read and write audit, audit engine linksed etc etc all working 
+also make sure here redis is using properly everywhere as needed
 also make sure everything is optimzied, db optimized, smooth and profasnla and no any ducktaps
+Also use same language code for same messages, find if any found and use it in full
 
 
+Also complay with this much rule is must, fully strict, no drop any consideration
 # File & Folder Structural Guidelines
 **Standard Operating Procedure (SOP) for Project Organization**
 
@@ -133,19 +137,6 @@ export async function processPayment(token: PaymentToken) { ...
 *   **No Secrets in Code:** Passwords, API keys, and JWT secrets must NEVER be hardcoded. Use `process.env`.
 *   **Schema Locality:** Zod validation schemas must sit in the same folder as the controller that uses them. (e.g., `shop.schema.js` next to `shop.controller.js`).
 *   **Audit Logging:** Every mutating function (POST, PUT, DELETE) in a backend controller must explicitly call `writeAudit` and `logUserActivity`.
-
-strict rules
-
-pls use read and write tools of antigravity only no use python node js scripts to do antyhing ok bitch
-if use scripts use, scripts and its results should put in scarch folder in root of project dir
-also run lint and fix all wanering and errors in backend and frontend fully
-then push to git locally
-
-Also use same language code for same messages, find if any found and use it in full
-
-make sure all codes are written profasnaly, industrial standared, not using amature code or desine or style, fully profsnal and strandard, well optimized, no errors or issues or bugs or gliths or vanrability or safty issues or vaalidation issues or sanitisation or any issues occor, all profasnally handled, check full backend and frontend fully
-
-Also complay with this much fully strict
 
 ## 1. Software Engineering & SDLC
 * ISO/IEC/IEEE 12207 — Software life-cycle processes

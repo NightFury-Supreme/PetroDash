@@ -5,6 +5,7 @@
 
 const serverService = require('./server.service');
 const { getServersListSchema } = require('./server.schema');
+const AppError = require('../../utils/AppError');
 
 class ServerController {
   async getUsage(req, res, next) {
@@ -20,7 +21,7 @@ class ServerController {
   async listServers(req, res, next) {
     try {
       const parsed = getServersListSchema.safeParse(req.query);
-      if (!parsed.success) return res.status(400).json({ error: 'Invalid query params', details: parsed.error.flatten() });
+      if (!parsed.success) return next(new AppError('Invalid query params', 400, 'ERR_INVALID_QUERY_PARAMS', parsed.error.flatten()));
       
       const paginate = parsed.data.paginate === 'true';
       const page = parsed.data.page;

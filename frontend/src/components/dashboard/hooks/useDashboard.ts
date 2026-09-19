@@ -5,6 +5,7 @@ import { ServerInfo, ResourceLimits, ResourceUsage } from '../types';
 
 export function useDashboard() {
   const tError = useTranslations('GlobalErrors');
+  const tErrorBackend = useTranslations('BackendErrors');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [servers, setServers] = useState<ServerInfo[]>([]);
@@ -34,7 +35,9 @@ export function useDashboard() {
           return;
         }
         let errorData: any = {}; try { errorData = await response.json(); } catch {}
-        throw new Error(errorData?.error || tError('failedToLoadUsageData'));
+        const code = errorData?.error?.code;
+        const msg = errorData?.error?.message || errorData?.error;
+        throw new Error(code || msg || "failedToLoadUsageData");
       }
       
       let data: any = {}; try { data = await response.json(); } catch {}
@@ -67,7 +70,9 @@ export function useDashboard() {
           return;
         }
         let errorData: any = {}; try { errorData = await response.json(); } catch {}
-        throw new Error(errorData?.error || tError('failedToLoadUserResources'));
+        const code = errorData?.error?.code;
+        const msg = errorData?.error?.message || errorData?.error;
+        throw new Error(code || msg || "failedToLoadUserResources");
       }
       
       let data: any = {}; try { data = await response.json(); } catch {}
@@ -92,7 +97,9 @@ export function useDashboard() {
           return;
         }
         let errorData: any = {}; try { errorData = await response.json(); } catch {}
-        throw new Error(errorData?.error || tError('failedToLoadServers'));
+        const code = errorData?.error?.code;
+        const msg = errorData?.error?.message || errorData?.error;
+        throw new Error(code || msg || "failedToLoadServers");
       }
       
       let data: any = {}; try { data = await response.json(); } catch {}
@@ -147,12 +154,22 @@ export function useDashboard() {
         loadResources(token),
         loadServers(token)
       ]);
-    } catch (err: unknown) {
-      setError(err instanceof Error  ? err.message : tError('failedToLoadDashboardData'));
+    } catch (err: any) {
+      let msg = err.message || "failedToLoadDashboardData";
+      try {
+         msg = tErrorBackend(msg as any);
+      } catch(e) {
+         if (msg === "failedToLoadUsageData" || msg === "failedToLoadUserResources" || msg === "failedToLoadServers") {
+            msg = tError(msg as any);
+         } else {
+            msg = tErrorBackend("ERR_INTERNAL_SERVER");
+         }
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }
-  }, []); // Empty dependency array since we don't depend on any props or state
+  }, [tError, tErrorBackend]);
 
   // Load data on mount
   useEffect(() => {

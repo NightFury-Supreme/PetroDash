@@ -4,6 +4,7 @@ const { requireAuth } = require('../../middleware/auth');
 const Server = require('../../models/Server');
 const { getServer: getPanelServer, updateServerBuild } = require('../../services/pterodactyl');
 const { hasServerLimitsChanged } = require('../../utils/security');
+const AppError = require('../../utils/AppError');
 
 const router = express.Router();
 const { validateObjectId } = require('../../middleware/validateObjectId');
@@ -19,13 +20,13 @@ router.use('/', newServerModuleRoutes); // GET /api/servers and GET /api/servers
 router.use('/', createRouter);         // POST /api/servers
 
 // Handle ID-specific routes directly in this file to avoid conflicts
-router.get('/:id', requireAuth, validateObjectId('id'), async (req, res) => {
+router.get('/:id', requireAuth, validateObjectId('id'), async (req, res, next) => {
   try {
     const server = await Server.findOne({ _id: String(req.params.id), owner: req.user.sub })
       .populate('eggId', 'name icon')
       .populate('locationId', 'name flag')
       .lean();
-    if (!server) return res.status(404).json({ error: 'Server not found' });
+    if (!server) return next(new AppError('Server not found', 404, 'ERR_SERVER_NOT_FOUND'));
 
     let unreachable = false;
     let suspended = Boolean(server.status && server.status.toLowerCase() === 'suspended');
@@ -81,21 +82,22 @@ router.get('/:id', requireAuth, validateObjectId('id'), async (req, res) => {
 
     const responsePayload = {
       ...server,
-      eggName: server.eggId?.name || undefined,
-      eggIcon: server.eggId?.icon || undefined,
-      location: server.locationId?.name || 'Unknown',
-      locationFlag: server.locationId?.flag || undefined,
-      status: server.status,
       unreachable,
       suspended,
-      error: errorMessage || undefined,
+      error: errorMessage,
+      eggName: server.eggId?.name,
+      eggIcon: server.eggId?.icon,
+      location: server.locationId?.name,
+      locationFlag: server.locationId?.flag
     };
+
+    delete responsePayload.eggId;
+    delete responsePayload.locationId;
 
     res.set('Cache-Control', 'no-store');
     return res.json(responsePayload);
-  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
-    return res.status(500).json({ error: 'Failed to load server' });
+    next(e);
   }
 });
 
@@ -105,7 +107,6 @@ const User = require('../../models/User');
 const { updateServerDetails } = require('../../services/pterodactyl');
 const { writeAudit } = require('../../middleware/audit');
 const { forceDeleteServer, getServer } = require('../../services/pterodactyl');
-const PendingDeletion = require('../../models/PendingDeletion');
 const { sendMailTemplate } = require('../../lib/mail');
 const Egg = require('../../models/Egg');
 const Location = require('../../models/Location');
@@ -434,34 +435,25 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
 });
 
 // DELETE /api/servers/:id - delete server
-router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10, 60 * 1000), async (req, res) => {
+router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10, 60 * 1000), async (req, res, next) => {
   let lockAcquired = false;
   const userId = req.user.sub;
   
-
   try {
     // 1. Verify the server exists and belongs to this user
     const server = await Server.findOne({ _id: String(req.params.id), owner: userId });
-    if (!server) return res.status(404).json({ error: 'Server not found' });
+    if (!server) return next(new AppError('Server not found', 404, 'ERR_SERVER_NOT_FOUND'));
     
     const isForce = true; // User requested all deletions to be forced
 
     // 2. If NOT a force-delete, block deletion of suspended servers
     const locallySuspended = server.suspended === true || (server.status && server.status.toLowerCase() === 'suspended');
     if (!isForce && locallySuspended) {
-      return res.status(403).json({ 
-        error: 'Cannot delete suspended server', 
-        details: 'Server is suspended. Contact staff for assistance, or use force removal.',
-        serverId: server._id
-      });
+      return next(new AppError('Cannot delete suspended server', 403, 'ERR_SERVER_SUSPENDED', { serverId: server._id }));
     }
 
     if (server.status && server.status.toLowerCase() === 'creating') {
-      return res.status(403).json({
-        error: 'Cannot delete creating server',
-        details: 'This server is currently being created. Please wait for the process to finish before deleting it.',
-        serverId: server._id
-      });
+      return next(new AppError('Cannot delete creating server', 403, 'ERR_SERVER_CREATING', { serverId: server._id }));
     }
 
     // 3. Acquire per-user atomic lock to prevent concurrent operations
@@ -479,7 +471,7 @@ router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10,
       { new: true }
     );
     if (!user) {
-      return res.status(429).json({ error: 'Another server operation is in progress. Please wait a moment.' });
+      return next(new AppError('Another server operation is in progress. Please wait a moment.', 429, 'ERR_SERVER_LOCKED'));
     }
     lockAcquired = true;
 
@@ -488,7 +480,6 @@ router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10,
     // 4. Delete from Pterodactyl panel
     if (server.panelServerId) {
       try {
-        
         try {
           const panelServerData = await getServer(server.panelServerId);
           serverIdentifier = panelServerData?.attributes?.identifier;
@@ -502,27 +493,19 @@ router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10,
 
         // 404 = server already gone; safe to remove locally
         if (status === 404) {
-          console.warn(`Panel server ${server.panelServerId} already gone — cleaning up locally.`);
+          console.warn(`Panel server ${server.panelServerId} already gone - cleaning up locally.`);
         } else {
           console.warn(`Panel deletion failed for ${server.panelServerId}. Queueing for background deletion. Error:`, detail);
           
+          const { PendingDeletion } = require('../../models/PendingDeletion');
           await PendingDeletion.create({ resourceType: 'server', panelId: server.panelServerId });
         }
       }
     }
 
-    // 5. Remove server record from database
+    // 5. Delete local database record
     await Server.deleteOne({ _id: server._id });
 
-    // 6. Audit trail
-    
-    writeAudit(req, 'server.delete', 'server', server._id.toString(), {
-      serverName: server.name,
-      limits: server.limits,
-      panelServerId: server.panelServerId,
-      forced: isForce,
-    });
-    
     await logUserActivity(req, 'server.delete', { serverName: server.name, dbId: server._id.toString() });
 
     // Email notification for server deletion (non-blocking)

@@ -659,6 +659,10 @@
     "ERR_SHOP_INVALID_ITEM": "Artículo de tienda no válido seleccionado.",
     "ERR_SHOP_ITEM_NOT_FOUND": "No se pudo encontrar el artículo de tienda solicitado.",
     "ERR_SHOP_MAX_PER_PURCHASE": "Se excedió el límite máximo de compra para este artículo.",
-    "ERR_SHOP_INSUFFICIENT_COINS": "No tienes suficientes monedas para completar esta compra."
+    "ERR_SHOP_INSUFFICIENT_COINS": "No tienes suficientes monedas para completar esta compra.",
+    "ERR_SERVER_NOT_FOUND": "No se pudo encontrar el servidor solicitado.",
+    "ERR_SERVER_SUSPENDED": "No se puede completar la operación porque el servidor está suspendido.",
+    "ERR_SERVER_CREATING": "No se puede completar la operación porque el servidor se está creando actualmente.",
+    "ERR_SERVER_LOCKED": "Otra operación del servidor está en progreso. Por favor espera un momento."
   }
 }

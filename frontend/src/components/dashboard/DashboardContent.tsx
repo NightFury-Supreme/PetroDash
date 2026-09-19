@@ -17,6 +17,7 @@ import { Plus, RefreshCw, Server, Cpu, HardDrive, Database } from 'lucide-react'
 export function DashboardContent() {
   const { showError, showSuccess } = useToast();
   const t = useTranslations('Dashboard');
+  const tErrorBackend = useTranslations('BackendErrors');
   const { servers, usage, resources, removeServer, loadDashboardData } = useDashboard();
   const { form } = useProfile();
   const [showCreateDrawer, setShowCreateDrawer] = useState(false);
@@ -49,15 +50,27 @@ export function DashboardContent() {
 
       if (!response.ok) {
         let errorData: any = {}; try { errorData = await response.json(); } catch {}
-        throw new Error(errorData?.error || t('failedToDeleteServer'));
+        const code = errorData?.error?.code;
+        const msg = errorData?.error?.message || errorData?.error;
+        throw new Error(code || msg || 'failedToDeleteServer');
       }
 
       removeServer(serverId);
       showSuccess(t('deleteServerSuccess', { name: serverName }));
     } catch (e: any) {
-      throw e; // DeleteDrawer will catch this and call showError
+      let msg = e.message || 'failedToDeleteServer';
+      try {
+         msg = tErrorBackend(msg as any);
+      } catch(err) {
+         if (msg === 'failedToDeleteServer' || msg === 'authRequired') {
+            msg = t(msg as any);
+         } else {
+            msg = tErrorBackend("ERR_INTERNAL_SERVER");
+         }
+      }
+      throw new Error(msg); // DeleteDrawer will catch this translated message and call showError
     }
-  }, [removeServer, showError, showSuccess, t]);
+  }, [removeServer, showError, showSuccess, t, tErrorBackend]);
 
   return (
     <div className="flex flex-col h-full">
