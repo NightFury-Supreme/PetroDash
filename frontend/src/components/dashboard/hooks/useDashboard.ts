@@ -1,7 +1,7 @@
 import { useTranslations } from 'next-intl';
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect, useCallback } from 'react';
-import { ServerInfo, ResourceLimits, ResourceUsage } from '../components/dashboard/types';
+import { ServerInfo, ResourceLimits, ResourceUsage } from '../types';
 
 export function useDashboard() {
   const tError = useTranslations('GlobalErrors');

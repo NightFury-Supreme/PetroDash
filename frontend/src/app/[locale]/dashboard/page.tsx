@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "@/i18n/routing";
 import { DashboardSkeleton } from "@/components/Skeleton";
-import { DashboardContent } from "@/components/dashboard/DashboardContent";
-import { useDashboard } from "@/hooks/useDashboard";
+import { DashboardContent, useDashboard } from "@/components/dashboard";
 import { ContentAd } from "@/components/ads/AdSense";
 import { useToast } from "@/components/ui/ToastProvider";
 import { ErrorState, DashboardButton, ErrorDescription } from "@/components/ui/ErrorState";
@@ -16,6 +16,8 @@ function DashboardContentWrapper() {
   const { loading, error } = useDashboard();
   const searchParams = useSearchParams();
   const { showError, showSuccess } = useToast();
+  const t = useTranslations('Dashboard');
+  const tShop = useTranslations('Shop');
 
   // Initialize
   useEffect(() => {
@@ -37,9 +39,9 @@ function DashboardContentWrapper() {
       url.searchParams.delete('verified');
       window.history.replaceState({}, '', url.toString());
       
-      showSuccess("Email address successfully verified! You now have full access.");
+      showSuccess(t('emailVerifiedSuccess', { defaultMessage: "Email address successfully verified! You now have full access." }));
     }
-  }, [searchParams, showSuccess]);
+  }, [searchParams, showSuccess, t]);
 
   // Handle error toast
   useEffect(() => {
@@ -63,8 +65,8 @@ function DashboardContentWrapper() {
       <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
         <ErrorState
           icon={<LayoutDashboard strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
-          kicker="Load Error"
-          title="Failed to Load Dashboard"
+          kicker={tShop('loadError', { defaultMessage: 'Load Error' })}
+          title={t('failedToLoadDashboard', { defaultMessage: 'Failed to Load Dashboard' })}
           errorString={error}
           description={<ErrorDescription error={error} topic="Dashboard" />}
           buttons={
@@ -74,7 +76,7 @@ function DashboardContentWrapper() {
                 className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
               >
                 <RefreshCw className="w-[14px] h-[14px]" />
-                Retry
+                {tShop('retry', { defaultMessage: 'Retry' })}
               </button>
               <DashboardButton variant="secondary" />
             </>
