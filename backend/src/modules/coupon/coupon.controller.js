@@ -4,13 +4,14 @@
 
 const couponService = require('./coupon.service');
 const { validateCouponSchema } = require('./coupon.schema');
+const AppError = require('../../utils/AppError');
 
 class CouponController {
-  async validateCoupon(req, res, _next) {
+  async validateCoupon(req, res, next) {
     try {
       const parsed = validateCouponSchema.safeParse(req.body);
       if (!parsed.success) {
-        return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
+        throw new AppError('Invalid payload', 400, 'ERR_INVALID_PAYLOAD', parsed.error.flatten());
       }
 
       const { code, planId } = parsed.data;
@@ -18,6 +19,8 @@ class CouponController {
       
       return res.json(result);
     } catch (error) {
+      if (error instanceof AppError) return next(error);
+      
       const msgMap = {
         'PLAN_NOT_FOUND': { status: 404, message: 'Plan not found' },
         'INVALID_COUPON': { status: 404, message: 'Invalid coupon' },
@@ -31,11 +34,11 @@ class CouponController {
 
       const knownError = msgMap[error.message];
       if (knownError) {
-        return res.status(knownError.status).json({ error: knownError.message });
+        return next(new AppError(knownError.message, knownError.status, error.message));
       }
 
       console.error('Coupon validation error:', error);
-      res.status(500).json({ error: 'Failed to validate coupon' });
+      next(new AppError('Failed to validate coupon', 500, 'ERR_INTERNAL_SERVER'));
     }
   }
 }

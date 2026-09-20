@@ -448,7 +448,17 @@
     "failedToCreateServer": "सर्वर बनाने में विफल",
     "failedToLoadItems": "आइटम लोड करने में विफल",
     "failedToLoadPlans": "प्लान लोड करने में विफल",
-    "unknownError": "अज्ञात त्रुटि"
+    "unknownError": "अज्ञात त्रुटि",
+    "usernameTooShort": "उपयोगकर्ता नाम कम से कम 3 वर्णों का होना चाहिए।",
+    "firstNameEmpty": "पहला नाम खाली नहीं हो सकता।",
+    "failedToSaveProfile": "प्रोफ़ाइल सहेजने में विफल। कृपया पुन: प्रयास करें।",
+    "failedToUpdateEmail": "ईमेल अपडेट करने में विफल",
+    "failedToVerifyEmail": "ईमेल परिवर्तन सत्यापित करने में विफल",
+    "failedToDeleteAccount": "खाता हटाने में विफल",
+    "failedToSetup2FA": "2FA सेट करने में विफल",
+    "networkError": "सर्वर से कनेक्ट नहीं हो सका। कृपया पुन: प्रयास करें।",
+    "invalidVerificationCode": "अमान्य सत्यापन कोड",
+    "failedToDisable2FA": "2FA अक्षम करने में विफल"
   },
   "Gift": {
     "title": "उपहार",
@@ -780,6 +790,19 @@
     "profileSettingsDesc": "अपने खाते का विवरण और सुरक्षा प्राथमिकताएं प्रबंधित करें।",
     "balance": "शेष राशि",
     "account": "खाता",
-    "accountActions": "खाता कार्य"
+    "accountActions": "खाता कार्य",
+    "saved": "सेव हो गया",
+    "coins": "सिक्के",
+    "changePasswordDesc": "अपने खाते का पासवर्ड बदलें।",
+    "changePassword": "पासवर्ड बदलें",
+    "emailSecurity": "ईमेल सुरक्षा",
+    "emailVerifiedDesc": "आपका सत्यापित ईमेल खाता पुनर्प्राप्ति के लिए उपयोग किया जा सकता है।",
+    "emailUnverifiedDesc": "कृपया अपने खाते को सुरक्षित करने के लिए अपना ईमेल पता सत्यापित करें।",
+    "tryAfter": "इसके बाद प्रयास करें",
+    "verifyEmail": "ईमेल सत्यापित करें",
+    "tfaEnabledDesc": "आपका खाता 2FA से सुरक्षित है।",
+    "tfaDisabledDesc": "अपने खाते में सुरक्षा की एक अतिरिक्त परत जोड़ें।",
+    "profileUpdated": "प्रोफ़ाइल सफलतापूर्वक अपडेट की गई।",
+    "profilePictureUpdated": "प्रोफ़ाइल चित्र अपडेट किया गया।"
   }
 }

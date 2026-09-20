@@ -56,29 +56,29 @@ const [step, setStep] = useState<1 | 2>(1);
   }, [isOpen]);
 
   const emailValidation = useMemo(() => {
-    if (!newEmail) return { valid: false, message: 'New email is required.' };
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) return { valid: false, message: 'Please enter a valid email address.' };
-    return { valid: true, message: 'Valid email format.' };
-  }, [newEmail]);
+    if (!newEmail) return { valid: false, message: tError('newEmailRequired') || 'New email is required.' };
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) return { valid: false, message: tError('invalidEmail') || 'Please enter a valid email address.' };
+    return { valid: true, message: tError('validEmailFormat') || 'Valid email format.' };
+  }, [newEmail, tError]);
 
   const currentValidation = useMemo(() => {
-    if (!currentPassword) return { valid: false, message: 'Current password is required.' };
-    return { valid: true, message: 'Current password entered.' };
-  }, [currentPassword]);
+    if (!currentPassword) return { valid: false, message: tError('currentPasswordRequired') || 'Current password is required.' };
+    return { valid: true, message: tError('currentPasswordEntered') || 'Current password entered.' };
+  }, [currentPassword, tError]);
 
   const tfaValidation = useMemo(() => {
     if (!tfaEnabled) return { valid: true, message: '' };
-    if (!tfaCode) return { valid: false, message: useBackupCode ? 'Backup code is required.' : '2FA code is required.' };
-    if (useBackupCode && tfaCode.length !== 8) return { valid: false, message: 'Enter your 8-character backup code.' };
-    if (!useBackupCode && tfaCode.length !== 6) return { valid: false, message: 'Enter your 6-digit authenticator code.' };
-    return { valid: true, message: useBackupCode ? '8-character backup code entered.' : '6-digit code entered.' };
-  }, [tfaCode, tfaEnabled, useBackupCode]);
+    if (!tfaCode) return { valid: false, message: useBackupCode ? (tError('backupCodeRequired') || 'Backup code is required.') : (tError('tfaCodeRequired') || '2FA code is required.') };
+    if (useBackupCode && tfaCode.length !== 8) return { valid: false, message: tError('enter8CharBackupCode') || 'Enter your 8-character backup code.' };
+    if (!useBackupCode && tfaCode.length !== 6) return { valid: false, message: tError('enter6DigitAuthCode') || 'Enter your 6-digit authenticator code.' };
+    return { valid: true, message: useBackupCode ? (tError('8CharBackupCodeEntered') || '8-character backup code entered.') : (tError('6DigitCodeEntered') || '6-digit code entered.') };
+  }, [tfaCode, tfaEnabled, useBackupCode, tError]);
   
   const verifyValidation = useMemo(() => {
-    if (!verifyCode) return { valid: false, message: 'Verification code is required.' };
-    if (verifyCode.length !== 8) return { valid: false, message: 'Code must be exactly 8 characters.' };
-    return { valid: true, message: 'Valid code format.' };
-  }, [verifyCode]);
+    if (!verifyCode) return { valid: false, message: tError('verificationCodeRequired') || 'Verification code is required.' };
+    if (verifyCode.length !== 8) return { valid: false, message: tError('codeExactly8Char') || 'Code must be exactly 8 characters.' };
+    return { valid: true, message: tError('validCodeFormat') || 'Valid code format.' };
+  }, [verifyCode, tError]);
 
   const isStep1Valid = emailValidation.valid && currentValidation.valid && tfaValidation.valid;
   const isStep2Valid = verifyValidation.valid;

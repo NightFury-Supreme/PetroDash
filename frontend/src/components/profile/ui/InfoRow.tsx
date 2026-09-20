@@ -184,11 +184,11 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
                 ) : (
                   <Save size={14} />
                 )}
-                {isSaved ? 'Saved' : 'Save'}
+                {isSaved ? t('saved') || 'Saved' : t('save') || 'Save'}
               </button>
             </>
           ) : (
-            <button type="button" onClick={onEdit} className="flex h-9 items-center gap-1.5 rounded-lg border border-[#222] bg-[#1A1A1A] px-3 text-xs font-medium text-[#D4D4D4] hover:bg-[#222] transition"><Pencil size={14} /> Edit</button>
+            <button type="button" onClick={onEdit} className="flex h-9 items-center gap-1.5 rounded-lg border border-[#222] bg-[#1A1A1A] px-3 text-xs font-medium text-[#D4D4D4] hover:bg-[#222] transition"><Pencil size={14} /> {t('edit') || 'Edit'}</button>
           )}
         </div>
       </div>

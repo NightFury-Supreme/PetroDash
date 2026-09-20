@@ -450,7 +450,17 @@
     "failedToCreateServer": "Failed to create server",
     "failedToLoadItems": "Failed to load items",
     "failedToLoadPlans": "Failed to load plans",
-    "unknownError": "Unknown error"
+    "unknownError": "Unknown error",
+    "usernameTooShort": "Username must be at least 3 characters.",
+    "firstNameEmpty": "First name cannot be empty.",
+    "failedToSaveProfile": "Failed to save profile. Please try again.",
+    "failedToUpdateEmail": "Failed to update email",
+    "failedToVerifyEmail": "Failed to verify email change",
+    "failedToDeleteAccount": "Failed to delete account",
+    "failedToSetup2FA": "Failed to setup 2FA",
+    "networkError": "Could not connect to the server. Please try again.",
+    "invalidVerificationCode": "Invalid verification code",
+    "failedToDisable2FA": "Failed to disable 2FA"
   },
   "Gift": {
     "title": "Gift",
@@ -782,6 +792,19 @@
     "profileSettingsDesc": "Manage your account details and security preferences.",
     "balance": "Balance",
     "account": "Account",
-    "accountActions": "Account actions"
+    "accountActions": "Account actions",
+    "saved": "Saved",
+    "coins": "coins",
+    "changePasswordDesc": "Change your account password.",
+    "changePassword": "Change password",
+    "emailSecurity": "Email security",
+    "emailVerifiedDesc": "Your verified email can be used for account recovery.",
+    "emailUnverifiedDesc": "Please verify your email address to secure your account.",
+    "tryAfter": "Try after",
+    "verifyEmail": "Verify Email",
+    "tfaEnabledDesc": "Your account is secured with 2FA.",
+    "tfaDisabledDesc": "Add an extra layer of security to your account.",
+    "profileUpdated": "Profile updated successfully.",
+    "profilePictureUpdated": "Profile picture updated."
   }
 }
