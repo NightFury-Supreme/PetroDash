@@ -69,7 +69,7 @@ export function useProfile() {
       const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/sessions`, { headers: { Authorization: `Bearer ${token}` } });
       if (r.ok) {
         const data = await r.json();
-        setSessions(data);
+        setSessions(Array.isArray(data) ? data : (data.sessions || []));
       } else if (r.status === 401) {
         localStorage.removeItem('auth_token');
         window.location.href = '/login';
