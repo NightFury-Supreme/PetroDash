@@ -861,6 +861,8 @@
     "action": "Action",
     "thisDevice": "This device",
     "signOut": "Sign out",
-    "activeNow": "Active now"
+    "activeNow": "Active now",
+    "activityLogDesc": "Review recent events and actions on your account.",
+    "events": "events"
   }
 }

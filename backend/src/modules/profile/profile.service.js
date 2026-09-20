@@ -187,7 +187,7 @@ class ProfileService {
     
     const s = await getSettings();
     const secret = generateSecret();
-    const uri = generateURI({ serviceName: s?.siteName || 'PteroDash', accountName: user.email, secret });
+    const uri = generateURI({ issuer: s?.siteName || 'PteroDash', label: user.email, secret });
     const qr = await qrcode.toDataURL(uri);
     return { secret, qr };
   }
