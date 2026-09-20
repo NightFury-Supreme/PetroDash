@@ -20,7 +20,8 @@ export function PasswordDrawer({ isOpen,
 }) {
   const t = useTranslations('Profile');
   const tErrorBackend = useTranslations('BackendErrors');
-const [currentPassword, setCurrentPassword] = useState('');
+  const tError = useTranslations('GlobalErrors');
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [passwordTfaCode, setPasswordTfaCode] = useState('');
   const [useBackupCode, setUseBackupCode] = useState(false);
@@ -31,25 +32,25 @@ const [currentPassword, setCurrentPassword] = useState('');
   const { showError, showSuccess } = useToast();
 
   const currentValidation = useMemo(() => {
-    if (!currentPassword) return { valid: false, message: 'Current password is required.' };
-    return { valid: true, message: 'Current password entered.' };
-  }, [currentPassword]);
+    if (!currentPassword) return { valid: false, message: tError('currentPasswordRequired') || 'Current password is required.' };
+    return { valid: true, message: tError('currentPasswordEntered') || 'Current password entered.' };
+  }, [currentPassword, tError]);
 
   const newValidation = useMemo(() => {
-    if (!newPassword) return { valid: false, message: 'New password is required.' };
-    if (newPassword.length < 8) return { valid: false, message: 'Password must be at least 8 characters.' };
-    if (!/[A-Za-z]/.test(newPassword)) return { valid: false, message: 'Password must contain at least one letter.' };
-    if (!/\d/.test(newPassword)) return { valid: false, message: 'Password must contain at least one number.' };
-    return { valid: true, message: 'Password meets all requirements.' };
-  }, [newPassword]);
+    if (!newPassword) return { valid: false, message: tError('newPasswordRequired') || 'New password is required.' };
+    if (newPassword.length < 8) return { valid: false, message: tError('passwordMin8') || 'Password must be at least 8 characters.' };
+    if (!/[A-Za-z]/.test(newPassword)) return { valid: false, message: tError('passwordLetter') || 'Password must contain at least one letter.' };
+    if (!/\d/.test(newPassword)) return { valid: false, message: tError('passwordNumber') || 'Password must contain at least one number.' };
+    return { valid: true, message: tError('passwordMeetsRequirements') || 'Password meets all requirements.' };
+  }, [newPassword, tError]);
 
   const tfaValidation = useMemo(() => {
     if (!tfaEnabled) return { valid: true, message: '' };
-    if (!passwordTfaCode) return { valid: false, message: useBackupCode ? 'Backup code is required.' : '2FA code is required.' };
-    if (useBackupCode && passwordTfaCode.length !== 8) return { valid: false, message: 'Enter your 8-character backup code.' };
-    if (!useBackupCode && passwordTfaCode.length !== 6) return { valid: false, message: 'Enter your 6-digit authenticator code.' };
-    return { valid: true, message: useBackupCode ? '8-character backup code entered.' : '6-digit code entered.' };
-  }, [passwordTfaCode, tfaEnabled, useBackupCode]);
+    if (!passwordTfaCode) return { valid: false, message: useBackupCode ? (tError('backupCodeRequired') || 'Backup code is required.') : (tError('tfaCodeRequired') || '2FA code is required.') };
+    if (useBackupCode && passwordTfaCode.length !== 8) return { valid: false, message: tError('enter8CharBackupCode') || 'Enter your 8-character backup code.' };
+    if (!useBackupCode && passwordTfaCode.length !== 6) return { valid: false, message: tError('enter6DigitAuthCode') || 'Enter your 6-digit authenticator code.' };
+    return { valid: true, message: useBackupCode ? (tError('8CharBackupCodeEntered') || '8-character backup code entered.') : (tError('6DigitCodeEntered') || '6-digit code entered.') };
+  }, [passwordTfaCode, tfaEnabled, useBackupCode, tError]);
 
   const isValid = currentValidation.valid && newValidation.valid && tfaValidation.valid;
 
@@ -81,10 +82,10 @@ const [currentPassword, setCurrentPassword] = useState('');
   };
 
   return (
-    <Drawer isOpen={isOpen} onClose={handleClose} title="Change Password" subtitle="Update your account password" icon={<KeyRound className="text-[#FF5722]" size={20} />}>
+    <Drawer isOpen={isOpen} onClose={handleClose} title={t('changePassword')} subtitle={t('changePasswordDesc')} icon={<KeyRound className="text-[#FF5722]" size={20} />}>
       <div className="grid gap-6 mt-2">
         <div>
-          <label className="block text-[11px] uppercase tracking-wider text-[#888] mb-2 font-medium">Current Password</label>
+          <label className="block text-[11px] uppercase tracking-wider text-[#888] mb-2 font-medium">{t('currentPassword') || 'Current Password'}</label>
           <input
             type="password"
             value={currentPassword}
@@ -97,7 +98,7 @@ const [currentPassword, setCurrentPassword] = useState('');
           <ValidationMsg touched={touchedCurrent} valid={currentValidation.valid} message={currentValidation.message} hideSuccess={true} />
         </div>
         <div>
-          <label className="block text-[11px] uppercase tracking-wider text-[#888] mb-2 font-medium">New Password</label>
+          <label className="block text-[11px] uppercase tracking-wider text-[#888] mb-2 font-medium">{t('newPassword') || 'New Password'}</label>
           <input
             type="password"
             value={newPassword}
@@ -105,16 +106,16 @@ const [currentPassword, setCurrentPassword] = useState('');
             onBlur={() => setTouchedNew(true)}
             disabled={isLoading}
             className={`w-full h-11 rounded-lg border bg-[#161616] px-4 text-[13px] text-white outline-none focus:border-[#FF5722] transition-colors disabled:opacity-50 ${touchedNew && !newValidation.valid ? 'border-red-400/30' : 'border-[#222]'}`}
-            placeholder="Minimum 8 characters"
+            placeholder={t('minimum8Characters') || "Minimum 8 characters"}
           />
           <ValidationMsg touched={touchedNew} valid={newValidation.valid} message={newValidation.message} />
         </div>
         {tfaEnabled && (
           <div>
             <div className="flex justify-between items-end mb-2">
-              <label className="block text-[11px] uppercase tracking-wider text-[#888] font-medium">{useBackupCode ? 'Backup Code' : '2FA Code'}</label>
+              <label className="block text-[11px] uppercase tracking-wider text-[#888] font-medium">{useBackupCode ? (t('backupCode') || 'Backup Code') : (t('tfaCode') || '2FA Code')}</label>
               <button type="button" onClick={() => { setUseBackupCode(!useBackupCode); setPasswordTfaCode(''); setTouchedTfa(false); }} className="text-[12px] font-medium text-[#FF5722] hover:text-[#F4511E] transition-colors">
-                {useBackupCode ? 'Use 2FA Code' : 'Use Backup Code'}
+                {useBackupCode ? (t('use2faCode') || 'Use 2FA Code') : (t('useBackupCode') || 'Use Backup Code')}
               </button>
             </div>
             <input
@@ -133,7 +134,7 @@ const [currentPassword, setCurrentPassword] = useState('');
         <div className="mt-4 flex justify-end gap-3">
           <button onClick={handleClose} disabled={isLoading} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-[#D4D4D4] transition-colors disabled:opacity-50 bg-transparent">{t('cancel')}</button>
           <button onClick={handleUpdate} disabled={isLoading || !isValid} className={`flex h-11 items-center justify-center rounded-lg px-6 text-[13px] font-medium transition-colors gap-2 ${(!isValid) ? 'bg-[#333] text-[#888] cursor-not-allowed' : 'bg-[#FF5722] hover:bg-[#F4511E] text-white disabled:opacity-50'}`}>
-            {isLoading ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : "Update Password"}
+            {isLoading ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : (t('updatePassword') || "Update Password")}
           </button>
         </div>
       </div>
