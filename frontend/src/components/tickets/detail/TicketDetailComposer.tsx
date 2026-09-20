@@ -2,6 +2,7 @@
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useRef, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Check, Loader2, RotateCcw, Send, Server, FileText } from 'lucide-react';
 import { TicketStatus } from '../types';
 import { API_BASE, getToken } from '../utils';
@@ -23,6 +24,8 @@ export function TicketDetailComposer({
   status, replyText, replying, statusBusy,
   onTextChange, onSend, onKeyDown, onReopen,
 }: TicketDetailComposerProps) {
+  const t = useTranslations('Tickets');
+  const tCommon = useTranslations('Common');
   const { currency } = useCurrency();
   const replyAllowed  = status === 'open' || status === 'pending';
   const editorRef = useRef<HTMLDivElement>(null);
@@ -138,15 +141,15 @@ export function TicketDetailComposer({
           <Check size={14} />
         </div>
         <div className="flex flex-col gap-0.5">
-          <span className="text-sm font-semibold text-white/50">This ticket is {status}.</span>
-          <span className="text-xs text-white/30">Replies are currently disabled.</span>
+          <span className="text-sm font-semibold text-white/50">{t('ticketStatus', { status })}</span>
+          <span className="text-xs text-white/30">{t('repliesDisabled')}</span>
         </div>
         <button
           onClick={onReopen}
           disabled={statusBusy}
           className="ml-auto flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-colors bg-[#FF5722] text-white hover:bg-[#ff6939] disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <RotateCcw size={14} /> Reopen ticket
+          <RotateCcw size={14} /> {t('reopenTicket')}
         </button>
       </div>
     );
@@ -166,15 +169,15 @@ export function TicketDetailComposer({
         <div className="absolute bottom-full mb-2 left-0 w-80 max-h-64 overflow-y-auto rounded-xl border border-white/[0.05] bg-[#1a1a1a] p-2 shadow-2xl z-50">
           {!mentionsData ? (
             <div className="p-3 text-center text-xs text-white/40 flex items-center justify-center gap-2">
-              <Loader2 size={12} className="animate-spin" /> Loading...
+              <Loader2 size={12} className="animate-spin" /> {tCommon('loading')}
             </div>
           ) : filteredServers.length === 0 && filteredPayments.length === 0 ? (
-            <div className="p-3 text-center text-xs text-white/40">No matches found</div>
+            <div className="p-3 text-center text-xs text-white/40">{t('noMatches')}</div>
           ) : (
             <>
               {filteredServers.length > 0 && (
                 <div className="mb-2">
-                  <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white/30">Servers</div>
+                  <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white/30">{t('servers')}</div>
                   {filteredServers.map(s => (
                     <button
                       key={s._id}
@@ -192,7 +195,7 @@ export function TicketDetailComposer({
               )}
               {filteredPayments.length > 0 && (
                 <div>
-                  <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white/30">Invoices</div>
+                  <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white/30">{t('invoices')}</div>
                   {filteredPayments.map(p => (
                     <button
                       key={p._id}

@@ -111,7 +111,12 @@ export function useTicketDetail(id: string): UseTicketDetailReturn {
         return { ok: true };
       }
       const code = d.error?.code;
-      const msg = d.error?.message || d.error;
+      let msg = d.error?.message || d.error;
+      if (code === 'ERR_INVALID_PAYLOAD' && d.error?.details?.length) {
+        msg = d.error.details[0].message;
+        setReplying(false);
+        return { ok: false, error: msg };
+      }
       let errMsg = code || msg || 'ERR_INTERNAL_SERVER';
       try { errMsg = tErrorBackend(errMsg as any); } catch { errMsg = tErrorBackend('ERR_INTERNAL_SERVER'); }
       setReplying(false);
@@ -139,7 +144,12 @@ export function useTicketDetail(id: string): UseTicketDetailReturn {
         return { ok: true };
       }
       const code = d.error?.code;
-      const msg = d.error?.message || d.error;
+      let msg = d.error?.message || d.error;
+      if (code === 'ERR_INVALID_PAYLOAD' && d.error?.details?.length) {
+        msg = d.error.details[0].message;
+        setStatusBusy(false);
+        return { ok: false, error: msg };
+      }
       let errMsg = code || msg || 'ERR_INTERNAL_SERVER';
       try { errMsg = tErrorBackend(errMsg as any); } catch { errMsg = tErrorBackend('ERR_INTERNAL_SERVER'); }
       setStatusBusy(false);

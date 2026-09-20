@@ -1,5 +1,6 @@
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import React, { useEffect, useRef } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { useToast } from "@/components/ui/ToastProvider";
 import { TicketMessage } from '../types';
 import { formatRelative } from '../utils';
@@ -25,6 +26,8 @@ export function TicketDetailConversation({
   viewerRole = 'user',
   onServerMentionClick,
 }: TicketDetailConversationProps) {
+  const t = useTranslations('Tickets');
+  const locale = useLocale();
   const topRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const initialScrolledRef = useRef(false);
@@ -71,7 +74,7 @@ export function TicketDetailConversation({
       {/* Messages */}
       <div className="flex flex-col gap-6">
         {!hasMore && messages.length === 0 && (
-          <p className="py-8 text-center text-sm font-medium text-white/30">No messages yet.</p>
+          <p className="py-8 text-center text-sm font-medium text-white/30">{t('noMessages')}</p>
         )}
         {messages.map((msg, i) => {
           const authorRole = (msg.authorRole === 'admin' || (msg as any).isAdmin) ? 'admin' : 'user';
@@ -80,13 +83,13 @@ export function TicketDetailConversation({
           
           const authorObj = msg.author || (typeof msg.userId === 'object' ? msg.userId : null);
           const authorName = authorObj?.username || authorObj?.email || null;
-          const author  = authorName || (isAdmin ? 'Support Staff' : username);
+          const author  = authorName || (isAdmin ? t('supportStaff') : username);
           
           const isInternal = msg.internal || msg.isInternal || false;
           const avatarUrl = authorObj?.profilePicture || null;
 
-          const msgDate = new Date(msg.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-          const prevMsgDate = i > 0 ? new Date(messages[i-1].createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : null;
+          const msgDate = new Date(msg.createdAt).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+          const prevMsgDate = i > 0 ? new Date(messages[i-1].createdAt).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' }) : null;
           const showDateDivider = msgDate !== prevMsgDate;
 
           return (

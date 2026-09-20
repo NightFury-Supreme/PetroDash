@@ -1,6 +1,8 @@
 import React from 'react';
+import { useTranslations } from 'next-intl';
 
 export function TicketDetailSkeleton() {
+  const t = useTranslations('Tickets');
   return (
     <div className="flex-1 relative bg-[#0F0F0F]">
       <div className="absolute inset-0 pt-4 sm:pt-6 px-4 sm:px-6 flex flex-col overflow-hidden">
@@ -99,13 +101,13 @@ export function TicketDetailSkeleton() {
             <div className="w-full lg:w-[380px] shrink-0 overflow-y-auto min-h-0 pr-2">
               <aside className="flex w-full flex-col bg-[#0F0F0F] p-2 sm:p-4">
                 <div>
-                  <h3 className="mb-5 text-sm font-semibold text-white/90">Overview</h3>
+                  <h3 className="mb-5 text-sm font-semibold text-white/90">{t('overview')}</h3>
                   <div className="flex flex-col gap-5">
                     
                     {/* Priority */}
                     <div className="border-b border-white/[0.06] pb-4">
                       <span className="flex items-center gap-1.5 text-sm font-medium text-white/50 mb-2">
-                        Priority
+                        {t('priority')}
                       </span>
                       <div className="flex items-center gap-2">
                         <span className="h-2 w-2 rounded-full bg-white/20 animate-pulse" />
@@ -116,7 +118,7 @@ export function TicketDetailSkeleton() {
                     {/* Status */}
                     <div className="border-b border-white/[0.06] pb-4">
                       <span className="flex items-center gap-1.5 text-sm font-medium text-white/50 mb-2">
-                        Status
+                        {t('status')}
                       </span>
                       <div className="flex items-center gap-2">
                         <span className="h-4 w-4 rounded-full bg-emerald-500/20 animate-pulse" />
@@ -127,11 +129,11 @@ export function TicketDetailSkeleton() {
                     {/* Metadata */}
                     <div className="border-b border-white/[0.06] pb-4 flex flex-col gap-3">
                       {[
-                        { label: 'Category', w: 'w-16' },
-                        { label: 'Ticket ID', w: 'w-20' },
-                        { label: 'Admins', w: 'w-24' },
-                        { label: 'Created', w: 'w-24' },
-                        { label: 'Updated', w: 'w-20' },
+                        { label: t('category'), w: 'w-16' },
+                        { label: t('ticketId'), w: 'w-20' },
+                        { label: t('admins'), w: 'w-24' },
+                        { label: t('created'), w: 'w-24' },
+                        { label: t('updated'), w: 'w-20' },
                       ].map((row, idx) => (
                         <div key={idx} className="flex justify-between items-center text-sm">
                           <span className="text-white/40">{row.label}</span>

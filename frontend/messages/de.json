@@ -685,7 +685,20 @@
     "sortPriorityLow": "Priorität - Niedrig zuerst",
     "closeTicket": "Ticket schließen",
     "softDelete": "Soft Delete",
-    "restore": "Wiederherstellen"
+    "restore": "Wiederherstellen",
+    "overview": "Overview",
+    "admins": "Admins",
+    "resolving": "Resolving...",
+    "resolvedSuccess": "Resolved!",
+    "resolveTicket": "Resolve Ticket",
+    "reopening": "Reopening...",
+    "reopenedSuccess": "Reopened!",
+    "noMatches": "No matches found",
+    "noMessages": "No messages yet.",
+    "ticketStatus": "This ticket is {status}.",
+    "repliesDisabled": "Replies are currently disabled.",
+    "servers": "Servers",
+    "invoices": "Invoices"
   },
   "Common": {
     "cancel": "Abbrechen",

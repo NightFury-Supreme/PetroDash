@@ -4,11 +4,11 @@
 
 Perform a complete production-grade refactor, modularization, localization, security hardening, performance optimization, and verification of:
 
-`https://dashboard.auto-manager.tk/tickets`
+`https://dashboard.auto-manager.tk/tickets/<id>`
 
 This is **not** a visual-only or page-only task.
 
-The entire `/tickets` domain and every dependency, child route, shared component, backend endpoint, drawer, modal, toast, error path, translation resource, audit path, Redis path, and database path that belongs to or affects this domain must be inspected and corrected where necessary.
+The entire `/tickets/<id>` domain and every dependency, child route, shared component, backend endpoint, drawer, modal, toast, error path, translation resource, audit path, Redis path, and database path that belongs to or affects this domain must be inspected and corrected where necessary.
 
 The final implementation must be production-grade, modular, maintainable, secure, localized, performant, tested, and consistent with the existing application architecture.
 
