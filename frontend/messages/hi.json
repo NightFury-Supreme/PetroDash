@@ -775,6 +775,11 @@
     "save": "सहेजें",
     "cancel": "रद्द करें",
     "edit": "संपादित करें",
-    "deleteAccount": "खाता हटाएं"
+    "deleteAccount": "खाता हटाएं",
+    "profileSettings": "प्रोफ़ाइल सेटिंग्स",
+    "profileSettingsDesc": "अपने खाते का विवरण और सुरक्षा प्राथमिकताएं प्रबंधित करें।",
+    "balance": "शेष राशि",
+    "account": "खाता",
+    "accountActions": "खाता कार्य"
   }
 }

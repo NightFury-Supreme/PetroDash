@@ -775,6 +775,11 @@
     "save": "Save",
     "cancel": "Cancel",
     "edit": "Edit",
-    "deleteAccount": "Delete Account"
+    "deleteAccount": "Delete Account",
+    "profileSettings": "Profile Settings",
+    "profileSettingsDesc": "Manage your account details and security preferences.",
+    "balance": "Balance",
+    "account": "Account",
+    "accountActions": "Account actions"
   }
 }

@@ -2,6 +2,7 @@
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import React, { useState } from "react";
 import { useProfile } from '@/hooks/useProfile';
+import { useTranslations } from 'next-intl';
 import ProfileSkeleton from '@/components/skeletons/profile/ProfileSkeleton';
 import { useToast } from '@/components/ui/ToastProvider';
 import { 
@@ -37,6 +38,7 @@ import { ErrorState, DashboardButton, ErrorDescription } from "@/components/ui/E
 type Section = "overview" | "security" | "sessions" | "activity" | "invoices";
 
 export default function ProfilePage() {
+  const t = useTranslations('Profile');
   const { form, setForm, loading, error, saveProfile, updatePassword, updateProfilePicture, sessions, revokeSession, resendVerification, verifyEmailCode } = useProfile();
 
   const { showError, showSuccess } = useToast();
@@ -294,8 +296,8 @@ export default function ProfilePage() {
         <header>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-[#FF5722] tracking-tight">Profile Settings</h1>
-              <p className="text-[#888888] mt-1 text-sm">Manage your account details and security preferences.</p>
+              <h1 className="text-2xl font-bold text-[#FF5722] tracking-tight">{t('profileSettings')}</h1>
+              <p className="text-[#888888] mt-1 text-sm">{t('profileSettingsDesc')}</p>
             </div>
           </div>
         </header>
@@ -339,7 +341,7 @@ export default function ProfilePage() {
               <div className="flex items-center gap-3">
                 <Coins size={16} className="text-[#FF5722]" />
                 <div>
-                  <span className="block text-[10px] uppercase tracking-widest text-[#666]">Balance</span>
+                  <span className="block text-[10px] uppercase tracking-widest text-[#666]">{t('balance')}</span>
                   <span className="text-sm font-medium text-[#D4D4D4]">{form.coins || 0} coins</span>
                 </div>
               </div>
@@ -351,7 +353,7 @@ export default function ProfilePage() {
           <aside className="w-full lg:w-48 shrink-0 pt-1">
             <div className="sticky top-6">
               <div className="mb-4">
-                <p className="text-[11px] font-medium uppercase tracking-widest text-[#555]">Account</p>
+                <p className="text-[11px] font-medium uppercase tracking-widest text-[#555]">{t('account')}</p>
               </div>
               <nav className="space-y-1">
                 <SideItem icon={User} label="Overview" active={section === "overview"} onClick={() => setSection("overview")} />
@@ -362,7 +364,7 @@ export default function ProfilePage() {
               </nav>
               
               <div className="mt-8 border-t border-[#333] pt-6 mb-4">
-                <p className="text-[11px] font-medium uppercase tracking-widest text-[#555]">Account actions</p>
+                <p className="text-[11px] font-medium uppercase tracking-widest text-[#555]">{t('accountActions')}</p>
               </div>
               <nav className="space-y-1">
                 <SideItem icon={Trash2} label="Delete account" danger active={false} onClick={() => setDeleteOpen(true)} />
