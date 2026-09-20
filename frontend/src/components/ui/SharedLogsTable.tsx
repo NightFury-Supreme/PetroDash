@@ -396,6 +396,10 @@ function MetaViewer({ data }: { data: Record<string, unknown> }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; meta: LogMeta }) {
+  const tActivity = useTranslations('ActivityLog');
+  
+  const actionLabel = tActivity.has(log.action) ? tActivity(log.action) : getActionLabel(log.action);
+  
   // Admin: show actor link + role badge + target
   if (variant === 'admin') {
     const actorId   = log.actorId ?? log.targetUserId ?? meta.userId;
@@ -404,7 +408,7 @@ function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; m
     return (
       <div className="min-w-0">
         <div className="text-sm font-semibold text-white truncate">
-          {getActionLabel(log.action)}
+          {actionLabel}
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-1.5">
           {actorId ? (
@@ -454,7 +458,7 @@ function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; m
   return (
     <div className="min-w-0">
       <div className="text-sm font-semibold text-white truncate">
-        {getActionLabel(log.action)}
+        {actionLabel}
       </div>
       {ctx && <div className="mt-0.5 text-[10px] text-white/45 truncate">{ctx as string}</div>}
     </div>
@@ -557,7 +561,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
       {/* Column headers */}
       <div className="hidden md:grid grid-cols-[2fr_1.5fr_110px_140px_44px] gap-4 px-5 pb-3 border-b border-white/[0.06] text-[9px] uppercase tracking-[0.13em] text-white/40">
         <span>{tCommon('action')}</span>
-        <span>Device / Browser</span>
+        <span>{tCommon('deviceBrowser') || 'Device / Browser'}</span>
         <span>{tCommon('status')}</span>
         <span>{t('date')}</span>
         <span />

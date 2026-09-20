@@ -24,17 +24,17 @@ export function Setup2FADrawer({ isOpen,
 }) {
   const t = useTranslations('Profile');
   const tErrorBackend = useTranslations('BackendErrors');
-const [tfaVerifyCode, setTfaVerifyCode] = useState('');
+  const [tfaVerifyCode, setTfaVerifyCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [touchedCode, setTouchedCode] = useState(false);
   const { showError, showSuccess } = useToast();
 
   const codeValidation = useMemo(() => {
-    if (!tfaVerifyCode) return { valid: false, message: 'Verification code is required.' };
-    if (tfaVerifyCode.length !== 6) return { valid: false, message: 'Code must be exactly 6 digits.' };
-    return { valid: true, message: '6-digit code entered.' };
-  }, [tfaVerifyCode]);
+    if (!tfaVerifyCode) return { valid: false, message: t('codeRequired') || 'Verification code is required.' };
+    if (tfaVerifyCode.length !== 6) return { valid: false, message: t('code6Digits') || 'Code must be exactly 6 digits.' };
+    return { valid: true, message: t('code6DigitsEntered') || '6-digit code entered.' };
+  }, [tfaVerifyCode, t]);
 
   const handleClose = () => {
     onClose();
@@ -49,12 +49,10 @@ const [tfaVerifyCode, setTfaVerifyCode] = useState('');
     setIsLoading(true);
     try {
       await verifyAndEnable2FA(tfaVerifyCode);
-      showSuccess("2FA enabled successfully.");
+      showSuccess(t('tfaEnabledSuccess') || "2FA enabled successfully.");
     } catch (e: any) {
-      
-        const errKey = e.details?.[0]?.message || e.message;
-        showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : (e.message || 'An error occurred'));
-    
+      const errKey = e.details?.[0]?.message || e.message;
+      showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : (e.message || 'An error occurred'));
     } finally {
       setIsLoading(false);
     }
@@ -64,12 +62,12 @@ const [tfaVerifyCode, setTfaVerifyCode] = useState('');
     if (!tfaBackupCodes) return;
     navigator.clipboard.writeText(tfaBackupCodes.join('\n'));
     setCopied(true);
-    showSuccess("Backup codes copied to clipboard");
+    showSuccess(t('backupCodesCopied') || "Backup codes copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <Drawer isOpen={isOpen} onClose={handleClose} title="Setup 2FA" subtitle="Two-Factor Authentication" icon={<ShieldCheck className="text-[#FF5722]" size={20} />}>
+    <Drawer isOpen={isOpen} onClose={handleClose} title={t('setup2faTitle') || "Setup 2FA"} subtitle={t('setup2faSubtitle') || "Two-Factor Authentication"} icon={<ShieldCheck className="text-[#FF5722]" size={20} />}>
       <div className="grid gap-6 mt-2">
         {!tfaBackupCodes ? (
           <>
@@ -79,12 +77,12 @@ const [tfaVerifyCode, setTfaVerifyCode] = useState('');
                   <img src={tfaSetupData.qrCodeUrl} alt="2FA setup QR code" className="h-full w-full object-contain" />
                 </div>
                 <div className="min-w-0 w-full text-center sm:text-left">
-                  <p className="text-[14px] font-semibold text-[#EAEAEA]">Scan this QR code</p>
+                  <p className="text-[14px] font-semibold text-[#EAEAEA]">{t('scanQrCode') || 'Scan this QR code'}</p>
                   <p className="mt-2 text-[12px] leading-relaxed text-[#888]">
-                    Open your authenticator app and scan the code to automatically configure two-factor authentication.
+                    {t('scanQrCodeDesc') || 'Open your authenticator app and scan the code to automatically configure two-factor authentication.'}
                   </p>
                   <div className="mt-5 text-left">
-                    <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-[#888]">Can't scan?</p>
+                    <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-[#888]">{t('cantScan') || "Can't scan?"}</p>
                     <div className="flex items-center rounded-md border border-[#292929] bg-[#151515]">
                       <code className="min-w-0 flex-1 truncate px-3 py-2 text-[12px] tracking-wider text-[#aaa]">
                         {tfaSetupData.secret}
@@ -92,7 +90,7 @@ const [tfaVerifyCode, setTfaVerifyCode] = useState('');
                       <button onClick={() => { 
                         navigator.clipboard.writeText(tfaSetupData.secret); 
                         setCopied(true);
-                        showSuccess("Secret copied to clipboard");
+                        showSuccess(t('secretCopied') || "Secret copied to clipboard");
                         setTimeout(() => setCopied(false), 2000);
                       }} className="flex h-9 w-10 shrink-0 items-center justify-center border-l border-[#292929] text-[#666] hover:bg-[#1c1c1c] hover:text-white transition">
                         {copied ? <Check size={14} className="text-[#ff6b1a]" /> : <Copy size={14} />}
@@ -105,7 +103,7 @@ const [tfaVerifyCode, setTfaVerifyCode] = useState('');
 
             <div className="mt-6">
               <label htmlFor="two-factor-code" className="block text-[11px] uppercase tracking-wider text-[#888] font-medium mb-2">
-                Verification code
+                {t('verificationCodeLabel') || 'Verification code'}
               </label>
               <div className="flex gap-3">
                 <input
@@ -117,7 +115,7 @@ const [tfaVerifyCode, setTfaVerifyCode] = useState('');
                   inputMode="numeric"
                   autoComplete="one-time-code"
                   maxLength={6}
-                  placeholder="123456"
+                  placeholder={t('placeholder123456') || "123456"}
                   className={`h-11 min-w-0 flex-1 rounded-lg border bg-[#161616] px-4 font-mono text-[16px] tracking-[0.2em] text-center text-white outline-none placeholder:text-[#414141] focus:border-[#FF5722] disabled:opacity-50 transition-colors ${touchedCode && !codeValidation.valid ? 'border-red-400/30' : 'border-[#222]'}`}
                 />
                 <button
@@ -125,12 +123,12 @@ const [tfaVerifyCode, setTfaVerifyCode] = useState('');
                   disabled={!codeValidation.valid || isLoading}
                   className="flex h-11 items-center justify-center gap-2 rounded-lg bg-[#FF5722] hover:bg-[#F4511E] px-4 text-[13px] font-medium text-white transition-colors disabled:cursor-not-allowed disabled:bg-[#333] disabled:text-[#888]"
                 >
-                  {isLoading ? "Verifying..." : "Verify"}
+                  {isLoading ? (t('verifying') || "Verifying...") : (t('verify') || "Verify")}
                   {!isLoading && <ArrowRight size={14} />}
                 </button>
               </div>
               <p className="mt-3 text-[12px] text-[#888]">
-                Enter the 6-digit code currently displayed in your authenticator application.
+                {t('enter6DigitCode') || 'Enter the 6-digit code currently displayed in your authenticator application.'}
               </p>
               <ValidationMsg touched={touchedCode} valid={codeValidation.valid} message={codeValidation.message} hideSuccess={true} />
             </div>
@@ -139,10 +137,10 @@ const [tfaVerifyCode, setTfaVerifyCode] = useState('');
           <>
             <div className="flex items-center gap-3 rounded-lg bg-emerald-500/10 p-4 border border-emerald-500/20 text-emerald-400">
               <ShieldCheck size={24} />
-              <p className="text-[13px] font-medium">2FA has been successfully enabled!</p>
+              <p className="text-[13px] font-medium">{t('tfaEnabledSuccess') || '2FA has been successfully enabled!'}</p>
             </div>
             <p className="text-[13px] leading-relaxed text-[#888]">
-              Save these backup codes in a secure location. They are the <strong className="text-white">only way</strong> to recover your account if you lose access to your authenticator app.
+              {t('backupCodesWarning') || 'Save these backup codes in a secure location. They are the'} <strong className="text-white">{t('backupCodesWarning') ? '' : 'only way'}</strong> {t('backupCodesWarning') ? '' : 'to recover your account if you lose access to your authenticator app.'}
             </p>
             <div className="grid grid-cols-2 gap-3 bg-[#161616] p-5 rounded-lg border border-[#222]">
               {tfaBackupCodes.map((code, i) => (
@@ -152,9 +150,9 @@ const [tfaVerifyCode, setTfaVerifyCode] = useState('');
             <div className="mt-4 flex justify-end gap-3">
               <button onClick={handleCopyCodes} className={`flex h-11 items-center justify-center rounded-lg border px-6 text-[13px] font-medium transition-colors gap-2 ${copied ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : 'border-[#222] text-[#888] hover:bg-[#161616] hover:text-white'}`}>
                 {copied ? <Check size={16} /> : <Copy size={16} />}
-                {copied ? 'Copied!' : 'Copy Codes'}
+                {copied ? (t('copied') || 'Copied!') : (t('copyCodes') || 'Copy Codes')}
               </button>
-              <button onClick={handleClose} className="flex h-11 items-center justify-center rounded-lg bg-[#FF5722] px-4 text-[13px] font-medium text-white hover:bg-[#F4511E] transition-colors">I have saved them</button>
+              <button onClick={handleClose} className="flex h-11 items-center justify-center rounded-lg bg-[#FF5722] px-4 text-[13px] font-medium text-white hover:bg-[#F4511E] transition-colors">{t('savedThem') || 'I have saved them'}</button>
             </div>
           </>
         )}
@@ -162,5 +160,3 @@ const [tfaVerifyCode, setTfaVerifyCode] = useState('');
     </Drawer>
   );
 }
-
-

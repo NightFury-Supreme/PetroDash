@@ -72,7 +72,7 @@ export function Overview({
                 autoFocus
                 value={avatarDraft}
                 onChange={(e) => setAvatarDraft(e.target.value)}
-                placeholder="https://example.com/avatar.png"
+                placeholder={t('placeholderAvatarUrl') || "https://example.com/avatar.png"}
                 className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all border-[#FF5722]/50 focus:ring-[#FF5722]/50"
               />
             }

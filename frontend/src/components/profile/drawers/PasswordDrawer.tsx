@@ -93,7 +93,7 @@ export function PasswordDrawer({ isOpen,
             onBlur={() => setTouchedCurrent(true)}
             disabled={isLoading}
             className={`w-full h-11 rounded-lg border bg-[#161616] px-4 text-[13px] text-white outline-none focus:border-[#FF5722] transition-colors disabled:opacity-50 ${touchedCurrent && !currentValidation.valid ? 'border-red-400/30' : 'border-[#222]'}`}
-            placeholder="••••••••"
+            placeholder={t('placeholderPassword') || "••••••••"}
           />
           <ValidationMsg touched={touchedCurrent} valid={currentValidation.valid} message={currentValidation.message} hideSuccess={true} />
         </div>
@@ -126,7 +126,7 @@ export function PasswordDrawer({ isOpen,
               onBlur={() => setTouchedTfa(true)}
               disabled={isLoading}
               className={`w-full h-11 rounded-lg border bg-[#161616] px-4 text-[14px] text-white outline-none focus:border-[#FF5722] transition-colors tracking-[0.2em] font-mono text-center disabled:opacity-50 ${touchedTfa && !tfaValidation.valid ? 'border-red-400/30' : 'border-[#222]'}`}
-              placeholder={useBackupCode ? "a1b2c3d4" : "123456"}
+              placeholder={useBackupCode ? (t('placeholderBackup') || "a1b2c3d4") : (t('placeholder123456') || "123456")}
             />
             <ValidationMsg touched={touchedTfa} valid={tfaValidation.valid} message={tfaValidation.message} hideSuccess={true} />
           </div>

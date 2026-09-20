@@ -79,7 +79,7 @@ const [password, setPassword] = useState('');
               onChange={(e) => setPassword(e.target.value)} 
               disabled={isLoading}
               className="w-full h-11 rounded-lg border border-[#222] bg-[#161616] px-4 text-[13px] text-white outline-none focus:border-red-500/50 transition-colors disabled:opacity-50" 
-              placeholder="••••••••" 
+              placeholder={t('placeholderPassword') || "••••••••"} 
             />
           </div>
         )}
@@ -99,7 +99,7 @@ const [password, setPassword] = useState('');
               onChange={(e) => setTfaCode(e.target.value.replace(useBackupCode ? /[^0-9a-fA-F]/g : /\D/g, ''))} 
               disabled={isLoading}
               className="w-full h-11 rounded-lg border border-[#222] bg-[#161616] px-4 text-[14px] text-white outline-none focus:border-red-500/50 transition-colors tracking-[0.2em] font-mono text-center disabled:opacity-50" 
-              placeholder={useBackupCode ? "a1b2c3d4" : "123456"} 
+              placeholder={useBackupCode ? (t('placeholderBackup') || "a1b2c3d4") : (t('placeholder123456') || "123456")} 
             />
           </div>
         )}
