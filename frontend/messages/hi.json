@@ -393,7 +393,20 @@
       "error": "Error",
       "warning": "Warning",
       "info": "Info"
-    }
+    },
+    "requestInformation": "अनुरोध की जानकारी",
+    "requestId": "अनुरोध आईडी",
+    "sessionId": "सत्र आईडी",
+    "ipAddress": "आईपी पता",
+    "category": "श्रेणी",
+    "method": "तरीका",
+    "path": "पथ",
+    "targetUser": "लक्षित उपयोगकर्ता",
+    "targetServer": "लक्षित सर्वर",
+    "targetTicket": "लक्षित टिकट",
+    "resource": "संसाधन",
+    "valueChanges": "मूल्य परिवर्तन",
+    "additionalInfo": "अतिरिक्त जानकारी"
   },
   "Panel": {
     "controlPanel": "कंट्रोल पैनल",
@@ -765,7 +778,7 @@
     "user": "उपयोगकर्ता",
     "password": "पासवर्ड",
     "email": "ईमेल पता",
-    "success": "सफलता",
+    "success": "सफल",
     "active": "सक्रिय",
     "pending": "लंबित",
     "resource": "संसाधन",
@@ -778,7 +791,17 @@
     "server": "सर्वर",
     "ticket": "टिकट",
     "item": "आइटम",
-    "code": "कोड"
+    "code": "कोड",
+    "coins": "सिक्के",
+    "maxRedemptions": "अधिकतम मोचन",
+    "validUntil": "तक वैध",
+    "referralCode": "रेफरल कोड",
+    "failed": "विफल",
+    "system": "प्रणाली",
+    "emailLabel": "ईमेल पता",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "पासवर्ड",
+    "passwordPlaceholder": "••••••••"
   },
   "Profile": {
     "overview": "अवलोकन",
@@ -932,7 +955,8 @@
     "placeholderBackup": "a1b2c3d4",
     "placeholderNewEmail": "new@example.com",
     "placeholderA1B2C3D4": "A1B2C3D4",
-    "placeholder12345678": "12345678"
+    "placeholder12345678": "12345678",
+    "verified": "सत्यापित"
   },
   "ActivityLog": {
     "admin": {

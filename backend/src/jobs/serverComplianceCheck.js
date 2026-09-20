@@ -74,31 +74,32 @@ async function doSuspend(server, reason) {
 // ─── Main sweep ─────────────────────────────────────────────────────────────
 
 async function runComplianceSweep() {
-  const Server   = require('../models/Server');
-  const Location = require('../models/Location');
-  const Egg      = require('../models/Egg');
-  const { writeAudit } = require('../middleware/audit');
+  try {
+    const Server   = require('../models/Server');
+    const Location = require('../models/Location');
+    const Egg      = require('../models/Egg');
+    const { writeAudit } = require('../middleware/audit');
 
-  console.log('[Compliance] Starting server compliance sweep...');
+    console.log('[Compliance] Starting server compliance sweep...');
 
-  // Fetch all active servers that have a panel ID (only those that are actually running)
-  const activeServers = await Server.find({
-    status: 'active',
-    panelServerId: { $exists: true, $ne: null },
-  }).lean();
+    // Fetch all active servers that have a panel ID (only those that are actually running)
+    const activeServers = await Server.find({
+      status: 'active',
+      panelServerId: { $exists: true, $ne: null },
+    }).lean();
 
-  if (activeServers.length === 0) {
-    console.log('[Compliance] No active servers to check.');
-    return;
-  }
+    if (activeServers.length === 0) {
+      console.log('[Compliance] No active servers to check.');
+      return;
+    }
 
-  // Group servers by owner for efficient per-user checks
-  const byOwner = {};
-  for (const s of activeServers) {
-    const ownerId = String(s.owner);
-    if (!byOwner[ownerId]) byOwner[ownerId] = [];
-    byOwner[ownerId].push();
-  }
+    // Group servers by owner for efficient per-user checks
+    const byOwner = {};
+    for (const s of activeServers) {
+      const ownerId = String(s.owner);
+      if (!byOwner[ownerId]) byOwner[ownerId] = [];
+      byOwner[ownerId].push(s);
+    }
 
   // Pre-fetch all referenced locations and eggs in bulk
   const locationIds = [...new Set(activeServers.map(s => String(s.locationId)).filter(Boolean))];
@@ -287,6 +288,9 @@ async function runComplianceSweep() {
   }
 
   console.log(`[Compliance] Sweep complete. Suspended ${totalSuspended} server().`);
+  } catch (error) {
+    console.error(`[Compliance] Sweep failed due to an error:`, error.message);
+  }
 }
 
 // ─── Job lifecycle ───────────────────────────────────────────────────────────

@@ -7,9 +7,9 @@ import { Session } from '@/hooks/useProfile';
 
 
 
-function parseUserAgent(ua: string) {
-  if (!ua) return { os: 'Unknown OS', browser: 'Unknown Browser' };
-  let os = 'Unknown OS', browser = 'Unknown Browser';
+function parseUserAgent(ua: string, fallbackOS: string = 'Unknown OS', fallbackBrowser: string = 'Unknown Browser') {
+  if (!ua) return { os: fallbackOS, browser: fallbackBrowser };
+  let os = fallbackOS, browser = fallbackBrowser;
   if (ua.includes('Windows')) os = 'Windows';
   else if (ua.includes('Mac OS X')) os = 'macOS';
   else if (ua.includes('Linux')) os = 'Linux';
@@ -27,20 +27,21 @@ function parseUserAgent(ua: string) {
 
 export function ActiveSessions({ sessions, onRevoke }: { sessions: Session[]; onRevoke: (id: string) => void; }) {
   const t = useTranslations('Profile');
+  const tCommon = useTranslations('Common');
 
   return (
     <div className="space-y-6">
       <div className="rounded-xl border border-[#222] bg-[#161616] p-4">
         <div className="flex gap-3">
           <Clock3 size={16} className="mt-0.5 shrink-0 text-[#666]" />
-          <p className="text-xs text-[#888]">{t('unrecognizedDeviceWarning') || 'If you do not recognize a device or location, revoke its session and change your password.'}</p>
+          <p className="text-xs text-[#888]">{t('unrecognizedDeviceWarning')}</p>
         </div>
       </div>
       <section>
         <div className="mb-5 flex items-end justify-between">
           <div>
             <h3 className="text-xl font-semibold tracking-tight text-white">{t('activeSessions')}</h3>
-            <p className="mt-2 text-sm text-white/35">{t('activeSessionsDesc') || 'Review devices currently signed into your account.'}</p>
+            <p className="mt-2 text-sm text-white/35">{t('activeSessionsDesc')}</p>
           </div>
         </div>
 
@@ -49,18 +50,18 @@ export function ActiveSessions({ sessions, onRevoke }: { sessions: Session[]; on
             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-white/5">
               <Laptop size={18} className="text-[#888]" />
             </div>
-            <p className="text-sm font-semibold text-[#D4D4D4]">{t('noActiveSessions') || 'No active sessions'}</p>
-            <p className="mt-1 text-xs text-[#888]">{t('noOtherDevices') || 'There are no other authenticated devices.'}</p>
+            <p className="text-sm font-semibold text-[#D4D4D4]">{t('noActiveSessions')}</p>
+            <p className="mt-1 text-xs text-[#888]">{t('noOtherDevices')}</p>
           </div>
         ) : (
           <>
             <div className="hidden gap-4 grid-cols-[minmax(250px,1fr)_1fr_150px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
-              <span>{t('device') || 'Device'}</span>
-              <span className="md:text-right">{t('details') || 'Details'}</span>
-              <span className="text-right">{t('action') || 'Action'}</span>
+              <span>{t('device')}</span>
+              <span className="md:text-right">{t('details')}</span>
+              <span className="text-right">{t('action')}</span>
             </div>
             <div className="divide-y divide-white/[0.06]">
-              {sessions.map((session) => <SessionRow key={session.id} session={session} onRevoke={() => onRevoke(session.id)} t={t} />)}
+              {sessions.map((session) => <SessionRow key={session.id} session={session} onRevoke={() => onRevoke(session.id)} t={t} tCommon={tCommon} />)}
             </div>
           </>
         )}
@@ -69,8 +70,10 @@ export function ActiveSessions({ sessions, onRevoke }: { sessions: Session[]; on
   );
 }
 
-function SessionRow({ session, onRevoke, t }: { session: Session; onRevoke: () => void; t?: any; }) {
+function SessionRow({ session, onRevoke, t, tCommon }: { session: Session; onRevoke: () => void; t?: any; tCommon?: any; }) {
   const DeviceIcon = session.deviceType === "mobile" || session.deviceType === "tablet" ? Smartphone : Laptop;
+  const unknownLabel = tCommon ? tCommon('unknown') : 'Unknown';
+  
   return (
     <div className="px-5 py-4 transition hover:bg-white/[0.02]">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(250px,1fr)_1fr_150px] md:items-center">
@@ -81,30 +84,30 @@ function SessionRow({ session, onRevoke, t }: { session: Session; onRevoke: () =
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-sm font-semibold text-[#D4D4D4]">{session.device}</p>
-              {session.current && <span className="rounded border border-emerald-500/20 bg-emerald-500/10 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-emerald-400">{t ? (t('thisDevice') || 'This device') : 'This device'}</span>}
+              {session.current && <span className="rounded border border-emerald-500/20 bg-emerald-500/10 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-emerald-400">{t ? t('thisDevice') : 'This device'}</span>}
             </div>
           </div>
         </div>
         <div className="flex items-center md:justify-end min-w-0">
           <div className="flex flex-wrap items-center md:justify-end gap-x-3 gap-y-1 text-xs text-[#888]">
-            <span className="truncate max-w-[200px]" title={session.browser}>{typeof session.browser === 'string' && session.browser.includes('Mozilla') ? parseUserAgent(session.browser).browser : session.browser as string}</span>
-            <span className="text-[#444]">·</span>
-            <span className="flex items-center gap-1"><Globe size={12} /> {session.ip || 'Unknown'}</span>
-            <span className="text-[#444]">·</span>
-            <span>{session.lastActive ? new Date(session.lastActive).toLocaleString() : 'Unknown'}</span>
-            <span className="text-[#444]">·</span>
+            <span className="truncate max-w-[200px]" title={session.browser}>{typeof session.browser === 'string' && session.browser.includes('Mozilla') ? parseUserAgent(session.browser, unknownLabel + ' OS', unknownLabel + ' Browser').browser : session.browser as string}</span>
+            <span className="text-[#444]">•</span>
+            <span className="flex items-center gap-1"><Globe size={12} /> {session.ip || unknownLabel}</span>
+            <span className="text-[#444]">•</span>
+            <span>{session.lastActive ? new Date(session.lastActive).toLocaleString() : unknownLabel}</span>
+            <span className="text-[#444]">•</span>
             <span className="font-mono text-[10px]">ID: {session.id}</span>
           </div>
         </div>
         <div className="flex items-center justify-end">
           {!session.current && (
             <button type="button" onClick={onRevoke} className="flex h-8 shrink-0 items-center justify-center gap-1.5 self-start rounded-md border border-[#2A2A2A] bg-[#1A1A1A] px-3 text-[11px] font-medium text-[#888] hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-500 transition-all sm:self-auto">
-              <LogOut size={11} /> {t ? (t('signOut') || 'Sign out') : 'Sign out'}
+              <LogOut size={11} /> {t ? t('signOut') : 'Sign out'}
             </button>
           )}
           {session.current && (
             <span className="flex shrink-0 items-center gap-1.5 text-[11px] font-medium text-emerald-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> {t ? (t('activeNow') || 'Active now') : 'Active now'}
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> {t ? t('activeNow') : 'Active now'}
             </span>
           )}
         </div>

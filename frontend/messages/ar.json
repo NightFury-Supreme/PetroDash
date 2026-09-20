@@ -375,7 +375,7 @@
   },
   "UI": {
     "system": "النظام",
-    "statusCode": "رمز الحالة",
+    "statusCode": "Status Code",
     "changed": "تم التغيير",
     "created": "تم الإنشاء",
     "date": "التاريخ",
@@ -393,7 +393,20 @@
       "error": "Error",
       "warning": "Warning",
       "info": "Info"
-    }
+    },
+    "requestInformation": "Request Information",
+    "requestId": "Request ID",
+    "sessionId": "Session ID",
+    "ipAddress": "IP Address",
+    "category": "Category",
+    "method": "Method",
+    "path": "Path",
+    "targetUser": "Target User",
+    "targetServer": "Target Server",
+    "targetTicket": "Target Ticket",
+    "resource": "Resource",
+    "valueChanges": "Value Changes",
+    "additionalInfo": "Additional Info"
   },
   "Panel": {
     "controlPanel": "لوحة التحكم",
@@ -755,7 +768,7 @@
     "user": "المستخدم",
     "password": "كلمة المرور",
     "email": "عنوان البريد الإلكتروني",
-    "success": "نجاح",
+    "success": "SUCCESS",
     "active": "نشط",
     "pending": "قيد الانتظار",
     "resource": "مورد",
@@ -768,7 +781,17 @@
     "server": "خادم",
     "ticket": "تذكرة",
     "item": "عنصر",
-    "code": "رمز"
+    "code": "رمز",
+    "coins": "Coins",
+    "maxRedemptions": "Max Redemptions",
+    "validUntil": "Valid Until",
+    "referralCode": "Referral Code",
+    "failed": "FAILED",
+    "system": "System",
+    "emailLabel": "البريد الإلكتروني",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "كلمة المرور",
+    "passwordPlaceholder": "••••••••"
   },
   "Profile": {
     "overview": "Overview",
@@ -922,7 +945,8 @@
     "placeholderBackup": "a1b2c3d4",
     "placeholderNewEmail": "new@example.com",
     "placeholderA1B2C3D4": "A1B2C3D4",
-    "placeholder12345678": "12345678"
+    "placeholder12345678": "12345678",
+    "verified": "تم التحقق"
   },
   "ActivityLog": {
     "admin": {

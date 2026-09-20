@@ -45,7 +45,7 @@ export function ActivityLogSection() {
         <div className="mb-5 flex items-end justify-between">
           <div>
             <h3 className="text-xl font-semibold tracking-tight text-white">{t('activityLog')}</h3>
-            <p className="mt-2 text-sm text-white/35">{t('activityLogDesc') || 'Review recent events and actions on your account.'}</p>
+            <p className="mt-2 text-sm text-white/35">{t('activityLogDesc')}</p>
           </div>
         </div>
         
@@ -61,7 +61,7 @@ export function ActivityLogSection() {
           pageSize={LOGS_PER_PAGE}
           onPageChange={setPage}
           loading={loading}
-          itemName={t('events') || "events"}
+          itemName={t('events')}
         />
       </section>
     </div>

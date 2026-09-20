@@ -39,7 +39,7 @@ type Section = "overview" | "security" | "sessions" | "activity" | "invoices";
 
 export default function ProfilePage() {
   const t = useTranslations('Profile');
-  const tError = useTranslations('GlobalErrors');
+  const tError = useTranslations('BackendErrors');
   const { form, setForm, loading, error, saveProfile, updatePassword, updateProfilePicture, sessions, revokeSession, resendVerification, verifyEmailCode } = useProfile();
 
   const { showError, showSuccess } = useToast();
@@ -100,7 +100,7 @@ export default function ProfilePage() {
     if (editing === "username") {
       const trimmed = (draft || '').trim();
       if (trimmed.length < 3) {
-        showError(tError('usernameTooShort') || 'Username must be at least 3 characters.');
+        showError(tError('usernameTooShort'));
         return false;
       }
       updates = { username: trimmed };
@@ -111,7 +111,7 @@ export default function ProfilePage() {
       const lastName = (draft?.last || '').trim();
       // Backend requires min 1 char for each field when provided
       if (!firstName) {
-        showError(tError('firstNameEmpty') || 'First name cannot be empty.');
+        showError(tError('firstNameEmpty'));
         return false;
       }
       // Only send lastName if it's non-empty (backend min(1) validation)
@@ -121,10 +121,10 @@ export default function ProfilePage() {
 
     try {
       await saveProfile(updates);
-      showSuccess(t('profileUpdated') || 'Profile updated successfully.');
+      showSuccess(t('profileUpdated'));
       return true;
     } catch (e: any) {
-      showError(e.message || tError('failedToSaveProfile') || 'Failed to save profile. Please try again.');
+      showError(tError(e.message) || tError('failedToSaveProfile'));
       return false;
     }
   };
@@ -137,7 +137,7 @@ export default function ProfilePage() {
       body: JSON.stringify({ email: newEmail, password: password || undefined, tfaCode: tfaCode || undefined })
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || tError('failedToUpdateEmail') || 'Failed to update email');
+    if (!res.ok) throw new Error(data.error || 'failedToUpdateEmail');
     
     if (data.requiresVerification) {
       return { requiresVerification: true };
@@ -166,7 +166,7 @@ export default function ProfilePage() {
       body: JSON.stringify({ email: newEmail, code })
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || tError('failedToVerifyEmail') || 'Failed to verify email change');
+    if (!res.ok) throw new Error(data.error || 'failedToVerifyEmail');
     
     const profileRes = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, {
       headers: { Authorization: `Bearer ${token}` }
@@ -192,7 +192,7 @@ export default function ProfilePage() {
       body: JSON.stringify({ password: password || undefined, tfaCode: tfaCode || undefined })
     });
     let d: any = {}; try { d = await r.json(); } catch {} 
-    if (!r.ok) throw new Error(d?.error || tError('failedToDeleteAccount') || 'Failed to delete account');
+    if (!r.ok) throw new Error(d?.error || 'failedToDeleteAccount');
     
     setTimeout(() => {
       localStorage.removeItem('auth_token');
@@ -210,7 +210,7 @@ export default function ProfilePage() {
         setResendRateLimit(e.retryAfter);
         localStorage.setItem('email_verify_rate_limited_until', (Date.now() + e.retryAfter * 1000).toString());
       } else {
-        showError(e.message || tError('failedToSendVerificationEmail') || 'Failed to send verification email. Please try again.');
+        showError(tError(e.message) || tError('failedToSendVerificationEmail'));
       }
     }
   };
@@ -220,8 +220,8 @@ export default function ProfilePage() {
       <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
         <ErrorState
           icon={<User strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
-          kicker="Load Error"
-          title="Failed to Load Profile"
+          kicker={t('loadError')}
+          title={t('failedToLoadProfile')}
           errorString={error}
           description={<ErrorDescription error={error} topic="Profile" />}
           buttons={
@@ -231,7 +231,7 @@ export default function ProfilePage() {
                 className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
               >
                 <RefreshCw className="w-[14px] h-[14px]" />
-                Retry
+                {t('retry')}
               </button>
               <DashboardButton variant="secondary" />
             </>
@@ -252,14 +252,14 @@ export default function ProfilePage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        showError(data.error || tError('failedToSetup2FA') || 'Failed to setup 2FA');
+        showError(tError(data.error) || tError('failedToSetup2FA'));
         return;
       }
       setTfaSetupData(data);
       setTfaBackupCodes(null);
       setShow2FASetupModal(true);
     } catch {
-      showError(tError('networkError') || 'Could not connect to the server. Please try again.');
+      showError(tError('networkError'));
     }
   };
 
@@ -272,7 +272,7 @@ export default function ProfilePage() {
       body: JSON.stringify({ code })
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || tError('invalidVerificationCode') || 'Invalid verification code');
+    if (!res.ok) throw new Error(data.error || 'invalidVerificationCode');
     setTfaBackupCodes(data.backupCodes);
     setForm(f => ({ ...f, tfaEnabled: true }));
   };
@@ -286,7 +286,7 @@ export default function ProfilePage() {
       body: JSON.stringify({ password: password || undefined, code: code || undefined })
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || tError('failedToDisable2FA') || 'Failed to disable 2FA');
+    if (!res.ok) throw new Error(data.error || 'failedToDisable2FA');
     setForm(f => ({ ...f, tfaEnabled: false }));
     setShow2FADisableModal(false);
   };
@@ -325,16 +325,16 @@ export default function ProfilePage() {
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="text-base font-semibold text-[#D4D4D4]">
-                    {`${form.firstName || ''} ${form.lastName || ''}`.trim() || form.username || 'User'}
+                    {`${form.firstName || ''} ${form.lastName || ''}`.trim() || form.username || tCommon('user')}
                   </h2>
                   {form.emailVerification && form.emailVerified && (
                     <span className="rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-emerald-400">
-                      Verified
+                      {t('verified')}
                     </span>
                   )}
                 </div>
                 <p className="mt-1 text-sm text-[#888]">
-                  @{form.username || 'username'}
+                  @{form.username || tCommon('user')}
                 </p>
               </div>
             </div>
@@ -343,7 +343,7 @@ export default function ProfilePage() {
                 <Coins size={16} className="text-[#FF5722]" />
                 <div>
                   <span className="block text-[10px] uppercase tracking-widest text-[#666]">{t('balance')}</span>
-                  <span className="text-sm font-medium text-[#D4D4D4]">{form.coins || 0} {t('coins') || 'coins'}</span>
+                  <span className="text-sm font-medium text-[#D4D4D4]">{form.coins || 0} {t('coins')}</span>
                 </div>
               </div>
             </div>
@@ -374,15 +374,16 @@ export default function ProfilePage() {
           </aside>
 
           <div className="flex-1 min-w-0 w-full">
-            {section === "overview" && <Overview form={form} editing={editing} draft={draft} onEdit={beginEdit} onCancel={cancelEdit} onSave={saveEdit} onDraft={setDraft} onSaveAvatar={async (url) => {
+            <div className={section === "overview" ? "block" : "hidden"}>
+              <Overview form={form} editing={editing} draft={draft} onEdit={beginEdit} onCancel={cancelEdit} onSave={saveEdit} onDraft={setDraft} onSaveAvatar={async (url) => {
                   try {
                     await updateProfilePicture(url || '');
-                    showSuccess(t('profilePictureUpdated') || 'Profile picture updated.');
+                    showSuccess(t('profilePictureUpdated'));
                   } catch (e: any) {
-                    showError(e.message || tError('failedToUpdateProfilePicture') || 'Failed to update profile picture.');
+                    showError(tError(e.message) || tError('failedToUpdateProfilePicture'));
                   }
-                }} onChangeEmail={() => setShowChangeEmailDrawer(true)} setForm={setForm} />}
-            {section === "security" && (
+                }} onChangeEmail={() => setShowChangeEmailDrawer(true)} setForm={setForm} />
+            </div>{section === "security" && (
               <Security 
                 emailVerified={form.emailVerified}
                 emailVerification={form.emailVerification}

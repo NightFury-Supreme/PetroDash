@@ -193,6 +193,7 @@ function SectionHeading({ children, className = '' }: { children: React.ReactNod
 
 /** Status / severity badge. */
 function StatusBadge({ log }: { log: LogEntry }) {
+  const tCommon = useTranslations('Common');
   type BadgeSpec = { dot: string; text: string; border: string; bg: string; pulse?: boolean };
 
   const badge = (spec: BadgeSpec, label: string) => (
@@ -208,19 +209,19 @@ function StatusBadge({ log }: { log: LogEntry }) {
 
   if (log.success !== undefined) {
     return log.success
-      ? badge({ dot: 'bg-emerald-500', text: 'text-emerald-400', border: 'border-emerald-500/20', bg: 'bg-emerald-500/[0.06]' }, 'SUCCESS')
-      : badge({ dot: 'bg-red-500',     text: 'text-red-400',     border: 'border-red-500/20',     bg: 'bg-red-500/[0.06]'     }, 'FAILED');
+      ? badge({ dot: 'bg-emerald-500', text: 'text-emerald-400', border: 'border-emerald-500/20', bg: 'bg-emerald-500/[0.06]' }, tCommon('success') || 'SUCCESS')
+      : badge({ dot: 'bg-red-500',     text: 'text-red-400',     border: 'border-red-500/20',     bg: 'bg-red-500/[0.06]'     }, tCommon('failed') || 'FAILED');
   }
 
   switch (log.severity) {
-    case 'CRITICAL':
-      return badge({ dot: 'bg-red-500',    text: 'text-red-400',    border: 'border-red-500/20',    bg: 'bg-red-500/[0.06]',    pulse: true }, 'CRITICAL');
-    case 'ERROR':
-      return badge({ dot: 'bg-orange-500', text: 'text-orange-400', border: 'border-orange-500/20', bg: 'bg-orange-500/[0.06]' }, 'ERROR');
-    case 'WARNING':
-      return badge({ dot: 'bg-yellow-500', text: 'text-yellow-400', border: 'border-yellow-500/20', bg: 'bg-yellow-500/[0.06]' }, 'WARN');
-    default:
-      return badge({ dot: 'bg-white/25',   text: 'text-white/35',   border: 'border-white/[0.07]',  bg: 'bg-white/[0.03]'     }, 'INFO');
+    case 'CRITICAL': return badge({ dot: 'bg-red-500',    text: 'text-red-400',    border: 'border-red-500/20',    bg: 'bg-red-500/[0.06]',    pulse: true }, tCommon('critical') || 'CRITICAL');
+    case 'ERROR':    return badge({ dot: 'bg-orange-500', text: 'text-orange-400', border: 'border-orange-500/20', bg: 'bg-orange-500/[0.06]' }, tCommon('error') || 'ERROR');
+    case 'WARNING':  return badge({ dot: 'bg-yellow-500', text: 'text-yellow-400', border: 'border-yellow-500/20', bg: 'bg-yellow-500/[0.06]' }, tCommon('warning') || 'WARN');
+    case 'error':    return badge({ dot: 'bg-red-500',    text: 'text-red-400',    border: 'border-red-500/20',    bg: 'bg-red-500/[0.06]' }, tCommon('error') || 'ERROR');
+    case 'warning':  return badge({ dot: 'bg-amber-500',  text: 'text-amber-400',  border: 'border-amber-500/20',  bg: 'bg-amber-500/[0.06]' }, tCommon('warning') || 'WARNING');
+    case 'INFO':
+    case 'info':
+    default:         return badge({ dot: 'bg-sky-500',    text: 'text-sky-400',    border: 'border-sky-500/20',    bg: 'bg-sky-500/[0.06]' }, tCommon('info') || 'INFO');
   }
 }
 
@@ -232,48 +233,70 @@ function StatusBadge({ log }: { log: LogEntry }) {
  * Renders a nested diff object recursively.
  * Handles: { old, new } objects, "A -> B" legacy strings, plain nested objects.
  */
-function DiffViewer({ data, prefix = '' }: { data: Record<string, unknown>; prefix?: string }) {
+function DiffViewer({ data, prefix = '', tCommon }: { data: Record<string, unknown>; prefix?: string; tCommon: any }) {
   return (
     <>
       {Object.entries(data).map(([key, value]) => {
         const fullKey    = prefix ? `${prefix}.${key}` : key;
-        const displayKey = getFieldLabel(fullKey);
+        const fallbackLabel = getFieldLabel(fullKey);
+        const translateKey = key === 'code' ? 'referralCode' : key;
+        const displayKey = (tCommon && tCommon.has(translateKey)) ? tCommon(translateKey) : fallbackLabel;
 
         if (isDiffValue(value)) {
           return (
             <div key={fullKey} className="flex items-center justify-between gap-4 py-2 border-b border-white/[0.04] last:border-0">
               <span className="font-sans text-[10px] text-white/55 shrink-0 truncate">{displayKey}</span>
-              <DiffPills oldVal={String(value.old ?? '—')} newVal={String(value.new ?? '—')} />
+              <DiffPills oldVal={String(value.old ?? '-')} newVal={String(value.new ?? '-')} />
             </div>
           );
         }
 
+        // If legacy diff string (A -> B)
         if (isLegacyDiffString(value)) {
-          const separatorIndex = value.indexOf('->');
-          const oldVal = value.slice(0, separatorIndex).trim();
-          const newVal = value.slice(separatorIndex + 2).trim();
+          const [oldVal, newVal] = value.split('->').map(s => s.trim());
           return (
             <div key={fullKey} className="flex items-center justify-between gap-4 py-2 border-b border-white/[0.04] last:border-0">
               <span className="font-sans text-[10px] text-white/55 shrink-0 truncate">{displayKey}</span>
-              <DiffPills oldVal={oldVal} newVal={newVal} />
+              <DiffPills oldVal={oldVal || '-'} newVal={newVal || '-'} />
             </div>
           );
         }
 
-        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        // Nested object
+        if (typeof value === 'object' && value !== null) {
           return (
             <DiffViewer
               key={fullKey}
               data={value as Record<string, unknown>}
               prefix={fullKey}
+              tCommon={tCommon}
             />
           );
         }
 
+        return null;
+      })}
+    </>
+  );
+}
+
+/**
+ * Renders the "created" block - shows each created field in emerald.
+ */
+function CreatedViewer({ data, tCommon }: { data: Record<string, unknown>; tCommon: any }) {
+  return (
+    <>
+      {Object.entries(data).map(([key, value]) => {
+        const fallbackLabel = getFieldLabel(key);
+        const translateKey = key === 'code' ? 'referralCode' : key;
+        const displayLabel = (tCommon && tCommon.has(translateKey)) ? tCommon(translateKey) : fallbackLabel;
+        
         return (
-          <div key={fullKey} className="flex items-center justify-between gap-4 py-2 border-b border-white/[0.04] last:border-0">
-            <span className="font-sans text-[10px] text-white/50 shrink-0 truncate">{displayKey}</span>
-            <span className="font-mono text-[11px] text-white/65 break-all ml-auto text-right">
+          <div key={key} className="flex items-center justify-between gap-4 py-2 border-b border-white/[0.04] last:border-0">
+            <span className="font-sans text-[10px] text-white/50 shrink-0 truncate">
+              {displayLabel}
+            </span>
+            <span className="font-mono text-[11px] text-emerald-400/70 break-all ml-auto text-right">
               {typeof value === 'string' ? value : JSON.stringify(value)}
             </span>
           </div>
@@ -284,34 +307,16 @@ function DiffViewer({ data, prefix = '' }: { data: Record<string, unknown>; pref
 }
 
 /**
- * Renders the "created" block — shows each created field in emerald.
- */
-function CreatedViewer({ data }: { data: Record<string, unknown> }) {
-  return (
-    <>
-      {Object.entries(data).map(([key, value]) => (
-        <div key={key} className="flex items-center justify-between gap-4 py-2 border-b border-white/[0.04] last:border-0">
-          <span className="font-sans text-[10px] text-white/50 shrink-0 truncate">
-            {getFieldLabel(key)}
-          </span>
-          <span className="font-mono text-[11px] text-emerald-400/70 break-all ml-auto text-right">
-            {typeof value === 'string' ? value : JSON.stringify(value)}
-          </span>
-        </div>
-      ))}
-    </>
-  );
-}
-
-/**
- * Renders the "additional meta" block — arbitrary key/value pairs.
+ * Renders the "additional meta" block - arbitrary key/value pairs.
  * Handles nested objects, booleans, arrays, diff strings, and IDs intelligently.
  */
-function MetaViewer({ data }: { data: Record<string, unknown> }) {
+function MetaViewer({ data, tCommon }: { data: Record<string, unknown>; tCommon: any }) {
   return (
     <>
       {Object.entries(data).map(([key, value]) => {
-        const label = getFieldLabel(key);
+        const fallbackLabel = getFieldLabel(key);
+        const translateKey = key === 'code' ? 'referralCode' : key;
+        const label = (tCommon && tCommon.has(translateKey)) ? tCommon(translateKey) : fallbackLabel;
 
         // { old, new } inline diff
         if (isDiffValue(value)) {
@@ -329,7 +334,7 @@ function MetaViewer({ data }: { data: Record<string, unknown> }) {
             <div key={key} className="mt-4 first:mt-0">
               <SectionHeading>{label}</SectionHeading>
               <div className="pl-2 border-l border-white/[0.06]">
-                <MetaViewer data={value as Record<string, unknown>} />
+                <MetaViewer data={value as Record<string, unknown>} tCommon={tCommon} />
               </div>
             </div>
           );
@@ -420,7 +425,7 @@ function ActionCell({ log, variant, meta, tCommon }: { log: LogEntry; variant: V
               {actorName as string}
             </Link>
           ) : (
-            <span className="text-[10px] text-white/35">System</span>
+            <span className="text-[10px] text-white/35">{tCommon('system') || 'System'}</span>
           )}
           <RankBadge
             rank={log.actorRole ?? 'system'}
@@ -492,18 +497,18 @@ function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: Variant
     <div className="px-5 pt-3 pb-7 border-b border-white/[0.05] overflow-hidden">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-14 gap-y-6 w-full min-w-0">
 
-        {/* ── Request Information ─────────────────── */}
+        {/* 1. Request Information */}
         <div>
-          <SectionHeading>Request Information</SectionHeading>
-          <InfoRow label="Request ID" value={log._id}                                  mono muted />
-          <InfoRow label="Session ID" value={log.sessionId ?? meta.sessionId}          mono muted />
-          <InfoRow label="IP Address" value={ip ?? '—'}                                mono />
-          {log.category    && <InfoRow label="Category" value={getCategoryLabel(log.category)} />}
-          {log.method      && <InfoRow label="Method"   value={log.method}   />}
-          {log.path        && <InfoRow label="Path"     value={log.path}     mono muted />}
+          <SectionHeading>{t('requestInformation') || 'Request Information'}</SectionHeading>
+          <InfoRow label={t('requestId') || "Request ID"} value={log._id}                                  mono muted />
+          <InfoRow label={t('sessionId') || "Session ID"} value={log.sessionId ?? meta.sessionId}          mono muted />
+          <InfoRow label={t('ipAddress') || "IP Address"} value={ip ?? '-'}                                mono />
+          {log.category    && <InfoRow label={t('category') || "Category"} value={getCategoryLabel(log.category)} />}
+          {log.method      && <InfoRow label={t('method') || "Method"}   value={log.method}   />}
+          {log.path        && <InfoRow label={t('path') || "Path"}     value={log.path}     mono muted />}
           {variant === 'admin' && log.resourceType && (
             <InfoRow
-              label={log.resourceType === 'user' ? 'Target User' : log.resourceType === 'server' ? 'Target Server' : log.resourceType === 'ticket' ? 'Target Ticket' : 'Resource'}
+              label={log.resourceType === 'user' ? (t('targetUser') || 'Target User') : log.resourceType === 'server' ? (t('targetServer') || 'Target Server') : log.resourceType === 'ticket' ? (t('targetTicket') || 'Target Ticket') : (t('resource') || 'Resource')}
               value={log.resourceId ? (meta.targetName ? `${meta.targetName} (${log.resourceId})` : log.resourceId) : log.resourceType}
               mono
               muted
@@ -511,7 +516,7 @@ function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: Variant
           )}
           {statusCode != null && (
             <div className="flex justify-between items-start gap-4 py-[7px] border-b border-white/[0.04] last:border-0">
-              <span className="text-[9px] uppercase tracking-[0.1em] text-white/45 shrink-0 pt-px">Status Code</span>
+              <span className="text-[9px] uppercase tracking-[0.1em] text-white/45 shrink-0 pt-px">{t('statusCode') || "Status Code"}</span>
               <span className={`font-mono text-[11px] ${statusCode >= 400 ? 'text-red-400' : 'text-emerald-400'}`}>
                 {statusCode}
               </span>
@@ -519,30 +524,30 @@ function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: Variant
           )}
         </div>
 
-        {/* ── Changes / Created / Meta ────────────── */}
+        {/* 2. Changes / Created / Meta */}
         <div className="space-y-5 min-w-0">
           {hasChanges && (
             <div>
-              <SectionHeading>Value Changes</SectionHeading>
-              <DiffViewer data={meta.changes as Record<string, unknown>} />
+              <SectionHeading>{t('valueChanges') || "Value Changes"}</SectionHeading>
+              <DiffViewer data={meta.changes as Record<string, unknown>} tCommon={tCommon} />
             </div>
           )}
           {hasChangedLegacy && (
             <div>
-              <SectionHeading>{t('changed')}</SectionHeading>
-              <DiffViewer data={meta.changed as Record<string, unknown>} />
+              <SectionHeading>{t('changed') || "Changed"}</SectionHeading>
+              <DiffViewer data={meta.changed as Record<string, unknown>} tCommon={tCommon} />
             </div>
           )}
           {hasCreated && (
             <div>
-              <SectionHeading>{t('created')}</SectionHeading>
-              <CreatedViewer data={meta.created as Record<string, unknown>} />
+              <SectionHeading>{t('created') || "Created"}</SectionHeading>
+              <CreatedViewer data={meta.created as Record<string, unknown>} tCommon={tCommon} />
             </div>
           )}
           {variant === 'admin' && hasRawMeta && (
             <div>
-              <SectionHeading>Additional Info</SectionHeading>
-              <MetaViewer data={rawMeta} />
+              <SectionHeading>{t('additionalInfo') || "Additional Info"}</SectionHeading>
+              <MetaViewer data={rawMeta} tCommon={tCommon} />
             </div>
           )}
         </div>

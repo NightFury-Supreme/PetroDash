@@ -12,18 +12,17 @@ const { generateSecret, generateURI, verifySync } = require('otplib');
 const qrcode = require('qrcode');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const AppError = require('../../utils/AppError');
 
 class ProfileService {
   async updateProfile(userId, { username, firstName, lastName }) {
     const user = await User.findById(userId);
-    if (!user) throw new Error('Not found');
+    if (!user) throw AppError.notFound('User not found');
     
     if (username && username !== user.username) {
       const exists = await User.findOne({ username }).lean();
       if (exists) {
-        const err = new Error('Username already in use');
-        err.code = 'ERR_USERNAME_IN_USE';
-        throw err;
+        throw AppError.badRequest('Username already in use', null, 'ERR_USERNAME_IN_USE');
       }
     }
     
@@ -52,13 +51,11 @@ class ProfileService {
 
   async initiateEmailChange(userId, newEmail) {
     const user = await User.findById(userId);
-    if (!user) throw new Error('Not found');
+    if (!user) throw AppError.notFound('User not found');
     
     const exists = await User.findOne({ email: newEmail }).lean();
     if (exists) {
-      const err = new Error('Email already in use');
-      err.code = 'ERR_EMAIL_IN_USE';
-      throw err;
+      throw AppError.badRequest('Email already in use', null, 'ERR_EMAIL_IN_USE');
     }
     
     const s = await getSettings();
@@ -103,24 +100,24 @@ class ProfileService {
 
   async verifyEmailChange(userId, newEmail, code) {
     const user = await User.findById(userId);
-    if (!user) throw new Error('Not found');
+    if (!user) throw AppError.notFound('User not found');
     
     const tokenRecord = await VerificationToken.findOne({ userId: user._id, purpose: 'email_change', newEmail, usedAt: null }).sort({ createdAt: -1 });
-    if (!tokenRecord) { const e = new Error('Expired'); e.code = 'ERR_TOKEN_EXPIRED'; throw e; }
-    if (tokenRecord.expiresAt < new Date()) { const e = new Error('Expired'); e.code = 'ERR_TOKEN_EXPIRED'; throw e; }
-    if (tokenRecord.lockedUntil && tokenRecord.lockedUntil > new Date()) { const e = new Error('Rate limit'); e.code = 'ERR_RATE_LIMIT'; throw e; }
+    if (!tokenRecord) throw AppError.badRequest('Expired', null, 'ERR_TOKEN_EXPIRED');
+    if (tokenRecord.expiresAt < new Date()) throw AppError.badRequest('Expired', null, 'ERR_TOKEN_EXPIRED');
+    if (tokenRecord.lockedUntil && tokenRecord.lockedUntil > new Date()) throw AppError.badRequest('Rate limit', null, 'ERR_RATE_LIMIT');
     
     const inputHash = hashString(code);
     if (inputHash !== tokenRecord.tokenHash) {
       tokenRecord.attempts += 1;
       if (tokenRecord.attempts >= tokenRecord.maxAttempts) tokenRecord.lockedUntil = new Date(Date.now() + 15 * 60 * 1000);
       await tokenRecord.save();
-      const e = new Error('Invalid code'); e.code = 'ERR_INVALID_CODE'; throw e;
+      throw AppError.badRequest('Invalid code', null, 'ERR_INVALID_CODE');
     }
     
     const exists = await User.findOne({ email: newEmail }).lean();
     if (exists && String(exists._id) !== String(user._id)) {
-      const e = new Error('In use'); e.code = 'ERR_EMAIL_IN_USE'; throw e;
+      throw AppError.badRequest('In use', null, 'ERR_EMAIL_IN_USE');
     }
     
     tokenRecord.usedAt = new Date();
@@ -149,13 +146,13 @@ class ProfileService {
 
   async updatePassword(userId, currentPassword, newPassword, tfaCode) {
     const user = await User.findById(userId);
-    if (!user) throw new Error('Not found');
+    if (!user) throw AppError.notFound('User not found');
     
     const ok = await bcrypt.compare(currentPassword, user.passwordHash);
-    if (!ok) { const e = new Error('Invalid'); e.code = 'ERR_INVALID_PASSWORD'; throw e; }
+    if (!ok) throw AppError.badRequest('Invalid password', null, 'ERR_INVALID_PASSWORD');
     
     if (user.tfaEnabled) {
-      if (!tfaCode) { const e = new Error('2FA'); e.code = 'ERR_2FA_REQUIRED'; throw e; }
+      if (!tfaCode) throw AppError.badRequest('2FA required', null, 'ERR_2FA_REQUIRED');
       let isValid = false;
       if (tfaCode.length === 6) {
         try { isValid = verifySync({ token: tfaCode, secret: user.tfaSecret })?.valid === true; } catch {}
@@ -163,7 +160,7 @@ class ProfileService {
         isValid = true;
         user.tfaBackupCodes = user.tfaBackupCodes.filter(c => c !== tfaCode);
       }
-      if (!isValid) { const e = new Error('Invalid 2FA'); e.code = 'ERR_2FA_INVALID'; throw e; }
+      if (!isValid) throw AppError.badRequest('Invalid 2FA', null, 'ERR_2FA_INVALID');
     }
     
     const salt = await bcrypt.genSalt(10);
@@ -182,8 +179,8 @@ class ProfileService {
   
   async setup2FA(userId) {
     const user = await User.findById(userId);
-    if (!user) throw new Error('Not found');
-    if (user.tfaEnabled) { const e = new Error('Enabled'); e.code = 'ERR_2FA_ALREADY_ENABLED'; throw e; }
+    if (!user) throw AppError.notFound('User not found');
+    if (user.tfaEnabled) throw AppError.badRequest('2FA already enabled', null, 'ERR_2FA_ALREADY_ENABLED');
     
     const s = await getSettings();
     const secret = generateSecret();
@@ -194,11 +191,11 @@ class ProfileService {
   
   async verify2FA(userId, secret, code) {
     const user = await User.findById(userId);
-    if (!user) throw new Error('Not found');
+    if (!user) throw AppError.notFound('User not found');
     
     let isValid = false;
     try { isValid = verifySync({ token: code, secret })?.valid === true; } catch {}
-    if (!isValid) { const e = new Error('Invalid'); e.code = 'ERR_2FA_INVALID'; throw e; }
+    if (!isValid) throw AppError.badRequest('Invalid 2FA code', null, 'ERR_2FA_INVALID');
     
     const backupCodes = Array.from({ length: 8 }, () => crypto.randomBytes(4).toString('hex'));
     user.tfaEnabled = true;
@@ -210,10 +207,10 @@ class ProfileService {
   
   async disable2FA(userId, password, code) {
     const user = await User.findById(userId);
-    if (!user) throw new Error('Not found');
+    if (!user) throw AppError.notFound('User not found');
     
     const ok = await bcrypt.compare(password, user.passwordHash);
-    if (!ok) { const e = new Error('Invalid'); e.code = 'ERR_INVALID_PASSWORD'; throw e; }
+    if (!ok) throw AppError.badRequest('Invalid password', null, 'ERR_INVALID_PASSWORD');
     
     let isValid = false;
     if (code.length === 6) {
@@ -222,7 +219,7 @@ class ProfileService {
       isValid = true;
       user.tfaBackupCodes = user.tfaBackupCodes.filter(c => c !== code);
     }
-    if (!isValid) { const e = new Error('Invalid'); e.code = 'ERR_2FA_INVALID'; throw e; }
+    if (!isValid) throw AppError.badRequest('Invalid 2FA code', null, 'ERR_2FA_INVALID');
     
     user.tfaEnabled = false;
     user.tfaSecret = null;
@@ -233,13 +230,17 @@ class ProfileService {
   
   async getSessions(userId, currentSessionId) {
     const sessions = await UserSession.find({ userId }).sort({ lastActive: -1 }).lean();
-    return sessions.map(s => ({ ...s, isCurrent: s.sessionId === currentSessionId }));
+    return sessions.map(s => ({ 
+      ...s, 
+      id: s._id.toString(),
+      current: s._id.toString() === currentSessionId 
+    }));
   }
   
   async revokeSession(userId, id, currentSessionId) {
     const session = await UserSession.findOne({ _id: id, userId });
-    if (!session) { const e = new Error('Not found'); e.code = 'ERR_NOT_FOUND'; throw e; }
-    if (session.sessionId === currentSessionId) { const e = new Error('Current'); e.code = 'ERR_CANNOT_REVOKE_CURRENT'; throw e; }
+    if (!session) throw AppError.notFound('Session not found', null, 'ERR_NOT_FOUND');
+    if (session._id.toString() === currentSessionId) throw AppError.badRequest('Cannot revoke current session', null, 'ERR_CANNOT_REVOKE_CURRENT');
     await UserSession.deleteOne({ _id: id });
     deleteCache(`session:${session.sessionId}`);
     return true;
@@ -247,20 +248,20 @@ class ProfileService {
   
   async deleteAccount(userId, password, tfaCode) {
     const user = await User.findById(userId);
-    if (!user) throw new Error('Not found');
+    if (!user) throw AppError.notFound('User not found');
     
     const ok = await bcrypt.compare(password, user.passwordHash);
-    if (!ok) { const e = new Error('Invalid'); e.code = 'ERR_INVALID_PASSWORD'; throw e; }
+    if (!ok) throw AppError.badRequest('Invalid password', null, 'ERR_INVALID_PASSWORD');
     
     if (user.tfaEnabled) {
-      if (!tfaCode) { const e = new Error('2FA'); e.code = 'ERR_2FA_REQUIRED'; throw e; }
+      if (!tfaCode) throw AppError.badRequest('2FA required', null, 'ERR_2FA_REQUIRED');
       let isValid = false;
       if (tfaCode.length === 6) {
         try { isValid = verifySync({ token: tfaCode, secret: user.tfaSecret })?.valid === true; } catch {}
       } else if (tfaCode.length === 8 && user.tfaBackupCodes && user.tfaBackupCodes.includes(tfaCode)) {
         isValid = true;
       }
-      if (!isValid) { const e = new Error('Invalid'); e.code = 'ERR_2FA_INVALID'; throw e; }
+      if (!isValid) throw AppError.badRequest('Invalid 2FA code', null, 'ERR_2FA_INVALID');
     }
     
     const servers = await Server.find({ userId: user._id });

@@ -1,6 +1,6 @@
 import { Check, Pencil, Save, AlertCircle } from "lucide-react";
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
@@ -184,11 +184,11 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
                 ) : (
                   <Save size={14} />
                 )}
-                {isSaved ? t('saved') || 'Saved' : t('save') || 'Save'}
+                {isSaved ? t('saved') : t('save')}
               </button>
             </>
           ) : (
-            <button type="button" onClick={onEdit} className="flex h-9 items-center gap-1.5 rounded-lg border border-[#222] bg-[#1A1A1A] px-3 text-xs font-medium text-[#D4D4D4] hover:bg-[#222] transition"><Pencil size={14} /> {t('edit') || 'Edit'}</button>
+            <button type="button" onClick={onEdit} className="flex h-9 items-center gap-1.5 rounded-lg border border-[#222] bg-[#1A1A1A] px-3 text-xs font-medium text-[#D4D4D4] hover:bg-[#222] transition"><Pencil size={14} /> {t('edit')}</button>
           )}
         </div>
       </div>

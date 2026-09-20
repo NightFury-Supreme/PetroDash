@@ -43,8 +43,8 @@ export function InvoicesTab({ currency = "USD" }: { currency?: string }) {
       <section>
         <div className="mb-5 flex items-end justify-between">
           <div>
-            <h3 className="text-xl font-semibold tracking-tight text-white">{t('paymentHistory') || 'Payment History'}</h3>
-            <p className="mt-2 text-sm text-white/35">{t('paymentHistoryDesc') || 'Your recent plan purchases and payment history.'}</p>
+            <h3 className="text-xl font-semibold tracking-tight text-white">{t('paymentHistory')}</h3>
+            <p className="mt-2 text-sm text-white/35">{t('paymentHistoryDesc')}</p>
           </div>
         </div>
         <PaymentsSection currency={currency} onDownload={downloadInvoice} />
@@ -92,12 +92,12 @@ function PaymentsSection({ currency, onDownload }: { currency: string; onDownloa
     <div>
       {/* TABLE HEADER */}
       <div className="hidden gap-4 grid-cols-[1.8fr_1fr_1.5fr_1fr_1fr_70px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
-        <span>{t('paymentId') || 'Payment ID'}</span>
-        <span>{t('date') || 'Date'}</span>
-        <span>{t('plan') || 'Plan'}</span>
-        <span>{t('amount') || 'Amount'}</span>
-        <span>{t('status') || 'Status'}</span>
-        <span className="text-right">{t('invoice') || 'Invoice'}</span>
+        <span>{t('paymentId')}</span>
+        <span>{t('date')}</span>
+        <span>{t('plan')}</span>
+        <span>{t('amount')}</span>
+        <span>{t('status')}</span>
+        <span className="text-right">{t('invoice')}</span>
       </div>
 
       {/* TABLE LIST */}
@@ -128,7 +128,7 @@ function PaymentsSection({ currency, onDownload }: { currency: string; onDownloa
             ))}
           </>
         ) : payments.length === 0 ? (
-          <div className="py-8 text-center text-xs text-[#666]">{t('noPaymentsYet') || 'No payments yet.'}</div>
+          <div className="py-8 text-center text-xs text-[#666]">{t('noPaymentsYet')}</div>
         ) : (
           payments.map((payment, i) => (
             <PaymentRow key={payment.id || i} payment={payment} currency={currency} onDownload={onDownload} t={t} />
@@ -144,7 +144,7 @@ function PaymentsSection({ currency, onDownload }: { currency: string; onDownloa
         pageSize={PAYMENTS_PER_PAGE}
         onPageChange={setPage}
         loading={loading}
-        itemName={t('payments') || "payments"}
+        itemName={t('payments')}
       />
     </div>
   );
@@ -167,32 +167,32 @@ function PaymentRow({ payment, currency, onDownload, t }: { payment: any; curren
   return (
     <div className="group grid grid-cols-1 gap-4 px-5 py-5 transition hover:bg-white/[0.015] md:grid-cols-[1.8fr_1fr_1.5fr_1fr_1fr_70px] md:items-center">
       <div className="min-w-0">
-        <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{t('paymentId') || 'Payment ID'}</p>
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{t('paymentId')}</p>
         <span className="block truncate font-mono text-xs text-white/35">
           {payment.id}
         </span>
       </div>
       <div className="min-w-0">
-        <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{t('date') || 'Date'}</p>
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{t('date')}</p>
         <span className="text-xs text-white/35">
           {new Date(payment.createdAt || payment.date).toLocaleDateString()}
         </span>
       </div>
       <div className="min-w-0">
-        <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{t('plan') || 'Plan'}</p>
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{t('plan')}</p>
         <span className="truncate text-xs font-medium text-white/70">
           {payment.plan?.name || payment.planId || payment.plan}
         </span>
       </div>
       <div className="min-w-0">
-        <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{t('amount') || 'Amount'}</p>
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{t('amount')}</p>
         <span className="text-xs font-medium text-white/70">
           {payment.amount?.toFixed ? payment.amount.toFixed(2) : payment.amount}
           <span className="ml-1 text-white/25">{payment.currency || currency}</span>
         </span>
       </div>
       <div className="min-w-0">
-        <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{t('status') || 'Status'}</p>
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{t('status')}</p>
         <PaymentStatus status={payment.status} t={t} />
       </div>
       <div className="min-w-0 md:text-right">
@@ -233,7 +233,7 @@ function PaymentStatus({ status, t }: { status: string; t?: any }) {
 
   return (
     <span className={`inline-flex w-fit rounded border px-2 py-1 text-xs font-medium uppercase ${styles}`}>
-      {t ? (t(`status${normStatus.charAt(0) + normStatus.slice(1).toLowerCase()}`) || normStatus) : normStatus}
+      {t ? t(`status${normStatus.charAt(0) + normStatus.slice(1).toLowerCase()}`) : normStatus}
     </span>
   );
 }

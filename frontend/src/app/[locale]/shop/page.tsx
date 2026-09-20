@@ -117,22 +117,22 @@ export default function StorePage() {
 
           {/* Main Content */}
           <div className="flex-1 min-w-0 w-full">
-            {activeTab === "items" && (
+            <div className={activeTab === "items" ? "block" : "hidden"}>
               <ShopItemsView
                 items={items}
                 buying={buying ? purchaseItem?.key : null}
                 onBuy={openDrawer}
               />
-            )}
+            </div>
 
-            {activeTab === "plans" && (
+            <div className={activeTab === "plans" ? "block" : "hidden"}>
               <PlansView
                 plans={plans}
                 activePlans={activePlans}
                 currency={currency}
                 onPurchasePlan={(plan) => { setSelectedPlan(plan); setShowCouponModal(true); }}
               />
-            )}
+            </div>
           </div>
         </div>
       </div>

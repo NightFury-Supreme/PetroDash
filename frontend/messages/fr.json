@@ -348,7 +348,7 @@
   },
   "UI": {
     "system": "Système",
-    "statusCode": "Code d'état",
+    "statusCode": "Status Code",
     "changed": "Modifié",
     "created": "Créé",
     "date": "Date",
@@ -366,7 +366,20 @@
       "error": "Error",
       "warning": "Warning",
       "info": "Info"
-    }
+    },
+    "requestInformation": "Request Information",
+    "requestId": "Request ID",
+    "sessionId": "Session ID",
+    "ipAddress": "IP Address",
+    "category": "Category",
+    "method": "Method",
+    "path": "Path",
+    "targetUser": "Target User",
+    "targetServer": "Target Server",
+    "targetTicket": "Target Ticket",
+    "resource": "Resource",
+    "valueChanges": "Value Changes",
+    "additionalInfo": "Additional Info"
   },
   "Panel": {
     "controlPanel": "Panneau de Contrôle",
@@ -738,7 +751,7 @@
     "user": "Utilisateur",
     "password": "Mot de passe",
     "email": "Adresse e-mail",
-    "success": "Succès",
+    "success": "SUCCESS",
     "active": "Actif",
     "pending": "En attente",
     "resource": "Ressource",
@@ -751,7 +764,17 @@
     "server": "Serveur",
     "ticket": "Ticket",
     "item": "Article",
-    "code": "Code"
+    "code": "Code",
+    "coins": "Coins",
+    "maxRedemptions": "Max Redemptions",
+    "validUntil": "Valid Until",
+    "referralCode": "Referral Code",
+    "failed": "FAILED",
+    "system": "System",
+    "emailLabel": "Adresse e-mail",
+    "emailPlaceholder": "vous@exemple.com",
+    "passwordLabel": "Mot de passe",
+    "passwordPlaceholder": "••••••••"
   },
   "Profile": {
     "overview": "Aperçu",
@@ -905,7 +928,8 @@
     "placeholderBackup": "a1b2c3d4",
     "placeholderNewEmail": "nouveau@example.com",
     "placeholderA1B2C3D4": "A1B2C3D4",
-    "placeholder12345678": "12345678"
+    "placeholder12345678": "12345678",
+    "verified": "Vérifié"
   },
   "ActivityLog": {
     "admin": {

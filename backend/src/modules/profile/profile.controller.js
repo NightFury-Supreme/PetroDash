@@ -16,8 +16,7 @@ exports.updateProfile = async (req, res, next) => {
     
     res.json({ ok: true });
   } catch (err) {
-    if (err.code) next(AppError.badRequest(err.message, null, err.code));
-    else next(err);
+    next(err);
   }
 };
 
@@ -36,8 +35,7 @@ exports.initiateEmailChange = async (req, res, next) => {
     
     res.json({ ok: true, requiresVerification: true, message: 'Verification code sent to new email' });
   } catch (err) {
-    if (err.code) next(AppError.badRequest(err.message, null, err.code));
-    else next(err);
+    next(err);
   }
 };
 
@@ -54,8 +52,7 @@ exports.verifyEmailChange = async (req, res, next) => {
     
     res.json({ ok: true, email: user.email });
   } catch (err) {
-    if (err.code) next(AppError.badRequest(err.message, null, err.code));
-    else next(err);
+    next(err);
   }
 };
 
@@ -72,8 +69,7 @@ exports.updatePassword = async (req, res, next) => {
     
     res.json({ ok: true });
   } catch (err) {
-    if (err.code) next(AppError.badRequest(err.message, null, err.code));
-    else next(err);
+    next(err);
   }
 };
 
@@ -82,8 +78,7 @@ exports.setup2FA = async (req, res, next) => {
     const result = await profileService.setup2FA(req.user.sub);
     res.json({ ok: true, secret: result.secret, qr: result.qr });
   } catch (err) {
-    if (err.code) next(AppError.badRequest(err.message, null, err.code));
-    else next(err);
+    next(err);
   }
 };
 
@@ -99,8 +94,7 @@ exports.verify2FA = async (req, res, next) => {
     
     res.json({ ok: true, backupCodes });
   } catch (err) {
-    if (err.code) next(AppError.badRequest(err.message, null, err.code));
-    else next(err);
+    next(err);
   }
 };
 
@@ -116,14 +110,13 @@ exports.disable2FA = async (req, res, next) => {
     
     res.json({ ok: true });
   } catch (err) {
-    if (err.code) next(AppError.badRequest(err.message, null, err.code));
-    else next(err);
+    next(err);
   }
 };
 
 exports.getSessions = async (req, res, next) => {
   try {
-    const sessions = await profileService.getSessions(req.user.sub, req.session?.id);
+    const sessions = await profileService.getSessions(req.user.sub, req.user.sessionId);
     res.json({ ok: true, sessions });
   } catch (err) {
     next(err);
@@ -132,15 +125,14 @@ exports.getSessions = async (req, res, next) => {
 
 exports.revokeSession = async (req, res, next) => {
   try {
-    await profileService.revokeSession(req.user.sub, req.params.id, req.session?.id);
+    await profileService.revokeSession(req.user.sub, req.params.id, req.user.sessionId);
     
     await logUserActivity(req, 'auth.session.revoke', { sessionId: req.params.id });
     await writeAudit(req, 'auth.session.revoke', 'user_profile', req.user.sub, { sessionId: req.params.id });
     
     res.json({ ok: true });
   } catch (err) {
-    if (err.code) next(AppError.badRequest(err.message, null, err.code));
-    else next(err);
+    next(err);
   }
 };
 
@@ -156,7 +148,6 @@ exports.deleteAccount = async (req, res, next) => {
     
     res.json({ ok: true });
   } catch (err) {
-    if (err.code) next(AppError.badRequest(err.message, null, err.code));
-    else next(err);
+    next(err);
   }
 };

@@ -13,6 +13,7 @@ import { useToast } from "@/components/ui/ToastProvider";
 import type { GiftCode, TabStatus } from "../types";
 
 const CODES_PER_PAGE = 10;
+const globalCache: Record<string, any> = {};
 
 interface UseGiftCodesResult {
   codes: GiftCode[];
@@ -31,7 +32,7 @@ interface UseGiftCodesResult {
   onInitialLoad: () => void;
 }
 
-export function useGiftCodes(): UseGiftCodesResult {
+export function useGiftCodes(initialTab: TabStatus = "Active"): UseGiftCodesResult {
   const t = useTranslations("Gift");
   const tError = useTranslations("BackendErrors");
   const { showError } = useToast();
@@ -39,7 +40,7 @@ export function useGiftCodes(): UseGiftCodesResult {
   const [codes, setCodes] = useState<GiftCode[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [activeTab, setActiveTab] = useState<TabStatus>("Active");
+  const [activeTab, setActiveTab] = useState<TabStatus>(initialTab);
   
   const [totalCodes, setTotalCodes] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -50,7 +51,18 @@ export function useGiftCodes(): UseGiftCodesResult {
 
   const fetchCodes = useCallback(async () => {
     try {
-      setLoading(true);
+      const cacheKey = `${activeTab}-${page}`;
+      if (globalCache[cacheKey]) {
+        setCodes(globalCache[cacheKey].codes);
+        setTotalCodes(globalCache[cacheKey].totalCodes);
+        setTotalPages(globalCache[cacheKey].totalPages);
+        setActiveCount(globalCache[cacheKey].activeCount);
+        setInactiveCount(globalCache[cacheKey].inactiveCount);
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
+
       const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
       if (!token) return;
 
@@ -64,11 +76,19 @@ export function useGiftCodes(): UseGiftCodesResult {
       try { d = await res.json(); } catch { /* ignore parse errors */ }
 
       if (d.data) {
-        setCodes(d.data);
-        setTotalCodes(d.meta?.total || 0);
-        setTotalPages(Math.max(1, Math.ceil((d.meta?.total || 0) / CODES_PER_PAGE)));
-        setActiveCount(d.meta?.activeCount || 0);
-        setInactiveCount(d.meta?.inactiveCount || 0);
+        const result = {
+          codes: d.data,
+          totalCodes: d.meta?.total || 0,
+          totalPages: Math.max(1, Math.ceil((d.meta?.total || 0) / CODES_PER_PAGE)),
+          activeCount: d.meta?.activeCount || 0,
+          inactiveCount: d.meta?.inactiveCount || 0
+        };
+        globalCache[cacheKey] = result;
+        setCodes(result.codes);
+        setTotalCodes(result.totalCodes);
+        setTotalPages(result.totalPages);
+        setActiveCount(result.activeCount);
+        setInactiveCount(result.inactiveCount);
       } else if (Array.isArray(d)) {
         setCodes(d);
       } else if (!res.ok) {
@@ -100,6 +120,26 @@ export function useGiftCodes(): UseGiftCodesResult {
 
   useEffect(() => {
     fetchCodes();
+
+    // Silently preload Inactive tab
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+    if (token && !globalCache[`Inactive-1`]) {
+      fetchWithRetry(
+        `${process.env.NEXT_PUBLIC_API_BASE ?? ""}/api/gifts/mine?paginate=true&page=1&pageSize=${CODES_PER_PAGE}&status=inactive`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      ).then(async (res) => {
+         const d = await res.json();
+         if (d.data) {
+           globalCache[`Inactive-1`] = {
+             codes: d.data,
+             totalCodes: d.meta?.total || 0,
+             totalPages: Math.max(1, Math.ceil((d.meta?.total || 0) / CODES_PER_PAGE)),
+             activeCount: d.meta?.activeCount || 0,
+             inactiveCount: d.meta?.inactiveCount || 0
+           };
+         }
+      }).catch(() => {});
+    }
   }, [fetchCodes]);
 
   const triggerInitialLoad = useCallback(() => {

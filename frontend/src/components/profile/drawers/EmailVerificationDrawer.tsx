@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 
 import React, { useState } from 'react';
@@ -53,35 +52,35 @@ export function EmailVerificationDrawer({ isOpen,
   };
 
   const resendLabel = (() => {
-    if (resendLoading) return t('sending') || 'Sending...';
+    if (resendLoading) return t('sending');
     if (rateLimit > 0) {
       const mins = Math.floor(rateLimit / 60);
       const secs = rateLimit % 60;
-      return `${t('resendIn') || 'Resend in'} ${mins > 0 ? `${mins}m ` : ''}${secs}s`;
+      return `${t('resendIn')} ${mins > 0 ? `${mins}m ` : ''}${secs}s`;
     }
-    return t('resendCode') || 'Resend Code';
+    return t('resendCode');
   })();
 
   return (
-    <Drawer isOpen={isOpen} onClose={handleClose} title={t('verifyEmailTitle') || "Verify Email"} subtitle={t('verifyEmailSubtitle') || "Enter the 8-digit verification code."} icon={<Mail className="text-emerald-500" size={20} />}>
+    <Drawer isOpen={isOpen} onClose={handleClose} title={t('verifyEmailTitle')} subtitle={t('verifyEmailSubtitle')} icon={<Mail className="text-emerald-500" size={20} />}>
       <div className="grid gap-6 mt-2">
         <div className="flex items-center justify-between bg-[#161616] border border-[#222] rounded-lg p-3">
           <div className="text-[13px] text-left truncate pr-2">
-            <span className="text-[#888] block text-[10px] uppercase tracking-wider mb-0.5">{t('emailAddress') || 'Email Address'}</span>
-            <span className="font-medium text-white">{email || (t('yourEmail') || 'your email')}</span>
+            <span className="text-[#888] block text-[10px] uppercase tracking-wider mb-0.5">{t('emailAddress')}</span>
+            <span className="font-medium text-white">{email || t('yourEmail')}</span>
           </div>
           {onChangeEmail && (
             <button type="button" onClick={onChangeEmail} className="shrink-0 px-3 py-1.5 bg-[#222] hover:bg-[#333] border border-[#333] rounded-md text-[11px] font-medium text-[#aaa] hover:text-white transition-colors">
-              {t('editEmail') || 'Edit'}
+              {t('editEmail')}
             </button>
           )}
         </div>
         <p className="text-[13px] text-[#888] leading-relaxed -mt-3">
-          {t('codeSentDesc') || 'We sent a verification code to your email. Please enter it below.'}
+          {t('codeSentDesc')}
         </p>
 
         <div>
-          <label className="block text-[11px] uppercase tracking-wider text-[#888] mb-2 font-medium">{t('verificationCode') || 'Verification Code'}</label>
+          <label className="block text-[11px] uppercase tracking-wider text-[#888] mb-2 font-medium">{t('verificationCode')}</label>
           <input 
             type="text" 
             maxLength={8} 
@@ -89,7 +88,7 @@ export function EmailVerificationDrawer({ isOpen,
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} 
             disabled={isLoading}
             className={`w-full h-11 rounded-lg border bg-[#161616] px-4 text-[14px] text-white outline-none focus:border-[#FF5722] transition-colors tracking-[0.2em] font-mono text-center disabled:opacity-50 border-[#222]`} 
-            placeholder={t('placeholder12345678') || "12345678"} 
+            placeholder={t('placeholder12345678')} 
           />
           <div className="mt-2 flex items-center justify-end">
             <button 
@@ -122,7 +121,7 @@ export function EmailVerificationDrawer({ isOpen,
         <div className="mt-4 flex justify-end gap-3">
           <button type="button" onClick={handleClose} disabled={isLoading} className="flex h-11 items-center justify-center rounded-lg border border-[#222] px-6 text-[13px] font-medium text-[#888] hover:bg-[#161616] hover:text-[#D4D4D4] transition-colors disabled:opacity-50 bg-transparent">{t('cancel')}</button>
           <button type="button" onClick={handleVerify} disabled={isLoading || code.length !== 8} className={`flex h-11 items-center justify-center gap-2 rounded-lg px-6 text-[13px] font-medium transition-colors disabled:cursor-not-allowed ${(isLoading || code.length !== 8) ? 'bg-[#333] text-[#888]' : 'bg-[#FF5722] hover:bg-[#F4511E] text-white'}`}>
-            {isLoading ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : (t('verify') || "Verify")}
+            {isLoading ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : t('verify')}
           </button>
         </div>
       </div>

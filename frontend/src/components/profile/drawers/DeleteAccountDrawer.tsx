@@ -1,5 +1,4 @@
 import { Trash2 } from 'lucide-react';
-import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 
 import React, { useState } from 'react';
@@ -52,34 +51,34 @@ const [password, setPassword] = useState('');
   };
 
   return (
-    <Drawer isOpen={isOpen} onClose={handleClose} title={t('deleteAccount')} subtitle={t('deleteAccountDesc') || "Permanently remove your account and all associated data."} icon={<AlertTriangle className="text-red-500" size={20} />}>
+    <Drawer isOpen={isOpen} onClose={handleClose} title={t('deleteAccount')} subtitle={t('deleteAccountDesc')} icon={<AlertTriangle className="text-red-500" size={20} />}>
       <div className="grid gap-6 mt-2">
         <div className="space-y-4 text-[13px] text-[#A0A0A0] leading-relaxed">
           <p>
-            {t('deleteWarning1') || "Once you delete your account, there is no going back. Your servers, settings, and remaining coin balance will be permanently erased."}
+            {t('deleteWarning1')}
           </p>
           <p>
-            {t('deleteWarning2') || "It is recommended that you download any files you wish to keep from your servers."}
+            {t('deleteWarning2')}
           </p>
           <p>
-            {t('deleteWarning3') || "All related subscriptions will stop, and your invoices and billing history will no longer be accessible after deletion. Download any you need from the Invoices tab first."}
+            {t('deleteWarning3')}
           </p>
         </div>
 
         <div className="rounded-lg bg-[#3A1414] p-3 text-[#E5484D] text-[13px]">
-          {t('deleteIrreversible') || "This action is not reversible. Please be certain."}
+          {t('deleteIrreversible')}
         </div>
 
         {loginMethod === 'email' && (
           <div>
-            <label className="block text-[11px] uppercase tracking-wider text-[#888] mb-2 font-medium">{t('confirmPassword') || 'Confirm Password'}</label>
+            <label className="block text-[11px] uppercase tracking-wider text-[#888] mb-2 font-medium">{t('confirmPassword')}</label>
             <input 
               type="password" 
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
               disabled={isLoading}
               className="w-full h-11 rounded-lg border border-[#222] bg-[#161616] px-4 text-[13px] text-white outline-none focus:border-red-500/50 transition-colors disabled:opacity-50" 
-              placeholder={t('placeholderPassword') || "••••••••"} 
+              placeholder={t('placeholderPassword')} 
             />
           </div>
         )}
@@ -87,9 +86,9 @@ const [password, setPassword] = useState('');
         {tfaEnabled && (
           <div>
             <div className="flex justify-between items-end mb-2">
-              <label className="block text-[11px] uppercase tracking-wider text-[#888] font-medium">{useBackupCode ? (t('backupCode') || 'Backup Code') : (t('tfaCode') || '2FA Code')}</label>
+              <label className="block text-[11px] uppercase tracking-wider text-[#888] font-medium">{useBackupCode ? t('backupCode') : t('tfaCode')}</label>
               <button type="button" onClick={() => { setUseBackupCode(!useBackupCode); setTfaCode(''); }} className="text-[12px] font-medium text-red-400 hover:text-red-300 transition-colors">
-                {useBackupCode ? (t('use2faCode') || 'Use 2FA Code') : (t('useBackupCode') || 'Use Backup Code')}
+                {useBackupCode ? t('use2faCode') : t('useBackupCode')}
               </button>
             </div>
             <input 
@@ -99,20 +98,20 @@ const [password, setPassword] = useState('');
               onChange={(e) => setTfaCode(e.target.value.replace(useBackupCode ? /[^0-9a-fA-F]/g : /\D/g, ''))} 
               disabled={isLoading}
               className="w-full h-11 rounded-lg border border-[#222] bg-[#161616] px-4 text-[14px] text-white outline-none focus:border-red-500/50 transition-colors tracking-[0.2em] font-mono text-center disabled:opacity-50" 
-              placeholder={useBackupCode ? (t('placeholderBackup') || "a1b2c3d4") : (t('placeholder123456') || "123456")} 
+              placeholder={useBackupCode ? t('placeholderBackup') : t('placeholder123456')} 
             />
           </div>
         )}
 
         <div>
-          <label className="block text-[11px] uppercase tracking-wider text-[#888] mb-2 font-medium">{t('typeDeleteAccount') || 'Type "delete my account" to confirm'}</label>
+          <label className="block text-[11px] uppercase tracking-wider text-[#888] mb-2 font-medium">{t('typeDeleteAccount')}</label>
           <input 
             type="text" 
             value={confirmPhrase} 
             onChange={(e) => setConfirmPhrase(e.target.value)} 
             disabled={isLoading}
             className="w-full h-11 rounded-lg border border-[#222] bg-[#161616] px-4 text-[13px] text-white outline-none focus:border-red-500/50 transition-colors disabled:opacity-50" 
-            placeholder={t('deleteMyAccount') || "delete my account"} 
+            placeholder={t('deleteMyAccount')} 
           />
         </div>
 
@@ -121,14 +120,14 @@ const [password, setPassword] = useState('');
           <button 
             type="button" 
             onClick={handleDelete} 
-            disabled={isLoading || confirmPhrase.toLowerCase() !== (t('deleteMyAccount') || 'delete my account').toLowerCase() || (loginMethod === 'email' && !password) || (tfaEnabled && (useBackupCode ? tfaCode.length !== 8 : tfaCode.length !== 6))}
+            disabled={isLoading || confirmPhrase.toLowerCase() !== t('deleteMyAccount').toLowerCase() || (loginMethod === 'email' && !password) || (tfaEnabled && (useBackupCode ? tfaCode.length !== 8 : tfaCode.length !== 6))}
             className={`flex h-11 items-center justify-center gap-2 rounded-lg px-6 text-[13px] font-medium transition-colors disabled:cursor-not-allowed ${
-              (isLoading || confirmPhrase.toLowerCase() !== (t('deleteMyAccount') || 'delete my account').toLowerCase() || (loginMethod === 'email' && !password) || (tfaEnabled && (useBackupCode ? tfaCode.length !== 8 : tfaCode.length !== 6))) ? 'bg-[#333] text-[#888]' : 
+              (isLoading || confirmPhrase.toLowerCase() !== t('deleteMyAccount').toLowerCase() || (loginMethod === 'email' && !password) || (tfaEnabled && (useBackupCode ? tfaCode.length !== 8 : tfaCode.length !== 6))) ? 'bg-[#333] text-[#888]' : 
               'bg-red-500 hover:bg-red-600 text-white'
             }`}
           >
             {isLoading ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : <Trash2 size={15} />}
-            {t('deleteAccountButton') || "Delete account"}
+            {t('deleteAccountButton')}
           </button>
         </div>
       </div>

@@ -52,7 +52,7 @@ export function Overview({
             icon={form.profilePicture ? <img src={form.profilePicture} alt="Avatar" className="h-full w-full object-cover rounded-lg" /> : <Camera size={14} />}
             label={t('avatarUrl')}
             description={t('avatarUrlDesc')}
-            value={form.profilePicture ? <span className="truncate max-w-[220px] inline-block align-bottom">{form.profilePicture}</span> : t('notSet') || 'Not set'}
+            value={form.profilePicture ? <span className="truncate max-w-[220px] inline-block align-bottom">{form.profilePicture}</span> : t('notSet')}
             editing={editingAvatar}
             draft={avatarDraft}
             forceUnchanged={avatarDraft.trim() === (form.profilePicture || '')}
@@ -72,17 +72,17 @@ export function Overview({
                 autoFocus
                 value={avatarDraft}
                 onChange={(e) => setAvatarDraft(e.target.value)}
-                placeholder={t('placeholderAvatarUrl') || "https://example.com/avatar.png"}
+                placeholder={t('placeholderAvatarUrl')}
                 className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all border-[#FF5722]/50 focus:ring-[#FF5722]/50"
               />
             }
           />
-          <InfoRow icon={<User size={14} />} label={t('username')} description={t('usernameDesc')} value={form.username || t('notSet') || 'Not set'} editing={editing === "username"} draft={draft} field="username" onEdit={() => onEdit("username")} onDraft={onDraft} onSave={onSave} onCancel={onCancel} />
+          <InfoRow icon={<User size={14} />} label={t('username')} description={t('usernameDesc')} value={form.username || t('notSet')} editing={editing === "username"} draft={draft} field="username" onEdit={() => onEdit("username")} onDraft={onDraft} onSave={onSave} onCancel={onCancel} />
           <InfoRow 
             icon={<User size={14} />} 
             label={t('fullName')} 
             description={t('fullNameDesc')} 
-            value={`${form.firstName || ''} ${form.lastName || ''}`.trim() || t('notSet') || 'Not set'} 
+            value={`${form.firstName || ''} ${form.lastName || ''}`.trim() || t('notSet')} 
             editing={editing === "name"} 
             field="name"
             draft={draft}
@@ -100,7 +100,7 @@ export function Overview({
             icon={<Mail size={14} />} 
             label={t('emailAddress')} 
             description={t('emailAddressDesc')} 
-            value={form.email || t('notSet') || 'Not set'} 
+            value={form.email || t('notSet')} 
 
             onEdit={onChangeEmail} 
             status={form.emailVerified ? <ShieldCheck size={16} className="text-emerald-400 shrink-0" /> : (form.emailVerification !== false ? <AlertCircle size={16} className="text-[#FF5722] shrink-0" /> : undefined)} 
