@@ -205,7 +205,7 @@ export function TicketDetailComposer({
                       <FileText size={14} className="text-emerald-400" />
                       <div className="flex flex-col">
                         <span className="text-xs font-medium text-white/80">Invoice #{p._id.slice(-6).toUpperCase()}</span>
-                        <span className="text-[10px] text-white/40">{p.amount} {p.currency || currency} • {new Date(p.createdAt).toLocaleDateString()}</span>
+                        <span className="text-[10px] text-white/40">{p.amount} {p.currency || currency} • {new Date(p.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
                       </div>
                     </button>
                   ))}

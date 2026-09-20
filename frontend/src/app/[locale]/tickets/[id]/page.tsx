@@ -157,8 +157,8 @@ export default function TicketDetailPage() {
   const status       = ticket.status;
   const replyAllowed = status === 'open' || status === 'pending';
   const username     = ticket.user?.username || ticket.user?.email || t('you');
-  const createdDate  = new Date(ticket.createdAt).toLocaleDateString(locale, {
-    day: 'numeric', month: 'short', year: 'numeric',
+  const createdDate  = new Date(ticket.createdAt).toLocaleDateString('en-GB', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
   });
 
   const adminsInvolved = Array.from(new Set(

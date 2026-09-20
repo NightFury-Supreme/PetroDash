@@ -33,7 +33,7 @@ export function formatRelative(dateStr: string): string {
     const days = Math.floor(hrs / 24);
     if (days === 1) return 'Yesterday';
     if (days < 7)   return `${days} days ago`;
-    return new Date(dateStr).toLocaleDateString();
+    return new Date(dateStr).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
   } catch {
     return dateStr;
   }

@@ -88,8 +88,8 @@ export function TicketDetailConversation({
           const isInternal = msg.internal || msg.isInternal || false;
           const avatarUrl = authorObj?.profilePicture || null;
 
-          const msgDate = new Date(msg.createdAt).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
-          const prevMsgDate = i > 0 ? new Date(messages[i-1].createdAt).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' }) : null;
+          const msgDate = new Date(msg.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+          const prevMsgDate = i > 0 ? new Date(messages[i-1].createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : null;
           const showDateDivider = msgDate !== prevMsgDate;
 
           return (
