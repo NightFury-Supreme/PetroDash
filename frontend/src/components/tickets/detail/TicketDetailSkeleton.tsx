@@ -1,8 +1,6 @@
 import React from 'react';
-import { useTranslations } from 'next-intl';
 
 export function TicketDetailSkeleton() {
-  const t = useTranslations('Tickets');
   return (
     <div className="flex-1 relative bg-[#0F0F0F]">
       <div className="absolute inset-0 pt-4 sm:pt-6 px-4 sm:px-6 flex flex-col overflow-hidden">
@@ -101,50 +99,52 @@ export function TicketDetailSkeleton() {
             <div className="w-full lg:w-[380px] shrink-0 overflow-y-auto min-h-0 pr-2">
               <aside className="flex w-full flex-col bg-[#0F0F0F] p-2 sm:p-4">
                 <div>
-                  <h3 className="mb-5 text-sm font-semibold text-white/90">{t('overview')}</h3>
+                  <div className="h-5 w-20 rounded bg-[#2A2A2A] mb-5 animate-pulse" />
                   <div className="flex flex-col gap-5">
                     
                     {/* Priority */}
                     <div className="border-b border-white/[0.06] pb-4">
-                      <span className="flex items-center gap-1.5 text-sm font-medium text-white/50 mb-2">
-                        {t('priority')}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-white/20 animate-pulse" />
+                      <div className="flex items-center gap-1.5 mb-2">
                         <div className="h-4 w-16 rounded bg-[#202020] animate-pulse" />
+                        <div className="h-3.5 w-3.5 rounded-full bg-[#202020] animate-pulse" />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-white/10 animate-pulse" />
+                        <div className="h-4 w-12 rounded bg-[#202020] animate-pulse" />
                       </div>
                     </div>
 
                     {/* Status */}
                     <div className="border-b border-white/[0.06] pb-4">
-                      <span className="flex items-center gap-1.5 text-sm font-medium text-white/50 mb-2">
-                        {t('status')}
-                      </span>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <div className="h-4 w-14 rounded bg-[#202020] animate-pulse" />
+                        <div className="h-3.5 w-3.5 rounded-full bg-[#202020] animate-pulse" />
+                      </div>
                       <div className="flex items-center gap-2">
-                        <span className="h-4 w-4 rounded-full bg-emerald-500/20 animate-pulse" />
-                        <div className="h-4 w-16 rounded bg-emerald-400/20 animate-pulse" />
+                        <span className="h-4 w-4 rounded-full bg-[#202020] animate-pulse" />
+                        <div className="h-4 w-16 rounded bg-[#202020] animate-pulse" />
                       </div>
                     </div>
 
                     {/* Metadata */}
                     <div className="border-b border-white/[0.06] pb-4 flex flex-col gap-3">
                       {[
-                        { label: t('category'), w: 'w-16' },
-                        { label: t('ticketId'), w: 'w-20' },
-                        { label: t('admins'), w: 'w-24' },
-                        { label: t('created'), w: 'w-24' },
-                        { label: t('updated'), w: 'w-20' },
+                        { lw: 'w-16', rw: 'w-16' },
+                        { lw: 'w-20', rw: 'w-20' },
+                        { lw: 'w-16', rw: 'w-24' },
+                        { lw: 'w-20', rw: 'w-24' },
+                        { lw: 'w-20', rw: 'w-20' },
                       ].map((row, idx) => (
-                        <div key={idx} className="flex justify-between items-center text-sm">
-                          <span className="text-white/40">{row.label}</span>
-                          <div className={`h-4 ${row.w} rounded bg-[#202020] animate-pulse`} />
+                        <div key={idx} className="flex justify-between items-center">
+                          <div className={`h-4 ${row.lw} rounded bg-[#202020] animate-pulse`} />
+                          <div className={`h-4 ${row.rw} rounded bg-[#202020] animate-pulse`} />
                         </div>
                       ))}
                     </div>
 
                     {/* Action Button */}
                     <div className="flex flex-col gap-2">
-                      <div className="h-[34px] w-full rounded-lg border border-[#FF5722]/25 bg-[#FF5722]/[0.06] animate-pulse" />
+                      <div className="h-[34px] w-full rounded-lg bg-[#202020] animate-pulse" />
                     </div>
 
                   </div>
