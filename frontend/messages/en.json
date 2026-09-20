@@ -775,7 +775,12 @@
     "back": "Back",
     "unknown": "Unknown",
     "delete": "Delete",
-    "deviceBrowser": "Device / Browser"
+    "deviceBrowser": "Device / Browser",
+    "plan": "Plan",
+    "server": "Server",
+    "ticket": "Ticket",
+    "item": "Item",
+    "code": "Code"
   },
   "Profile": {
     "overview": "Overview",
@@ -1059,6 +1064,9 @@
       },
       "session": {
         "revoke": "Revoke Session"
+      },
+      "profile": {
+        "update": "Update Profile"
       }
     },
     "earn": {
@@ -1084,7 +1092,8 @@
       }
     },
     "gift": {
-      "redeem": "Redeem Gift"
+      "redeem": "Redeem Gift",
+      "create": "Create Gift"
     },
     "payment": {
       "purchase": {
@@ -1108,6 +1117,11 @@
       "create": "Create Ticket",
       "reply": "Reply to Ticket",
       "status_change": "Change Ticket Status"
+    },
+    "panel": {
+      "password": {
+        "reset": "Reset Panel Password"
+      }
     }
   }
 }

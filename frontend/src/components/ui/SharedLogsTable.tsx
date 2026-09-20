@@ -98,20 +98,20 @@ const CONTEXT_LABELS: Record<string, string> = {
 
 
 
-function parseUserAgent(ua?: string): string {
-  if (!ua) return 'Unknown';
+function parseUserAgent(ua?: string, unknownLabel: string = 'Unknown'): string {
+  if (!ua) return unknownLabel;
 
   const browsers: [string, string][] = [
     ['Edge', 'Edge'], ['Firefox', 'Firefox'],
-    ['Chrome', 'Chrome'], ['Safari', 'Safari'],
+    ['Chrome', 'Chrome'], ['Safari', 'Safari'], ['Opera', 'Opera'],
   ];
   const oses: [string, string][] = [
     ['Windows', 'Windows'], ['Android', 'Android'],
     ['iOS', 'iOS'], ['Mac OS', 'macOS'], ['Linux', 'Linux'],
   ];
 
-  const browser = browsers.find(([token]) => ua.includes(token))?.[1] ?? 'Unknown';
-  const os      = oses.find(([token]) => ua.includes(token))?.[1]      ?? 'Unknown';
+  const browser = browsers.find(([token]) => ua.includes(token))?.[1] ?? unknownLabel;
+  const os      = oses.find(([token]) => ua.includes(token))?.[1]      ?? unknownLabel;
 
   return `${os} • ${browser}`;
 }
@@ -395,7 +395,7 @@ function MetaViewer({ data }: { data: Record<string, unknown> }) {
 // Row sub-components
 // ─────────────────────────────────────────────────────────────────────────────
 
-function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; meta: LogMeta }) {
+function ActionCell({ log, variant, meta, tCommon }: { log: LogEntry; variant: Variant; meta: LogMeta; tCommon: any }) {
   const tActivity = useTranslations('ActivityLog');
   
   const actionLabel = tActivity.has(log.action) ? tActivity(log.action) : getActionLabel(log.action);
@@ -453,7 +453,15 @@ function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; m
 
   // User: show action name + context hint from metadata
   const ctxKey = CONTEXT_META_KEYS.find(k => meta[k]);
-  const ctx    = ctxKey ? `${CONTEXT_LABELS[ctxKey]}: ${meta[ctxKey]}` : null;
+  
+  let translatedCtxLabel = ctxKey ? CONTEXT_LABELS[ctxKey] : null;
+  if (ctxKey === 'serverName') translatedCtxLabel = tCommon('server') || 'Server';
+  if (ctxKey === 'planName') translatedCtxLabel = tCommon('plan') || 'Plan';
+  if (ctxKey === 'subject') translatedCtxLabel = tCommon('ticket') || 'Ticket';
+  if (ctxKey === 'itemName') translatedCtxLabel = tCommon('item') || 'Item';
+  if (ctxKey === 'code') translatedCtxLabel = tCommon('code') || 'Code';
+
+  const ctx = ctxKey ? `${translatedCtxLabel}: ${meta[ctxKey]}` : null;
 
   return (
     <div className="min-w-0">
@@ -603,14 +611,14 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
                 onKeyDown={e => e.key === 'Enter' && toggle(log._id)}
               >
                 {/* Action */}
-                <ActionCell log={log} variant={variant} meta={meta} />
+                <ActionCell log={log} variant={variant} meta={meta} tCommon={tCommon} />
 
                 {/* Device / IP */}
                 <div className="min-w-0">
                   <p className="mb-1 text-[9px] uppercase tracking-wider text-white/30 md:hidden">{t('device')}</p>
-                  <div className="text-[11px] text-white/65 font-mono truncate">{ip ?? '—'}</div>
+                  <div className="text-[11px] text-white/65 font-mono truncate">{ip ?? '-'}</div>
                   <div className="mt-0.5 text-[10px] text-white/40">
-                    {parseUserAgent(log.userAgent ?? meta.userAgent)}
+                    {parseUserAgent(log.userAgent ?? meta.userAgent, tCommon('unknown') || 'Unknown')}
                   </div>
                 </div>
 

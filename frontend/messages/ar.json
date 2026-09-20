@@ -763,7 +763,12 @@
     "back": "رجوع",
     "unknown": "غير معروف",
     "delete": "حذف",
-    "deviceBrowser": "الجهاز / المتصفح"
+    "deviceBrowser": "الجهاز / المتصفح",
+    "plan": "خطة",
+    "server": "خادم",
+    "ticket": "تذكرة",
+    "item": "عنصر",
+    "code": "رمز"
   },
   "Profile": {
     "overview": "Overview",
@@ -1047,6 +1052,9 @@
       },
       "session": {
         "revoke": "إبطال الجلسة"
+      },
+      "profile": {
+        "update": "تحديث الملف الشخصي"
       }
     },
     "earn": {
@@ -1072,7 +1080,8 @@
       }
     },
     "gift": {
-      "redeem": "استرداد الهدية"
+      "redeem": "استرداد الهدية",
+      "create": "إنشاء هدية"
     },
     "payment": {
       "purchase": {
@@ -1096,6 +1105,11 @@
       "create": "إنشاء تذكرة",
       "reply": "الرد على التذكرة",
       "status_change": "تغيير حالة التذكرة"
+    },
+    "panel": {
+      "password": {
+        "reset": "إعادة تعيين كلمة مرور اللوحة"
+      }
     }
   }
 }

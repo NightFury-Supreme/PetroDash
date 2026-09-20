@@ -746,7 +746,12 @@
     "back": "Retour",
     "unknown": "Inconnu",
     "delete": "Supprimer",
-    "deviceBrowser": "Appareil / Navigateur"
+    "deviceBrowser": "Appareil / Navigateur",
+    "plan": "Plan",
+    "server": "Serveur",
+    "ticket": "Ticket",
+    "item": "Article",
+    "code": "Code"
   },
   "Profile": {
     "overview": "Aperçu",
@@ -1030,6 +1035,9 @@
       },
       "session": {
         "revoke": "Révoquer la session"
+      },
+      "profile": {
+        "update": "Mettre à jour le profil"
       }
     },
     "earn": {
@@ -1055,7 +1063,8 @@
       }
     },
     "gift": {
-      "redeem": "Échanger un cadeau"
+      "redeem": "Échanger un cadeau",
+      "create": "Créer un cadeau"
     },
     "payment": {
       "purchase": {
@@ -1079,6 +1088,11 @@
       "create": "Créer un ticket",
       "reply": "Répondre au ticket",
       "status_change": "Changer le statut du ticket"
+    },
+    "panel": {
+      "password": {
+        "reset": "Réinitialiser le mot de passe du panel"
+      }
     }
   }
 }
