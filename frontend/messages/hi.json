@@ -458,7 +458,24 @@
     "failedToSetup2FA": "2FA सेट करने में विफल",
     "networkError": "सर्वर से कनेक्ट नहीं हो सका। कृपया पुन: प्रयास करें।",
     "invalidVerificationCode": "अमान्य सत्यापन कोड",
-    "failedToDisable2FA": "2FA अक्षम करने में विफल"
+    "failedToDisable2FA": "2FA अक्षम करने में विफल",
+    "currentPasswordRequired": "Current password is required.",
+    "currentPasswordEntered": "Current password entered.",
+    "newPasswordRequired": "New password is required.",
+    "newEmailRequired": "New email address is required.",
+    "validEmailFormat": "Valid email format is required.",
+    "verificationCodeRequired": "Verification code is required.",
+    "validCodeFormat": "Valid 8-digit verification code required.",
+    "passwordMin8": "Password must be at least 8 characters.",
+    "passwordLetter": "Password must contain at least one letter.",
+    "passwordNumber": "Password must contain at least one number.",
+    "passwordMeetsRequirements": "Password meets all requirements.",
+    "backupCodeRequired": "Backup code is required.",
+    "tfaCodeRequired": "2FA code is required.",
+    "enter8CharBackupCode": "Enter your 8-character backup code.",
+    "enter6DigitAuthCode": "Enter your 6-digit authenticator code.",
+    "8CharBackupCodeEntered": "8-character backup code entered.",
+    "6DigitCodeEntered": "6-digit code entered."
   },
   "Gift": {
     "title": "उपहार",
@@ -775,11 +792,11 @@
     "security": "सुरक्षा",
     "securityDesc": "अपनी खाता सुरक्षा और प्रमाणीकरण विधियों का प्रबंधन करें।",
     "activeSessions": "सक्रिय सत्र",
-    "activeSessionsDesc": "आपके खाते में वर्तमान में लॉग इन किए गए उपकरणों का प्रबंधन करें।",
+    "activeSessionsDesc": "वर्तमान में आपके खाते में साइन इन किए गए उपकरणों की समीक्षा करें।",
     "invoices": "चालान",
     "invoicesDesc": "अपना बिलिंग इतिहास देखें और प्रबंधित करें।",
     "activityLog": "गतिविधि लॉग",
-    "activityLogDesc": "आपके खाते पर किए गए हाल के कार्य।",
+    "activityLogDesc": "अपने खाते पर हाल की घटनाओं और कार्यों की समीक्षा करें।",
     "password": "पासवर्ड",
     "tfa": "टू-फैक्टर ऑथ",
     "changeEmail": "ईमेल बदलें",
@@ -811,8 +828,8 @@
     "currentPassword": "वर्तमान पासवर्ड",
     "backupCode": "बैकअप कोड",
     "tfaCode": "2FA कोड",
-    "use2faCode": "2FA कोड का उपयोग करें",
-    "useBackupCode": "बैकअप कोड का उपयोग करें",
+    "use2faCode": "2FA कोड उपयोग करें",
+    "useBackupCode": "बैकअप कोड उपयोग करें",
     "verificationCode": "सत्यापन कोड",
     "back": "वापस",
     "verifyAndSave": "सत्यापित करें और सहेजें",
@@ -852,7 +869,6 @@
     "statusPending": "लंबित",
     "statusPaid": "भुगतान किया गया",
     "unrecognizedDeviceWarning": "यदि आप किसी उपकरण या स्थान को नहीं पहचानते हैं, तो उसका सत्र रद्द करें और अपना पासवर्ड बदलें।",
-    "activeSessionsDesc": "वर्तमान में आपके खाते में साइन इन किए गए उपकरणों की समीक्षा करें।",
     "noActiveSessions": "कोई सक्रिय सत्र नहीं",
     "noOtherDevices": "कोई अन्य प्रमाणित उपकरण नहीं हैं।",
     "device": "उपकरण",
@@ -861,7 +877,6 @@
     "thisDevice": "यह उपकरण",
     "signOut": "साइन आउट करें",
     "activeNow": "अभी सक्रिय है",
-    "activityLogDesc": "अपने खाते पर हाल की घटनाओं और कार्यों की समीक्षा करें।",
     "events": "घटनाएं",
     "setup2faTitle": "2FA सेटअप करें",
     "setup2faSubtitle": "दो-कारक प्रमाणीकरण",
@@ -896,11 +911,9 @@
     "confirmDisable": "अक्षम करने की पुष्टि करें",
     "verifyEmailTitle": "ईमेल सत्यापित करें",
     "verifyEmailSubtitle": "8-अंकीय सत्यापन कोड दर्ज करें।",
-    "emailAddress": "ईमेल पता",
     "yourEmail": "आपका ईमेल",
     "editEmail": "संपादित करें",
     "codeSentDesc": "हमने आपके ईमेल पर एक सत्यापन कोड भेजा है। कृपया इसे नीचे दर्ज करें।",
-    "verificationCode": "सत्यापन कोड",
     "sending": "भेजा जा रहा है...",
     "resendIn": "पुनः भेजें",
     "resendCode": "कोड पुनः भेजें",
@@ -908,10 +921,6 @@
     "activityDevice": "डिवाइस / ब्राउज़र",
     "activityDate": "दिनांक",
     "activityGrade": "ग्रेड",
-    "backupCode": "बैकअप कोड",
-    "tfaCode": "2FA कोड",
-    "use2faCode": "2FA कोड उपयोग करें",
-    "useBackupCode": "बैकअप कोड उपयोग करें",
     "placeholderAvatarUrl": "https://example.com/avatar.png",
     "placeholder123456": "123456",
     "placeholderPassword": "••••••••",
@@ -921,91 +930,182 @@
     "placeholder12345678": "12345678"
   },
   "ActivityLog": {
-    "admin.coupon.create": "कूपन बनाएं (व्यवस्थापक)",
-    "admin.coupon.delete": "कूपन हटाएं (व्यवस्थापक)",
-    "admin.coupon.update": "कूपन अपडेट करें (व्यवस्थापक)",
-    "admin.earn.update": "अर्न सेटिंग अपडेट करें (व्यवस्थापक)",
-    "admin.egg_category.create": "एग कैटेगरी बनाएं (व्यवस्थापक)",
-    "admin.egg_category.delete": "एग कैटेगरी हटाएं (व्यवस्थापक)",
-    "admin.egg_category.update": "एग कैटेगरी अपडेट करें (व्यवस्थापक)",
-    "admin.egg.create": "एग बनाएं (व्यवस्थापक)",
-    "admin.egg.delete": "एग हटाएं (व्यवस्थापक)",
-    "admin.egg.update": "एग अपडेट करें (व्यवस्थापक)",
-    "admin.email_settings.update": "ईमेल सेटिंग अपडेट करें (व्यवस्थापक)",
-    "admin.gift.create": "गिफ्ट बनाएं (व्यवस्थापक)",
-    "admin.gift.delete": "गिफ्ट हटाएं (व्यवस्थापक)",
-    "admin.gift.update": "गिफ्ट अपडेट करें (व्यवस्थापक)",
-    "admin.location.create": "स्थान बनाएं (व्यवस्थापक)",
-    "admin.location.delete": "स्थान हटाएं (व्यवस्थापक)",
-    "admin.location.update": "स्थान अपडेट करें (व्यवस्थापक)",
-    "admin.payment.refund": "भुगतान वापस करें (व्यवस्थापक)",
-    "admin.payment.update": "भुगतान अपडेट करें (व्यवस्थापक)",
-    "admin.payment.void": "भुगतान रद्द करें (व्यवस्थापक)",
-    "admin.plan.create": "योजना बनाएं (व्यवस्थापक)",
-    "admin.plan.delete": "योजना हटाएं (व्यवस्थापक)",
-    "admin.plan.update": "योजना अपडेट करें (व्यवस्थापक)",
-    "admin.server.delete": "सर्वर हटाएं (व्यवस्थापक)",
-    "admin.server.queue.clear": "सर्वर कतार साफ करें (व्यवस्थापक)",
-    "admin.server.update": "सर्वर अपडेट करें (व्यवस्थापक)",
-    "admin.settings.tickets.update": "टिकट सेटिंग अपडेट करें (व्यवस्थापक)",
-    "admin.settings.update": "सेटिंग अपडेट करें (व्यवस्थापक)",
-    "admin.shop.update": "शॉप अपडेट करें (व्यवस्थापक)",
-    "admin.ticket.delete": "टिकट हटाएं (व्यवस्थापक)",
-    "admin.ticket.reply": "टिकट का जवाब दें (व्यवस्थापक)",
-    "admin.ticket.update": "टिकट अपडेट करें (व्यवस्थापक)",
-    "admin.user.ban": "उपयोगकर्ता प्रतिबंधित करें (व्यवस्थापक)",
-    "admin.user.unban": "उपयोगकर्ता प्रतिबंध हटाएं (व्यवस्थापक)",
-    "admin.user.delete": "उपयोगकर्ता हटाएं (व्यवस्थापक)",
-    "admin.user.plan.add": "उपयोगकर्ता को योजना जोड़ें (व्यवस्थापक)",
-    "admin.user.plan.cancel": "उपयोगकर्ता योजना रद्द करें (व्यवस्थापक)",
-    "admin.user.plan.instance.cancel": "योजना इंस्टेंस रद्द करें (व्यवस्थापक)",
-    "admin.user.server.delete": "उपयोगकर्ता सर्वर हटाएं (व्यवस्थापक)",
-    "admin.user.server.update": "उपयोगकर्ता सर्वर अपडेट करें (व्यवस्थापक)",
-    "admin.user.update": "उपयोगकर्ता अपडेट करें (व्यवस्थापक)",
-    "auth.2fa.disable": "2FA अक्षम करें",
-    "auth.2fa.enable": "2FA सक्षम करें",
-    "auth.account.delete": "खाता हटाएं",
-    "auth.account.update": "खाता अपडेट करें",
-    "auth.email.update": "ईमेल अपडेट करें",
-    "auth.email.verified": "ईमेल सत्यापित करें",
-    "auth.login.error": "लॉगिन त्रुटि",
-    "auth.login.failed": "लॉगिन विफल",
-    "auth.login.success": "लॉगिन",
-    "auth.logout": "लॉगआउट",
-    "auth.logout.error": "लॉगआउट त्रुटि",
-    "auth.oauth.discord.error": "Discord प्रमाणीकरण त्रुटि",
-    "auth.oauth.discord.failed": "Discord प्रमाणीकरण विफल",
-    "auth.oauth.discord.initiated": "Discord प्रमाणीकरण शुरू करें",
-    "auth.oauth.discord.success": "Discord प्रमाणीकरण सफल",
-    "auth.oauth.google.error": "Google प्रमाणीकरण त्रुटि",
-    "auth.oauth.google.failed": "Google प्रमाणीकरण विफल",
-    "auth.oauth.google.initiated": "Google प्रमाणीकरण शुरू करें",
-    "auth.oauth.google.success": "Google प्रमाणीकरण सफल",
-    "auth.password.reset.requested": "पासवर्ड रीसेट अनुरोध",
-    "auth.password.reset.success": "पासवर्ड रीसेट",
-    "auth.password.update": "पासवर्ड अपडेट करें",
-    "auth.register.failed": "पंजीकरण विफल",
-    "auth.register.success": "पंजीकरण",
-    "auth.session.revoke": "सत्र रद्द करें",
-    "earn.ad.verified": "विज्ञापन सत्यापित",
-    "earn.callback.claim": "कमाई दावा",
-    "earn.claim": "कमाई दावा",
-    "earn.session.start": "कमाई सत्र शुरू करें",
-    "earn.linkvertise": "Linkvertise से कमाई",
-    "referral.code.update": "रेफरल कोड अपडेट करें",
-    "referral.reward.referred": "रेफरल पुरस्कार प्राप्त",
-    "referral.reward.referrer": "रेफरर पुरस्कार प्राप्त",
-    "gift.redeem": "गिफ्ट रिडीम करें",
-    "payment.purchase.completed": "खरीद पूर्ण",
-    "shop.payment.cancel": "भुगतान रद्द करें",
-    "shop.payment.capture": "भुगतान कैप्चर करें",
-    "shop.payment.create": "भुगतान बनाएं",
-    "shop.purchase": "शॉप खरीद",
-    "server.create": "सर्वर बनाएं",
-    "server.delete": "सर्वर हटाएं",
-    "server.update": "सर्वर अपडेट करें",
-    "ticket.create": "टिकट बनाएं",
-    "ticket.reply": "टिकट का जवाब दें",
-    "ticket.status_change": "टिकट स्थिति बदलें"
+    "admin": {
+      "coupon": {
+        "create": "कूपन बनाएं (व्यवस्थापक)",
+        "delete": "कूपन हटाएं (व्यवस्थापक)",
+        "update": "कूपन अपडेट करें (व्यवस्थापक)"
+      },
+      "earn": {
+        "update": "अर्न सेटिंग अपडेट करें (व्यवस्थापक)"
+      },
+      "egg_category": {
+        "create": "एग कैटेगरी बनाएं (व्यवस्थापक)",
+        "delete": "एग कैटेगरी हटाएं (व्यवस्थापक)",
+        "update": "एग कैटेगरी अपडेट करें (व्यवस्थापक)"
+      },
+      "egg": {
+        "create": "एग बनाएं (व्यवस्थापक)",
+        "delete": "एग हटाएं (व्यवस्थापक)",
+        "update": "एग अपडेट करें (व्यवस्थापक)"
+      },
+      "email_settings": {
+        "update": "ईमेल सेटिंग अपडेट करें (व्यवस्थापक)"
+      },
+      "gift": {
+        "create": "गिफ्ट बनाएं (व्यवस्थापक)",
+        "delete": "गिफ्ट हटाएं (व्यवस्थापक)",
+        "update": "गिफ्ट अपडेट करें (व्यवस्थापक)"
+      },
+      "location": {
+        "create": "स्थान बनाएं (व्यवस्थापक)",
+        "delete": "स्थान हटाएं (व्यवस्थापक)",
+        "update": "स्थान अपडेट करें (व्यवस्थापक)"
+      },
+      "payment": {
+        "refund": "भुगतान वापस करें (व्यवस्थापक)",
+        "update": "भुगतान अपडेट करें (व्यवस्थापक)",
+        "void": "भुगतान रद्द करें (व्यवस्थापक)"
+      },
+      "plan": {
+        "create": "योजना बनाएं (व्यवस्थापक)",
+        "delete": "योजना हटाएं (व्यवस्थापक)",
+        "update": "योजना अपडेट करें (व्यवस्थापक)"
+      },
+      "server": {
+        "delete": "सर्वर हटाएं (व्यवस्थापक)",
+        "queue": {
+          "clear": "सर्वर कतार साफ करें (व्यवस्थापक)"
+        },
+        "update": "सर्वर अपडेट करें (व्यवस्थापक)"
+      },
+      "settings": {
+        "tickets": {
+          "update": "टिकट सेटिंग अपडेट करें (व्यवस्थापक)"
+        },
+        "update": "सेटिंग अपडेट करें (व्यवस्थापक)"
+      },
+      "shop": {
+        "update": "शॉप अपडेट करें (व्यवस्थापक)"
+      },
+      "ticket": {
+        "delete": "टिकट हटाएं (व्यवस्थापक)",
+        "reply": "टिकट का जवाब दें (व्यवस्थापक)",
+        "update": "टिकट अपडेट करें (व्यवस्थापक)"
+      },
+      "user": {
+        "ban": "उपयोगकर्ता प्रतिबंधित करें (व्यवस्थापक)",
+        "unban": "उपयोगकर्ता प्रतिबंध हटाएं (व्यवस्थापक)",
+        "delete": "उपयोगकर्ता हटाएं (व्यवस्थापक)",
+        "plan": {
+          "add": "उपयोगकर्ता को योजना जोड़ें (व्यवस्थापक)",
+          "cancel": "उपयोगकर्ता योजना रद्द करें (व्यवस्थापक)",
+          "instance": {
+            "cancel": "योजना इंस्टेंस रद्द करें (व्यवस्थापक)"
+          }
+        },
+        "server": {
+          "delete": "उपयोगकर्ता सर्वर हटाएं (व्यवस्थापक)",
+          "update": "उपयोगकर्ता सर्वर अपडेट करें (व्यवस्थापक)"
+        },
+        "update": "उपयोगकर्ता अपडेट करें (व्यवस्थापक)"
+      }
+    },
+    "auth": {
+      "2fa": {
+        "disable": "2FA अक्षम करें",
+        "enable": "2FA सक्षम करें"
+      },
+      "account": {
+        "delete": "खाता हटाएं",
+        "update": "खाता अपडेट करें"
+      },
+      "email": {
+        "update": "ईमेल अपडेट करें",
+        "verified": "ईमेल सत्यापित करें"
+      },
+      "login": {
+        "error": "लॉगिन त्रुटि",
+        "failed": "लॉगिन विफल",
+        "success": "लॉगिन"
+      },
+      "logout": "लॉगआउट",
+      "oauth": {
+        "discord": {
+          "error": "Discord प्रमाणीकरण त्रुटि",
+          "failed": "Discord प्रमाणीकरण विफल",
+          "initiated": "Discord प्रमाणीकरण शुरू करें",
+          "success": "Discord प्रमाणीकरण सफल"
+        },
+        "google": {
+          "error": "Google प्रमाणीकरण त्रुटि",
+          "failed": "Google प्रमाणीकरण विफल",
+          "initiated": "Google प्रमाणीकरण शुरू करें",
+          "success": "Google प्रमाणीकरण सफल"
+        }
+      },
+      "password": {
+        "reset": {
+          "requested": "पासवर्ड रीसेट अनुरोध",
+          "success": "पासवर्ड रीसेट"
+        },
+        "update": "पासवर्ड अपडेट करें"
+      },
+      "register": {
+        "failed": "पंजीकरण विफल",
+        "success": "पंजीकरण"
+      },
+      "session": {
+        "revoke": "सत्र रद्द करें"
+      }
+    },
+    "earn": {
+      "ad": {
+        "verified": "विज्ञापन सत्यापित"
+      },
+      "callback": {
+        "claim": "कमाई दावा"
+      },
+      "claim": "कमाई दावा",
+      "session": {
+        "start": "कमाई सत्र शुरू करें"
+      },
+      "linkvertise": "Linkvertise से कमाई"
+    },
+    "referral": {
+      "code": {
+        "update": "रेफरल कोड अपडेट करें"
+      },
+      "reward": {
+        "referred": "रेफरल पुरस्कार प्राप्त",
+        "referrer": "रेफरर पुरस्कार प्राप्त"
+      }
+    },
+    "gift": {
+      "redeem": "गिफ्ट रिडीम करें"
+    },
+    "payment": {
+      "purchase": {
+        "completed": "खरीद पूर्ण"
+      }
+    },
+    "shop": {
+      "payment": {
+        "cancel": "भुगतान रद्द करें",
+        "capture": "भुगतान कैप्चर करें",
+        "create": "भुगतान बनाएं"
+      },
+      "purchase": "शॉप खरीद"
+    },
+    "server": {
+      "create": "सर्वर बनाएं",
+      "delete": "सर्वर हटाएं",
+      "update": "सर्वर अपडेट करें"
+    },
+    "ticket": {
+      "create": "टिकट बनाएं",
+      "reply": "टिकट का जवाब दें",
+      "status_change": "टिकट स्थिति बदलें"
+    }
   }
 }

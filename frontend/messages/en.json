@@ -460,7 +460,24 @@
     "failedToSetup2FA": "Failed to setup 2FA",
     "networkError": "Could not connect to the server. Please try again.",
     "invalidVerificationCode": "Invalid verification code",
-    "failedToDisable2FA": "Failed to disable 2FA"
+    "failedToDisable2FA": "Failed to disable 2FA",
+    "currentPasswordRequired": "Current password is required.",
+    "currentPasswordEntered": "Current password entered.",
+    "newPasswordRequired": "New password is required.",
+    "newEmailRequired": "New email address is required.",
+    "validEmailFormat": "Valid email format is required.",
+    "verificationCodeRequired": "Verification code is required.",
+    "validCodeFormat": "Valid 8-digit verification code required.",
+    "passwordMin8": "Password must be at least 8 characters.",
+    "passwordLetter": "Password must contain at least one letter.",
+    "passwordNumber": "Password must contain at least one number.",
+    "passwordMeetsRequirements": "Password meets all requirements.",
+    "backupCodeRequired": "Backup code is required.",
+    "tfaCodeRequired": "2FA code is required.",
+    "enter8CharBackupCode": "Enter your 8-character backup code.",
+    "enter6DigitAuthCode": "Enter your 6-digit authenticator code.",
+    "8CharBackupCodeEntered": "8-character backup code entered.",
+    "6DigitCodeEntered": "6-digit code entered."
   },
   "Gift": {
     "title": "Gift",
@@ -772,16 +789,16 @@
     "fullNameDesc": "The name displayed on your account.",
     "firstName": "First name",
     "lastName": "Last name",
-    "emailAddress": "Email address",
+    "emailAddress": "Email Address",
     "emailAddressDesc": "Used for account communication.",
     "security": "Security",
     "securityDesc": "Manage your account security and authentication methods.",
     "activeSessions": "Active Sessions",
-    "activeSessionsDesc": "Manage devices currently logged into your account.",
+    "activeSessionsDesc": "Review devices currently signed into your account.",
     "invoices": "Invoices",
     "invoicesDesc": "View and manage your billing history.",
     "activityLog": "Activity Log",
-    "activityLogDesc": "Recent actions performed on your account.",
+    "activityLogDesc": "Review recent events and actions on your account.",
     "password": "Password",
     "tfa": "Two-Factor Auth",
     "changeEmail": "Change Email",
@@ -854,7 +871,6 @@
     "statusPending": "PENDING",
     "statusPaid": "PAID",
     "unrecognizedDeviceWarning": "If you do not recognize a device or location, revoke its session and change your password.",
-    "activeSessionsDesc": "Review devices currently signed into your account.",
     "noActiveSessions": "No active sessions",
     "noOtherDevices": "There are no other authenticated devices.",
     "device": "Device",
@@ -863,7 +879,6 @@
     "thisDevice": "This device",
     "signOut": "Sign out",
     "activeNow": "Active now",
-    "activityLogDesc": "Review recent events and actions on your account.",
     "events": "events",
     "setup2faTitle": "Setup 2FA",
     "setup2faSubtitle": "Two-Factor Authentication",
@@ -898,11 +913,9 @@
     "confirmDisable": "Confirm Disable",
     "verifyEmailTitle": "Verify Email",
     "verifyEmailSubtitle": "Enter the 8-digit verification code.",
-    "emailAddress": "Email Address",
     "yourEmail": "your email",
     "editEmail": "Edit",
     "codeSentDesc": "We sent a verification code to your email. Please enter it below.",
-    "verificationCode": "Verification Code",
     "sending": "Sending...",
     "resendIn": "Resend in",
     "resendCode": "Resend Code",
@@ -910,10 +923,6 @@
     "activityDevice": "DEVICE / BROWSER",
     "activityDate": "DATE",
     "activityGrade": "GRADE",
-    "backupCode": "Backup Code",
-    "tfaCode": "2FA Code",
-    "use2faCode": "Use 2FA Code",
-    "useBackupCode": "Use Backup Code",
     "placeholderAvatarUrl": "https://example.com/avatar.png",
     "placeholder123456": "123456",
     "placeholderPassword": "••••••••",
@@ -923,91 +932,182 @@
     "placeholder12345678": "12345678"
   },
   "ActivityLog": {
-    "admin.coupon.create": "Create Coupon (Admin)",
-    "admin.coupon.delete": "Delete Coupon (Admin)",
-    "admin.coupon.update": "Update Coupon (Admin)",
-    "admin.earn.update": "Update Earn Settings (Admin)",
-    "admin.egg_category.create": "Create Egg Category (Admin)",
-    "admin.egg_category.delete": "Delete Egg Category (Admin)",
-    "admin.egg_category.update": "Update Egg Category (Admin)",
-    "admin.egg.create": "Create Egg (Admin)",
-    "admin.egg.delete": "Delete Egg (Admin)",
-    "admin.egg.update": "Update Egg (Admin)",
-    "admin.email_settings.update": "Update Email Settings (Admin)",
-    "admin.gift.create": "Create Gift (Admin)",
-    "admin.gift.delete": "Delete Gift (Admin)",
-    "admin.gift.update": "Update Gift (Admin)",
-    "admin.location.create": "Create Location (Admin)",
-    "admin.location.delete": "Delete Location (Admin)",
-    "admin.location.update": "Update Location (Admin)",
-    "admin.payment.refund": "Refund Payment (Admin)",
-    "admin.payment.update": "Update Payment (Admin)",
-    "admin.payment.void": "Void Payment (Admin)",
-    "admin.plan.create": "Create Plan (Admin)",
-    "admin.plan.delete": "Delete Plan (Admin)",
-    "admin.plan.update": "Update Plan (Admin)",
-    "admin.server.delete": "Delete Server (Admin)",
-    "admin.server.queue.clear": "Clear Server Queue (Admin)",
-    "admin.server.update": "Update Server (Admin)",
-    "admin.settings.tickets.update": "Update Ticket Settings (Admin)",
-    "admin.settings.update": "Update Settings (Admin)",
-    "admin.shop.update": "Update Shop (Admin)",
-    "admin.ticket.delete": "Delete Ticket (Admin)",
-    "admin.ticket.reply": "Reply to Ticket (Admin)",
-    "admin.ticket.update": "Update Ticket (Admin)",
-    "admin.user.ban": "Ban User (Admin)",
-    "admin.user.unban": "Unban User (Admin)",
-    "admin.user.delete": "Delete User (Admin)",
-    "admin.user.plan.add": "Add Plan to User (Admin)",
-    "admin.user.plan.cancel": "Cancel User Plan (Admin)",
-    "admin.user.plan.instance.cancel": "Cancel Plan Instance (Admin)",
-    "admin.user.server.delete": "Delete User Server (Admin)",
-    "admin.user.server.update": "Update User Server (Admin)",
-    "admin.user.update": "Update User (Admin)",
-    "auth.2fa.disable": "Disable 2FA",
-    "auth.2fa.enable": "Enable 2FA",
-    "auth.account.delete": "Delete Account",
-    "auth.account.update": "Update Account",
-    "auth.email.update": "Update Email",
-    "auth.email.verified": "Verify Email",
-    "auth.login.error": "Login Error",
-    "auth.login.failed": "Login Failed",
-    "auth.login.success": "Login",
-    "auth.logout": "Logout",
-    "auth.logout.error": "Logout Error",
-    "auth.oauth.discord.error": "Discord Auth Error",
-    "auth.oauth.discord.failed": "Discord Auth Failed",
-    "auth.oauth.discord.initiated": "Initiate Discord Auth",
-    "auth.oauth.discord.success": "Discord Auth Success",
-    "auth.oauth.google.error": "Google Auth Error",
-    "auth.oauth.google.failed": "Google Auth Failed",
-    "auth.oauth.google.initiated": "Initiate Google Auth",
-    "auth.oauth.google.success": "Google Auth Success",
-    "auth.password.reset.requested": "Password Reset Requested",
-    "auth.password.reset.success": "Password Reset",
-    "auth.password.update": "Update Password",
-    "auth.register.failed": "Registration Failed",
-    "auth.register.success": "Registration",
-    "auth.session.revoke": "Revoke Session",
-    "earn.ad.verified": "Ad Verified",
-    "earn.callback.claim": "Earn Claim",
-    "earn.claim": "Earn Claim",
-    "earn.session.start": "Start Earn Session",
-    "earn.linkvertise": "Earn via Linkvertise",
-    "referral.code.update": "Update Referral Code",
-    "referral.reward.referred": "Referred Reward Claimed",
-    "referral.reward.referrer": "Referrer Reward Claimed",
-    "gift.redeem": "Redeem Gift",
-    "payment.purchase.completed": "Purchase Completed",
-    "shop.payment.cancel": "Cancel Payment",
-    "shop.payment.capture": "Capture Payment",
-    "shop.payment.create": "Create Payment",
-    "shop.purchase": "Shop Purchase",
-    "server.create": "Create Server",
-    "server.delete": "Delete Server",
-    "server.update": "Update Server",
-    "ticket.create": "Create Ticket",
-    "ticket.reply": "Reply to Ticket",
-    "ticket.status_change": "Change Ticket Status"
+    "admin": {
+      "coupon": {
+        "create": "Create Coupon (Admin)",
+        "delete": "Delete Coupon (Admin)",
+        "update": "Update Coupon (Admin)"
+      },
+      "earn": {
+        "update": "Update Earn Settings (Admin)"
+      },
+      "egg_category": {
+        "create": "Create Egg Category (Admin)",
+        "delete": "Delete Egg Category (Admin)",
+        "update": "Update Egg Category (Admin)"
+      },
+      "egg": {
+        "create": "Create Egg (Admin)",
+        "delete": "Delete Egg (Admin)",
+        "update": "Update Egg (Admin)"
+      },
+      "email_settings": {
+        "update": "Update Email Settings (Admin)"
+      },
+      "gift": {
+        "create": "Create Gift (Admin)",
+        "delete": "Delete Gift (Admin)",
+        "update": "Update Gift (Admin)"
+      },
+      "location": {
+        "create": "Create Location (Admin)",
+        "delete": "Delete Location (Admin)",
+        "update": "Update Location (Admin)"
+      },
+      "payment": {
+        "refund": "Refund Payment (Admin)",
+        "update": "Update Payment (Admin)",
+        "void": "Void Payment (Admin)"
+      },
+      "plan": {
+        "create": "Create Plan (Admin)",
+        "delete": "Delete Plan (Admin)",
+        "update": "Update Plan (Admin)"
+      },
+      "server": {
+        "delete": "Delete Server (Admin)",
+        "queue": {
+          "clear": "Clear Server Queue (Admin)"
+        },
+        "update": "Update Server (Admin)"
+      },
+      "settings": {
+        "tickets": {
+          "update": "Update Ticket Settings (Admin)"
+        },
+        "update": "Update Settings (Admin)"
+      },
+      "shop": {
+        "update": "Update Shop (Admin)"
+      },
+      "ticket": {
+        "delete": "Delete Ticket (Admin)",
+        "reply": "Reply to Ticket (Admin)",
+        "update": "Update Ticket (Admin)"
+      },
+      "user": {
+        "ban": "Ban User (Admin)",
+        "unban": "Unban User (Admin)",
+        "delete": "Delete User (Admin)",
+        "plan": {
+          "add": "Add Plan to User (Admin)",
+          "cancel": "Cancel User Plan (Admin)",
+          "instance": {
+            "cancel": "Cancel Plan Instance (Admin)"
+          }
+        },
+        "server": {
+          "delete": "Delete User Server (Admin)",
+          "update": "Update User Server (Admin)"
+        },
+        "update": "Update User (Admin)"
+      }
+    },
+    "auth": {
+      "2fa": {
+        "disable": "Disable 2FA",
+        "enable": "Enable 2FA"
+      },
+      "account": {
+        "delete": "Delete Account",
+        "update": "Update Account"
+      },
+      "email": {
+        "update": "Update Email",
+        "verified": "Verify Email"
+      },
+      "login": {
+        "error": "Login Error",
+        "failed": "Login Failed",
+        "success": "Login"
+      },
+      "logout": "Logout",
+      "oauth": {
+        "discord": {
+          "error": "Discord Auth Error",
+          "failed": "Discord Auth Failed",
+          "initiated": "Initiate Discord Auth",
+          "success": "Discord Auth Success"
+        },
+        "google": {
+          "error": "Google Auth Error",
+          "failed": "Google Auth Failed",
+          "initiated": "Initiate Google Auth",
+          "success": "Google Auth Success"
+        }
+      },
+      "password": {
+        "reset": {
+          "requested": "Password Reset Requested",
+          "success": "Password Reset"
+        },
+        "update": "Update Password"
+      },
+      "register": {
+        "failed": "Registration Failed",
+        "success": "Registration"
+      },
+      "session": {
+        "revoke": "Revoke Session"
+      }
+    },
+    "earn": {
+      "ad": {
+        "verified": "Ad Verified"
+      },
+      "callback": {
+        "claim": "Earn Claim"
+      },
+      "claim": "Earn Claim",
+      "session": {
+        "start": "Start Earn Session"
+      },
+      "linkvertise": "Earn via Linkvertise"
+    },
+    "referral": {
+      "code": {
+        "update": "Update Referral Code"
+      },
+      "reward": {
+        "referred": "Referred Reward Claimed",
+        "referrer": "Referrer Reward Claimed"
+      }
+    },
+    "gift": {
+      "redeem": "Redeem Gift"
+    },
+    "payment": {
+      "purchase": {
+        "completed": "Purchase Completed"
+      }
+    },
+    "shop": {
+      "payment": {
+        "cancel": "Cancel Payment",
+        "capture": "Capture Payment",
+        "create": "Create Payment"
+      },
+      "purchase": "Shop Purchase"
+    },
+    "server": {
+      "create": "Create Server",
+      "delete": "Delete Server",
+      "update": "Update Server"
+    },
+    "ticket": {
+      "create": "Create Ticket",
+      "reply": "Reply to Ticket",
+      "status_change": "Change Ticket Status"
+    }
   }
 }

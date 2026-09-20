@@ -448,7 +448,24 @@
     "failedToCreateServer": "فشل إنشاء الخادم",
     "failedToLoadItems": "فشل تحميل العناصر",
     "failedToLoadPlans": "فشل تحميل الخطط",
-    "unknownError": "خطأ غير معروف"
+    "unknownError": "خطأ غير معروف",
+    "currentPasswordRequired": "Current password is required.",
+    "currentPasswordEntered": "Current password entered.",
+    "newPasswordRequired": "New password is required.",
+    "newEmailRequired": "New email address is required.",
+    "validEmailFormat": "Valid email format is required.",
+    "verificationCodeRequired": "Verification code is required.",
+    "validCodeFormat": "Valid 8-digit verification code required.",
+    "passwordMin8": "Password must be at least 8 characters.",
+    "passwordLetter": "Password must contain at least one letter.",
+    "passwordNumber": "Password must contain at least one number.",
+    "passwordMeetsRequirements": "Password meets all requirements.",
+    "backupCodeRequired": "Backup code is required.",
+    "tfaCodeRequired": "2FA code is required.",
+    "enter8CharBackupCode": "Enter your 8-character backup code.",
+    "enter6DigitAuthCode": "Enter your 6-digit authenticator code.",
+    "8CharBackupCodeEntered": "8-character backup code entered.",
+    "6DigitCodeEntered": "6-digit code entered."
   },
   "Gift": {
     "title": "رموز",
@@ -760,16 +777,16 @@
     "fullNameDesc": "The name displayed on your account.",
     "firstName": "First name",
     "lastName": "Last name",
-    "emailAddress": "Email address",
+    "emailAddress": "عنوان البريد الإلكتروني",
     "emailAddressDesc": "Used for account communication.",
     "security": "Security",
     "securityDesc": "Manage your account security and authentication methods.",
     "activeSessions": "Active Sessions",
-    "activeSessionsDesc": "Manage devices currently logged into your account.",
+    "activeSessionsDesc": "راجع الأجهزة المسجلة الدخول حاليًا إلى حسابك.",
     "invoices": "Invoices",
     "invoicesDesc": "View and manage your billing history.",
     "activityLog": "Activity Log",
-    "activityLogDesc": "Recent actions performed on your account.",
+    "activityLogDesc": "راجع الأحداث والإجراءات الأخيرة على حسابك.",
     "password": "Password",
     "tfa": "Two-Factor Auth",
     "changeEmail": "Change Email",
@@ -842,7 +859,6 @@
     "statusPending": "قيد الانتظار",
     "statusPaid": "مدفوع",
     "unrecognizedDeviceWarning": "إذا كنت لا تتعرف على جهاز أو موقع ، فقم بإلغاء جلسته وقم بتغيير كلمة المرور الخاصة بك.",
-    "activeSessionsDesc": "راجع الأجهزة المسجلة الدخول حاليًا إلى حسابك.",
     "noActiveSessions": "لا توجد جلسات نشطة",
     "noOtherDevices": "لا توجد أجهزة أخرى مصدق عليها.",
     "device": "جهاز",
@@ -851,7 +867,6 @@
     "thisDevice": "هذا الجهاز",
     "signOut": "تسجيل الخروج",
     "activeNow": "نشط الآن",
-    "activityLogDesc": "راجع الأحداث والإجراءات الأخيرة على حسابك.",
     "events": "الأحداث",
     "setup2faTitle": "إعداد 2FA",
     "setup2faSubtitle": "المصادقة الثنائية",
@@ -886,11 +901,9 @@
     "confirmDisable": "تأكيد التعطيل",
     "verifyEmailTitle": "التحقق من البريد الإلكتروني",
     "verifyEmailSubtitle": "أدخل رمز التحقق المكون من 8 أرقام.",
-    "emailAddress": "عنوان البريد الإلكتروني",
     "yourEmail": "بريدك الإلكتروني",
     "editEmail": "تعديل",
     "codeSentDesc": "لقد أرسلنا رمز تحقق إلى بريدك الإلكتروني. يرجى إدخاله أدناه.",
-    "verificationCode": "رمز التحقق",
     "sending": "جاري الإرسال...",
     "resendIn": "إعادة الإرسال في",
     "resendCode": "إعادة إرسال الرمز",
@@ -907,91 +920,182 @@
     "placeholder12345678": "12345678"
   },
   "ActivityLog": {
-    "admin.coupon.create": "إنشاء قسيمة (مسؤول)",
-    "admin.coupon.delete": "حذف قسيمة (مسؤول)",
-    "admin.coupon.update": "تحديث قسيمة (مسؤول)",
-    "admin.earn.update": "تحديث إعدادات الكسب (مسؤول)",
-    "admin.egg_category.create": "إنشاء فئة البيض (مسؤول)",
-    "admin.egg_category.delete": "حذف فئة البيض (مسؤول)",
-    "admin.egg_category.update": "تحديث فئة البيض (مسؤول)",
-    "admin.egg.create": "إنشاء بيضة (مسؤول)",
-    "admin.egg.delete": "حذف بيضة (مسؤول)",
-    "admin.egg.update": "تحديث بيضة (مسؤول)",
-    "admin.email_settings.update": "تحديث إعدادات البريد الإلكتروني (مسؤول)",
-    "admin.gift.create": "إنشاء هدية (مسؤول)",
-    "admin.gift.delete": "حذف هدية (مسؤول)",
-    "admin.gift.update": "تحديث هدية (مسؤول)",
-    "admin.location.create": "إنشاء موقع (مسؤول)",
-    "admin.location.delete": "حذف موقع (مسؤول)",
-    "admin.location.update": "تحديث موقع (مسؤول)",
-    "admin.payment.refund": "استرداد الدفع (مسؤول)",
-    "admin.payment.update": "تحديث الدفع (مسؤول)",
-    "admin.payment.void": "إلغاء الدفع (مسؤول)",
-    "admin.plan.create": "إنشاء خطة (مسؤول)",
-    "admin.plan.delete": "حذف خطة (مسؤول)",
-    "admin.plan.update": "تحديث خطة (مسؤول)",
-    "admin.server.delete": "حذف خادم (مسؤول)",
-    "admin.server.queue.clear": "مسح قائمة انتظار الخادم (مسؤول)",
-    "admin.server.update": "تحديث خادم (مسؤول)",
-    "admin.settings.tickets.update": "تحديث إعدادات التذاكر (مسؤول)",
-    "admin.settings.update": "تحديث الإعدادات (مسؤول)",
-    "admin.shop.update": "تحديث المتجر (مسؤول)",
-    "admin.ticket.delete": "حذف تذكرة (مسؤول)",
-    "admin.ticket.reply": "الرد على التذكرة (مسؤول)",
-    "admin.ticket.update": "تحديث تذكرة (مسؤول)",
-    "admin.user.ban": "حظر المستخدم (مسؤول)",
-    "admin.user.unban": "إلغاء حظر المستخدم (مسؤول)",
-    "admin.user.delete": "حذف المستخدم (مسؤول)",
-    "admin.user.plan.add": "إضافة خطة للمستخدم (مسؤول)",
-    "admin.user.plan.cancel": "إلغاء خطة المستخدم (مسؤول)",
-    "admin.user.plan.instance.cancel": "إلغاء مثيل الخطة (مسؤول)",
-    "admin.user.server.delete": "حذف خادم المستخدم (مسؤول)",
-    "admin.user.server.update": "تحديث خادم المستخدم (مسؤول)",
-    "admin.user.update": "تحديث المستخدم (مسؤول)",
-    "auth.2fa.disable": "تعطيل 2FA",
-    "auth.2fa.enable": "تمكين 2FA",
-    "auth.account.delete": "حذف الحساب",
-    "auth.account.update": "تحديث الحساب",
-    "auth.email.update": "تحديث البريد الإلكتروني",
-    "auth.email.verified": "التحقق من البريد الإلكتروني",
-    "auth.login.error": "خطأ في تسجيل الدخول",
-    "auth.login.failed": "فشل تسجيل الدخول",
-    "auth.login.success": "تسجيل الدخول",
-    "auth.logout": "تسجيل الخروج",
-    "auth.logout.error": "خطأ في تسجيل الخروج",
-    "auth.oauth.discord.error": "خطأ في مصادقة Discord",
-    "auth.oauth.discord.failed": "فشل مصادقة Discord",
-    "auth.oauth.discord.initiated": "بدء مصادقة Discord",
-    "auth.oauth.discord.success": "نجاح مصادقة Discord",
-    "auth.oauth.google.error": "خطأ في مصادقة Google",
-    "auth.oauth.google.failed": "فشل مصادقة Google",
-    "auth.oauth.google.initiated": "بدء مصادقة Google",
-    "auth.oauth.google.success": "نجاح مصادقة Google",
-    "auth.password.reset.requested": "طلب إعادة تعيين كلمة المرور",
-    "auth.password.reset.success": "إعادة تعيين كلمة المرور",
-    "auth.password.update": "تحديث كلمة المرور",
-    "auth.register.failed": "فشل التسجيل",
-    "auth.register.success": "التسجيل",
-    "auth.session.revoke": "إبطال الجلسة",
-    "earn.ad.verified": "تم التحقق من الإعلان",
-    "earn.callback.claim": "المطالبة بالكسب",
-    "earn.claim": "المطالبة بالكسب",
-    "earn.session.start": "بدء جلسة الكسب",
-    "earn.linkvertise": "اكسب عبر Linkvertise",
-    "referral.code.update": "تحديث رمز الإحالة",
-    "referral.reward.referred": "تمت المطالبة بمكافأة المُحال",
-    "referral.reward.referrer": "تمت المطالبة بمكافأة المُحيل",
-    "gift.redeem": "استرداد الهدية",
-    "payment.purchase.completed": "اكتملت عملية الشراء",
-    "shop.payment.cancel": "إلغاء الدفع",
-    "shop.payment.capture": "التقاط الدفع",
-    "shop.payment.create": "إنشاء دفع",
-    "shop.purchase": "شراء من المتجر",
-    "server.create": "إنشاء خادم",
-    "server.delete": "حذف خادم",
-    "server.update": "تحديث خادم",
-    "ticket.create": "إنشاء تذكرة",
-    "ticket.reply": "الرد على التذكرة",
-    "ticket.status_change": "تغيير حالة التذكرة"
+    "admin": {
+      "coupon": {
+        "create": "إنشاء قسيمة (مسؤول)",
+        "delete": "حذف قسيمة (مسؤول)",
+        "update": "تحديث قسيمة (مسؤول)"
+      },
+      "earn": {
+        "update": "تحديث إعدادات الكسب (مسؤول)"
+      },
+      "egg_category": {
+        "create": "إنشاء فئة البيض (مسؤول)",
+        "delete": "حذف فئة البيض (مسؤول)",
+        "update": "تحديث فئة البيض (مسؤول)"
+      },
+      "egg": {
+        "create": "إنشاء بيضة (مسؤول)",
+        "delete": "حذف بيضة (مسؤول)",
+        "update": "تحديث بيضة (مسؤول)"
+      },
+      "email_settings": {
+        "update": "تحديث إعدادات البريد الإلكتروني (مسؤول)"
+      },
+      "gift": {
+        "create": "إنشاء هدية (مسؤول)",
+        "delete": "حذف هدية (مسؤول)",
+        "update": "تحديث هدية (مسؤول)"
+      },
+      "location": {
+        "create": "إنشاء موقع (مسؤول)",
+        "delete": "حذف موقع (مسؤول)",
+        "update": "تحديث موقع (مسؤول)"
+      },
+      "payment": {
+        "refund": "استرداد الدفع (مسؤول)",
+        "update": "تحديث الدفع (مسؤول)",
+        "void": "إلغاء الدفع (مسؤول)"
+      },
+      "plan": {
+        "create": "إنشاء خطة (مسؤول)",
+        "delete": "حذف خطة (مسؤول)",
+        "update": "تحديث خطة (مسؤول)"
+      },
+      "server": {
+        "delete": "حذف خادم (مسؤول)",
+        "queue": {
+          "clear": "مسح قائمة انتظار الخادم (مسؤول)"
+        },
+        "update": "تحديث خادم (مسؤول)"
+      },
+      "settings": {
+        "tickets": {
+          "update": "تحديث إعدادات التذاكر (مسؤول)"
+        },
+        "update": "تحديث الإعدادات (مسؤول)"
+      },
+      "shop": {
+        "update": "تحديث المتجر (مسؤول)"
+      },
+      "ticket": {
+        "delete": "حذف تذكرة (مسؤول)",
+        "reply": "الرد على التذكرة (مسؤول)",
+        "update": "تحديث تذكرة (مسؤول)"
+      },
+      "user": {
+        "ban": "حظر المستخدم (مسؤول)",
+        "unban": "إلغاء حظر المستخدم (مسؤول)",
+        "delete": "حذف المستخدم (مسؤول)",
+        "plan": {
+          "add": "إضافة خطة للمستخدم (مسؤول)",
+          "cancel": "إلغاء خطة المستخدم (مسؤول)",
+          "instance": {
+            "cancel": "إلغاء مثيل الخطة (مسؤول)"
+          }
+        },
+        "server": {
+          "delete": "حذف خادم المستخدم (مسؤول)",
+          "update": "تحديث خادم المستخدم (مسؤول)"
+        },
+        "update": "تحديث المستخدم (مسؤول)"
+      }
+    },
+    "auth": {
+      "2fa": {
+        "disable": "تعطيل 2FA",
+        "enable": "تمكين 2FA"
+      },
+      "account": {
+        "delete": "حذف الحساب",
+        "update": "تحديث الحساب"
+      },
+      "email": {
+        "update": "تحديث البريد الإلكتروني",
+        "verified": "التحقق من البريد الإلكتروني"
+      },
+      "login": {
+        "error": "خطأ في تسجيل الدخول",
+        "failed": "فشل تسجيل الدخول",
+        "success": "تسجيل الدخول"
+      },
+      "logout": "تسجيل الخروج",
+      "oauth": {
+        "discord": {
+          "error": "خطأ في مصادقة Discord",
+          "failed": "فشل مصادقة Discord",
+          "initiated": "بدء مصادقة Discord",
+          "success": "نجاح مصادقة Discord"
+        },
+        "google": {
+          "error": "خطأ في مصادقة Google",
+          "failed": "فشل مصادقة Google",
+          "initiated": "بدء مصادقة Google",
+          "success": "نجاح مصادقة Google"
+        }
+      },
+      "password": {
+        "reset": {
+          "requested": "طلب إعادة تعيين كلمة المرور",
+          "success": "إعادة تعيين كلمة المرور"
+        },
+        "update": "تحديث كلمة المرور"
+      },
+      "register": {
+        "failed": "فشل التسجيل",
+        "success": "التسجيل"
+      },
+      "session": {
+        "revoke": "إبطال الجلسة"
+      }
+    },
+    "earn": {
+      "ad": {
+        "verified": "تم التحقق من الإعلان"
+      },
+      "callback": {
+        "claim": "المطالبة بالكسب"
+      },
+      "claim": "المطالبة بالكسب",
+      "session": {
+        "start": "بدء جلسة الكسب"
+      },
+      "linkvertise": "اكسب عبر Linkvertise"
+    },
+    "referral": {
+      "code": {
+        "update": "تحديث رمز الإحالة"
+      },
+      "reward": {
+        "referred": "تمت المطالبة بمكافأة المُحال",
+        "referrer": "تمت المطالبة بمكافأة المُحيل"
+      }
+    },
+    "gift": {
+      "redeem": "استرداد الهدية"
+    },
+    "payment": {
+      "purchase": {
+        "completed": "اكتملت عملية الشراء"
+      }
+    },
+    "shop": {
+      "payment": {
+        "cancel": "إلغاء الدفع",
+        "capture": "التقاط الدفع",
+        "create": "إنشاء دفع"
+      },
+      "purchase": "شراء من المتجر"
+    },
+    "server": {
+      "create": "إنشاء خادم",
+      "delete": "حذف خادم",
+      "update": "تحديث خادم"
+    },
+    "ticket": {
+      "create": "إنشاء تذكرة",
+      "reply": "الرد على التذكرة",
+      "status_change": "تغيير حالة التذكرة"
+    }
   }
 }
