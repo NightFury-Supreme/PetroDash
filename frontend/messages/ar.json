@@ -621,7 +621,14 @@
     "ERR_SERVER_NOT_FOUND": "تعذر العثور على الخادم المطلوب.",
     "ERR_SERVER_SUSPENDED": "لا يمكن إكمال العملية لأن الخادم معلق.",
     "ERR_SERVER_CREATING": "لا يمكن إكمال العملية لأن الخادم قيد الإنشاء حاليًا.",
-    "ERR_SERVER_LOCKED": "هناك عملية خادم أخرى قيد التقدم. يرجى الانتظار لحظة."
+    "ERR_SERVER_LOCKED": "هناك عملية خادم أخرى قيد التقدم. يرجى الانتظار لحظة.",
+    "ERR_TITLE_REQUIRED": "Title is required",
+    "ERR_TITLE_MIN": "Title must be at least 3 characters",
+    "ERR_TITLE_MAX": "Title cannot exceed 255 characters",
+    "ERR_MESSAGE_REQUIRED": "Message is required",
+    "ERR_MESSAGE_MIN": "Message must be at least 3 characters",
+    "ERR_MESSAGE_MAX": "Message cannot exceed 5000 characters",
+    "ERR_INVALID_ACTION": "Invalid action. Allowed: resolved, reopen"
   },
   "Tickets": {
     "createTicket": "إنشاء تذكرة",
@@ -698,7 +705,11 @@
     "ticketStatus": "This ticket is {status}.",
     "repliesDisabled": "Replies are currently disabled.",
     "servers": "Servers",
-    "invoices": "Invoices"
+    "invoices": "Invoices",
+    "status": "Status",
+    "created": "Created",
+    "pending": "Pending",
+    "typeMessagePlaceholder": "Type a message (use @ to link servers or invoices)"
   },
   "Common": {
     "cancel": "إلغاء",

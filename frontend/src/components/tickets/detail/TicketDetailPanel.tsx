@@ -43,7 +43,7 @@ export function TicketDetailPanel({
             </span>
             <div className="flex items-center gap-2 text-sm font-medium text-white/70 capitalize">
               <span className={`h-2 w-2 rounded-full ${PRIORITY_DOT[priority.toLowerCase()] ?? 'bg-white/20'}`} />
-              <span>{priority}</span>
+              <span>{t(`priorities.${priority.toLowerCase()}`)}</span>
             </div>
           </div>
 
@@ -54,7 +54,7 @@ export function TicketDetailPanel({
             </span>
             <div className="flex items-center gap-2 text-sm font-medium text-emerald-400">
               <CheckCircle2 size={16} />
-              <span className="capitalize">{status}</span>
+              <span className="capitalize">{t(status as any)}</span>
             </div>
           </div>
 

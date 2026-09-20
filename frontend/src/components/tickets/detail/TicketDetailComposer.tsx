@@ -233,7 +233,7 @@ export function TicketDetailComposer({
           }}
           className={`w-full overflow-y-auto bg-transparent py-2 pl-1 text-sm leading-[1.6] text-white/90 outline-none min-h-[36px] max-h-[128px] break-words whitespace-pre-wrap ${replying ? 'opacity-50' : ''}`}
           style={{ scrollbarWidth: 'thin', scrollbarColor: '#555 transparent' }}
-          data-placeholder="Type a message (use @ to link servers or invoices)"
+          data-placeholder={t('typeMessagePlaceholder')}
         />
         <style dangerouslySetInnerHTML={{__html: `
           [contenteditable]:empty:before {

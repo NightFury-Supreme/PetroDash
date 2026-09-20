@@ -594,7 +594,14 @@
     "ERR_SERVER_NOT_FOUND": "Le serveur demandé est introuvable.",
     "ERR_SERVER_SUSPENDED": "Impossible de terminer l'opération car le serveur est suspendu.",
     "ERR_SERVER_CREATING": "Impossible de terminer l'opération car le serveur est en cours de création.",
-    "ERR_SERVER_LOCKED": "Une autre opération du serveur est en cours. Veuillez patienter."
+    "ERR_SERVER_LOCKED": "Une autre opération du serveur est en cours. Veuillez patienter.",
+    "ERR_TITLE_REQUIRED": "Title is required",
+    "ERR_TITLE_MIN": "Title must be at least 3 characters",
+    "ERR_TITLE_MAX": "Title cannot exceed 255 characters",
+    "ERR_MESSAGE_REQUIRED": "Message is required",
+    "ERR_MESSAGE_MIN": "Message must be at least 3 characters",
+    "ERR_MESSAGE_MAX": "Message cannot exceed 5000 characters",
+    "ERR_INVALID_ACTION": "Invalid action. Allowed: resolved, reopen"
   },
   "Tickets": {
     "createTicket": "Créer le ticket",
@@ -671,7 +678,11 @@
     "ticketStatus": "This ticket is {status}.",
     "repliesDisabled": "Replies are currently disabled.",
     "servers": "Servers",
-    "invoices": "Invoices"
+    "invoices": "Invoices",
+    "status": "Status",
+    "created": "Created",
+    "pending": "Pending",
+    "typeMessagePlaceholder": "Type a message (use @ to link servers or invoices)"
   },
   "Common": {
     "cancel": "Annuler",
