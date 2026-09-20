@@ -634,16 +634,6 @@
       "normal": "सामान्य",
       "high": "उच्च"
     },
-    "categories": {
-      "general": "सामान्य",
-      "billing": "बिलिंग",
-      "technical": "तकनीकी",
-      "abuse": "दुर्व्यवहार",
-      "account": "खाता",
-      "server": "सर्वर",
-      "payment": "भुगतान",
-      "other": "अन्य"
-    },
     "searchTickets": "अपने टिकट खोजें...",
     "noTicketsFound": "कोई टिकट नहीं मिला",
     "noTicketsDesc": "आपने अभी तक इस श्रेणी में कोई टिकट नहीं खोला है।",

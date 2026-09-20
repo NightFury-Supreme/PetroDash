@@ -637,16 +637,6 @@
       "normal": "Normal",
       "high": "High"
     },
-    "categories": {
-      "general": "General",
-      "billing": "Billing",
-      "technical": "Technical",
-      "abuse": "Abuse",
-      "account": "Account",
-      "server": "Server",
-      "payment": "Payment",
-      "other": "Other"
-    },
     "searchTickets": "Search your tickets...",
     "noTicketsFound": "No tickets found",
     "noTicketsDesc": "You haven't opened any tickets in this category yet.",

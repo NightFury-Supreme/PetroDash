@@ -92,7 +92,7 @@ export default function TicketItem({ ticket: t, onAction, isAdmin = false }:{ ti
 
         {/* Category - desktop */}
         <span className="hidden text-xs capitalize text-[#888] md:block">
-          {(tr as any)(`categories.${(t.category || '').toLowerCase()}`) || t.category || 'general'}
+          {t.category || 'general'}
         </span>
 
         {/* Updated - desktop */}

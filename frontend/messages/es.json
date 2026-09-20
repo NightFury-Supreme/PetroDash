@@ -634,16 +634,6 @@
       "normal": "Normal",
       "high": "Alta"
     },
-    "categories": {
-      "general": "General",
-      "billing": "Facturación",
-      "technical": "Técnico",
-      "abuse": "Abuso",
-      "account": "Cuenta",
-      "server": "Servidor",
-      "payment": "Pago",
-      "other": "Otro"
-    },
     "searchTickets": "Buscar sus tickets...",
     "noTicketsFound": "No se encontraron tickets",
     "noTicketsDesc": "Aún no ha abierto ningún ticket en esta categoría.",

@@ -634,16 +634,6 @@
       "normal": "عادية",
       "high": "عالية"
     },
-    "categories": {
-      "general": "عام",
-      "billing": "الفواتير",
-      "technical": "تقني",
-      "abuse": "إساءة",
-      "account": "الحساب",
-      "server": "الخادم",
-      "payment": "الدفع",
-      "other": "أخرى"
-    },
     "searchTickets": "البحث في التذاكر الخاصة بك...",
     "noTicketsFound": "لم يتم العثور على تذاكر",
     "noTicketsDesc": "لم تقم بفتح أي تذاكر في هذه الفئة بعد.",

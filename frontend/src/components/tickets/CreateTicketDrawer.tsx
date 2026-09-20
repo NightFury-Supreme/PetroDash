@@ -189,7 +189,7 @@ export function CreateTicketDrawer({
               <Select
                 value={category}
                 onChange={onCategoryChange}
-                options={categories.map(c => ({ label: (t as any)(`categories.${c.toLowerCase()}`) || c, value: c }))}
+                options={categories.map(c => ({ label: c, value: c }))}
               />
           </Field>
 

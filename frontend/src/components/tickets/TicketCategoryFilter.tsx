@@ -17,14 +17,10 @@ export function TicketCategoryFilter({ categories, value, onChange }: TicketCate
   const uniqueCats = Array.from(new Set(categories));
   const options = [
     { label: t('allCategories') || 'All Categories', value: '' },
-    ...uniqueCats.map(c => {
-      // Try to translate the lowercase version, but fallback to the exact DB string
-      const translated = (t as any)(`categories.${c.toLowerCase()}`);
-      return { 
-        label: translated || c, 
-        value: c 
-      };
-    })
+    ...uniqueCats.map(c => ({
+      label: c, 
+      value: c 
+    }))
   ];
 
   return (
@@ -36,13 +32,12 @@ export function TicketCategoryFilter({ categories, value, onChange }: TicketCate
         renderButtonContent={() => {
           let displayLabel = t('allCategories') || 'All Categories';
           if (value) {
-            const translated = (t as any)(`categories.${value.toLowerCase()}`);
-            displayLabel = translated || value;
+            displayLabel = value;
           }
           return (
             <div className="flex items-center gap-[7px]">
               <Filter size={14} className="text-[#858585]" />
-              <span className="text-[10px] text-[#858585]">
+              <span className="text-[10px] text-[#858585] capitalize">
                 {displayLabel}
               </span>
             </div>
