@@ -22,7 +22,8 @@ export function ChangeEmailDrawer({ isOpen,
 }) {
   const t = useTranslations('Profile');
   const tErrorBackend = useTranslations('BackendErrors');
-const [step, setStep] = useState<1 | 2>(1);
+  const tError = useTranslations('GlobalErrors');
+  const [step, setStep] = useState<1 | 2>(1);
   const [newEmail, setNewEmail] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [tfaCode, setTfaCode] = useState('');
