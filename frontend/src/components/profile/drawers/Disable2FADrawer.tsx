@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Drawer } from '@/components/ui/Drawer';
 import { AlertTriangle } from 'lucide-react';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/components/ui/ToastProvider';
 
 export function Disable2FADrawer({
   isOpen,

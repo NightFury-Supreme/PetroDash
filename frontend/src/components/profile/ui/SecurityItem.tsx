@@ -55,4 +55,4 @@ function parseUserAgent(ua: string): string {
 
   return `${os} • ${browser}`;
 }
-
+

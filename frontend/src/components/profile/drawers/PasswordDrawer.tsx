@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Drawer } from '@/components/ui/Drawer';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/components/ui/ToastProvider';
 
 export function PasswordDrawer({
   isOpen,

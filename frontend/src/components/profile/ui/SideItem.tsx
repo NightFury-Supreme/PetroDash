@@ -38,4 +38,4 @@ export function SideItem({ icon: Icon, label, active, danger, onClick }: { icon:
     </button>
   );
 }
-
+
