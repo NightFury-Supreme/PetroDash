@@ -3,7 +3,7 @@ import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "@/i18n/routing";
-import { SideItem } from "@/components/profile/ProfileComponents";
+import { SideItem } from "@/components/profile";
 import {
   Activity, ChevronDown, CreditCard, HardDrive, MessageSquare, RefreshCw, Users,
 } from "lucide-react";

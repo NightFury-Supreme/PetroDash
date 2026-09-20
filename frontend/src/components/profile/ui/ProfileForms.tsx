@@ -7,7 +7,7 @@ export function ProfileInfoForm({ form, setForm, saving, onSave }: { form: any; 
     <div className="rounded-xl p-6" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
-          <label className="block text-sm font-semibold mb-2 text-[#AAAAAA]">Username</label>
+          <label className="block text-sm font-semibold mb-2 text-[#AAAAAA]">{t('username')}</label>
           <input className="w-full bg-transparent border border-[#303030] rounded-lg p-3" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
         </div>
         <div>
@@ -31,7 +31,7 @@ export function EmailChangeForm({ email, onSubmit, saving }: { email: string; on
   const [password, setPassword] = useState('');
   return (
     <div className="rounded-xl p-6" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-      <h3 className="text-lg font-bold mb-4">Change Email</h3>
+      <h3 className="text-lg font-bold mb-4">{t('changeEmail')}</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-semibold mb-2 text-[#AAAAAA]">New Email</label>

@@ -11,15 +11,15 @@ import {
   Disable2FADrawer, 
   DeleteAccountDrawer,
   ChangeEmailDrawer
-} from '@/components/profile/ProfileDrawers';
+} from '@/components/profile';
 import { 
   SideItem, 
   Overview, 
   Security, 
   ActiveSessions,
   ActivityLogSection
-} from '@/components/profile/ProfileComponents';
-import { InvoicesTab } from '@/components/profile/InvoicesTab';
+} from '@/components/profile';
+import { InvoicesTab } from '@/components/profile';
 import { useRouter } from "@/i18n/routing";
 import {
   User,

@@ -4,7 +4,11 @@ import { useToast } from "@/components/ui/ToastProvider";
 import { Download, Loader2 } from "lucide-react";
 import { Pagination } from "@/components/Pagination";
 
+import { useTranslations } from 'next-intl';
 export function InvoicesTab({ currency = "USD" }: { currency?: string }) {
+  const t = useTranslations('Profile');
+  const tErrorBackend = useTranslations('BackendErrors');
+
     const { showError } = useToast();
   
   const downloadInvoice = async (id: string) => {

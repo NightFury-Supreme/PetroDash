@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ShoppingCart, Crown, Tag, Receipt } from 'lucide-react';
-import { SideItem } from '@/components/profile/ProfileComponents';
+import { SideItem } from '@/components/profile';
 import AdminShopTab from '@/components/admin/store/tabs/ShopTab';
 import AdminPlansTab from '@/components/admin/store/tabs/PlansTab';
 import AdminCouponsTab from '@/components/admin/store/tabs/CouponsTab';
