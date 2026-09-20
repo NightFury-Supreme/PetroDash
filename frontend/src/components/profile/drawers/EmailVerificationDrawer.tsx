@@ -90,9 +90,10 @@ export function EmailVerificationDrawer({
                   showSuccess("Verification code resent.");
                 } catch (e: any) {
                   if (e.retryAfter) onRateLimitChange(e.retryAfter);
-                  else 
-        const errKey = e.details?.[0]?.message || e.message;
-        showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : (e.message || 'An error occurred'));
+                  else {
+  const errKey = e.details?.[0]?.message || e.message;
+  showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : (e.message || 'An error occurred'));
+}
     
                 } finally {
                   setResendLoading(false);
