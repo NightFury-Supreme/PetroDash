@@ -39,9 +39,9 @@ export function TicketDetailSkeleton() {
                             </div>
                           </div>
                           {/* Bubble */}
-                          <div className="rounded-2xl rounded-tl-sm bg-[#3f3f3f] px-4 py-3 min-w-[200px] w-[340px] max-w-full space-y-2">
-                            <div className="h-4 w-full rounded bg-white/10 animate-pulse" />
-                            <div className="h-4 w-3/4 rounded bg-white/10 animate-pulse" />
+                          <div className="rounded-2xl rounded-tl-sm bg-[#121212] border border-[#282828] px-4 py-3 min-w-[200px] w-[340px] max-w-full space-y-2">
+                            <div className="h-4 w-full rounded bg-[#202020] animate-pulse" />
+                            <div className="h-4 w-3/4 rounded bg-[#202020] animate-pulse" />
                           </div>
                           {/* Timestamp */}
                           <div className="mt-1.5 flex items-center gap-2">
@@ -59,10 +59,10 @@ export function TicketDetailSkeleton() {
                             <div className="h-4 w-14 rounded bg-[#202020] animate-pulse" />
                           </div>
                           {/* Bubble */}
-                          <div className="rounded-2xl rounded-tr-sm bg-[#1e1e1e] px-4 py-3 min-w-[220px] w-[420px] max-w-full space-y-2">
-                            <div className="h-4 w-full rounded bg-white/10 animate-pulse" />
-                            <div className="h-4 w-5/6 rounded bg-white/10 animate-pulse" />
-                            <div className="h-4 w-2/3 rounded bg-white/10 animate-pulse" />
+                          <div className="rounded-2xl rounded-tr-sm bg-[#151515] border border-[#282828] px-4 py-3 min-w-[220px] w-[420px] max-w-full space-y-2">
+                            <div className="h-4 w-full rounded bg-[#202020] animate-pulse" />
+                            <div className="h-4 w-5/6 rounded bg-[#202020] animate-pulse" />
+                            <div className="h-4 w-2/3 rounded bg-[#202020] animate-pulse" />
                           </div>
                           {/* Timestamp */}
                           <div className="mt-1.5 flex items-center justify-end gap-2">
@@ -144,7 +144,7 @@ export function TicketDetailSkeleton() {
 
                     {/* Action Button */}
                     <div className="flex flex-col gap-2">
-                      <div className="h-[34px] w-full rounded-lg bg-[#202020] animate-pulse" />
+                      <div className="h-[34px] w-full rounded-lg border border-[#FF5722]/25 bg-[#FF5722]/[0.06] animate-pulse" />
                     </div>
 
                   </div>
