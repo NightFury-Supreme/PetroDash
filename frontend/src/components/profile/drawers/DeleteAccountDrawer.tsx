@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
-import { Drawer } from '@/components/ui/Drawer';
-import { AlertTriangle } from 'lucide-react';
-import { useToast } from '@/components/ui/ToastProvider';
+import { Trash2 } from 'lucide-react';
+import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 
-export function DeleteAccountDrawer({
-  isOpen,
+import React, { useState } from 'react';
+import { useToast } from "@/components/ui/ToastProvider";
+import { Drawer } from '@/components/ui/Drawer';
+import { AlertTriangle
+} from "lucide-react";
+
+export function DeleteAccountDrawer({ isOpen,
   onClose,
   onConfirm,
   loginMethod,
@@ -16,7 +20,9 @@ export function DeleteAccountDrawer({
   loginMethod?: string;
   tfaEnabled?: boolean;
 }) {
-  const [password, setPassword] = useState('');
+  const t = useTranslations('Profile');
+  const tErrorBackend = useTranslations('BackendErrors');
+const [password, setPassword] = useState('');
   const [tfaCode, setTfaCode] = useState('');
   const [confirmPhrase, setConfirmPhrase] = useState('');
   const [useBackupCode, setUseBackupCode] = useState(false);

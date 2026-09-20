@@ -1,6 +1,8 @@
-import React from 'react';
 
+import React from 'react';
 import { useTranslations } from 'next-intl';
+
+
 export function SecurityItem({ icon, title, description, action, status, onAction }: any) {
   const t = useTranslations('Profile');
 

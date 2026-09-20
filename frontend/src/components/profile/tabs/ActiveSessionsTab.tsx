@@ -1,5 +1,29 @@
+import { Smartphone, Globe, LogOut, Clock3, Laptop } from "lucide-react";
+
 import React from 'react';
-import { Smartphone, Globe } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { Session } from '@/hooks/useProfile';
+
+
+
+
+function parseUserAgent(ua: string) {
+  if (!ua) return { os: 'Unknown OS', browser: 'Unknown Browser' };
+  let os = 'Unknown OS', browser = 'Unknown Browser';
+  if (ua.includes('Windows')) os = 'Windows';
+  else if (ua.includes('Mac OS X')) os = 'macOS';
+  else if (ua.includes('Linux')) os = 'Linux';
+  else if (ua.includes('Android')) os = 'Android';
+  else if (ua.includes('iOS') || ua.includes('iPhone')) os = 'iOS';
+  if (ua.includes('Chrome')) browser = 'Chrome';
+  else if (ua.includes('Firefox')) browser = 'Firefox';
+  else if (ua.includes('Safari') && !ua.includes('Chrome')) browser = 'Safari';
+  else if (ua.includes('Edge')) browser = 'Edge';
+  return { os, browser };
+}
+
+
+
 
 export function ActiveSessions({ sessions, onRevoke }: { sessions: Session[]; onRevoke: (id: string) => void; }) {
   const t = useTranslations('Profile');
@@ -63,7 +87,7 @@ function SessionRow({ session, onRevoke }: { session: Session; onRevoke: () => v
         </div>
         <div className="flex items-center md:justify-end min-w-0">
           <div className="flex flex-wrap items-center md:justify-end gap-x-3 gap-y-1 text-xs text-[#888]">
-            <span className="truncate max-w-[200px]" title={session.browser}>{session.browser?.includes('Mozilla') ? parseUserAgent(session.browser) : session.browser}</span>
+            <span className="truncate max-w-[200px]" title={session.browser}>{typeof session.browser === 'string' && session.browser.includes('Mozilla') ? parseUserAgent(session.browser).browser : session.browser as string}</span>
             <span className="text-[#444]">·</span>
             <span className="flex items-center gap-1"><Globe size={12} /> {session.ip || 'Unknown'}</span>
             <span className="text-[#444]">·</span>

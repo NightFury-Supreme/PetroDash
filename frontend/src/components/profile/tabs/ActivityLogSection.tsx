@@ -1,7 +1,11 @@
-import React from 'react';
-import { fetchWithRetry } from '@/utils/fetchWithRetry';
 
+import React from 'react';
 import { useTranslations } from 'next-intl';
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
+import { SharedLogsTable } from '@/components/ui/SharedLogsTable';
+import { Pagination } from '@/components/Pagination';
+
+
 export function ActivityLogSection() {
   const t = useTranslations('Profile');
 

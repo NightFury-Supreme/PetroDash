@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
-import { Drawer } from '@/components/ui/Drawer';
-import { useToast } from '@/components/ui/ToastProvider';
+import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 
-export function Setup2FADrawer({
-  isOpen,
+import React, { useState } from 'react';
+import { useToast } from "@/components/ui/ToastProvider";
+import { Drawer } from '@/components/ui/Drawer';
+import { ValidationMsg } from '../ui/ValidationMsg';
+import { ShieldCheck, Check, ArrowRight, Copy
+} from "lucide-react";
+
+export function Setup2FADrawer({ isOpen,
   onClose,
   tfaSetupData,
   tfaBackupCodes,
@@ -17,7 +22,9 @@ export function Setup2FADrawer({
   setTfaBackupCodes: (codes: string[] | null) => void;
   verifyAndEnable2FA: (code: string) => Promise<void>;
 }) {
-  const [tfaVerifyCode, setTfaVerifyCode] = useState('');
+  const t = useTranslations('Profile');
+  const tErrorBackend = useTranslations('BackendErrors');
+const [tfaVerifyCode, setTfaVerifyCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [touchedCode, setTouchedCode] = useState(false);

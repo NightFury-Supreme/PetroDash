@@ -1,4 +1,13 @@
+import { Mail, ShieldCheck, KeyRound, AlertCircle } from "lucide-react";
+
 import React from 'react';
+import { useTranslations } from 'next-intl';
+import { SecurityItem } from '../ui/SecurityItem';
+
+
+
+
+
 
 export function Security({ emailVerified, emailVerification, loginMethod, tfaEnabled, emailRateLimit = 0, onChangePassword, onSetup2FA, onDisable2FA, onVerifyEmail }: { emailVerified: boolean; emailVerification: boolean; loginMethod?: string; tfaEnabled: boolean; emailRateLimit?: number; onChangePassword: () => void; onSetup2FA: () => void; onDisable2FA: () => void; onVerifyEmail: () => void; }) {
   const t = useTranslations('Profile');

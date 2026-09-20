@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import { Drawer } from '@/components/ui/Drawer';
-import { Mail } from 'lucide-react';
-import { useToast } from '@/components/ui/ToastProvider';
+import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 
-export function EmailVerificationDrawer({
-  isOpen,
+import React, { useState } from 'react';
+import { useToast } from "@/components/ui/ToastProvider";
+import { Drawer } from '@/components/ui/Drawer';
+import { Mail
+} from "lucide-react";
+
+export function EmailVerificationDrawer({ isOpen,
   onClose,
   email,
   onVerify,
@@ -22,7 +25,9 @@ export function EmailVerificationDrawer({
   onRateLimitChange: (val: number) => void;
   onChangeEmail?: () => void;
 }) {
-  const [code, setCode] = useState('');
+  const t = useTranslations('Profile');
+  const tErrorBackend = useTranslations('BackendErrors');
+const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const { showError, showSuccess } = useToast();

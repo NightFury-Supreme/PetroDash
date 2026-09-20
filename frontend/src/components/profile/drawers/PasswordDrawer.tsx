@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
-import { Drawer } from '@/components/ui/Drawer';
-import { useToast } from '@/components/ui/ToastProvider';
+import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 
-export function PasswordDrawer({
-  isOpen,
+import React, { useState } from 'react';
+import { useToast } from "@/components/ui/ToastProvider";
+import { Drawer } from '@/components/ui/Drawer';
+import { ValidationMsg } from '../ui/ValidationMsg';
+import { KeyRound
+} from "lucide-react";
+
+export function PasswordDrawer({ isOpen,
   onClose,
   tfaEnabled,
   updatePassword,
@@ -13,7 +18,9 @@ export function PasswordDrawer({
   tfaEnabled?: boolean;
   updatePassword: (current: string, newPass: string, tfa: string) => Promise<void>;
 }) {
-  const [currentPassword, setCurrentPassword] = useState('');
+  const t = useTranslations('Profile');
+  const tErrorBackend = useTranslations('BackendErrors');
+const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [passwordTfaCode, setPasswordTfaCode] = useState('');
   const [useBackupCode, setUseBackupCode] = useState(false);

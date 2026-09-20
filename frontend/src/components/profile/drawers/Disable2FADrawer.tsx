@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
-import { Drawer } from '@/components/ui/Drawer';
-import { AlertTriangle } from 'lucide-react';
-import { useToast } from '@/components/ui/ToastProvider';
+import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 
-export function Disable2FADrawer({
-  isOpen,
+import React, { useState } from 'react';
+import { useToast } from "@/components/ui/ToastProvider";
+import { Drawer } from '@/components/ui/Drawer';
+import { ValidationMsg } from '../ui/ValidationMsg';
+import { AlertTriangle
+} from "lucide-react";
+
+export function Disable2FADrawer({ isOpen,
   onClose,
   disable2FA,
 }: {
@@ -12,7 +16,9 @@ export function Disable2FADrawer({
   onClose: () => void;
   disable2FA: (password: string, code: string) => Promise<void>;
 }) {
-  const [tfaPassword, setTfaPassword] = useState('');
+  const t = useTranslations('Profile');
+  const tErrorBackend = useTranslations('BackendErrors');
+const [tfaPassword, setTfaPassword] = useState('');
   const [tfaVerifyCode, setTfaVerifyCode] = useState('');
   const [useBackupCode, setUseBackupCode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

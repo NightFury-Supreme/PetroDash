@@ -1,8 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Check, Save, AlertCircle, Pencil } from 'lucide-react';
-import { fetchWithRetry } from '@/utils/fetchWithRetry';
+import { Check, Pencil, Save, AlertCircle } from "lucide-react";
 
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
+
+
+
+
+
+
+
+
 export function InfoRow({ icon, label, description, value, editing, draft, field, status, action, customEdit, onEdit, onDraft, onSave, onCancel, forceUnchanged }: any) {
   const t = useTranslations('Profile');
 

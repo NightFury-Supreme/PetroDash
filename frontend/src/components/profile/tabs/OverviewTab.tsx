@@ -1,4 +1,13 @@
+import { User, Mail, ShieldCheck, Camera, AlertCircle } from "lucide-react";
+
 import React from 'react';
+import { useTranslations } from 'next-intl';
+import { InfoRow } from '../ui/InfoRow';
+
+
+
+
+
 
 export function Overview({
   form,

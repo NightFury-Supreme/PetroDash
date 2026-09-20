@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
-import { Drawer } from '@/components/ui/Drawer';
-import { Mail } from 'lucide-react';
-import { useToast } from '@/components/ui/ToastProvider';
+import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 
-export function ChangeEmailDrawer({
-  isOpen,
+import React, { useState, useEffect } from 'react';
+import { useToast } from "@/components/ui/ToastProvider";
+import { Drawer } from '@/components/ui/Drawer';
+import { ValidationMsg } from '../ui/ValidationMsg';
+import { Mail
+} from "lucide-react";
+
+export function ChangeEmailDrawer({ isOpen,
   onClose,
   tfaEnabled,
   changeEmail,
@@ -16,7 +20,9 @@ export function ChangeEmailDrawer({
   changeEmail: (newEmail: string, password: string, tfa: string) => Promise<{ requiresVerification: boolean } | void>;
   verifyEmailChange?: (newEmail: string, code: string) => Promise<void>;
 }) {
-  const [step, setStep] = useState<1 | 2>(1);
+  const t = useTranslations('Profile');
+  const tErrorBackend = useTranslations('BackendErrors');
+const [step, setStep] = useState<1 | 2>(1);
   const [newEmail, setNewEmail] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [tfaCode, setTfaCode] = useState('');

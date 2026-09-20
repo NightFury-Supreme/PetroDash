@@ -1,4 +1,6 @@
+
 import React from 'react';
+
 
 export function SideItem({ icon: Icon, label, active, danger, onClick }: { icon: any; label: string; active?: boolean; danger?: boolean; onClick: () => void; }) {
   return (
