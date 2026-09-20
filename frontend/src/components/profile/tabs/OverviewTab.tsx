@@ -23,6 +23,8 @@ export function Overview({
   onSaveAvatar: (url: string) => void;
   onChangeEmail: () => void;
 }) {
+  const t = useTranslations('Profile');
+
   const [editingAvatar, setEditingAvatar] = React.useState(false);
   const [avatarDraft, setAvatarDraft] = React.useState('');
   return (

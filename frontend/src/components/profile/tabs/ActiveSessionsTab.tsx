@@ -2,6 +2,8 @@ import React from 'react';
 import { Smartphone, Globe } from 'lucide-react';
 
 export function ActiveSessions({ sessions, onRevoke }: { sessions: Session[]; onRevoke: (id: string) => void; }) {
+  const t = useTranslations('Profile');
+
   return (
     <div className="space-y-6">
       <div className="rounded-xl border border-[#222] bg-[#161616] p-4">
