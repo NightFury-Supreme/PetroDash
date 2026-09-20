@@ -14,8 +14,7 @@ interface ForgotRequestFormProps {
 export default function ForgotRequestForm({ email, setEmail, onRequest, loading }: ForgotRequestFormProps) {
   const router = useRouter();
   const t = useTranslations('Auth.forgot');
-  const tCommon = useTranslations('Common');
-  const tCommon = useTranslations('Auth.common');
+  const tCommon = useTranslations('Common');
   
   return (
     <div className="space-y-4">

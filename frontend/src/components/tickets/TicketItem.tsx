@@ -92,7 +92,7 @@ export default function TicketItem({ ticket: t, onAction, isAdmin = false }:{ ti
 
         {/* Category - desktop */}
         <span className="hidden text-xs capitalize text-[#888] md:block">
-          {t.category || 'general'}
+          {(tr as any)(`categories.${(t.category || '').toLowerCase()}`) || t.category || 'general'}
         </span>
 
         {/* Updated - desktop */}
@@ -139,7 +139,6 @@ export default function TicketItem({ ticket: t, onAction, isAdmin = false }:{ ti
             <TicketContextMenu 
               ticket={t} 
               onAction={handleContextAction} 
-              onClose={() => setMenu(false)}
               isAdmin={isAdmin}
             />
           )}

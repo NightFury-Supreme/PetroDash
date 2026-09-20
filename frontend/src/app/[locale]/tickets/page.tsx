@@ -207,12 +207,10 @@ export default function TicketsPage() {
                 <div className="flex flex-col items-center justify-center py-20 text-center bg-[#141414] rounded-[10px] border border-[#282828]">
                   <MessageSquare className="h-10 w-10 text-[#505050] mb-4 opacity-50" />
                   <h3 className="text-[15px] font-medium text-[#d5d5d5] mb-2">
-                    {debouncedQ ? noTicketsFound : t('noTicketsFound')}
+                    {t('noTicketsFound') || "No tickets found"}
                   </h3>
                   <p className="text-[#888] text-[13px] max-w-[300px]">
-                    {debouncedQ 
-                      ? noTicketsDesc
-                      : t('noTicketsDesc')}
+                    {t('noTicketsDesc') || "You haven't opened any tickets in this category yet."}
                   </p>
                 </div>
               )}

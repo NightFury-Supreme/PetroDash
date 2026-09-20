@@ -9,7 +9,7 @@ export function TicketStatusBadge({ status }: { status: TicketStatus }) {
   
   const getStatusLabel = () => {
     if (status === 'pending') return tCommon('pending') || cfg.label;
-    if (status === 'deleted') return t('deleted') || cfg.label;
+    if ((status as string) === 'deleted') return t('deleted') || cfg.label;
     return (t as any)(status) || cfg.label;
   };
 

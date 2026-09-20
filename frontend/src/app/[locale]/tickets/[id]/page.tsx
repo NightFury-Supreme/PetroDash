@@ -50,10 +50,10 @@ export default function TicketDetailPage() {
 
   /* -- Priority handling (UI mapping) -------------------- */
   const priorityMap: Record<string, { label: string; level: Priority }> = {
-    low:    { label: t('priorities.low'), level: 'low' },
-    medium: { label: t('priorities.normal'), level: 'medium' },
-    normal: { label: t('priorities.normal'), level: 'medium' },
-    high:   { label: t('priorities.high'), level: 'high' }
+    low:    { label: t('priorities.low'), level: 'Low' },
+    medium: { label: t('priorities.normal'), level: 'Normal' },
+    normal: { label: t('priorities.normal'), level: 'Normal' },
+    high:   { label: t('priorities.high'), level: 'High' }
   };
   const priority = priorityMap[ticket?.priority || 'low'] || priorityMap.low;
 
@@ -223,12 +223,12 @@ export default function TicketDetailPage() {
                 ticketId={shortId(ticket._id)}
                 status={status}
                 category={ticket.category || 'General'}
-                priority={priority}
+                priority={priority.level}
                 createdDate={createdDate}
                 updatedAt={ticket.updatedAt}
                 replyAllowed={replyAllowed}
                 statusBusy={statusBusy}
-                statusDone={statusDone}
+                statusDone={statusDone as 'resolved' | 'reopen' | null}
                 copied={copied}
                 adminsInvolved={adminsText}
                 onResolve={() => handleUpdateStatus('resolved')}

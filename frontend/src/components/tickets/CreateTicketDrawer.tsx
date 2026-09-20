@@ -186,11 +186,11 @@ export function CreateTicketDrawer({
 
         <div className="grid grid-cols-2 gap-4">
           <Field label={t('category')}>
-            <Select
-              value={category}
-              onChange={onCategoryChange}
-              options={categories.map(c => ({ label: (t as any)(`categories.${c}`) || c.charAt(0).toUpperCase() + c.slice(1), value: c }))}
-            />
+              <Select
+                value={category}
+                onChange={onCategoryChange}
+                options={categories.map(c => ({ label: (t as any)(`categories.${c.toLowerCase()}`) || c, value: c }))}
+              />
           </Field>
 
           <Field label={t('priority')}>

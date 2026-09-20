@@ -21,8 +21,7 @@ export default function RegisterForm() {
   const [loading, setLoading] = useState(false);
 
   const t = useTranslations('Auth.register');
-  const tCommon = useTranslations('Common');
-  const tCommon = useTranslations('Auth.common');
+  const tCommon = useTranslations('Common');
   const tErrors = useTranslations('Auth.errors');
 
   const strongPassword = z

@@ -21,8 +21,7 @@ export default function LoginForm({ onSuccess, onRequires2FA }: { onSuccess: (to
   const { settings } = useAuthSettings();
   const { showError } = useToast();
   const t = useTranslations('Auth.login');
-  const tCommon = useTranslations('Common');
-  const tCommon = useTranslations('Auth.common');
+  const tCommon = useTranslations('Common');
   const tErrors = useTranslations('Auth.errors');
   const [form, setForm] = useState<LoginForm>({ emailOrUsername: '', password: '' });
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});

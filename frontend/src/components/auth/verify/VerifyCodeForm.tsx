@@ -19,8 +19,7 @@ export default function VerifyCodeForm({
   email, code, setCode, codeSent, onChangeEmailRequest, onVerify, onResend, loading, resendLoading, rateLimit
 }: VerifyCodeFormProps) {
   const t = useTranslations('Auth.verify');
-  const tCommon = useTranslations('Common');
-  const tCommon = useTranslations('Auth.common');
+  const tCommon = useTranslations('Common');
   
   return (
     <div className="space-y-4">

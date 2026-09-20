@@ -22,7 +22,7 @@ class TicketService {
     try {
       const s = await getSettings();
       if (s && Array.isArray(s.ticketCategories) && s.ticketCategories.length > 0) {
-        allowedCategories = s.ticketCategories.map((c) => String(c).toLowerCase()).filter(Boolean);
+        allowedCategories = s.ticketCategories.map((c) => String(c)).filter(Boolean);
       }
     } catch (_) {}
     return allowedCategories;

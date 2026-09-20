@@ -105,6 +105,7 @@ export function GoBackButton() {
 
 export function ErrorDescription({ error, topic }: { error: string; topic?: string }) {
   const t = useTranslations('ErrorState');
+  const tCommon = useTranslations('Common');
   const e = typeof error === 'string' ? error.toLowerCase() : '';
   
   let msg = t('descGeneric').replace('{topic}', topic || t('defaultTopic'));

@@ -13,8 +13,7 @@ export default function TwoFactorForm({ tempToken, onSuccess, onBack }: { tempTo
   const [useBackup, setUseBackup] = useState(false);
   const { showError } = useToast();
   const t = useTranslations('Auth.twoFactor');
-  const tCommon = useTranslations('Common');
-  const tCommon = useTranslations('Auth.common');
+  const tCommon = useTranslations('Common');
   const tErrors = useTranslations('Auth.errors');
 
   const onSubmit = async (e: React.FormEvent) => {

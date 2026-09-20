@@ -546,6 +546,7 @@ function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: Variant
 
 export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps) {
   const t = useTranslations('UI');
+  const tCommon = useTranslations('Common');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const toggle = (id: string) => setExpandedId(prev => (prev === id ? null : id));
