@@ -4,7 +4,7 @@ const User = require('../../../models/User');
 const { getCache, setCache, deleteCache, deleteCachePattern } = require('../../../lib/redis');
 const { updateServerBuild, getServer, updateServerDetails, forceDeleteServer } = require('../../../services/pterodactyl');
 const { hasServerLimitsChanged } = require('../../../utils/security');
-const AppError = require('../../../../utils/AppError');
+const AppError = require('../../../utils/AppError');
 
 const shouldLogPanelErrors = true;
 
@@ -378,7 +378,7 @@ const updateServer = async (id, data) => {
       suspended = panel?.suspended === true || panel?.suspended === 1;
       currentAllocationId = panel?.allocation || panel?.relationships?.allocation?.attributes?.id || 0;
     }
-  } catch (panelError) {
+  } catch (_panelError) {
     unreachable = true;
   }
 

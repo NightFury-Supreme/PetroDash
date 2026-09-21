@@ -1,11 +1,11 @@
 const { z } = require('zod');
-const Plan = require('../../../../models/Plan');
-const PlanCategory = require('../../../../models/PlanCategory');
-const UserPlan = require('../../../../models/UserPlan');
+const Plan = require('../../../models/Plan');
+const PlanCategory = require('../../../models/PlanCategory');
+const UserPlan = require('../../../models/UserPlan');
 const mongoose = require('mongoose');
-const { getCache, setCache, deleteCachePattern } = require('../../../../lib/redis');
-const { writeAudit } = require('../../../../middleware/audit');
-const AppError = require('../../../../utils/AppError');
+const { getCache, setCache, deleteCachePattern } = require('../../../lib/redis');
+const { writeAudit } = require('../../../middleware/audit');
+const AppError = require('../../../utils/AppError');
 
 const createSchema = z.object({
   name: z.string().min(1, 'Name is required'),

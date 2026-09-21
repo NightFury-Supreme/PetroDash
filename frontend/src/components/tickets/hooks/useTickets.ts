@@ -69,7 +69,7 @@ export function useTickets(): UseTicketsReturn {
       let msg = String(e.message || 'failedToLoadTickets');
       try {
         msg = tErrorBackend(msg as any);
-      } catch(err) {
+      } catch(_err) {
         if (msg === 'failedToLoadTickets') msg = tError(msg as any);
         else msg = tErrorBackend('ERR_INTERNAL_SERVER');
       }

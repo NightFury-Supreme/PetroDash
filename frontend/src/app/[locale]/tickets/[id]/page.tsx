@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "@/i18n/routing";
 import { notFound } from "@/i18n/routing";
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useToast } from '@/components/ui/ToastProvider';
 import { MessageSquare, RefreshCw } from 'lucide-react';
 import { ErrorState, DashboardButton, ErrorDescription } from '@/components/ui/ErrorState';
@@ -22,7 +22,6 @@ import { useTicketDetail } from '@/components/tickets/hooks';
 
 export default function TicketDetailPage() {
   const t = useTranslations('Tickets');
-  const locale = useLocale();
   const tCommon = useTranslations('Common');
   const tError = useTranslations('GlobalErrors');
   const { showError, showSuccess } = useToast();

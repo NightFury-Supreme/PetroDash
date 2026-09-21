@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
-const Ticket = require('../../../../models/Ticket');
-const Settings = require('../../../../models/Settings');
-const { getCache, setCache, deleteCachePattern } = require('../../../../lib/redis');
-const { getSettings, clearSettingsCache } = require('../../../../lib/settings');
-const AppError = require('../../../../utils/AppError');
-const { writeAudit } = require('../../../../middleware/audit');
-const User = require('../../../../models/User');
-const TicketMessage = require('../../../../models/TicketMessage');
+const Ticket = require('../../../models/Ticket');
+const Settings = require('../../../models/Settings');
+const { getCache, setCache, deleteCachePattern } = require('../../../lib/redis');
+const { getSettings, clearSettingsCache } = require('../../../lib/settings');
+const AppError = require('../../../utils/AppError');
+const { writeAudit } = require('../../../middleware/audit');
+const User = require('../../../models/User');
+const TicketMessage = require('../../../models/TicketMessage');
 
 function extractAdminId(req) {
   return (req.user && (req.user.sub || req.user.userId || req.user._id || req.user.id)) || null;
@@ -243,7 +243,7 @@ const addMessage = async (id, data, req) => {
     try {
       const owner = await User.findById(t.user).lean();
       if (owner && owner.email) {
-        const { sendMailTemplate } = require('../../../../lib/mail');
+        const { sendMailTemplate } = require('../../../lib/mail');
         let frontendHost = process.env.FRONTEND_URL || '';
         if (frontendHost && !frontendHost.startsWith('http')) frontendHost = `https://${frontendHost}`;
         
@@ -306,7 +306,7 @@ const updateTicket = async (id, data, req) => {
       try {
         const owner = await User.findById(t.user).lean();
         if (owner && owner.email) {
-          const { sendMailTemplate } = require('../../../../lib/mail');
+          const { sendMailTemplate } = require('../../../lib/mail');
           let frontendHost = process.env.FRONTEND_URL || '';
           if (frontendHost && !frontendHost.startsWith('http')) frontendHost = `https://${frontendHost}`;
           await sendMailTemplate({
@@ -372,7 +372,7 @@ const updateTicket = async (id, data, req) => {
 
     await writeAudit(req, 'admin.ticket.update', 'ticket', t._id.toString(), { changes });
     
-    const { logUserActivity } = require('../../../../middleware/userActivity');
+    const { logUserActivity } = require('../../../middleware/userActivity');
     await logUserActivity(null, 'admin.ticket.update', {
       ticketId: t._id.toString(),
       title: t.title,

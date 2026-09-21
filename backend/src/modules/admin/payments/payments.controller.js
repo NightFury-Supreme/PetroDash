@@ -7,7 +7,7 @@ exports.getLedger = async (req, res, next) => {
     try {
         const result = await paymentsService.getLedger(req.query);
         res.json(result);
-    } catch (error) {
+    } catch (_error) {
         next(new AppError('Failed to fetch ledger', 500, 'ERR_INTERNAL'));
     }
 };

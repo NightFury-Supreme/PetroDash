@@ -1,7 +1,7 @@
 const { z } = require('zod');
 const { getSettings, updateSettings } = require('./settings.service');
-const AppError = require('../../../../utils/AppError');
-const { writeAudit } = require('../../../../middleware/audit');
+const AppError = require('../../../utils/AppError');
+const { writeAudit } = require('../../../middleware/audit');
 
 const settingsPayloadSchema = z.object({
   siteName: z.string().min(1, 'Site name must be at least 1 character').max(100, 'Site name must be less than 100 characters').regex(/^[^<>]*$/, 'Site name cannot contain HTML tags').optional(),
@@ -36,7 +36,7 @@ const settingsPayloadSchema = z.object({
       try {
         Intl.DateTimeFormat(undefined, { timeZone: tz });
         return true;
-      } catch (e) {
+      } catch (_e) {
         return false;
       }
     }, 'Invalid IANA timezone').optional(),

@@ -1,9 +1,9 @@
-const ShopItem = require('../../../../models/ShopItem');
+const ShopItem = require('../../../models/ShopItem');
 const { z } = require('zod');
-const { ensureShopPresets } = require('../../../../lib/shopPresets');
-const { getCache, setCache, deleteCachePattern } = require('../../../../lib/redis');
-const { writeAudit } = require('../../../../middleware/audit');
-const AppError = require('../../../../utils/AppError');
+const { ensureShopPresets } = require('../../../lib/shopPresets');
+const { getCache, setCache, deleteCachePattern } = require('../../../lib/redis');
+const { writeAudit } = require('../../../middleware/audit');
+const AppError = require('../../../utils/AppError');
 
 const updateSchema = z.object({
   amountPerUnit: z.coerce.number().min(0).max(1000000).optional(),

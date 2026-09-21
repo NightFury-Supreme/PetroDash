@@ -9,7 +9,6 @@ import { Pagination } from '@/components/Pagination';
 
 export function InvoicesTab({ currency = "USD" }: { currency?: string }) {
   const t = useTranslations('Profile');
-  const tErrorBackend = useTranslations('BackendErrors');
 
     const { showError } = useToast();
   

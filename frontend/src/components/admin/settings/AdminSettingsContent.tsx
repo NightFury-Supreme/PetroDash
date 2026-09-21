@@ -24,7 +24,6 @@ export function AdminSettingsContent({
   const [saving, setSaving] = useState(false);
   const { showSuccess, showError } = useToast();
   const t = useTranslations('AdminSettings');
-  const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
 
   useEffect(() => {

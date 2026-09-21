@@ -22,7 +22,6 @@ export default function AdminUsersListPage() {
     loading,
     search,
     setSearch,
-    currentPage,
     setCurrentPage,
     setLoading
   } = useAdminUsers();

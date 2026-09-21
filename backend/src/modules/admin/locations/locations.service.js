@@ -1,7 +1,7 @@
-const Location = require('../../../../models/Location');
-const Plan = require('../../../../models/Plan');
-const Server = require('../../../../models/Server');
-const { deleteCachePattern, deleteCache, getCache, setCache } = require('../../../../lib/redis');
+const Location = require('../../../models/Location');
+const Plan = require('../../../models/Plan');
+const Server = require('../../../models/Server');
+const { deleteCachePattern, deleteCache, getCache, setCache } = require('../../../lib/redis');
 
 async function clearLocationCaches() {
   await deleteCachePattern('admin:locations');

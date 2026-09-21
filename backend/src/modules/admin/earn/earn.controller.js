@@ -1,7 +1,6 @@
 const { z } = require('zod');
 const earnService = require('./earn.service');
 const { writeAudit } = require('../../../middleware/audit');
-const AppError = require('../../../utils/AppError');
 
 const earnPatchSchema = z.object({
   linkvertise: z.object({

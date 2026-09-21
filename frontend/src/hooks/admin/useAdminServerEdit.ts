@@ -72,7 +72,7 @@ export function useAdminServerEdit(serverId: string, onUpdate?: () => void, onCl
   }, [serverId]);
 
   useEffect(() => {
-    loadServer().catch((err) => {
+    loadServer().catch((_err) => {
        // This will be caught and set in the component
     });
   }, [loadServer]);

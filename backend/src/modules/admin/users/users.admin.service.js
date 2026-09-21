@@ -4,13 +4,12 @@ const Server = require('../../../models/Server');
 const UserPlan = require('../../../models/UserPlan');
 const Plan = require('../../../models/Plan');
 const PendingUpdate = require('../../../models/PendingUpdate');
-const AppError = require('../../../../utils/AppError');
+const AppError = require('../../../utils/AppError');
 const { deleteServer: deletePanelServer, updateServerBuild, getServer: getPanelServer, updateServerDetails, deletePanelUser, checkUserExists, updatePanelUser, suspendServer, unsuspendServer } = require('../../../services/pterodactyl');
 const { getCache, setCache, deleteCachePattern } = require('../../../lib/redis');
 const { sendMailTemplate } = require('../../../lib/mail');
 const { writeAudit } = require('../../../middleware/audit');
 const { logUserActivity } = require('../../../middleware/userActivity');
-const { computeEffectiveLimits } = require('../../../lib/limits');
 
 const listUsers = async ({ search, page = '1', limit = '10', pageSize }) => {
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
@@ -431,7 +430,7 @@ const updateServer = async (req, id, serverId, data) => {
   if (!user) throw new AppError('User not found', 404, 'ERR_USER_NOT_FOUND');
 
   if (data.limits) {
-    const userLimits = await computeEffectiveLimits(user._id);
+    const userLimits = user.resources || {};
     const others = await Server.find({ owner: user._id, _id: { $ne: server._id } }).lean();
     const used = others.reduce((acc, s) => {
       const l = s.limits || {};

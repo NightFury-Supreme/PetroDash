@@ -1,7 +1,7 @@
-const AuditLog = require('../../../../models/AuditLog');
-const User = require('../../../../models/User');
-const Server = require('../../../../models/Server');
-const { getCache, setCache } = require('../../../../lib/redis');
+const AuditLog = require('../../../models/AuditLog');
+const User = require('../../../models/User');
+const Server = require('../../../models/Server');
+const { getCache, setCache } = require('../../../lib/redis');
 
 async function getLogs(parsedQuery) {
   const { page, pageSize, action, actorId, resourceType, requestId, severity, sortBy } = parsedQuery;

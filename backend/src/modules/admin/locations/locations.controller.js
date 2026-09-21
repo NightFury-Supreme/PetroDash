@@ -1,7 +1,7 @@
 const { z } = require('zod');
 const { getLocations, createLocation, getLocationById, updateLocation, deleteLocation } = require('./locations.service');
-const AppError = require('../../../../utils/AppError');
-const { writeAudit } = require('../../../../middleware/audit');
+const AppError = require('../../../utils/AppError');
+const { writeAudit } = require('../../../middleware/audit');
 
 const schema = z.object({
   name: z.string().min(1),

@@ -28,7 +28,7 @@ export function ProfileInfoForm({ form, setForm, saving, onSave }: { form: any; 
   );
 }
 
-export function EmailChangeForm({ email, onSubmit, saving }: { email: string; onSubmit: (email: string, password: string) => void; saving: boolean }) {
+export function EmailChangeForm({ email: _email, onSubmit, saving }: { email: string; onSubmit: (email: string, password: string) => void; saving: boolean }) {
   const t = useTranslations('Profile');
   const [newEmail, setNewEmail] = useState('');
   const [password, setPassword] = useState('');

@@ -1,10 +1,10 @@
-const Settings = require('../../../../models/Settings');
-const DefaultResources = require('../../../../models/DefaultResources');
-const Email = require('../../../../models/Email');
-const { clearSettingsCache } = require('../../../../lib/settings');
-const { getCache, setCache, deleteCachePattern } = require('../../../../lib/redis');
-const { reconfigureStrategies } = require('../../../../routes/auth/oauth');
-const AppError = require('../../../../utils/AppError');
+const Settings = require('../../../models/Settings');
+const DefaultResources = require('../../../models/DefaultResources');
+const Email = require('../../../models/Email');
+const { clearSettingsCache } = require('../../../lib/settings');
+const { getCache, setCache, deleteCachePattern } = require('../../../lib/redis');
+const { reconfigureStrategies } = require('../../../routes/auth/oauth');
+const AppError = require('../../../utils/AppError');
 
 async function getOrCreate() {
   try {
@@ -13,7 +13,7 @@ async function getOrCreate() {
       doc = await Settings.create({});
     }
     return doc;
-  } catch (error) {
+  } catch (_error) {
     throw new AppError('Failed to access settings database', 500);
   }
 }

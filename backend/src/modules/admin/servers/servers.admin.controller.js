@@ -1,7 +1,7 @@
 const { z } = require('zod');
 const serversAdminService = require('./servers.admin.service');
-const AppError = require('../../../../utils/AppError');
-const { writeAudit } = require('../../../../middleware/audit');
+const AppError = require('../../../utils/AppError');
+const { writeAudit } = require('../../../middleware/audit');
 
 const listServers = async (req, res, next) => {
   try {

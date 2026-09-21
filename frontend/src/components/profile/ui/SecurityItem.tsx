@@ -1,11 +1,7 @@
 
 import React from 'react';
-import { useTranslations } from 'next-intl';
-
 
 export function SecurityItem({ icon, title, description, action, status, onAction }: any) {
-  const t = useTranslations('Profile');
-
   return (
     <div className="px-5 py-4 transition hover:bg-white/[0.02]">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -31,28 +27,5 @@ export function SecurityItem({ icon, title, description, action, status, onActio
       </div>
     </div>
   );
-}
-
-function parseUserAgent(ua: string): string {
-  if (!ua) return 'Unknown Device';
-  
-  let browser = 'Unknown Browser';
-  if (ua.includes('Firefox/')) browser = 'Firefox';
-  else if (ua.includes('Edg/')) browser = 'Edge';
-  else if (ua.includes('Chrome/')) browser = 'Chrome';
-  else if (ua.includes('Safari/') && !ua.includes('Chrome/')) browser = 'Safari';
-  else if (ua.includes('OPR/') || ua.includes('Opera/')) browser = 'Opera';
-
-  let os = 'Unknown OS';
-  if (ua.includes('Windows NT 10.0')) os = 'Windows 10/11';
-  else if (ua.includes('Windows NT 6.3')) os = 'Windows 8.1';
-  else if (ua.includes('Windows NT 6.2')) os = 'Windows 8';
-  else if (ua.includes('Windows NT 6.1')) os = 'Windows 7';
-  else if (ua.includes('Mac OS X')) os = 'macOS';
-  else if (ua.includes('Android')) os = 'Android';
-  else if (ua.includes('iPhone') || ua.includes('iPad') || ua.includes('iPod')) os = 'iOS';
-  else if (ua.includes('Linux')) os = 'Linux';
-
-  return `${os} • ${browser}`;
 }
 

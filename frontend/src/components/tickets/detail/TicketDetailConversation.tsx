@@ -1,6 +1,6 @@
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import React, { useEffect, useRef } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useToast } from "@/components/ui/ToastProvider";
 import { TicketMessage } from '../types';
 import { formatRelative } from '../utils';
@@ -20,14 +20,13 @@ interface TicketDetailConversationProps {
 export function TicketDetailConversation({
   messages,
   username,
-  hasMore,
-  isLoadingMore,
+  hasMore = false,
+  isLoadingMore = false,
   onLoadMore,
   viewerRole = 'user',
   onServerMentionClick,
 }: TicketDetailConversationProps) {
   const t = useTranslations('Tickets');
-  const locale = useLocale();
   const topRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const initialScrolledRef = useRef(false);

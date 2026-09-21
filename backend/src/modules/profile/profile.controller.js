@@ -9,7 +9,7 @@ exports.updateProfile = async (req, res, next) => {
     const parsed = schemas.updateProfileSchema.safeParse(req.body);
     if (!parsed.success) throw AppError.badRequest('Invalid payload', parsed.error.flatten());
     
-    const { user, changes } = await profileService.updateProfile(req.user.sub, parsed.data);
+    const { changes } = await profileService.updateProfile(req.user.sub, parsed.data);
     
     await logUserActivity(req, 'auth.profile.update', { changes });
     await writeAudit(req, 'auth.profile.update', 'user_profile', req.user.sub, { changes });

@@ -1,6 +1,6 @@
 const { z } = require('zod');
 const { getLogs } = require('./logs.service');
-const AppError = require('../../../../utils/AppError');
+const AppError = require('../../../utils/AppError');
 
 const logsQuerySchema = z.object({
   page: z.coerce.number().int().min(1).max(100).default(1),

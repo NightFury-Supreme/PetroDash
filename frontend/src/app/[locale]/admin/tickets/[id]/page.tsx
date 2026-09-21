@@ -128,7 +128,7 @@ export default function AdminTicketDetailPage() {
     else if (action === "reopen")  await updateStatusHandler("open",     "reopen");
     else if (action === "delete") {
       setActionBusy("delete");
-      try { await handleActionAPI("delete"); } catch (e: any) { setActionBusy(null); }
+      try { await handleActionAPI("delete"); } catch (_e: any) { setActionBusy(null); }
     } else if (action === "restore") {
       setActionBusy("restore");
       try { 

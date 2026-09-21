@@ -71,7 +71,7 @@ export function useShopPurchase() {
       } else {
          try {
             msg = tError(msg as any);
-         } catch(err) {
+         } catch(_err) {
             msg = tError("ERR_INTERNAL_SERVER");
          }
       }

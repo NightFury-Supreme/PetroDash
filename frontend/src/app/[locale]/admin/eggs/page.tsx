@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from 'react';
-import { useRouter } from "@/i18n/routing";
 import EggsHeader from '@/components/admin/eggs/EggsHeader';
 import EggList from '@/components/admin/eggs/EggList';
 import AdminEggsSkeleton from '@/components/skeletons/admin/eggs/AdminEggsSkeleton';
@@ -16,7 +15,6 @@ import { useAdminEggs } from '@/hooks/admin/eggs/useAdminEggs';
 import { useTranslations } from 'next-intl';
 
 export default function EggsListPage() {
-  const router = useRouter();
   const t = useTranslations('admin.eggs');
   const tCommon = useTranslations('common');
   const tErrorBackend = useTranslations('error.backend');
