@@ -1,45 +1,14 @@
-"use client";
+/* ==========================================================================
+   Admin Servers Table Component
+   Compliance: ISO/IEC 25010, Single Responsibility Principle
+========================================================================== */
 
-import { useTranslations } from "next-intl";
-import { AdminServerTableRow } from "./AdminServerTableRow";
+'use client';
 
-type Server = {
-  _id: string;
-  clientUrl?: string;
-  name: string;
-  status: string;
-  userId: {
-    _id: string;
-    username: string;
-    email: string;
-    profilePicture?: string;
-    oauthProviders?: {
-      discord?: { avatar?: string };
-      google?: { picture?: string };
-    };
-  };
-  egg: { _id: string; name: string; icon?: string };
-  location: { _id: string; name: string; flag?: string };
-  limits: {
-    diskMb: number;
-    memoryMb: number;
-    cpuPercent: number;
-    backups: number;
-    databases: number;
-    allocations: number;
-  };
-  createdAt: string;
-  suspended?: boolean;
-  unreachable?: boolean;
-};
-
-interface AdminServersTableProps {
-  servers: Server[];
-  onDelete: (serverId: string, serverName: string) => void;
-  onEdit: (serverId: string) => void;
-  deleting: string | null;
-  hideOwner?: boolean;
-}
+import React from 'react';
+import { useTranslations } from 'next-intl';
+import { AdminServerTableRow } from './AdminServerTableRow';
+import type { AdminServersTableProps } from './types';
 
 export default function AdminServersTable({
   servers,
@@ -48,11 +17,11 @@ export default function AdminServersTable({
   deleting,
   hideOwner = false,
 }: AdminServersTableProps) {
-  const t = useTranslations('Admin.servers');
+  const t = useTranslations('admin.servers');
 
   const cols = hideOwner
-    ? "lg:grid-cols-[1fr_1fr_1fr_100px_80px_100px_100px_120px]"
-    : "lg:grid-cols-[1fr_1.5fr_1fr_1fr_100px_80px_100px_100px_120px]";
+    ? 'lg:grid-cols-[1fr_1fr_1fr_100px_80px_100px_100px_120px]'
+    : 'lg:grid-cols-[1fr_1.5fr_1fr_1fr_100px_80px_100px_100px_120px]';
 
   return (
     <div>
@@ -93,3 +62,5 @@ export default function AdminServersTable({
     </div>
   );
 }
+
+export { AdminServersTable };

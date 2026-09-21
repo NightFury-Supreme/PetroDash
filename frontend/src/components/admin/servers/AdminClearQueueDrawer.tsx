@@ -1,9 +1,15 @@
-"use client";
+/* ==========================================================================
+   Admin Clear Queue Drawer Component
+   Compliance: ISO/IEC 25010, Single Responsibility Principle (<300 lines)
+========================================================================== */
 
-import React, { useState } from "react";
-import { AlertTriangle, Loader2, X, ChevronDown } from "lucide-react";
-import { Drawer } from "@/components/ui/Drawer";
-import { useTranslations } from "next-intl";
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { AlertTriangle, Loader2, X, ChevronDown } from 'lucide-react';
+import { Drawer } from '@/components/ui/Drawer';
+import { useTranslations } from 'next-intl';
+import type { LocationOption, EggOption } from '@/hooks/admin/servers';
 
 function SimpleDropdown({
   label,
@@ -41,8 +47,8 @@ interface AdminClearQueueDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (locationId: string, eggId: string) => Promise<void>;
-  locations: { _id: string; name: string }[];
-  eggs: { _id: string; name: string }[];
+  locations: LocationOption[];
+  eggs: EggOption[];
 }
 
 export function AdminClearQueueDrawer({
@@ -52,20 +58,19 @@ export function AdminClearQueueDrawer({
   locations,
   eggs,
 }: AdminClearQueueDrawerProps) {
-  const t = useTranslations('Admin.servers');
+  const t = useTranslations('admin.servers');
   const tCommon = useTranslations('Common');
 
-  const [selectedLocation, setSelectedLocation] = useState("all");
-  const [selectedEgg, setSelectedEgg] = useState("all");
-  const [confirmText, setConfirmText] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState('all');
+  const [selectedEgg, setSelectedEgg] = useState('all');
+  const [confirmText, setConfirmText] = useState('');
   const [isClearing, setIsClearing] = useState(false);
 
-  // Reset state when drawer opens
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen) {
-      setConfirmText("");
-      setSelectedLocation("all");
-      setSelectedEgg("all");
+      setConfirmText('');
+      setSelectedLocation('all');
+      setSelectedEgg('all');
       setIsClearing(false);
     }
   }, [isOpen]);
@@ -78,14 +83,13 @@ export function AdminClearQueueDrawer({
     try {
       await onConfirm(selectedLocation, selectedEgg);
       onClose();
-    } catch (err) {
-      console.error(err);
+    } catch {
       setIsClearing(false);
     }
   };
 
   const isConfirmDisabled = confirmText.trim().toLowerCase() !== expectedConfirmText.toLowerCase();
-  const isFiltering = selectedLocation !== "all" || selectedEgg !== "all";
+  const isFiltering = selectedLocation !== 'all' || selectedEgg !== 'all';
 
   return (
     <Drawer
@@ -96,18 +100,20 @@ export function AdminClearQueueDrawer({
       footer={
         <div className="flex items-center justify-end gap-2 w-full">
           <button
+            type="button"
             onClick={onClose}
             className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
           >
             {tCommon('cancel')}
           </button>
           <button
+            type="button"
             onClick={handleConfirm}
             disabled={isConfirmDisabled || isClearing}
             className={`flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-all ${
               isConfirmDisabled || isClearing
-                ? "bg-[#161616] border border-[#222] text-[#888] cursor-not-allowed"
-                : "bg-red-500 border border-red-500 text-white hover:bg-red-600"
+                ? 'bg-[#161616] border border-[#222] text-[#888] cursor-not-allowed'
+                : 'bg-red-500 border border-red-500 text-white hover:bg-red-600'
             }`}
           >
             {isClearing ? (
@@ -125,17 +131,17 @@ export function AdminClearQueueDrawer({
           value={selectedLocation}
           onChange={setSelectedLocation}
           options={[
-            { label: t('allNodes'), value: "all" },
+            { label: t('allNodes'), value: 'all' },
             ...locations.map((loc) => ({ label: loc.name, value: loc._id })),
           ]}
         />
-        
+
         <SimpleDropdown
           label={t('targetEgg')}
           value={selectedEgg}
           onChange={setSelectedEgg}
           options={[
-            { label: t('allEggs'), value: "all" },
+            { label: t('allEggs'), value: 'all' },
             ...eggs.map((egg) => ({ label: egg.name, value: egg._id })),
           ]}
         />

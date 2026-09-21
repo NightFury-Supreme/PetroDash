@@ -1,53 +1,48 @@
-import { useState, useCallback, useEffect } from 'react';
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
+/* ==========================================================================
+   Admin Servers Data Hook
+   Compliance: ISO/IEC 25010, Separation of Concerns
+========================================================================== */
 
-export type Server = {
+import { useState, useCallback, useEffect } from 'react';
+import { fetchWithRetry } from '@/utils/fetchWithRetry';
+import type { AdminServer } from '@/components/admin/servers/types';
+
+export interface LocationOption {
   _id: string;
-  clientUrl?: string;
   name: string;
-  status: string;
-  userId: {
-    _id: string;
-    username: string;
-    email: string;
-    profilePicture?: string;
-    oauthProviders?: {
-      discord?: { avatar?: string };
-      google?: { picture?: string };
-    };
-  };
-  egg: {
-    _id: string;
-    name: string;
-    icon?: string;
-  };
-  location: {
-    _id: string;
-    name: string;
-    flag?: string;
-  };
-  limits: {
-    diskMb: number;
-    memoryMb: number;
-    cpuPercent: number;
-    backups: number;
-    databases: number;
-    allocations: number;
-  };
-  createdAt: string;
-  suspended?: boolean;
-  unreachable?: boolean;
-  priority?: number;
-};
+}
+
+export interface EggOption {
+  _id: string;
+  name: string;
+}
+
+export interface LoadServersParams {
+  page: number;
+  debouncedSearch: string;
+  locationFilter: string;
+  eggFilter: string;
+  sortBy: string;
+  forceRefresh?: boolean;
+}
+
+export interface LoadQueueParams {
+  queuePage: number;
+  debouncedSearch: string;
+  locationFilter: string;
+  eggFilter: string;
+  sortBy: string;
+  forceRefresh?: boolean;
+}
 
 export const useAdminServers = () => {
   // Servers tab state
-  const [servers, setServers] = useState<Server[]>([]);
+  const [servers, setServers] = useState<AdminServer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Queue tab state
-  const [queueServers, setQueueServers] = useState<any[]>([]);
+  const [queueServers, setQueueServers] = useState<AdminServer[]>([]);
   const [queueLoading, setQueueLoading] = useState(false);
   const [queueError, setQueueError] = useState<string | null>(null);
 
@@ -56,46 +51,53 @@ export const useAdminServers = () => {
   const [totalQueueServers, setTotalQueueServers] = useState(0);
   const [totalQueuePages, setTotalQueuePages] = useState(1);
 
-  const [locations, setLocations] = useState<{_id: string, name: string}[]>([]);
-  const [eggs, setEggs] = useState<{_id: string, name: string}[]>([]);
+  const [locations, setLocations] = useState<LocationOption[]>([]);
+  const [eggs, setEggs] = useState<EggOption[]>([]);
 
   const SERVERS_PER_PAGE = 10;
 
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const token = localStorage.getItem('auth_token');
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
         if (!token) return;
         const [locRes, eggRes] = await Promise.all([
           fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs`, { headers: { Authorization: `Bearer ${token}` } })
+          fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs`, { headers: { Authorization: `Bearer ${token}` } }),
         ]);
         if (locRes.ok) setLocations(await locRes.json());
         if (eggRes.ok) setEggs(await eggRes.json());
-      } catch {}
+      } catch {
+        // Handled silently for dropdown options
+      }
     };
     fetchOptions();
   }, []);
 
-  const loadServers = useCallback(async (params: { page: number, debouncedSearch: string, locationFilter: string, eggFilter: string, sortBy: string }) => {
+  const loadServers = useCallback(async (params: LoadServersParams) => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       if (!token) return;
       const queryParams = new URLSearchParams({
         paginate: 'true',
         page: params.page.toString(),
-        pageSize: SERVERS_PER_PAGE.toString()
+        pageSize: SERVERS_PER_PAGE.toString(),
       });
       if (params.debouncedSearch) queryParams.append('search', params.debouncedSearch);
       if (params.locationFilter && params.locationFilter !== 'all') queryParams.append('locationId', params.locationFilter);
       if (params.eggFilter && params.eggFilter !== 'all') queryParams.append('eggId', params.eggFilter);
       if (params.sortBy) queryParams.append('sort', params.sortBy);
+      if (params.forceRefresh) queryParams.append('refresh', 'true');
 
       const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/servers?${queryParams.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to load servers');
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        const code = errData?.error?.code || errData?.code || 'ERR_STATS_FETCH_FAILED';
+        throw new Error(code);
+      }
       const data = await response.json();
       if (data && data.data) {
         setServers(data.data);
@@ -106,32 +108,39 @@ export const useAdminServers = () => {
         setTotalServers(0);
         setTotalPages(1);
       }
-    } catch (err: any) {
-      setError(err.message);
+      setError(null);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'ERR_STATS_FETCH_FAILED';
+      setError(msg);
     } finally {
       setLoading(false);
     }
   }, [SERVERS_PER_PAGE]);
 
-  const loadQueue = useCallback(async (params: { queuePage: number, debouncedSearch: string, locationFilter: string, eggFilter: string, sortBy: string }) => {
+  const loadQueue = useCallback(async (params: LoadQueueParams) => {
     try {
       setQueueLoading(true);
-      const token = localStorage.getItem('auth_token');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       if (!token) return;
       const queryParams = new URLSearchParams({
         paginate: 'true',
         page: params.queuePage.toString(),
-        pageSize: SERVERS_PER_PAGE.toString()
+        pageSize: SERVERS_PER_PAGE.toString(),
       });
       if (params.debouncedSearch) queryParams.append('search', params.debouncedSearch);
       if (params.locationFilter && params.locationFilter !== 'all') queryParams.append('locationId', params.locationFilter);
       if (params.eggFilter && params.eggFilter !== 'all') queryParams.append('eggId', params.eggFilter);
       if (params.sortBy) queryParams.append('sort', params.sortBy);
-      
+      if (params.forceRefresh) queryParams.append('refresh', 'true');
+
       const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/servers/queue?${queryParams.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error('Failed to load queue');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        const code = errData?.error?.code || errData?.code || 'ERR_STATS_FETCH_FAILED';
+        throw new Error(code);
+      }
       const data = await res.json();
       if (data && data.data) {
         setQueueServers(data.data);
@@ -143,53 +152,54 @@ export const useAdminServers = () => {
         setTotalQueuePages(1);
       }
       setQueueError(null);
-    } catch (e: any) {
-      setQueueError(e.message);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'ERR_STATS_FETCH_FAILED';
+      setQueueError(msg);
     } finally {
       setQueueLoading(false);
     }
   }, [SERVERS_PER_PAGE]);
 
   const deleteServer = async (id: string) => {
-    const token = localStorage.getItem('auth_token');
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
     const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/servers/${id}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}` },
     });
     if (!response.ok) {
-      let errData: any = {};
-      try { errData = await response.json(); } catch {}
-      throw new Error(errData.error || 'Failed to delete server');
+      const errData = await response.json().catch(() => ({}));
+      const code = errData?.error?.code || errData?.code || 'ERR_PANEL_DELETION_FAILED';
+      throw new Error(code);
     }
   };
 
   const deleteQueueServer = async (id: string) => {
-    const token = localStorage.getItem('auth_token');
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
     const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/servers/${id}?force=true`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}` },
     });
     if (!response.ok) {
-      let errData: any = {};
-      try { errData = await response.json(); } catch {}
-      throw new Error(errData.error || 'Failed to remove from queue');
+      const errData = await response.json().catch(() => ({}));
+      const code = errData?.error?.code || errData?.code || 'ERR_PANEL_DELETION_FAILED';
+      throw new Error(code);
     }
   };
 
   const clearQueue = async (locationId: string, eggId: string) => {
-    const token = localStorage.getItem('auth_token');
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
     const queryParams = new URLSearchParams();
     if (locationId && locationId !== 'all') queryParams.append('locationId', locationId);
     if (eggId && eggId !== 'all') queryParams.append('eggId', eggId);
-    
+
     const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/servers/queue/clear?${queryParams.toString()}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}` },
     });
     if (!response.ok) {
-      let errData: any = {};
-      try { errData = await response.json(); } catch {}
-      throw new Error(errData.error || 'Failed to clear queue');
+      const errData = await response.json().catch(() => ({}));
+      const code = errData?.error?.code || errData?.code || 'ERR_QUEUE_CLEAR_FAILED';
+      throw new Error(code);
     }
   };
 
@@ -211,6 +221,8 @@ export const useAdminServers = () => {
     loadQueue,
     deleteServer,
     deleteQueueServer,
-    clearQueue
+    clearQueue,
   };
 };
+
+export type Server = AdminServer;

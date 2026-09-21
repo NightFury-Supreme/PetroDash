@@ -1,17 +1,23 @@
+/* ==========================================================================
+   Admin Servers Filters Dropdown Component
+   Compliance: ISO/IEC 25010, User Experience
+========================================================================== */
+
 'use client';
 
 import React from 'react';
 import { Select } from '@/components/ui/Select';
 import { SlidersHorizontal } from 'lucide-react';
-import { useTranslations } from "next-intl";
+import { useTranslations } from 'next-intl';
+import type { LocationOption, EggOption } from '@/hooks/admin/servers';
 
 interface AdminServerFiltersProps {
   locationFilter: string;
   setLocationFilter: (val: string) => void;
   eggFilter: string;
   setEggFilter: (val: string) => void;
-  locations: { _id: string; name: string }[];
-  eggs: { _id: string; name: string }[];
+  locations: LocationOption[];
+  eggs: EggOption[];
   activeFilterCount: number;
   clearFilters: () => void;
 }
@@ -26,7 +32,7 @@ export function AdminServerFilters({
   activeFilterCount,
   clearFilters,
 }: AdminServerFiltersProps) {
-  const t = useTranslations('Admin.servers');
+  const t = useTranslations('admin.servers');
 
   return (
     <div className="w-[110px]">
@@ -50,15 +56,16 @@ export function AdminServerFilters({
               <strong className="text-[#ddd] text-[11px] mb-[2px]">{t('filters')}</strong>
               <span className="text-[#555] text-[9px]">{t('narrowDown')}</span>
             </div>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-[15px] p-[13px]">
               <div className="flex flex-col gap-[7px]">
                 <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">{t('node')}</label>
-                <Select size="sm"
+                <Select
+                  size="sm"
                   value={locationFilter}
                   options={[
-                    { label: t('allNodes'), value: "all" },
-                    ...locations.map(loc => ({ label: loc.name, value: loc._id }))
+                    { label: t('allNodes'), value: 'all' },
+                    ...locations.map((loc) => ({ label: loc.name, value: loc._id })),
                   ]}
                   onChange={setLocationFilter}
                 />
@@ -66,11 +73,12 @@ export function AdminServerFilters({
 
               <div className="flex flex-col gap-[7px]">
                 <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">{t('egg')}</label>
-                <Select size="sm"
+                <Select
+                  size="sm"
                   value={eggFilter}
                   options={[
-                    { label: t('allEggs'), value: "all" },
-                    ...eggs.map(egg => ({ label: egg.name, value: egg._id }))
+                    { label: t('allEggs'), value: 'all' },
+                    ...eggs.map((egg) => ({ label: egg.name, value: egg._id })),
                   ]}
                   onChange={setEggFilter}
                 />
@@ -78,14 +86,16 @@ export function AdminServerFilters({
             </div>
 
             <div className="flex items-center justify-end gap-[15px] px-3 py-3 border-t border-[#222]">
-              <button 
-                onClick={clearFilters} 
+              <button
+                type="button"
+                onClick={clearFilters}
                 className="text-[10px] font-medium text-[#777] hover:text-[#ddd] transition-colors"
               >
                 {t('clearFilters')}
               </button>
-              <button 
-                onClick={close} 
+              <button
+                type="button"
+                onClick={close}
                 className="h-[35px] px-[15px] rounded-md text-[10px] font-semibold bg-[#ff5722] text-white hover:bg-[#ff6939] transition-colors"
               >
                 {t('applyFilters')}

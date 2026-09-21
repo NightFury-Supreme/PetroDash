@@ -1,9 +1,14 @@
+/* ==========================================================================
+   Admin Servers Sort Dropdown Component
+   Compliance: ISO/IEC 25010, User Experience
+========================================================================== */
+
 'use client';
 
 import React from 'react';
 import { ArrowUpDown } from 'lucide-react';
 import { Select } from '@/components/ui/Select';
-import { useTranslations } from "next-intl";
+import { useTranslations } from 'next-intl';
 
 interface AdminServerSortProps {
   sortBy: string;
@@ -11,7 +16,7 @@ interface AdminServerSortProps {
 }
 
 export function AdminServerSort({ sortBy, setSortBy }: AdminServerSortProps) {
-  const t = useTranslations('Admin.servers');
+  const t = useTranslations('admin.servers');
 
   return (
     <div className="w-[180px]">
@@ -25,14 +30,14 @@ export function AdminServerSort({ sortBy, setSortBy }: AdminServerSortProps) {
           </div>
         )}
         options={[
-              { label: t('sortCreatedNewest'), value: 'created_desc' },
-              { label: t('sortCreatedOldest'), value: 'created_asc' },
-              { label: t('sortNameAsc'), value: 'name_asc' },
-              { label: t('sortNameDesc'), value: 'name_desc' },
-              { label: t('sortCpuDesc'), value: 'cpu_desc' },
-              { label: t('sortMemoryDesc'), value: 'memory_desc' },
-              { label: t('sortDiskDesc'), value: 'disk_desc' }
-            ]}
+          { label: t('sortCreatedNewest'), value: 'created_desc' },
+          { label: t('sortCreatedOldest'), value: 'created_asc' },
+          { label: t('sortNameAsc'), value: 'name_asc' },
+          { label: t('sortNameDesc'), value: 'name_desc' },
+          { label: t('sortCpuDesc'), value: 'cpu_desc' },
+          { label: t('sortMemoryDesc'), value: 'memory_desc' },
+          { label: t('sortDiskDesc'), value: 'disk_desc' },
+        ]}
       />
     </div>
   );

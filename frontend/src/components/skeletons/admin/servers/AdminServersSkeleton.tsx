@@ -1,19 +1,29 @@
-"use client";
+/* ==========================================================================
+   Admin Servers Skeleton Component
+   Compliance: ISO/IEC 25010, Accessibility & Localization
+========================================================================== */
+
+'use client';
+
+import React from 'react';
+import { useTranslations } from 'next-intl';
 
 export default function AdminServersSkeleton() {
+  const t = useTranslations('admin.servers');
+
   return (
     <div className="w-full">
       {/* Table Header (Desktop) */}
       <div className="hidden gap-4 lg:grid lg:grid-cols-[1fr_1.5fr_1fr_1fr_100px_80px_100px_100px_120px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30">
-        <span>Server Name</span>
-        <span>Owner</span>
-        <span>Node</span>
-        <span>Egg</span>
-        <span>Status</span>
-        <span>CPU</span>
-        <span>RAM</span>
-        <span>Disk</span>
-        <span className="text-right">Actions</span>
+        <span>{t('serverName')}</span>
+        <span>{t('owner')}</span>
+        <span>{t('node')}</span>
+        <span>{t('egg')}</span>
+        <span>{t('status')}</span>
+        <span>{t('cpu')}</span>
+        <span>{t('ram')}</span>
+        <span>{t('disk')}</span>
+        <span className="text-right">{t('actions')}</span>
       </div>
 
       {/* Table Rows */}
@@ -26,7 +36,7 @@ export default function AdminServersSkeleton() {
             {/* Server Name */}
             <div className="min-w-0">
               <p className="mb-2 text-[9px] uppercase tracking-wider text-white/30 lg:hidden">
-                Server Name
+                {t('serverName')}
               </p>
               <div className="h-4 w-32 bg-white/[0.03] rounded-md animate-pulse" />
             </div>
@@ -34,7 +44,7 @@ export default function AdminServersSkeleton() {
             {/* Owner */}
             <div className="min-w-0">
               <p className="mb-2 text-[9px] uppercase tracking-wider text-white/30 lg:hidden">
-                Owner
+                {t('owner')}
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-7 h-7 rounded-full bg-white/[0.03] border border-white/[0.05] animate-pulse shrink-0" />
@@ -48,7 +58,7 @@ export default function AdminServersSkeleton() {
             {/* Node */}
             <div className="min-w-0">
               <p className="mb-2 text-[9px] uppercase tracking-wider text-white/30 lg:hidden">
-                Node
+                {t('node')}
               </p>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-3 bg-white/[0.03] rounded-[2px] animate-pulse shrink-0" />
@@ -59,7 +69,7 @@ export default function AdminServersSkeleton() {
             {/* Egg */}
             <div className="min-w-0">
               <p className="mb-2 text-[9px] uppercase tracking-wider text-white/30 lg:hidden">
-                Egg
+                {t('egg')}
               </p>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-white/[0.03] rounded-full animate-pulse shrink-0" />
@@ -70,7 +80,7 @@ export default function AdminServersSkeleton() {
             {/* Status */}
             <div className="min-w-0">
               <p className="mb-2 text-[9px] uppercase tracking-wider text-white/30 lg:hidden">
-                Status
+                {t('status')}
               </p>
               <div className="h-[22px] w-[58px] rounded bg-white/[0.03] border border-white/[0.02] animate-pulse" />
             </div>
@@ -78,7 +88,7 @@ export default function AdminServersSkeleton() {
             {/* CPU */}
             <div className="min-w-0">
               <p className="mb-2 text-[9px] uppercase tracking-wider text-white/30 lg:hidden">
-                CPU
+                {t('cpu')}
               </p>
               <div className="flex items-center gap-1.5">
                 <div className="w-3.5 h-3.5 bg-white/[0.03] rounded animate-pulse shrink-0" />
@@ -89,7 +99,7 @@ export default function AdminServersSkeleton() {
             {/* RAM */}
             <div className="min-w-0">
               <p className="mb-2 text-[9px] uppercase tracking-wider text-white/30 lg:hidden">
-                RAM
+                {t('ram')}
               </p>
               <div className="flex items-center gap-1.5">
                 <div className="w-3.5 h-3.5 bg-white/[0.03] rounded animate-pulse shrink-0" />
@@ -100,7 +110,7 @@ export default function AdminServersSkeleton() {
             {/* Disk */}
             <div className="min-w-0">
               <p className="mb-2 text-[9px] uppercase tracking-wider text-white/30 lg:hidden">
-                Disk
+                {t('disk')}
               </p>
               <div className="flex items-center gap-1.5">
                 <div className="w-3.5 h-3.5 bg-white/[0.03] rounded animate-pulse shrink-0" />

@@ -1,11 +1,27 @@
-const { z } = require('zod');
+/* ==========================================================================
+   Admin Servers Controller Layer
+   Compliance: ISO/IEC 25010, OWASP Secure SDLC, Separation of Concerns
+========================================================================== */
+
 const serversAdminService = require('./servers.admin.service');
 const AppError = require('../../../utils/AppError');
 const { writeAudit } = require('../../../middleware/audit');
+const {
+  serverIdParamSchema,
+  serverListQuerySchema,
+  serverQueueQuerySchema,
+  clearQueueQuerySchema,
+  updateServerSchema,
+  deleteServerQuerySchema,
+} = require('./servers.admin.schema');
 
 const listServers = async (req, res, next) => {
   try {
-    const result = await serversAdminService.listServers(req.query);
+    const parsedQuery = serverListQuerySchema.safeParse(req.query);
+    if (!parsedQuery.success) {
+      throw new AppError('Invalid query parameters', 400, 'ERR_INVALID_QUERY_PARAMS');
+    }
+    const result = await serversAdminService.listServers(parsedQuery.data);
     res.json(result);
   } catch (error) {
     next(error);
@@ -14,7 +30,11 @@ const listServers = async (req, res, next) => {
 
 const listQueuedServers = async (req, res, next) => {
   try {
-    const result = await serversAdminService.listQueuedServers(req.query);
+    const parsedQuery = serverQueueQuerySchema.safeParse(req.query);
+    if (!parsedQuery.success) {
+      throw new AppError('Invalid query parameters', 400, 'ERR_INVALID_QUERY_PARAMS');
+    }
+    const result = await serversAdminService.listQueuedServers(parsedQuery.data);
     res.json(result);
   } catch (error) {
     next(error);
@@ -23,7 +43,11 @@ const listQueuedServers = async (req, res, next) => {
 
 const clearQueue = async (req, res, next) => {
   try {
-    const result = await serversAdminService.clearQueue(req.query);
+    const parsedQuery = clearQueueQuerySchema.safeParse(req.query);
+    if (!parsedQuery.success) {
+      throw new AppError('Invalid query parameters', 400, 'ERR_INVALID_QUERY_PARAMS');
+    }
+    const result = await serversAdminService.clearQueue(parsedQuery.data);
     await writeAudit(req, 'admin.server.queue.clear', 'server', null, { deletedCount: result.deletedCount });
     res.json({ success: result.success, count: result.count, message: result.message });
   } catch (error) {
@@ -33,7 +57,11 @@ const clearQueue = async (req, res, next) => {
 
 const getServerDetails = async (req, res, next) => {
   try {
-    const result = await serversAdminService.getServerDetails(req.params.id);
+    const parsedParams = serverIdParamSchema.safeParse(req.params);
+    if (!parsedParams.success) {
+      throw new AppError('Invalid server ID format', 400, 'ERR_INVALID_ID');
+    }
+    const result = await serversAdminService.getServerDetails(parsedParams.data.id);
     res.json(result);
   } catch (error) {
     next(error);
@@ -42,37 +70,27 @@ const getServerDetails = async (req, res, next) => {
 
 const updateServer = async (req, res, next) => {
   try {
-    if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
-      throw new AppError('Invalid server ID format', 400, 'INVALID_FORMAT');
+    const parsedParams = serverIdParamSchema.safeParse(req.params);
+    if (!parsedParams.success) {
+      throw new AppError('Invalid server ID format', 400, 'ERR_INVALID_ID');
     }
 
-    const schema = z.object({
-      name: z.string().trim().min(1).max(100).optional(),
-      limits: z.object({
-        diskMb: z.coerce.number().int().min(0),
-        memoryMb: z.coerce.number().int().min(0),
-        cpuPercent: z.coerce.number().int().min(0),
-        backups: z.coerce.number().int().min(0),
-        databases: z.coerce.number().int().min(0),
-        allocations: z.coerce.number().int().min(0),
-      })
-    });
-    const parsed = schema.safeParse(req.body);
-    if (!parsed.success) {
-      throw new AppError('Validation failed', 400, 'VALIDATION_FAILED');
+    const parsedBody = updateServerSchema.safeParse(req.body);
+    if (!parsedBody.success) {
+      throw new AppError('Validation failed', 400, 'ERR_VALIDATION_FAILED');
     }
 
-    const { limits, name } = parsed.data;
+    const { limits, name } = parsedBody.data;
     if (!limits) {
-      throw new AppError('Limits are required', 400, 'LIMITS_REQUIRED');
+      throw new AppError('Limits are required', 400, 'ERR_LIMITS_REQUIRED');
     }
 
-    const { server, changes } = await serversAdminService.updateServer(req.params.id, { limits, name });
+    const { server, changes } = await serversAdminService.updateServer(parsedParams.data.id, { limits, name });
 
-    await writeAudit(req, 'admin.server.update', 'server', server._id.toString(), { 
-      serverId: server._id.toString(), 
+    await writeAudit(req, 'admin.server.update', 'server', server._id.toString(), {
+      serverId: server._id.toString(),
       serverName: server.name,
-      changes: Object.keys(changes).length > 0 ? changes : undefined
+      changes: Object.keys(changes).length > 0 ? changes : undefined,
     });
 
     res.json(server);
@@ -83,12 +101,15 @@ const updateServer = async (req, res, next) => {
 
 const deleteServer = async (req, res, next) => {
   try {
-    if (!/^[0-9a-fA-F]{24}$/.test(req.params.id)) {
-      throw new AppError('Invalid server ID format', 400, 'INVALID_FORMAT');
+    const parsedParams = serverIdParamSchema.safeParse(req.params);
+    if (!parsedParams.success) {
+      throw new AppError('Invalid server ID format', 400, 'ERR_INVALID_ID');
     }
 
-    const isForce = true;
-    const server = await serversAdminService.deleteServer(req.params.id, isForce);
+    const parsedQuery = deleteServerQuerySchema.safeParse(req.query);
+    const isForce = parsedQuery.success ? (parsedQuery.data.force ?? true) : true;
+
+    const server = await serversAdminService.deleteServer(parsedParams.data.id, isForce);
 
     await writeAudit(req, 'admin.server.delete', 'server', server._id.toString(), {
       serverId: server._id.toString(),
@@ -110,5 +131,5 @@ module.exports = {
   clearQueue,
   getServerDetails,
   updateServer,
-  deleteServer
+  deleteServer,
 };

@@ -1,13 +1,21 @@
+/* ==========================================================================
+   Admin Servers Active Filters Bar Component
+   Compliance: ISO/IEC 25010, User Experience
+========================================================================== */
+
+'use client';
+
 import React from 'react';
 import { X } from 'lucide-react';
-import { useTranslations } from "next-intl";
+import { useTranslations } from 'next-intl';
+import type { LocationOption, EggOption } from '@/hooks/admin/servers';
 
 interface AdminServerActiveFiltersProps {
   activeFilterCount: number;
   locationFilter: string;
   eggFilter: string;
-  locations: { _id: string; name: string }[];
-  eggs: { _id: string; name: string }[];
+  locations: LocationOption[];
+  eggs: EggOption[];
   removeFilter: (type: 'location' | 'egg') => void;
   clearFilters: () => void;
 }
@@ -21,19 +29,20 @@ export function AdminServerActiveFilters({
   removeFilter,
   clearFilters,
 }: AdminServerActiveFiltersProps) {
-  const t = useTranslations('Admin.servers');
+  const t = useTranslations('admin.servers');
 
   if (activeFilterCount === 0) return null;
 
   return (
     <div className="min-h-[38px] flex items-center gap-[6px] flex-wrap pt-2.5">
       <span className="mr-[3px] text-[#444] text-[8px]">{t('activeFilters')}</span>
-      
+
       {locationFilter !== 'all' && (
         <div className="h-[25px] inline-flex items-center gap-[6px] pl-[9px] pr-[7px] border border-[#292929] rounded-[5px] bg-[#141414] text-[#8a8a8a] text-[8px]">
-          {t('node')}: {locations.find(l => l._id === locationFilter)?.name || locationFilter}
-          <button 
-            onClick={() => removeFilter('location')} 
+          {t('node')}: {locations.find((l) => l._id === locationFilter)?.name || locationFilter}
+          <button
+            type="button"
+            onClick={() => removeFilter('location')}
             className="w-[16px] h-[16px] flex items-center justify-center rounded-[4px] text-[#555] hover:bg-[#252525] hover:text-[#ddd] transition-colors"
           >
             <X size={11} />
@@ -43,9 +52,10 @@ export function AdminServerActiveFilters({
 
       {eggFilter !== 'all' && (
         <div className="h-[25px] inline-flex items-center gap-[6px] pl-[9px] pr-[7px] border border-[#292929] rounded-[5px] bg-[#141414] text-[#8a8a8a] text-[8px]">
-          {t('egg')}: {eggs.find(e => e._id === eggFilter)?.name || eggFilter}
-          <button 
-            onClick={() => removeFilter('egg')} 
+          {t('egg')}: {eggs.find((e) => e._id === eggFilter)?.name || eggFilter}
+          <button
+            type="button"
+            onClick={() => removeFilter('egg')}
             className="w-[16px] h-[16px] flex items-center justify-center rounded-[4px] text-[#555] hover:bg-[#252525] hover:text-[#ddd] transition-colors"
           >
             <X size={11} />
@@ -53,7 +63,8 @@ export function AdminServerActiveFilters({
         </div>
       )}
 
-      <button 
+      <button
+        type="button"
         onClick={clearFilters}
         className="text-[10px] text-[#ff5722] hover:text-[#ff6939] hover:underline ml-2"
       >
