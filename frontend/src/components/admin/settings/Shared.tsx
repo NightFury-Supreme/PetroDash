@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Loader2, Trash2, Image as ImageIcon } from 'lucide-react';
 import { Drawer } from '@/components/ui/Drawer';
+import { useTranslations } from 'next-intl';
 
 export const PayPalIcon = ({ size }: { size?: number }) => <i className="fab fa-paypal" style={{ fontSize: size, width: size, textAlign: 'center' }}></i>;
 export const GoogleIcon = ({ size }: { size?: number }) => <i className="fab fa-google" style={{ fontSize: size, width: size, textAlign: 'center' }}></i>;
@@ -130,6 +131,7 @@ export function SettingsRow({
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const tCommon = useTranslations('Common');
 
   const handleSave = async () => {
     if (onSave) {
@@ -162,9 +164,9 @@ export function SettingsRow({
           {isEditing ? children : (displayValue !== undefined ? (
             <div className="text-sm text-[#D4D4D4] flex items-center md:justify-end h-9">
               {displayValue === 'Enabled' ? (
-                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">Enabled</span>
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">{tCommon('enabled')}</span>
               ) : displayValue === 'Disabled' ? (
-                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">Disabled</span>
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">{tCommon('disabled')}</span>
               ) : (
                 displayValue
               )}
@@ -178,7 +180,7 @@ export function SettingsRow({
                 onClick={() => setIsEditing(true)}
                 className="flex h-9 items-center gap-1.5 rounded-lg border border-[#222] bg-[#1A1A1A] px-3 text-xs font-medium text-[#D4D4D4] hover:bg-[#222] transition"
               >
-                <i className="fas fa-pencil-alt text-[10px]"></i> Edit
+                <i className="fas fa-pencil-alt text-[10px]"></i> {tCommon('edit')}
               </button>
             )}
             {isEditing && (
@@ -188,14 +190,14 @@ export function SettingsRow({
                   className="flex h-9 items-center gap-1.5 rounded-lg border border-[#2A2A2A] bg-[#1A1A1A] px-3 text-xs font-medium text-[#D4D4D4] hover:bg-[#222] transition disabled:opacity-50"
                   disabled={isSaving}
                 >
-                  Cancel
+                  {tCommon('cancel')}
                 </button>
                 <button
                   onClick={handleSave}
                   className="flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-medium transition disabled:cursor-not-allowed bg-[#FF5722] hover:bg-[#F4511E] text-white"
                   disabled={isSaving}
                 >
-                  {isSaving ? <Loader2 size={16} className="animate-spin" /> : <><i className="fas fa-save text-[14px]"></i> Save</>}
+                  {isSaving ? <Loader2 size={16} className="animate-spin" /> : <><i className="fas fa-save text-[14px]"></i> {tCommon('save')}</>}
                 </button>
               </>
             )}
@@ -225,6 +227,8 @@ export function SettingsDrawerRow({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const t = useTranslations('AdminSettings');
+  const tCommon = useTranslations('Common');
   
   return (
     <div className="px-5 py-4 transition hover:bg-white/[0.02]">
@@ -244,16 +248,16 @@ export function SettingsDrawerRow({
             <div className="text-sm text-[#D4D4D4] flex items-center md:justify-end h-9">
               {enabled !== undefined && (
                 enabled ? (
-                   <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">Enabled</span>
+                   <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">{tCommon('enabled')}</span>
                 ) : (
-                   <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">Disabled</span>
+                   <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">{tCommon('disabled')}</span>
                 )
               )}
             </div>
          </div>
          <div className="flex items-center justify-end gap-2">
             <button onClick={() => setIsOpen(true)} className="flex h-9 items-center gap-1.5 rounded-lg border border-[#222] bg-[#1A1A1A] px-3 text-xs font-medium text-[#D4D4D4] hover:bg-[#222] transition">
-              <i className="fas fa-pencil-alt text-[10px]"></i> Edit
+              <i className="fas fa-pencil-alt text-[10px]"></i> {tCommon('edit')}
             </button>
          </div>
       </div>
@@ -261,8 +265,8 @@ export function SettingsDrawerRow({
       <Drawer
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        title={`Configure ${label}`}
-        subtitle={typeof description === 'string' ? description : "Update this setting"}
+        title={`${t('configure')} ${label}`}
+        subtitle={typeof description === 'string' ? description : t('updateThisSetting')}
         icon={icon}
         footer={
           <div className="flex items-center justify-between w-full">
@@ -271,22 +275,22 @@ export function SettingsDrawerRow({
                 <>
                   <div className="flex items-center gap-2">
                     <button onClick={async () => { setIsSaving(true); await onToggle(false); setIsSaving(false); setIsOpen(false); }} className="flex h-9 items-center justify-center gap-2 rounded-lg px-4 text-xs font-medium transition-all border border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20 disabled:opacity-50" disabled={isSaving}>
-                       {isSaving ? <Loader2 size={14} className="animate-spin" /> : <><Trash2 size={14}/> Disable</>}
+                       {isSaving ? <Loader2 size={14} className="animate-spin" /> : <><Trash2 size={14}/> {tCommon('disable')}</>}
                     </button>
                   </div>
                   <button onClick={async () => { setIsSaving(true); await onSave(); setIsSaving(false); setIsOpen(false); }} className="flex h-9 items-center justify-center gap-2 rounded-lg bg-[#FF5722] px-4 text-xs font-medium text-white transition-all hover:bg-[#FF4500] disabled:opacity-50" disabled={isSaving}>
-                    {isSaving ? <Loader2 size={14} className="animate-spin" /> : 'Save Changes'}
+                    {isSaving ? <Loader2 size={14} className="animate-spin" /> : tCommon('saveChanges')}
                   </button>
                 </>
               ) : (
                 <button onClick={async () => { setIsSaving(true); await onToggle(true); setIsSaving(false); setIsOpen(false); }} className="flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-[#FF5722] px-4 text-xs font-medium text-white transition-all hover:bg-[#FF4500] disabled:opacity-50" disabled={isSaving}>
-                  {isSaving ? <Loader2 size={14} className="animate-spin" /> : 'Enable Integration'}
+                  {isSaving ? <Loader2 size={14} className="animate-spin" /> : t('enableIntegration')}
                 </button>
               )
             ) : (
               <div className="flex items-center justify-end w-full">
                 <button onClick={async () => { setIsSaving(true); await onSave(); setIsSaving(false); setIsOpen(false); }} className="flex h-9 items-center justify-center gap-2 rounded-lg bg-[#FF5722] px-4 text-xs font-medium text-white transition-all hover:bg-[#FF4500] disabled:opacity-50" disabled={isSaving}>
-                  {isSaving ? <Loader2 size={14} className="animate-spin" /> : 'Save Changes'}
+                  {isSaving ? <Loader2 size={14} className="animate-spin" /> : tCommon('saveChanges')}
                 </button>
               </div>
             )}
@@ -302,7 +306,7 @@ export function SettingsDrawerRow({
              <div className="h-12 w-12 rounded-full bg-[#1A1A1A] border border-[#222] flex items-center justify-center text-[#555] mb-4">
                 {icon}
              </div>
-             <p className="text-[#888] text-sm max-w-[250px] mx-auto">This setting requires no additional configuration. Simply enable or disable it below.</p>
+             <p className="text-[#888] text-sm max-w-[250px] mx-auto">{t('noAdditionalConfig')}</p>
           </div>
         )}
       </Drawer>

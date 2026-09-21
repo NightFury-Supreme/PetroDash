@@ -12,6 +12,7 @@ import { ResourcesTab } from './tabs/ResourcesTab';
 import { ReferralsTab } from './tabs/ReferralsTab';
 import { AdSenseTab } from './tabs/AdSenseTab';
 import { PayPalTab } from './tabs/PayPalTab';
+import { useTranslations } from 'next-intl';
 
 export function AdminSettingsContent({
   settings,
@@ -22,6 +23,9 @@ export function AdminSettingsContent({
   const [formData, setFormData] = useState<Settings>(settings);
   const [saving, setSaving] = useState(false);
   const { showSuccess, showError } = useToast();
+  const t = useTranslations('AdminSettings');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
 
   useEffect(() => {
     setFormData(settings);
@@ -53,8 +57,9 @@ export function AdminSettingsContent({
       const next = await onSave(cleanPatch(patch));
       setFormData(next);
       showSuccess(successBody);
-    } catch (error) {
-      showError(error instanceof Error ? error.message : "Failed to save settings. Please try again.");
+    } catch (error: any) {
+      const errKey = error instanceof Error ? error.message : "failedToSaveSettings";
+      showError(tErrorBackend.has(errKey as any) ? tErrorBackend(errKey as any) : (error instanceof Error ? error.message : t('failedToSaveSettings')));
     } finally {
       setSaving(false);
     }
@@ -100,18 +105,18 @@ export function AdminSettingsContent({
       <aside className="w-full lg:w-48 shrink-0 pt-1">
         <div className="sticky top-6">
           <div className="mb-4">
-            <p className="text-[11px] font-medium uppercase tracking-widest text-[#555]">Settings</p>
+            <p className="text-[11px] font-medium uppercase tracking-widest text-[#555]">{t('settings')}</p>
           </div>
           <nav className="flex flex-col gap-1">
-            <SideItem icon={Palette} label="Brand" active={activeTab === 'brand'} onClick={() => setActiveTab('brand')} />
-            <SideItem icon={Globe} label="Localization" active={activeTab === 'localization'} onClick={() => setActiveTab('localization')} />
-            <SideItem icon={ShieldCheck} label="Authentication" active={activeTab === 'auth'} onClick={() => setActiveTab('auth')} />
-            <SideItem icon={Mail} label="Email" active={activeTab === 'email'} onClick={() => setActiveTab('email')} />
-            <SideItem icon={Server} label="Default Resources" active={activeTab === 'resources'} onClick={() => setActiveTab('resources')} />
-            <SideItem icon={Users} label="Referrals" active={activeTab === 'referrals'} onClick={() => setActiveTab('referrals')} />
-            <SideItem icon={GoogleIcon} label="Google AdSense" active={activeTab === 'adsense'} onClick={() => setActiveTab('adsense')} />
-            <SideItem icon={PayPalIcon} label="PayPal" active={activeTab === 'paypal'} onClick={() => setActiveTab('paypal')} />
-            <SideItem icon={RefreshCw} label="System Updates" active={activeTab === 'updates'} onClick={() => setActiveTab('updates')} />
+            <SideItem icon={Palette} label={t('brand')} active={activeTab === 'brand'} onClick={() => setActiveTab('brand')} />
+            <SideItem icon={Globe} label={t('localization')} active={activeTab === 'localization'} onClick={() => setActiveTab('localization')} />
+            <SideItem icon={ShieldCheck} label={t('authentication')} active={activeTab === 'auth'} onClick={() => setActiveTab('auth')} />
+            <SideItem icon={Mail} label={t('email')} active={activeTab === 'email'} onClick={() => setActiveTab('email')} />
+            <SideItem icon={Server} label={t('defaultResources')} active={activeTab === 'resources'} onClick={() => setActiveTab('resources')} />
+            <SideItem icon={Users} label={t('referrals')} active={activeTab === 'referrals'} onClick={() => setActiveTab('referrals')} />
+            <SideItem icon={GoogleIcon} label={t('googleAdSense')} active={activeTab === 'adsense'} onClick={() => setActiveTab('adsense')} />
+            <SideItem icon={PayPalIcon} label={t('paypal')} active={activeTab === 'paypal'} onClick={() => setActiveTab('paypal')} />
+            <SideItem icon={RefreshCw} label={t('systemUpdates')} active={activeTab === 'updates'} onClick={() => setActiveTab('updates')} />
           </nav>
         </div>
       </aside>

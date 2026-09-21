@@ -5,6 +5,7 @@ import { Drawer } from "@/components/ui/Drawer";
 import { useToast } from "@/components/ui/ToastProvider";
 import { ActionButton, FieldLabel, FieldInput, FieldHint } from "../EarnUI";
 import type { AdminEarnSettings } from "@/hooks/admin/earn/useAdminEarn";
+import { useTranslations } from "next-intl";
 
 export interface LinkvertiseConfigDrawerProps {
   isOpen: boolean;
@@ -25,13 +26,21 @@ export function LinkvertiseConfigDrawer({
 }: LinkvertiseConfigDrawerProps) {
   const sf = (path: string, value: any) => onChange(path, value);
   const { showSuccess, showError } = useToast();
+  const t = useTranslations('AdminEarn');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
+
+  const handleError = (e: any) => {
+    const errKey = e?.message || e;
+    showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : errKey);
+  };
 
   return (
     <Drawer
       isOpen={isOpen}
       onClose={onClose}
-      title="Configure Linkvertise"
-      subtitle="Link tasks with anti-bypass protection."
+      title={t('configureLinkvertise')}
+      subtitle={t('linkvertiseSubtitle')}
       icon={<Link2 size={20} />}
       footer={
         <div className="flex items-center justify-between w-full">
@@ -41,10 +50,10 @@ export function LinkvertiseConfigDrawer({
                 <ActionButton
                   onClick={async () => { await onSaveLinkvertise({ enabled: false }); }}
                   loading={saving}
-                  label="Disable"
+                  label={tCommon('disable')}
                   variant="danger"
-                  onSuccess={() => { showSuccess("Linkvertise disabled."); onClose(); }}
-                  onError={(e) => showError(e)}
+                  onSuccess={() => { showSuccess(t('linkvertiseDisabled')); onClose(); }}
+                  onError={handleError}
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -53,14 +62,14 @@ export function LinkvertiseConfigDrawer({
                   disabled={saving}
                   className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Cancel
+                  {tCommon('cancel')}
                 </button>
                 <ActionButton
                   onClick={async () => { await onSaveLinkvertise(); }}
                   loading={saving}
-                  label="Save Changes"
-                  onSuccess={() => { showSuccess("Linkvertise settings saved."); onClose(); }}
-                  onError={(e) => showError(e)}
+                  label={tCommon('saveChanges')}
+                  onSuccess={() => { showSuccess(t('linkvertiseSettingsSaved')); onClose(); }}
+                  onError={handleError}
                 />
               </div>
             </>
@@ -71,14 +80,14 @@ export function LinkvertiseConfigDrawer({
                 disabled={saving}
                 className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Cancel
+                {tCommon('cancel')}
               </button>
               <ActionButton
                 onClick={async () => { await onSaveLinkvertise({ enabled: true }); }}
                 loading={saving}
-                label="Enable Method"
-                onSuccess={() => { showSuccess("Linkvertise enabled."); onClose(); }}
-                onError={(e) => showError(e)}
+                label={tCommon('enableMethod')}
+                onSuccess={() => { showSuccess(t('linkvertiseEnabled')); onClose(); }}
+                onError={handleError}
               />
             </div>
           )}
@@ -88,32 +97,32 @@ export function LinkvertiseConfigDrawer({
       <div className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <FieldLabel>Coins per claim</FieldLabel>
+            <FieldLabel>{t('coinsPerClaim')}</FieldLabel>
             <FieldInput type="number" min="0" step="1" value={(form.linkvertise as any).coins ?? 0} onChange={(v) => sf("linkvertise.coins", Number(v))} disabled={saving} />
           </div>
           <div>
-            <FieldLabel>Max claims per day</FieldLabel>
+            <FieldLabel>{t('maxClaimsPerDay')}</FieldLabel>
             <FieldInput type="number" min="0" step="1" value={(form.linkvertise as any).maxClaimsPerDay ?? 0} onChange={(v) => sf("linkvertise.maxClaimsPerDay", Number(v))} disabled={saving} />
           </div>
           <div>
-            <FieldLabel>Cooldown (seconds)</FieldLabel>
+            <FieldLabel>{t('cooldownSeconds')}</FieldLabel>
             <FieldInput type="number" min="0" step="1" value={(form.linkvertise as any).cooldownSeconds ?? 0} onChange={(v) => sf("linkvertise.cooldownSeconds", Number(v))} disabled={saving} />
           </div>
           <div>
-            <FieldLabel>Wait time (seconds)</FieldLabel>
+            <FieldLabel>{t('waitTimeSeconds')}</FieldLabel>
             <FieldInput type="number" min="0" step="1" value={(form.linkvertise as any).waitSeconds ?? 0} onChange={(v) => sf("linkvertise.waitSeconds", Number(v))} disabled={saving} />
           </div>
         </div>
         <hr className="border-white/[0.06]" />
         <div>
-          <FieldLabel>Linkvertise Link <span className="text-[#FF5722]">*</span></FieldLabel>
-          <FieldInput value={(form.linkvertise as any).url ?? ""} onChange={(v) => sf("linkvertise.url", v)} disabled={saving} placeholder="https://linkvertise.com/1412952/your-post-id" />
-          <FieldHint>Paste the standard Linkvertise URL. The dynamic target payload is added automatically.</FieldHint>
+          <FieldLabel>{t('linkvertiseLink')} <span className="text-[#FF5722]">*</span></FieldLabel>
+          <FieldInput value={(form.linkvertise as any).url ?? ""} onChange={(v) => sf("linkvertise.url", v)} disabled={saving} placeholder={t('linkvertiseUrlPlaceholder')} />
+          <FieldHint>{t('linkvertiseUrlHint')}</FieldHint>
         </div>
         <div>
-          <FieldLabel>Anti-Bypass Token</FieldLabel>
-          <FieldInput value={(form.linkvertise as any).antiBypassToken ?? ""} onChange={(v) => sf("linkvertise.antiBypassToken", v)} disabled={saving} placeholder="Leave blank to disable anti-bypass" />
-          <FieldHint>If set, claims require a valid anti-bypass hash (proof-based).</FieldHint>
+          <FieldLabel>{t('antiBypassToken')}</FieldLabel>
+          <FieldInput value={(form.linkvertise as any).antiBypassToken ?? ""} onChange={(v) => sf("linkvertise.antiBypassToken", v)} disabled={saving} placeholder={t('antiBypassTokenPlaceholder')} />
+          <FieldHint>{t('antiBypassTokenHint')}</FieldHint>
         </div>
       </div>
     </Drawer>

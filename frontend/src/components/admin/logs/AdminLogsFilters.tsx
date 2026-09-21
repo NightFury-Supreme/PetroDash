@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Select } from '@/components/ui/Select';
 import { Search, X, SlidersHorizontal } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface AdminLogsFiltersProps {
   filters: {
@@ -25,6 +26,7 @@ export function AdminLogsFilters({
   onClearFilters,
   loading
 }: AdminLogsFiltersProps) {
+  const t = useTranslations('AdminLogs');
   const [searchTerm, setSearchTerm] = useState(filters.actorId || filters.requestId || '');
 
   // Sync external filters clear to local search term
@@ -47,41 +49,42 @@ export function AdminLogsFilters({
   }, [searchTerm, onSearchChange, filters.actorId, filters.requestId]);
 
   const actionOptions = [
-    { value: '', label: 'All Actions' },
-    { value: 'server.create', label: 'Server Created' },
-    { value: 'server.update', label: 'Server Updated' },
-    { value: 'server.delete', label: 'Server Deleted' },
-    { value: 'user.update', label: 'User Updated' },
-    { value: 'user.delete', label: 'User Deleted' },
-    { value: 'payment.purchase.completed', label: 'Plan Purchased' },
-    { value: 'shop.purchase', label: 'Shop Item Purchased' },
-    { value: 'admin.user.update', label: 'Admin User Update' },
-    { value: 'admin.server.update', label: 'Admin Server Update' },
-    { value: 'auth.login', label: 'User Login' },
-    { value: 'auth.logout', label: 'User Logout' },
-    { value: 'auth.register', label: 'User Registration' },
-    { value: 'oauth.discord', label: 'Discord Login' },
-    { value: 'oauth.google', label: 'Google Login' }
+    { value: '', label: t('allActions') },
+    { value: 'server.create', label: t('serverCreated') },
+    { value: 'server.update', label: t('serverUpdated') },
+    { value: 'server.delete', label: t('serverDeleted') },
+    { value: 'user.update', label: t('userUpdated') },
+    { value: 'user.delete', label: t('userDeleted') },
+    { value: 'payment.purchase.completed', label: t('planPurchased') },
+    { value: 'shop.purchase', label: t('shopItemPurchased') },
+    { value: 'admin.user.update', label: t('adminUserUpdate') },
+    { value: 'admin.server.update', label: t('adminServerUpdate') },
+    { value: 'auth.login', label: t('userLogin') },
+    { value: 'auth.logout', label: t('userLogout') },
+    { value: 'auth.register', label: t('userRegistration') },
+    { value: 'oauth.discord', label: t('discordLogin') },
+    { value: 'oauth.google', label: t('googleLogin') }
   ];
 
   const resourceTypeOptions = [
-    { value: '', label: 'All Resources' },
-    { value: 'server', label: 'Server' },
-    { value: 'user', label: 'User' },
-    { value: 'plan', label: 'Plan' },
-    { value: 'payment', label: 'Payment' },
-    { value: 'shop', label: 'Shop' },
-    { value: 'auth', label: 'Authentication' },
-    { value: 'admin', label: 'Admin' }
+    { value: '', label: t('allResources') },
+    { value: 'server', label: t('server') },
+    { value: 'user', label: t('user') },
+    { value: 'plan', label: t('plan') },
+    { value: 'payment', label: t('payment') },
+    { value: 'shop', label: t('shop') },
+    { value: 'auth', label: t('authentication') },
+    { value: 'admin', label: t('admin') }
   ];
 
   const severityOptions = [
-    { value: '', label: 'All Severities' },
-    { value: 'INFO', label: 'Info' },
-    { value: 'WARNING', label: 'Warning' },
-    { value: 'ERROR', label: 'Error' },
-    { value: 'CRITICAL', label: 'Critical' }
+    { value: '', label: t('allSeverities') },
+    { value: 'INFO', label: t('info') },
+    { value: 'WARNING', label: t('warning') },
+    { value: 'ERROR', label: t('error') },
+    { value: 'CRITICAL', label: t('critical') }
   ];
+
 
   const activeFilterCount = [
     filters.action !== '', 
@@ -96,7 +99,7 @@ export function AdminLogsFilters({
           <Search size={15} />
           <input
             type="text"
-            placeholder="Search by User ID or Request ID..."
+            placeholder={t('searchPlaceholder')}
             value={filters.actorId || filters.requestId}
             onChange={(e) => onSearchChange(e.target.value)}
             disabled={loading}
@@ -106,7 +109,7 @@ export function AdminLogsFilters({
             <button
               onClick={() => onSearchChange('')}
               className="w-[23px] h-[23px] flex-shrink-0 flex items-center justify-center rounded-[5px] text-[#666] hover:bg-[#222] hover:text-[#ddd] transition-colors"
-              aria-label="Clear search"
+              aria-label={t('clearSearch')}
             >
               <X size={13} />
             </button>
@@ -121,7 +124,7 @@ export function AdminLogsFilters({
             renderButtonContent={() => (
               <div className="flex items-center gap-[7px]">
                 <SlidersHorizontal size={14} className="text-[#858585]" />
-                <span className="text-[10px] text-[#858585]">Filters</span>
+                <span className="text-[10px] text-[#858585]">{t('filters')}</span>
                 {activeFilterCount > 0 && (
                   <span className="min-w-[17px] h-[17px] inline-flex items-center justify-center px-1 rounded-[9px] bg-[#ff5722] text-white text-[8px] font-bold">
                     {activeFilterCount}
@@ -132,13 +135,13 @@ export function AdminLogsFilters({
             renderDropdown={({ close }) => (
               <div className="flex flex-col">
                 <div className="min-h-[50px] flex flex-col justify-center px-3 pt-1 border-b border-[#222] pb-3">
-                  <strong className="text-[#ddd] text-[11px] mb-[2px]">Filters</strong>
-                  <span className="text-[#555] text-[9px]">Narrow down your audit logs</span>
+                  <strong className="text-[#ddd] text-[11px] mb-[2px]">{t('filters')}</strong>
+                  <span className="text-[#555] text-[9px]">{t('filtersDescription')}</span>
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-[15px] p-[13px]">
                   <div className="flex flex-col gap-[7px]">
-                    <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">Action</label>
+                    <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">{t('action')}</label>
                     <Select size="sm"
                       value={filters.action}
                       options={actionOptions}
@@ -147,7 +150,7 @@ export function AdminLogsFilters({
                   </div>
 
                   <div className="flex flex-col gap-[7px]">
-                    <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">Resource</label>
+                    <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">{t('resource')}</label>
                     <Select size="sm"
                       value={filters.resourceType}
                       options={resourceTypeOptions}
@@ -156,7 +159,7 @@ export function AdminLogsFilters({
                   </div>
 
                   <div className="flex flex-col gap-[7px]">
-                    <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">Severity</label>
+                    <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">{t('severity')}</label>
                     <Select size="sm"
                       value={filters.severity}
                       options={severityOptions}
@@ -170,13 +173,13 @@ export function AdminLogsFilters({
                     onClick={onClearFilters} 
                     className="text-[10px] font-medium text-[#777] hover:text-[#ddd] transition-colors"
                   >
-                    Clear filters
+                    {t('clearFilters')}
                   </button>
                   <button 
                     onClick={close} 
                     className="h-[35px] px-[15px] rounded-md text-[10px] font-semibold bg-[#ff5722] text-white hover:bg-[#ff6939] transition-colors"
                   >
-                    Apply filters
+                    {t('applyFilters')}
                   </button>
                 </div>
               </div>

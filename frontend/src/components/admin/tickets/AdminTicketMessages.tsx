@@ -4,6 +4,7 @@ import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import React, { useRef, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/ToastProvider";
+import { useTranslations } from 'next-intl';
 
 function safeTime(val: any): string {
   if (!val) return "";
@@ -44,6 +45,8 @@ export default function AdminTicketMessages({
   onLoadMore,
 }: AdminTicketMessagesProps) {
   const topRef = useRef<HTMLDivElement>(null);
+  const t = useTranslations('AdminTickets');
+  const tCommon = useTranslations('Common');
 
   // IntersectionObserver — fires onLoadMore when top sentinel enters the viewport
   useEffect(() => {
@@ -70,7 +73,7 @@ export default function AdminTicketMessages({
       )}
 
       {!hasMore && messages.length === 0 && (
-        <p className="py-8 text-center text-sm font-medium text-white/30">No messages yet.</p>
+        <p className="py-8 text-center text-sm font-medium text-white/30">{t('noMessagesYet')}</p>
       )}
 
       {messages.map((m, i) => {
@@ -81,9 +84,9 @@ export default function AdminTicketMessages({
 
         let authorName = m.author?.username || m.author?.email;
         if (!authorName) {
-          authorName = isFromUser ? "User" : "Admin";
+          authorName = isFromUser ? t('user') : t('admin');
         } else if (!isFromUser) {
-          authorName = `${authorName} · Admin`;
+          authorName = `${authorName} · ${t('admin')}`;
         }
 
         const msgDate = safeDate(m.createdAt);
@@ -114,7 +117,7 @@ export default function AdminTicketMessages({
                   <span className="text-sm font-medium text-white/60">{authorName}</span>
                   {m.internal && (
                     <span className="text-[10px] px-2 py-0.5 rounded-full border bg-yellow-600/20 text-yellow-300 border-yellow-700/50 font-semibold">
-                      INTERNAL
+                      {t('internalTag')}
                     </span>
                   )}
                 </div>
@@ -127,7 +130,7 @@ export default function AdminTicketMessages({
                       : "rounded-tr-sm bg-[#151515] border border-[#282828]"
                     : "rounded-tl-sm bg-[#121212] border border-[#282828]"
                 }`}>
-                  <div className="pb-4"><RichText text={m.body} viewerRole="admin" /></div>
+                  <div className="pb-4"><RichText text={m.body} viewerRole="admin" tCommon={tCommon} /></div>
                   {timeStr && (
                     <span className={`absolute bottom-1.5 right-3 text-[11px] font-medium ${
                       m.internal ? "text-yellow-400/60" : "text-white/30"
@@ -144,7 +147,7 @@ export default function AdminTicketMessages({
   );
 }
 
-function RichText({ text, viewerRole }: { text: string; viewerRole: 'admin' | 'user' }) {
+function RichText({ text, viewerRole, tCommon }: { text: string; viewerRole: 'admin' | 'user', tCommon: any }) {
   const regex = /\[@(server|invoice):([a-zA-Z0-9_-]+):([^\]]+)\]/g;
   
   const parts = [];
@@ -161,7 +164,7 @@ function RichText({ text, viewerRole }: { text: string; viewerRole: 'admin' | 'u
     const name = match[3];
 
     parts.push(
-      <MentionPill key={match.index} type={type as 'server'|'invoice'} id={id} name={name} viewerRole={viewerRole} />
+      <MentionPill key={match.index} type={type as 'server'|'invoice'} id={id} name={name} viewerRole={viewerRole} tCommon={tCommon} />
     );
 
     lastIndex = match.index + match[0].length;
@@ -174,7 +177,7 @@ function RichText({ text, viewerRole }: { text: string; viewerRole: 'admin' | 'u
   return <span className="whitespace-pre-wrap break-words">{parts.length > 0 ? parts : text}</span>;
 }
 
-function MentionPill({ type, id, name, viewerRole }: { type: 'server'|'invoice'; id: string; name: string; viewerRole: 'admin'|'user' }) {
+function MentionPill({ type, id, name, viewerRole, tCommon }: { type: 'server'|'invoice'; id: string; name: string; viewerRole: 'admin'|'user'; tCommon: any }) {
   const [downloading, setDownloading] = React.useState(false);
   const { showError } = useToast();
 
@@ -206,7 +209,7 @@ function MentionPill({ type, id, name, viewerRole }: { type: 'server'|'invoice';
         window.URL.revokeObjectURL(url);
       } catch (e) {
         console.error(e);
-        showError("Failed to download invoice.");
+        showError(tCommon('failedToDownloadInvoice'));
       } finally {
         setDownloading(false);
       }

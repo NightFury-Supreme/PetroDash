@@ -2,6 +2,7 @@
 
 import { Edit2 } from 'lucide-react';
 import { ShopItem } from '@/hooks/admin/shop/useAdminShop';
+import { useTranslations } from 'next-intl';
 
 interface ShopItemsListProps {
   items: ShopItem[];
@@ -12,6 +13,8 @@ export function ShopItemsList({
   items,
   onStartEditing,
 }: ShopItemsListProps) {
+  const t = useTranslations('AdminShop');
+  const tCommon = useTranslations('Common');
   const getIconForItem = (key: string) => {
     const k = key.toLowerCase();
     if (k.includes('disk')) return 'fas fa-hdd';
@@ -34,14 +37,14 @@ export function ShopItemsList({
 
   const getDescriptionForKey = (key: string, name: string) => {
     switch (key) {
-      case 'allocations': return 'Additional network ports';
-      case 'backups': return 'Additional backup slots';
-      case 'cpuPercent': return 'Increase CPU limit (in %)';
-      case 'databases': return 'Additional database slots';
-      case 'diskMb': return 'Increase disk space (in MB)';
-      case 'memoryMb': return 'Increase memory (in MB)';
-      case 'serverSlots': return 'Additional server slots';
-      default: return `Add extra ${name}`;
+      case 'allocations': return t('descAllocations');
+      case 'backups': return t('descBackups');
+      case 'cpuPercent': return t('descCpuPercent');
+      case 'databases': return t('descDatabases');
+      case 'diskMb': return t('descDiskMb');
+      case 'memoryMb': return t('descMemoryMb');
+      case 'serverSlots': return t('descServerSlots');
+      default: return t('descDefault', { name });
     }
   };
 
@@ -49,7 +52,7 @@ export function ShopItemsList({
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center border border-white/[0.06] rounded-xl">
         <i className="fas fa-shopping-cart mb-3 text-2xl text-white/20"></i>
-        <p className="text-sm text-white/40">No shop items available</p>
+        <p className="text-sm text-white/40">{t('noItems')}</p>
       </div>
     );
   }
@@ -58,12 +61,12 @@ export function ShopItemsList({
     <div className="w-full">
       {/* Column headers */}
       <div className="hidden gap-4 grid-cols-[2fr_1fr_1fr_1fr_1fr_100px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
-        <span>Resource</span>
-        <span>Amount</span>
-        <span>Price</span>
-        <span>Max</span>
-        <span>Status</span>
-        <span className="text-right">Action</span>
+        <span>{tCommon('resource')}</span>
+        <span>{t('amount')}</span>
+        <span>{tCommon('price')}</span>
+        <span>{t('max')}</span>
+        <span>{tCommon('status')}</span>
+        <span className="text-right">{tCommon('action')}</span>
       </div>
 
       <div className="divide-y divide-white/[0.06]">
@@ -108,9 +111,9 @@ export function ShopItemsList({
             <div className="flex items-center">
               <div className="relative inline-flex items-center">
                 {item.enabled ? (
-                  <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">Enabled</span>
+                  <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">{tCommon('enabled')}</span>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">Disabled</span>
+                  <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">{tCommon('disabled')}</span>
                 )}
               </div>
             </div>
@@ -120,7 +123,7 @@ export function ShopItemsList({
               <button
                 onClick={() => onStartEditing(item)}
                 className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors"
-                title="Manage"
+                title={tCommon('manage')}
               >
                 <Edit2 size={14} />
               </button>

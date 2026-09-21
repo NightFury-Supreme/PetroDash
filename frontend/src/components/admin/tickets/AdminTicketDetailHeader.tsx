@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Select } from "@/components/ui/Select";
+import { useTranslations } from 'next-intl';
 
 const _STATUS_COLORS: Record<string, string> = {
   open: "bg-green-600/20 text-green-300 border-green-700/50",
@@ -29,6 +30,7 @@ export default function AdminTicketDetailHeader({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const t = useTranslations('AdminTickets');
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -46,10 +48,10 @@ export default function AdminTicketDetailHeader({
       <Select size="sm"
         value={ticket.status || "open"}
         options={[
-          { label: "OPEN",     value: "open"     },
-          { label: "PENDING",  value: "pending"  },
-          { label: "RESOLVED", value: "resolved" },
-          { label: "CLOSED",   value: "closed"   },
+          { label: t('statusOpen').toUpperCase(),     value: "open"     },
+          { label: t('statusPending').toUpperCase(),  value: "pending"  },
+          { label: t('statusResolved').toUpperCase(), value: "resolved" },
+          { label: t('statusClosed').toUpperCase(),   value: "closed"   },
         ]}
         
         onChange={onStatusChange}
@@ -57,9 +59,9 @@ export default function AdminTicketDetailHeader({
       <Select size="sm"
         value={ticket.priority || "low"}
         options={[
-          { label: "LOW",    value: "low"    },
-          { label: "MEDIUM", value: "medium" },
-          { label: "HIGH",   value: "high"   },
+          { label: t('priorityLow').toUpperCase(),    value: "low"    },
+          { label: t('priorityMedium').toUpperCase(), value: "medium" },
+          { label: t('priorityHigh').toUpperCase(),   value: "high"   },
         ]}
         
         onChange={onPriorityChange}
@@ -81,7 +83,7 @@ export default function AdminTicketDetailHeader({
                     onClick={async () => { await onAction("reopen"); setMenuOpen(false); }}
                     className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#202020]"
                   >
-                    Reopen Ticket
+                    {t('reopenTicket')}
                   </button>
                 ) : (
                   <>
@@ -89,13 +91,13 @@ export default function AdminTicketDetailHeader({
                       onClick={async () => { await onAction("close"); setMenuOpen(false); }}
                       className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#202020]"
                     >
-                      Close Ticket
+                      {t('closeTicket')}
                     </button>
                     <button
                       onClick={async () => { await onAction("resolve"); setMenuOpen(false); }}
                       className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#202020]"
                     >
-                      Resolve
+                      {t('resolve')}
                     </button>
                   </>
                 )}
@@ -104,7 +106,7 @@ export default function AdminTicketDetailHeader({
                   onClick={async () => { await onAction("delete"); setMenuOpen(false); }}
                   className="w-full text-left px-3 py-2 text-sm text-[#FF3333] hover:bg-[#202020]"
                 >
-                  Soft Delete
+                  {t('softDelete')}
                 </button>
               </>
             ) : (
@@ -112,7 +114,7 @@ export default function AdminTicketDetailHeader({
                 onClick={async () => { await onAction("restore"); setMenuOpen(false); }}
                 className="w-full text-left px-3 py-2 text-sm text-green-400 hover:bg-[#202020]"
               >
-                Restore Ticket
+                {t('restoreTicket')}
               </button>
             )}
           </div>

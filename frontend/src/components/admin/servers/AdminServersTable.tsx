@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { AdminServerTableRow } from "./AdminServerTableRow";
 
 type Server = {
@@ -47,6 +48,8 @@ export default function AdminServersTable({
   deleting,
   hideOwner = false,
 }: AdminServersTableProps) {
+  const t = useTranslations('Admin.servers');
+
   const cols = hideOwner
     ? "lg:grid-cols-[1fr_1fr_1fr_100px_80px_100px_100px_120px]"
     : "lg:grid-cols-[1fr_1.5fr_1fr_1fr_100px_80px_100px_100px_120px]";
@@ -56,22 +59,22 @@ export default function AdminServersTable({
       <div className="w-full">
         {/* TABLE HEADER (Desktop) */}
         <div className={`hidden gap-4 lg:grid ${cols} border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30`}>
-          <span>Server Name</span>
-          {!hideOwner && <span>Owner</span>}
-          <span>Node</span>
-          <span>Egg</span>
-          <span>Status</span>
-          <span>CPU</span>
-          <span>RAM</span>
-          <span>Disk</span>
-          <span className="text-right">Actions</span>
+          <span>{t('serverName')}</span>
+          {!hideOwner && <span>{t('owner')}</span>}
+          <span>{t('node')}</span>
+          <span>{t('egg')}</span>
+          <span>{t('status')}</span>
+          <span>{t('cpu')}</span>
+          <span>{t('ram')}</span>
+          <span>{t('disk')}</span>
+          <span className="text-right">{t('actions')}</span>
         </div>
 
         {/* TABLE LIST */}
         <div className="divide-y divide-[#222]">
           {servers.length === 0 ? (
             <div className="text-center py-16 text-xs text-[#555]">
-              No servers found.
+              {t('noServers')}
             </div>
           ) : (
             servers.map((server) => (

@@ -3,6 +3,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { Plus, Save, Settings, X, Loader2 } from "lucide-react";
 import { Drawer } from "@/components/ui/Drawer";
 import { useToast } from "@/components/ui/ToastProvider";
+import { useTranslations } from 'next-intl';
 
 interface Category {
   id: string;
@@ -19,7 +20,11 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [newCategory, setNewCategory] = useState("");
-      const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const t = useTranslations('AdminTickets');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
   
   const load = async () => {
     try {
@@ -47,7 +52,7 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
         setCategories(loadedCategories);
       }
     } catch {
-      showError("Failed to load categories");
+      showError(t('failedToLoadCategories'));
     } finally {
       setLoading(false);
     }
@@ -79,7 +84,7 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
     ]);
 
     setNewCategory("");
-          };
+  };
 
   const removeCategory = (id: string) => {
     const category = categories.find((item) => item.id === id);
@@ -87,7 +92,7 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
     if (category.ticketCount > 0) return;
 
     setCategories((current) => current.filter((item) => item.id !== id));
-          };
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -109,18 +114,18 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
       try { d = await r.json(); } catch {}
       
       if (r.ok) {
-        showSuccess("Settings saved successfully.");
+        showSuccess(t('settingsSavedSuccess'));
         await load();
       } else {
-                showError(d?.error || "Failed to save");
+        const errKey = d?.error || "failedToSave";
+        const errMsg = tErrorBackend.has(errKey) ? tErrorBackend(errKey) : (d?.error || t('failedToSave'));
+        showError(errMsg);
         if (Array.isArray(d?.inUse) && d.inUse.length) {
-          showError(`${d.error}: ${d.inUse.join(", ")}`);
+          showError(`${errMsg}: ${d.inUse.join(", ")}`);
         }
-        
       }
     } catch {
-            showError("An unexpected error occurred while saving.");
-      
+      showError(t('unexpectedErrorSaving'));
     } finally {
       setSaving(false);
     }
@@ -130,8 +135,8 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
     <Drawer
       isOpen={true}
       onClose={onClose}
-      title="Ticket Settings"
-      subtitle="Manage ticket categories"
+      title={t('ticketSettings')}
+      subtitle={t('manageTicketCategories')}
       icon={<Settings className="text-[#D4D4D4]" size={22} />}
       footer={
         <div className="flex items-center justify-end w-full">
@@ -142,7 +147,7 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
           >
             {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
             <span>
-              {saving ? "Saving..." : "Save Changes"}
+              {saving ? t('saving') : tCommon('saveChanges')}
             </span>
           </button>
         </div>
@@ -191,8 +196,8 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
 
           {/* ADD CATEGORY */}
           <section>
-            <h2 className="text-base font-semibold text-white">Add Category</h2>
-            <p className="mt-0.5 text-sm text-[#888]">Create a category for a new type of support request.</p>
+            <h2 className="text-base font-semibold text-white">{t('addCategory')}</h2>
+            <p className="mt-0.5 text-sm text-[#888]">{t('createCategoryDesc')}</p>
             
             <div className="mt-5 flex gap-3">
               <div className="relative flex-1">
@@ -207,7 +212,7 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
                       addCategory();
                     }
                   }}
-                  placeholder="e.g. Technical"
+                  placeholder={t('egTechnical')}
                   className="w-full rounded-lg border border-[#222] bg-[#161616] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60"
                 />
                 {newCategory && (
@@ -225,35 +230,35 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
                 className="flex items-center justify-center gap-2 rounded-lg bg-[#FF5722] hover:bg-[#F4511E] px-4 py-2 text-sm font-medium text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Plus size={15} />
-                <span>Add</span>
+                <span>{tCommon('add')}</span>
               </button>
             </div>
-            {categoryExists && <p className="mt-1.5 text-xs text-red-400">This category already exists.</p>}
+            {categoryExists && <p className="mt-1.5 text-xs text-red-400">{t('categoryAlreadyExists')}</p>}
             {!categoryExists && normalizedNewCategory.length > 0 && normalizedNewCategory.length < 3 && (
-              <p className="mt-1.5 text-xs text-[#888]">Use at least 3 characters.</p>
+              <p className="mt-1.5 text-xs text-[#888]">{t('useAtLeast3Chars')}</p>
             )}
           </section>
 
           {/* CATEGORIES LIST */}
           <section>
             <div className="flex items-center justify-between mb-0.5">
-              <h2 className="text-base font-semibold text-white">Current Categories</h2>
+              <h2 className="text-base font-semibold text-white">{t('currentCategories')}</h2>
             </div>
-            <p className="mt-0.5 text-sm text-[#888] mb-6">Organize incoming support tickets by request type.</p>
+            <p className="mt-0.5 text-sm text-[#888] mb-6">{t('organizeIncomingTickets')}</p>
 
             <div>
               {/* TABLE HEADER */}
               <div className="hidden gap-4 grid-cols-[30px_1.5fr_1fr_70px] border-b border-white/[0.06] px-2 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
                 <span>#</span>
-                <span>Category Name</span>
-                <span>Tickets</span>
-                <span className="text-right">Action</span>
+                <span>{t('categoryName')}</span>
+                <span>{t('tickets')}</span>
+                <span className="text-right">{tCommon('action')}</span>
               </div>
 
               {/* TABLE LIST */}
               <div className="divide-y divide-white/[0.06]">
                 {categories.length === 0 ? (
-                  <div className="py-8 text-center text-xs text-[#666]">No categories defined.</div>
+                  <div className="py-8 text-center text-xs text-[#666]">{t('noCategoriesDefined')}</div>
                 ) : (
                   categories.map((category, index) => {
                     const canRemove = category.ticketCount === 0;
@@ -269,7 +274,7 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
                           </span>
                         </div>
                         <div className="min-w-0">
-                          <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Category Name</p>
+                          <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{t('categoryName')}</p>
                           <div className="flex items-center gap-2">
                             <span className="truncate text-xs font-medium text-white/70">
                               {category.name}
@@ -277,7 +282,7 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
                           </div>
                         </div>
                         <div className="min-w-0">
-                          <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Tickets</p>
+                          <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{t('tickets')}</p>
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-medium text-white/70">
                               {category.ticketCount}
@@ -293,7 +298,7 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
                                 ? "text-[#888] hover:bg-red-500/10 hover:text-red-400 focus:ring-2 focus:ring-red-400/30"
                                 : "text-white/20 opacity-50"
                             }`}
-                            title={canRemove ? `Remove ${category.name}` : "Category is being used"}
+                            title={canRemove ? t('removeCategory', { name: category.name }) : t('categoryInUse')}
                           >
                             <X className="h-4 w-4" />
                           </button>

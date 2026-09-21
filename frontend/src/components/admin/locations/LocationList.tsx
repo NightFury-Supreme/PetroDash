@@ -1,12 +1,15 @@
 "use client";
 
 import { Globe, Settings, Server, Trash, Crown } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export default function LocationList({ locations, onEdit, onDelete }: { locations: any[], onEdit: (id: string) => void, onDelete: (id: string) => void }) {
+  const t = useTranslations('AdminLocations');
+  
   if (!locations || locations.length === 0) {
     return (
       <div className="py-8 text-center text-xs text-[#666]">
-        No locations found. Create your first location to get started.
+        {t('noLocationsFound', { fallback: 'No locations found. Create your first location to get started.' })}
       </div>
     );
   }
@@ -15,10 +18,10 @@ export default function LocationList({ locations, onEdit, onDelete }: { location
     <div className="w-full">
       {/* TABLE HEADER */}
       <div className="hidden gap-4 lg:grid lg:grid-cols-[2fr_120px_80px_100px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20">
-        <span>Location Name</span>
-        <span>Server Limit</span>
-        <span>Servers</span>
-        <span className="text-right">Actions</span>
+        <span>{t('locationName', { fallback: 'Location Name' })}</span>
+        <span>{t('serverLimit', { fallback: 'Server Limit' })}</span>
+        <span>{t('servers', { fallback: 'Servers' })}</span>
+        <span className="text-right">{t('actions', { fallback: 'Actions' })}</span>
       </div>
 
       <div className="divide-y divide-white/[0.06]">
@@ -29,7 +32,7 @@ export default function LocationList({ locations, onEdit, onDelete }: { location
           >
             {/* Location Name */}
             <div className="min-w-0">
-              <p className="mb-1 text-[9px] uppercase tracking-[0.13em] text-white/20 lg:hidden">Location Name</p>
+              <p className="mb-1 text-[9px] uppercase tracking-[0.13em] text-white/20 lg:hidden">{t('locationName', { fallback: 'Location Name' })}</p>
               <div className="flex items-center gap-3">
                 {loc.flag ? (
                   <img
@@ -45,7 +48,7 @@ export default function LocationList({ locations, onEdit, onDelete }: { location
                   <div className="flex items-center gap-2">
                     <span className="block truncate font-mono text-sm text-[#DDDDDD]">{loc.name}</span>
                     {loc.allowedPlanNames && loc.allowedPlanNames.length > 0 && (
-                      <div title={`Requires plan: ${loc.allowedPlanNames.join(', ')}`} className="text-yellow-400 cursor-help drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]">
+                      <div title={`${t('requiresPlan', { fallback: 'Requires plan:' })} ${loc.allowedPlanNames.join(', ')}`} className="text-yellow-400 cursor-help drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]">
                         <Crown size={14} fill="currentColor" />
                       </div>
                     )}
@@ -59,15 +62,15 @@ export default function LocationList({ locations, onEdit, onDelete }: { location
 
             {/* Server Limit */}
             <div className="min-w-0 lg:text-left">
-              <p className="mb-1 text-[9px] uppercase tracking-[0.13em] text-white/20 lg:hidden">Server Limit</p>
+              <p className="mb-1 text-[9px] uppercase tracking-[0.13em] text-white/20 lg:hidden">{t('serverLimit', { fallback: 'Server Limit' })}</p>
               <div className="flex items-center gap-1.5 font-medium text-[#E0E0E0] text-sm">
-                <span>{loc.serverLimit === 0 ? 'Unlimited' : loc.serverLimit}</span>
+                <span>{loc.serverLimit === 0 ? t('unlimited', { fallback: 'Unlimited' }) : loc.serverLimit}</span>
               </div>
             </div>
 
             {/* Servers count */}
             <div className="min-w-0 lg:text-left">
-              <p className="mb-1 text-[9px] uppercase tracking-[0.13em] text-white/20 lg:hidden">Servers</p>
+              <p className="mb-1 text-[9px] uppercase tracking-[0.13em] text-white/20 lg:hidden">{t('servers', { fallback: 'Servers' })}</p>
               <div className="flex items-center gap-1.5 font-medium text-[#E0E0E0] text-sm">
                 <Server size={14} className="text-[#FF5722]" />
                 <span className="truncate">{loc.serversCount || 0}</span>
@@ -80,7 +83,7 @@ export default function LocationList({ locations, onEdit, onDelete }: { location
                 <button
                   onClick={() => onEdit(loc._id)}
                   className="bg-white/5 border border-white/5 rounded p-1.5 text-[#888] hover:bg-white/10 hover:text-[#ddd] transition-colors"
-                  title="Edit Location"
+                  title={t('editLocationTitle', { fallback: 'Edit Location' })}
                 >
                   <Settings size={15} />
                 </button>
@@ -91,7 +94,7 @@ export default function LocationList({ locations, onEdit, onDelete }: { location
                   }}
                   disabled={(loc.serversCount || 0) > 0}
                   className={`border rounded p-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${(loc.serversCount || 0) > 0 ? 'bg-red-500/0 border-transparent text-red-500/30' : 'bg-red-500/5 border-red-500/10 text-red-500/70 hover:bg-red-500/10 hover:border-red-500/20 hover:text-red-500'}`}
-                  title={(loc.serversCount || 0) > 0 ? 'Cannot delete a location that is in use by servers' : 'Delete Location'}
+                  title={(loc.serversCount || 0) > 0 ? t('cannotDeleteInUse', { fallback: 'Cannot delete a location that is in use by servers' }) : t('deleteLocationTitle', { fallback: 'Delete Location' })}
                 >
                   <Trash size={15} />
                 </button>

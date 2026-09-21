@@ -1,9 +1,9 @@
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import React, { useState, useEffect, useRef } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
-
 import { useModal } from "@/components/Modal";
 import { ChevronDown, Check, Plus, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { adminUsersApi } from "@/utils/api/adminUsers";
 
 export function PlansTab({ plans, allPlans, userId, onRefresh }: any) {
   const [newPlanId, setNewPlanId] = useState('');
@@ -12,6 +12,10 @@ export function PlansTab({ plans, allPlans, userId, onRefresh }: any) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const modal = useModal();
   const { showSuccess, showError } = useToast();
+  const t = useTranslations('Admin.users');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
+  
   const [activeActions, setActiveActions] = useState<Record<string, { type: 'add' | 'remove' | 'removeAll', status: 'loading' | 'done' }>>({});
 
   const setActionState = (planId: string, type: 'add' | 'remove' | 'removeAll', status: 'loading' | 'done' | null) => {
@@ -39,76 +43,61 @@ export function PlansTab({ plans, allPlans, userId, onRefresh }: any) {
     if (!newPlanId) return;
     setLoading(true);
     try {
-      const token = localStorage.getItem('auth_token');
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${userId}/plans`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ planId: newPlanId, months: 1 })
-      });
-      const d = await r.json();
-      if (!r.ok) throw new Error(d.error || 'Failed to add plan');
-      showSuccess('The plan has been successfully added to the user.');
+      const token = localStorage.getItem('auth_token') || '';
+      const { res, data } = await adminUsersApi.addPlan(userId, { planId: newPlanId, months: 1 }, token);
+      if (!res.ok) throw new Error(data.error || 'Failed to add plan');
+      showSuccess(t('planAddedSuccess'));
       setNewPlanId('');
       onRefresh();
     } catch (e: any) {
-      showError(e.message || 'Failed');
+      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
     } finally {
       setLoading(false);
     }
   };
 
   const removePlan = async (planId: string) => {
-    const confirmed = await modal.confirm({ title: 'Remove Plan', body: 'Are you sure you want to remove all instances of this plan from the user?' });
+    const confirmed = await modal.confirm({ title: t('removePlanTitle'), body: t('removePlanConfirm') });
     if (!confirmed) return;
     setActionState(planId, 'removeAll', 'loading');
     try {
-      const token = localStorage.getItem('auth_token');
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${userId}/plans/${planId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const token = localStorage.getItem('auth_token') || '';
+      const r = await adminUsersApi.removePlan(userId, planId, token);
       if (!r.ok) throw new Error('Failed to remove plan');
       onRefresh();
       setActionState(planId, 'removeAll', 'done');
       setTimeout(() => setActionState(planId, 'removeAll', null), 2000);
     } catch (e: any) {
       setActionState(planId, 'removeAll', null);
-      showError(e.message);
+      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
     }
   };
 
   const quickAddPlan = async (pid: string) => {
     setActionState(pid, 'add', 'loading');
     try {
-      const token = localStorage.getItem('auth_token');
-      await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${userId}/plans`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ planId: pid, months: 1 })
-      });
+      const token = localStorage.getItem('auth_token') || '';
+      await adminUsersApi.addPlan(userId, { planId: pid, months: 1 }, token);
       onRefresh();
       setActionState(pid, 'add', 'done');
       setTimeout(() => setActionState(pid, 'add', null), 2000);
     } catch (e: any) {
       setActionState(pid, 'add', null);
-      showError(e.message || 'Failed to add');
+      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
     }
   };
 
   const removePlanInstance = async (planId: string, instanceId: string) => {
     setActionState(planId, 'remove', 'loading');
     try {
-      const token = localStorage.getItem('auth_token');
-      await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/users/${userId}/plans/instance/${instanceId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const token = localStorage.getItem('auth_token') || '';
+      await adminUsersApi.removePlanInstance(userId, instanceId, token);
       onRefresh();
       setActionState(planId, 'remove', 'done');
       setTimeout(() => setActionState(planId, 'remove', null), 2000);
     } catch (e: any) {
       setActionState(planId, 'remove', null);
-      showError(e.message);
+      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
     }
   };
 
@@ -118,7 +107,7 @@ export function PlansTab({ plans, allPlans, userId, onRefresh }: any) {
       if (!acc[pId]) {
         acc[pId] = {
           planId: pId,
-          name: p.planId?.name || 'Unknown Plan',
+          name: p.planId?.name || t('unknownPlan'),
           instances: []
         };
       }
@@ -132,8 +121,8 @@ export function PlansTab({ plans, allPlans, userId, onRefresh }: any) {
       <section>
         <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h3 className="text-xl font-semibold tracking-tight text-white">Active Plans</h3>
-            <p className="mt-2 text-sm text-white/35">Manage subscription plans assigned to this user.</p>
+            <h3 className="text-xl font-semibold tracking-tight text-white">{t('activePlans')}</h3>
+            <p className="mt-2 text-sm text-white/35">{t('activePlansDesc')}</p>
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -145,7 +134,7 @@ export function PlansTab({ plans, allPlans, userId, onRefresh }: any) {
                 `}
               >
                 <span className={newPlanId ? "text-[#ddd]" : "text-[#858585]"}>
-                  {newPlanId ? allPlans.find((p: any) => p._id === newPlanId)?.name : "Select a plan to add"}
+                  {newPlanId ? allPlans.find((p: any) => p._id === newPlanId)?.name : t('selectPlanToAdd')}
                 </span>
                 <ChevronDown size={12} className={newPlanId ? "text-[#ddd]" : "text-[#858585]"} />
               </button>
@@ -153,7 +142,7 @@ export function PlansTab({ plans, allPlans, userId, onRefresh }: any) {
               {dropdownOpen && (
                 <div className="absolute z-50 top-[calc(100%+8px)] right-0 w-[240px] border border-[#222] rounded-md bg-[#151515] p-2 shadow-xl max-h-[300px] overflow-y-auto">
                   <div className="px-2 pb-2 pt-1">
-                    <span className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">Available Plans</span>
+                    <span className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">{t('availablePlans')}</span>
                   </div>
                   
                   <div className="flex flex-col gap-1">
@@ -178,14 +167,14 @@ export function PlansTab({ plans, allPlans, userId, onRefresh }: any) {
             </div>
 
             <button onClick={addPlan} disabled={loading || !newPlanId} className="flex h-[42px] shrink-0 items-center justify-center gap-2 rounded-lg bg-white/10 px-4 text-sm font-medium text-white transition-all hover:bg-white/20 disabled:opacity-50">
-              <Plus size={16} /> Add Plan
+              <Plus size={16} /> {t('addPlan')}
             </button>
           </div>
         </div>
 
         {groupedPlans.length === 0 ? (
           <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-8 text-center">
-            <p className="text-sm text-white/50">No plans assigned.</p>
+            <p className="text-sm text-white/50">{t('noPlansAssigned')}</p>
           </div>
         ) : (
           <div className="divide-y divide-white/[0.06] border-y border-white/[0.06]">
@@ -227,7 +216,7 @@ export function PlansTab({ plans, allPlans, userId, onRefresh }: any) {
                     {activeActions[g.planId]?.type === 'removeAll' ? (
                       activeActions[g.planId].status === 'loading' ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} className="text-red-400" strokeWidth={3} />
                     ) : null}
-                    {activeActions[g.planId]?.type === 'removeAll' && activeActions[g.planId].status === 'done' ? 'Removed' : 'Remove All'}
+                    {activeActions[g.planId]?.type === 'removeAll' && activeActions[g.planId].status === 'done' ? t('removed') : t('removeAll')}
                   </button>
                 </div>
               </div>

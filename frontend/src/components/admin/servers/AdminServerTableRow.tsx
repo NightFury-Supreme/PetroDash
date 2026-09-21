@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import React from "react";
+import { useTranslations } from "next-intl";
 
 type Server = {
   _id: string;
@@ -56,16 +57,18 @@ export function AdminServerTableRow({
   deleting,
   hideOwner = false,
 }: AdminServerTableRowProps) {
+  const t = useTranslations('Admin.servers');
+
   let statusBadge: React.ReactNode = (
     <span className="px-2 py-1 rounded text-xs font-medium bg-[#00FF88]/10 text-[#00FF88]">
-      Active
+      {t('active')}
     </span>
   );
 
   if (server.suspended || server.status?.toLowerCase() === "suspended") {
     statusBadge = (
       <span className="px-2 py-1 rounded text-xs font-medium bg-[#FF5722]/10 text-[#FF5722]">
-        Suspended
+        {t('suspended')}
       </span>
     );
   } else if (
@@ -74,25 +77,25 @@ export function AdminServerTableRow({
   ) {
     statusBadge = (
       <span className="px-2 py-1 rounded text-xs font-medium bg-[#FF4444]/10 text-[#FF4444]">
-        Unreachable
+        {t('unreachable')}
       </span>
     );
   } else if (server.status?.toLowerCase() === "error") {
     statusBadge = (
       <span className="px-2 py-1 whitespace-nowrap rounded text-xs font-medium bg-[#FF4444]/10 text-[#FF4444]">
-        Failed
+        {t('failed')}
       </span>
     );
   } else if (server.status?.toLowerCase() === "creating") {
     statusBadge = (
       <span className="px-2 py-1 rounded text-xs font-medium bg-[#4488FF]/10 text-[#4488FF]">
-        Creating
+        {t('creating')}
       </span>
     );
   } else if (server.status?.toLowerCase() === "queued") {
     statusBadge = (
       <span className="px-2 py-1 whitespace-nowrap rounded text-xs font-medium bg-[#A855F7]/10 text-[#A855F7]">
-        Queued
+        {t('queued')}
       </span>
     );
   }
@@ -119,12 +122,12 @@ export function AdminServerTableRow({
       {/* Server Name */}
       <div className="min-w-0">
         <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
-          Server Name
+          {t('serverName')}
         </p>
         <span className="block truncate font-mono text-sm text-[#DDDDDD]">
           {server.name}
         </span>
-        <span className="block truncate font-mono text-[10px] text-[#666] mt-0.5" title="Dashboard ID">
+        <span className="block truncate font-mono text-[10px] text-[#666] mt-0.5" title={t('dashboardId')}>
           {server._id}
         </span>
       </div>
@@ -133,7 +136,7 @@ export function AdminServerTableRow({
       {!hideOwner && (
         <div className="min-w-0">
           <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
-            Owner
+            {t('owner')}
           </p>
           <Link
             href={`/admin/users/${server.userId._id}`}
@@ -165,7 +168,7 @@ export function AdminServerTableRow({
       {/* Node */}
       <div className="min-w-0">
         <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
-          Node
+          {t('node')}
         </p>
         <div className="flex items-center gap-2 text-[#AAAAAA] text-sm">
           {server.location.flag && (
@@ -191,7 +194,7 @@ export function AdminServerTableRow({
       {/* Egg */}
       <div className="min-w-0">
         <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
-          Egg
+          {t('egg')}
         </p>
         <div className="flex items-center gap-2 text-[#AAAAAA] text-sm">
           {server.egg.icon && (
@@ -217,7 +220,7 @@ export function AdminServerTableRow({
       {/* Status */}
       <div className="min-w-0">
         <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
-          Status
+          {t('status')}
         </p>
         <div>{statusBadge}</div>
       </div>
@@ -225,7 +228,7 @@ export function AdminServerTableRow({
       {/* CPU */}
       <div className="min-w-0">
         <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
-          CPU
+          {t('cpu')}
         </p>
         <div className="flex items-center gap-1.5 font-medium text-[#E0E0E0] text-sm">
           <Cpu size={14} className="text-[#FF5722]" />
@@ -236,7 +239,7 @@ export function AdminServerTableRow({
       {/* RAM */}
       <div className="min-w-0">
         <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
-          RAM
+          {t('ram')}
         </p>
         <div className="flex items-center gap-1.5 font-medium text-[#E0E0E0] text-sm">
           <CircuitBoard size={14} className="text-[#FF5722]" />
@@ -247,7 +250,7 @@ export function AdminServerTableRow({
       {/* Disk */}
       <div className="min-w-0">
         <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
-          Disk
+          {t('disk')}
         </p>
         <div className="flex items-center gap-1.5 font-medium text-[#E0E0E0] text-sm">
           <HardDrive size={14} className="text-[#FF5722]" />
@@ -262,7 +265,7 @@ export function AdminServerTableRow({
             <>
               {/* Open server */}
               {isDownOrUnreachable ? (
-                <button disabled className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#555] cursor-not-allowed transition-colors" title="Cannot open unreachable server">
+                <button disabled className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#555] cursor-not-allowed transition-colors" title={t('cannotOpenUnreachable')}>
                   <ExternalLink size={14} />
                 </button>
               ) : (
@@ -271,7 +274,7 @@ export function AdminServerTableRow({
                   target="_blank"
                   rel="noreferrer"
                   className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#888] hover:text-[#D4D4D4] transition-colors bg-transparent border border-[#222] rounded-lg"
-                  title="Open server"
+                  title={t('openServer')}
                 >
                   <ExternalLink size={14} />
                 </a>
@@ -282,7 +285,7 @@ export function AdminServerTableRow({
               server.status?.toLowerCase() === "suspended" ? (
                 <button
                   disabled
-                  title="Cannot edit suspended server"
+                  title={t('cannotEditSuspended')}
                   className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#555] cursor-not-allowed transition-colors"
                 >
                   <ShieldAlert size={14} />
@@ -290,7 +293,7 @@ export function AdminServerTableRow({
               ) : server.status?.toLowerCase() === "creating" ? (
                 <button
                   disabled
-                  title="Cannot edit a server in this state"
+                  title={t('cannotEditState')}
                   className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#444] cursor-not-allowed transition-colors"
                 >
                   <Edit2 size={14} />
@@ -298,7 +301,7 @@ export function AdminServerTableRow({
               ) : isDownOrUnreachable ? (
                 <button
                   disabled
-                  title="Cannot edit unreachable server"
+                  title={t('cannotEditUnreachable')}
                   className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#555] cursor-not-allowed transition-colors"
                 >
                   <Edit2 size={14} />
@@ -306,7 +309,7 @@ export function AdminServerTableRow({
               ) : (
                 <button
                   onClick={() => onEdit(server._id)}
-                  title="Edit server"
+                  title={t('editServer')}
                   className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#888] hover:text-[#D4D4D4] transition-colors bg-transparent border border-[#222] rounded-lg"
                 >
                   <Edit2 size={14} />
@@ -326,10 +329,10 @@ export function AdminServerTableRow({
             }
             title={
               server.status?.toLowerCase() === "creating" 
-                ? "Cannot delete server while creating" 
+                ? t('cannotDeleteCreating')
                 : server.suspended || server.status?.toLowerCase() === "suspended"
-                ? "Cannot delete suspended server"
-                : "Delete server"
+                ? t('cannotDeleteSuspended')
+                : t('deleteServer')
             }
             className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#888] hover:text-[#FF4444] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >

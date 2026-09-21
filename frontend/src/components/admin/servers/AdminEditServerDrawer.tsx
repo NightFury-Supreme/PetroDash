@@ -1,7 +1,7 @@
 "use client";
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
+import { useTranslations } from "next-intl";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   Server,
   Save,
@@ -23,31 +23,7 @@ import { Drawer } from "@/components/ui/Drawer";
 import { DeleteDrawer } from "@/components/ui/DeleteDrawer";
 
 
-type ServerLimits = {
-  diskMb: number;
-  memoryMb: number;
-  cpuPercent: number;
-  backups: number;
-  databases: number;
-  allocations: number;
-};
-
-type AdminServer = {
-  _id: string;
-  name: string;
-  status: string;
-  userId: { _id: string; username: string; email: string };
-  egg: { _id: string; name: string; icon?: string };
-  location: { _id: string; name: string; flag?: string };
-  limits: ServerLimits;
-  createdAt: string;
-  unreachable?: boolean;
-  suspended?: boolean;
-  identifier?: string;
-  uuid?: string;
-  clientUrl?: string;
-  panelUrl?: string;
-};
+import { useAdminServerEdit, ServerLimits } from "@/hooks/admin/useAdminServerEdit";
 
 interface AdminEditServerDrawerProps {
   serverId: string;
@@ -82,13 +58,25 @@ function ResourceField({
   value: number;
   onChange: (key: keyof ServerLimits, val: number) => void;
 }) {
+  const t = useTranslations('Admin.servers');
   const Icon = field.icon;
+  
+  // Create a translation key map for resource fields
+  const fieldLabelMap: Record<string, string> = {
+    cpuPercent: t('cpu'),
+    memoryMb: t('ram'),
+    diskMb: t('disk'),
+    backups: t('backups'),
+    databases: t('databases'),
+    allocations: t('allocations')
+  };
+
   return (
     <div className="relative group">
       <div className="mb-2 flex items-center justify-between">
         <span className="flex items-center gap-1.5 text-sm font-medium text-[#D4D4D4]">
           <Icon size={14} className="text-[#888]" />
-          {field.label}
+          {fieldLabelMap[field.key] || field.label}
         </span>
       </div>
       <div className="relative">
@@ -173,126 +161,52 @@ export function AdminEditServerDrawer({
   onClose,
   onUpdate,
 }: AdminEditServerDrawerProps) {
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const t = useTranslations('Admin.servers');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
+
+  const {
+    server,
+    name,
+    setName,
+    limits,
+    loading,
+    saving,
+    saved,
+    failed,
+    isDeleting,
+    errorMsg,
+    setErrorMsg,
+    loadServer,
+    handleChange,
+    handleSave: hookHandleSave,
+    handleConfirmDelete: hookHandleConfirmDelete,
+  } = useAdminServerEdit(serverId, onUpdate, onClose);
 
   const [showDeleteDrawer, setShowDeleteDrawer] = useState(false);
 
+  useEffect(() => {
+    loadServer().catch((err: any) => {
+      const errKey = err.message || 'unknownError';
+      setErrorMsg(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : (err.message || tCommon('error')));
+    });
+  }, [loadServer, tErrorBackend, tCommon, setErrorMsg]);
+
   const handleConfirmDelete = async () => {
-    if (!server) return;
-    setIsDeleting(true);
-    setFailed(false);
-    setErrorMsg(null);
     try {
-      const token = localStorage.getItem("auth_token");
-      const res = await fetchWithRetry(
-        `${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/servers/${serverId}`,
-        {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      if (!res.ok) {
-        let d: any = {};
-        try { d = await res.json(); } catch {}
-        throw new Error(d?.error || "Failed to delete server");
-      }
-      if (onUpdate) onUpdate();
-      onClose();
+      await hookHandleConfirmDelete();
     } catch (err: any) {
-      setErrorMsg(err.message || "Failed to delete server");
-      setFailed(true);
-      setTimeout(() => setFailed(false), 3000);
-      setIsDeleting(false);
-      throw err;
+      const errKey = err.message || 'unknownError';
+      setErrorMsg(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : (err.message || tCommon('error')));
     }
   };
-  const [server, setServer] = useState<AdminServer | null>(null);
-  const [limits, setLimits] = useState<ServerLimits>({
-    diskMb: 0,
-    memoryMb: 0,
-    cpuPercent: 0,
-    backups: 0,
-    databases: 0,
-    allocations: 0,
-  });
-
-    const [name, setName] = useState<string>("");
-
-  const loadServer = useCallback(async () => {
-    setLoading(true);
-    setErrorMsg(null);
-    try {
-      const token = localStorage.getItem("auth_token");
-      if (!token) return;
-      const res = await fetchWithRetry(
-        `${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/servers/${serverId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || "Failed to load server");
-      }
-      const data: AdminServer = await res.json();
-      setServer(data);
-      setLimits({ ...data.limits });
-      setName(data.name || "");
-    } catch (err: any) {
-      setErrorMsg(err.message || "Failed to load server");
-    } finally {
-      setLoading(false);
-    }
-  }, [serverId]);
-
-  useEffect(() => {
-    loadServer();
-  }, [loadServer]);
-
-  const handleChange = useCallback(
-    (key: keyof ServerLimits, val: number) => {
-      setLimits((prev) => ({ ...prev, [key]: val }));
-    },
-    []
-  );
 
   const handleSave = async () => {
-    if (!server) return;
-    setSaving(true);
-    setFailed(false);
-    setErrorMsg(null);
     try {
-      const token = localStorage.getItem("auth_token");
-      const res = await fetchWithRetry(
-        `${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/servers/${serverId}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ name, limits }),
-        }
-      );
-      if (!res.ok) {
-        let d: any = {};
-        try { d = await res.json(); } catch {}
-        throw new Error(d?.error || "Failed to update server");
-      }
-      setSaved(true);
-      setTimeout(() => {
-        if (onUpdate) onUpdate();
-        onClose();
-      }, 1000);
+      await hookHandleSave();
     } catch (err: any) {
-      setErrorMsg(err.message || "Failed to update server");
-      setFailed(true);
-      setTimeout(() => setFailed(false), 3000);
-    } finally {
-      setSaving(false);
+      const errKey = err.message || 'unknownError';
+      setErrorMsg(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : (err.message || tCommon('error')));
     }
   };
 
@@ -341,8 +255,8 @@ export function AdminEditServerDrawer({
     <Drawer
       isOpen={true}
       onClose={onClose}
-      title={loading ? "Edit Server" : (server?.name ?? "Edit Server")}
-      subtitle={server?.uuid ? `UUID: ${server.uuid.split('-')[0]}...` : 'Update configuration'}
+      title={loading ? t('editServerTitle') : (server?.name ?? t('editServerTitle'))}
+      subtitle={server?.uuid ? t('uuidSubtitle', { uuid: server.uuid.split('-')[0] }) : t('updateConfigSubtitle')}
       icon={<Server className="text-[#D4D4D4]" size={22} />}
       headerExtra={headerExtra}
       footer={
@@ -358,14 +272,14 @@ export function AdminEditServerDrawer({
                     ? "border-[#222] bg-[#161616] text-[#555] cursor-not-allowed"
                     : "border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20"
                 }`}
-                title={isSuspended ? "Cannot delete suspended server" : "Delete server"}
+                title={isSuspended ? t('cannotDeleteSuspended') : t('deleteServer')}
               >
                 {isDeleting ? (
                   <Loader2 size={15} className="animate-spin" />
                 ) : (
                   <Trash2 size={15} />
                 )}
-                <span className="hidden sm:inline">Delete</span>
+                <span className="hidden sm:inline">{tCommon('delete')}</span>
               </button>
               
               {!isUnreachable && server.clientUrl ? (
@@ -374,19 +288,19 @@ export function AdminEditServerDrawer({
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center gap-2 rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
-                  title="Open server in Pterodactyl"
+                  title={t('openPanelTitle')}
                 >
                   <ExternalLink size={15} />
-                  <span className="hidden sm:inline">Open Panel</span>
+                  <span className="hidden sm:inline">{t('openPanel')}</span>
                 </a>
               ) : (
                 <button
                   disabled
                   className="flex items-center gap-2 rounded-lg border border-[#222] bg-[#161616] px-4 py-2 text-sm font-medium text-[#555] cursor-not-allowed"
-                  title="Cannot open unreachable server"
+                  title={t('cannotOpenUnreachable')}
                 >
                   <ExternalLink size={15} />
-                  <span className="hidden sm:inline">Open Panel</span>
+                  <span className="hidden sm:inline">{t('openPanel')}</span>
                 </button>
               )}
             </div>
@@ -399,7 +313,7 @@ export function AdminEditServerDrawer({
                 disabled={saving || saved || failed}
                 className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50"
               >
-                Cancel
+                {tCommon('cancel')}
               </button>
               {canEdit && (
                 <button
@@ -416,13 +330,13 @@ export function AdminEditServerDrawer({
                   }`}
                 >
                   {saving ? (
-                    <><Loader2 size={16} className="animate-spin" /> Saving...</>
+                    <><Loader2 size={16} className="animate-spin" /> {tCommon('saving')}</>
                   ) : saved ? (
-                    "Saved!"
+                    tCommon('saved')
                   ) : failed ? (
-                    "Failed to Save"
+                    t('failedToSave')
                   ) : (
-                    "Save Changes"
+                    tCommon('saveChanges')
                   )}
                 </button>
               )}
@@ -437,7 +351,7 @@ export function AdminEditServerDrawer({
         <div className="flex flex-col items-center justify-center py-16 text-center gap-2">
           <p className="text-sm font-medium text-[#D4D4D4]">{errorMsg}</p>
           <button onClick={loadServer} className="text-xs text-[#FF5722] hover:underline mt-2">
-            Try again
+            {t('tryAgain')}
           </button>
         </div>
       ) : isSuspended ? (
@@ -447,9 +361,9 @@ export function AdminEditServerDrawer({
               <ShieldAlert size={24} className="text-red-400" />
             </div>
             <div>
-              <p className="text-sm font-medium text-[#D4D4D4]">Server Suspended</p>
+              <p className="text-sm font-medium text-[#D4D4D4]">{t('serverSuspended')}</p>
               <p className="text-xs text-[#888] mt-1 max-w-[280px]">
-                This server is currently suspended. Unsuspend it from the panel before editing its limits.
+                {t('serverSuspendedDesc')}
               </p>
             </div>
           </div>
@@ -461,9 +375,9 @@ export function AdminEditServerDrawer({
               <WifiOff size={24} className="text-yellow-400" />
             </div>
             <div>
-              <p className="text-sm font-medium text-[#D4D4D4]">Server Unreachable</p>
+              <p className="text-sm font-medium text-[#D4D4D4]">{t('serverUnreachable')}</p>
               <p className="text-xs text-[#888] mt-1 max-w-[280px]">
-                Cannot connect to the panel for this server. Limits cannot be edited while the server is unreachable.
+                {t('serverUnreachableDesc')}
               </p>
             </div>
           </div>
@@ -471,26 +385,26 @@ export function AdminEditServerDrawer({
       ) : server ? (
         <div className="space-y-6">
           <section>
-            <h2 className="text-base font-semibold text-white">Server Details</h2>
-            <p className="mt-0.5 text-sm text-[#888]">Configure your server&apos;s basic information</p>
+            <h2 className="text-base font-semibold text-white">{t('serverDetails')}</h2>
+            <p className="mt-0.5 text-sm text-[#888]">{t('serverDetailsDesc')}</p>
 
             <label className="mb-2 mt-5 block text-sm font-medium text-[#D4D4D4]">
-              Server Name <span className="text-[#FF5722]">*</span>
+              {t('serverNameLabel')} <span className="text-[#FF5722]">*</span>
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Enter server name"
+              placeholder={t('enterServerName')}
               className="w-full rounded-lg border border-[#222] bg-[#161616] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60"
             />
           </section>
 
           <section className="mt-8">
             <div className="flex items-center justify-between mb-0.5">
-              <h2 className="text-base font-semibold text-white">Resource Limits</h2>
+              <h2 className="text-base font-semibold text-white">{t('resourceLimits')}</h2>
             </div>
-            <p className="text-sm text-[#888]">Configure your server&apos;s resource allocation</p>
+            <p className="text-sm text-[#888]">{t('resourceLimitsDesc')}</p>
 
             <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
               {RESOURCE_FIELDS.map((field) => (
@@ -511,12 +425,12 @@ export function AdminEditServerDrawer({
         isOpen={showDeleteDrawer}
         onClose={() => setShowDeleteDrawer(false)}
         onConfirm={handleConfirmDelete}
-        entityType="Server"
+        entityType={tCommon('server')}
         entityName={server?.name || ""}
         warningPoints={[
-          "The server will be permanently deleted from the panel.",
-          "All associated data and configurations will be lost.",
-          "This action cannot be undone.",
+          t('deleteWarning1'),
+          t('deleteWarning2'),
+          t('cannotUndo'),
         ]}
       />
     </Drawer>

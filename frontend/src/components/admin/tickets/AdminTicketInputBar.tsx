@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from 'next-intl';
 
 const MAX_LEN = 5000;
 
@@ -19,6 +20,9 @@ export default function AdminTicketInputBar({
   onToggleInternal: () => void;
   onSend: () => void;
 }) {
+  const t = useTranslations('AdminTickets');
+  const tCommon = useTranslations('Common');
+
   if (!canSend) return null;
 
   const remaining = MAX_LEN - value.length;
@@ -44,14 +48,14 @@ export default function AdminTicketInputBar({
               if (!overLimit && value.trim()) onSend();
             }
           }}
-          placeholder={internal ? "Write an internal note... (Admins only)" : "Type your reply..."}
+          placeholder={internal ? t('writeInternalNotePlaceholderAdmin') : t('typeReplyPlaceholder')}
           className={`w-full resize-none bg-transparent px-2 py-1.5 text-sm outline-none placeholder:text-[#555] ${internal ? 'text-yellow-100 placeholder:text-yellow-700/50' : 'text-[#E0E0E0]'}`}
           style={{ minHeight: '40px' }}
         />
         
         <div className="flex items-center justify-between px-2 pb-1">
           <span className={`text-[10px] font-medium ${overLimit ? 'text-red-400' : 'text-[#555]'}`}>
-            {value.length > 0 && `${remaining} remaining`}
+            {value.length > 0 && `${remaining} ${t('remainingChars')}`}
           </span>
           <div className="flex items-center gap-2">
             <button
@@ -62,14 +66,14 @@ export default function AdminTicketInputBar({
               }`}
             >
               <i className={internal ? "fas fa-eye-slash" : "fas fa-eye"} />
-              {internal ? 'Internal' : 'Public'}
+              {internal ? t('internal') : t('public')}
             </button>
             <button
               onClick={onSend}
               disabled={overLimit || !value.trim()}
               className="flex h-8 items-center gap-1.5 rounded-lg bg-white px-4 text-xs font-medium text-black transition-colors hover:bg-[#e0e0e0] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Send
+              {tCommon('send')}
             </button>
           </div>
         </div>

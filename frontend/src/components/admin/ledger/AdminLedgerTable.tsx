@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
-
-
+import { useTranslations } from 'next-intl';
 
 interface AdminLedgerTableProps {
   items: any[];
@@ -18,6 +17,9 @@ export function AdminLedgerTable({
   refunding,
   voiding
 }: AdminLedgerTableProps) {
+  const t = useTranslations('Admin.ledger');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
   const [downloading, setDownloading] = useState<string | null>(null);
   
   const getStatusBadge = (status: string) => {
@@ -57,7 +59,10 @@ export function AdminLedgerTable({
         const res = await fetchWithRetry(`${baseUrl}/api/admin/payments/${paymentId}/invoice`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        if (!res.ok) throw new Error('Failed to download invoice');
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || 'Failed to download invoice');
+        }
         
         const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);
@@ -68,9 +73,10 @@ export function AdminLedgerTable({
         a.click();
         window.URL.revokeObjectURL(url);
         a.remove();
-      } catch (err) {
+      } catch (err: any) {
         console.error(err);
-        alert('Failed to download invoice');
+        const errKey = err.message || '';
+        alert(tErrorBackend.has(errKey as any) ? tErrorBackend(errKey as any) : t('failedToDownloadInvoice'));
       } finally {
         setDownloading(null);
       }
@@ -86,7 +92,7 @@ export function AdminLedgerTable({
           <button
             onClick={() => handleDownloadInvoice(item._id)}
             disabled={downloading === item._id}
-            title="Download Invoice"
+            title={t('downloadInvoice')}
             className="w-7 h-7 rounded border flex items-center justify-center bg-white/[0.02] border-white/[0.04] text-white/40 hover:text-white hover:bg-white/[0.06] hover:border-white/[0.08] transition-colors disabled:opacity-50"
           >
             {downloading === item._id ? <i className="fas fa-spinner fa-spin text-[12px]"></i> : <i className="fas fa-download text-[12px]"></i>}
@@ -96,7 +102,7 @@ export function AdminLedgerTable({
           <button
             onClick={() => onRefund(item._id)}
             disabled={refunding === item._id}
-            title="Refund Payment"
+            title={t('refundPayment')}
             className="w-7 h-7 rounded border flex items-center justify-center bg-white/[0.02] border-white/[0.04] text-yellow-500/80 hover:text-yellow-500 hover:bg-yellow-500/10 hover:border-yellow-500/20 transition-colors disabled:opacity-50"
           >
             {refunding === item._id ? <i className="fas fa-spinner fa-spin text-[12px]"></i> : <i className="fas fa-undo text-[12px]"></i>}
@@ -106,7 +112,7 @@ export function AdminLedgerTable({
           <button
             onClick={() => onVoid(item._id)}
             disabled={voiding === item._id}
-            title="Void Checkout"
+            title={t('voidCheckout')}
             className="w-7 h-7 rounded border flex items-center justify-center bg-white/[0.02] border-white/[0.04] text-red-500/80 hover:text-red-500 hover:bg-red-500/10 hover:border-red-500/20 transition-colors disabled:opacity-50"
           >
             {voiding === item._id ? <i className="fas fa-spinner fa-spin text-[12px]"></i> : <i className="fas fa-ban text-[12px]"></i>}
@@ -120,8 +126,8 @@ export function AdminLedgerTable({
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center border border-white/[0.06] rounded-xl">
         <i className="fas fa-inbox mb-3 text-2xl text-white/20"></i>
-        <p className="text-sm text-white/40">No payments found</p>
-        <p className="text-xs text-white/30 mt-1">Try adjusting your filters or check back later.</p>
+        <p className="text-sm text-white/40">{t('noPaymentsFound')}</p>
+        <p className="text-xs text-white/30 mt-1">{t('adjustFiltersOrCheckBackLater')}</p>
       </div>
     );
   }
@@ -130,12 +136,12 @@ export function AdminLedgerTable({
     <div className="w-full">
       {/* Column headers */}
       <div className="hidden gap-4 grid-cols-[1.5fr_1.5fr_1fr_1fr_1fr_80px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
-        <span>User</span>
-        <span>Order Info</span>
-        <span>Provider</span>
-        <span>Amount</span>
-        <span>Status</span>
-        <span className="text-right">Action</span>
+        <span>{tCommon('user')}</span>
+        <span>{t('orderInfo')}</span>
+        <span>{t('provider')}</span>
+        <span>{t('amount')}</span>
+        <span>{tCommon('status')}</span>
+        <span className="text-right">{tCommon('action')}</span>
       </div>
 
       <div className="divide-y divide-white/[0.06]">
@@ -173,7 +179,7 @@ export function AdminLedgerTable({
                 })()}
               </div>
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-[#D4D4D4]">{item.userId?.username || 'Unknown'}</p>
+                <p className="truncate text-sm font-semibold text-[#D4D4D4]">{item.userId?.username || tCommon('unknown')}</p>
                 <p className="mt-0.5 truncate text-[13px] text-[#888]">{item.userId?.email || item.userId || ''}</p>
               </div>
             </div>
@@ -191,10 +197,10 @@ export function AdminLedgerTable({
             {/* Item & Provider */}
             <div className="flex flex-col justify-center">
               <span className="text-sm font-semibold text-white/80 truncate">
-                {item.planId?.name || item.planId || 'Unknown'}
+                {item.planId?.name || item.planId || tCommon('unknown')}
               </span>
               <span className="text-[10px] text-white/30 uppercase tracking-wide mt-0.5">
-                {item.provider || 'system'}
+                {item.provider || t('system')}
               </span>
             </div>
 

@@ -1,8 +1,11 @@
 "use client";
 
 import { Link } from '@/i18n/routing';
+import { useTranslations } from "next-intl";
 
 export default function EditServerHeader() {
+  const t = useTranslations('Admin.servers');
+
   return (
     <div className="flex items-center gap-3 mb-8">
       <Link href="/admin/servers" className="btn-ghost p-2">
@@ -12,8 +15,8 @@ export default function EditServerHeader() {
         <i className="fas fa-server text-white text-lg sm:text-2xl"></i>
       </div>
       <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold">Edit Server</h1>
-        <p className="text-[#AAAAAA] text-base sm:text-lg">Update server resources and configuration</p>
+        <h1 className="text-2xl sm:text-3xl font-extrabold">{t('editServerTitle')}</h1>
+        <p className="text-[#AAAAAA] text-base sm:text-lg">{t('editServerSubtitle')}</p>
       </div>
     </div>
   );

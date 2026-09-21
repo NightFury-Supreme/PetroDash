@@ -5,6 +5,7 @@ import AdminGiftRedemptionsSkeleton from "@/components/skeletons/admin/gifts/Adm
 import { Users, User } from "lucide-react";
 import { Pagination } from "@/components/Pagination";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 
 export function AdminGiftRedemptionsDrawer({
   giftId,
@@ -13,6 +14,10 @@ export function AdminGiftRedemptionsDrawer({
   giftId: string | null;
   onClose: () => void;
 }) {
+  const t = useTranslations('Admin.gifts');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('GlobalErrors');
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [redemptions, setRedemptions] = useState<any[]>([]);
@@ -30,18 +35,22 @@ export function AdminGiftRedemptionsDrawer({
       const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/gifts/${giftId}/redemptions?page=${page}&limit=10`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (!res.ok) throw new Error("Failed to load redemptions");
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error || "fetch_failed");
+      }
       const data = await res.json();
       
       setGiftCode(data.code || "");
       setRedemptions(data.redemptions || []);
       if (data.pagination) setPagination(data.pagination);
     } catch (e: any) {
-      setError(e.message);
+      const errKey = e.message || 'fetch_failed';
+      setError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : e.message);
     } finally {
       setLoading(false);
     }
-  }, [giftId]);
+  }, [giftId, tErrorBackend]);
 
   useEffect(() => {
     if (giftId) {
@@ -56,13 +65,13 @@ export function AdminGiftRedemptionsDrawer({
     <Drawer
       isOpen={!!giftId}
       onClose={onClose}
-      title="Gift Redemptions"
-      subtitle={giftCode ? `Viewing users who redeemed ${giftCode}` : "Loading..."}
+      title={t('giftRedemptions')}
+      subtitle={giftCode ? t('viewingRedemptions', { code: giftCode }) : tCommon('loading')}
       icon={<Users size={20} />}
       footer={
         <div className="flex items-center justify-end w-full">
           <button onClick={onClose} className="rounded-lg border border-[#222] bg-[#161616] px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#1A1A1A] hover:text-[#D4D4D4] bg-transparent">
-            Close
+            {tCommon('close')}
           </button>
         </div>
       }
@@ -75,15 +84,15 @@ export function AdminGiftRedemptionsDrawer({
         </div>
       ) : redemptions.length === 0 ? (
         <div className="text-center py-12 text-[#666] text-sm">
-          No users have redeemed this gift yet.
+          {t('noRedemptions')}
         </div>
       ) : (
         <div className="-mx-6 sm:-mx-8">
           {/* TABLE HEADER */}
           <div className="hidden gap-4 grid-cols-[1.5fr_1.5fr_1fr] border-b border-white/[0.06] px-6 sm:px-8 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30 md:grid pt-4">
-            <span>Username</span>
-            <span>Email</span>
-            <span className="text-right">Redeemed At</span>
+            <span>{tCommon('username')}</span>
+            <span>{tCommon('email')}</span>
+            <span className="text-right">{t('redeemedAt')}</span>
           </div>
 
           {/* TABLE LIST */}
@@ -91,34 +100,34 @@ export function AdminGiftRedemptionsDrawer({
             {redemptions.map((r, i) => (
               <div key={i} className="group grid grid-cols-1 gap-4 px-6 sm:px-8 py-4 transition hover:bg-white/[0.015] md:grid-cols-[1.5fr_1.5fr_1fr] md:items-center">
                 <div className="min-w-0">
-                  <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Username</p>
+                  <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{tCommon('username')}</p>
                   <Link 
                     href={r.user?._id ? `/admin/users/${r.user._id}` : "#"}
                     className={`flex items-center gap-2 group/user ${r.user?._id ? "cursor-pointer" : "cursor-default pointer-events-none"}`}
                   >
                     <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0 bg-white/[0.05] flex items-center justify-center border border-white/[0.05]">
                       {r.user?.profilePicture ? (
-                        <img src={r.user.profilePicture} alt="Avatar" className="w-full h-full object-cover" />
+                        <img src={r.user.profilePicture} alt={tCommon('avatar')} className="w-full h-full object-cover" />
                       ) : (
                         <User size={12} className="text-[#888]" />
                       )}
                     </div>
                     <div>
                       <span className={`block truncate text-sm text-[#DDDDDD] ${r.user?._id ? "group-hover/user:text-[#FF5722] transition-colors" : ""}`}>
-                        {r.user?.username || 'Unknown'}
+                        {r.user?.username || tCommon('unknown')}
                       </span>
                       <span className="block truncate font-mono text-[10px] text-[#666] mt-0.5">
-                        {r.user?._id || "Unknown"}
+                        {r.user?._id || tCommon('unknown')}
                       </span>
                     </div>
                   </Link>
                 </div>
                 <div className="min-w-0">
-                  <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Email</p>
+                  <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{tCommon('email')}</p>
                   <span className="block truncate text-xs text-[#888888]">{r.user?.email || 'N/A'}</span>
                 </div>
                 <div className="min-w-0 md:text-right">
-                  <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">Redeemed At</p>
+                  <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{t('redeemedAt')}</p>
                   <span className="block truncate text-xs text-[#888888]">{new Date(r.redeemedAt).toLocaleString()}</span>
                 </div>
               </div>
@@ -133,7 +142,7 @@ export function AdminGiftRedemptionsDrawer({
             pageSize={10}
             onPageChange={setCurrentPage}
             loading={loading}
-            itemName="redemptions"
+            itemName={tCommon('redemptions')}
           />
         </div>
       )}

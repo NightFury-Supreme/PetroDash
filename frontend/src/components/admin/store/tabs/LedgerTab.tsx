@@ -9,11 +9,16 @@ import { AdminLedgerSkeleton } from "@/components/skeletons/admin/ledger";
 import { AdminLedgerContent, AdminRefundDrawer } from "@/components/admin/ledger";
 import { Pagination } from "@/components/Pagination";
 import { useModal } from "@/components/Modal";
+import { useTranslations } from "next-intl";
 
 // Use a flexible item shape to match API without strict coupling
 type LedgerItem = Record<string, any>;
 
 export default function AdminLedgerTab() {
+  const t = useTranslations('Admin.Ledger');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('Errors.Backend');
+  
   const [items, setItems] = useState<LedgerItem[]>([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [status, setStatus] = useState<string>("");
@@ -38,7 +43,7 @@ export default function AdminLedgerTab() {
     try {
       const token = localStorage.getItem('auth_token');
       if (!token) {
-        setError('Authentication token not found');
+        setError(t('errors.tokenNotFound'));
         return;
       }
 
@@ -55,7 +60,7 @@ export default function AdminLedgerTab() {
       });
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to load payments' }));
+        const errorData = await response.json().catch(() => ({ error: t('errors.failedToLoad') }));
         throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`);
       }
       
@@ -71,8 +76,9 @@ export default function AdminLedgerTab() {
           total: data.total || 0
         });
       }
-    } catch (e: unknown) { 
-      setError(e instanceof Error ? e.message : 'Failed to load payments'); 
+    } catch (e: any) { 
+      const errKey = e.message;
+      setError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : errKey);
     } finally {
       setLoading(false);
     }
@@ -95,7 +101,7 @@ export default function AdminLedgerTab() {
     try {
       const token = localStorage.getItem('auth_token');
       if (!token) {
-        setError('Authentication token not found');
+        setError(t('errors.tokenNotFound'));
         return;
       }
 
@@ -105,15 +111,16 @@ export default function AdminLedgerTab() {
       });
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to refund payment' }));
+        const errorData = await response.json().catch(() => ({ error: t('errors.failedToRefund') }));
         throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`);
       }
       
-      showSuccess("The payment has been successfully refunded.");
+      showSuccess(t('success.refunded'));
       setRefundDrawerOpen(false);
       await load(); // Reload the data
-    } catch (e: unknown) {
-      showError(e instanceof Error ? e.message : 'Failed to refund payment');
+    } catch (e: any) {
+      const errKey = e.message;
+      showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : errKey);
     } finally {
       setRefunding(null);
     }
@@ -121,10 +128,10 @@ export default function AdminLedgerTab() {
 
   const handleVoid = async (id: string) => {
     const confirmed = await modal.confirm({
-      title: "Confirm Void",
-      body: "Are you sure you want to void this payment? This action cannot be undone.",
-      confirmText: "Void Payment",
-      cancelText: "Cancel"
+      title: t('modals.voidTitle'),
+      body: t('modals.voidBody'),
+      confirmText: t('actions.void'),
+      cancelText: tCommon('cancel')
     });
     
     if (!confirmed) return;
@@ -133,7 +140,7 @@ export default function AdminLedgerTab() {
     try {
       const token = localStorage.getItem('auth_token');
       if (!token) {
-        setError('Authentication token not found');
+        setError(t('errors.tokenNotFound'));
         return;
       }
 
@@ -143,15 +150,16 @@ export default function AdminLedgerTab() {
       });
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to void payment' }));
+        const errorData = await response.json().catch(() => ({ error: t('errors.failedToVoid') }));
         throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`);
       }
       
-      showSuccess("The payment has been successfully voided.");
+      showSuccess(t('success.voided'));
       
       await load(); // Reload the data
-    } catch (e: unknown) {
-      showError(e instanceof Error ? e.message : 'Failed to void payment');
+    } catch (e: any) {
+      const errKey = e.message;
+      showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : errKey);
     } finally {
       setVoiding(null);
     }
@@ -172,10 +180,10 @@ export default function AdminLedgerTab() {
       <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
         <ErrorState
           icon={<BookOpen strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
-          kicker="Load Error"
-          title="Failed to Load Ledger"
+          kicker={tCommon('errors.loadErrorKicker')}
+          title={t('errors.failedToLoadTitle')}
           errorString={error}
-          description={<ErrorDescription error={error} topic="Ledger" />}
+          description={<ErrorDescription error={error} topic={t('title')} />}
           buttons={
             <>
               <button
@@ -183,7 +191,7 @@ export default function AdminLedgerTab() {
                 className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
               >
                 <RefreshCw className="w-[14px] h-[14px]" />
-                Retry
+                {tCommon('retry')}
               </button>
               <DashboardButton variant="secondary" />
             </>
@@ -226,7 +234,7 @@ export default function AdminLedgerTab() {
           totalItems={pagination.total}
           pageSize={10}
           onPageChange={setCurrentPage}
-          itemName="payments"
+          itemName={tCommon('pagination.payments')}
         />
         
         <AdminRefundDrawer

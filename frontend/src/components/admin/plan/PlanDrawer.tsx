@@ -8,6 +8,7 @@ import { usePlanEdit } from '@/hooks/admin/plan/usePlanEdit';
 import { usePlanForm } from '@/hooks/admin/plan/usePlanForm';
 import { PlanForm } from './PlanForm';
 import { PlanEditForm } from './PlanEditForm';
+import { useTranslations } from 'next-intl';
 
 export interface PlanDrawerProps {
   planId: string | null;
@@ -132,6 +133,8 @@ function DrawerPlanSkeleton() {
 function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan, preloadedCategories }: { planId: string, onClose: () => void, onSaveSuccess: () => void, onDeletePlan: (planId: string, planName: string) => Promise<void>, preloadedCategories?: Array<{ id: string; name: string; planCount: number }> }) {
   const { loading, saving, error, plan, validationErrors, loadPlan, handleInputChange, handleSubmit } = usePlanEdit();
   const { showSuccess, showError } = useToast();
+  const t = useTranslations('Admin.plan');
+  const tCommon = useTranslations('Common');
   
   useEffect(() => { loadPlan(planId); }, [planId, loadPlan]);
 
@@ -141,8 +144,8 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan, preload
     <Drawer
       isOpen={true}
       onClose={onClose}
-      title="Edit Plan"
-      subtitle="Update plan details and settings"
+      title={t('editPlanTitle') || "Edit Plan"}
+      subtitle={t('editPlanSubtitle') || "Update plan details and settings"}
       icon={<PenTool className="text-[#D4D4D4]" size={22} />}
       footer={
         !loading && plan ? (
@@ -158,27 +161,27 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan, preload
                   }}
                   loading={saving}
                   disabled={isInvalid}
-                  label="Disable"
+                  label={t('disable') || "Disable"}
                   variant="danger"
                   icon={<i className="fas fa-ban mr-2"></i>}
-                  onSuccess={() => { showSuccess(`Plan "${plan.name}" disabled.`); onClose(); }}
+                  onSuccess={() => { showSuccess(t('planDisabled', { name: plan.name }) || `Plan "${plan.name}" disabled.`); onClose(); }}
                   onError={(e) => showError(e)}
                 />
               )}
               <ActionButton
                 onClick={async () => {
-                  if (confirm("Are you sure you want to delete this plan?")) {
+                  if (confirm(t('confirmDelete') || "Are you sure you want to delete this plan?")) {
                     await onDeletePlan(plan._id, plan.name);
                     onSaveSuccess();
                   }
                 }}
                 loading={saving}
                 disabled={plan.totalPurchases > 0}
-                title={plan.totalPurchases > 0 ? "Cannot delete plan while it is assigned to users" : undefined}
-                label="Delete"
+                title={plan.totalPurchases > 0 ? (t('cannotDeleteActivePlan') || "Cannot delete plan while it is assigned to users") : undefined}
+                label={tCommon('delete') || "Delete"}
                 variant="danger"
                 icon={<i className="fas fa-trash mr-2"></i>}
-                onSuccess={() => { showSuccess(`Plan "${plan.name}" deleted.`); onClose(); }}
+                onSuccess={() => { showSuccess(t('planDeleted', { name: plan.name }) || `Plan "${plan.name}" deleted.`); onClose(); }}
                 onError={(e) => showError(e)}
               />
             </div>
@@ -189,7 +192,7 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan, preload
                 disabled={saving}
                 className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Cancel
+                {tCommon('cancel') || "Cancel"}
               </button>
               {!plan.enabled ? (
                 <ActionButton
@@ -202,8 +205,8 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan, preload
                   loading={saving}
                   disabled={isInvalid}
                   className="min-w-[140px]"
-                  label="Enable Item"
-                  onSuccess={() => { showSuccess(`Plan "${plan.name}" enabled.`); onClose(); }}
+                  label={t('enableItem') || "Enable Item"}
+                  onSuccess={() => { showSuccess(t('planEnabled', { name: plan.name }) || `Plan "${plan.name}" enabled.`); onClose(); }}
                   onError={(e) => showError(e)}
                 />
               ) : (
@@ -215,9 +218,9 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan, preload
                   loading={saving}
                   disabled={isInvalid}
                   className="min-w-[140px]"
-                  label="Save Changes"
+                  label={t('saveChanges') || "Save Changes"}
                   icon={<i className="fas fa-save mr-2"></i>}
-                  onSuccess={() => { showSuccess(`Plan "${plan.name}" saved.`); onClose(); }}
+                  onSuccess={() => { showSuccess(t('planSaved', { name: plan.name }) || `Plan "${plan.name}" saved.`); onClose(); }}
                   onError={(e) => showError(e)}
                 />
               )}
@@ -266,6 +269,8 @@ function NewPlanWrapper({ onClose, onSaveSuccess, preloadedCategories }: { onClo
   const { saving, validationErrors, handleInputChange, handleSubmit, formData } = usePlanForm();
   const { showSuccess, showError } = useToast();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const t = useTranslations('Admin.plan');
+  const tCommon = useTranslations('Common');
 
   const currentStep = STEPS[currentStepIndex].id;
 
@@ -275,8 +280,8 @@ function NewPlanWrapper({ onClose, onSaveSuccess, preloadedCategories }: { onClo
     <Drawer
       isOpen={true}
       onClose={onClose}
-      title="Create New Plan"
-      subtitle="Create a new hosting plan"
+      title={t('createNewPlan') || "Create New Plan"}
+      subtitle={t('createPlanSubtitle') || "Create a new hosting plan"}
       icon={<CreditCard className="text-[#D4D4D4]" size={22} />}
       footer={
         <div className="flex items-center justify-end w-full">
@@ -287,7 +292,7 @@ function NewPlanWrapper({ onClose, onSaveSuccess, preloadedCategories }: { onClo
                 onClick={() => setCurrentStepIndex(i => i - 1)}
                 className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
               >
-                Back
+                {tCommon('back') || "Back"}
               </button>
             ) : (
               <button
@@ -296,7 +301,7 @@ function NewPlanWrapper({ onClose, onSaveSuccess, preloadedCategories }: { onClo
                 disabled={saving}
                 className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Cancel
+                {tCommon('cancel') || "Cancel"}
               </button>
             )}
             
@@ -307,7 +312,7 @@ function NewPlanWrapper({ onClose, onSaveSuccess, preloadedCategories }: { onClo
                 disabled={(currentStep === 'basics' && (!formData.name || !formData.category || !formData.description)) || (currentStep === 'pricing' && (formData.pricePerMonth === undefined || formData.pricePerMonth === null))}
                 className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Next Step
+                {tCommon('nextStep') || "Next Step"}
               </button>
             ) : (
               <ActionButton
@@ -318,9 +323,9 @@ function NewPlanWrapper({ onClose, onSaveSuccess, preloadedCategories }: { onClo
                 loading={saving}
                 disabled={isInvalid}
                 className="min-w-[140px]"
-                label="Create Plan"
+                label={t('createPlan') || "Create Plan"}
                 icon={<i className="fas fa-plus mr-2"></i>}
-                onSuccess={() => { showSuccess("Plan created successfully."); onClose(); }}
+                onSuccess={() => { showSuccess(t('planCreated') || "Plan created successfully."); onClose(); }}
                 onError={(e) => showError(e)}
               />
             )}

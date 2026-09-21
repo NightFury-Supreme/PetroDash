@@ -4,6 +4,7 @@ import React from 'react';
 import { Select } from '@/components/ui/Select';
 import { PlanCategorySelect } from './PlanCategorySelect';
 import type { PlanFormData } from '@/hooks/admin/plan/usePlanForm';
+import { useTranslations } from 'next-intl';
 
 interface PlanFormProps {
   formData: PlanFormData;
@@ -26,6 +27,7 @@ export function PlanForm({
   initialCategories,
 }: PlanFormProps) {
   const { currency } = useCurrency();
+  const t = useTranslations('Admin.plan');
 
   const inputClass = "w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50 transition-colors disabled:opacity-50";
 
@@ -35,20 +37,20 @@ export function PlanForm({
       {/* Basic Info */}
       {(!currentStep || currentStep === "basics") && (
       <div className="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4">
-        <h3 className="text-sm font-medium text-white mb-4">Basic Information</h3>
+        <h3 className="text-sm font-medium text-white mb-4">{t('basicInfo') || 'Basic Information'}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <FieldLabel>Plan Name <span className="text-red-500">*</span></FieldLabel>
+            <FieldLabel>{t('planName') || 'Plan Name'} <span className="text-red-500">*</span></FieldLabel>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => onInputChange('name', e.target.value)}
               className={inputClass}
-              placeholder="e.g., Starter Plan"
+              placeholder={t('planNamePlaceholder') || "e.g., Starter Plan"}
             />
           </div>
           <div>
-            <FieldLabel>Category <span className="text-red-500">*</span></FieldLabel>
+            <FieldLabel>{t('category') || 'Category'} <span className="text-red-500">*</span></FieldLabel>
             <PlanCategorySelect 
               value={formData.category || ''} 
               onChange={(v) => onInputChange('category', v)} 
@@ -57,43 +59,43 @@ export function PlanForm({
             {validationErrors?.category && <p className="text-red-400 text-xs mt-1">{validationErrors.category}</p>}
           </div>
           <div className="md:col-span-2">
-            <FieldLabel>Description <span className="text-red-500">*</span></FieldLabel>
+            <FieldLabel>{t('description') || 'Description'} <span className="text-red-500">*</span></FieldLabel>
             <textarea
               value={formData.description || ''}
               onChange={(e) => onInputChange('description', e.target.value)}
               className={inputClass}
               rows={3}
-              placeholder="Describe what this plan offers..."
+              placeholder={t('descriptionPlaceholder') || "Describe what this plan offers..."}
             />
             {validationErrors?.description && <p className="text-red-400 text-xs mt-1">{validationErrors.description}</p>}
           </div>
 
           <div>
-            <FieldLabel>Valid From</FieldLabel>
+            <FieldLabel>{t('validFrom') || 'Valid From'}</FieldLabel>
             <input
               type="datetime-local"
               value={formData.availableAt ? new Date(formData.availableAt).toISOString().slice(0, 16) : ''}
               onChange={(e) => onInputChange('availableAt', e.target.value ? new Date(e.target.value).toISOString() : null)}
               className={inputClass}
             />
-            <FieldHint>Leave blank to start immediately</FieldHint>
+            <FieldHint>{t('validFromHint') || 'Leave blank to start immediately'}</FieldHint>
           </div>
           
           <div>
-            <FieldLabel>Valid Until</FieldLabel>
+            <FieldLabel>{t('validUntil') || 'Valid Until'}</FieldLabel>
             <input
               type="datetime-local"
               value={formData.availableUntil ? new Date(formData.availableUntil).toISOString().slice(0, 16) : ''}
               onChange={(e) => onInputChange('availableUntil', e.target.value ? new Date(e.target.value).toISOString() : null)}
               className={inputClass}
             />
-            <FieldHint>Leave blank to never expire</FieldHint>
+            <FieldHint>{t('validUntilHint') || 'Leave blank to never expire'}</FieldHint>
           </div>
 
           <div className="md:col-span-2 flex items-center justify-between py-2">
             <div className="flex flex-col">
-              <span className="text-sm font-semibold text-white mb-0.5">Mark as Popular</span>
-              <span className="text-[11px] text-[#888]">Highlight this plan with a popular badge to attract users.</span>
+              <span className="text-sm font-semibold text-white mb-0.5">{t('markAsPopular') || 'Mark as Popular'}</span>
+              <span className="text-[11px] text-[#888]">{t('markAsPopularHint') || 'Highlight this plan with a popular badge to attract users.'}</span>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
               <input
@@ -112,10 +114,10 @@ export function PlanForm({
       {/* Pricing */}
       {(!currentStep || currentStep === "pricing") && (
       <div className="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4">
-        <h3 className="text-sm font-medium text-white mb-4">Pricing & Availability</h3>
+        <h3 className="text-sm font-medium text-white mb-4">{t('pricingAndAvailability') || 'Pricing & Availability'}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <FieldLabel>{formData.billingOptions.lifetime ? 'Price' : 'Monthly Price'} ({currency}) <span className="text-red-500">*</span></FieldLabel>
+            <FieldLabel>{formData.billingOptions.lifetime ? (t('price') || 'Price') : (t('monthlyPrice') || 'Monthly Price')} ({currency}) <span className="text-red-500">*</span></FieldLabel>
             <input
               type="number"
               value={formData.pricePerMonth}
@@ -125,7 +127,7 @@ export function PlanForm({
             />
           </div>
           <div>
-            <FieldLabel>Strike-through Price ({currency})</FieldLabel>
+            <FieldLabel>{t('strikeThroughPrice') || 'Strike-through Price'} ({currency})</FieldLabel>
             <input
               type="number"
               value={formData.strikeThroughPrice}
@@ -135,7 +137,7 @@ export function PlanForm({
             />
           </div>
           <div>
-            <FieldLabel>Stock</FieldLabel>
+            <FieldLabel>{t('stock') || 'Stock'}</FieldLabel>
             <input
               type="number"
               value={formData.stock}
@@ -143,10 +145,10 @@ export function PlanForm({
               className={inputClass}
               min="-1"
             />
-            <FieldHint>0 = unlimited, -1 = unavailable</FieldHint>
+            <FieldHint>{t('stockHint') || '0 = unlimited, -1 = unavailable'}</FieldHint>
           </div>
           <div>
-            <FieldLabel>Limit Per Customer</FieldLabel>
+            <FieldLabel>{t('limitPerCustomer') || 'Limit Per Customer'}</FieldLabel>
             <input
               type="number"
               value={formData.limitPerCustomer}
@@ -154,16 +156,16 @@ export function PlanForm({
               className={inputClass}
               min="0"
             />
-            <FieldHint>0 = unlimited</FieldHint>
+            <FieldHint>{t('limitHint') || '0 = unlimited'}</FieldHint>
           </div>
           <div className="md:col-span-2">
-            <FieldLabel>Visibility</FieldLabel>
+            <FieldLabel>{t('visibility') || 'Visibility'}</FieldLabel>
             <Select
               value={formData.visibility}
               onChange={(val) => onInputChange('visibility', val)}
               options={[
-                { value: 'public', label: 'Public - Visible to all users' },
-                { value: 'unlisted', label: 'Unlisted - Hidden from public view' }
+                { value: 'public', label: t('publicVis') || 'Public - Visible to all users' },
+                { value: 'unlisted', label: t('unlistedVis') || 'Unlisted - Hidden from public view' }
               ]}
             />
           </div>
@@ -174,10 +176,10 @@ export function PlanForm({
       {/* Resource Limits */}
       {(!currentStep || currentStep === "resources") && (
       <div className="animate-in fade-in slide-in-from-right-4 duration-300 space-y-4">
-        <h3 className="text-sm font-medium text-white mb-4">Resource Limits</h3>
+        <h3 className="text-sm font-medium text-white mb-4">{t('resourceLimits') || 'Resource Limits'}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <FieldLabel>CPU Limit (%) <span className="text-red-500">*</span></FieldLabel>
+            <FieldLabel>{t('cpuLimit') || 'CPU Limit (%)'} <span className="text-red-500">*</span></FieldLabel>
             <input
               type="number"
               value={formData.productContent.recurrentResources.cpuPercent}
@@ -187,7 +189,7 @@ export function PlanForm({
             />
           </div>
           <div>
-            <FieldLabel>Memory (MB) <span className="text-red-500">*</span></FieldLabel>
+            <FieldLabel>{t('memoryMb') || 'Memory (MB)'} <span className="text-red-500">*</span></FieldLabel>
             <input
               type="number"
               value={formData.productContent.recurrentResources.memoryMb}
@@ -197,7 +199,7 @@ export function PlanForm({
             />
           </div>
           <div>
-            <FieldLabel>Disk (MB) <span className="text-red-500">*</span></FieldLabel>
+            <FieldLabel>{t('diskMb') || 'Disk (MB)'} <span className="text-red-500">*</span></FieldLabel>
             <input
               type="number"
               value={formData.productContent.recurrentResources.diskMb}
@@ -207,7 +209,7 @@ export function PlanForm({
             />
           </div>
           <div>
-            <FieldLabel>Backups <span className="text-red-500">*</span></FieldLabel>
+            <FieldLabel>{t('backups') || 'Backups'} <span className="text-red-500">*</span></FieldLabel>
             <input
               type="number"
               value={formData.productContent.backups}
@@ -217,7 +219,7 @@ export function PlanForm({
             />
           </div>
           <div>
-            <FieldLabel>Databases <span className="text-red-500">*</span></FieldLabel>
+            <FieldLabel>{t('databases') || 'Databases'} <span className="text-red-500">*</span></FieldLabel>
             <input
               type="number"
               value={formData.productContent.databases}
@@ -227,7 +229,7 @@ export function PlanForm({
             />
           </div>
           <div>
-            <FieldLabel>Ports</FieldLabel>
+            <FieldLabel>{t('ports') || 'Ports'}</FieldLabel>
             <input
               type="number"
               value={formData.productContent.additionalAllocations}
@@ -237,7 +239,7 @@ export function PlanForm({
             />
           </div>
           <div>
-            <FieldLabel>Server Limit <span className="text-red-500">*</span></FieldLabel>
+            <FieldLabel>{t('serverLimit') || 'Server Limit'} <span className="text-red-500">*</span></FieldLabel>
             <input
               type="number"
               value={formData.productContent.serverLimit}
@@ -247,7 +249,7 @@ export function PlanForm({
             />
           </div>
           <div>
-            <FieldLabel>Coins</FieldLabel>
+            <FieldLabel>{t('coins') || 'Coins'}</FieldLabel>
             <input
               type="number"
               value={formData.productContent.coins}

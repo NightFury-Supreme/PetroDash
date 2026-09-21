@@ -2,6 +2,7 @@ import { AdminLedgerFilters } from './AdminLedgerFilters';
 import { AdminLedgerError } from './AdminLedgerError';
 import { AdminLedgerTable } from './AdminLedgerTable';
 import { AdminLedgerFiltersSkeleton, AdminLedgerTableSkeleton } from '@/components/skeletons/admin/ledger';
+import { useTranslations } from 'next-intl';
 
 // eslint-disable-next-line unused-imports/no-unused-vars
 interface Payment {
@@ -53,11 +54,13 @@ export function AdminLedgerContent({
   onRefund,
   onVoid
 }: AdminLedgerContentProps) {
+  const t = useTranslations('Admin.ledger');
+
   return (
     <>
       <div className="mb-4 mt-8">
-        <h2 className="text-lg font-semibold text-white">Ledger</h2>
-        <p className="mt-0.5 text-xs text-[#666]">View transactions, filter payments, and manage refunds.</p>
+        <h2 className="text-lg font-semibold text-white">{t('title')}</h2>
+        <p className="mt-0.5 text-xs text-[#666]">{t('subtitle')}</p>
       </div>
 
       {/* Filters */}

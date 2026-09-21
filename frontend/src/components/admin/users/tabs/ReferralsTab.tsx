@@ -3,6 +3,7 @@ import { InfoRow } from "@/components/admin/users/AdminInfoRow";
 import { Key, User } from "lucide-react";
 import { Pagination } from "@/components/Pagination";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 
 export function ReferralsTab({ referral, onSaveCode, referralPage, setReferralPage, REFERRAL_PAGE_SIZE }: any) {
   const [codeDraft, setCodeDraft] = useState(referral?.code || '');
@@ -10,6 +11,7 @@ export function ReferralsTab({ referral, onSaveCode, referralPage, setReferralPa
   const referredUsers = referral?.referredUsers || [];
   const totalUsers = referral?.meta?.total || 0;
   const totalPages = Math.ceil(totalUsers / REFERRAL_PAGE_SIZE) || 1;
+  const t = useTranslations('Admin.users');
 
   useEffect(() => {
     setCodeDraft(referral?.code || '');
@@ -28,9 +30,9 @@ export function ReferralsTab({ referral, onSaveCode, referralPage, setReferralPa
       {/* ── STATS ─────────────────────────────────────────────── */}
       <section className="grid grid-cols-1 sm:grid-cols-3 border-y border-white/[0.07]">
         {[
-          { label: 'Users Referred', value: totalUsers, suffix: 'users' },
-          { label: 'Coins Earned', value: referral?.coinsEarned ?? 0, suffix: 'coins' },
-          { label: 'Successful', value: referral?.referredCount ?? 0, suffix: 'rewards' },
+          { label: t('usersReferred'), value: totalUsers, suffix: t('usersSuffix') },
+          { label: t('coinsEarned'), value: referral?.coinsEarned ?? 0, suffix: t('coinsSuffix') },
+          { label: t('successful'), value: referral?.referredCount ?? 0, suffix: t('rewardsSuffix') },
         ].map((item, i) => (
           <div key={i} className="flex items-center gap-4 border-b border-white/[0.07] px-5 py-5 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
             <div>
@@ -46,9 +48,9 @@ export function ReferralsTab({ referral, onSaveCode, referralPage, setReferralPa
         <div className="divide-y divide-white/[0.06]">
           <InfoRow
             icon={<Key size={14} />}
-            label="Referral Code"
-            description="The referral code used by others to register."
-            value={referral?.code || 'Not set'}
+            label={t('referralCode')}
+            description={t('referralCodeDesc')}
+            value={referral?.code || t('notSet')}
             editing={editingCode}
             field="code"
             onEdit={() => setEditingCode(true)}
@@ -62,7 +64,7 @@ export function ReferralsTab({ referral, onSaveCode, referralPage, setReferralPa
                 maxLength={20}
                 minLength={3}
                 autoFocus
-                placeholder="e.g. USER-12345"
+                placeholder={t('referralCodePlaceholder')}
                 className="h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all border-[#FF5722]/50 focus:ring-[#FF5722]/50"
               />
             }
@@ -74,23 +76,23 @@ export function ReferralsTab({ referral, onSaveCode, referralPage, setReferralPa
       <section>
         <div className="mb-5 flex items-end justify-between border-t border-white/[0.07] pt-7">
           <div>
-            <h3 className="text-xl font-semibold tracking-tight text-white">Referred users</h3>
-            <p className="mt-2 text-sm text-white/35">Users who joined using this referral code.</p>
+            <h3 className="text-xl font-semibold tracking-tight text-white">{t('referredUsers')}</h3>
+            <p className="mt-2 text-sm text-white/35">{t('referredUsersDesc')}</p>
           </div>
         </div>
 
         {/* Table header */}
         <div className="hidden grid-cols-[minmax(200px,1fr)_180px_120px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
-          <span>User</span>
-          <span>Joined</span>
-          <span className="text-right">Action</span>
+          <span>{t('userCol')}</span>
+          <span>{t('joinedCol')}</span>
+          <span className="text-right">{t('actionCol')}</span>
         </div>
 
         <div className="divide-y divide-white/[0.06]">
           {referredUsers.length === 0 ? (
             <div className="py-12 text-center flex flex-col items-center">
               <User className="w-8 h-8 text-white/10 mb-3" />
-              <p className="text-white/40 text-sm">No referrals yet</p>
+              <p className="text-white/40 text-sm">{t('noReferralsYet')}</p>
             </div>
           ) : (
             referredUsers.map((u: any) => (
@@ -109,7 +111,7 @@ export function ReferralsTab({ referral, onSaveCode, referralPage, setReferralPa
                 </div>
                 <div className="flex justify-end">
                   <Link href={`/admin/users/${u._id}`} className="inline-flex h-8 items-center justify-center rounded border border-white/[0.07] bg-white/[0.035] px-3 text-xs font-medium text-white/70 transition hover:bg-white/[0.07]">
-                    Manage
+                    {t('manage')}
                   </Link>
                 </div>
               </div>
@@ -124,7 +126,7 @@ export function ReferralsTab({ referral, onSaveCode, referralPage, setReferralPa
           totalItems={totalUsers}
           pageSize={REFERRAL_PAGE_SIZE}
           onPageChange={setReferralPage}
-          itemName="users"
+          itemName={t('usersItemName')}
         />
       </section>
     </div>

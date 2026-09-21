@@ -5,6 +5,7 @@ import { Drawer } from "@/components/ui/Drawer";
 import AdminEditGiftSkeleton from "@/components/skeletons/admin/gifts/AdminEditGiftSkeleton";
 import { AdminDeleteGiftDrawer } from "./AdminDeleteGiftDrawer";
 import { Loader2, Edit2, Tag, FileText, Infinity, Coins, Cpu, MemoryStick, HardDrive, Server } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export function AdminEditGiftDrawer({
   isOpen,
@@ -17,6 +18,10 @@ export function AdminEditGiftDrawer({
   onSuccess: () => void;
   giftId: string | null;
 }) {
+  const t = useTranslations('Admin.gifts');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('GlobalErrors');
+
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +57,7 @@ export function AdminEditGiftDrawer({
       })
       .then(r => r.json())
       .then(data => {
+        if (data.error) throw new Error(data.error);
         setForm({
           code: data.code || "",
           description: data.description || "",
@@ -66,12 +72,13 @@ export function AdminEditGiftDrawer({
           serverSlots: data.rewards?.resources?.serverSlots || 0,
         });
       })
-      .catch(e => setError(e.message))
+      .catch(e => {
+        const errKey = e.message || 'fetch_failed';
+        setError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : e.message);
+      })
       .finally(() => setLoading(false));
     }
-  }, [isOpen, giftId]);
-
-  
+  }, [isOpen, giftId, tErrorBackend]);
 
   const handleUpdate = async () => {
     if (!giftId) return;
@@ -108,14 +115,15 @@ export function AdminEditGiftDrawer({
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to update gift");
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "update_failed");
       }
 
       onSuccess();
       onClose();
     } catch (e: any) {
-      setError(e.message);
+      const errKey = e.message || 'update_failed';
+      setError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : e.message);
     } finally {
       setSaving(false);
     }
@@ -128,8 +136,8 @@ export function AdminEditGiftDrawer({
     <Drawer
       isOpen={isOpen}
       onClose={onClose}
-      title="Edit Gift"
-      subtitle={`Updating gift ${form.code}`}
+      title={t('editGift')}
+      subtitle={t('editGiftSubtitle', { code: form.code })}
       icon={<Edit2 size={20} />}
       footer={
         <div className="flex items-center justify-between w-full">
@@ -139,11 +147,11 @@ export function AdminEditGiftDrawer({
               disabled={loading}
               className="flex items-center justify-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-500/20 transition-colors"
             >
-              Delete Gift
+              {t('deleteGift')}
             </button>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={onClose} disabled={saving} className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]">Cancel</button>
+            <button onClick={onClose} disabled={saving} className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]">{tCommon('cancel')}</button>
             <button
               onClick={handleUpdate}
               disabled={saving || loading || !isFormValid}
@@ -153,7 +161,7 @@ export function AdminEditGiftDrawer({
                   : "bg-[#FF5722] border border-[#FF5722] text-white hover:bg-[#F4511E]"
               }`}
             >
-              {saving ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : "Save Changes"}
+              {saving ? <><Loader2 size={16} className="animate-spin" /> {tCommon('saving')}</> : tCommon('saveChanges')}
             </button>
           </div>
         </div>
@@ -171,67 +179,67 @@ export function AdminEditGiftDrawer({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Tag size={12} /> Code *</label>
+              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Tag size={12} /> {t('codeLabel')} *</label>
               <input 
-                value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} disabled={saving} placeholder="SUMMER2026"
+                value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} disabled={saving} placeholder={t('codePlaceholder')}
                 className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50 uppercase" 
               />
             </div>
 
             <div className="col-span-2">
-              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><FileText size={12} /> Description</label>
+              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><FileText size={12} /> {t('descriptionLabel')}</label>
               <input 
-                value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} disabled={saving} placeholder="Short description"
+                value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} disabled={saving} placeholder={t('descriptionPlaceholder')}
                 className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" 
               />
             </div>
 
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Infinity size={12} /> Max Uses (0 = ∞)</label>
+              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Infinity size={12} /> {t('maxUsesLabel')}</label>
               <input type="number" min="0" value={form.maxRedemptions} onChange={(e) => setForm({ ...form, maxRedemptions: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Enabled</label>
-              <Select value={form.enabled ? "true" : "false"} onChange={(val) => setForm({ ...form, enabled: val === "true" })} disabled={saving} options={[{label: "Yes", value: "true"}, {label: "No", value: "false"}]} size="md" />
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">{t('enabledLabel')}</label>
+              <Select value={form.enabled ? "true" : "false"} onChange={(val) => setForm({ ...form, enabled: val === "true" })} disabled={saving} options={[{label: tCommon('yes'), value: "true"}, {label: tCommon('no'), value: "false"}]} size="md" />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Valid From</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">{t('validFromLabel')}</label>
               <input type="datetime-local" value={form.validFrom} onChange={(e) => setForm({ ...form, validFrom: e.target.value })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-[#888] focus:text-white focus:outline-none focus:border-[#FF5722]/50" />
-              <p className="text-[10px] text-[#555] mt-1">Leave blank to start immediately</p>
+              <p className="text-[10px] text-[#555] mt-1">{t('validFromHelper')}</p>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Valid Until</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">{t('validUntilLabel')}</label>
               <input type="datetime-local" value={form.validUntil} onChange={(e) => setForm({ ...form, validUntil: e.target.value })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-[#888] focus:text-white focus:outline-none focus:border-[#FF5722]/50" />
-              <p className="text-[10px] text-[#555] mt-1">Leave blank to never expire</p>
+              <p className="text-[10px] text-[#555] mt-1">{t('validUntilHelper')}</p>
             </div>
           </div>
 
           <hr className="border-white/[0.06]" />
 
           <div>
-            <h3 className="text-sm font-semibold text-white mb-4">Rewards</h3>
+            <h3 className="text-sm font-semibold text-white mb-4">{t('rewardsLabel')}</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
-                <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Coins size={12} className="text-[#666]" /> Coins</label>
+                <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Coins size={12} className="text-[#666]" /> {t('coinsLabel')}</label>
                 <input type="number" min="0" value={form.coins} onChange={(e) => setForm({ ...form, coins: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
               </div>
               <div>
-                <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Cpu size={12} className="text-[#666]" /> CPU (%)</label>
+                <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Cpu size={12} className="text-[#666]" /> {t('cpuLabel')}</label>
                 <input type="number" min="0" value={form.cpuPercent} onChange={(e) => setForm({ ...form, cpuPercent: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
               </div>
               <div>
-                <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><MemoryStick size={12} className="text-[#666]" /> RAM (MB)</label>
+                <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><MemoryStick size={12} className="text-[#666]" /> {t('ramLabel')}</label>
                 <input type="number" min="0" value={form.memoryMb} onChange={(e) => setForm({ ...form, memoryMb: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
               </div>
               <div>
-                <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><HardDrive size={12} className="text-[#666]" /> Disk (MB)</label>
+                <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><HardDrive size={12} className="text-[#666]" /> {t('diskLabel')}</label>
                 <input type="number" min="0" value={form.diskMb} onChange={(e) => setForm({ ...form, diskMb: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
               </div>
               <div>
-                <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Server size={12} className="text-[#666]" /> Slots</label>
+                <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Server size={12} className="text-[#666]" /> {t('slotsLabel')}</label>
                 <input type="number" min="0" value={form.serverSlots} onChange={(e) => setForm({ ...form, serverSlots: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
               </div>
             </div>

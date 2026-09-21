@@ -1,5 +1,6 @@
 import { Search, SlidersHorizontal, ArrowDownUp, X } from 'lucide-react';
 import { Select } from '@/components/ui/Select';
+import { useTranslations } from 'next-intl';
 
 interface AdminLedgerFiltersProps {
   status: string;
@@ -26,25 +27,28 @@ export function AdminLedgerFilters({
   onFilter,
   loading: _loading
 }: AdminLedgerFiltersProps) {
+  const t = useTranslations('Admin.ledger');
+  const tCommon = useTranslations('Common');
+
   const statusOptions = [
-    { value: '', label: 'All Statuses' },
-    { value: 'CREATED', label: 'Created' },
-    { value: 'COMPLETED', label: 'Completed' },
-    { value: 'FAILED', label: 'Failed' },
-    { value: 'REFUNDED', label: 'Refunded' },
-    { value: 'VOIDED', label: 'Voided' }
+    { value: '', label: t('allStatuses') },
+    { value: 'CREATED', label: t('created') },
+    { value: 'COMPLETED', label: t('completed') },
+    { value: 'FAILED', label: t('failed') },
+    { value: 'REFUNDED', label: t('refunded') },
+    { value: 'VOIDED', label: t('voided') }
   ];
 
   const providerOptions = [
-    { value: '', label: 'All Providers' },
+    { value: '', label: t('allProviders') },
     { value: 'paypal', label: 'PayPal' }
   ];
 
   const sortOptions = [
-    { value: '-createdAt', label: 'Newest First' },
-    { value: 'createdAt', label: 'Oldest First' },
-    { value: '-amount', label: 'Highest Amount' },
-    { value: 'amount', label: 'Lowest Amount' }
+    { value: '-createdAt', label: t('newestFirst') },
+    { value: 'createdAt', label: t('oldestFirst') },
+    { value: '-amount', label: t('highestAmount') },
+    { value: 'amount', label: t('lowestAmount') }
   ];
 
   const activeFilterCount = (status ? 1 : 0) + (provider ? 1 : 0);
@@ -62,7 +66,7 @@ export function AdminLedgerFilters({
           <Search size={15} />
           <input
             type="text"
-            placeholder="Search by User, Email, Order ID..."
+            placeholder={t('searchPlaceholder')}
             value={userId}
             onChange={(e) => onUserIdChange(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && onFilter()}
@@ -92,7 +96,7 @@ export function AdminLedgerFilters({
               renderButtonContent={() => (
                 <div className="flex items-center gap-[7px]">
                   <SlidersHorizontal size={14} className="text-[#858585]" />
-                  <span className="text-[10px] text-[#858585]">Filters</span>
+                  <span className="text-[10px] text-[#858585]">{tCommon('filters')}</span>
                   {activeFilterCount > 0 && (
                     <span className="min-w-[17px] h-[17px] inline-flex items-center justify-center px-1 rounded-[9px] bg-[#ff5722] text-white text-[8px] font-bold">
                       {activeFilterCount}
@@ -103,13 +107,13 @@ export function AdminLedgerFilters({
               renderDropdown={({ close }) => (
                 <div className="flex flex-col">
                   <div className="min-h-[50px] flex flex-col justify-center px-3 pt-1 border-b border-[#222] pb-3">
-                    <strong className="text-[#ddd] text-[11px] mb-[2px]">Filters</strong>
-                    <span className="text-[#555] text-[9px]">Narrow down transactions</span>
+                    <strong className="text-[#ddd] text-[11px] mb-[2px]">{tCommon('filters')}</strong>
+                    <span className="text-[#555] text-[9px]">{t('narrowDownTransactions')}</span>
                   </div>
                   
                   <div className="flex flex-col gap-[15px] p-[13px]">
                     <div className="flex flex-col gap-[7px]">
-                      <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">Status</label>
+                      <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">{t('status')}</label>
                       <Select size="sm"
                         value={status}
                         options={statusOptions}
@@ -117,7 +121,7 @@ export function AdminLedgerFilters({
                       />
                     </div>
                     <div className="flex flex-col gap-[7px]">
-                      <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">Provider</label>
+                      <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">{t('provider')}</label>
                       <Select size="sm"
                         value={provider}
                         options={providerOptions}
@@ -131,13 +135,13 @@ export function AdminLedgerFilters({
                       onClick={clearFilters} 
                       className="text-[10px] font-medium text-[#777] hover:text-[#ddd] transition-colors"
                     >
-                      Clear filters
+                      {tCommon('clearFilters')}
                     </button>
                     <button 
                       onClick={() => { close(); onFilter(); }} 
                       className="h-[35px] px-[15px] rounded-md text-[10px] font-semibold bg-[#ff5722] text-white hover:bg-[#ff6939] transition-colors"
                     >
-                      Apply filters
+                      {tCommon('applyFilters')}
                     </button>
                   </div>
                 </div>
@@ -149,11 +153,11 @@ export function AdminLedgerFilters({
 
       {activeFilterCount > 0 && (
         <div className="min-h-[38px] flex items-center gap-[6px] flex-wrap pt-1">
-          <span className="mr-[3px] text-[#444] text-[10px] font-semibold uppercase tracking-[0.6px]">Active:</span>
+          <span className="mr-[3px] text-[#444] text-[10px] font-semibold uppercase tracking-[0.6px]">{tCommon('active')}:</span>
           {status && (
             <div className="h-[28px] flex items-center gap-[7px] pl-[9px] pr-[5px] rounded-[5px] bg-[#1a1a1a] border border-[#222]">
               <span className="text-[#888] text-[9px] font-medium">
-                Status: <span className="text-[#ccc]">{statusOptions.find(o => o.value === status)?.label}</span>
+                {t('status')}: <span className="text-[#ccc]">{statusOptions.find(o => o.value === status)?.label}</span>
               </span>
               <button 
                 onClick={() => { onStatusChange(''); setTimeout(onFilter, 0); }}
@@ -166,7 +170,7 @@ export function AdminLedgerFilters({
           {provider && (
             <div className="h-[28px] flex items-center gap-[7px] pl-[9px] pr-[5px] rounded-[5px] bg-[#1a1a1a] border border-[#222]">
               <span className="text-[#888] text-[9px] font-medium">
-                Provider: <span className="text-[#ccc]">{providerOptions.find(o => o.value === provider)?.label}</span>
+                {t('provider')}: <span className="text-[#ccc]">{providerOptions.find(o => o.value === provider)?.label}</span>
               </span>
               <button 
                 onClick={() => { onProviderChange(''); setTimeout(onFilter, 0); }}

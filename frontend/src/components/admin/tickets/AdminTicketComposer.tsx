@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Loader2, Send } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface AdminTicketComposerProps {
   replyText:        string;
@@ -18,7 +19,8 @@ export function AdminTicketComposer({
   replyText, replying, internal, canSend,
   onTextChange, onSend, onKeyDown, onToggleInternal,
 }: AdminTicketComposerProps) {
-  
+  const t = useTranslations('AdminTickets');
+
   if (!canSend) {
     return (
       <div className="flex items-center gap-3 rounded-xl border border-white/[0.05] bg-white/[0.02] px-5 py-4">
@@ -26,8 +28,8 @@ export function AdminTicketComposer({
           <i className="fas fa-lock text-xs" />
         </div>
         <div className="flex flex-col gap-0.5">
-          <span className="text-sm font-semibold text-white/50">This ticket was deleted.</span>
-          <span className="text-xs text-white/30">Replies are disabled for deleted tickets.</span>
+          <span className="text-sm font-semibold text-white/50">{t('ticketDeleted')}</span>
+          <span className="text-xs text-white/30">{t('repliesDisabledDeleted')}</span>
         </div>
       </div>
     );
@@ -54,7 +56,7 @@ export function AdminTicketComposer({
               onKeyDown(e);
             }
           }}
-          placeholder={internal ? 'Write an internal note…' : 'Type a reply…'}
+          placeholder={internal ? t('writeInternalNotePlaceholder') : t('typeReplyPlaceholder')}
           className={`w-full resize-none overflow-y-auto bg-transparent py-2 pl-1 text-sm leading-[1.6] outline-none min-h-[36px] max-h-[128px] break-words whitespace-pre-wrap ${replying ? 'opacity-50' : ''} ${
             internal ? 'text-yellow-100 placeholder:text-yellow-700/50' : 'text-white/90 placeholder:text-white/40'
           }`}
@@ -72,7 +74,7 @@ export function AdminTicketComposer({
             }`}
           >
             <i className={internal ? 'fas fa-eye-slash text-[10px]' : 'fas fa-eye text-[10px]'} />
-            {internal ? 'Internal note' : 'Public reply'}
+            {internal ? t('internalNote') : t('publicReply')}
           </button>
 
           {/* Char count */}

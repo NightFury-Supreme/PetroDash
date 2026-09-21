@@ -1,9 +1,12 @@
 "use client";
 
 import { Link } from '@/i18n/routing';
+import { useTranslations } from 'next-intl';
 
 // eslint-disable-next-line unused-imports/no-unused-vars
 export default function LocationsHeader({ total }: { total: number }) {
+  const t = useTranslations('AdminLocations');
+  
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
@@ -11,13 +14,11 @@ export default function LocationsHeader({ total }: { total: number }) {
           <i className="fas fa-location-dot text-white text-lg sm:text-2xl"></i>
         </div>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Locations</h1>
-          <p className="text-[#AAAAAA] text-base sm:text-lg">Regions available for servers</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">{t('locations', { fallback: 'Locations' })}</h1>
+          <p className="text-[#AAAAAA] text-base sm:text-lg">{t('regionsAvailable', { fallback: 'Regions available for servers' })}</p>
         </div>
       </div>
-      <Link href="/admin/locations/new" className="px-4 py-2 rounded-md bg-white text-black border border-[var(--border)]">New Location</Link>
+      <Link href="/admin/locations/new" className="px-4 py-2 rounded-md bg-white text-black border border-[var(--border)]">{t('newLocation', { fallback: 'New Location' })}</Link>
     </div>
   );
 }
-
-

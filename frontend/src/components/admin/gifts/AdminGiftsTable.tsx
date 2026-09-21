@@ -1,4 +1,5 @@
 import { AdminGiftTableRow } from "./AdminGiftTableRow";
+import { useTranslations } from "next-intl";
 
 export function AdminGiftsTable({
   gifts,
@@ -11,14 +12,16 @@ export function AdminGiftsTable({
   onDelete: (id: string) => void;
   onRedemptions: (id: string) => void;
 }) {
+  const t = useTranslations('Admin.gifts');
+  const tCommon = useTranslations('Common');
   const cols = "lg:grid-cols-[1.2fr_1fr_1.8fr_80px_100px_80px_100px]";
 
   if (!gifts?.length) {
     return (
       <div className="flex flex-col items-center justify-center py-24 px-4 text-center border-t border-white/[0.06]">
-        <h3 className="text-lg font-medium text-white mb-1">No gifts found</h3>
+        <h3 className="text-lg font-medium text-white mb-1">{t('noGiftsFound')}</h3>
         <p className="text-sm text-[#888] max-w-sm">
-          No gift codes match your search criteria. Create one to get started.
+          {t('noGiftsFoundDesc')}
         </p>
       </div>
     );
@@ -28,13 +31,13 @@ export function AdminGiftsTable({
     <div className="w-full">
       {/* TABLE HEADER (Desktop) */}
       <div className={`hidden gap-4 lg:grid ${cols} border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30`}>
-        <span>Code</span>
-        <span>Creator</span>
-        <span>Rewards</span>
-        <span>Uses</span>
-        <span>Expires</span>
-        <span>Status</span>
-        <span className="text-right">Actions</span>
+        <span>{t('code')}</span>
+        <span>{t('creator')}</span>
+        <span>{t('rewards')}</span>
+        <span>{t('uses')}</span>
+        <span>{t('expires')}</span>
+        <span>{tCommon('status')}</span>
+        <span className="text-right">{tCommon('actions')}</span>
       </div>
 
       {/* TABLE LIST */}

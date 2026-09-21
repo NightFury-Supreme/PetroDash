@@ -13,9 +13,12 @@ import { AdminPlanFilters } from '@/components/admin/plan/AdminPlanFilters';
 import { AdminPlanActiveFilters } from '@/components/admin/plan/AdminPlanActiveFilters';
 import { Pagination } from '@/components/Pagination';
 import { useMemo } from 'react';
-
+import { useTranslations } from 'next-intl';
 
 export default function AdminPlansTab() {
+  const t = useTranslations('Admin.Plans');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('Errors.Backend');
   const modal = useModal();
   const { showSuccess, showError } = useToast();
   
@@ -23,7 +26,6 @@ export default function AdminPlansTab() {
   const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-
 
   const {
     plans,
@@ -43,9 +45,9 @@ export default function AdminPlansTab() {
 
   const handleDelete = async (planId: string, planName: string) => {
     const confirmed = await modal.confirm({
-      title: 'Delete Plan',
-      body: `Are you sure you want to delete "${planName}"? This action cannot be undone.`,
-      confirmText: 'Delete'
+      title: t('modals.deleteTitle'),
+      body: t('modals.deleteBody', { planName }),
+      confirmText: tCommon('delete')
     });
 
     if (!confirmed) return;
@@ -54,7 +56,8 @@ export default function AdminPlansTab() {
       const result = await deletePlan(planId, planName);
       showSuccess(result.message);
     } catch (err: any) {
-      showError(err.message);
+      const errKey = err.message;
+      showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : errKey);
     }
   };
 
@@ -63,7 +66,8 @@ export default function AdminPlansTab() {
       const result = await toggleEnabled(plan);
       showSuccess(result.message);
     } catch (err: any) {
-      showError(err.message);
+      const errKey = err.message;
+      showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : errKey);
     }
   };
 
@@ -72,7 +76,8 @@ export default function AdminPlansTab() {
       const result = await makeUnlisted(plan);
       showSuccess(result.message);
     } catch (err: any) {
-      showError(err.message);
+      const errKey = err.message;
+      showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : errKey);
     }
   };
 
@@ -81,7 +86,8 @@ export default function AdminPlansTab() {
       const result = await makePublic(plan);
       showSuccess(result.message);
     } catch (err: any) {
-      showError(err.message);
+      const errKey = err.message;
+      showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : errKey);
     }
   };
 
@@ -94,7 +100,7 @@ export default function AdminPlansTab() {
       const cat = p.category as any;
       if (!cat) continue;
       const id   = cat._id ?? cat.id ?? '';
-      const name = cat.name ?? 'Uncategorized';
+      const name = cat.name ?? t('uncategorized');
       if (!id) continue;
       if (map.has(id)) {
         map.get(id)!.planCount += 1;
@@ -103,7 +109,7 @@ export default function AdminPlansTab() {
       }
     }
     return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
-  }, [plans]);
+  }, [plans, t]);
 
   const categories = useMemo(() => categoryObjects.map(c => c.name), [categoryObjects]);
 
@@ -114,7 +120,7 @@ export default function AdminPlansTab() {
   const filteredPlans = useMemo(() => {
     let result = plans;
     if (categoryFilter !== 'all') {
-      result = result.filter(p => (p.category || 'Uncategorized') === categoryFilter);
+      result = result.filter(p => (p.category || t('uncategorized')) === categoryFilter);
     }
     if (searchQuery.trim()) {
       const lower = searchQuery.toLowerCase();
@@ -124,7 +130,7 @@ export default function AdminPlansTab() {
       );
     }
     return result;
-  }, [plans, searchQuery, categoryFilter]);
+  }, [plans, searchQuery, categoryFilter, t]);
 
   if (error) {
 
@@ -132,10 +138,10 @@ export default function AdminPlansTab() {
       <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
         <ErrorState
           icon={<CreditCard strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
-          kicker="Load Error"
-          title="Failed to Load Plans"
+          kicker={tCommon('errors.loadErrorKicker')}
+          title={t('errors.failedToLoadTitle')}
           errorString={error}
-          description={<ErrorDescription error={error} topic="Plans" />}
+          description={<ErrorDescription error={error} topic={t('title')} />}
           buttons={
             <>
               <button
@@ -143,7 +149,7 @@ export default function AdminPlansTab() {
                 className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
               >
                 <RefreshCw className="w-[14px] h-[14px]" />
-                Retry
+                {tCommon('retry')}
               </button>
               <DashboardButton variant="secondary" />
             </>
@@ -168,8 +174,8 @@ export default function AdminPlansTab() {
           {/* Header & Action Bar */}
           <div className="mt-8 mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
-              <h2 className="text-lg font-semibold text-white">Plans</h2>
-              <p className="mt-0.5 text-xs text-[#666]">Manage subscription plans, adjust pricing, and toggle availability.</p>
+              <h2 className="text-lg font-semibold text-white">{t('title')}</h2>
+              <p className="mt-0.5 text-xs text-[#666]">{t('description')}</p>
             </div>
             <div className="flex items-center shrink-0">
               <button 
@@ -177,7 +183,7 @@ export default function AdminPlansTab() {
                 className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-colors bg-[#FF5722] text-white hover:bg-[#ff6939]"
                 >
                 <Plus size={12} />
-                Create New Plan
+                {t('actions.createNew')}
               </button>
             </div>
           </div>
@@ -188,7 +194,7 @@ export default function AdminPlansTab() {
               <Search size={15} />
               <input
                 type="text"
-                placeholder="Search by plan name or category..."
+                placeholder={t('searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full min-w-0 border-0 outline-none bg-transparent text-[#d5d5d5] text-[11px] placeholder:text-[#505050]"
@@ -229,7 +235,7 @@ export default function AdminPlansTab() {
             totalItems={totalItems}
             pageSize={10}
             onPageChange={setPage}
-            itemName="plans"
+            itemName={tCommon('pagination.plans')}
           />
 
         </div>

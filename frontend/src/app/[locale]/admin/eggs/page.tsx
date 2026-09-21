@@ -1,6 +1,6 @@
 "use client";
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
-import { useEffect, useState, useMemo, useCallback } from 'react';
+
+import { useState, useMemo } from 'react';
 import { useRouter } from "@/i18n/routing";
 import EggsHeader from '@/components/admin/eggs/EggsHeader';
 import EggList from '@/components/admin/eggs/EggList';
@@ -12,44 +12,28 @@ import { AdminEggActiveFilters } from '@/components/admin/eggs/AdminEggActiveFil
 import { CreateEggDrawer } from '@/components/admin/eggs/CreateEggDrawer';
 import { EditEggDrawer } from '@/components/admin/eggs/EditEggDrawer';
 import { DeleteDrawer } from '@/components/ui/DeleteDrawer';
+import { useAdminEggs } from '@/hooks/admin/eggs/useAdminEggs';
+import { useTranslations } from 'next-intl';
 
 export default function EggsListPage() {
   const router = useRouter();
-  const [eggs, setEggs] = useState<Array<{ _id: string; name: string; description: string; pterodactylEggId: string; pterodactylNestId: string; recommended: boolean; allowedPlans: string[], category?: string, serversCount?: number }>>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const t = useTranslations('admin.eggs');
+  const tCommon = useTranslations('common');
+  const tErrorBackend = useTranslations('error.backend');
+
+  const { eggs, loading, error, fetchEggs, deleteEgg } = useAdminEggs();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [editingEggId, setEditingEggId] = useState<string | null>(null);
   const [deletingEggId, setDeletingEggId] = useState<string | null>(null);
 
-  const fetchEggs = useCallback(() => {
-    const token = localStorage.getItem("auth_token");
-    if (!token) { router.replace('/login'); return; }
-    
-    setLoading(true);
-    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/eggs`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(async res => {
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || 'Failed to fetch eggs');
-        if (Array.isArray(data)) setEggs(data);
-      })
-      .catch(e => setError(e.message))
-      .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    fetchEggs();
-  }, [fetchEggs]);
-
   const categoryObjects = useMemo(() => {
     const map = new Map<string, { id: string; name: string; eggCount: number }>();
     for (const e of eggs) {
       const id = (e as any).category;
-      const name = (e as any).categoryName || 'Uncategorized';
+      const name = (e as any).categoryName || tCommon('uncategorized');
       if (!id) continue;
       if (map.has(id)) {
         map.get(id)!.eggCount += 1;
@@ -58,7 +42,7 @@ export default function EggsListPage() {
       }
     }
     return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
-  }, [eggs]);
+  }, [eggs, tCommon]);
 
   const categories = useMemo(() => categoryObjects.map(c => c.name), [categoryObjects]);
 
@@ -70,7 +54,7 @@ export default function EggsListPage() {
     let result = eggs;
     if (categoryFilter !== 'all') {
       result = result.filter(e => {
-        const cat = (e as any).categoryName || 'Uncategorized';
+        const cat = (e as any).categoryName || tCommon('uncategorized');
         return cat === categoryFilter;
       });
     }
@@ -84,30 +68,22 @@ export default function EggsListPage() {
       );
     }
     return result;
-  }, [eggs, searchQuery, categoryFilter]);
+  }, [eggs, searchQuery, categoryFilter, tCommon]);
 
   const handleExecuteDelete = async (id: string) => {
-    const token = localStorage.getItem('auth_token');
-    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    if (!res.ok) {
-      let d: any = {}; try { d = await res.json(); } catch {}
-      throw new Error(d?.error || 'Failed to delete egg');
-    }
-    fetchEggs();
+    await deleteEgg(id);
   };
 
   if (error) {
+    const displayError = tErrorBackend.has(error) ? tErrorBackend(error) : error;
     return (
       <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
         <ErrorState
           icon={<Box strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
-          kicker="Load Error"
-          title="Failed to Load Eggs"
-          errorString={error}
-          description={<ErrorDescription error={error} topic="Eggs" />}
+          kicker={t('loadErrorKicker')}
+          title={t('failedToLoad')}
+          errorString={displayError}
+          description={<ErrorDescription error={displayError} topic={tCommon('eggs')} />}
           buttons={
             <>
               <button
@@ -115,7 +91,7 @@ export default function EggsListPage() {
                 className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
               >
                 <RefreshCw className="w-[14px] h-[14px]" />
-                Retry
+                {tCommon('retry')}
               </button>
               <DashboardButton variant="secondary" />
             </>
@@ -142,7 +118,7 @@ export default function EggsListPage() {
               <Search size={15} />
               <input
                 type="text"
-                placeholder="Search by egg name, category, or nest ID..."
+                placeholder={t('searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full min-w-0 border-0 outline-none bg-transparent text-[#d5d5d5] text-[11px] placeholder:text-[#505050]"
@@ -151,7 +127,7 @@ export default function EggsListPage() {
                 <button
                   onClick={() => setSearchQuery("")}
                   className="w-[23px] h-[23px] flex-shrink-0 flex items-center justify-center rounded-[5px] text-[#666] hover:bg-[#222] hover:text-[#ddd] transition-colors"
-                  aria-label="Clear search"
+                  aria-label={tCommon('clearSearch')}
                 >
                   <X size={13} />
                 </button>
@@ -209,18 +185,18 @@ export default function EggsListPage() {
         onConfirm={async () => {
           if (deletingEggId) await handleExecuteDelete(deletingEggId);
         }}
-        entityType="Egg"
+        entityType={tCommon('egg')}
         entityName={eggToDelete?.name || ''}
-        entitySubText={eggToDelete ? `Nest ID: ${eggToDelete.pterodactylNestId} Egg ID: ${eggToDelete.pterodactylEggId}` : ''}
+        entitySubText={eggToDelete ? `${t('nestId')}: ${eggToDelete.pterodactylNestId} ${t('eggId')}: ${eggToDelete.pterodactylEggId}` : ''}
         icon={
           (eggToDelete as any)?.icon ? (
             <img src={`${process.env.NEXT_PUBLIC_API_BASE || ''}${(eggToDelete as any).icon}`} className="w-10 h-10 object-contain rounded" />
           ) : <Egg size={24} />
         }
         warningPoints={[
-          "Egg configuration will be permanently deleted.",
-          "Any new servers will not be able to use this egg.",
-          "This action cannot be undone."
+          t('deleteWarning1'),
+          t('deleteWarning2'),
+          t('deleteWarning3')
         ]}
       />
     </div>

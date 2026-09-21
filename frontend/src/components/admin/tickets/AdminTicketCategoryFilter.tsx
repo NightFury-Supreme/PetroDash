@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslations } from 'next-intl';
 
 interface AdminTicketCategoryFilterProps {
   categories: string[];
@@ -17,6 +18,8 @@ export function AdminTicketCategoryFilter({
   loading,
   onSelect,
 }: AdminTicketCategoryFilterProps) {
+  const t = useTranslations('AdminTickets');
+
   const catCounts = categories.reduce((acc, cat) => {
     acc[cat] = tickets.filter((t) => {
       if (activeTab === "deleted") return !!t.deletedByUser && t.category === cat;
@@ -55,7 +58,7 @@ export function AdminTicketCategoryFilter({
                 : "text-[#606060]"
             }`}
           >
-            <span>All categories</span>
+            <span>{t('allCategories')}</span>
             <small
               className={`flex min-w-[17px] h-[17px] items-center justify-center rounded-[9px] border border-transparent text-[8px] ${
                 catFilter === "" ? "text-[#aaa]" : "text-[#4e4e4e]"

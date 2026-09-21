@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export function FieldLabel({ children }: { children: React.ReactNode }) {
   return <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">{children}</label>;
@@ -38,6 +39,7 @@ export function ActionButton({
   disabled?: boolean;
   title?: string;
 }) {
+  const tCommon = useTranslations('Common');
   const [running, setRunning] = useState(false);
 
   const handleClick = async () => {
@@ -47,7 +49,7 @@ export function ActionButton({
       await onClick();
       onSuccess?.();
     } catch (err: any) {
-      onError?.(err?.message ?? "Something went wrong");
+      onError?.(err?.message ?? tCommon('somethingWentWrong'));
     } finally {
       setRunning(false);
     }
@@ -74,7 +76,7 @@ export function ActionButton({
       } ${className}`}
     >
       {isLoading ? (
-        <><Loader2 size={16} className="animate-spin" /> Saving...</>
+        <><Loader2 size={16} className="animate-spin" /> {tCommon('saving')}</>
       ) : (
         <>
           {icon}

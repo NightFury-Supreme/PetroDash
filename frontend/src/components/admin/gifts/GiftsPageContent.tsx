@@ -1,8 +1,6 @@
 "use client";
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
-import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from '@/i18n/routing';
+import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { AdminGiftsSkeleton } from '@/components/skeletons/admin/gifts/AdminGiftsSkeleton';
 import { Pagination } from '@/components/Pagination';
@@ -14,65 +12,26 @@ import { AdminDeleteGiftDrawer } from './drawers/AdminDeleteGiftDrawer';
 import { AdminGiftFilters } from './AdminGiftFilters';
 import { AdminGiftSort } from './AdminGiftSort';
 import { Search, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useAdminGift } from '@/hooks/admin/gift/useAdminGift';
 
 export default function GiftsPageContent() {
-  const router = useRouter();
-  const [gifts, setGifts] = useState<any[]>([]);
-  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
-  const [loading, setLoading] = useState(true);
+  const t = useTranslations('admin.gift');
+  const tCommon = useTranslations('common');
+  const tErrorBackend = useTranslations('error.backend');
+
   const [query, setQuery] = useState('');
   const [tab, setTab] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [currentPage, setCurrentPage] = useState(1);
-  const [error, setError] = useState<string | null>(null);
+
+  const { gifts, pagination, loading, error, fetchGifts, setLoading } = useAdminGift(currentPage, query, tab, sortBy);
 
   // Drawers
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingGiftId, setEditingGiftId] = useState<string | null>(null);
   const [viewingRedemptionsId, setViewingRedemptionsId] = useState<string | null>(null);
   const [deletingGift, setDeletingGift] = useState<{ id: string; code: string } | null>(null);
-
-  const fetchGifts = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    const token = localStorage.getItem('auth_token');
-    if (!token) { router.replace('/login'); return; }
-    
-    try {
-      const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/gifts`);
-      url.searchParams.set('page', currentPage.toString());
-      url.searchParams.set('limit', '10');
-      url.searchParams.set('tab', tab);
-      url.searchParams.set('sort', sortBy);
-      if (query.trim()) url.searchParams.set('search', query.trim());
-
-      const res = await fetchWithRetry(url.toString(), { headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) {
-        let d: any = {}; try { d = await res.json(); } catch {}
-        if (Array.isArray(d)) {
-          setGifts(d);
-          setPagination({ page: 1, totalPages: 1, total: d.length });
-        } else {
-          setGifts(d.gifts || []);
-          setPagination({
-            page: d.page || 1,
-            totalPages: d.totalPages || 1,
-            total: d.total || 0
-          });
-        }
-      } else {
-        throw new Error("Failed to fetch gifts");
-      }
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch gifts');
-    } finally {
-      setLoading(false);
-    }
-  }, [currentPage, query, tab, sortBy]);
-
-  useEffect(() => {
-    fetchGifts();
-  }, [fetchGifts]);
 
   const handleDelete = (id: string) => {
     const gift = gifts.find(g => g._id === id);
@@ -83,22 +42,25 @@ export default function GiftsPageContent() {
 
   if (loading && gifts.length === 0) return <AdminGiftsSkeleton />;
 
-  if (error) throw new Error(error);
+  if (error) {
+    const displayError = tErrorBackend.has(error) ? tErrorBackend(error) : error;
+    throw new Error(displayError);
+  }
 
   return (
     <div className="flex flex-col space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#FF5722] tracking-tight">Gift Manager</h1>
-          <p className="text-[#888888] mt-1 text-sm">Create and manage coupon codes for your users.</p>
+          <h1 className="text-2xl font-bold text-[#FF5722] tracking-tight">{t('title')}</h1>
+          <p className="text-[#888888] mt-1 text-sm">{t('description')}</p>
         </div>
         <button
           onClick={() => setIsCreateOpen(true)}
           className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-colors bg-[#FF5722] text-white hover:bg-[#ff6939]"
         >
           <Plus size={12} />
-          Create Gift
+          {t('createGift')}
         </button>
       </div>
 
@@ -115,14 +77,14 @@ export default function GiftsPageContent() {
                 setQuery(e.target.value); 
                 setCurrentPage(1);
               }}
-              placeholder="Search codes, rewards, descriptions..."
+              placeholder={t('searchPlaceholder')}
               className="w-full min-w-0 border-0 outline-none bg-transparent text-[#d5d5d5] text-[11px] placeholder:text-[#505050]"
             />
             {query && (
               <button
                 onClick={() => { setLoading(true); setQuery(""); setCurrentPage(1); }}
                 className="w-[23px] h-[23px] flex-shrink-0 flex items-center justify-center rounded-[5px] text-[#666] hover:bg-[#222] hover:text-[#ddd] transition-colors"
-                aria-label="Clear search"
+                aria-label={tCommon('clearSearch')}
               >
                 <X size={13} />
               </button>
@@ -167,7 +129,7 @@ export default function GiftsPageContent() {
           pageSize={10}
           onPageChange={setCurrentPage}
           loading={loading}
-          itemName="gifts"
+          itemName={tCommon('gifts')}
         />
       </section>
 

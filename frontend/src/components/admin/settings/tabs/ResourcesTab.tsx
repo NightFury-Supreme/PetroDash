@@ -2,28 +2,31 @@ import React from 'react';
 import { Server, Cpu, MemoryStick, HardDrive, Archive, Network, Database, Coins } from 'lucide-react';
 import { SettingsRow } from '../Shared';
 import { TabProps, Settings } from '../types';
+import { useTranslations } from 'next-intl';
 
 export function ResourcesTab({ formData, updateFormData, saveSection, loading }: TabProps) {
+  const t = useTranslations('AdminSettings');
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       <section>
         <div className="mb-5 flex items-end justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-white">Default Resources</h3>
-            <p className="mt-2 text-sm text-white/35">Set default resource allocations for new users</p>
+            <h3 className="text-lg font-semibold text-white">{t('defaultResourcesTitle')}</h3>
+            <p className="mt-2 text-sm text-white/35">{t('defaultResourcesDesc')}</p>
           </div>
         </div>
         
         <div className="divide-y divide-white/[0.06]">
           {([
-            ['cpuPercent', 'CPU (%)', 'Percentage of CPU allocated'],
-            ['memoryMb', 'Memory (MB)', 'RAM in megabytes'],
-            ['diskMb', 'Disk (MB)', 'Storage in megabytes'],
-            ['serverSlots', 'Server Slots', 'Number of servers allowed'],
-            ['backups', 'Backups', 'Number of backups allowed'],
-            ['allocations', 'Allocations', 'Number of port allocations'],
-            ['databases', 'Databases', 'Number of databases allowed'],
-            ['coins', 'Coins', 'Starting coin balance']
+            ['cpuPercent', t('cpuPercent'), t('cpuPercentDesc')],
+            ['memoryMb', t('memoryMb'), t('memoryMbDesc')],
+            ['diskMb', t('diskMb'), t('diskMbDesc')],
+            ['serverSlots', t('serverSlots'), t('serverSlotsDesc')],
+            ['backups', t('backups'), t('backupsDesc')],
+            ['allocations', t('allocations'), t('allocationsDesc')],
+            ['databases', t('databases'), t('databasesDesc')],
+            ['coins', t('coins'), t('coinsDesc')]
           ] as [keyof Settings['defaults'], string, string][]).map(([key, label, tooltip]) => (
               <SettingsRow 
                 key={key} 
@@ -41,7 +44,7 @@ export function ResourcesTab({ formData, updateFormData, saveSection, loading }:
                 label={label} 
                 description={tooltip} 
                 displayValue={formData.defaults?.[key]} 
-                onSave={() => saveSection({ defaults: formData.defaults }, 'Default resources updated.')}
+                onSave={() => saveSection({ defaults: formData.defaults }, t('defaultResourcesUpdated'))}
               >
               <input
                 type="number"

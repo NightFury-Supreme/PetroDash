@@ -2,6 +2,7 @@ import React from 'react';
 import { Coins, Clock } from 'lucide-react';
 import { SettingsRow, SettingsDropdown } from '../Shared';
 import { TabProps } from '../types';
+import { useTranslations } from 'next-intl';
 
 const TIMEZONE_OPTIONS = (() => {
   try {
@@ -54,23 +55,25 @@ const TIMEZONE_OPTIONS = (() => {
 })();
 
 export function LocalizationTab({ formData, updateFormData, saveSection, loading }: TabProps) {
+  const t = useTranslations('AdminSettings');
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       <section>
         <div className="mb-5 flex items-end justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-white">Localization Settings</h3>
-            <p className="mt-2 text-sm text-white/35">Configure global language and currency</p>
+            <h3 className="text-lg font-semibold text-white">{t('localizationSettingsTitle')}</h3>
+            <p className="mt-2 text-sm text-white/35">{t('localizationSettingsDesc')}</p>
           </div>
         </div>
         
         <div className="divide-y divide-white/[0.06]">
-          <SettingsRow icon={<Coins />} label="Site Currency" description="This currency is displayed on the shop and all plans." onSave={() => saveSection({ localization: formData.localization }, 'Localization settings updated.')}>
+          <SettingsRow icon={<Coins />} label={t('siteCurrency')} description={t('siteCurrencyDesc')} onSave={() => saveSection({ localization: formData.localization }, t('localizationSettingsUpdated'))}>
             <SettingsDropdown
               value={formData.localization?.currency || 'USD'}
               onChange={async (val) => {
                 updateFormData('localization.currency', val);
-                await saveSection({ localization: { ...formData.localization, currency: val } as any }, 'Localization settings updated.');
+                await saveSection({ localization: { ...formData.localization, currency: val } as any }, t('localizationSettingsUpdated'));
               }}
               disabled={loading}
               options={[
@@ -104,12 +107,12 @@ export function LocalizationTab({ formData, updateFormData, saveSection, loading
             />
           </SettingsRow>
 
-          <SettingsRow icon={<Clock />} label="Timezone" description="Global timezone for logs and timestamps." onSave={() => saveSection({ localization: formData.localization }, 'Localization settings updated.')}>
+          <SettingsRow icon={<Clock />} label={t('timezone')} description={t('timezoneDesc')} onSave={() => saveSection({ localization: formData.localization }, t('localizationSettingsUpdated'))}>
             <SettingsDropdown
               value={formData.localization?.timezone || 'UTC'}
               onChange={async (val) => {
                 updateFormData('localization.timezone', val);
-                await saveSection({ localization: { ...formData.localization, timezone: val } as any }, 'Localization settings updated.');
+                await saveSection({ localization: { ...formData.localization, timezone: val } as any }, t('localizationSettingsUpdated'));
               }}
               disabled={loading}
               options={TIMEZONE_OPTIONS}

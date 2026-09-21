@@ -4,8 +4,13 @@ import { useEffect } from 'react';
 import { ScrollText, RefreshCw } from 'lucide-react';
 import { ErrorState, DashboardButton, ErrorDescription } from '@/components/ui/ErrorState';
 import { AdminLogsHeader, AdminLogsContent, useAdminLogs } from '@/components/admin/logs';
+import { useTranslations } from 'next-intl';
 
 export default function AdminLogsPage() {
+  const t = useTranslations('admin.logs');
+  const tCommon = useTranslations('common');
+  const tErrorBackend = useTranslations('error.backend');
+
   const {
     logs,
     loading,
@@ -53,14 +58,15 @@ export default function AdminLogsPage() {
   }
 
   if (error) {
+    const displayError = tErrorBackend.has(error) ? tErrorBackend(error) : error;
     return (
       <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
         <ErrorState
           icon={<ScrollText strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
-          kicker="Load Error"
-          title="Failed to Load Logs"
-          errorString={error}
-          description={<ErrorDescription error={error} topic="Logs" />}
+          kicker={tCommon('error.kicker')}
+          title={t('error.title')}
+          errorString={displayError}
+          description={<ErrorDescription error={displayError} topic={tCommon('logs')} />}
           buttons={
             <>
               <button
@@ -68,7 +74,7 @@ export default function AdminLogsPage() {
                 className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
               >
                 <RefreshCw className="w-[14px] h-[14px]" />
-                Retry
+                {tCommon('actions.retry')}
               </button>
               <DashboardButton variant="secondary" />
             </>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { ShoppingCart, Crown, Tag, Receipt } from 'lucide-react';
 import { SideItem } from '@/components/profile';
@@ -9,6 +10,7 @@ import AdminCouponsTab from '@/components/admin/store/tabs/CouponsTab';
 import AdminLedgerTab from '@/components/admin/store/tabs/LedgerTab';
 
 export default function AdminStorePage() {
+  const t = useTranslations('admin.store');
   const [tab, setTab] = useState('shop');
 
   const handleTabChange = (t: string) => {
@@ -21,8 +23,8 @@ export default function AdminStorePage() {
         <header>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-[#FF5722] tracking-tight">Store</h1>
-              <p className="text-[#888888] mt-1 text-sm">Manage your billing, plans, shop items, and view transactions.</p>
+              <h1 className="text-2xl font-bold text-[#FF5722] tracking-tight">{t('title')}</h1>
+              <p className="text-[#888888] mt-1 text-sm">{t('description')}</p>
             </div>
           </div>
         </header>
@@ -32,30 +34,30 @@ export default function AdminStorePage() {
           <aside className="w-full lg:w-48 shrink-0 pt-1">
             <div className="sticky top-6">
               <div className="mb-4">
-                <p className="text-[11px] font-medium uppercase tracking-widest text-[#555]">Store Management</p>
+                <p className="text-[11px] font-medium uppercase tracking-widest text-[#555]">{t('sidebar.title')}</p>
               </div>
               <nav className="space-y-1">
                 <SideItem 
                   icon={ShoppingCart} 
-                  label="Shop" 
+                  label={t('sidebar.shop')} 
                   active={tab === 'shop'} 
                   onClick={() => handleTabChange('shop')} 
                 />
                 <SideItem 
                   icon={Crown} 
-                  label="Plans" 
+                  label={t('sidebar.plans')} 
                   active={tab === 'plans'} 
                   onClick={() => handleTabChange('plans')} 
                 />
                 <SideItem 
                   icon={Tag} 
-                  label="Coupons" 
+                  label={t('sidebar.coupons')} 
                   active={tab === 'coupons'} 
                   onClick={() => handleTabChange('coupons')} 
                 />
                 <SideItem 
                   icon={Receipt} 
-                  label="Ledger" 
+                  label={t('sidebar.ledger')} 
                   active={tab === 'ledger'} 
                   onClick={() => handleTabChange('ledger')} 
                 />

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { AlertTriangle, Loader2, X, ChevronDown } from "lucide-react";
 import { Drawer } from "@/components/ui/Drawer";
+import { useTranslations } from "next-intl";
 
 function SimpleDropdown({
   label,
@@ -51,6 +52,9 @@ export function AdminClearQueueDrawer({
   locations,
   eggs,
 }: AdminClearQueueDrawerProps) {
+  const t = useTranslations('Admin.servers');
+  const tCommon = useTranslations('Common');
+
   const [selectedLocation, setSelectedLocation] = useState("all");
   const [selectedEgg, setSelectedEgg] = useState("all");
   const [confirmText, setConfirmText] = useState("");
@@ -66,8 +70,10 @@ export function AdminClearQueueDrawer({
     }
   }, [isOpen]);
 
+  const expectedConfirmText = t('clearText');
+
   const handleConfirm = async () => {
-    if (confirmText.trim().toLowerCase() !== "clear") return;
+    if (confirmText.trim().toLowerCase() !== expectedConfirmText.toLowerCase()) return;
     setIsClearing(true);
     try {
       await onConfirm(selectedLocation, selectedEgg);
@@ -78,22 +84,22 @@ export function AdminClearQueueDrawer({
     }
   };
 
-  const isConfirmDisabled = confirmText.trim().toLowerCase() !== "clear";
+  const isConfirmDisabled = confirmText.trim().toLowerCase() !== expectedConfirmText.toLowerCase();
   const isFiltering = selectedLocation !== "all" || selectedEgg !== "all";
 
   return (
     <Drawer
       isOpen={isOpen}
       onClose={onClose}
-      title="Clear Queue"
-      subtitle="Remove servers from the queue based on the criteria below."
+      title={t('clearQueueTitle')}
+      subtitle={t('clearQueueSubtitle')}
       footer={
         <div className="flex items-center justify-end gap-2 w-full">
           <button
             onClick={onClose}
             className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
           >
-            Cancel
+            {tCommon('cancel')}
           </button>
           <button
             onClick={handleConfirm}
@@ -105,9 +111,9 @@ export function AdminClearQueueDrawer({
             }`}
           >
             {isClearing ? (
-              <><Loader2 size={16} className="animate-spin" /> Clearing...</>
+              <><Loader2 size={16} className="animate-spin" /> {tCommon('clearing')}</>
             ) : (
-              <><X size={16} /> Clear Queue</>
+              <><X size={16} /> {t('clearQueueTitle')}</>
             )}
           </button>
         </div>
@@ -115,21 +121,21 @@ export function AdminClearQueueDrawer({
     >
       <div className="flex flex-col gap-5 mb-8">
         <SimpleDropdown
-          label="Target Node"
+          label={t('targetNode')}
           value={selectedLocation}
           onChange={setSelectedLocation}
           options={[
-            { label: "All Nodes", value: "all" },
+            { label: t('allNodes'), value: "all" },
             ...locations.map((loc) => ({ label: loc.name, value: loc._id })),
           ]}
         />
         
         <SimpleDropdown
-          label="Target Egg"
+          label={t('targetEgg')}
           value={selectedEgg}
           onChange={setSelectedEgg}
           options={[
-            { label: "All Eggs", value: "all" },
+            { label: t('allEggs'), value: "all" },
             ...eggs.map((egg) => ({ label: egg.name, value: egg._id })),
           ]}
         />
@@ -138,38 +144,38 @@ export function AdminClearQueueDrawer({
       <div className="border-l-2 border-red-500 pl-5 py-1 mb-10">
         <div className="flex items-center gap-2 text-red-500 mb-4">
           <AlertTriangle size={14} />
-          <span className="text-xs font-bold uppercase tracking-wider">BEFORE YOU CONTINUE</span>
+          <span className="text-xs font-bold uppercase tracking-wider">{t('beforeYouContinue')}</span>
         </div>
         <ul className="space-y-3">
           <li className="flex items-start gap-3 text-sm text-zinc-400">
             <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-red-500"></span>
             <span>
               {isFiltering
-                ? "This will remove all queue servers matching your selected Node and/or Egg permanently."
-                : "This will remove ALL servers from the queue permanently for ALL users."}
+                ? t('removeFilteredWarning')
+                : t('removeAllWarning')}
             </span>
           </li>
           <li className="flex items-start gap-3 text-sm text-zinc-400">
             <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-red-500"></span>
-            <span>Users will need to recreate these servers manually.</span>
+            <span>{t('recreateWarning')}</span>
           </li>
           <li className="flex items-start gap-3 text-sm text-zinc-400">
             <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-red-500"></span>
-            <span>This action cannot be undone.</span>
+            <span>{t('cannotUndo')}</span>
           </li>
         </ul>
       </div>
 
       <div>
         <h2 className="text-[11px] font-medium uppercase tracking-[0.1em] text-zinc-500 mb-4">
-          Type <span className="text-zinc-100">CLEAR</span> to confirm
+          {t.rich('typeToConfirm', { clear: (chunks) => <span className="text-zinc-100">{chunks}</span> })}
         </h2>
         <div className="flex overflow-hidden rounded-lg border border-[#2A2A2A] bg-[#161616] focus-within:border-red-500/50 transition-colors">
           <input
             type="text"
             value={confirmText}
             onChange={(e) => setConfirmText(e.target.value)}
-            placeholder="CLEAR"
+            placeholder={expectedConfirmText}
             className="min-w-0 flex-1 bg-transparent px-4 py-3.5 text-[13px] text-white outline-none placeholder:text-zinc-600"
           />
         </div>

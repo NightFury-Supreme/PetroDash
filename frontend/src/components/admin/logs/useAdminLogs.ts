@@ -2,8 +2,11 @@ import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useCallback } from 'react';
 import { useToast } from '@/components/ui/ToastProvider';
 import { AuditLog, LogsResponse, LogFilters } from './types';
+import { useTranslations } from 'next-intl';
 
 export function useAdminLogs() {
+  const tError = useTranslations('GlobalErrors');
+  const tErrorBackend = useTranslations('BackendErrors');
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +30,7 @@ export function useAdminLogs() {
     try {
       const token = localStorage.getItem('auth_token');
       if (!token) {
-        setError('Authentication token not found');
+        setError(tError('authNotFound'));
         return;
       }
 
@@ -47,8 +50,10 @@ export function useAdminLogs() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to load logs' }));
-        throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({ error: tError('failedToLoadLogs') }));
+        const errKey = errorData?.error || 'failedToLoadLogs';
+        const msg = tErrorBackend.has(errKey) ? tErrorBackend(errKey) : (errorData?.error || `HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(msg);
       }
 
       const data: LogsResponse = await response.json();
@@ -56,14 +61,15 @@ export function useAdminLogs() {
       setTotal(data.total || 0);
       setPage(data.page || 1);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'An unknown error occurred');
+      const msg = e instanceof Error ? e.message : tError('unknownError');
+      setError(msg);
       if (logs.length > 0) {
-        showError(e instanceof Error ? e.message : 'An unknown error occurred');
+        showError(msg);
       }
     } finally {
       setLoading(false);
     }
-  }, [pageSize, logs.length, filters, sortBy, showError]);
+  }, [pageSize, logs.length, filters, sortBy, showError, tError, tErrorBackend]);
 
   const handlePageChange = (newPage: number) => {
     loadLogs(newPage, filters, sortBy);

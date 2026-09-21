@@ -1,7 +1,6 @@
 "use client";
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
-import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from "@/i18n/routing";
+
+import { useEffect, useState } from 'react';
 import { Search, X, Globe, Plus, MapPin, RefreshCw } from 'lucide-react';
 import { ErrorState, DashboardButton, ErrorDescription } from '@/components/ui/ErrorState';
 import LocationList from '@/components/admin/locations/LocationList';
@@ -9,32 +8,19 @@ import { CreateLocationDrawer } from '@/components/admin/locations/CreateLocatio
 import { EditLocationDrawer } from '@/components/admin/locations/EditLocationDrawer';
 import { DeleteDrawer } from '@/components/ui/DeleteDrawer';
 import AdminLocationsSkeleton from '@/components/skeletons/admin/locations/AdminLocationsSkeleton';
+import { useAdminLocations } from '@/hooks/admin/locations/useAdminLocations';
+import { useTranslations } from 'next-intl';
 
 export default function LocationsPage() {
-  const router = useRouter();
-  const [locations, setLocations] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const t = useTranslations('admin.locations');
+  const tCommon = useTranslations('common');
+  const tErrorBackend = useTranslations('error.backend');
+
+  const { locations, loading, error, fetchLocations, deleteLocation } = useAdminLocations();
   const [searchQuery, setSearchQuery] = useState('');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [editingLocationId, setEditingLocationId] = useState<string | null>(null);
   const [deletingLocationId, setDeletingLocationId] = useState<string | null>(null);
-
-  const fetchLocations = useCallback(() => {
-    const token = localStorage.getItem('auth_token');
-    if (!token) { router.replace('/login'); return; }
-    setLoading(true);
-    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(async res => {
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || 'Failed to fetch locations');
-        if (Array.isArray(data)) setLocations(data);
-      })
-      .catch(e => setError(e.message))
-      .finally(() => setLoading(false));
-  }, []);
 
   useEffect(() => { fetchLocations(); }, [fetchLocations]);
 
@@ -45,27 +31,19 @@ export default function LocationsPage() {
   });
 
   const handleExecuteDelete = async (id: string) => {
-    const token = localStorage.getItem('auth_token');
-    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) {
-      let d: any = {}; try { d = await res.json(); } catch {}
-      throw new Error(d?.error || 'Failed to delete location');
-    }
-    fetchLocations();
+    await deleteLocation(id);
   };
 
   if (error) {
+    const displayError = tErrorBackend.has(error) ? tErrorBackend(error) : error;
     return (
       <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
         <ErrorState
           icon={<MapPin strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
-          kicker="Load Error"
-          title="Failed to Load Locations"
-          errorString={error}
-          description={<ErrorDescription error={error} topic="Locations" />}
+          kicker={tCommon('error.kicker')}
+          title={t('error.title')}
+          errorString={displayError}
+          description={<ErrorDescription error={displayError} topic={tCommon('locations')} />}
           buttons={
             <>
               <button
@@ -73,7 +51,7 @@ export default function LocationsPage() {
                 className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
               >
                 <RefreshCw className="w-[14px] h-[14px]" />
-                Retry
+                {tCommon('actions.retry')}
               </button>
               <DashboardButton variant="secondary" />
             </>
@@ -93,14 +71,14 @@ export default function LocationsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-[#FF5722] tracking-tight">Locations</h1>
-            <p className="text-[#888888] mt-1 text-sm">Monitor and manage all deployment locations.</p>
+            <h1 className="text-2xl font-bold text-[#FF5722] tracking-tight">{t('title')}</h1>
+            <p className="text-[#888888] mt-1 text-sm">{t('description')}</p>
           </div>
           <button
             onClick={() => setIsDrawerOpen(true)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-colors bg-[#FF5722] text-white hover:bg-[#ff6939]"
           >
-            <Plus size={12} /> New Location
+            <Plus size={12} /> {t('actions.newLocation')}
           </button>
         </div>
 
@@ -111,13 +89,13 @@ export default function LocationsPage() {
               <Search size={15} />
               <input
                 type="text"
-                placeholder="Search by location name or node IP..."
+                placeholder={t('search.placeholder')}
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="w-full min-w-0 border-0 outline-none bg-transparent text-[#d5d5d5] text-[11px] placeholder:text-[#505050]"
               />
               {searchQuery && (
-                <button onClick={() => setSearchQuery('')} className="w-[23px] h-[23px] flex-shrink-0 flex items-center justify-center rounded-[5px] text-[#666] hover:bg-[#222] hover:text-[#ddd] transition-colors" aria-label="Clear search">
+                <button onClick={() => setSearchQuery('')} className="w-[23px] h-[23px] flex-shrink-0 flex items-center justify-center rounded-[5px] text-[#666] hover:bg-[#222] hover:text-[#ddd] transition-colors" aria-label={tCommon('actions.clear')}>
                   <X size={13} />
                 </button>
               )}
@@ -151,14 +129,14 @@ export default function LocationsPage() {
         isOpen={!!deletingLocationId}
         onClose={() => setDeletingLocationId(null)}
         onConfirm={async () => { if (deletingLocationId) await handleExecuteDelete(deletingLocationId); }}
-        entityType="Location"
+        entityType={tCommon('location')}
         entityName={locationToDelete?.name || ''}
-        entitySubText={locationToDelete?.latencyUrl ? `Node IP: ` : ''}
+        entitySubText={locationToDelete?.latencyUrl ? `${t('table.nodeIp')}: ` : ''}
         icon={<Globe size={24} />}
         warningPoints={[
-          'Location configuration will be permanently deleted.',
-          'Existing servers in this location will lose their location reference.',
-          'This action cannot be undone.',
+          t('delete.warning1'),
+          t('delete.warning2'),
+          t('delete.warning3'),
         ]}
       />
     </div>

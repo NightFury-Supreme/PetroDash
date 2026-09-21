@@ -1,15 +1,19 @@
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useModal } from '@/components/Modal';
 import React, { useState } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
 import AdminServersTable from "@/components/admin/servers/AdminServersTable";
 import { AdminEditServerDrawer } from "@/components/admin/servers/AdminEditServerDrawer";
+import { useTranslations } from "next-intl";
+import { adminUsersApi } from "@/utils/api/adminUsers";
 
 export function ServersTab({ user, servers, onRefresh }: any) {
   const [editingServer, setEditingServer] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
-    const { showError } = useToast();
+  const { showError } = useToast();
   const modal = useModal();
+  const t = useTranslations('Admin.users');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
 
   const formattedServers = servers.map((s: any) => ({
     ...s,
@@ -20,42 +24,38 @@ export function ServersTab({ user, servers, onRefresh }: any) {
 
   const handleDelete = async (id: string, name: string) => {
     const inputValue = await modal.prompt({
-      title: 'Delete Server',
+      title: t('deleteServerTitle'),
       content: (
         <div>
-          You are about to permanently delete the server <span className="bg-[#222] border border-[#2A2A2A] px-[6px] py-[2px] rounded-[4px] font-mono text-[#D4D4D4] text-[12px]">{name}</span>. 
+          {t('deleteServerPrompt1')} <span className="bg-[#222] border border-[#2A2A2A] px-[6px] py-[2px] rounded-[4px] font-mono text-[#D4D4D4] text-[12px]">{name}</span>. 
           <br /><br />
-          This will remove the server from both the database and the Pterodactyl panel. This action cannot be undone.
+          {t('deleteServerPrompt2')}
           <br /><br />
-          Please type <strong className="text-white font-medium">delete</strong> to confirm.
+          {t('deleteServerPrompt3')} <strong className="text-white font-medium">{t('deleteKeyword')}</strong> {t('deleteServerPrompt4')}
         </div>
       ),
-      confirmText: 'Delete',
+      confirmText: t('deleteBtn'),
       danger: true,
-      requiredInput: 'delete'
+      requiredInput: t('deleteKeyword')
     });
 
-    if (!inputValue || inputValue.toLowerCase() !== 'delete') {
+    if (!inputValue || inputValue.toLowerCase() !== t('deleteKeyword').toLowerCase()) {
       if (inputValue !== null) {
-        showError('You must type "delete" to confirm.');
+        showError(t('deleteKeywordError'));
       }
       return;
     }
     
     setDeleting(id);
     try {
-      const token = localStorage.getItem('auth_token');
-      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/servers/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const token = localStorage.getItem('auth_token') || '';
+      const { res, data } = await adminUsersApi.deleteServer(id, token);
       if (!res.ok) {
-        const d = await res.json();
-        throw new Error(d.error || 'Failed to delete server');
+        throw new Error(data.error || 'Failed to delete server');
       }
       onRefresh();
     } catch (e: any) {
-      showError(e.message);
+      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
     } finally {
       setDeleting(null);
     }
@@ -65,14 +65,14 @@ export function ServersTab({ user, servers, onRefresh }: any) {
     <div className="space-y-6">
       <section>
         <div className="mb-5">
-          <h3 className="text-xl font-semibold tracking-tight text-white">User Servers</h3>
-          <p className="mt-2 text-sm text-white/35">Manage servers owned by this user.</p>
+          <h3 className="text-xl font-semibold tracking-tight text-white">{t('userServers')}</h3>
+          <p className="mt-2 text-sm text-white/35">{t('userServersDesc')}</p>
         </div>
         
         <div className="mt-6">
           {formattedServers.length === 0 ? (
             <div className="p-8 text-center text-sm text-white/40">
-              This user has no servers.
+              {t('noServers')}
             </div>
           ) : (
             <AdminServersTable 

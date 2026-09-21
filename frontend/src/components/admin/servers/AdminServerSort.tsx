@@ -3,6 +3,7 @@
 import React from 'react';
 import { ArrowUpDown } from 'lucide-react';
 import { Select } from '@/components/ui/Select';
+import { useTranslations } from "next-intl";
 
 interface AdminServerSortProps {
   sortBy: string;
@@ -10,6 +11,8 @@ interface AdminServerSortProps {
 }
 
 export function AdminServerSort({ sortBy, setSortBy }: AdminServerSortProps) {
+  const t = useTranslations('Admin.servers');
+
   return (
     <div className="w-[180px]">
       <Select
@@ -18,17 +21,17 @@ export function AdminServerSort({ sortBy, setSortBy }: AdminServerSortProps) {
         renderButtonContent={() => (
           <div className="flex items-center gap-[7px]">
             <ArrowUpDown size={14} className="text-[#858585]" />
-            <span className="text-[10px] text-[#858585]">Sort</span>
+            <span className="text-[10px] text-[#858585]">{t('sort')}</span>
           </div>
         )}
         options={[
-              { label: 'Created · Newest', value: 'created_desc' },
-              { label: 'Created · Oldest', value: 'created_asc' },
-              { label: 'Name · A → Z', value: 'name_asc' },
-              { label: 'Name · Z → A', value: 'name_desc' },
-              { label: 'CPU · Highest', value: 'cpu_desc' },
-              { label: 'Memory · Highest', value: 'memory_desc' },
-              { label: 'Disk · Highest', value: 'disk_desc' }
+              { label: t('sortCreatedNewest'), value: 'created_desc' },
+              { label: t('sortCreatedOldest'), value: 'created_asc' },
+              { label: t('sortNameAsc'), value: 'name_asc' },
+              { label: t('sortNameDesc'), value: 'name_desc' },
+              { label: t('sortCpuDesc'), value: 'cpu_desc' },
+              { label: t('sortMemoryDesc'), value: 'memory_desc' },
+              { label: t('sortDiskDesc'), value: 'disk_desc' }
             ]}
       />
     </div>

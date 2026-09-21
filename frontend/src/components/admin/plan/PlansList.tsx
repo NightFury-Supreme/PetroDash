@@ -13,6 +13,7 @@ import {
   Crown,
 } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useTranslations } from "next-intl";
 
 interface Plan {
   _id: string;
@@ -77,18 +78,19 @@ export function PlansList({
   onManage,
 }: PlansListProps) {
   const { currency } = useCurrency();
+  const t = useTranslations("Admin.plan");
 
   if (plans.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center border border-white/[0.06] rounded-xl">
         <Crown className="mb-3 h-8 w-8 text-yellow-400/30 drop-shadow-[0_0_8px_rgba(250,204,21,0.4)]" />
-        <p className="text-sm text-white/40">No plans yet</p>
+        <p className="text-sm text-white/40">{t("noPlansYet") || "No plans yet"}</p>
         <div className="mt-4">
           <button
             onClick={() => onManage?.("")}
             className="bg-[#FF5722] hover:bg-[#F4511E] text-white px-4 py-2 text-sm rounded-lg font-semibold transition-colors"
           >
-            Create First Plan
+            {t("createFirstPlan") || "Create First Plan"}
           </button>
         </div>
       </div>
@@ -141,6 +143,7 @@ function AdminPlanRow({
   currency: string;
   onManage: () => void;
 }) {
+  const t = useTranslations("Admin.plan");
   const res = plan.productContent?.recurrentResources || ({} as any);
   const cpu = res.cpuPercent > 0 ? `${res.cpuPercent}%` : "0%";
   const memory = res.memoryMb > 0 ? `${res.memoryMb} MB` : "0 MB";
@@ -151,7 +154,7 @@ function AdminPlanRow({
       : "0";
   const price = plan.pricePerMonth;
   const isLifetime = plan.billingOptions?.lifetime;
-  const billing = isLifetime ? "One-time payment" : "per month";
+  const billing = isLifetime ? (t('oneTimePayment') || "One-time payment") : (t('perMonth') || "per month");
   const isEnabled = plan.enabled !== false;
   const isExpired = plan.availableUntil && new Date(plan.availableUntil).getTime() < Date.now();
 
@@ -162,7 +165,7 @@ function AdminPlanRow({
         <div className="absolute right-0 top-0 z-10 flex items-center justify-center rounded-bl border-b border-l border-[#FF5722]/30 bg-[#FF5722]/10 px-3 py-1 shadow-sm backdrop-blur-md">
           <span className="flex items-center gap-1 text-[9px] font-bold tracking-wider text-[#FF5722]">
             <Flame className="h-3 w-3" />
-            POPULAR
+            {t('popularUpper') || 'POPULAR'}
           </span>
         </div>
       )}
@@ -178,7 +181,7 @@ function AdminPlanRow({
               <h2 className="text-sm font-medium text-white/70">{plan.name}</h2>
               {plan.visibility !== "public" && (
                 <span className="text-[9px] font-bold tracking-wider text-[#AAAAAA] border border-[#AAAAAA]/30 bg-[#AAAAAA]/10 px-1.5 py-0.5 rounded-sm">
-                  UNLISTED
+                  {t('unlistedUpper') || 'UNLISTED'}
                 </span>
               )}
             </div>
@@ -192,17 +195,17 @@ function AdminPlanRow({
 
         {/* Resource chips */}
         <div className="grid flex-1 grid-cols-2 gap-4 sm:grid-cols-4 xl:min-w-0">
-          <Resource icon={<Cpu className="h-3.5 w-3.5" />} label="CPU" value={cpu} />
-          <Resource icon={<MemoryStick className="h-3.5 w-3.5" />} label="Memory" value={memory} />
-          <Resource icon={<HardDrive className="h-3.5 w-3.5" />} label="Disk" value={disk} />
-          <Resource icon={<Server className="h-3.5 w-3.5" />} label="Servers" value={servers} />
+          <Resource icon={<Cpu className="h-3.5 w-3.5" />} label={t('cpu') || "CPU"} value={cpu} />
+          <Resource icon={<MemoryStick className="h-3.5 w-3.5" />} label={t('memory') || "Memory"} value={memory} />
+          <Resource icon={<HardDrive className="h-3.5 w-3.5" />} label={t('disk') || "Disk"} value={disk} />
+          <Resource icon={<Server className="h-3.5 w-3.5" />} label={t('servers') || "Servers"} value={servers} />
         </div>
 
         {/* Price + Status + Edit */}
         <div className="flex items-center justify-between gap-6 border-t border-white/[0.06] pt-5 sm:justify-end xl:border-l xl:border-t-0 xl:pl-7 xl:pt-0">
           {/* Price */}
           <div className="text-left">
-            <p className="text-[9px] uppercase tracking-[0.13em] text-white/20">Price</p>
+            <p className="text-[9px] uppercase tracking-[0.13em] text-white/20">{t('price') || 'Price'}</p>
             <div className="mt-0.5 flex items-baseline">
               {plan.strikeThroughPrice > 0 && (
                 <span className="text-xs text-white/30 line-through mr-1">
@@ -219,21 +222,21 @@ function AdminPlanRow({
           <div className="flex items-center gap-2 shrink-0">
             {isExpired ? (
               <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-amber-500/10 text-amber-400 text-[10px] font-medium tracking-wide uppercase border border-amber-500/20">
-                Expired
+                {t('expired') || 'Expired'}
               </span>
             ) : isEnabled ? (
               <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">
-                Enabled
+                {t('enabled') || 'Enabled'}
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">
-                Disabled
+                {t('disabled') || 'Disabled'}
               </span>
             )}
             <button
               onClick={onManage}
               className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors"
-              title="Manage Plan"
+              title={t('managePlan') || "Manage Plan"}
             >
               <Edit2 size={14} />
             </button>
@@ -247,20 +250,20 @@ function AdminPlanRow({
           {isLifetime && (
             <div className="flex items-center gap-1.5">
               <Check className="h-3 w-3 text-emerald-500" />
-              <span className="text-[11px] text-white/40 whitespace-nowrap">Lifetime access</span>
+              <span className="text-[11px] text-white/40 whitespace-nowrap">{t('lifetimeAccess') || 'Lifetime access'}</span>
             </div>
           )}
           {plan.stock > 0 && (
             <div className="flex items-center gap-1.5">
               <Package className="h-3 w-3 text-orange-400" />
-              <span className="text-[11px] text-white/40 whitespace-nowrap">Limited stock</span>
+              <span className="text-[11px] text-white/40 whitespace-nowrap">{t('limitedStock') || 'Limited stock'}</span>
             </div>
           )}
           {plan.availableUntil && (
             <div className="flex items-center gap-1.5">
               <Clock className="h-3 w-3 text-blue-400" />
               <span className="text-[11px] text-white/40 whitespace-nowrap">
-                Ends{" "}
+                {t('ends') || 'Ends'}{" "}
                 {new Date(plan.availableUntil).toLocaleDateString(undefined, {
                   day: "numeric",
                   month: "short",
@@ -270,12 +273,12 @@ function AdminPlanRow({
           )}
           <div className="flex items-center gap-1.5">
             <span className="text-[11px] text-white/40 whitespace-nowrap">
-              {plan.currentUsers} users · {plan.stock === -1 ? "∞" : plan.stock} stock · {plan.totalPurchases} purchases
+              {plan.currentUsers} {t('users') || 'users'} · {plan.stock === -1 ? "∞" : plan.stock} {t('stock') || 'stock'} · {plan.totalPurchases} {t('purchases') || 'purchases'}
             </span>
           </div>
         </div>
         <span className="text-[11px] text-white/20 shrink-0 ml-4 hidden sm:block whitespace-nowrap">
-          {isLifetime ? "One-time purchase" : "Recurring subscription"}
+          {isLifetime ? (t('oneTimePurchase') || "One-time purchase") : (t('recurringSubscription') || "Recurring subscription")}
         </span>
       </div>
     </article>

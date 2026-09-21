@@ -1,12 +1,15 @@
 "use client";
 
 import { RankBadge } from "@/components/ui/RankBadge";
+import { useTranslations } from "next-intl";
 
 export default function UsersTable({ users, onManageUser }: { users: any[], onManageUser: (id: string) => void }) {
+  const t = useTranslations('Admin.users');
+
   if (!users || users.length === 0) {
     return (
       <div className="py-8 text-center text-xs text-[#666]">
-        No users found.
+        {t('noUsersFound')}
       </div>
     );
   }
@@ -14,12 +17,12 @@ export default function UsersTable({ users, onManageUser }: { users: any[], onMa
   return (
     <div className="w-full">
       <div className="hidden gap-4 grid-cols-[1.5fr_1.5fr_100px_100px_80px_100px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 xl:grid">
-        <span>Email</span>
-        <span>Username</span>
-        <span>Role</span>
-        <span>Status</span>
-        <span>Servers</span>
-        <span className="text-right">Action</span>
+        <span>{t('email')}</span>
+        <span>{t('username')}</span>
+        <span>{t('role')}</span>
+        <span>{t('status')}</span>
+        <span>{t('servers')}</span>
+        <span className="text-right">{t('action')}</span>
       </div>
 
       <div className="divide-y divide-white/[0.06]">
@@ -47,11 +50,11 @@ export default function UsersTable({ users, onManageUser }: { users: any[], onMa
             <div className="flex items-center">
               {u.ban?.isBanned ? (
                 <span className="flex items-center gap-1.5 text-xs font-medium text-red-500">
-                  <i className="fas fa-ban text-[10px]"></i> Banned
+                  <i className="fas fa-ban text-[10px]"></i> {t('banned')}
                 </span>
               ) : (
                 <span className="flex items-center gap-1.5 text-xs font-medium text-green-500">
-                  <i className="fas fa-check-circle text-[10px]"></i> Active
+                  <i className="fas fa-check-circle text-[10px]"></i> {t('active')}
                 </span>
               )}
             </div>
@@ -65,7 +68,7 @@ export default function UsersTable({ users, onManageUser }: { users: any[], onMa
                 onClick={() => onManageUser(u._id)}
                 className="inline-flex h-8 items-center justify-center rounded border border-white/[0.07] bg-white/[0.035] px-3 text-xs font-medium text-white/70 transition hover:bg-white/[0.07]"
               >
-                Manage
+                {t('manage')}
               </button>
             </div>
           </div>

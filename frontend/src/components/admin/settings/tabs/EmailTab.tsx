@@ -2,15 +2,19 @@ import React from 'react';
 import { Mail } from 'lucide-react';
 import { SettingsDrawerRow } from '../Shared';
 import { TabProps } from '../types';
+import { useTranslations } from 'next-intl';
 
 export function EmailTab({ formData, updateFormData, saveSection, loading }: TabProps) {
+  const t = useTranslations('AdminSettings');
+  const tCommon = useTranslations('Common');
+
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       <section>
         <div className="mb-5 flex items-end justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-white">Email Settings</h3>
-            <p className="mt-2 text-sm text-white/35">Configure SMTP and email verification</p>
+            <h3 className="text-lg font-semibold text-white">{t('emailSettingsTitle')}</h3>
+            <p className="mt-2 text-sm text-white/35">{t('emailSettingsDesc')}</p>
           </div>
         </div>
         
@@ -18,44 +22,44 @@ export function EmailTab({ formData, updateFormData, saveSection, loading }: Tab
           {/* Email Configuration */}
           <SettingsDrawerRow 
             icon={<Mail />} 
-            label="Email Configuration" 
-            description="Configure your email server settings for outgoing emails." 
+            label={t('emailConfiguration')} 
+            description={t('emailConfigurationDesc')} 
             enabled={formData.payments?.smtp?.enabled ?? false}
-            onToggle={async (enabled) => { updateFormData('payments.smtp.enabled', enabled); await saveSection({ payments: { smtp: { ...formData.payments?.smtp, enabled } } as any }, `Email Configuration ${enabled ? 'enabled' : 'disabled'}`); }}
-            onSave={async () => await saveSection({ payments: { smtp: formData.payments?.smtp } as any }, 'SMTP settings updated.')}
+            onToggle={async (enabled) => { updateFormData('payments.smtp.enabled', enabled); await saveSection({ payments: { smtp: { ...formData.payments?.smtp, enabled } } as any }, t('emailConfigurationToggled', { status: enabled ? tCommon('enabled') : tCommon('disabled') })); }}
+            onSave={async () => await saveSection({ payments: { smtp: formData.payments?.smtp } as any }, t('smtpSettingsUpdated'))}
           >
              <div className="space-y-4">
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                    <div className="flex flex-col">
-                     <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">SMTP Host</label>
+                     <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">{t('smtpHost')}</label>
                      <input type="text" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder="smtp.example.com" value={formData.payments?.smtp?.host || ''} onChange={(e) => updateFormData('payments.smtp.host', e.target.value)} disabled={loading} />
                    </div>
                    <div className="flex flex-col">
-                     <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">SMTP Port</label>
+                     <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">{t('smtpPort')}</label>
                      <input type="number" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder="587" value={formData.payments?.smtp?.port || ''} onChange={(e) => updateFormData('payments.smtp.port', parseInt(e.target.value) || '')} disabled={loading} />
                    </div>
                    <div className="flex flex-col">
-                     <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">SMTP Username</label>
+                     <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">{t('smtpUsername')}</label>
                      <input type="text" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder="user@example.com" value={formData.payments?.smtp?.user || ''} onChange={(e) => updateFormData('payments.smtp.user', e.target.value)} disabled={loading} />
                    </div>
                    <div className="flex flex-col">
-                     <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">SMTP Password</label>
-                     <input type="password" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder={formData.payments?.smtp?.pass === '***' ? '••••••••••••••••••••••••' : 'Enter SMTP Password'} value={formData.payments?.smtp?.pass === '***' ? '' : (formData.payments?.smtp?.pass || '')} onChange={(e) => updateFormData('payments.smtp.pass', e.target.value)} disabled={loading} />
+                     <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">{t('smtpPassword')}</label>
+                     <input type="password" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder={formData.payments?.smtp?.pass === '***' ? '••••••••••••••••••••••••' : t('enterSmtpPassword')} value={formData.payments?.smtp?.pass === '***' ? '' : (formData.payments?.smtp?.pass || '')} onChange={(e) => updateFormData('payments.smtp.pass', e.target.value)} disabled={loading} />
                      {formData.payments?.smtp?.pass === '***' && (
-                       <p className="mt-1.5 text-[11px] text-[#777]">Secret is securely configured. Leave blank to keep.</p>
+                       <p className="mt-1.5 text-[11px] text-[#777]">{t('secretConfigured')}</p>
                      )}
                    </div>
                    <div className="flex flex-col md:col-span-2">
-                     <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">From Email Address</label>
+                     <label className="mb-2 block text-sm font-medium text-[#D4D4D4]">{t('fromEmailAddress')}</label>
                      <input type="email" className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60 focus:bg-white/[0.04] disabled:opacity-50" placeholder="noreply@example.com" value={formData.payments?.smtp?.fromEmail || ''} onChange={(e) => updateFormData('payments.smtp.fromEmail', e.target.value)} disabled={loading} />
-                     <p className="mt-2 text-[11px] text-[#555]">This email address will be used as the sender for all outgoing emails.</p>
+                     <p className="mt-2 text-[11px] text-[#555]">{t('fromEmailAddressDesc')}</p>
                    </div>
                  </div>
                  
                  <div className="flex items-center justify-between pt-4 border-t border-white/[0.06]">
                    <div className="flex flex-col">
-                     <span className="text-sm font-medium text-[#D4D4D4] mb-0.5">Enable TLS/SSL</span>
-                     <span className="text-xs text-[#888]">Use a secure connection</span>
+                     <span className="text-sm font-medium text-[#D4D4D4] mb-0.5">{t('enableTlsSsl')}</span>
+                     <span className="text-xs text-[#888]">{t('enableTlsSslDesc')}</span>
                    </div>
                    <label className="relative inline-flex items-center cursor-pointer">
                      <input type="checkbox" className="sr-only peer" checked={formData.payments?.smtp?.secure || false} onChange={(e) => updateFormData('payments.smtp.secure', e.target.checked)} disabled={loading} />

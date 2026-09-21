@@ -1147,5 +1147,16 @@
         "reset": "Reset Panel Password"
       }
     }
+  },
+  "AdminUpdates": {
+    "systemUpdates": "System Updates",
+    "subtitle": "Check current and latest versions",
+    "updateAvailable": "Update Available",
+    "publishedOn": "Published on {date}",
+    "viewOnGitHub": "View on GitHub",
+    "upToDate": "You're up to date!",
+    "runningLatestVersion": "You are running the latest version",
+    "clickCheckForUpdates": "Click \"Check for Updates\" to see if a newer version is available.",
+    "failedToCheckUpdates": "Failed to check for updates"
   }
 }

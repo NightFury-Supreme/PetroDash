@@ -1,10 +1,11 @@
 "use client";
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useEffect, useState, useRef } from 'react';
 import { Globe, Trash, Loader2, Check, Upload, Trash2 } from 'lucide-react';
 import { Drawer } from '@/components/ui/Drawer';
 import { DeleteDrawer } from '@/components/ui/DeleteDrawer';
+import { useTranslations } from 'next-intl';
+import { useLocationApi } from './hooks/useLocationApi';
 
 const INPUT_CLASS = "w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60";
 
@@ -18,7 +19,6 @@ function DrawerSkeleton() {
   return (
     <div className="flex-1 flex flex-col h-full w-full overflow-hidden px-1 pb-6 animate-in fade-in duration-300">
       <div className="space-y-8">
-        {/* Basic Info */}
         <div className="space-y-5">
           <div>
             <div className="h-4 w-32 rounded bg-white/[0.03] animate-pulse mb-1.5" />
@@ -47,7 +47,6 @@ function DrawerSkeleton() {
 
         <div className="border-t border-white/[0.06]" />
 
-        {/* Platform Config */}
         <div className="space-y-5">
           <div>
             <div className="h-4 w-40 rounded bg-white/[0.03] animate-pulse mb-1.5" />
@@ -75,7 +74,6 @@ function DrawerSkeleton() {
 
         <div className="border-t border-white/[0.06]" />
 
-        {/* Permissions */}
         <div className="space-y-5">
           <div>
             <div className="h-4 w-32 rounded bg-white/[0.03] animate-pulse mb-1.5" />
@@ -93,6 +91,11 @@ function DrawerSkeleton() {
 }
 
 export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocationDrawerProps) {
+  const t = useTranslations('AdminLocations');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
+  const { fetchLocation, fetchPlans, uploadIcon, updateLocation, deleteLocation } = useLocationApi();
+
   const [form, setForm] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -107,30 +110,29 @@ export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocati
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    if (!token) return;
-    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${locationId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }).then(async r => {
-      let d: any = {}; try { d = await r.json(); } catch {}
-      if (!r.ok) throw new Error(d?.error || 'Failed');
-      setForm({
-        _id: d._id || locationId,
-        name: d.name || '',
-        flag: d.flag || '',
-        latencyUrl: d.latencyUrl || '',
-        serverLimit: String(d.serverLimit ?? '0'),
-        platformLocationId: d.platform?.platformLocationId || '',
-        swapMb: String(d.platform?.swapMb ?? '-1'),
-        blockIoWeight: String(d.platform?.blockIoWeight ?? '500'),
-        cpuPinning: d.platform?.cpuPinning || '',
-        allowedPlans: Array.isArray(d.allowedPlans) ? d.allowedPlans : [],
-        serversCount: d.serversCount ?? 0,
-      });
-    }).catch(() => {}).finally(() => setLoading(false));
+    fetchLocation(locationId)
+      .then((d: any) => {
+        setForm({
+          _id: d._id || locationId,
+          name: d.name || '',
+          flag: d.flag || '',
+          latencyUrl: d.latencyUrl || '',
+          serverLimit: String(d.serverLimit ?? '0'),
+          platformLocationId: d.platform?.platformLocationId || '',
+          swapMb: String(d.platform?.swapMb ?? '-1'),
+          blockIoWeight: String(d.platform?.blockIoWeight ?? '500'),
+          cpuPinning: d.platform?.cpuPinning || '',
+          allowedPlans: Array.isArray(d.allowedPlans) ? d.allowedPlans : [],
+          serversCount: d.serversCount ?? 0,
+        });
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
 
-    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
-      .then(r => r.json()).then(d => setPlans(Array.isArray(d) ? d : [])).catch(() => {}).finally(() => setLoadingPlans(false));
+    fetchPlans()
+      .then(d => setPlans(Array.isArray(d) ? d : []))
+      .catch(() => {})
+      .finally(() => setLoadingPlans(false));
   }, [locationId]);
 
   const handleFileSelection = (file: File | undefined | null) => {
@@ -147,51 +149,53 @@ export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocati
     e.preventDefault();
     if (!form) return;
     if (!form.name || form.name.trim().length === 0) {
-      setError("Location name is required.");
+      setError(t('errorNameRequired', { fallback: 'Location name is required.' }));
       return;
     }
     if (!pendingFlagFile && (!form.flag || form.flag === 'pending')) {
-      setError("Location flag is required.");
+      setError(t('errorFlagRequired', { fallback: 'Location flag is required.' }));
       return;
     }
     if (!form.latencyUrl || form.latencyUrl.trim().length === 0) {
-      setError("Node IP is required.");
+      setError(t('errorIpRequired', { fallback: 'Node IP is required.' }));
       return;
     }
     setError(null);
     setSubmitting(true);
     try {
-      const token = localStorage.getItem('auth_token');
       let finalFlag = form.flag === 'pending' ? '' : form.flag;
       if (pendingFlagFile) {
         setUploadingFlag(true);
-        const fd = new FormData(); fd.append('icon', pendingFlagFile);
-        const uploadRes = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/upload/icon`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
+        const uploadData = await uploadIcon(pendingFlagFile);
         setUploadingFlag(false);
-        if (!uploadRes.ok) throw new Error('Failed to upload flag image');
-        const uploadData = await uploadRes.json();
         finalFlag = uploadData.filePath;
       }
-      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${locationId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          name: form.name, flag: finalFlag, latencyUrl: form.latencyUrl,
-          serverLimit: Number(form.serverLimit || 0),
-          platform: { platformLocationId: form.platformLocationId, swapMb: Number(form.swapMb || -1), blockIoWeight: Number(form.blockIoWeight || 500), cpuPinning: form.cpuPinning },
-          allowedPlans: form.allowedPlans,
-        }),
+      
+      await updateLocation(locationId, {
+        name: form.name, flag: finalFlag, latencyUrl: form.latencyUrl,
+        serverLimit: Number(form.serverLimit || 0),
+        platform: { platformLocationId: form.platformLocationId, swapMb: Number(form.swapMb || -1), blockIoWeight: Number(form.blockIoWeight || 500), cpuPinning: form.cpuPinning },
+        allowedPlans: form.allowedPlans,
       });
-      if (!res.ok) { let d: any = {}; try { d = await res.json(); } catch {} throw new Error(d?.error || 'Failed'); }
-      onUpdate(); onClose();
-    } catch (err: any) { setError(err.message || 'Failed to update'); } finally { setSubmitting(false); }
+      onUpdate(); 
+      onClose();
+    } catch (err: any) { 
+      const errKey = err.errorKey || err.message;
+      setError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : errKey);
+    } finally { 
+      setSubmitting(false); 
+    }
   };
 
   const remove = async () => {
-    const token = localStorage.getItem('auth_token');
-    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${locationId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-    if (!res.ok) { let d: any = {}; try { d = await res.json(); } catch {} throw new Error(d?.error || 'Failed to delete'); }
-    onUpdate(); onClose();
+    try {
+      await deleteLocation(locationId);
+      onUpdate(); 
+      onClose();
+    } catch (err: any) {
+      const errKey = err.errorKey || err.message;
+      setError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : errKey);
+    }
   };
 
   return (
@@ -199,8 +203,8 @@ export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocati
       <Drawer
         isOpen={true}
         onClose={onClose}
-        title={loading ? 'Edit Location' : (form?.name ?? 'Edit Location')}
-        subtitle={form?._id ? `ID: ${form._id}` : 'Update configuration'}
+        title={loading ? t('editLocation', { fallback: 'Edit Location' }) : (form?.name ?? t('editLocation', { fallback: 'Edit Location' }))}
+        subtitle={form?._id ? `${t('id', { fallback: 'ID' })}: ${form._id}` : t('updateConfig', { fallback: 'Update configuration' })}
         icon={<Globe className="text-[#D4D4D4]" size={22} />}
         footer={
           !loading && form ? (
@@ -211,13 +215,13 @@ export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocati
                   onClick={() => (!form.serversCount || form.serversCount === 0) && setIsDeleteDrawerOpen(true)}
                   disabled={form.serversCount !== undefined && form.serversCount > 0}
                   className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-500 transition-colors hover:bg-red-500/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  title={form.serversCount > 0 ? 'Cannot delete location with existing servers' : ''}
-                ><Trash size={15} /> Delete</button>
+                  title={form.serversCount > 0 ? t('cannotDeleteInUse', { fallback: 'Cannot delete location with existing servers' }) : ''}
+                ><Trash size={15} /> {tCommon('delete', { fallback: 'Delete' })}</button>
               </div>
               <div className="flex items-center gap-2">
-                <button type="button" onClick={onClose} disabled={submitting} className="px-4 py-2 text-sm font-medium text-[#888] hover:text-[#D4D4D4] transition-colors disabled:opacity-50 bg-transparent border border-[#222] rounded-lg">Cancel</button>
+                <button type="button" onClick={onClose} disabled={submitting} className="px-4 py-2 text-sm font-medium text-[#888] hover:text-[#D4D4D4] transition-colors disabled:opacity-50 bg-transparent border border-[#222] rounded-lg">{tCommon('cancel', { fallback: 'Cancel' })}</button>
                 <button type="submit" form="location-form" disabled={submitting} className="flex items-center justify-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed">
-                  {(submitting || uploadingFlag) ? <><Loader2 size={14} className="animate-spin" /> Saving...</> : 'Save Changes'}
+                  {(submitting || uploadingFlag) ? <><Loader2 size={14} className="animate-spin" /> {tCommon('saving', { fallback: 'Saving...' })}</> : t('saveChanges', { fallback: 'Save Changes' })}
                 </button>
               </div>
             </div>
@@ -243,15 +247,14 @@ export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocati
                     {error}
                   </div>
                 )}
-                {/* Basic Info */}
                 <div className="space-y-5">
-                  <div><h3 className="text-sm font-semibold text-white mb-0.5">Basic Information</h3><p className="text-xs text-[#888]">Configure the location identity</p></div>
+                  <div><h3 className="text-sm font-semibold text-white mb-0.5">{t('basicInfo', { fallback: 'Basic Information' })}</h3><p className="text-xs text-[#888]">{t('basicInfoDesc', { fallback: 'Configure the location identity' })}</p></div>
                   <div>
-                    <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">Location Name <span className="text-[#FF5722]">*</span></label>
-                    <input className={INPUT_CLASS} value={form.name} onChange={e => setForm((f: any) => ({ ...f, name: e.target.value }))} placeholder="e.g. US East" />
+                    <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">{t('locationName', { fallback: 'Location Name' })} <span className="text-[#FF5722]">*</span></label>
+                    <input className={INPUT_CLASS} value={form.name} onChange={e => setForm((f: any) => ({ ...f, name: e.target.value }))} placeholder={t('locationNamePlaceholder', { fallback: 'e.g. US East' })} />
                   </div>
                   <div>
-                  <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">Flag / Icon <span className="text-[#FF5722]">*</span></label>
+                  <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">{t('locationFlag', { fallback: 'Flag / Icon' })} <span className="text-[#FF5722]">*</span></label>
                   <div className="flex items-center gap-3">
                     {(flagPreview || form.flag) && (
                       <div className="relative w-11 h-11 bg-white/[0.02] border border-white/[0.06] rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
@@ -283,7 +286,7 @@ export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocati
                         className={`flex items-center justify-between w-full rounded-lg border px-4 h-[44px] text-sm text-[#888] transition-colors outline-none ${isDragging ? 'bg-[#FF5722]/10 border-[#FF5722] text-[#FF5722]' : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.1]'}`}
                       >
                         <span className="truncate">
-                          {uploadingFlag ? 'Uploading...' : form.flag ? 'Change flag (or drop/paste)' : 'Upload icon (or drop/paste)'}
+                          {uploadingFlag ? tCommon('uploading', { fallback: 'Uploading...' }) : form.flag ? t('changeFlag', { fallback: 'Change flag (or drop/paste)' }) : t('uploadIcon', { fallback: 'Upload icon (or drop/paste)' })}
                         </span>
                         {uploadingFlag ? <Loader2 size={16} className="animate-spin text-[#888] shrink-0" /> : <Upload size={16} className="text-[#888] shrink-0" />}
                       </button>
@@ -299,52 +302,50 @@ export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocati
                       </button>
                     )}
                   </div>
-                  <p className="mt-1.5 text-[10px] text-[#666]">Upload a PNG, JPG, or SVG image (max 5MB)</p>
+                  <p className="mt-1.5 text-[10px] text-[#666]">{t('uploadHint', { fallback: 'Upload a PNG, JPG, or SVG image (max 5MB)' })}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">Node IP <span className="text-[#FF5722]">*</span></label>
-                    <input className={INPUT_CLASS} value={form.latencyUrl} onChange={e => setForm((f: any) => ({ ...f, latencyUrl: e.target.value }))} placeholder="e.g. 192.168.1.1 or node.example.com" />
+                  <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">{t('nodeIp', { fallback: 'Node IP' })} <span className="text-[#FF5722]">*</span></label>
+                    <input className={INPUT_CLASS} value={form.latencyUrl} onChange={e => setForm((f: any) => ({ ...f, latencyUrl: e.target.value }))} placeholder={t('nodeIpPlaceholder', { fallback: 'e.g. 192.168.1.1 or node.example.com' })} />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">Server Limit</label>
+                    <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">{t('serverLimit', { fallback: 'Server Limit' })}</label>
                     <input type="number" className={INPUT_CLASS} value={form.serverLimit} onChange={e => setForm((f: any) => ({ ...f, serverLimit: e.target.value }))} min="0" />
-                    <p className="mt-1 text-[10px] text-[#666]">Maximum servers (0 = unlimited)</p>
+                    <p className="mt-1 text-[10px] text-[#666]">{t('serverLimitHintShort', { fallback: 'Maximum servers (0 = unlimited)' })}</p>
                   </div>
                 </div>
 
                 <div className="border-t border-white/[0.06]" />
 
-                {/* Platform Config */}
                 <div className="space-y-5">
-                  <div><h3 className="text-sm font-semibold text-white mb-0.5">Platform Configuration</h3><p className="text-xs text-[#888]">Link to your Pterodactyl panel</p></div>
+                  <div><h3 className="text-sm font-semibold text-white mb-0.5">{t('platformConfig', { fallback: 'Platform Configuration' })}</h3><p className="text-xs text-[#888]">{t('platformConfigDescShort', { fallback: 'Link to your Pterodactyl panel' })}</p></div>
                   <div>
-                    <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">Platform Location ID</label>
-                    <input className={INPUT_CLASS} value={form.platformLocationId} onChange={e => setForm((f: any) => ({ ...f, platformLocationId: e.target.value }))} placeholder="e.g. 1" />
+                    <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">{t('platformLocationId', { fallback: 'Platform Location ID' })}</label>
+                    <input className={INPUT_CLASS} value={form.platformLocationId} onChange={e => setForm((f: any) => ({ ...f, platformLocationId: e.target.value }))} placeholder={t('platformLocationIdPlaceholder', { fallback: 'e.g. 1' })} />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">Swap (MB)</label>
+                      <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">{t('swapMb', { fallback: 'Swap (MB)' })}</label>
                       <input type="number" className={INPUT_CLASS} value={form.swapMb} onChange={e => setForm((f: any) => ({ ...f, swapMb: e.target.value }))} />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">Block IO Weight</label>
+                      <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">{t('blockIoWeight', { fallback: 'Block IO Weight' })}</label>
                       <input type="number" className={INPUT_CLASS} value={form.blockIoWeight} onChange={e => setForm((f: any) => ({ ...f, blockIoWeight: e.target.value }))} min="10" max="1000" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">CPU Pinning</label>
-                    <input className={INPUT_CLASS} value={form.cpuPinning} onChange={e => setForm((f: any) => ({ ...f, cpuPinning: e.target.value }))} placeholder="e.g. 0-3 (optional)" />
+                    <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">{t('cpuPinning', { fallback: 'CPU Pinning' })}</label>
+                    <input className={INPUT_CLASS} value={form.cpuPinning} onChange={e => setForm((f: any) => ({ ...f, cpuPinning: e.target.value }))} placeholder={t('cpuPinningPlaceholder', { fallback: 'e.g. 0-3 (optional)' })} />
                   </div>
                 </div>
 
                 <div className="border-t border-white/[0.06]" />
 
-                {/* Permissions */}
                 <div className="space-y-5">
-                  <div><h3 className="text-sm font-medium text-white mb-1">Allowed Plans</h3><p className="text-xs text-[#888] mb-4">Select which plans are permitted to deploy in this location. Leave empty to allow all plans.</p></div>
+                  <div><h3 className="text-sm font-medium text-white mb-1">{t('allowedPlans', { fallback: 'Allowed Plans' })}</h3><p className="text-xs text-[#888] mb-4">{t('allowedPlansDesc', { fallback: 'Select which plans are permitted to deploy in this location. Leave empty to allow all plans.' })}</p></div>
                   {loadingPlans ? (
-                    <div className="flex items-center gap-2 text-[#888] text-sm"><Loader2 size={14} className="animate-spin" /> Loading plans...</div>
-                  ) : plans.length === 0 ? <p className="text-sm text-[#888]">No plans found.</p> : (
+                    <div className="flex items-center gap-2 text-[#888] text-sm"><Loader2 size={14} className="animate-spin" /> {tCommon('loadingPlans', { fallback: 'Loading plans...' })}</div>
+                  ) : plans.length === 0 ? <p className="text-sm text-[#888]">{tCommon('noPlansFound', { fallback: 'No plans found.' })}</p> : (
                     <div className="border-t border-white/[0.06] divide-y divide-white/[0.06]">
                       {plans.map((p: any) => {
                   const id = String(p._id || p.id);
@@ -377,7 +378,7 @@ export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocati
                       
                       <div className="flex items-center gap-6 shrink-0">
                         <div>
-                          <p className="text-[9px] uppercase tracking-[0.13em] text-white/20 text-right">Price</p>
+                          <p className="text-[9px] uppercase tracking-[0.13em] text-white/20 text-right">{t('price', { fallback: 'Price' })}</p>
                           <p className={`text-sm font-semibold tracking-tight mt-0.5 ${selected ? 'text-white/90' : 'text-white/60'}`}>
                             {price > 0 ? price.toFixed(2) : "0.00"} <span className="text-[10px] font-normal text-white/25">{currency}</span>
                           </p>
@@ -406,17 +407,17 @@ export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocati
       isOpen={isDeleteDrawerOpen}
       onClose={() => setIsDeleteDrawerOpen(false)}
       onConfirm={remove}
-      entityType="Location"
+      entityType={t('locationEntity', { fallback: 'Location' })}
       entityName={form?.name || ''}
-      entitySubText={form ? `Platform ID: ${form.platformLocationId || 'Not set'}` : ''}
+      entitySubText={form ? `${t('platformId', { fallback: 'Platform ID' })}: ${form.platformLocationId || t('notSet', { fallback: 'Not set' })}` : ''}
       icon={
         (flagPreview || (form && form.flag && form.flag !== 'pending')) ? (
           <img src={flagPreview || `${process.env.NEXT_PUBLIC_API_BASE || ''}${form?.flag}`} alt="" className="w-6 h-6 object-contain rounded" />
         ) : <Globe size={24} />
       }
       warningPoints={[
-        "Location configuration will be permanently deleted.",
-        "This action cannot be undone."
+        t('deleteWarning1', { fallback: 'Location configuration will be permanently deleted.' }),
+        t('deleteWarning2', { fallback: 'This action cannot be undone.' })
       ]}
     />
     </>

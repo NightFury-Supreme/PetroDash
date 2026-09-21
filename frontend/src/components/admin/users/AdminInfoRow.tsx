@@ -1,11 +1,13 @@
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import React, { useState, useEffect, useRef } from 'react';
 import { Check, AlertCircle, Pencil, Save } from 'lucide-react';
+import { useTranslations } from "next-intl";
+import { adminUsersApi } from "@/utils/api/adminUsers";
 
 export function InfoRow({ icon, label, description, value, editing, draft, field, status, action, customEdit, onEdit, onDraft, onSave, onCancel, hideEditButton }: any) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [touched, setTouched] = useState(false);
+  const t = useTranslations('Admin.users');
 
   // Username availability check state
   const [usernameAvail, setUsernameAvail] = useState<'idle' | 'checking' | 'available' | 'taken' | 'error'>('idle');
@@ -20,17 +22,17 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
   const formatValid: { valid: boolean; message: string } | null =
     field === 'username' && editing
       ? (() => {
-          if (!usernameVal.trim()) return { valid: false, message: 'Username cannot be empty.' };
-          if (usernameVal.trim().length < 3) return { valid: false, message: 'Username must be at least 3 characters.' };
-          if (usernameVal.trim().length > 30) return { valid: false, message: 'Username cannot exceed 30 characters.' };
-          if (!/^[a-zA-Z0-9_]+$/.test(usernameVal.trim())) return { valid: false, message: 'Use only letters, numbers and underscores.' };
+          if (!usernameVal.trim()) return { valid: false, message: t('usernameEmpty') };
+          if (usernameVal.trim().length < 3) return { valid: false, message: t('usernameMin') };
+          if (usernameVal.trim().length > 30) return { valid: false, message: t('usernameMax') };
+          if (!/^[a-zA-Z0-9_]+$/.test(usernameVal.trim())) return { valid: false, message: t('usernameRegex') };
           return { valid: true, message: '' };
         })()
       : field === 'name' && editing
       ? (() => {
-          if (!firstNameVal.trim()) return { valid: false, message: 'First name is required.' };
-          if (!lastNameVal.trim()) return { valid: false, message: 'Last name is required.' };
-          return { valid: true, message: 'Name looks good.' };
+          if (!firstNameVal.trim()) return { valid: false, message: t('firstNameReq') };
+          if (!lastNameVal.trim()) return { valid: false, message: t('lastNameReq') };
+          return { valid: true, message: t('nameLooksGood') };
         })()
       : null;
 
@@ -46,12 +48,8 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
       try {
-        const token = localStorage.getItem('auth_token');
-        const res = await fetchWithRetry(
-          `${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/check-username?username=${encodeURIComponent(usernameVal.trim())}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        const data = await res.json();
+        const token = localStorage.getItem('auth_token') || '';
+        const data = await adminUsersApi.checkUsername(usernameVal.trim(), token);
         setUsernameAvail(data.available ? 'available' : 'taken');
       } catch {
         setUsernameAvail('error');
@@ -70,10 +68,10 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
     field === 'username' && editing
       ? (() => {
           if (!formatValid?.valid) return formatValid;
-          if (usernameAvail === 'checking') return { valid: true, message: 'Checking availability…' };
-          if (usernameAvail === 'taken') return { valid: false, message: 'Username is already taken.' };
-          if (usernameAvail === 'available') return { valid: true, message: 'Username is available.' };
-          if (usernameAvail === 'error') return { valid: false, message: 'Error checking availability.' };
+          if (usernameAvail === 'checking') return { valid: true, message: t('checkingAvail') };
+          if (usernameAvail === 'taken') return { valid: false, message: t('usernameTaken') };
+          if (usernameAvail === 'available') return { valid: true, message: t('usernameAvail') };
+          if (usernameAvail === 'error') return { valid: false, message: t('errorCheckingAvail') };
           return { valid: true, message: '' };
         })()
       : formatValid;
@@ -154,7 +152,7 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
           {action}
           {editing ? (
             <>
-              <button type="button" onClick={onCancel} disabled={isLoading || isSaved} className="flex h-9 items-center gap-1.5 rounded-lg border border-[#2A2A2A] bg-[#1A1A1A] px-3 text-xs font-medium text-[#D4D4D4] hover:bg-[#222] transition disabled:opacity-50">Cancel</button>
+              <button type="button" onClick={onCancel} disabled={isLoading || isSaved} className="flex h-9 items-center gap-1.5 rounded-lg border border-[#2A2A2A] bg-[#1A1A1A] px-3 text-xs font-medium text-[#D4D4D4] hover:bg-[#222] transition disabled:opacity-50">{t('cancel')}</button>
               <button type="button" onClick={handleSave} disabled={isLoading || isSaved || !canSave} className={`flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-medium transition disabled:cursor-not-allowed ${isSaved ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : (isLoading || !canSave) ? 'bg-[#333] text-[#888]' : 'bg-[#FF5722] hover:bg-[#F4511E] text-white'}`}>
                 {isLoading && !isSaved ? (
                   <span className="h-3.5 w-3.5 rounded-full border-2 border-white/20 border-t-white animate-spin" />
@@ -163,11 +161,11 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
                 ) : (
                   <Save size={14} />
                 )}
-                {isSaved ? 'Saved' : 'Save'}
+                {isSaved ? t('saved') : t('save')}
               </button>
             </>
           ) : (
-            !hideEditButton && <button type="button" onClick={onEdit} className="flex h-9 items-center gap-1.5 rounded-lg border border-[#222] bg-[#1A1A1A] px-3 text-xs font-medium text-[#D4D4D4] hover:bg-[#222] transition"><Pencil size={14} /> Edit</button>
+            !hideEditButton && <button type="button" onClick={onEdit} className="flex h-9 items-center gap-1.5 rounded-lg border border-[#222] bg-[#1A1A1A] px-3 text-xs font-medium text-[#D4D4D4] hover:bg-[#222] transition"><Pencil size={14} /> {t('edit')}</button>
           )}
         </div>
       </div>

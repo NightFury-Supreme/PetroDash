@@ -7,8 +7,11 @@ import { AdminShopError } from '@/components/admin/shop/AdminShopError';
 import { AdminShopContent } from '@/components/admin/shop/AdminShopContent';
 import { ShopItem } from '@/hooks/admin/shop/useAdminShop';
 import { useToast } from '@/components/ui/ToastProvider';
+import { useTranslations } from 'next-intl';
 
 export default function AdminShopTab() {
+  const t = useTranslations('Admin.Shop');
+  const tErrorBackend = useTranslations('Errors.Backend');
   const { showSuccess, showError } = useToast();
   const {
     items,
@@ -34,9 +37,14 @@ export default function AdminShopTab() {
   const handleSaveItem = async (itemId: string, updates: Partial<ShopItem>) => {
     try {
       await updateItem(itemId, updates);
-      showSuccess("Item updated successfully");
+      showSuccess(t('success.itemUpdated'));
     } catch (err: any) {
-      showError(err?.message || "Failed to update item");
+      const errKey = err?.message;
+      showError(
+        errKey 
+          ? (tErrorBackend.has(errKey) ? tErrorBackend(errKey) : errKey)
+          : t('errors.failedToUpdate')
+      );
     }
   };
 

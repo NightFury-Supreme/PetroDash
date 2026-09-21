@@ -3,6 +3,7 @@ import { Select } from "@/components/ui/Select";
 import { useState, useEffect } from "react";
 import { Drawer } from "@/components/ui/Drawer";
 import { Loader2, Plus, Coins, Cpu, MemoryStick, HardDrive, Server, Tag, FileText, Infinity } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export function AdminCreateGiftDrawer({
   isOpen,
@@ -13,6 +14,10 @@ export function AdminCreateGiftDrawer({
   onClose: () => void;
   onSuccess: () => void;
 }) {
+  const t = useTranslations('Admin.gifts');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('GlobalErrors');
+
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -80,14 +85,15 @@ export function AdminCreateGiftDrawer({
       });
 
       if (!res.ok) {
-        const d = await res.json();
-        throw new Error(d.error || "Failed to create gift");
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error || "create_failed");
       }
 
       onSuccess();
       onClose();
     } catch (e: any) {
-      setError(e.message);
+      const errKey = e.message || 'create_failed';
+      setError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : e.message);
     } finally {
       setSaving(false);
     }
@@ -99,12 +105,12 @@ export function AdminCreateGiftDrawer({
     <Drawer
       isOpen={isOpen}
       onClose={onClose}
-      title="Create Gift"
-      subtitle="Generate a new redeemable coupon code"
+      title={t('createGift')}
+      subtitle={t('createGiftSubtitle')}
       icon={<Plus size={20} />}
       footer={
         <div className="flex items-center justify-end w-full gap-2">
-          <button onClick={onClose} className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]">Cancel</button>
+          <button onClick={onClose} className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]">{tCommon('cancel')}</button>
           <button
             onClick={handleCreate}
             disabled={saving || !isFormValid}
@@ -114,7 +120,7 @@ export function AdminCreateGiftDrawer({
                 : "bg-[#FF5722] border border-[#FF5722] text-white hover:bg-[#F4511E]"
             }`}
           >
-            {saving ? <><Loader2 size={16} className="animate-spin" /> Creating...</> : "Create Gift"}
+            {saving ? <><Loader2 size={16} className="animate-spin" /> {tCommon('creating')}</> : t('createGift')}
           </button>
         </div>
       }
@@ -128,67 +134,67 @@ export function AdminCreateGiftDrawer({
         
         <div className="grid grid-cols-2 gap-4">
           <div className="col-span-2">
-            <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Tag size={12} /> Code *</label>
+            <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Tag size={12} /> {t('codeLabel')} *</label>
             <input 
-              value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} disabled={saving} placeholder="SUMMER2026"
+              value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} disabled={saving} placeholder={t('codePlaceholder')}
               className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50 uppercase" 
             />
           </div>
 
           <div className="col-span-2">
-            <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><FileText size={12} /> Description</label>
+            <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><FileText size={12} /> {t('descriptionLabel')}</label>
             <input 
-              value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} disabled={saving} placeholder="Short description of the gift"
+              value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} disabled={saving} placeholder={t('descriptionPlaceholder')}
               className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" 
             />
           </div>
 
           <div>
-            <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Infinity size={12} /> Max Uses (0 = ∞)</label>
+            <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Infinity size={12} /> {t('maxUsesLabel')}</label>
             <input type="number" min="0" value={form.maxRedemptions} onChange={(e) => setForm({ ...form, maxRedemptions: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Enabled</label>
-            <Select value={form.enabled ? "true" : "false"} onChange={(val) => setForm({ ...form, enabled: val === "true" })} disabled={saving} options={[{label: "Yes", value: "true"}, {label: "No", value: "false"}]} size="md" />
+            <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">{t('enabledLabel')}</label>
+            <Select value={form.enabled ? "true" : "false"} onChange={(val) => setForm({ ...form, enabled: val === "true" })} disabled={saving} options={[{label: tCommon('yes'), value: "true"}, {label: tCommon('no'), value: "false"}]} size="md" />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Valid From</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">{t('validFromLabel')}</label>
             <input type="datetime-local" value={form.validFrom} onChange={(e) => setForm({ ...form, validFrom: e.target.value })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-[#888] focus:text-white focus:outline-none focus:border-[#FF5722]/50" />
-            <p className="text-[10px] text-[#555] mt-1">Leave blank to start immediately</p>
+            <p className="text-[10px] text-[#555] mt-1">{t('validFromHelper')}</p>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">Valid Until</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">{t('validUntilLabel')}</label>
             <input type="datetime-local" value={form.validUntil} onChange={(e) => setForm({ ...form, validUntil: e.target.value })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-[#888] focus:text-white focus:outline-none focus:border-[#FF5722]/50" />
-            <p className="text-[10px] text-[#555] mt-1">Leave blank to never expire</p>
+            <p className="text-[10px] text-[#555] mt-1">{t('validUntilHelper')}</p>
           </div>
         </div>
 
         <hr className="border-white/[0.06]" />
 
         <div>
-          <h3 className="text-sm font-semibold text-white mb-4">Rewards</h3>
+          <h3 className="text-sm font-semibold text-white mb-4">{t('rewardsLabel')}</h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Coins size={12} className="text-[#666]" /> Coins</label>
+              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Coins size={12} className="text-[#666]" /> {t('coinsLabel')}</label>
               <input type="number" min="0" value={form.coins} onChange={(e) => setForm({ ...form, coins: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
             </div>
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Cpu size={12} className="text-[#666]" /> CPU (%)</label>
+              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Cpu size={12} className="text-[#666]" /> {t('cpuLabel')}</label>
               <input type="number" min="0" value={form.cpuPercent} onChange={(e) => setForm({ ...form, cpuPercent: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
             </div>
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><MemoryStick size={12} className="text-[#666]" /> RAM (MB)</label>
+              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><MemoryStick size={12} className="text-[#666]" /> {t('ramLabel')}</label>
               <input type="number" min="0" value={form.memoryMb} onChange={(e) => setForm({ ...form, memoryMb: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
             </div>
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><HardDrive size={12} className="text-[#666]" /> Disk (MB)</label>
+              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><HardDrive size={12} className="text-[#666]" /> {t('diskLabel')}</label>
               <input type="number" min="0" value={form.diskMb} onChange={(e) => setForm({ ...form, diskMb: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
             </div>
             <div>
-              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Server size={12} className="text-[#666]" /> Slots</label>
+              <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2"><Server size={12} className="text-[#666]" /> {t('slotsLabel')}</label>
               <input type="number" min="0" value={form.serverSlots} onChange={(e) => setForm({ ...form, serverSlots: Number(e.target.value) })} disabled={saving} className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50" />
             </div>
           </div>

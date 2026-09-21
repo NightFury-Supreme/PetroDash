@@ -1,15 +1,17 @@
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import React, { useState, useEffect, useRef } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
 import { InfoRow } from "@/components/admin/users/AdminInfoRow";
-import { 
-  User, ShieldCheck, Coins, Camera, Mail, Check, Loader2, ChevronDown
-} from "lucide-react";
+import { User, ShieldCheck, Coins, Camera, Mail, Check, Loader2, ChevronDown } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { adminUsersApi } from "@/utils/api/adminUsers";
 
 export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefresh }: any) {
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState<any>("");
-    const { showError } = useToast();
+  const { showError } = useToast();
+  const t = useTranslations('Admin.users');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
   
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
   const roleDropdownRef = useRef<HTMLDivElement>(null);
@@ -42,7 +44,7 @@ export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefre
   const saveEdit = async () => {
     if (!editing) return false;
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem('auth_token') || '';
       let payload: any = {};
       if (editing === 'name') {
         payload = { firstName: draft.first, lastName: draft.last };
@@ -51,14 +53,10 @@ export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefre
       } else {
         payload = { [editing]: draft };
       }
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/users/${userId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(payload)
-      });
-      const d = await r.json();
-      if (!r.ok) {
-        const firstError = d.details?.fieldErrors ? String(Object.values(d.details.fieldErrors).flat()[0]) : d.error || 'Failed to save';
+      
+      const { res, data } = await adminUsersApi.updateUser(userId, payload, token);
+      if (!res.ok) {
+        const firstError = data.details?.fieldErrors ? String(Object.values(data.details.fieldErrors).flat()[0]) : data.error || 'Failed to save';
         throw new Error(firstError);
       }
       // update local state optimistically
@@ -72,7 +70,7 @@ export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefre
       setEditing(null);
       return true;
     } catch (e: any) {
-      showError(e.message || 'Failed to save');
+      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
       return false;
     }
   };
@@ -84,18 +82,14 @@ export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefre
     setRoleLoading(true);
     setRoleSaved(false);
     try {
-      const token = localStorage.getItem('auth_token');
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/users/${userId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ role: newRole })
-      });
-      if (!r.ok) throw new Error('Failed');
+      const token = localStorage.getItem('auth_token') || '';
+      const { res } = await adminUsersApi.updateUser(userId, { role: newRole }, token);
+      if (!res.ok) throw new Error('Failed');
       setUserForm({ ...userForm, role: newRole });
       setRoleSaved(true);
       setTimeout(() => setRoleSaved(false), 2000);
-    } catch {
-      showError('Failed to update role');
+    } catch (e: any) {
+      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
     } finally {
       setRoleLoading(false);
     }
@@ -107,16 +101,16 @@ export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefre
     <div className="space-y-8">
       <section>
         <div className="mb-5">
-          <h3 className="text-xl font-semibold tracking-tight text-white">Overview</h3>
-          <p className="mt-2 text-sm text-white/35">Manage user profile information and account details.</p>
+          <h3 className="text-xl font-semibold tracking-tight text-white">{t('overview')}</h3>
+          <p className="mt-2 text-sm text-white/35">{t('overviewDesc')}</p>
         </div>
 
         <div className="divide-y divide-white/[0.06]">
           <InfoRow 
             icon={userForm.profilePicture ? <img src={userForm.profilePicture} alt="Avatar" className="h-full w-full object-cover rounded-lg" /> : <Camera size={14} />}
-            label="Avatar URL"
-            description="Profile picture URL."
-            value={userForm.profilePicture ? <span className="truncate max-w-[220px] inline-block align-bottom">{userForm.profilePicture}</span> : 'Not set'}
+            label={t('avatarUrl')}
+            description={t('avatarDesc')}
+            value={userForm.profilePicture ? <span className="truncate max-w-[220px] inline-block align-bottom">{userForm.profilePicture}</span> : t('notSet')}
             editing={editing === "profilePicture"}
             field="avatar"
             onEdit={() => beginEdit("profilePicture")}
@@ -135,9 +129,9 @@ export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefre
           />
           <InfoRow 
             icon={<User size={14} />} 
-            label="Username" 
-            description="Unique username." 
-            value={userForm.username || 'Not set'} 
+            label={t('username')} 
+            description={t('usernameDesc')} 
+            value={userForm.username || t('notSet')} 
             editing={editing === "username"} 
             field="username" 
             onEdit={() => beginEdit("username")} 
@@ -149,9 +143,9 @@ export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefre
           />
           <InfoRow 
             icon={<User size={14} />} 
-            label="Full name" 
-            description="The name displayed on the account." 
-            value={`${userForm.firstName || ''} ${userForm.lastName || ''}`.trim() || 'Not set'} 
+            label={t('fullName')} 
+            description={t('fullNameDesc')} 
+            value={`${userForm.firstName || ''} ${userForm.lastName || ''}`.trim() || t('notSet')} 
             editing={editing === "name"} 
             field="name"
             onEdit={() => beginEdit("name")} 
@@ -159,16 +153,16 @@ export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefre
             onSave={saveEdit}
             customEdit={
               <div className="flex w-full gap-2">
-                <input autoFocus value={draft?.first || ''} onChange={(e) => setDraft({ ...draft, first: e.target.value })} onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") cancelEdit(); }} placeholder="First name" className={customInputCls} />
-                <input value={draft?.last || ''} onChange={(e) => setDraft({ ...draft, last: e.target.value })} onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") cancelEdit(); }} placeholder="Last name" className={customInputCls} />
+                <input autoFocus value={draft?.first || ''} onChange={(e) => setDraft({ ...draft, first: e.target.value })} onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") cancelEdit(); }} placeholder={t('firstName')} className={customInputCls} />
+                <input value={draft?.last || ''} onChange={(e) => setDraft({ ...draft, last: e.target.value })} onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") cancelEdit(); }} placeholder={t('lastName')} className={customInputCls} />
               </div>
             }
           />
           <InfoRow 
             icon={<Mail size={14} />} 
-            label="Email address" 
-            description="Used for account communication." 
-            value={userForm.email || 'Not set'} 
+            label={t('emailAddress')} 
+            description={t('emailDesc')} 
+            value={userForm.email || t('notSet')} 
             editing={editing === "email"} 
             field="email" 
             onEdit={() => beginEdit("email")} 
@@ -180,8 +174,8 @@ export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefre
           />
           <InfoRow 
             icon={<ShieldCheck size={14} />} 
-            label="Role" 
-            description="User's administrative role." 
+            label={t('role')} 
+            description={t('roleDesc')} 
             hideEditButton
             value={
               <div className="flex items-center gap-3">
@@ -209,7 +203,7 @@ export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefre
                             ${userForm.role !== 'admin' ? 'text-[#ff5722] bg-[#FF5722]/10' : 'text-[#888] hover:bg-[#222] hover:text-[#ddd]'}
                           `}
                         >
-                          User
+                          {t('roleUser')}
                           {userForm.role !== 'admin' && <Check size={14} />}
                         </button>
                         <button
@@ -221,7 +215,7 @@ export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefre
                             ${userForm.role === 'admin' ? 'text-[#ff5722] bg-[#FF5722]/10' : 'text-[#888] hover:bg-[#222] hover:text-[#ddd]'}
                           `}
                         >
-                          Admin
+                          {t('roleAdmin')}
                           {userForm.role === 'admin' && <Check size={14} />}
                         </button>
                       </div>
@@ -229,14 +223,14 @@ export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefre
                   )}
                 </div>
                 {roleLoading && <Loader2 size={14} className="animate-spin shrink-0 text-white/50" />}
-                {roleSaved && <span className="text-emerald-400 shrink-0 flex items-center gap-1 text-[11px]"><Check size={12} strokeWidth={3} /> Done</span>}
+                {roleSaved && <span className="text-emerald-400 shrink-0 flex items-center gap-1 text-[11px]"><Check size={12} strokeWidth={3} /> {t('done')}</span>}
               </div>
             }
           />
           <InfoRow 
             icon={<Coins size={14} />} 
-            label="Coins" 
-            description="User's current coin balance." 
+            label={t('coins')} 
+            description={t('coinsDesc')} 
             value={userForm.coins || 0} 
             editing={editing === "coins"} 
             field="coins" 

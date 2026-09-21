@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Coins, RefreshCw } from "lucide-react";
 import { useToast } from "@/components/ui/ToastProvider";
 import { useAdminEarn } from "@/hooks/admin/earn/useAdminEarn";
@@ -11,6 +12,10 @@ import { ErrorState, DashboardButton, ErrorDescription } from "@/components/ui/E
 import type { AdminEarnSettings } from "@/hooks/admin/earn/useAdminEarn";
 
 export default function AdminEarnPage() {
+  const t = useTranslations('admin.earn');
+  const tCommon = useTranslations('common');
+  const tErrorBackend = useTranslations('error.backend');
+
   const { showError } = useToast();
   const { settings, loading, saving, error, setError, save } = useAdminEarn();
   const [form, setForm] = useState<AdminEarnSettings | null>(null);
@@ -23,14 +28,15 @@ export default function AdminEarnPage() {
     if (!error) return;
     (async () => {
       try {
-        showError(error);
+        const translatedError = tErrorBackend.has(error) ? tErrorBackend(error) : error;
+        showError(translatedError);
       // eslint-disable-next-line unused-imports/no-unused-vars
       } catch (_) {
       } finally {
         setError(null);
       }
     })();
-  }, [error, showError, setError]);
+  }, [error, showError, setError, tErrorBackend]);
 
   const setField = (path: string, value: any) => {
     setForm((prev) => {
@@ -56,7 +62,7 @@ export default function AdminEarnPage() {
       const next = await save({ linkvertise: { ...form.linkvertise, ...override } });
       setForm(next);
     } catch (e: any) {
-      const msg = String(e?.message || "Failed to save");
+      const msg = String(e?.message || tCommon('failedToSave') || "Failed to save");
       setError(msg);
       throw e;
     }
@@ -69,10 +75,10 @@ export default function AdminEarnPage() {
       <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
         <ErrorState
           icon={<Coins strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
-          kicker="Load Error"
-          title="Failed to Load Earn Settings"
-          errorString={error}
-          description={<ErrorDescription error={error} topic="Earn Settings" />}
+          kicker={t('loadErrorKicker')}
+          title={t('failedToLoadEarnSettings')}
+          errorString={tErrorBackend.has(error) ? tErrorBackend(error) : error}
+          description={<ErrorDescription error={error} topic={t('earnSettingsTopic')} />}
           buttons={
             <>
               <button
@@ -80,7 +86,7 @@ export default function AdminEarnPage() {
                 className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
               >
                 <RefreshCw className="w-[14px] h-[14px]" />
-                Retry
+                {tCommon('retry')}
               </button>
               <DashboardButton variant="secondary" />
             </>

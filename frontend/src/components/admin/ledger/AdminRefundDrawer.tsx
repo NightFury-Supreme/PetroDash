@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Drawer } from '@/components/ui/Drawer';
 import { AlertTriangle, Loader2, Undo } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface AdminRefundDrawerProps {
   isOpen: boolean;
@@ -17,6 +18,9 @@ export function AdminRefundDrawer({
   payment,
   isRefunding
 }: AdminRefundDrawerProps) {
+  const t = useTranslations('Admin.ledger');
+  const tCommon = useTranslations('Common');
+  
   const [confirmText, setConfirmText] = useState("");
 
   useEffect(() => {
@@ -31,15 +35,15 @@ export function AdminRefundDrawer({
     <Drawer
       isOpen={isOpen}
       onClose={onClose}
-      title="Refund Payment"
-      subtitle="This will reverse the transaction and return the funds to the original payment method."
+      title={t('refundPayment')}
+      subtitle={t('refundSubtitle')}
       footer={
         <div className="flex items-center justify-between w-full">
           <button
             onClick={onClose}
             className="flex items-center gap-2 rounded-lg border border-[#222] bg-transparent px-5 py-2 text-sm font-medium text-[#888] transition-colors hover:border-[#333] hover:text-[#D4D4D4]"
           >
-            Cancel
+            {tCommon('cancel')}
           </button>
           <button
             onClick={onConfirm}
@@ -55,7 +59,7 @@ export function AdminRefundDrawer({
             ) : (
               <Undo size={16} />
             )}
-            Refund Payment
+            {t('refundPayment')}
           </button>
         </div>
       }
@@ -63,13 +67,13 @@ export function AdminRefundDrawer({
       <div className="border-b border-white/[0.07] pb-6 mb-8 mt-2">
         <div className="flex flex-row items-center gap-5">
           <div className="flex-1 min-w-0">
-            <h2 className="text-[16px] font-semibold text-zinc-200 truncate leading-snug">Order ID: {payment?._id || "Unknown"}</h2>
+            <h2 className="text-[16px] font-semibold text-zinc-200 truncate leading-snug">{t('orderId')}: {payment?._id || tCommon('unknown')}</h2>
             <div className="mt-1.5 flex flex-col gap-1">
               <span className="text-[11px] font-medium text-[#888]">
-                Refund Amount: <span className="text-zinc-300 font-semibold">{Number(payment?.amount || 0).toFixed(2)} {payment?.currency || 'USD'}</span>
+                {t('refundAmount')}: <span className="text-zinc-300 font-semibold">{Number(payment?.amount || 0).toFixed(2)} {payment?.currency || 'USD'}</span>
               </span>
               <span className="text-[11px] font-medium text-[#888]">
-                User: <span className="text-zinc-300 font-semibold">{payment?.userId?.username || 'Unknown'}</span> <span className="text-zinc-500">({payment?.userId?.email || 'N/A'})</span>
+                {tCommon('user')}: <span className="text-zinc-300 font-semibold">{payment?.userId?.username || tCommon('unknown')}</span> <span className="text-zinc-500">({payment?.userId?.email || tCommon('na')})</span>
               </span>
             </div>
           </div>
@@ -79,23 +83,25 @@ export function AdminRefundDrawer({
       <div className="border-l-2 border-yellow-500 pl-5 py-1 mb-10">
         <div className="flex items-center gap-2 text-yellow-500 mb-4">
           <AlertTriangle size={14} />
-          <span className="text-xs font-bold uppercase tracking-wider">BEFORE YOU CONTINUE</span>
+          <span className="text-xs font-bold uppercase tracking-wider">{t('beforeYouContinue')}</span>
         </div>
         <ul className="space-y-3">
           <li className="flex items-start gap-3 text-sm text-zinc-400">
             <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-yellow-500"></span>
-            <span>The customer will receive their money back on their original payment method.</span>
+            <span>{t('customerReceivesMoneyBack')}</span>
           </li>
           <li className="flex items-start gap-3 text-sm text-zinc-400">
             <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-yellow-500"></span>
-            <span>This action is irreversible.</span>
+            <span>{t('actionIrreversible')}</span>
           </li>
         </ul>
       </div>
 
       <div>
         <h2 className="text-[11px] font-medium uppercase tracking-[0.1em] text-zinc-500 mb-4">
-          Type <span className="text-zinc-100">REFUND</span> to confirm
+          {t.rich('typeRefundToConfirm', {
+            refund: (chunks) => <span className="text-zinc-100">{chunks}</span>
+          })}
         </h2>
         <div className="flex overflow-hidden rounded-lg border border-[#2A2A2A] bg-[#161616] focus-within:border-yellow-500/50 transition-colors">
           <input

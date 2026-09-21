@@ -1,6 +1,7 @@
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { DeleteDrawer } from "@/components/ui/DeleteDrawer";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export function AdminDeleteGiftDrawer({
   isOpen,
@@ -15,6 +16,8 @@ export function AdminDeleteGiftDrawer({
   giftId: string | null;
   giftCode: string | null;
 }) {
+  const t = useTranslations('Admin.gifts');
+  const tErrorBackend = useTranslations('GlobalErrors');
   const [error, setError] = useState<string | null>(null);
 
   const handleDelete = async () => {
@@ -30,11 +33,12 @@ export function AdminDeleteGiftDrawer({
         onSuccess();
         onClose();
       } else {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to delete gift");
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "delete_failed");
       }
     } catch (e: any) {
-      setError(e.message);
+      const errKey = e.message || 'delete_failed';
+      setError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : e.message);
       throw e; // Pass to DeleteDrawer so it unsets isDeleting
     }
   };
@@ -45,12 +49,12 @@ export function AdminDeleteGiftDrawer({
         isOpen={isOpen}
         onClose={onClose}
         onConfirm={handleDelete}
-        entityType="Gift"
+        entityType={t('giftEntityType')}
         entityName={giftCode || "unknown"}
-        entitySubText="This gift code and its settings will be deleted."
+        entitySubText={t('deleteGiftSubText')}
         warningPoints={[
-          "Any users who have already redeemed this code will keep their rewards.",
-          "The code will no longer be available for future redemptions."
+          t('deleteWarning1'),
+          t('deleteWarning2')
         ]}
         requireConfirmText={true}
       />

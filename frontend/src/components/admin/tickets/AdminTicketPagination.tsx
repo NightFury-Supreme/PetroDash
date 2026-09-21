@@ -1,5 +1,6 @@
 import React from "react";
 import { Pagination } from "@/components/Pagination";
+import { useTranslations } from 'next-intl';
 
 interface AdminTicketPaginationProps {
   page: number;
@@ -14,6 +15,7 @@ export function AdminTicketPagination({
   totalItems,
   onPageChange,
 }: AdminTicketPaginationProps) {
+  const t = useTranslations('AdminTickets');
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   
   return (
@@ -23,7 +25,7 @@ export function AdminTicketPagination({
       totalItems={totalItems}
       pageSize={pageSize}
       onPageChange={onPageChange}
-      itemName="tickets"
+      itemName={t('tickets').toLowerCase()}
     />
   );
 }

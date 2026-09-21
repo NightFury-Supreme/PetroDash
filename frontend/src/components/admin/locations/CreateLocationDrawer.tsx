@@ -1,17 +1,12 @@
 "use client";
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useState, useEffect, useRef } from "react";
 import { Globe, Loader2, Check, Upload, Trash2 } from "lucide-react";
 import { Drawer } from "@/components/ui/Drawer";
+import { useTranslations } from "next-intl";
+import { useLocationApi } from "./hooks/useLocationApi";
 
 type Step = 'basic' | 'platform' | 'permissions';
-
-const STEPS: { id: Step; label: string }[] = [
-  { id: 'basic', label: 'Details' },
-  { id: 'platform', label: 'Platform' },
-  { id: 'permissions', label: 'Permissions' },
-];
 
 const INPUT_CLASS = "w-full rounded-lg border border-white/[0.06] bg-white/[0.02] px-4 py-2.5 text-sm text-[#D4D4D4] placeholder-[#888] outline-none transition-colors focus:border-[#FF5722]/60";
 
@@ -21,10 +16,21 @@ interface CreateLocationDrawerProps {
 }
 
 export function CreateLocationDrawer({ onClose, onSuccess }: CreateLocationDrawerProps) {
+  const t = useTranslations('AdminLocations');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
+  const { fetchPlans, uploadIcon, createLocation } = useLocationApi();
+
+  const STEPS: { id: Step; label: string }[] = [
+    { id: 'basic', label: t('steps.basic', { fallback: 'Details' }) },
+    { id: 'platform', label: t('steps.platform', { fallback: 'Platform' }) },
+    { id: 'permissions', label: t('steps.permissions', { fallback: 'Permissions' }) },
+  ];
+
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const currentStep = STEPS[currentStepIndex].id;
 
-  const [, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: '',
     flag: '',
@@ -37,7 +43,7 @@ export function CreateLocationDrawer({ onClose, onSuccess }: CreateLocationDrawe
     allowedPlans: [] as string[],
   });
 
-        const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [uploadingFlag, setUploadingFlag] = useState(false);
   const [plans, setPlans] = useState<any[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
@@ -47,9 +53,7 @@ export function CreateLocationDrawer({ onClose, onSuccess }: CreateLocationDrawe
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
-      .then(r => r.json())
+    fetchPlans()
       .then(d => setPlans(Array.isArray(d) ? d : []))
       .catch(() => {})
       .finally(() => setLoadingPlans(false));
@@ -69,78 +73,63 @@ export function CreateLocationDrawer({ onClose, onSuccess }: CreateLocationDrawe
     setForm(f => ({ ...f, flag: '' }));
   };
 
-    
   const canGoNext = () => {
     if (currentStep === 'basic') return form.name.trim().length > 0 && form.latencyUrl.trim().length > 0 && (form.flag || pendingFlagFile);
     return true;
   };
 
   const handleSubmit = async () => {
-        setError(null);
+    setError(null);
     setLoading(true);
     try {
-      const token = localStorage.getItem('auth_token');
       let finalFlag = form.flag === 'pending' ? '' : form.flag;
 
       if (pendingFlagFile) {
         setUploadingFlag(true);
-        const fd = new FormData();
-        fd.append('icon', pendingFlagFile);
-        const uploadRes = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/upload/icon`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
-          body: fd,
-        });
+        const uploadData = await uploadIcon(pendingFlagFile);
         setUploadingFlag(false);
-        if (!uploadRes.ok) throw new Error('Failed to upload flag image');
-        const uploadData = await uploadRes.json();
         finalFlag = uploadData.filePath;
       }
 
-      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          name: form.name,
-          flag: finalFlag,
-          latencyUrl: form.latencyUrl,
-          serverLimit: Number(form.serverLimit || 0),
-          platform: {
-            platformLocationId: form.platformLocationId,
-            swapMb: Number(form.swapMb || -1),
-            blockIoWeight: Number(form.blockIoWeight || 500),
-            cpuPinning: form.cpuPinning,
-          },
-          allowedPlans: form.allowedPlans,
-        }),
+      await createLocation({
+        name: form.name,
+        flag: finalFlag,
+        latencyUrl: form.latencyUrl,
+        serverLimit: Number(form.serverLimit || 0),
+        platform: {
+          platformLocationId: form.platformLocationId,
+          swapMb: Number(form.swapMb || -1),
+          blockIoWeight: Number(form.blockIoWeight || 500),
+          cpuPinning: form.cpuPinning,
+        },
+        allowedPlans: form.allowedPlans,
       });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error((data as any)?.error || 'Failed to create location');
       onSuccess();
     } catch (e: any) {
-        console.error(e);
-            setLoading(false);
+      console.error(e);
+      const errKey = e.errorKey || e.message;
+      setError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : errKey);
+      setLoading(false);
     }
   };
-
-  
 
   return (
     <Drawer
       isOpen={true}
       onClose={onClose}
-      title="New Location"
-      subtitle="Add a deployment location"
+      title={t('drawerTitle', { fallback: 'New Location' })}
+      subtitle={t('drawerSubtitle', { fallback: 'Add a deployment location' })}
       icon={<Globe className="text-[#D4D4D4]" size={22} />}
       footer={
         <div className="flex items-center justify-end gap-2 w-full">
+          {error && <div className="text-red-500 text-sm mr-auto">{error}</div>}
           {currentStepIndex > 0 ? (
             <button
               type="button"
               onClick={() => setCurrentStepIndex(i => i - 1)}
               className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
             >
-              Back
+              {tCommon('back', { fallback: 'Back' })}
             </button>
           ) : (
             <button
@@ -148,7 +137,7 @@ export function CreateLocationDrawer({ onClose, onSuccess }: CreateLocationDrawe
               onClick={onClose}
               className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4]"
             >
-              Cancel
+              {tCommon('cancel', { fallback: 'Cancel' })}
             </button>
           )}
           
@@ -159,7 +148,7 @@ export function CreateLocationDrawer({ onClose, onSuccess }: CreateLocationDrawe
               disabled={!canGoNext()}
               className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Next Step
+              {tCommon('nextStep', { fallback: 'Next Step' })}
             </button>
           ) : (
             <button
@@ -168,7 +157,7 @@ export function CreateLocationDrawer({ onClose, onSuccess }: CreateLocationDrawe
               disabled={loading || uploadingFlag}
               className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {(loading || uploadingFlag) ? <><Loader2 size={16} className="animate-spin" /> Creating...</> : "Create Location"}
+              {(loading || uploadingFlag) ? <><Loader2 size={16} className="animate-spin" /> {tCommon('creating', { fallback: 'Creating...' })}</> : t('createLocation', { fallback: 'Create Location' })}
             </button>
           )}
         </div>
@@ -198,14 +187,14 @@ export function CreateLocationDrawer({ onClose, onSuccess }: CreateLocationDrawe
           <div className="flex-1 pb-8 min-w-0">
         {currentStep === 'basic' && (
           <div className="space-y-6">
-            <div><h3 className="text-sm font-semibold text-white mb-1">Basic Information</h3><p className="text-xs text-[#888]">Configure the location identity</p></div>
+            <div><h3 className="text-sm font-semibold text-white mb-1">{t('basicInfo', { fallback: 'Basic Information' })}</h3><p className="text-xs text-[#888]">{t('basicInfoDesc', { fallback: 'Configure the location identity' })}</p></div>
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">Location Name <span className="text-[#FF5722]">*</span></label>
-                <input className={INPUT_CLASS} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. US East, EU Frankfurt" required />
+                <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">{t('locationName', { fallback: 'Location Name' })} <span className="text-[#FF5722]">*</span></label>
+                <input className={INPUT_CLASS} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder={t('locationNamePlaceholder', { fallback: 'e.g. US East, EU Frankfurt' })} required />
               </div>
               <div>
-                  <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">Location Flag / Icon <span className="text-[#FF5722]">*</span></label>
+                  <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">{t('locationFlag', { fallback: 'Location Flag / Icon' })} <span className="text-[#FF5722]">*</span></label>
                   <div className="flex items-center gap-3">
                     {(flagPreview || form.flag) && (
                       <div className="relative w-11 h-11 bg-white/[0.02] border border-white/[0.06] rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
@@ -237,7 +226,7 @@ export function CreateLocationDrawer({ onClose, onSuccess }: CreateLocationDrawe
                         className={`flex items-center justify-between w-full rounded-lg border px-4 h-[44px] text-sm text-[#888] transition-colors outline-none ${isDragging ? 'bg-[#FF5722]/10 border-[#FF5722] text-[#FF5722]' : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.1]'}`}
                       >
                         <span className="truncate">
-                          {uploadingFlag ? 'Uploading...' : form.flag ? 'Change flag (or drop/paste)' : 'Upload icon (or drop/paste)'}
+                          {uploadingFlag ? tCommon('uploading', { fallback: 'Uploading...' }) : form.flag ? t('changeFlag', { fallback: 'Change flag (or drop/paste)' }) : t('uploadIcon', { fallback: 'Upload icon (or drop/paste)' })}
                         </span>
                         {uploadingFlag ? <Loader2 size={16} className="animate-spin text-[#888] shrink-0" /> : <Upload size={16} className="text-[#888] shrink-0" />}
                       </button>
@@ -253,54 +242,54 @@ export function CreateLocationDrawer({ onClose, onSuccess }: CreateLocationDrawe
                       </button>
                     )}
                   </div>
-                  <p className="mt-1.5 text-[10px] text-[#666]">Upload a PNG, JPG, or SVG image (max 5MB)</p>
+                  <p className="mt-1.5 text-[10px] text-[#666]">{t('uploadHint', { fallback: 'Upload a PNG, JPG, or SVG image (max 5MB)' })}</p>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">Node IP <span className="text-[#FF5722]">*</span></label>
-                <input className={INPUT_CLASS} value={form.latencyUrl} onChange={e => setForm(f => ({ ...f, latencyUrl: e.target.value }))} placeholder="e.g. 192.168.1.1 or node.example.com" required />
-                <p className="mt-1 text-[10px] text-[#666]">IP used to measure ping from the user browser</p>
+                  <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">{t('nodeIp', { fallback: 'Node IP' })} <span className="text-[#FF5722]">*</span></label>
+                <input className={INPUT_CLASS} value={form.latencyUrl} onChange={e => setForm(f => ({ ...f, latencyUrl: e.target.value }))} placeholder={t('nodeIpPlaceholder', { fallback: 'e.g. 192.168.1.1 or node.example.com' })} required />
+                <p className="mt-1 text-[10px] text-[#666]">{t('nodeIpHint', { fallback: 'IP used to measure ping from the user browser' })}</p>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">Server Limit</label>
-                <input type="number" className={INPUT_CLASS} value={form.serverLimit} onChange={e => setForm(f => ({ ...f, serverLimit: e.target.value }))} min="0" placeholder="0 = unlimited" />
-                <p className="mt-1 text-[10px] text-[#666]">Maximum servers in this location (0 = unlimited)</p>
+                <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">{t('serverLimit', { fallback: 'Server Limit' })}</label>
+                <input type="number" className={INPUT_CLASS} value={form.serverLimit} onChange={e => setForm(f => ({ ...f, serverLimit: e.target.value }))} min="0" placeholder={t('serverLimitPlaceholder', { fallback: '0 = unlimited' })} />
+                <p className="mt-1 text-[10px] text-[#666]">{t('serverLimitHint', { fallback: 'Maximum servers in this location (0 = unlimited)' })}</p>
               </div>
             </div>
           </div>
         )}
         {currentStep === 'platform' && (
           <div className="space-y-6">
-            <div><h3 className="text-sm font-semibold text-white mb-1">Platform Configuration</h3><p className="text-xs text-[#888]">Link this location to your Pterodactyl panel</p></div>
+            <div><h3 className="text-sm font-semibold text-white mb-1">{t('platformConfig', { fallback: 'Platform Configuration' })}</h3><p className="text-xs text-[#888]">{t('platformConfigDesc', { fallback: 'Link this location to your Pterodactyl panel' })}</p></div>
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">Platform Location ID <span className="text-[#FF5722]">*</span></label>
-                <input className={INPUT_CLASS} value={form.platformLocationId} onChange={e => setForm(f => ({ ...f, platformLocationId: e.target.value }))} placeholder="e.g. 1" />
-                <p className="mt-1 text-[10px] text-[#666]">The location ID from your Pterodactyl panel</p>
+                <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">{t('platformLocationId', { fallback: 'Platform Location ID' })} <span className="text-[#FF5722]">*</span></label>
+                <input className={INPUT_CLASS} value={form.platformLocationId} onChange={e => setForm(f => ({ ...f, platformLocationId: e.target.value }))} placeholder={t('platformLocationIdPlaceholder', { fallback: 'e.g. 1' })} />
+                <p className="mt-1 text-[10px] text-[#666]">{t('platformLocationIdHint', { fallback: 'The location ID from your Pterodactyl panel' })}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">Swap (MB)</label>
+                  <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">{t('swapMb', { fallback: 'Swap (MB)' })}</label>
                   <input type="number" className={INPUT_CLASS} value={form.swapMb} onChange={e => setForm(f => ({ ...f, swapMb: e.target.value }))} placeholder="-1" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">Block IO Weight</label>
+                  <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">{t('blockIoWeight', { fallback: 'Block IO Weight' })}</label>
                   <input type="number" className={INPUT_CLASS} value={form.blockIoWeight} onChange={e => setForm(f => ({ ...f, blockIoWeight: e.target.value }))} placeholder="500" min="10" max="1000" />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">CPU Pinning</label>
-                <input className={INPUT_CLASS} value={form.cpuPinning} onChange={e => setForm(f => ({ ...f, cpuPinning: e.target.value }))} placeholder="e.g. 0-3 (optional)" />
+                <label className="block text-xs font-medium text-[#D4D4D4] mb-1.5">{t('cpuPinning', { fallback: 'CPU Pinning' })}</label>
+                <input className={INPUT_CLASS} value={form.cpuPinning} onChange={e => setForm(f => ({ ...f, cpuPinning: e.target.value }))} placeholder={t('cpuPinningPlaceholder', { fallback: 'e.g. 0-3 (optional)' })} />
               </div>
             </div>
           </div>
         )}
         {currentStep === 'permissions' && (
           <div className="space-y-6">
-            <div><h3 className="text-sm font-medium text-white mb-1">Allowed Plans</h3><p className="text-xs text-[#888] mb-4">Select which plans are permitted to deploy in this location. Leave empty to allow all plans.</p></div>
+            <div><h3 className="text-sm font-medium text-white mb-1">{t('allowedPlans', { fallback: 'Allowed Plans' })}</h3><p className="text-xs text-[#888] mb-4">{t('allowedPlansDesc', { fallback: 'Select which plans are permitted to deploy in this location. Leave empty to allow all plans.' })}</p></div>
             {loadingPlans ? (
-              <div className="flex items-center gap-2 text-[#888] text-sm"><Loader2 size={14} className="animate-spin" /> Loading plans...</div>
+              <div className="flex items-center gap-2 text-[#888] text-sm"><Loader2 size={14} className="animate-spin" /> {tCommon('loadingPlans', { fallback: 'Loading plans...' })}</div>
             ) : plans.length === 0 ? (
-              <p className="text-sm text-[#888]">No plans found.</p>
+              <p className="text-sm text-[#888]">{tCommon('noPlansFound', { fallback: 'No plans found.' })}</p>
             ) : (
               <div className="border-t border-white/[0.06] divide-y divide-white/[0.06]">
                 {plans.map((p: any) => {
@@ -334,7 +323,7 @@ export function CreateLocationDrawer({ onClose, onSuccess }: CreateLocationDrawe
                       
                       <div className="flex items-center gap-6 shrink-0">
                         <div>
-                          <p className="text-[9px] uppercase tracking-[0.13em] text-white/20 text-right">Price</p>
+                          <p className="text-[9px] uppercase tracking-[0.13em] text-white/20 text-right">{t('price', { fallback: 'Price' })}</p>
                           <p className={`text-sm font-semibold tracking-tight mt-0.5 ${selected ? 'text-white/90' : 'text-white/60'}`}>
                             {price > 0 ? price.toFixed(2) : "0.00"} <span className="text-[10px] font-normal text-white/25">{currency}</span>
                           </p>

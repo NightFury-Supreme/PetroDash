@@ -1,6 +1,7 @@
 import { ShopItem } from '@/hooks/admin/shop/useAdminShop';
 import { ShopItemsList } from './ShopItemsList';
 import { EditShopItemModal } from './EditShopItemModal';
+import { useTranslations } from 'next-intl';
 
 interface AdminShopContentProps {
   items: ShopItem[];
@@ -21,11 +22,13 @@ export function AdminShopContent({
   onCloseModal,
   onSaveItem,
 }: AdminShopContentProps) {
+  const t = useTranslations('AdminShop');
+
   return (
     <>
       <div className="mb-4 mt-8">
-        <h2 className="text-lg font-semibold text-white">Shop Items</h2>
-        <p className="mt-0.5 text-xs text-[#666]">Manage preset shop items, adjust pricing, and toggle availability.</p>
+        <h2 className="text-lg font-semibold text-white">{t('shopItems')}</h2>
+        <p className="mt-0.5 text-xs text-[#666]">{t('shopItemsDescription')}</p>
       </div>
 
       {/* Shop Items List */}

@@ -1,5 +1,6 @@
 import { Edit2, Trash2, Users, Coins, Cpu, MemoryStick, HardDrive, Server, User } from "lucide-react";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 
 export function AdminGiftTableRow({
   gift,
@@ -14,15 +15,18 @@ export function AdminGiftTableRow({
   onRedemptions: (id: string) => void;
   cols: string;
 }) {
+  const t = useTranslations('Admin.gifts');
+  const tCommon = useTranslations('Common');
+
   const renderRewards = () => {
     const badges = [];
-    if (gift.rewards?.coins) badges.push({ text: `${gift.rewards.coins} Coin${gift.rewards.coins === 1 ? '' : 's'}`, icon: Coins });
-    if (gift.rewards?.resources?.cpuPercent) badges.push({ text: `${gift.rewards.resources.cpuPercent}% CPU`, icon: Cpu });
-    if (gift.rewards?.resources?.memoryMb) badges.push({ text: `${gift.rewards.resources.memoryMb}MB RAM`, icon: MemoryStick });
-    if (gift.rewards?.resources?.diskMb) badges.push({ text: `${gift.rewards.resources.diskMb}MB Disk`, icon: HardDrive });
-    if (gift.rewards?.resources?.serverSlots) badges.push({ text: `${gift.rewards.resources.serverSlots} Slot${gift.rewards.resources.serverSlots === 1 ? '' : 's'}`, icon: Server });
+    if (gift.rewards?.coins) badges.push({ text: `${gift.rewards.coins} ${gift.rewards.coins === 1 ? t('coin') : t('coins')}`, icon: Coins });
+    if (gift.rewards?.resources?.cpuPercent) badges.push({ text: `${gift.rewards.resources.cpuPercent}% ${t('cpu')}`, icon: Cpu });
+    if (gift.rewards?.resources?.memoryMb) badges.push({ text: `${gift.rewards.resources.memoryMb}MB ${t('ram')}`, icon: MemoryStick });
+    if (gift.rewards?.resources?.diskMb) badges.push({ text: `${gift.rewards.resources.diskMb}MB ${t('disk')}`, icon: HardDrive });
+    if (gift.rewards?.resources?.serverSlots) badges.push({ text: `${gift.rewards.resources.serverSlots} ${gift.rewards.resources.serverSlots === 1 ? t('slot') : t('slots')}`, icon: Server });
     
-    if (badges.length === 0) return <span className="text-sm text-[#555]">No rewards</span>;
+    if (badges.length === 0) return <span className="text-sm text-[#555]">{t('noRewards')}</span>;
 
     return (
       <div className="flex flex-wrap gap-1.5">
@@ -45,30 +49,30 @@ export function AdminGiftTableRow({
     <div className={`group grid grid-cols-1 gap-4 px-5 py-5 transition hover:bg-white/[0.015] ${cols} lg:items-center`}>
       {/* Code */}
       <div className="min-w-0">
-        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Code</p>
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">{t('code')}</p>
         <span className="block truncate font-mono text-sm text-[#DDDDDD]">{gift.code}</span>
       </div>
 
       {/* Creator */}
       <div className="min-w-0 flex flex-col items-start justify-center">
-        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Creator</p>
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">{t('creator')}</p>
         <Link 
           href={gift.createdBy?._id ? `/admin/users/${gift.createdBy._id}` : "#"}
           className={`flex items-center gap-2 group/creator ${gift.createdBy?._id ? "cursor-pointer" : "cursor-default pointer-events-none"}`}
         >
           <div className="w-6 h-6 rounded overflow-hidden flex-shrink-0 bg-white/[0.05] flex items-center justify-center border border-white/[0.05]">
             {gift.createdBy?.profilePicture ? (
-              <img src={gift.createdBy.profilePicture} alt="Avatar" className="w-full h-full object-cover" />
+              <img src={gift.createdBy.profilePicture} alt={tCommon('avatar')} className="w-full h-full object-cover" />
             ) : (
               <User size={12} className="text-[#888]" />
             )}
           </div>
           <div>
             <span className={`block truncate text-sm text-[#AAAAAA] ${gift.createdBy?._id ? "group-hover/creator:text-[#FF5722] transition-colors" : ""}`}>
-              {gift.createdBy ? gift.createdBy.username : "System"}
+              {gift.createdBy ? gift.createdBy.username : tCommon('system')}
             </span>
             <span className="block truncate font-mono text-[10px] text-[#666] mt-0.5">
-              {gift.createdBy?._id || "System"}
+              {gift.createdBy?._id || tCommon('system')}
             </span>
           </div>
         </Link>
@@ -76,33 +80,33 @@ export function AdminGiftTableRow({
 
       {/* Rewards */}
       <div className="min-w-0">
-        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Rewards</p>
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">{t('rewards')}</p>
         {renderRewards()}
       </div>
 
       {/* Uses */}
       <div className="min-w-0">
-        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Uses</p>
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">{t('uses')}</p>
         <span className="text-sm text-[#AAAAAA]">{gift.redeemedCount || 0} / {gift.maxRedemptions || "∞"}</span>
       </div>
 
       {/* Valid Until */}
       <div className="min-w-0">
-        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Expires</p>
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">{t('expires')}</p>
         <span className="text-sm text-[#AAAAAA]">
-          {gift.validUntil ? new Date(gift.validUntil).toLocaleDateString() : "Never"}
+          {gift.validUntil ? new Date(gift.validUntil).toLocaleDateString() : tCommon('never')}
         </span>
       </div>
 
       {/* Status */}
       <div className="min-w-0">
-        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Status</p>
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">{tCommon('status')}</p>
         {isExpired ? (
-          <span className="inline-flex items-center px-2 py-1 rounded bg-[#222] text-[#888] text-[10px] font-medium tracking-wide uppercase border border-[#333]">Expired</span>
+          <span className="inline-flex items-center px-2 py-1 rounded bg-[#222] text-[#888] text-[10px] font-medium tracking-wide uppercase border border-[#333]">{t('statusExpired')}</span>
         ) : gift.enabled ? (
-          <span className="inline-flex items-center px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">Enabled</span>
+          <span className="inline-flex items-center px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">{t('statusEnabled')}</span>
         ) : (
-          <span className="inline-flex items-center px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">Disabled</span>
+          <span className="inline-flex items-center px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">{t('statusDisabled')}</span>
         )}
       </div>
 
@@ -111,21 +115,21 @@ export function AdminGiftTableRow({
         <div className="flex lg:justify-end gap-2">
           <button
             onClick={() => onRedemptions(gift._id)}
-            title="View redemptions"
+            title={t('viewRedemptions')}
             className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#888] hover:text-[#FF5722] hover:bg-[#FF5722]/10 transition-colors"
           >
             <Users size={14} />
           </button>
           <button
             onClick={() => onEdit(gift._id)}
-            title="Edit gift"
+            title={t('editGift')}
             className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#888] hover:text-[#D4D4D4] transition-colors bg-transparent border border-[#222] rounded-lg"
           >
             <Edit2 size={14} />
           </button>
           <button
             onClick={() => onDelete(gift._id)}
-            title="Delete gift"
+            title={t('deleteGift')}
             className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-red-400/70 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 transition-colors"
           >
             <Trash2 size={14} />
