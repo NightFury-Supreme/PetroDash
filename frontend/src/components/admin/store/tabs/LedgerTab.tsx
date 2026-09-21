@@ -17,7 +17,7 @@ type LedgerItem = Record<string, any>;
 export default function AdminLedgerTab() {
   const t = useTranslations('Admin.Ledger');
   const tCommon = useTranslations('Common');
-  const tErrorBackend = useTranslations('Errors.Backend');
+  const tErrorBackend = useTranslations('BackendErrors');
   
   const [items, setItems] = useState<LedgerItem[]>([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });

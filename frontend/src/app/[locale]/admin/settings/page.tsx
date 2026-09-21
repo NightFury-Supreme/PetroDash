@@ -10,8 +10,8 @@ import { useAdminSettings } from '@/hooks/admin/settings/useAdminSettings';
 
 export default function AdminSettingsPage() {
   const t = useTranslations('admin.settings');
-  const tCommon = useTranslations('common');
-  const tErrorBackend = useTranslations('error.backend');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
   
   const { showError } = useToast();
   const { settings, loading, error, saveSettings } = useAdminSettings();
@@ -54,7 +54,7 @@ export default function AdminSettingsPage() {
 
   const handleSave = async (newSettings: any) => {
     try {
-      await saveSettings(newSettings);
+      return await saveSettings(newSettings);
     } catch (err: any) {
       showError(err.message || t('errors.failedToSave'));
       throw err;

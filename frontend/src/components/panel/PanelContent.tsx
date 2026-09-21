@@ -63,7 +63,7 @@ export function PanelContent() {
     } catch (err: any) {
       try {
         showError(tError(err.message as any));
-      } catch (e) {
+      } catch {
         showError(tError("ERR_INTERNAL_SERVER"));
       }
     }
@@ -78,7 +78,7 @@ export function PanelContent() {
     const displayError = (() => {
       try {
         return tError(error as any);
-      } catch (e) {
+      } catch {
         // If code doesn't exist in translation, or is a raw English network error
         if (error.toLowerCase() === "failed to fetch" || error.toLowerCase().includes("network error") || error === "ERR_NETWORK") {
           return tError("ERR_NETWORK");

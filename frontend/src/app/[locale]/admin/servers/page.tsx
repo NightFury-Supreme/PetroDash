@@ -49,8 +49,8 @@ function NavItem({
 
 export default function AdminServersPage() {
   const t = useTranslations('admin.servers');
-  const tCommon = useTranslations('common');
-  const tErrorBackend = useTranslations('error.backend');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('servers');
   const [deleting, setDeleting] = useState<string | null>(null);

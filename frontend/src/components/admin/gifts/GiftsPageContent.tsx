@@ -17,8 +17,8 @@ import { useAdminGift } from '@/hooks/admin/gift/useAdminGift';
 
 export default function GiftsPageContent() {
   const t = useTranslations('admin.gift');
-  const tCommon = useTranslations('common');
-  const tErrorBackend = useTranslations('error.backend');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
 
   const [query, setQuery] = useState('');
   const [tab, setTab] = useState('all');

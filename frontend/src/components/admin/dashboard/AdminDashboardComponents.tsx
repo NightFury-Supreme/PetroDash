@@ -1,5 +1,6 @@
 import React from "react";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export const COLORS = {
   primary: "#ff5a1f", blue: "#4d91ff", green: "#16c784", yellow: "#e0a900",
@@ -13,16 +14,18 @@ export function ChartTooltip({ active, payload, label, currency }: any) {
       <div className="text-[#888] font-medium mb-1">{label}</div>
       {payload.map((item: any) => {
         let displayVal = typeof item.value === "number" ? item.value.toLocaleString() : item.value;
-        if ((item.name === "Revenue" || item.name === "Refunds") && currency) {
+        const key = String(item.dataKey || '').toLowerCase();
+        const name = String(item.name || '').toLowerCase();
+        if ((key === "revenue" || key === "refunds" || name === "revenue" || name === "refunds") && currency) {
           displayVal = `${displayVal} ${currency}`;
-        } else if (item.name === "First response" || item.name === "Resolution") {
+        } else if (key === "response" || key === "resolution" || name.includes("response") || name.includes("resolution")) {
           const val = Number(item.value);
           if (val >= 1440) displayVal = `${(val / 1440).toFixed(1)}d`; // 1440 mins = 24h
           else if (val >= 60) displayVal = `${(val / 60).toFixed(1)}h`;
           else displayVal = `${val}m`;
         }
         return (
-          <div className="flex justify-between items-center gap-4 text-[#ccc]" key={item.dataKey}>
+          <div className="flex justify-between items-center gap-4 text-[#ccc]" key={item.name || item.dataKey}>
             <span className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: item.color }} />
               {item.name}
@@ -116,10 +119,11 @@ export function DistributionPanel({ kicker, title, description, items, icon }: a
 }
 
 export function PlanTable({ planRevenueData, currency }: any) {
+  const t = useTranslations('admin.dashboard');
   return (
     <div className="w-full">
       <div className="grid grid-cols-[1.4fr_.8fr_.9fr_.5fr] items-center border-b border-[#222] pb-3 text-[10px] font-medium uppercase tracking-widest text-[#555]">
-        <span>PLAN</span><span>PURCHASES</span><span>REVENUE</span><span>SHARE</span>
+        <span>{t('table.plan')}</span><span>{t('table.purchases')}</span><span>{t('table.revenue')}</span><span>{t('table.share')}</span>
       </div>
       <div className="flex flex-col">
         {planRevenueData?.map((plan: any) => (

@@ -12,8 +12,8 @@ import { useTranslations } from 'next-intl';
 export default function AdminUsersListPage() {
   const router = useRouter();
   const t = useTranslations('admin.users');
-  const tCommon = useTranslations('common');
-  const tErrorBackend = useTranslations('error.backend');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
 
   const {
     users,

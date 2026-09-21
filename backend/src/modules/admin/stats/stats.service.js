@@ -7,19 +7,21 @@ const Ticket = require('../../../models/Ticket');
 const TicketMessage = require('../../../models/TicketMessage');
 const AuditLog = require('../../../models/AuditLog');
 const Payment = require('../../../models/Payment');
-const { getCache, setCache } = require('../../../lib/redis');
+const { getCache, setCache, deleteCachePattern } = require('../../../lib/redis');
 
 const COLORS = {
   primary: "#ff5a1f", blue: "#4d91ff", green: "#16c784", yellow: "#e0a900",
   red: "#ef514b", purple: "#a875ff", cyan: "#37c6d0", muted: "#666666",
 };
 
-exports.getStats = async (rangeParam) => {
+exports.getStats = async (rangeParam, forceRefresh = false) => {
     const days = rangeParam === '30D' ? 30 : (rangeParam === '14D' ? 14 : 7);
     const cacheKey = `admin:stats:${days}`;
     
-    const cachedStats = await getCache(cacheKey);
-    if (cachedStats) return cachedStats;
+    if (!forceRefresh) {
+        const cachedStats = await getCache(cacheKey);
+        if (cachedStats) return cachedStats;
+    }
 
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - (days - 1));
@@ -331,10 +333,10 @@ exports.getStats = async (rangeParam) => {
     const totalTickets = openTickets + pendingTickets + resolvedTickets + closedTickets;
 
     const ticketLifecycle = [
-      { name: "Open", value: openTickets, color: COLORS.green },
-      { name: "Pending", value: pendingTickets, color: COLORS.yellow },
-      { name: "Resolved", value: resolvedTickets, color: COLORS.blue },
-      { name: "Closed", value: closedTickets, color: COLORS.muted },
+      { name: "Open", status: "open", value: openTickets, color: COLORS.green },
+      { name: "Pending", status: "pending", value: pendingTickets, color: COLORS.yellow },
+      { name: "Resolved", status: "resolved", value: resolvedTickets, color: COLORS.blue },
+      { name: "Closed", status: "closed", value: closedTickets, color: COLORS.muted },
     ];
 
     const calcTrend = (curr, prev) => {
@@ -416,4 +418,8 @@ exports.getStats = async (rangeParam) => {
 
     await setCache(cacheKey, result, 300);
     return result;
+};
+
+exports.clearStatsCache = async () => {
+    await deleteCachePattern('admin:stats');
 };

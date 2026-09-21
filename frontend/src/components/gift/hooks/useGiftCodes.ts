@@ -103,7 +103,7 @@ export function useGiftCodes(initialTab: TabStatus = "Active"): UseGiftCodesResu
       } else {
          try {
             message = tError(message as any);
-         } catch(e) {
+         } catch {
             message = tError("ERR_INTERNAL_SERVER");
          }
       }

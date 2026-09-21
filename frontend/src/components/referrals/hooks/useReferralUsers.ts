@@ -61,9 +61,9 @@ export function useReferralUsers(): UseReferralUsersResult {
       } else {
          try {
             message = tError(message as any);
-         } catch(e) {
-            message = tError("ERR_INTERNAL_SERVER");
-         }
+          } catch {
+             message = tError("ERR_INTERNAL_SERVER");
+          }
       }
       showError(message);
     } finally {

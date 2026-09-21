@@ -8,8 +8,8 @@ import { useTranslations } from 'next-intl';
 
 export default function AdminLogsPage() {
   const t = useTranslations('admin.logs');
-  const tCommon = useTranslations('common');
-  const tErrorBackend = useTranslations('error.backend');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
 
   const {
     logs,

@@ -13,8 +13,8 @@ import { useTranslations } from 'next-intl';
 
 export default function LocationsPage() {
   const t = useTranslations('admin.locations');
-  const tCommon = useTranslations('common');
-  const tErrorBackend = useTranslations('error.backend');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
 
   const { locations, loading, error, fetchLocations, deleteLocation } = useAdminLocations();
   const [searchQuery, setSearchQuery] = useState('');

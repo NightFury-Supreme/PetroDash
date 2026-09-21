@@ -11,7 +11,7 @@ import { useTranslations } from 'next-intl';
 
 export default function AdminShopTab() {
   const t = useTranslations('Admin.Shop');
-  const tErrorBackend = useTranslations('Errors.Backend');
+  const tErrorBackend = useTranslations('BackendErrors');
   const { showSuccess, showError } = useToast();
   const {
     items,

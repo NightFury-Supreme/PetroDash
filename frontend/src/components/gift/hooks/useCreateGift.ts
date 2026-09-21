@@ -120,7 +120,7 @@ export function useCreateGift(): UseCreateGiftResult {
       } else {
          try {
             message = tError(message as any);
-         } catch(e) {
+         } catch {
             message = tError("ERR_INTERNAL_SERVER");
          }
       }

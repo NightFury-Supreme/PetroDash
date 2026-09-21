@@ -117,7 +117,7 @@ export function useReferralCode({
           if (code) {
              errorMsg = tError(code as any);
           }
-        } catch(e) {
+        } catch {
              errorMsg = tError("ERR_INTERNAL_SERVER");
         }
 
@@ -137,7 +137,7 @@ export function useReferralCode({
     } catch {
       try {
         showError(tError("ERR_INTERNAL_SERVER"));
-      } catch (e) {
+      } catch {
         showError(t("unexpectedError"));
       }
       setSaveStatus("error");

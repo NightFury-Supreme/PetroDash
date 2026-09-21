@@ -13,8 +13,8 @@ import type { AdminEarnSettings } from "@/hooks/admin/earn/useAdminEarn";
 
 export default function AdminEarnPage() {
   const t = useTranslations('admin.earn');
-  const tCommon = useTranslations('common');
-  const tErrorBackend = useTranslations('error.backend');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
 
   const { showError } = useToast();
   const { settings, loading, saving, error, setError, save } = useAdminEarn();

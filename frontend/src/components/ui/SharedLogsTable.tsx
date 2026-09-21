@@ -10,7 +10,7 @@ import { useTranslations } from 'next-intl';
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
 
-type Severity = 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL';
+type Severity = 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL' | 'info' | 'warning' | 'error' | 'critical';
 type Variant  = 'user' | 'admin';
 
 interface LogMeta {

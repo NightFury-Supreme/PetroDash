@@ -103,8 +103,9 @@ async function deleteCachePattern(pattern) {
 
     if (!shouldUseMemory()) {
         try {
-            const keys = await getClient().keys(pattern);
-            if (keys.length > 0) {
+            const searchPattern = pattern.includes('*') ? pattern : `${pattern}*`;
+            const keys = await getClient().keys(searchPattern);
+            if (keys && keys.length > 0) {
                 await getClient().del(...keys);
             }
         } catch {

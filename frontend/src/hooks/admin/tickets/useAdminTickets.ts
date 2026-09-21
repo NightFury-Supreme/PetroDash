@@ -142,7 +142,7 @@ export function useAdminTicketDetail(id: string, POLL_MS: number, scrollToBottom
     } catch {}
   }, [id, scrollToBottom]);
 
-  const loadMoreMessages = useCallback(async (scrollContainerRef: React.RefObject<HTMLDivElement>) => {
+  const loadMoreMessages = useCallback(async (scrollContainerRef: React.RefObject<HTMLDivElement | null>) => {
     if (!id || loadingMore || !hasMore || messages.length === 0) return;
     setLoadingMore(true);
     const oldestId = messages[0]._id;

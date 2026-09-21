@@ -17,8 +17,8 @@ const POLL_MS = 15_000;
 
 export default function AdminTicketDetailPage() {
   const t = useTranslations('admin.tickets');
-  const tCommon = useTranslations('common');
-  const tErrorBackend = useTranslations('error.backend');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
   const { showError, showSuccess } = useToast();
   const { id } = useParams() as { id: string };
 
@@ -128,7 +128,7 @@ export default function AdminTicketDetailPage() {
     else if (action === "reopen")  await updateStatusHandler("open",     "reopen");
     else if (action === "delete") {
       setActionBusy("delete");
-      try { await handleActionAPI("delete"); } catch (_e: any) { setActionBusy(null); }
+      try { await handleActionAPI("delete"); } catch { setActionBusy(null); }
     } else if (action === "restore") {
       setActionBusy("restore");
       try { 

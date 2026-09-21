@@ -6,13 +6,15 @@ import {
   Activity, ChevronDown, CreditCard, HardDrive, MessageSquare, RefreshCw, Users,
 } from "lucide-react";
 import { useCurrency } from "@/hooks/useCurrency";
-import { OverviewTab } from "@/components/admin/dashboard/OverviewTab";
-import { UsersTab } from "@/components/admin/dashboard/UsersTab";
-import { InfrastructureTab } from "@/components/admin/dashboard/InfrastructureTab";
-import { RevenueTab } from "@/components/admin/dashboard/RevenueTab";
-import { SupportTab } from "@/components/admin/dashboard/SupportTab";
+import {
+  OverviewTab,
+  UsersTab,
+  InfrastructureTab,
+  RevenueTab,
+  SupportTab,
+} from "@/components/admin/dashboard";
 import { AdminSkeleton } from "@/components/skeletons/admin/AdminSkeleton";
-import { useAdminDashboard } from "@/hooks/admin/dashboard/useAdminDashboard";
+import { useAdminDashboard } from "@/hooks/admin/dashboard";
 import { useTranslations } from 'next-intl';
 
 type Tab = "overview" | "users" | "infrastructure" | "revenue" | "support";
@@ -20,8 +22,8 @@ type Range = "7D" | "14D" | "30D";
 
 export default function AdminDashboard() {
   const t = useTranslations('admin.dashboard');
-  const tCommon = useTranslations('common');
-  const tErrorBackend = useTranslations('error.backend');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
 
   const { currency } = useCurrency();
   const [tab, setTab] = useState<Tab>("overview");
@@ -38,7 +40,7 @@ export default function AdminDashboard() {
           <Activity size={32} className="text-red-500 mb-4 opacity-80" />
           <h2 className="text-white font-medium text-lg mb-2">{t('failedToLoad')}</h2>
           <p className="text-[#888] text-sm mb-6">{displayError}</p>
-          <button onClick={refresh} className="bg-[#FF5722] hover:bg-[#F4511E] text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 mx-auto">
+          <button onClick={() => refresh(true)} className="bg-[#FF5722] hover:bg-[#F4511E] text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 mx-auto">
             <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} /> {tCommon('retry')}
           </button>
         </div>
@@ -58,7 +60,7 @@ export default function AdminDashboard() {
               <p className="text-[#888888] mt-1 text-sm">{t('description')}</p>
             </div>
             <div className="flex items-center gap-3">
-              <button className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#222] text-[#D4D4D4] hover:bg-[#333] transition-colors" onClick={refresh}>
+              <button className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#222] text-[#D4D4D4] hover:bg-[#333] transition-colors" onClick={() => refresh(true)}>
                 <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
               </button>
               <div className="relative">

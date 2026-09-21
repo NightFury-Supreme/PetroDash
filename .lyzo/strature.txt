@@ -1,4 +1,4 @@
-make sure hhttps://dashboard.auto-manager.tk/admin is fully componised, stratured, organised, module foldered and file
+make sure https://dashboard.auto-manager.tk/admin is fully componised, stratured, organised, module foldered and file
 
 make sure all codes are written profasnaly, industrial standared, not using amature code or desine or style, fully profsnal and strandard, well optimized, no errors or issues or bugs or gliths or vanrability or safty issues or vaalidation issues or sanitisation or any issues occor, all profasnally handled, check full backend and frontend fully
 scan full this page its subsidary page, it and its subsidary page drawer and toastr for hardedcoded values and untranslated text and transalate all of it and remove all hardcoded ones and transalate to all languagfes

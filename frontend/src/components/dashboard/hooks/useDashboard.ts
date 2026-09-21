@@ -158,7 +158,7 @@ export function useDashboard() {
       let msg = err.message || "failedToLoadDashboardData";
       try {
          msg = tErrorBackend(msg as any);
-      } catch(e) {
+      } catch {
          if (msg === "failedToLoadUsageData" || msg === "failedToLoadUserResources" || msg === "failedToLoadServers") {
             msg = tError(msg as any);
          } else {

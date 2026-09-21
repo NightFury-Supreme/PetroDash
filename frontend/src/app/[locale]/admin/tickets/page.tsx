@@ -19,8 +19,8 @@ const PAGE_SIZE = 25;
 
 export default function AdminTicketsPage() {
   const t = useTranslations('admin.tickets');
-  const tCommon = useTranslations('common');
-  const tErrorBackend = useTranslations('error.backend');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
   const { showError } = useToast();
 
   const [q, setQ] = useState("");

@@ -1,25 +1,55 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Ticket, MessageSquare, Clock3, CheckCircle2 } from "lucide-react";
 import { ResponsiveContainer, AreaChart, Area, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Line, PieChart, Pie, Cell } from "recharts";
+import { useTranslations } from "next-intl";
 import { COLORS, Metric, PanelHeader, Legend, ChartTooltip } from "./AdminDashboardComponents";
 
 export function SupportTab({ stats, currency }: any) {
+  const t = useTranslations('admin.dashboard');
+  const tTickets = useTranslations('AdminTickets');
+
+  const getLocalizedStatus = (statusName: string) => {
+    const key = String(statusName || '').toLowerCase();
+    switch (key) {
+      case 'open':
+        return tTickets('statusOpen');
+      case 'pending':
+        return tTickets('statusPending');
+      case 'resolved':
+        return tTickets('statusResolved');
+      case 'closed':
+        return tTickets('statusClosed');
+      case 'deleted':
+        return tTickets('statusDeleted');
+      default:
+        return statusName;
+    }
+  };
+
+  const localizedTicketLifecycle = useMemo(() => {
+    return (stats.ticketLifecycle || []).map((item: any) => ({
+      ...item,
+      name: getLocalizedStatus(item.status || item.name),
+      rawName: item.name,
+    }));
+  }, [stats.ticketLifecycle, tTickets]);
+
   return (
     <div className="space-y-6">
       <section className="grid grid-cols-1 border-y border-white/[0.06] divide-y divide-white/[0.06] sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4">
-        <Metric icon={<Ticket size={15} />} label="Total tickets" value={stats.metrics?.totalTickets?.toLocaleString() || "0"} detail="all tickets" trend={stats.metrics?.totalTicketsTrend} />
-        <Metric icon={<MessageSquare size={15} />} label="Open" value={stats.metrics?.openTickets?.toLocaleString() || "0"} detail="awaiting support" trend={stats.metrics?.openTicketsTrend} negative={true} />
-        <Metric icon={<Clock3 size={15} />} label="Pending" value={stats.metrics?.pendingTickets?.toLocaleString() || "0"} detail="waiting for action" trend={stats.metrics?.pendingTicketsTrend} />
-        <Metric icon={<CheckCircle2 size={15} />} label="Resolved" value={stats.metrics?.resolvedTickets?.toLocaleString() || "0"} detail="awaiting closure" trend={stats.metrics?.resolvedTicketsTrend} />
+        <Metric icon={<Ticket size={15} />} label={t('metrics.totalTickets')} value={stats.metrics?.totalTickets?.toLocaleString() || "0"} detail={t('metrics.allTickets')} trend={stats.metrics?.totalTicketsTrend} />
+        <Metric icon={<MessageSquare size={15} />} label={t('metrics.open')} value={stats.metrics?.openTickets?.toLocaleString() || "0"} detail={t('metrics.awaitingSupport')} trend={stats.metrics?.openTicketsTrend} negative={true} />
+        <Metric icon={<Clock3 size={15} />} label={t('metrics.pending')} value={stats.metrics?.pendingTickets?.toLocaleString() || "0"} detail={t('metrics.waitingForAction')} trend={stats.metrics?.pendingTicketsTrend} />
+        <Metric icon={<CheckCircle2 size={15} />} label={t('metrics.resolved')} value={stats.metrics?.resolvedTickets?.toLocaleString() || "0"} detail={t('metrics.awaitingClosure')} trend={stats.metrics?.resolvedTicketsTrend} />
       </section>
 
       <section className="flex flex-col p-6 border-b border-white/[0.06]">
-        <PanelHeader kicker="TICKET LIFECYCLE" title="Support activity" description="Created, resolved, closed and reopened tickets." />
+        <PanelHeader kicker={t('supportSection.lifecycleKicker')} title={t('supportSection.activityTitle')} description={t('supportSection.activityDescription')} />
         <div className="flex flex-wrap gap-4 mt-4">
-          <Legend label="Created" color={COLORS.primary} />
-          <Legend label="Resolved" color={COLORS.blue} />
-          <Legend label="Closed" color={COLORS.green} />
-          <Legend label="Reopened" color={COLORS.yellow} />
+          <Legend label={t('legends.created')} color={COLORS.primary} />
+          <Legend label={t('legends.resolved')} color={COLORS.blue} />
+          <Legend label={t('legends.closed')} color={COLORS.green} />
+          <Legend label={t('legends.reopened')} color={COLORS.yellow} />
         </div>
         <div className="h-[330px] mt-4 w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -28,10 +58,10 @@ export function SupportTab({ stats, currency }: any) {
               <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: "#555", fontSize: 10 }} />
               <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: "#555", fontSize: 10 }} />
               <Tooltip content={<ChartTooltip currency={currency} />} />
-              <Area type="monotone" dataKey="created" name="Created" stroke={COLORS.primary} fill={COLORS.primary} fillOpacity=".08" strokeWidth={2} />
-              <Line type="monotone" dataKey="resolved" name="Resolved" stroke={COLORS.blue} strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="closed" name="Closed" stroke={COLORS.green} strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="reopened" name="Reopened" stroke={COLORS.yellow} strokeWidth={2} dot={false} />
+              <Area type="monotone" dataKey="created" name={t('legends.created')} stroke={COLORS.primary} fill={COLORS.primary} fillOpacity=".08" strokeWidth={2} />
+              <Line type="monotone" dataKey="resolved" name={t('legends.resolved')} stroke={COLORS.blue} strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="closed" name={t('legends.closed')} stroke={COLORS.green} strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="reopened" name={t('legends.reopened')} stroke={COLORS.yellow} strokeWidth={2} dot={false} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -39,18 +69,18 @@ export function SupportTab({ stats, currency }: any) {
 
       <section className="grid grid-cols-1 lg:grid-cols-2 border-b border-white/[0.06] divide-y divide-white/[0.06] lg:divide-y-0">
         <div className="flex flex-col p-6 lg:border-r lg:border-white/[0.06] last:border-r-0">
-          <PanelHeader kicker="CURRENT STATE" title="Ticket distribution" description="Current status breakdown." />
+          <PanelHeader kicker={t('supportSection.currentStateKicker')} title={t('supportSection.distributionTitle')} description={t('supportSection.distributionDescription')} />
           <div className="flex flex-col sm:flex-row items-center gap-8 mt-4">
             <div className="relative h-40 w-40 shrink-0">
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-[#888] text-xs">
                 <strong className="text-2xl font-semibold text-[#eee] leading-none mb-1">{stats.metrics?.totalTickets || 0}</strong>
-                tickets
+                {t('supportSection.tickets')}
               </div>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={stats.ticketLifecycle || []} dataKey="value" innerRadius={58} outerRadius={80} paddingAngle={3} stroke="none">
-                    {(stats.ticketLifecycle || []).map((item: any) => (
-                      <Cell key={item.name} fill={item.color} />
+                  <Pie data={localizedTicketLifecycle} dataKey="value" innerRadius={58} outerRadius={80} paddingAngle={3} stroke="none">
+                    {localizedTicketLifecycle.map((item: any) => (
+                      <Cell key={item.rawName || item.name} fill={item.color} />
                     ))}
                   </Pie>
                   <Tooltip content={<ChartTooltip currency={currency} />} />
@@ -58,8 +88,8 @@ export function SupportTab({ stats, currency }: any) {
               </ResponsiveContainer>
             </div>
             <div className="flex w-full flex-col gap-4">
-              {(stats.ticketLifecycle || []).map((item: any) => (
-                <div className="flex justify-between text-xs text-[#888]" key={item.name}>
+              {localizedTicketLifecycle.map((item: any) => (
+                <div className="flex justify-between text-xs text-[#888]" key={item.rawName || item.name}>
                   <div className="flex items-center gap-2"><span className="h-2 w-2 rounded-full" style={{ background: item.color }} /><span>{item.name}</span></div>
                   <strong className="text-[#ccc]">{item.value}</strong>
                 </div>
@@ -69,10 +99,10 @@ export function SupportTab({ stats, currency }: any) {
         </div>
 
         <div className="flex flex-col p-6 lg:border-r lg:border-white/[0.06] last:border-r-0">
-          <PanelHeader kicker="SUPPORT PERFORMANCE" title="Response & resolution" description="Average support handling time." />
+          <PanelHeader kicker={t('supportSection.performanceKicker')} title={t('supportSection.responseTitle')} description={t('supportSection.responseDescription')} />
           <div className="flex gap-12 mt-4 mb-2">
-            <div className="flex flex-col gap-1"><span className="text-[10px] font-medium uppercase tracking-widest text-[#555]">FIRST RESPONSE</span><strong className="text-3xl tracking-tight text-[#eee]">{stats.metrics?.avgResponseTime || 'N/A'}</strong></div>
-            <div className="flex flex-col gap-1"><span className="text-[10px] font-medium uppercase tracking-widest text-[#555]">AVG. RESOLUTION</span><strong className="text-3xl tracking-tight text-[#eee]">{stats.metrics?.avgResolutionTime || 'N/A'}</strong></div>
+            <div className="flex flex-col gap-1"><span className="text-[10px] font-medium uppercase tracking-widest text-[#555]">{t('supportSection.firstResponse')}</span><strong className="text-3xl tracking-tight text-[#eee]">{stats.metrics?.avgResponseTime || 'N/A'}</strong></div>
+            <div className="flex flex-col gap-1"><span className="text-[10px] font-medium uppercase tracking-widest text-[#555]">{t('supportSection.avgResolution')}</span><strong className="text-3xl tracking-tight text-[#eee]">{stats.metrics?.avgResolutionTime || 'N/A'}</strong></div>
           </div>
           <div className="h-[190px] mt-4 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -85,8 +115,8 @@ export function SupportTab({ stats, currency }: any) {
                   return `${v}m`;
                 }} />
                 <Tooltip content={<ChartTooltip currency={currency} />} />
-                <Line type="monotone" dataKey="response" name="First response" stroke={COLORS.primary} strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="resolution" name="Resolution" stroke={COLORS.blue} strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="response" name={t('supportSection.firstResponse')} stroke={COLORS.primary} strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="resolution" name={t('supportSection.resolution')} stroke={COLORS.blue} strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>

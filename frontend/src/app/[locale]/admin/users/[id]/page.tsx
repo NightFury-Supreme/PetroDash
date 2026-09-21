@@ -20,8 +20,8 @@ export default function AdminUserPage() {
   const { showSuccess, showError } = useToast();
   
   const t = useTranslations('admin.users');
-  const tCommon = useTranslations('common');
-  const tErrorBackend = useTranslations('error.backend');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
 
   const [section, setSection] = useState("overview");
 

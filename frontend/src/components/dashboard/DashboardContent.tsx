@@ -62,7 +62,7 @@ export function DashboardContent() {
       let msg = e.message || 'failedToDeleteServer';
       try {
          msg = tErrorBackend(msg as any);
-      } catch(err) {
+      } catch {
          if (msg === 'failedToDeleteServer' || msg === 'authRequired') {
             msg = t(msg as any);
          } else {

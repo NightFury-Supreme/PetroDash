@@ -25,7 +25,7 @@ export function useAdminDashboard(range: string) {
   const [stats, setStats] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchStats = useCallback(async () => {
+  const fetchStats = useCallback(async (force = false) => {
     const token = localStorage.getItem('auth_token');
     if (!token) {
       router.replace('/login');
@@ -41,26 +41,28 @@ export function useAdminDashboard(range: string) {
     setRefreshing(true);
     setError(null);
     try {
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/stats?range=${range}`, { 
+      const url = `${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/stats?range=${range}${force ? '&refresh=true' : ''}`;
+      const r = await fetchWithRetry(url, { 
         headers: { Authorization: `Bearer ${token}` } 
       });
       const d = await r.json();
       if (r.ok) {
         setStats(d);
       } else {
-        throw new Error(d?.error || 'Failed to fetch dashboard stats');
+        const errCode = d?.error?.code || (typeof d?.error === 'string' ? d.error : 'ERR_STATS_FETCH_FAILED');
+        throw new Error(errCode);
       }
     } catch (e: any) {
       console.error(e);
-      setError(e.message || 'fetch_failed');
+      setError(e.message || 'ERR_STATS_FETCH_FAILED');
     } finally {
       setRefreshing(false);
     }
   }, [range, router]);
 
   useEffect(() => {
-    fetchStats();
+    fetchStats(false);
   }, [fetchStats]);
 
-  return { stats, error, refreshing, refresh: fetchStats };
+  return { stats, error, refreshing, refresh: (force = true) => fetchStats(force) };
 }

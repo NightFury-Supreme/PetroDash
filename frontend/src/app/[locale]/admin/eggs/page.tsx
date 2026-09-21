@@ -16,8 +16,8 @@ import { useTranslations } from 'next-intl';
 
 export default function EggsListPage() {
   const t = useTranslations('admin.eggs');
-  const tCommon = useTranslations('common');
-  const tErrorBackend = useTranslations('error.backend');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
 
   const { eggs, loading, error, fetchEggs, deleteEgg } = useAdminEggs();
 
