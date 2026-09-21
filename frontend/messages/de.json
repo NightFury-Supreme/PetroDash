@@ -946,7 +946,10 @@
     "placeholderNewEmail": "neu@example.com",
     "placeholderA1B2C3D4": "A1B2C3D4",
     "placeholder12345678": "12345678",
-    "verified": "Verifiziert"
+    "verified": "Verifiziert",
+    "loadError": "Ladefehler",
+    "failedToLoadProfile": "Profil konnte nicht geladen werden",
+    "retry": "Wiederholen"
   },
   "ActivityLog": {
     "admin": {

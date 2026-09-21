@@ -39,6 +39,7 @@ type Section = "overview" | "security" | "sessions" | "activity" | "invoices";
 
 export default function ProfilePage() {
   const t = useTranslations('Profile');
+  const tCommon = useTranslations('Common');
   const tError = useTranslations('BackendErrors');
   const { form, setForm, loading, error, saveProfile, updatePassword, updateProfilePicture, sessions, revokeSession, resendVerification, verifyEmailCode } = useProfile();
 
@@ -231,7 +232,7 @@ export default function ProfilePage() {
                 className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
               >
                 <RefreshCw className="w-[14px] h-[14px]" />
-                {t('retry')}
+                {tCommon('retry')}
               </button>
               <DashboardButton variant="secondary" />
             </>

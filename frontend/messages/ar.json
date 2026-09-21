@@ -946,7 +946,10 @@
     "placeholderNewEmail": "new@example.com",
     "placeholderA1B2C3D4": "A1B2C3D4",
     "placeholder12345678": "12345678",
-    "verified": "تم التحقق"
+    "verified": "تم التحقق",
+    "loadError": "خطأ في التحميل",
+    "failedToLoadProfile": "فشل تحميل الملف الشخصي",
+    "retry": "إعادة المحاولة"
   },
   "ActivityLog": {
     "admin": {

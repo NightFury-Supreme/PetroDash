@@ -929,7 +929,10 @@
     "placeholderNewEmail": "nouveau@example.com",
     "placeholderA1B2C3D4": "A1B2C3D4",
     "placeholder12345678": "12345678",
-    "verified": "Vérifié"
+    "verified": "Vérifié",
+    "loadError": "Erreur de chargement",
+    "failedToLoadProfile": "Échec du chargement du profil",
+    "retry": "Réessayer"
   },
   "ActivityLog": {
     "admin": {

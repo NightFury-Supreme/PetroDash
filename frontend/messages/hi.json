@@ -956,7 +956,10 @@
     "placeholderNewEmail": "new@example.com",
     "placeholderA1B2C3D4": "A1B2C3D4",
     "placeholder12345678": "12345678",
-    "verified": "सत्यापित"
+    "verified": "सत्यापित",
+    "loadError": "लोड त्रुटि",
+    "failedToLoadProfile": "प्रोफ़ाइल लोड करने में विफल",
+    "retry": "पुनः प्रयास करें"
   },
   "ActivityLog": {
     "admin": {

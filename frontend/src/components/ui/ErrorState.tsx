@@ -107,14 +107,26 @@ export function ErrorDescription({ error, topic }: { error: string; topic?: stri
   const tCommon = useTranslations('Common');
   const e = typeof error === 'string' ? error.toLowerCase() : '';
   
-  let msg = t('descGeneric').replace('{topic}', topic || t('defaultTopic'));
+  const defaultTopic = t('defaultTopic');
+  const resolvedTopic = topic || defaultTopic;
+  let msg = '';
+  try {
+    msg = t('descGeneric', { topic: resolvedTopic });
+  } catch {
+    msg = `${resolvedTopic}`;
+  }
   let matched = false;
   
   if (e.includes('forbidden') || e.includes('unauthorized') || e.includes('access denied')) {
     msg = t('descForbidden');
     matched = true;
   } else if (e.includes('not found')) {
-    msg = t('descNotFound').replace('{topic}', topic ? topic.toLowerCase() : tCommon('resource'));
+    const resourceTopic = topic ? topic.toLowerCase() : tCommon('resource');
+    try {
+      msg = t('descNotFound', { topic: resourceTopic });
+    } catch {
+      msg = t('descNotFound', { topic: '' });
+    }
     matched = true;
   } else if (e.includes('failed to fetch') || e.includes('network') || e.includes('timeout')) {
     msg = t('descNetwork');
