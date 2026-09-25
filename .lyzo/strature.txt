@@ -4,6 +4,7 @@ make sure all codes are written profasnaly, industrial standared, not using amat
 scan full this page its subsidary page, it and its subsidary page drawer and toastr for hardedcoded values and untranslated text and transalate all of it and remove all hardcoded ones and transalate to all languagfes
 also make sure that if a think is not transalated transalate it fully in this modulisation also, include toast, drawer, page and everything which comes in this domain and its related areas
 also update backend for Removeing hardcoded JSON API errors to use Wrapped all endpoint failures in standard AppError payloads, emitting predictable error codes globally handled by our new middleware and update frontend with it to show errors in all language 
+also make sure to delete all unwated files and folders after all of this, delete all unimported Dead / Unused files, modules, componets and folders and lines of code as needed 
 also make sure to check in audit thinks read and write audit, audit engine linksed etc etc all working 
 also make sure here redis is using properly everywhere as needed
 also make sure everything is optimzied, db optimized, smooth and profasnla and no any ducktaps
