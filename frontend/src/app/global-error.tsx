@@ -27,8 +27,10 @@ export default function GlobalError({
 
   const msg = error.message && error.message !== 'An error occurred in the Server Components render. The specific message is omitted in production builds to avoid leaking sensitive details. A digest property is included on this error instance which may provide additional details about the nature of the error.' ? error.message : t.defaultMsg;
 
+  const dir = locale === 'ar' ? 'rtl' : 'ltr';
+
   return (
-    <html lang={locale || "en"}>
+    <html lang={locale || "en"} dir={dir}>
       <body>
         <div className="flex flex-col items-center justify-center w-full flex-1 bg-[#0F0F0F] min-h-screen text-sans">
           <section className="text-center w-full max-w-[620px] px-4" aria-labelledby="error-title">

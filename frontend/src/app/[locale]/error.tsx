@@ -2,9 +2,9 @@
 
 import React, { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { ErrorState, DashboardButton } from '@/components/ui/ErrorState';
+import { ErrorState, DashboardButton, GoBackButton } from '@/components/ui/ErrorState';
 
-export default function GlobalError({
+export default function ErrorBoundary({
   error,
   reset,
 }: {
@@ -49,6 +49,7 @@ export default function GlobalError({
             {t('tryAgain')}
           </button>
           <DashboardButton variant="secondary" />
+          <GoBackButton />
         </>
       }
     />
