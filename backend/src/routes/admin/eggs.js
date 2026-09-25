@@ -1,6 +1,6 @@
 const express = require('express');
 const { requireAdmin } = require('../../middleware/auth');
-const eggsController = require('../../modules/admin/eggs/eggs.controller');
+const eggsController = require('../../modules/admin/eggs');
 
 const router = express.Router();
 
