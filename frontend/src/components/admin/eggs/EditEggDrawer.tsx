@@ -189,7 +189,7 @@ export function EditEggDrawer({
         onConfirm={handleDelete}
         entityType={t('deleteEgg')}
         entityName={form.name || ''}
-        entitySubText={`Nest ID: ${form.pterodactylNestId} | Egg ID: ${form.pterodactylEggId}`}
+        entitySubText={`${t('nestId')}: ${form.pterodactylNestId} | ${t('eggId')}: ${form.pterodactylEggId}`}
         icon={
           form.icon && form.icon !== 'pending' ? (
             <img

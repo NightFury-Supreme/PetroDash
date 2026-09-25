@@ -124,7 +124,7 @@ export function EggFormBasicSection({
               <div className="relative w-11 h-11 bg-white/[0.02] border border-white/[0.06] rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
                 <img
                   src={imageSrc}
-                  alt="Egg icon"
+                  alt={t('eggIcon')}
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
