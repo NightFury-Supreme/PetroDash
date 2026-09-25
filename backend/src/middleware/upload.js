@@ -2,6 +2,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const AppError = require('../utils/AppError');
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, '../../uploads');
@@ -94,11 +95,11 @@ const upload = multer({
 const handleUploadError = (err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ error: 'File size too large. Maximum size is 5MB.' });
+      return next(new AppError('File size too large. Maximum size is 5MB.', 400, 'ERR_FILE_TOO_LARGE'));
     }
-    return res.status(400).json({ error: err.message });
+    return next(new AppError(err.message, 400, 'ERR_LOCATION_FLAG_UPLOAD_FAILED'));
   } else if (err) {
-    return res.status(400).json({ error: err.message });
+    return next(new AppError(err.message, 400, 'ERR_LOCATION_FLAG_UPLOAD_FAILED'));
   }
   next();
 };

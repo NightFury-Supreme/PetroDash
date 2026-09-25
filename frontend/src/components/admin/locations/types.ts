@@ -1,7 +1,6 @@
-/* ==========================================================================
-   Admin Locations Types
-   Compliance: ISO/IEC 25010, Strong Typing
-========================================================================== */
+/**
+ * Admin Locations Types
+ */
 
 export interface PlatformSettings {
   platformLocationId?: string;

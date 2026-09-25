@@ -1,7 +1,6 @@
-/* ==========================================================================
-   Admin Locations Service Layer
-   Compliance: ISO/IEC 25010, Separation of Concerns, ACID Principles
-========================================================================== */
+/**
+ * Admin Locations Service
+ */
 
 const Location = require('../../../models/Location');
 const Plan = require('../../../models/Plan');

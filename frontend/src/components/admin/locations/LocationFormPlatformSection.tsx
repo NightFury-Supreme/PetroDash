@@ -1,7 +1,6 @@
-/* ==========================================================================
-   Location Form Platform Section
-   Compliance: ISO/IEC 25010, Single Responsibility Principle (<300 lines)
-========================================================================== */
+/**
+ * Location Form Platform Section
+ */
 
 'use client';
 

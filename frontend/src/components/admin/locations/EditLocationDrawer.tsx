@@ -1,7 +1,6 @@
-/* ==========================================================================
-   Edit Location Drawer
-   Compliance: ISO/IEC 25010, Single Responsibility Principle (<300 lines)
-========================================================================== */
+/**
+ * Edit Location Drawer
+ */
 
 'use client';
 
@@ -98,15 +97,15 @@ export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocati
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || form.name.trim().length === 0) {
-      setError(t('form.locationName'));
+      setError(t('error.nameRequired'));
       return;
     }
     if (!pendingFlagFile && (!form.flag || form.flag === 'pending')) {
-      setError(t('form.locationFlag'));
+      setError(t('error.flagRequired'));
       return;
     }
     if (!form.latencyUrl || form.latencyUrl.trim().length === 0) {
-      setError(t('form.nodeIp'));
+      setError(t('error.nodeIpRequired'));
       return;
     }
 

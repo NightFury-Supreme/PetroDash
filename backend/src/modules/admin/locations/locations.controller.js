@@ -1,7 +1,6 @@
-/* ==========================================================================
-   Admin Locations Controller Layer
-   Compliance: ISO/IEC 25010, Separation of Concerns, Audit Logging
-========================================================================== */
+/**
+ * Admin Locations Controller
+ */
 
 const { writeAudit } = require('../../../middleware/audit');
 const { logUserActivity } = require('../../../middleware/userActivity');

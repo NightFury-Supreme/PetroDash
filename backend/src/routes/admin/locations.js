@@ -1,7 +1,6 @@
-/* ==========================================================================
-   Admin Locations Routes
-   Compliance: ISO/IEC 25010, Separation of Concerns
-========================================================================== */
+/**
+ * Admin Locations Routes
+ */
 
 const express = require('express');
 const { requireAdmin } = require('../../middleware/auth');

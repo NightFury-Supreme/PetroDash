@@ -622,6 +622,9 @@
     "ERR_LOCATION_CREATE_FAILED": "Standort konnte nicht erstellt werden.",
     "ERR_LOCATION_UPDATE_FAILED": "Standort konnte nicht aktualisiert werden.",
     "ERR_LOCATION_DELETE_FAILED": "Standort konnte nicht gelöscht werden.",
+    "ERR_FILE_TOO_LARGE": "Dateigröße überschreitet das Limit von 5 MB.",
+    "ERR_UPLOAD_NO_FILE": "Keine Datei zum Hochladen ausgewählt.",
+    "ERR_UPLOAD_INVALID_IMAGE": "Die hochgeladene Datei ist kein gültiges Bildformat.",
     "ERR_STATS_FETCH_FAILED": "Fehler beim Laden der Dashboard-Statistiken",
     "ERR_UNAUTHORIZED": "Unbefugter Zugriff",
     "ERR_FORBIDDEN": "Sie haben keine Berechtigung, auf diese Ressource zuzugreifen",
@@ -1685,6 +1688,11 @@
         "saveChanges": "Änderungen speichern",
         "deleteLocation": "Standort löschen"
       },
+      "success": {
+        "created": "Standort erfolgreich erstellt.",
+        "updated": "Standort erfolgreich aktualisiert.",
+        "deleted": "Standort erfolgreich gelöscht."
+      },
       "search": {
         "placeholder": "Standorte nach Name oder Node-IP suchen..."
       },
@@ -1743,7 +1751,10 @@
         "maxServers": "Max. {limit} Server"
       },
       "error": {
-        "title": "Standorte konnten nicht geladen werden"
+        "title": "Standorte konnten nicht geladen werden",
+        "nameRequired": "Standortname ist erforderlich.",
+        "flagRequired": "Standortflagge ist erforderlich.",
+        "nodeIpRequired": "Knoten-IP ist erforderlich."
       },
       "delete": {
         "warning1": "Server an diesem Standort haben kein aktives Bereitstellungsziel mehr.",

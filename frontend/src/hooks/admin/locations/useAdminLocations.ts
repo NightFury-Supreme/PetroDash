@@ -1,7 +1,6 @@
-/* ==========================================================================
-   Admin Locations Hook
-   Compliance: ISO/IEC 25010, Strong Typing, Standard Error Handling
-========================================================================== */
+/**
+ * Admin Locations Hook
+ */
 
 import { useState, useCallback } from 'react';
 import { useRouter } from '@/i18n/routing';

@@ -1,85 +1,92 @@
+/**
+ * Upload Routes
+ */
+
 const express = require('express');
-const router = express.Router();
+const path = require('path');
+const fs = require('fs');
 const { upload, handleUploadError, deleteFile, validateMagicBytes } = require('../middleware/upload');
 const { requireAdmin } = require('../middleware/auth');
 const { createRateLimiter } = require('../middleware/rateLimit');
+const { writeAudit } = require('../middleware/audit');
+const AppError = require('../utils/AppError');
+
+const router = express.Router();
 
 // Rate limiter: 20 uploads per 15 minutes per IP
 const uploadLimiter = createRateLimiter(20, 15 * 60 * 1000);
 
 // Upload icon (admin only)
 router.post('/icon', requireAdmin, uploadLimiter, (req, res, next) => {
-  upload.single('icon')(req, res, (err) => {
+  upload.single('icon')(req, res, async (err) => {
     if (err) {
       return handleUploadError(err, req, res, next);
     }
 
     try {
       if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded' });
+        throw new AppError('No file uploaded', 400, 'ERR_UPLOAD_NO_FILE');
       }
 
       // Second line of defence: verify actual file content via magic bytes.
-      // This catches files that were renamed (e.g. evil.php → evil.jpg) and
-      // bypassed the MIME type / extension filter.
-      const fs = require('fs');
-      const path = require('path');
       const uploadsDir = path.resolve(__dirname, '../../uploads');
       const safePath = path.resolve(uploadsDir, path.basename(req.file.filename));
-      
+
       if (!safePath.startsWith(uploadsDir)) {
-        return res.status(403).json({ error: 'Invalid file path' });
+        throw new AppError('Invalid file path', 403, 'ERR_UPLOAD_INVALID_PATH');
       }
 
       if (!validateMagicBytes(safePath)) {
-        // Delete the already-saved file immediately
-         
-        try { fs.unlinkSync(safePath); } catch (_) {}
-        return res.status(400).json({ error: 'File content does not match a valid image.' });
+        try {
+          fs.unlinkSync(safePath);
+        } catch (_) {}
+        throw new AppError('File content does not match a valid image', 400, 'ERR_LOCATION_FLAG_UPLOAD_FAILED');
       }
 
-      // Return only the server-generated path — never echo back the original filename
       const filePath = `/uploads/${req.file.filename}`;
 
-      res.status(200).json({
-        message: 'File uploaded successfully',
-        filePath: filePath,
+      await writeAudit(req, 'admin.upload.icon', 'upload', req.file.filename, {
         filename: req.file.filename,
         size: req.file.size,
         mimetype: req.file.mimetype,
       });
-    // eslint-disable-next-line unused-imports/no-unused-vars
+
+      return res.status(200).json({
+        message: 'File uploaded successfully',
+        filePath,
+        filename: req.file.filename,
+        size: req.file.size,
+        mimetype: req.file.mimetype,
+      });
     } catch (error) {
-      res.status(500).json({ error: 'Failed to upload file' });
+      next(error instanceof AppError ? error : new AppError('Failed to upload file', 500, 'ERR_LOCATION_FLAG_UPLOAD_FAILED'));
     }
   });
 });
 
 // Delete icon (admin only)
-router.delete('/icon', requireAdmin, async (req, res) => {
+router.delete('/icon', requireAdmin, async (req, res, next) => {
   try {
     const { filePath } = req.body;
 
     if (!filePath) {
-      return res.status(400).json({ error: 'File path is required' });
+      throw new AppError('File path is required', 400, 'ERR_UPLOAD_PATH_REQUIRED');
     }
 
-    // Validate the file path format — must be a string under 255 chars
     if (typeof filePath !== 'string' || filePath.length > 255) {
-      return res.status(400).json({ error: 'Invalid file path format' });
+      throw new AppError('Invalid file path format', 400, 'ERR_UPLOAD_INVALID_FORMAT');
     }
 
-    // Attempt to delete the file with security checks
     const deleted = deleteFile(filePath);
-
     if (!deleted) {
-      return res.status(404).json({ error: 'File not found or cannot be deleted' });
+      throw new AppError('File not found or cannot be deleted', 404, 'ERR_UPLOAD_FILE_NOT_FOUND');
     }
 
-    res.status(200).json({ message: 'File deleted successfully' });
-  // eslint-disable-next-line unused-imports/no-unused-vars
+    await writeAudit(req, 'admin.upload.delete', 'upload', path.basename(filePath), { filePath });
+
+    return res.status(200).json({ message: 'File deleted successfully' });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to delete file' });
+    next(error instanceof AppError ? error : new AppError('Failed to delete file', 500, 'ERR_UPLOAD_DELETE_FAILED'));
   }
 });
 

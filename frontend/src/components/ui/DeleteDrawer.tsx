@@ -35,6 +35,7 @@ export function DeleteDrawer({
   const { showError } = useToast();
   const t = useTranslations('UI.deleteDrawer');
   const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
 
   useEffect(() => {
     if (isOpen) {
@@ -51,7 +52,11 @@ export function DeleteDrawer({
       onClose();
     } catch (err: any) {
       console.error(err);
-      showError(err.message || t('failedToDelete', { type: entityType.toLowerCase() }));
+      const translatedMsg =
+        err.message && tErrorBackend.has(err.message)
+          ? tErrorBackend(err.message)
+          : err.message || t('failedToDelete', { type: entityType.toLowerCase() });
+      showError(translatedMsg);
       setIsDeleting(false);
     }
   };

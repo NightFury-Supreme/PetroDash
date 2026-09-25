@@ -605,6 +605,9 @@
     "ERR_LOCATION_CREATE_FAILED": "Échec de la création de l'emplacement.",
     "ERR_LOCATION_UPDATE_FAILED": "Échec de la mise à jour de l'emplacement.",
     "ERR_LOCATION_DELETE_FAILED": "Échec de la suppression de l'emplacement.",
+    "ERR_FILE_TOO_LARGE": "La taille du fichier dépasse la limite de 5 Mo.",
+    "ERR_UPLOAD_NO_FILE": "Aucun fichier n'a été sélectionné pour le téléchargement.",
+    "ERR_UPLOAD_INVALID_IMAGE": "Le fichier téléchargé n'est pas un format d'image valide.",
     "ERR_STATS_FETCH_FAILED": "Échec du chargement des statistiques du tableau de bord",
     "ERR_UNAUTHORIZED": "Accès non autorisé",
     "ERR_FORBIDDEN": "Vous n'avez pas la permission d'accéder à cette ressource",
@@ -1668,6 +1671,11 @@
         "saveChanges": "Enregistrer les modifications",
         "deleteLocation": "Supprimer l'emplacement"
       },
+      "success": {
+        "created": "Emplacement créé avec succès.",
+        "updated": "Emplacement mis à jour avec succès.",
+        "deleted": "Emplacement supprimé avec succès."
+      },
       "search": {
         "placeholder": "Rechercher des emplacements par nom ou IP de nœud..."
       },
@@ -1726,7 +1734,10 @@
         "maxServers": "Max {limit} serveurs"
       },
       "error": {
-        "title": "Échec du chargement des emplacements"
+        "title": "Échec du chargement des emplacements",
+        "nameRequired": "Le nom de l'emplacement est requis.",
+        "flagRequired": "Le drapeau de l'emplacement est requis.",
+        "nodeIpRequired": "L'adresse IP du nœud est requise."
       },
       "delete": {
         "warning1": "Les serveurs de cet emplacement n'auront plus de cible de déploiement active.",

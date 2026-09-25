@@ -632,6 +632,9 @@
     "ERR_LOCATION_CREATE_FAILED": "Error al crear la ubicación.",
     "ERR_LOCATION_UPDATE_FAILED": "Error al actualizar la ubicación.",
     "ERR_LOCATION_DELETE_FAILED": "Error al eliminar la ubicación.",
+    "ERR_FILE_TOO_LARGE": "El tamaño del archivo supera el límite de 5 MB.",
+    "ERR_UPLOAD_NO_FILE": "No se seleccionó ningún archivo para subir.",
+    "ERR_UPLOAD_INVALID_IMAGE": "El archivo subido no es un formato de imagen válido.",
     "ERR_STATS_FETCH_FAILED": "Error al cargar las estadísticas del panel",
     "ERR_UNAUTHORIZED": "Acceso no autorizado",
     "ERR_FORBIDDEN": "No tienes permiso para acceder a este recurso",
@@ -1695,6 +1698,11 @@
         "saveChanges": "Guardar cambios",
         "deleteLocation": "Eliminar ubicación"
       },
+      "success": {
+        "created": "Ubicación creada con éxito.",
+        "updated": "Ubicación actualizada con éxito.",
+        "deleted": "Ubicación eliminada con éxito."
+      },
       "search": {
         "placeholder": "Buscar ubicaciones por nombre o IP del nodo..."
       },
@@ -1753,7 +1761,10 @@
         "maxServers": "Máx. {limit} servidores"
       },
       "error": {
-        "title": "Error al cargar las ubicaciones"
+        "title": "Error al cargar las ubicaciones",
+        "nameRequired": "El nombre de la ubicación es obligatorio.",
+        "flagRequired": "La bandera de la ubicación es obligatoria.",
+        "nodeIpRequired": "La IP del nodo es obligatoria."
       },
       "delete": {
         "warning1": "Los servidores en esta ubicación ya no tendrán un destino de despliegue activo.",

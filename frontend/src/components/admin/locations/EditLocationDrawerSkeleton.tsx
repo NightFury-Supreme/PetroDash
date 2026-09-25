@@ -1,7 +1,6 @@
-/* ==========================================================================
-   Edit Location Drawer Skeleton
-   Compliance: ISO/IEC 25010, User Experience & Visual Feedback
-========================================================================== */
+/**
+ * Edit Location Drawer Skeleton
+ */
 
 import React from 'react';
 

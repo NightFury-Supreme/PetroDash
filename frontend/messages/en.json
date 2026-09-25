@@ -634,6 +634,9 @@
     "ERR_LOCATION_CREATE_FAILED": "Failed to create location.",
     "ERR_LOCATION_UPDATE_FAILED": "Failed to update location.",
     "ERR_LOCATION_DELETE_FAILED": "Failed to delete location.",
+    "ERR_FILE_TOO_LARGE": "File size exceeds the 5MB limit.",
+    "ERR_UPLOAD_NO_FILE": "No file was selected for upload.",
+    "ERR_UPLOAD_INVALID_IMAGE": "Uploaded file is not a valid image format.",
     "ERR_STATS_FETCH_FAILED": "Failed to load dashboard statistics",
     "ERR_UNAUTHORIZED": "Unauthorized access",
     "ERR_FORBIDDEN": "You do not have permission to access this resource",
@@ -1708,6 +1711,11 @@
         "saveChanges": "Save Changes",
         "deleteLocation": "Delete Location"
       },
+      "success": {
+        "created": "Location created successfully.",
+        "updated": "Location updated successfully.",
+        "deleted": "Location deleted successfully."
+      },
       "search": {
         "placeholder": "Search locations by name or node IP..."
       },
@@ -1766,7 +1774,10 @@
         "maxServers": "Max {limit} servers"
       },
       "error": {
-        "title": "Failed to Load Locations"
+        "title": "Failed to Load Locations",
+        "nameRequired": "Location name is required.",
+        "flagRequired": "Location flag is required.",
+        "nodeIpRequired": "Node IP is required."
       },
       "delete": {
         "warning1": "Servers in this location will no longer have an active deployment target.",

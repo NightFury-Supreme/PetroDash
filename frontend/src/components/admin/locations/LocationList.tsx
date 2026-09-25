@@ -1,7 +1,6 @@
-/* ==========================================================================
-   Location List Component
-   Compliance: ISO/IEC 25010, Single Responsibility Principle (<300 lines)
-========================================================================== */
+/**
+ * Location List Component
+ */
 
 'use client';
 

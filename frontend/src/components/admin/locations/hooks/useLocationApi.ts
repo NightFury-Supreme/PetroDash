@@ -1,7 +1,6 @@
-/* ==========================================================================
-   Admin Location API Hook
-   Compliance: ISO/IEC 25010, Separation of Concerns (<300 lines)
-========================================================================== */
+/**
+ * Admin Locations API Hook
+ */
 
 import { fetchWithRetry } from '@/utils/fetchWithRetry';
 
@@ -36,8 +35,14 @@ export function useLocationApi() {
       body: fd,
       timeoutMs: 20000,
     });
-    if (!res.ok) throw new Error('ERR_LOCATION_FLAG_UPLOAD_FAILED');
-    return res.json();
+    const resData = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const code = resData?.error?.code || resData?.error?.message || resData?.error || 'ERR_LOCATION_FLAG_UPLOAD_FAILED';
+      const err = new Error(typeof code === 'string' ? code : 'ERR_LOCATION_FLAG_UPLOAD_FAILED');
+      (err as any).errorKey = err.message;
+      throw err;
+    }
+    return resData;
   };
 
   const createLocation = async (data: Record<string, unknown>) => {

@@ -1,7 +1,6 @@
-/* ==========================================================================
-   Create Location Drawer
-   Compliance: ISO/IEC 25010, Single Responsibility Principle (<300 lines)
-========================================================================== */
+/**
+ * Create Location Drawer
+ */
 
 'use client';
 
@@ -70,6 +69,19 @@ export function CreateLocationDrawer({ onClose, onSuccess }: CreateLocationDrawe
   };
 
   const handleSubmit = async () => {
+    if (!form.name || form.name.trim().length === 0) {
+      setError(t('error.nameRequired'));
+      return;
+    }
+    if (!pendingFlagFile && (!form.flag || form.flag === 'pending')) {
+      setError(t('error.flagRequired'));
+      return;
+    }
+    if (!form.latencyUrl || form.latencyUrl.trim().length === 0) {
+      setError(t('error.nodeIpRequired'));
+      return;
+    }
+
     setError(null);
     setLoading(true);
     try {

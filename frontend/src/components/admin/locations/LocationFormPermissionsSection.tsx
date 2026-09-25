@@ -1,7 +1,6 @@
-/* ==========================================================================
-   Location Form Permissions Section
-   Compliance: ISO/IEC 25010, Single Responsibility Principle (<300 lines)
-========================================================================== */
+/**
+ * Location Form Permissions Section
+ */
 
 'use client';
 

@@ -1,7 +1,6 @@
-/* ==========================================================================
-   Admin Locations Module Barrel Export
-   Compliance: ISO/IEC 25010, Clean Architecture
-========================================================================== */
+/**
+ * Admin Locations Module Exports
+ */
 
 export { CreateLocationDrawer } from './CreateLocationDrawer';
 export { EditLocationDrawer } from './EditLocationDrawer';

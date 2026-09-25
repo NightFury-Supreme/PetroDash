@@ -1,7 +1,6 @@
-/* ==========================================================================
-   Admin Locations Validation Schemas
-   Compliance: ISO/IEC 25010, OWASP ASVS Input Validation
-========================================================================== */
+/**
+ * Admin Locations Schemas
+ */
 
 const { z } = require('zod');
 

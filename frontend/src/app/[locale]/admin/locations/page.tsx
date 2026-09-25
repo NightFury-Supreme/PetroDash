@@ -1,7 +1,6 @@
-/* ==========================================================================
-   Admin Locations Page
-   Compliance: ISO/IEC 25010, Single Responsibility Principle (<300 lines)
-========================================================================== */
+/**
+ * Admin Locations Page
+ */
 
 'use client';
 
@@ -16,12 +15,15 @@ import {
 import { DeleteDrawer } from '@/components/ui/DeleteDrawer';
 import AdminLocationsSkeleton from '@/components/skeletons/admin/locations/AdminLocationsSkeleton';
 import { useAdminLocations } from '@/hooks/admin/locations/useAdminLocations';
+import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslations } from 'next-intl';
 
 export default function LocationsPage() {
   const t = useTranslations('admin.locations');
   const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
+
+  const { showError, showSuccess } = useToast();
 
   const { locations, loading, error, fetchLocations, deleteLocation } = useAdminLocations();
   const [searchQuery, setSearchQuery] = useState('');
@@ -43,7 +45,12 @@ export default function LocationsPage() {
   });
 
   const handleExecuteDelete = async (id: string) => {
-    await deleteLocation(id);
+    try {
+      await deleteLocation(id);
+      showSuccess(t('success.deleted'));
+    } catch (err: any) {
+      showError(err.message || tCommon('failed'));
+    }
   };
 
   if (error) {
@@ -132,6 +139,7 @@ export default function LocationsPage() {
           onSuccess={() => {
             setIsDrawerOpen(false);
             fetchLocations();
+            showSuccess(t('success.created'));
           }}
         />
       )}
@@ -143,6 +151,7 @@ export default function LocationsPage() {
           onUpdate={() => {
             setEditingLocationId(null);
             fetchLocations();
+            showSuccess(t('success.updated'));
           }}
         />
       )}

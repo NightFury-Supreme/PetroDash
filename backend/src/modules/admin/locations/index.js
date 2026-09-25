@@ -1,7 +1,6 @@
-/* ==========================================================================
-   Admin Locations Module Barrel Export
-   Compliance: ISO/IEC 25010, Barrel Pattern
-========================================================================== */
+/**
+ * Admin Locations Module
+ */
 
 const controller = require('./locations.controller');
 const service = require('./locations.service');

@@ -622,6 +622,9 @@
     "ERR_LOCATION_CREATE_FAILED": "فشل إنشاء الموقع.",
     "ERR_LOCATION_UPDATE_FAILED": "فشل تحديث الموقع.",
     "ERR_LOCATION_DELETE_FAILED": "فشل حذف الموقع.",
+    "ERR_FILE_TOO_LARGE": "حجم الملف يتجاوز الحد المسموح به وهو 5 ميجابايت.",
+    "ERR_UPLOAD_NO_FILE": "لم يتم تحديد أي ملف للتحميل.",
+    "ERR_UPLOAD_INVALID_IMAGE": "الملف الذي تم تحميله ليس بتنسيق صورة صالح.",
     "ERR_STATS_FETCH_FAILED": "فشل في تحميل إحصائيات لوحة التحكم",
     "ERR_UNAUTHORIZED": "وصول غير مصرح به",
     "ERR_FORBIDDEN": "ليس لديك إذن للوصول إلى هذا المورد",
@@ -1685,6 +1688,11 @@
         "saveChanges": "حفظ التغييرات",
         "deleteLocation": "حذف الموقع"
       },
+      "success": {
+        "created": "تم إنشاء الموقع بنجاح.",
+        "updated": "تم تحديث الموقع بنجاح.",
+        "deleted": "تم حذف الموقع بنجاح."
+      },
       "search": {
         "placeholder": "البحث في المواقع بالاسم أو عنوان IP للعقدة..."
       },
@@ -1743,7 +1751,10 @@
         "maxServers": "حد أقصى {limit} خوادم"
       },
       "error": {
-        "title": "فشل تحميل المواقع"
+        "title": "فشل تحميل المواقع",
+        "nameRequired": "اسم الموقع مطلوب.",
+        "flagRequired": "علم الموقع مطلوب.",
+        "nodeIpRequired": "عنوان IP للعقدة مطلوب."
       },
       "delete": {
         "warning1": "لن يكون للخوادم في هذا الموقع هدف نشر نشط بعد الآن.",
