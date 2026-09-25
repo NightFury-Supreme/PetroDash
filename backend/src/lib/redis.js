@@ -17,6 +17,8 @@ function getClient() {
         enableOfflineQueue: true, 
         // Only retry once per request
         maxRetriesPerRequest: 1,
+        commandTimeout: 1000,
+        connectTimeout: 2000,
         retryStrategy(times) {
             console.warn(`[Redis] Connection attempt ${times} failed. Retrying in 5s...`);
             return 5000;
@@ -40,6 +42,14 @@ function shouldUseMemory() {
     return redis.status !== 'ready';
 }
 
+async function withTimeout(promise, ms = 800) {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error('Redis timeout')), ms);
+    });
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
 async function getCache(key) {
     if (shouldUseMemory()) {
         const entry = memoryCache.get(key);
@@ -52,11 +62,11 @@ async function getCache(key) {
     }
 
     try {
-        const raw = await getClient().get(key);
+        const raw = await withTimeout(getClient().get(key), 800);
         if (!raw) return null;
         return JSON.parse(raw);
     } catch {
-        // Fallback to memory on immediate failure
+        // Fallback to memory on immediate failure or timeout
         const entry = memoryCache.get(key);
         if (entry && (!entry.expiresAt || Date.now() < entry.expiresAt)) {
             return entry.value;
@@ -74,7 +84,7 @@ async function setCache(key, value, ttlSeconds = 120) {
 
     if (!shouldUseMemory()) {
         try {
-            await getClient().set(key, JSON.stringify(value), 'EX', ttlSeconds);
+            await withTimeout(getClient().set(key, JSON.stringify(value), 'EX', ttlSeconds), 800);
         } catch {
             // Ignore error, already in memory
         }
@@ -86,7 +96,7 @@ async function deleteCache(key) {
 
     if (!shouldUseMemory()) {
         try {
-            await getClient().del(key);
+            await withTimeout(getClient().del(key), 800);
         } catch {
             // Ignore
         }
@@ -104,9 +114,9 @@ async function deleteCachePattern(pattern) {
     if (!shouldUseMemory()) {
         try {
             const searchPattern = pattern.includes('*') ? pattern : `${pattern}*`;
-            const keys = await getClient().keys(searchPattern);
+            const keys = await withTimeout(getClient().keys(searchPattern), 800);
             if (keys && keys.length > 0) {
-                await getClient().del(...keys);
+                await withTimeout(getClient().del(...keys), 800);
             }
         } catch {
             // Ignore

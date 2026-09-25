@@ -604,6 +604,8 @@
     "contactSupport": "Wenn Sie glauben, dass dies ein Fehler ist, kontaktieren Sie bitte den Support."
   },
   "BackendErrors": {
+    "ERR_SERVER_TIMEOUT": "Zeitüberschreitung der Anforderung. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+    "ERR_EGGS_FETCH_FAILED": "Fehler beim Laden der Eggs. Bitte versuchen Sie es erneut.",
     "ERR_EGG_NOT_FOUND": "Egg nicht gefunden.",
     "ERR_EGG_CATEGORY_NOT_FOUND": "Egg-Kategorie nicht gefunden.",
     "ERR_EGG_CATEGORY_DUPLICATE": "Eine Egg-Kategorie mit diesem Namen existiert bereits.",

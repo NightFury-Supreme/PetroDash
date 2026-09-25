@@ -24,6 +24,7 @@ const ServerSchema = new mongoose.Schema(
 // Indexes for common queries
 ServerSchema.index({ owner: 1 });
 ServerSchema.index({ locationId: 1 });
+ServerSchema.index({ eggId: 1 });
 
 ServerSchema.index({ status: 1, priority: -1, createdAt: 1 });
 module.exports = mongoose.model('Server', ServerSchema);

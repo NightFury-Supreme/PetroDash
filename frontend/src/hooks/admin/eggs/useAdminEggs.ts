@@ -30,16 +30,26 @@ export function useAdminEggs() {
     try {
       const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs`, {
         headers: { Authorization: `Bearer ${token}` },
+        timeoutMs: 20000,
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data.error || 'ERR_STATS_FETCH_FAILED');
+        const errCode = data?.error?.code || data?.error?.message || data?.error || 'ERR_EGGS_FETCH_FAILED';
+        throw new Error(typeof errCode === 'string' ? errCode : 'ERR_EGGS_FETCH_FAILED');
       }
       if (Array.isArray(data)) {
         setEggs(data);
       }
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'ERR_STATS_FETCH_FAILED');
+      if (e instanceof Error) {
+        if (e.name === 'AbortError' || e.message?.toLowerCase().includes('aborted') || e.message === 'ERR_SERVER_TIMEOUT') {
+          setError('ERR_SERVER_TIMEOUT');
+        } else {
+          setError(e.message || 'ERR_EGGS_FETCH_FAILED');
+        }
+      } else {
+        setError('ERR_EGGS_FETCH_FAILED');
+      }
     } finally {
       setLoading(false);
     }
@@ -54,10 +64,12 @@ export function useAdminEggs() {
     const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
+      timeoutMs: 15000,
     });
     if (!res.ok) {
       const d = await res.json().catch(() => ({}));
-      throw new Error(d?.error || 'ERR_EGG_NOT_FOUND');
+      const errCode = d?.error?.code || d?.error?.message || d?.error || 'ERR_EGG_NOT_FOUND';
+      throw new Error(typeof errCode === 'string' ? errCode : 'ERR_EGG_NOT_FOUND');
     }
     await fetchEggs();
   };

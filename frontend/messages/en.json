@@ -616,6 +616,8 @@
     "contactSupport": "If you believe this is a mistake, please contact support."
   },
   "BackendErrors": {
+    "ERR_SERVER_TIMEOUT": "The server took too long to respond. Please check your connection and try again.",
+    "ERR_EGGS_FETCH_FAILED": "Failed to load eggs. Please try again.",
     "ERR_EGG_NOT_FOUND": "Egg not found.",
     "ERR_EGG_CATEGORY_NOT_FOUND": "Egg category not found.",
     "ERR_EGG_CATEGORY_DUPLICATE": "An egg category with this name already exists.",

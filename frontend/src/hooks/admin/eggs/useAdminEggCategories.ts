@@ -21,16 +21,22 @@ export function useAdminEggCategories(initialCategories?: EggCategory[]) {
       const token = localStorage.getItem('auth_token');
       const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/categories`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
+        timeoutMs: 15000,
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data.error || 'ERR_STATS_FETCH_FAILED');
+        const errCode = data?.error?.code || data?.error?.message || data?.error || 'ERR_STATS_FETCH_FAILED';
+        throw new Error(typeof errCode === 'string' ? errCode : 'ERR_STATS_FETCH_FAILED');
       }
       if (Array.isArray(data)) {
         setCategories(data);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'ERR_STATS_FETCH_FAILED');
+      if (err instanceof Error && (err.name === 'AbortError' || err.message?.toLowerCase().includes('aborted') || err.message === 'ERR_SERVER_TIMEOUT')) {
+        setError('ERR_SERVER_TIMEOUT');
+      } else {
+        setError(err instanceof Error ? err.message : 'ERR_STATS_FETCH_FAILED');
+      }
     } finally {
       setLoading(false);
     }
@@ -51,10 +57,12 @@ export function useAdminEggCategories(initialCategories?: EggCategory[]) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name: name.trim() }),
+        timeoutMs: 15000,
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data.error || 'ERR_EGG_CATEGORY_DUPLICATE');
+        const errCode = data?.error?.code || data?.error?.message || data?.error || 'ERR_EGG_CATEGORY_DUPLICATE';
+        throw new Error(typeof errCode === 'string' ? errCode : 'ERR_EGG_CATEGORY_DUPLICATE');
       }
       const newCat: EggCategory = { id: data.id, name: data.name, eggCount: data.eggCount || 0 };
       setCategories((prev) => [...prev, newCat]);
@@ -77,10 +85,12 @@ export function useAdminEggCategories(initialCategories?: EggCategory[]) {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name: name.trim() }),
+        timeoutMs: 15000,
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data.error || 'ERR_EGG_CATEGORY_NOT_FOUND');
+        const errCode = data?.error?.code || data?.error?.message || data?.error || 'ERR_EGG_CATEGORY_NOT_FOUND';
+        throw new Error(typeof errCode === 'string' ? errCode : 'ERR_EGG_CATEGORY_NOT_FOUND');
       }
       const updatedCat: EggCategory = { id: data.id, name: data.name, eggCount: data.eggCount || 0 };
       setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, name: updatedCat.name } : c)));
@@ -102,10 +112,12 @@ export function useAdminEggCategories(initialCategories?: EggCategory[]) {
       const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/categories/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
+        timeoutMs: 15000,
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data.error || 'ERR_EGG_CATEGORY_HAS_EGGS');
+        const errCode = data?.error?.code || data?.error?.message || data?.error || 'ERR_EGG_CATEGORY_HAS_EGGS';
+        throw new Error(typeof errCode === 'string' ? errCode : 'ERR_EGG_CATEGORY_HAS_EGGS');
       }
       setCategories((prev) => prev.filter((c) => c.id !== id));
     } catch (err: unknown) {

@@ -51,10 +51,12 @@ export function useAdminEggMutation(eggId?: string | null) {
       const token = localStorage.getItem('auth_token');
       const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/${id}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
+        timeoutMs: 15000,
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data?.error || 'ERR_EGG_NOT_FOUND');
+        const errCode = data?.error?.code || data?.error?.message || data?.error || 'ERR_EGG_NOT_FOUND';
+        throw new Error(typeof errCode === 'string' ? errCode : 'ERR_EGG_NOT_FOUND');
       }
 
       setForm({
@@ -146,11 +148,13 @@ export function useAdminEggMutation(eggId?: string | null) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),
+        timeoutMs: 15000,
       });
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data?.error || 'ERR_EGG_VALIDATION_FAILED');
+        const errCode = data?.error?.code || data?.error?.message || data?.error || 'ERR_EGG_VALIDATION_FAILED';
+        throw new Error(typeof errCode === 'string' ? errCode : 'ERR_EGG_VALIDATION_FAILED');
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'ERR_INTERNAL_SERVER';
@@ -184,11 +188,13 @@ export function useAdminEggMutation(eggId?: string | null) {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),
+        timeoutMs: 15000,
       });
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data?.error || 'ERR_EGG_VALIDATION_FAILED');
+        const errCode = data?.error?.code || data?.error?.message || data?.error || 'ERR_EGG_VALIDATION_FAILED';
+        throw new Error(typeof errCode === 'string' ? errCode : 'ERR_EGG_VALIDATION_FAILED');
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'ERR_INTERNAL_SERVER';

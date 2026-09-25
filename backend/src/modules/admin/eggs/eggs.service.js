@@ -11,6 +11,31 @@ const Plan = require('../../../models/Plan');
 const { getCache, setCache, deleteCachePattern } = require('../../../lib/redis');
 const AppError = require('../../../utils/AppError');
 
+const buildCategoryMaps = (categories) => {
+  const nameMap = new Map();
+  const idMap = new Map();
+  if (Array.isArray(categories)) {
+    for (const c of categories) {
+      const idStr = c._id.toString();
+      nameMap.set(idStr, c.name);
+      nameMap.set(c.name.toLowerCase(), c.name);
+      idMap.set(c.name.toLowerCase(), idStr);
+      idMap.set(idStr, idStr);
+    }
+  }
+  return { nameMap, idMap };
+};
+
+const resolveCategory = (catField, nameMap, idMap) => {
+  const catRaw = catField ? catField.toString() : '';
+  const categoryName =
+    nameMap.get(catRaw) ||
+    nameMap.get(catRaw.toLowerCase()) ||
+    (typeof catField === 'string' ? catField : 'Uncategorized');
+  const categoryId = idMap.get(catRaw) || idMap.get(catRaw.toLowerCase()) || catRaw;
+  return { categoryName: categoryName || 'Uncategorized', categoryId };
+};
+
 /**
  * Retrieves all eggs populated with categories, server counts, and plan details.
  * Cached in Redis for 30s.
@@ -20,29 +45,42 @@ const getEggsList = async () => {
   const cached = await getCache(cacheKey);
   if (cached) return cached;
 
-  const [eggs, serverCountsAgg, allPlans] = await Promise.all([
-    Egg.find().populate('category').sort({ createdAt: -1 }).lean(),
+  const [eggs, categories, serverCountsAgg, allPlans] = await Promise.all([
+    Egg.find().sort({ createdAt: -1 }).lean(),
+    EggCategory.find().lean(),
     Server.aggregate([{ $group: { _id: '$eggId', count: { $sum: 1 } } }]),
     Plan.find({}, '_id name').lean(),
   ]);
 
-  const serverCounts = new Map(serverCountsAgg.map((s) => [s._id?.toString(), s.count]));
+  const serverCounts = new Map();
+  if (Array.isArray(serverCountsAgg)) {
+    for (const s of serverCountsAgg) {
+      if (s._id) serverCounts.set(s._id.toString(), s.count);
+    }
+  }
+
   const planMap = new Map();
-  allPlans.forEach((p) => {
-    planMap.set(p._id.toString(), p.name);
-    planMap.set(p.name, p.name);
-  });
+  if (Array.isArray(allPlans)) {
+    allPlans.forEach((p) => {
+      if (p._id) planMap.set(p._id.toString(), p.name);
+      if (p.name) planMap.set(p.name, p.name);
+    });
+  }
+
+  const { nameMap, idMap } = buildCategoryMaps(categories);
 
   const list = eggs.map((egg) => {
-    const count = serverCounts.get(egg._id.toString()) || 0;
+    const eggIdStr = egg._id?.toString();
+    const count = serverCounts.get(eggIdStr) || 0;
+    const { categoryName, categoryId } = resolveCategory(egg.category, nameMap, idMap);
     const allowedPlanNames = (egg.allowedPlans || [])
       .map((ap) => planMap.get(String(ap)))
       .filter(Boolean);
 
     return {
       ...egg,
-      categoryName: egg.category?.name || 'Uncategorized',
-      category: egg.category?._id?.toString() || egg.category,
+      categoryName,
+      category: categoryId,
       serversCount: count,
       allowedPlanNames: [...new Set(allowedPlanNames)],
     };
@@ -71,23 +109,29 @@ const getEggCategories = async () => {
   const cached = await getCache(cacheKey);
   if (cached) return cached;
 
-  // Ensure legacy string categories are migrated to category documents
-  const rawEggs = await mongoose.connection.db
-    .collection('eggs')
-    .find({ category: { $type: 'string' } })
-    .toArray();
-
-  for (const raw of rawEggs) {
-    if (raw.category) {
-      const cat = await EggCategory.findOneAndUpdate(
-        { name: raw.category },
-        { $setOnInsert: { name: raw.category } },
-        { upsert: true, new: true }
-      );
-      await mongoose.connection.db
+  // Defensive migration for legacy eggs
+  try {
+    if (mongoose.connection?.db) {
+      const rawEggs = await mongoose.connection.db
         .collection('eggs')
-        .updateOne({ _id: raw._id }, { $set: { category: cat._id } });
+        .find({ category: { $type: 'string' } })
+        .toArray();
+
+      for (const raw of rawEggs) {
+        if (raw.category) {
+          const cat = await EggCategory.findOneAndUpdate(
+            { name: raw.category },
+            { $setOnInsert: { name: raw.category } },
+            { upsert: true, new: true }
+          );
+          await mongoose.connection.db
+            .collection('eggs')
+            .updateOne({ _id: raw._id }, { $set: { category: cat._id } });
+        }
+      }
     }
+  } catch (err) {
+    console.warn('[EggsService] Category auto-migration non-fatal:', err.message);
   }
 
   const [categories, counts] = await Promise.all([
@@ -103,7 +147,7 @@ const getEggCategories = async () => {
   const result = categories.map((c) => ({
     id: c._id.toString(),
     name: c.name,
-    eggCount: countMap[c._id.toString()] || 0,
+    eggCount: countMap[c._id.toString()] || countMap[c.name] || 0,
   }));
 
   await setCache(cacheKey, result, 60);
@@ -116,13 +160,11 @@ const getEggCategories = async () => {
 const createEggCategory = async (name) => {
   try {
     const cat = await EggCategory.create({ name: name.trim() });
-    await deleteCachePattern('admin:eggs:categories');
+    await deleteCachePattern('admin:eggs*');
     await deleteCachePattern('eggs:*');
     return { id: cat._id.toString(), name: cat.name, eggCount: 0, catObj: cat };
   } catch (e) {
-    if (e.code === 11000) {
-      throw new AppError('Category already exists', 400, 'ERR_EGG_CATEGORY_DUPLICATE');
-    }
+    if (e.code === 11000) throw new AppError('Category already exists', 400, 'ERR_EGG_CATEGORY_DUPLICATE');
     throw new AppError('Failed to create egg category', 500, 'ERR_INTERNAL_SERVER');
   }
 };
@@ -132,22 +174,17 @@ const createEggCategory = async (name) => {
  */
 const updateEggCategory = async (id, name) => {
   const cat = await EggCategory.findById(id);
-  if (!cat) {
-    throw new AppError('Category not found', 404, 'ERR_EGG_CATEGORY_NOT_FOUND');
-  }
+  if (!cat) throw new AppError('Category not found', 404, 'ERR_EGG_CATEGORY_NOT_FOUND');
 
   const oldName = cat.name;
   const newName = name.trim();
-  if (oldName === newName) {
-    return { cat, oldName, newName, changed: false };
-  }
+  if (oldName === newName) return { cat, oldName, newName, changed: false };
 
   cat.name = newName;
   await cat.save();
 
   await deleteCachePattern('admin:eggs*');
   await deleteCachePattern('eggs:*');
-
   return { cat, oldName, newName, changed: true };
 };
 
@@ -156,19 +193,14 @@ const updateEggCategory = async (id, name) => {
  */
 const deleteEggCategory = async (id) => {
   const cat = await EggCategory.findById(id);
-  if (!cat) {
-    throw new AppError('Category not found', 404, 'ERR_EGG_CATEGORY_NOT_FOUND');
-  }
+  if (!cat) throw new AppError('Category not found', 404, 'ERR_EGG_CATEGORY_NOT_FOUND');
 
   const count = await Egg.countDocuments({ category: cat._id });
-  if (count > 0) {
-    throw new AppError('Cannot delete category with associated eggs', 400, 'ERR_EGG_CATEGORY_HAS_EGGS');
-  }
+  if (count > 0) throw new AppError('Cannot delete category with associated eggs', 400, 'ERR_EGG_CATEGORY_HAS_EGGS');
 
   await cat.deleteOne();
-  await deleteCachePattern('admin:eggs:categories');
+  await deleteCachePattern('admin:eggs*');
   await deleteCachePattern('eggs:*');
-
   return cat;
 };
 
@@ -180,17 +212,21 @@ const getEggById = async (id) => {
   const cached = await getCache(cacheKey);
   if (cached) return cached;
 
-  const egg = await Egg.findById(id).populate('category').lean();
-  if (!egg) {
-    throw new AppError('Egg not found', 404, 'ERR_EGG_NOT_FOUND');
-  }
+  const [egg, categories, serversCount] = await Promise.all([
+    Egg.findById(id).lean(),
+    EggCategory.find().lean(),
+    Server.countDocuments({ eggId: id }),
+  ]);
 
-  const serversCount = await Server.countDocuments({ eggId: id });
+  if (!egg) throw new AppError('Egg not found', 404, 'ERR_EGG_NOT_FOUND');
+
+  const { nameMap, idMap } = buildCategoryMaps(categories);
+  const { categoryName, categoryId } = resolveCategory(egg.category, nameMap, idMap);
 
   const formattedEgg = {
     ...egg,
-    categoryName: egg.category?.name || 'Uncategorized',
-    category: egg.category?._id?.toString() || egg.category,
+    categoryName,
+    category: categoryId,
     serversCount,
   };
 
@@ -203,23 +239,17 @@ const getEggById = async (id) => {
  */
 const updateEgg = async (id, data) => {
   const original = await Egg.findById(id).lean();
-  if (!original) {
-    throw new AppError('Egg not found', 404, 'ERR_EGG_NOT_FOUND');
-  }
+  if (!original) throw new AppError('Egg not found', 404, 'ERR_EGG_NOT_FOUND');
 
   const egg = await Egg.findByIdAndUpdate(id, data, { new: true }).lean();
-
   await deleteCachePattern('admin:eggs*');
   await deleteCachePattern('eggs:*');
   await deleteCachePattern(`admin:egg:${id}`);
 
   const changes = {};
   for (const [k, v] of Object.entries(data)) {
-    if (JSON.stringify(original[k]) !== JSON.stringify(v)) {
-      changes[k] = { old: original[k], new: v };
-    }
+    if (JSON.stringify(original[k]) !== JSON.stringify(v)) changes[k] = { old: original[k], new: v };
   }
-
   return { egg, changes };
 };
 
@@ -228,19 +258,14 @@ const updateEgg = async (id, data) => {
  */
 const deleteEgg = async (id) => {
   const serversCount = await Server.countDocuments({ eggId: id });
-  if (serversCount > 0) {
-    throw new AppError('Cannot delete egg with existing servers', 400, 'ERR_EGG_HAS_SERVERS');
-  }
+  if (serversCount > 0) throw new AppError('Cannot delete egg with existing servers', 400, 'ERR_EGG_HAS_SERVERS');
 
   const egg = await Egg.findByIdAndDelete(id).lean();
-  if (!egg) {
-    throw new AppError('Egg not found', 404, 'ERR_EGG_NOT_FOUND');
-  }
+  if (!egg) throw new AppError('Egg not found', 404, 'ERR_EGG_NOT_FOUND');
 
   await deleteCachePattern('admin:eggs*');
   await deleteCachePattern('eggs:*');
   await deleteCachePattern(`admin:egg:${id}`);
-
   return egg;
 };
 

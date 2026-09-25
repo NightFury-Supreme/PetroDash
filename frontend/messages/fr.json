@@ -587,6 +587,8 @@
     "contactSupport": "Si vous pensez que c'est une erreur, veuillez contacter le support."
   },
   "BackendErrors": {
+    "ERR_SERVER_TIMEOUT": "Délai d'attente de la demande dépassé. Veuillez vérifier votre connexion et réessayer.",
+    "ERR_EGGS_FETCH_FAILED": "Échec du chargement des eggs. Veuillez réessayer.",
     "ERR_EGG_NOT_FOUND": "Egg introuvable.",
     "ERR_EGG_CATEGORY_NOT_FOUND": "Catégorie d'egg introuvable.",
     "ERR_EGG_CATEGORY_DUPLICATE": "Une catégorie d'egg avec ce nom existe déjà.",

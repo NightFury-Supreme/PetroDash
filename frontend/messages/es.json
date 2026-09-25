@@ -614,6 +614,8 @@
     "contactSupport": "Si crees que esto es un error, por favor contacta al soporte."
   },
   "BackendErrors": {
+    "ERR_SERVER_TIMEOUT": "Se agotó el tiempo de espera de la solicitud. Por favor verifique su conexión e intente nuevamente.",
+    "ERR_EGGS_FETCH_FAILED": "Error al cargar los eggs. Por favor intente nuevamente.",
     "ERR_EGG_NOT_FOUND": "Egg no encontrado.",
     "ERR_EGG_CATEGORY_NOT_FOUND": "Categoría de egg no encontrada.",
     "ERR_EGG_CATEGORY_DUPLICATE": "Ya existe una categoría de egg con este nombre.",

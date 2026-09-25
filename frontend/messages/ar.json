@@ -604,6 +604,8 @@
     "contactSupport": "إذا كنت تعتقد أن هذا خطأ، يرجى الاتصال بالدعم."
   },
   "BackendErrors": {
+    "ERR_SERVER_TIMEOUT": "انتهت مهلة الطلب. يرجى التحقق من اتصالك والمحاولة مرة أخرى.",
+    "ERR_EGGS_FETCH_FAILED": "فشل في تحميل البيض. يرجى المحاولة مرة أخرى.",
     "ERR_EGG_NOT_FOUND": "النموذج (Egg) غير موجود.",
     "ERR_EGG_CATEGORY_NOT_FOUND": "فئة النماذج غير موجودة.",
     "ERR_EGG_CATEGORY_DUPLICATE": "توجد فئة نماذج بهذا الاسم بالفعل.",
