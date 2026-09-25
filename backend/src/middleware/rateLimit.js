@@ -19,6 +19,7 @@ function createRateLimiter(max, windowMs, options = {}) {
     standardHeaders: true,
     legacyHeaders: false,
     store,
+    passOnStoreError: true,
     message: { error: 'Too many requests, please try again later.' },
     ...options
   });
@@ -43,6 +44,7 @@ function createSecureRateLimiter(max, windowMs, options = {}) {
     standardHeaders: true,
     legacyHeaders: false,
     store,
+    passOnStoreError: true,
     message: { 
       error: 'Too many requests, please try again later.',
       retryAfter: Math.ceil(windowMs / 1000)

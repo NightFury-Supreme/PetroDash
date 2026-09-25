@@ -17,8 +17,6 @@ function getClient() {
         enableOfflineQueue: true, 
         // Only retry once per request
         maxRetriesPerRequest: 1,
-        commandTimeout: 1000,
-        connectTimeout: 2000,
         retryStrategy(times) {
             console.warn(`[Redis] Connection attempt ${times} failed. Retrying in 5s...`);
             return 5000;
