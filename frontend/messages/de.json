@@ -1748,7 +1748,8 @@
         "allowedPlansDesc": "Wählen Sie aus, welche Tarife an diesem Standort bereitgestellt werden dürfen. Leer lassen, um alle Tarife zuzulassen.",
         "allPlansAllowed": "Alle Tarife zulässig",
         "unlimitedServers": "Unbegrenzte Server",
-        "maxServers": "Max. {limit} Server"
+        "maxServers": "Max. {limit} Server",
+        "price": "Preis"
       },
       "error": {
         "title": "Standorte konnten nicht geladen werden",

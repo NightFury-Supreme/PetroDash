@@ -56,7 +56,10 @@ export function CreateLocationDrawer({ onClose, onSuccess }: CreateLocationDrawe
 
   useEffect(() => {
     fetchPlans()
-      .then((d) => setPlans(Array.isArray(d) ? d : []))
+      .then((d) => {
+        const list = Array.isArray(d) ? d : Array.isArray((d as any)?.plans) ? (d as any).plans : [];
+        setPlans(list);
+      })
       .catch(() => {})
       .finally(() => setLoadingPlans(false));
   }, []);

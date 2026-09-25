@@ -1731,7 +1731,8 @@
         "allowedPlansDesc": "Sélectionnez les forfaits autorisés à se déployer ici. Laissez vide pour tout autoriser.",
         "allPlansAllowed": "Tous les forfaits sont autorisés",
         "unlimitedServers": "Serveurs illimités",
-        "maxServers": "Max {limit} serveurs"
+        "maxServers": "Max {limit} serveurs",
+        "price": "Prix"
       },
       "error": {
         "title": "Échec du chargement des emplacements",

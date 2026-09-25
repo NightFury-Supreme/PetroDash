@@ -17,12 +17,15 @@ export function useLocationApi() {
   };
 
   const fetchPlans = async () => {
-    const res = await fetchWithRetry(`${getBaseUrl()}/api/admin/plans`, {
+    const res = await fetchWithRetry(`${getBaseUrl()}/api/admin/plans?limit=100`, {
       headers: getHeaders(false),
       timeoutMs: 15000,
     });
     if (!res.ok) throw new Error('ERR_PLANS_FETCH_FAILED');
-    return res.json();
+    const data = await res.json().catch(() => ({}));
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.plans)) return data.plans;
+    return [];
   };
 
   const uploadIcon = async (file: File) => {

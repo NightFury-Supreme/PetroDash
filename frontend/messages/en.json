@@ -1771,7 +1771,8 @@
         "allowedPlansDesc": "Select which plans are permitted to deploy in this location. Leave empty to allow all plans.",
         "allPlansAllowed": "All plans allowed",
         "unlimitedServers": "Unlimited servers",
-        "maxServers": "Max {limit} servers"
+        "maxServers": "Max {limit} servers",
+        "price": "Price"
       },
       "error": {
         "title": "Failed to Load Locations",

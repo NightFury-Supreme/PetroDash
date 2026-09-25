@@ -1758,7 +1758,8 @@
         "allowedPlansDesc": "Seleccione qué planes están autorizados para desplegarse aquí. Deje vacío para permitir todos.",
         "allPlansAllowed": "Todos los planes permitidos",
         "unlimitedServers": "Servidores ilimitados",
-        "maxServers": "Máx. {limit} servidores"
+        "maxServers": "Máx. {limit} servidores",
+        "price": "Precio"
       },
       "error": {
         "title": "Error al cargar las ubicaciones",

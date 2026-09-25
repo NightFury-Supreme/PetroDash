@@ -82,7 +82,9 @@ export function EditLocationDrawer({ locationId, onClose, onUpdate }: EditLocati
 
     fetchPlans()
       .then((data) => {
-        if (isMounted) setPlans(Array.isArray(data) ? data : []);
+        if (!isMounted) return;
+        const list = Array.isArray(data) ? data : Array.isArray((data as any)?.plans) ? (data as any).plans : [];
+        setPlans(list);
       })
       .catch(() => {})
       .finally(() => {

@@ -1748,7 +1748,8 @@
         "allowedPlansDesc": "حدد الخطط المسموح بنشرها في هذا الموقع. اتركه فارغًا للسماح بجميع الخطط.",
         "allPlansAllowed": "جميع الخطط مسموح بها",
         "unlimitedServers": "خوادم غير محدودة",
-        "maxServers": "حد أقصى {limit} خوادم"
+        "maxServers": "حد أقصى {limit} خوادم",
+        "price": "السعر"
       },
       "error": {
         "title": "فشل تحميل المواقع",
