@@ -386,13 +386,13 @@
       "subtitle": "यह {type} और इसके कॉन्फ़िगरेशन को स्थायी रूप से हटा देगा।",
       "deleteBtn": "{type} हटाएं",
       "beforeContinue": "जारी रखने से पहले",
-      "typeToConfirm": "पुष्टि करने के लिए {name} टाइप करें",
+      "typeToConfirm": "पुष्टि करने के लिए <confirm>{name}</confirm> टाइप करें",
       "failedToDelete": "{type} को हटाने में विफल"
     },
     "toast": {
-      "error": "Error",
-      "warning": "Warning",
-      "info": "Info"
+      "error": "त्रुटि",
+      "warning": "चेतावनी",
+      "info": "जानकारी"
     },
     "requestInformation": "अनुरोध की जानकारी",
     "requestId": "अनुरोध आईडी",
@@ -789,6 +789,7 @@
     "status": "स्थिति",
     "loading": "लोड हो रहा है...",
     "saving": "सहेज रहा है...",
+    "save": "सहेजें",
     "updating": "अपडेट हो रहा है...",
     "sending": "भेजा जा रहा है...",
     "retry": "पुनः प्रयास करें",
@@ -1541,7 +1542,7 @@
       "removeFilteredWarning": "यह केवल आपके चयनित नोड और एग फ़िल्टर से मेल खाने वाले सर्वर को स्थायी रूप से हटा देगा।",
       "removeAllWarning": "यह सभी लंबित और त्रुटिपूर्ण सर्वर निर्माणों को स्थायी रूप से रद्द और हटा देगा।",
       "recreateWarning": "रद्द होने पर उपयोगकर्ताओं को सर्वर को फिर से ऑर्डर या बनाना होगा।",
-      "typeToConfirm": "पुष्टि करने के लिए \"{clear}\" टाइप करें",
+      "typeToConfirm": "पुष्टि करने के लिए <confirm>{clear}</confirm> टाइप करें",
       "tabs": {
         "allServers": "सभी सर्वर",
         "queue": "तैनाती कतार"
@@ -2153,7 +2154,8 @@
       "refundAmount": "रिफंड राशि",
       "beforeYouContinue": "जारी रखने से पहले",
       "customerReceivesMoneyBack": "ग्राहक को उनकी मूल भुगतान विधि के माध्यम से रिफंड प्राप्त होगा।",
-      "actionIrreversible": "यह कार्रवाई अंतिम है और इसे वापस नहीं लिया जा सकता।"
+      "actionIrreversible": "यह कार्रवाई अंतिम है और इसे वापस नहीं लिया जा सकता।",
+      "typeRefundToConfirm": "पुष्टि करने के लिए <confirm>{refund}</confirm> टाइप करें"
     },
     "Ledger": {
       "headerTitle": "भुगतान लेज़र",

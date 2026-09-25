@@ -382,17 +382,17 @@
     "noActivity": "لا يوجد نشاط بعد",
     "device": "الجهاز",
     "deleteDrawer": {
-      "title": "Delete {type}",
-      "subtitle": "This will permanently remove the {type} and its configuration.",
-      "deleteBtn": "Delete {type}",
-      "beforeContinue": "BEFORE YOU CONTINUE",
-      "typeToConfirm": "Type {name} to confirm",
-      "failedToDelete": "Failed to delete {type}"
+      "title": "حذف {type}",
+      "subtitle": "سيؤدي هذا إلى إزالة {type} وإعداده بشكل دائم.",
+      "deleteBtn": "حذف {type}",
+      "beforeContinue": "قبل المتابعة",
+      "typeToConfirm": "اكتب <confirm>{name}</confirm> للتأكيد",
+      "failedToDelete": "فشل حذف {type}"
     },
     "toast": {
-      "error": "Error",
-      "warning": "Warning",
-      "info": "Info"
+      "error": "خطأ",
+      "warning": "تحذير",
+      "info": "معلومات"
     },
     "requestInformation": "Request Information",
     "requestId": "Request ID",
@@ -779,6 +779,7 @@
     "status": "الحالة",
     "loading": "جاري التحميل...",
     "saving": "جاري الحفظ...",
+    "save": "حفظ",
     "updating": "جارٍ التحديث...",
     "sending": "جاري الإرسال...",
     "retry": "إعادة المحاولة",
@@ -1531,7 +1532,7 @@
       "removeFilteredWarning": "سيؤدي هذا إلى إزالة الخوادم المطابقة لمرشحات العقدة وEgg المحددة فقط بشكل دائم.",
       "removeAllWarning": "سيؤدي هذا إلى إلغاء وإزالة جميع عمليات إنشاء الخوادم المعلقة والتي فشلت بشكل دائم.",
       "recreateWarning": "سيتعين على المستخدمين طلب أو إنشاء الخادم مرة أخرى إذا تم الإلغاء.",
-      "typeToConfirm": "اكتب \"{clear}\" للتأكيد",
+      "typeToConfirm": "اكتب <confirm>{clear}</confirm> للتأكيد",
       "tabs": {
         "allServers": "جميع الخوادم",
         "queue": "قائمة انتظار النشر"
@@ -2143,7 +2144,8 @@
       "refundAmount": "مبلغ الاسترداد",
       "beforeYouContinue": "قبل المتابعة",
       "customerReceivesMoneyBack": "سيتلقى العميل استردادًا عبر طريقة الدفع الأصلية.",
-      "actionIrreversible": "هذا الإجراء نهائي ولا يمكن التراجع عنه."
+      "actionIrreversible": "هذا الإجراء نهائي ولا يمكن التراجع عنه.",
+      "typeRefundToConfirm": "اكتب <confirm>{refund}</confirm> للتأكيد"
     },
     "Ledger": {
       "headerTitle": "دفتر الأستاذ للمدفوعات",

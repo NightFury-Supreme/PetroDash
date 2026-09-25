@@ -388,7 +388,7 @@
       "subtitle": "This will permanently remove the {type} and its configuration.",
       "deleteBtn": "Delete {type}",
       "beforeContinue": "BEFORE YOU CONTINUE",
-      "typeToConfirm": "Type {name} to confirm",
+      "typeToConfirm": "Type <confirm>{name}</confirm> to confirm",
       "failedToDelete": "Failed to delete {type}"
     },
     "toast": {
@@ -791,6 +791,7 @@
     "status": "Status",
     "loading": "Loading...",
     "saving": "Saving...",
+    "save": "Save",
     "updating": "Updating...",
     "sending": "Sending...",
     "retry": "Retry",
@@ -1554,7 +1555,7 @@
       "removeFilteredWarning": "This will permanently remove only the servers matching your selected node and egg filters.",
       "removeAllWarning": "This will permanently cancel and remove all pending and errored server creations.",
       "recreateWarning": "Users will need to order or create the server again if cancelled.",
-      "typeToConfirm": "Type \"{clear}\" to confirm",
+      "typeToConfirm": "Type <confirm>{clear}</confirm> to confirm",
       "tabs": {
         "allServers": "All Servers",
         "queue": "Deployment Queue"
@@ -2166,7 +2167,8 @@
       "refundAmount": "Refund Amount",
       "beforeYouContinue": "Before you continue",
       "customerReceivesMoneyBack": "The customer will receive a refund via their original payment method.",
-      "actionIrreversible": "This action is final and cannot be reversed."
+      "actionIrreversible": "This action is final and cannot be reversed.",
+      "typeRefundToConfirm": "Type <confirm>{refund}</confirm> to confirm"
     },
     "Ledger": {
       "headerTitle": "Payment Ledger",

@@ -355,16 +355,16 @@
     "noActivity": "Aucune activité pour l'instant",
     "device": "Appareil",
     "deleteDrawer": {
-      "title": "Delete {type}",
-      "subtitle": "This will permanently remove the {type} and its configuration.",
-      "deleteBtn": "Delete {type}",
-      "beforeContinue": "BEFORE YOU CONTINUE",
-      "typeToConfirm": "Type {name} to confirm",
-      "failedToDelete": "Failed to delete {type}"
+      "title": "Supprimer {type}",
+      "subtitle": "Cela supprimera définitivement {type} et sa configuration.",
+      "deleteBtn": "Supprimer {type}",
+      "beforeContinue": "AVANT DE CONTINUER",
+      "typeToConfirm": "Tapez <confirm>{name}</confirm> pour confirmer",
+      "failedToDelete": "Échec de la suppression de {type}"
     },
     "toast": {
-      "error": "Error",
-      "warning": "Warning",
+      "error": "Erreur",
+      "warning": "Avertissement",
       "info": "Info"
     },
     "requestInformation": "Request Information",
@@ -762,6 +762,7 @@
     "status": "Statut",
     "loading": "Chargement...",
     "saving": "Enregistrement...",
+    "save": "Enregistrer",
     "updating": "Mise à jour...",
     "sending": "Envoi en cours...",
     "retry": "Réessayer",
@@ -1514,7 +1515,7 @@
       "removeFilteredWarning": "Cela supprimera définitivement uniquement les serveurs correspondant à vos filtres de nœud et d'egg sélectionnés.",
       "removeAllWarning": "Cela annulera et supprimera définitivement toutes les créations de serveurs en attente et en erreur.",
       "recreateWarning": "Les utilisateurs devront commander ou recréer le serveur en cas d'annulation.",
-      "typeToConfirm": "Tapez \"{clear}\" pour confirmer",
+      "typeToConfirm": "Tapez <confirm>{clear}</confirm> pour confirmer",
       "tabs": {
         "allServers": "Tous les serveurs",
         "queue": "File d'attente de déploiement"
@@ -2126,7 +2127,8 @@
       "refundAmount": "Montant du remboursement",
       "beforeYouContinue": "Avant de continuer",
       "customerReceivesMoneyBack": "Le client recevra un remboursement via son moyen de paiement d'origine.",
-      "actionIrreversible": "Cette action est définitive et ne peut pas être inversée."
+      "actionIrreversible": "Cette action est définitive et ne peut pas être inversée.",
+      "typeRefundToConfirm": "Tapez <confirm>{refund}</confirm> pour confirmer"
     },
     "Ledger": {
       "headerTitle": "Registre des paiements",

@@ -174,7 +174,10 @@ export function AdminClearQueueDrawer({
 
       <div>
         <h2 className="text-[11px] font-medium uppercase tracking-[0.1em] text-zinc-500 mb-4">
-          {t.rich('typeToConfirm', { clear: (chunks) => <span className="text-zinc-100">{chunks}</span> })}
+          {t.rich('typeToConfirm', {
+            clear: expectedConfirmText,
+            confirm: (chunks) => <span className="text-zinc-100">{chunks}</span>,
+          })}
         </h2>
         <div className="flex overflow-hidden rounded-lg border border-[#2A2A2A] bg-[#161616] focus-within:border-red-500/50 transition-colors">
           <input

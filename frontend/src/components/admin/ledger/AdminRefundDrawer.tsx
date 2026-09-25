@@ -100,7 +100,8 @@ export function AdminRefundDrawer({
       <div>
         <h2 className="text-[11px] font-medium uppercase tracking-[0.1em] text-zinc-500 mb-4">
           {t.rich('typeRefundToConfirm', {
-            refund: (chunks) => <span className="text-zinc-100">{chunks}</span>
+            refund: 'REFUND',
+            confirm: (chunks) => <span className="text-zinc-100">{chunks}</span>,
           })}
         </h2>
         <div className="flex overflow-hidden rounded-lg border border-[#2A2A2A] bg-[#161616] focus-within:border-yellow-500/50 transition-colors">

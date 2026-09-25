@@ -132,7 +132,10 @@ export function DeleteDrawer({
       {requireConfirmText && (
         <div>
           <h2 className="text-[11px] font-medium uppercase tracking-[0.1em] text-zinc-500 mb-4">
-            {t.rich('typeToConfirm', { name: () => <span className="text-zinc-100">{entityName.toUpperCase()}</span> })}
+            {t.rich('typeToConfirm', {
+              name: entityName.toUpperCase(),
+              confirm: (chunks) => <span className="text-zinc-100">{chunks}</span>,
+            })}
           </h2>
           <div className="flex overflow-hidden rounded-lg border border-[#2A2A2A] bg-[#161616] focus-within:border-orange-500/50 transition-colors">
             <input

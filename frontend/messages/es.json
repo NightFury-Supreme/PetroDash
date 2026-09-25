@@ -382,17 +382,17 @@
     "noActivity": "Sin actividad aún",
     "device": "Dispositivo",
     "deleteDrawer": {
-      "title": "Delete {type}",
-      "subtitle": "This will permanently remove the {type} and its configuration.",
-      "deleteBtn": "Delete {type}",
-      "beforeContinue": "BEFORE YOU CONTINUE",
-      "typeToConfirm": "Type {name} to confirm",
-      "failedToDelete": "Failed to delete {type}"
+      "title": "Eliminar {type}",
+      "subtitle": "Esto eliminará permanentemente {type} y su configuración.",
+      "deleteBtn": "Eliminar {type}",
+      "beforeContinue": "ANTES DE CONTINUAR",
+      "typeToConfirm": "Escriba <confirm>{name}</confirm> para confirmar",
+      "failedToDelete": "No se pudo eliminar {type}"
     },
     "toast": {
       "error": "Error",
-      "warning": "Warning",
-      "info": "Info"
+      "warning": "Advertencia",
+      "info": "Información"
     },
     "requestInformation": "Request Information",
     "requestId": "Request ID",
@@ -789,6 +789,7 @@
     "status": "Estado",
     "loading": "Cargando...",
     "saving": "Guardando...",
+    "save": "Guardar",
     "updating": "Actualizando...",
     "sending": "Enviando...",
     "retry": "Reintentar",
@@ -1541,7 +1542,7 @@
       "removeFilteredWarning": "Esto eliminará permanentemente solo los servidores que coincidan con los filtros de nodo y egg seleccionados.",
       "removeAllWarning": "Esto cancelará y eliminará permanentemente todas las creaciones de servidores pendientes y con errores.",
       "recreateWarning": "Los usuarios deberán volver a solicitar o crear el servidor si se cancela.",
-      "typeToConfirm": "Escriba \"{clear}\" para confirmar",
+      "typeToConfirm": "Escriba <confirm>{clear}</confirm> para confirmar",
       "tabs": {
         "allServers": "Todos los servidores",
         "queue": "Cola de despliegue"
@@ -2153,7 +2154,8 @@
       "refundAmount": "Monto del reembolso",
       "beforeYouContinue": "Antes de continuar",
       "customerReceivesMoneyBack": "El cliente recibirá un reembolso a través de su método de pago original.",
-      "actionIrreversible": "Esta acción es definitiva y no se puede revertir."
+      "actionIrreversible": "Esta acción es definitiva y no se puede revertir.",
+      "typeRefundToConfirm": "Escriba <confirm>{refund}</confirm> para confirmar"
     },
     "Ledger": {
       "headerTitle": "Libro de pagos",

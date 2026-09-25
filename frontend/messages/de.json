@@ -382,16 +382,16 @@
     "noActivity": "Noch keine Aktivität",
     "device": "Gerät",
     "deleteDrawer": {
-      "title": "Delete {type}",
-      "subtitle": "This will permanently remove the {type} and its configuration.",
-      "deleteBtn": "Delete {type}",
-      "beforeContinue": "BEFORE YOU CONTINUE",
-      "typeToConfirm": "Type {name} to confirm",
-      "failedToDelete": "Failed to delete {type}"
+      "title": "{type} löschen",
+      "subtitle": "Dadurch werden {type} und die zugehörige Konfiguration dauerhaft entfernt.",
+      "deleteBtn": "{type} löschen",
+      "beforeContinue": "BEVOR SIE FORTFAHREN",
+      "typeToConfirm": "Geben Sie zur Bestätigung <confirm>{name}</confirm> ein",
+      "failedToDelete": "{type} konnte nicht gelöscht werden"
     },
     "toast": {
-      "error": "Error",
-      "warning": "Warning",
+      "error": "Fehler",
+      "warning": "Warnung",
       "info": "Info"
     },
     "requestInformation": "Request Information",
@@ -779,6 +779,7 @@
     "status": "Status",
     "loading": "Laden...",
     "saving": "Speichern...",
+    "save": "Speichern",
     "updating": "Aktualisierung...",
     "sending": "Senden...",
     "retry": "Wiederholen",
@@ -1531,7 +1532,7 @@
       "removeFilteredWarning": "Dadurch werden nur die Server dauerhaft entfernt, die Ihren ausgewählten Node- und Egg-Filtern entsprechen.",
       "removeAllWarning": "Dadurch werden alle ausstehenden und fehlerhaften Servererstellungen dauerhaft abgebrochen und entfernt.",
       "recreateWarning": "Benutzer müssen den Server bei Abbruch erneut bestellen oder erstellen.",
-      "typeToConfirm": "Geben Sie zur Bestätigung \"{clear}\" ein",
+      "typeToConfirm": "Geben Sie zur Bestätigung <confirm>{clear}</confirm> ein",
       "tabs": {
         "allServers": "Alle Server",
         "queue": "Bereitstellungswarteschlange"
@@ -2143,7 +2144,8 @@
       "refundAmount": "Rückerstattungsbetrag",
       "beforeYouContinue": "Bevor Sie fortfahren",
       "customerReceivesMoneyBack": "Der Kunde erhält eine Rückerstattung über seine ursprüngliche Zahlungsmethode.",
-      "actionIrreversible": "Diese Aktion ist endgültig und kann nicht rückgängig gemacht werden."
+      "actionIrreversible": "Diese Aktion ist endgültig und kann nicht rückgängig gemacht werden.",
+      "typeRefundToConfirm": "Geben Sie zur Bestätigung <confirm>{refund}</confirm> ein"
     },
     "Ledger": {
       "headerTitle": "Zahlungshauptbuch",
