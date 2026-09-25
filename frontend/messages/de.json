@@ -614,6 +614,14 @@
     "ERR_EGG_VALIDATION_FAILED": "Egg-Validierung fehlgeschlagen. Bitte Pflichtfelder prüfen.",
     "ERR_EGG_CATEGORY_NAME_REQUIRED": "Kategoriename ist erforderlich.",
     "ERR_ICON_UPLOAD_FAILED": "Fehler beim Hochladen des Egg-Icons. Bitte erneut versuchen.",
+    "ERR_LOCATIONS_FETCH_FAILED": "Standorte konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+    "ERR_LOCATION_NOT_FOUND": "Standort nicht gefunden.",
+    "ERR_LOCATION_VALIDATION_FAILED": "Standortvalidierung fehlgeschlagen. Bitte überprüfen Sie die Pflichtfelder.",
+    "ERR_LOCATION_HAS_SERVERS": "Standort mit vorhandenen Servern kann nicht gelöscht werden.",
+    "ERR_LOCATION_FLAG_UPLOAD_FAILED": "Standortflaggenbild konnte nicht hochgeladen werden.",
+    "ERR_LOCATION_CREATE_FAILED": "Standort konnte nicht erstellt werden.",
+    "ERR_LOCATION_UPDATE_FAILED": "Standort konnte nicht aktualisiert werden.",
+    "ERR_LOCATION_DELETE_FAILED": "Standort konnte nicht gelöscht werden.",
     "ERR_STATS_FETCH_FAILED": "Fehler beim Laden der Dashboard-Statistiken",
     "ERR_UNAUTHORIZED": "Unbefugter Zugriff",
     "ERR_FORBIDDEN": "Sie haben keine Berechtigung, auf diese Ressource zuzugreifen",
@@ -831,6 +839,10 @@
     "disabled": "Deaktiviert",
     "creating": "Wird erstellt...",
     "clearing": "Wird geleert...",
+    "nextStep": "Nächster Schritt",
+    "uploading": "Wird hochgeladen...",
+    "loadingPlans": "Tarife werden geladen...",
+    "noPlansFound": "Keine Tarife gefunden.",
     "saveChanges": "Änderungen speichern",
     "errors": {
       "loadError": "Ladefehler",
@@ -1668,13 +1680,67 @@
       "title": "Standorte",
       "description": "Geografische Serverbereitstellungsregionen verwalten.",
       "actions": {
-        "newLocation": "Neuer Standort"
+        "newLocation": "Neuer Standort",
+        "createLocation": "Standort erstellen",
+        "saveChanges": "Änderungen speichern",
+        "deleteLocation": "Standort löschen"
       },
       "search": {
-        "placeholder": "Standorte nach Name oder Node-IP durchsuchen..."
+        "placeholder": "Standorte nach Name oder Node-IP suchen..."
       },
       "table": {
-        "nodeIp": "Node-IP"
+        "locationName": "Standortname",
+        "nodeIp": "Node-IP",
+        "serverLimit": "Serverlimit",
+        "servers": "Server",
+        "actions": "Aktionen",
+        "unlimited": "Unbegrenzt",
+        "requiresPlan": "Erfordert Tarif:",
+        "editLocationTitle": "Standort bearbeiten",
+        "deleteLocationTitle": "Standort löschen",
+        "cannotDeleteInUse": "Standort mit aktiven Servern kann nicht gelöscht werden",
+        "noLocationsFound": "Keine Standorte gefunden. Erstellen Sie Ihren ersten Standort, um zu beginnen."
+      },
+      "steps": {
+        "basic": "Details",
+        "platform": "Plattform",
+        "permissions": "Berechtigungen"
+      },
+      "drawers": {
+        "createTitle": "Neuer Standort",
+        "createSubtitle": "Einen Bereitstellungsstandort hinzufügen",
+        "editTitle": "Standort bearbeiten",
+        "editSubtitle": "Standortkonfigurationen anpassen"
+      },
+      "form": {
+        "basicInfo": "Grundlegende Informationen",
+        "basicInfoDesc": "Standortidentität konfigurieren",
+        "locationName": "Standortname",
+        "locationNamePlaceholder": "z. B. US East, EU Frankfurt",
+        "locationFlag": "Standortflagge / Icon",
+        "changeFlag": "Flagge ändern (oder ablegen/einfügen)",
+        "uploadIcon": "Icon hochladen (oder ablegen/einfügen)",
+        "uploadHint": "PNG-, JPG- oder SVG-Bild hochladen (max. 5 MB)",
+        "nodeIp": "Node-IP",
+        "nodeIpPlaceholder": "z. B. 192.168.1.1 oder node.example.com",
+        "nodeIpHint": "IP zur Ping-Messung über den Benutzerbrowser",
+        "serverLimit": "Serverlimit",
+        "serverLimitPlaceholder": "0 = unbegrenzt",
+        "serverLimitHint": "Maximale Server an diesem Standort (0 = unbegrenzt)",
+        "platformConfig": "Plattformkonfiguration",
+        "platformConfigDesc": "Diesen Standort mit Ihrem Pterodactyl-Panel verknüpfen",
+        "platformLocationId": "Plattform-Standort-ID",
+        "platformLocationIdPlaceholder": "z. B. 1",
+        "platformLocationIdHint": "Die Standort-ID aus Ihrem Pterodactyl-Panel",
+        "swapMb": "Swap (MB)",
+        "blockIoWeight": "Block-I/O-Gewichtung",
+        "cpuPinning": "CPU-Pinning",
+        "cpuPinningPlaceholder": "z. B. 0-3 (optional)",
+        "allowedPlans": "Zulässige Tarife",
+        "allowedPlansDesc": "Wählen Sie aus, welche Tarife an diesem Standort bereitgestellt werden dürfen. Leer lassen, um alle Tarife zuzulassen.",
+        "allPlansAllowed": "Alle Tarife zulässig",
+        "unlimitedServers": "Unbegrenzte Server",
+        "maxServers": "Max. {limit} Server"
       },
       "error": {
         "title": "Standorte konnten nicht geladen werden"
@@ -1682,7 +1748,8 @@
       "delete": {
         "warning1": "Server an diesem Standort haben kein aktives Bereitstellungsziel mehr.",
         "warning2": "Diesem Standort zugewiesene Nodes müssen umgeleitet werden.",
-        "warning3": "Diese Aktion kann nicht rückgängig gemacht werden."
+        "warning3": "Diese Aktion kann nicht rückgängig gemacht werden.",
+        "cannotDeleteInUse": "Ein Standort mit aktiven Servern kann nicht gelöscht werden."
       }
     },
     "logs": {

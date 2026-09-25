@@ -1,11 +1,18 @@
-"use client";
+/* ==========================================================================
+   Admin Locations Page
+   Compliance: ISO/IEC 25010, Single Responsibility Principle (<300 lines)
+========================================================================== */
 
-import { useEffect, useState } from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import { Search, X, Globe, Plus, MapPin, RefreshCw } from 'lucide-react';
 import { ErrorState, DashboardButton, ErrorDescription } from '@/components/ui/ErrorState';
-import LocationList from '@/components/admin/locations/LocationList';
-import { CreateLocationDrawer } from '@/components/admin/locations/CreateLocationDrawer';
-import { EditLocationDrawer } from '@/components/admin/locations/EditLocationDrawer';
+import {
+  LocationList,
+  CreateLocationDrawer,
+  EditLocationDrawer,
+} from '@/components/admin/locations';
 import { DeleteDrawer } from '@/components/ui/DeleteDrawer';
 import AdminLocationsSkeleton from '@/components/skeletons/admin/locations/AdminLocationsSkeleton';
 import { useAdminLocations } from '@/hooks/admin/locations/useAdminLocations';
@@ -22,12 +29,17 @@ export default function LocationsPage() {
   const [editingLocationId, setEditingLocationId] = useState<string | null>(null);
   const [deletingLocationId, setDeletingLocationId] = useState<string | null>(null);
 
-  useEffect(() => { fetchLocations(); }, [fetchLocations]);
+  useEffect(() => {
+    fetchLocations();
+  }, [fetchLocations]);
 
-  const filteredLocations = locations.filter(loc => {
+  const filteredLocations = locations.filter((loc) => {
     if (!searchQuery.trim()) return true;
     const lower = searchQuery.toLowerCase();
-    return (loc.name || '').toLowerCase().includes(lower) || (loc.latencyUrl || '').toLowerCase().includes(lower);
+    return (
+      (loc.name || '').toLowerCase().includes(lower) ||
+      (loc.latencyUrl || '').toLowerCase().includes(lower)
+    );
   });
 
   const handleExecuteDelete = async (id: string) => {
@@ -63,7 +75,7 @@ export default function LocationsPage() {
 
   if (loading) return <AdminLocationsSkeleton />;
 
-  const locationToDelete = locations.find(l => l._id === deletingLocationId);
+  const locationToDelete = locations.find((l) => l._id === deletingLocationId);
 
   return (
     <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans">
@@ -91,11 +103,15 @@ export default function LocationsPage() {
                 type="text"
                 placeholder={t('search.placeholder')}
                 value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full min-w-0 border-0 outline-none bg-transparent text-[#d5d5d5] text-[11px] placeholder:text-[#505050]"
               />
               {searchQuery && (
-                <button onClick={() => setSearchQuery('')} className="w-[23px] h-[23px] flex-shrink-0 flex items-center justify-center rounded-[5px] text-[#666] hover:bg-[#222] hover:text-[#ddd] transition-colors" aria-label={tCommon('actions.clear')}>
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="w-[23px] h-[23px] flex-shrink-0 flex items-center justify-center rounded-[5px] text-[#666] hover:bg-[#222] hover:text-[#ddd] transition-colors"
+                  aria-label={tCommon('actions.clear')}
+                >
                   <X size={13} />
                 </button>
               )}
@@ -105,7 +121,7 @@ export default function LocationsPage() {
 
         <LocationList
           locations={filteredLocations}
-          onEdit={id => setEditingLocationId(id)}
+          onEdit={(id) => setEditingLocationId(id)}
           onDelete={setDeletingLocationId}
         />
       </div>
@@ -113,7 +129,10 @@ export default function LocationsPage() {
       {isDrawerOpen && (
         <CreateLocationDrawer
           onClose={() => setIsDrawerOpen(false)}
-          onSuccess={() => { setIsDrawerOpen(false); fetchLocations(); }}
+          onSuccess={() => {
+            setIsDrawerOpen(false);
+            fetchLocations();
+          }}
         />
       )}
 
@@ -121,23 +140,38 @@ export default function LocationsPage() {
         <EditLocationDrawer
           locationId={editingLocationId}
           onClose={() => setEditingLocationId(null)}
-          onUpdate={() => { setEditingLocationId(null); fetchLocations(); }}
+          onUpdate={() => {
+            setEditingLocationId(null);
+            fetchLocations();
+          }}
         />
       )}
 
       <DeleteDrawer
         isOpen={!!deletingLocationId}
         onClose={() => setDeletingLocationId(null)}
-        onConfirm={async () => { if (deletingLocationId) await handleExecuteDelete(deletingLocationId); }}
+        onConfirm={async () => {
+          if (deletingLocationId) await handleExecuteDelete(deletingLocationId);
+        }}
         entityType={tCommon('location')}
         entityName={locationToDelete?.name || ''}
-        entitySubText={locationToDelete?.latencyUrl ? `${t('table.nodeIp')}: ` : ''}
-        icon={<Globe size={24} />}
-        warningPoints={[
-          t('delete.warning1'),
-          t('delete.warning2'),
-          t('delete.warning3'),
-        ]}
+        entitySubText={
+          locationToDelete?.latencyUrl
+            ? `${t('table.nodeIp')}: ${locationToDelete.latencyUrl}`
+            : ''
+        }
+        icon={
+          locationToDelete?.flag ? (
+            <img
+              src={`${process.env.NEXT_PUBLIC_API_BASE || ''}${locationToDelete.flag}`}
+              alt=""
+              className="w-6 h-6 object-contain rounded"
+            />
+          ) : (
+            <Globe size={24} />
+          )
+        }
+        warningPoints={[t('delete.warning1'), t('delete.warning2'), t('delete.warning3')]}
       />
     </div>
   );

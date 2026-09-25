@@ -626,6 +626,14 @@
     "ERR_EGG_VALIDATION_FAILED": "Egg validation failed. Please check required fields.",
     "ERR_EGG_CATEGORY_NAME_REQUIRED": "Category name is required.",
     "ERR_ICON_UPLOAD_FAILED": "Failed to upload egg icon. Please try again.",
+    "ERR_LOCATIONS_FETCH_FAILED": "Failed to load locations. Please try again.",
+    "ERR_LOCATION_NOT_FOUND": "Location not found.",
+    "ERR_LOCATION_VALIDATION_FAILED": "Location validation failed. Please check required fields.",
+    "ERR_LOCATION_HAS_SERVERS": "Cannot delete location with existing servers.",
+    "ERR_LOCATION_FLAG_UPLOAD_FAILED": "Failed to upload location flag image.",
+    "ERR_LOCATION_CREATE_FAILED": "Failed to create location.",
+    "ERR_LOCATION_UPDATE_FAILED": "Failed to update location.",
+    "ERR_LOCATION_DELETE_FAILED": "Failed to delete location.",
     "ERR_STATS_FETCH_FAILED": "Failed to load dashboard statistics",
     "ERR_UNAUTHORIZED": "Unauthorized access",
     "ERR_FORBIDDEN": "You do not have permission to access this resource",
@@ -843,6 +851,10 @@
     "disabled": "Disabled",
     "creating": "Creating...",
     "clearing": "Clearing...",
+    "nextStep": "Next Step",
+    "uploading": "Uploading...",
+    "loadingPlans": "Loading plans...",
+    "noPlansFound": "No plans found.",
     "saveChanges": "Save Changes",
     "errors": {
       "loadError": "Load Error",
@@ -1691,13 +1703,67 @@
       "title": "Locations",
       "description": "Manage geographic server deployment regions.",
       "actions": {
-        "newLocation": "New Location"
+        "newLocation": "New Location",
+        "createLocation": "Create Location",
+        "saveChanges": "Save Changes",
+        "deleteLocation": "Delete Location"
       },
       "search": {
         "placeholder": "Search locations by name or node IP..."
       },
       "table": {
-        "nodeIp": "Node IP"
+        "locationName": "Location Name",
+        "nodeIp": "Node IP",
+        "serverLimit": "Server Limit",
+        "servers": "Servers",
+        "actions": "Actions",
+        "unlimited": "Unlimited",
+        "requiresPlan": "Requires plan:",
+        "editLocationTitle": "Edit Location",
+        "deleteLocationTitle": "Delete Location",
+        "cannotDeleteInUse": "Cannot delete a location that is in use by servers",
+        "noLocationsFound": "No locations found. Create your first location to get started."
+      },
+      "steps": {
+        "basic": "Details",
+        "platform": "Platform",
+        "permissions": "Permissions"
+      },
+      "drawers": {
+        "createTitle": "New Location",
+        "createSubtitle": "Add a deployment location",
+        "editTitle": "Edit Location",
+        "editSubtitle": "Modify location configurations"
+      },
+      "form": {
+        "basicInfo": "Basic Information",
+        "basicInfoDesc": "Configure the location identity",
+        "locationName": "Location Name",
+        "locationNamePlaceholder": "e.g. US East, EU Frankfurt",
+        "locationFlag": "Location Flag / Icon",
+        "changeFlag": "Change flag (or drop/paste)",
+        "uploadIcon": "Upload icon (or drop/paste)",
+        "uploadHint": "Upload a PNG, JPG, or SVG image (max 5MB)",
+        "nodeIp": "Node IP",
+        "nodeIpPlaceholder": "e.g. 192.168.1.1 or node.example.com",
+        "nodeIpHint": "IP used to measure ping from the user browser",
+        "serverLimit": "Server Limit",
+        "serverLimitPlaceholder": "0 = unlimited",
+        "serverLimitHint": "Maximum servers in this location (0 = unlimited)",
+        "platformConfig": "Platform Configuration",
+        "platformConfigDesc": "Link this location to your Pterodactyl panel",
+        "platformLocationId": "Platform Location ID",
+        "platformLocationIdPlaceholder": "e.g. 1",
+        "platformLocationIdHint": "The location ID from your Pterodactyl panel",
+        "swapMb": "Swap (MB)",
+        "blockIoWeight": "Block IO Weight",
+        "cpuPinning": "CPU Pinning",
+        "cpuPinningPlaceholder": "e.g. 0-3 (optional)",
+        "allowedPlans": "Allowed Plans",
+        "allowedPlansDesc": "Select which plans are permitted to deploy in this location. Leave empty to allow all plans.",
+        "allPlansAllowed": "All plans allowed",
+        "unlimitedServers": "Unlimited servers",
+        "maxServers": "Max {limit} servers"
       },
       "error": {
         "title": "Failed to Load Locations"
@@ -1705,7 +1771,8 @@
       "delete": {
         "warning1": "Servers in this location will no longer have an active deployment target.",
         "warning2": "Nodes assigned to this location must be re-routed.",
-        "warning3": "This action cannot be undone."
+        "warning3": "This action cannot be undone.",
+        "cannotDeleteInUse": "Cannot delete a location with active servers."
       }
     },
     "logs": {

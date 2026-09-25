@@ -1,28 +1,21 @@
-const { z } = require('zod');
-const { getLocations, createLocation, getLocationById, updateLocation, deleteLocation } = require('./locations.service');
-const AppError = require('../../../utils/AppError');
-const { writeAudit } = require('../../../middleware/audit');
+/* ==========================================================================
+   Admin Locations Controller Layer
+   Compliance: ISO/IEC 25010, Separation of Concerns, Audit Logging
+========================================================================== */
 
-const schema = z.object({
-  name: z.string().min(1),
-  flag: z.string().min(1, 'Location flag is required'),
-  latencyUrl: z.string().min(1, 'Node IP is required'),
-  serverLimit: z.coerce.number().int().nonnegative().default(0),
-  platform: z
-      .object({
-          platformLocationId: z.string().optional().default(''),
-          swapMb: z.coerce.number().default(-1),
-          blockIoWeight: z.coerce.number().default(500),
-          cpuPinning: z.string().optional().default(''),
-      })
-      .optional()
-      .default({}),
-  allowedPlans: z.array(z.string()).optional().default([]),
-});
+const { writeAudit } = require('../../../middleware/audit');
+const { logUserActivity } = require('../../../middleware/userActivity');
+const AppError = require('../../../utils/AppError');
+const locationsService = require('./locations.service');
+const {
+  createLocationSchema,
+  updateLocationSchema,
+  locationIdParamSchema,
+} = require('./locations.schema');
 
 async function getLocationsHandler(req, res, next) {
   try {
-    const data = await getLocations();
+    const data = await locationsService.getLocations();
     return res.json(data);
   } catch (error) {
     next(error);
@@ -31,14 +24,18 @@ async function getLocationsHandler(req, res, next) {
 
 async function createLocationHandler(req, res, next) {
   try {
-    const parsed = schema.safeParse(req.body);
+    const parsed = createLocationSchema.safeParse(req.body);
     if (!parsed.success) {
-      throw new AppError('Invalid payload', 400, parsed.error.flatten());
+      throw new AppError('Validation failed', 400, 'ERR_LOCATION_VALIDATION_FAILED', parsed.error.flatten());
     }
 
-    const created = await createLocation(parsed.data);
+    const created = await locationsService.createLocation(parsed.data);
+    const adminId = req.user?._id?.toString() || req.user?.id;
 
     await writeAudit(req, 'admin.location.create', 'location', created._id.toString(), { created: parsed.data });
+    if (adminId) {
+      await logUserActivity(req, 'admin.location.create', { locationId: created._id.toString(), name: created.name }, adminId);
+    }
 
     return res.status(201).json(created);
   } catch (error) {
@@ -48,10 +45,12 @@ async function createLocationHandler(req, res, next) {
 
 async function getLocationByIdHandler(req, res, next) {
   try {
-    const loc = await getLocationById(String(req.params.id));
-    if (!loc) {
-      throw new AppError('Not found', 404);
+    const paramParsed = locationIdParamSchema.safeParse(req.params);
+    if (!paramParsed.success) {
+      throw new AppError('Invalid location ID format', 400, 'ERR_INVALID_ID', paramParsed.error.flatten());
     }
+
+    const loc = await locationsService.getLocationById(paramParsed.data.id);
     return res.json(loc);
   } catch (error) {
     next(error);
@@ -60,19 +59,23 @@ async function getLocationByIdHandler(req, res, next) {
 
 async function updateLocationHandler(req, res, next) {
   try {
-    const parsed = schema.partial().safeParse(req.body);
+    const paramParsed = locationIdParamSchema.safeParse(req.params);
+    if (!paramParsed.success) {
+      throw new AppError('Invalid location ID format', 400, 'ERR_INVALID_ID', paramParsed.error.flatten());
+    }
+
+    const parsed = updateLocationSchema.safeParse(req.body);
     if (!parsed.success) {
-      throw new AppError('Invalid payload', 400, parsed.error.flatten());
+      throw new AppError('Validation failed', 400, 'ERR_LOCATION_VALIDATION_FAILED', parsed.error.flatten());
     }
 
-    const result = await updateLocation(String(req.params.id), parsed.data);
-    if (!result) {
-      throw new AppError('Not found', 404);
-    }
-
-    const { updated, changes } = result;
+    const { updated, changes } = await locationsService.updateLocation(paramParsed.data.id, parsed.data);
+    const adminId = req.user?._id?.toString() || req.user?.id;
 
     await writeAudit(req, 'admin.location.update', 'location', updated._id.toString(), { changes });
+    if (adminId) {
+      await logUserActivity(req, 'admin.location.update', { locationId: updated._id.toString(), name: updated.name }, adminId);
+    }
 
     return res.json(updated);
   } catch (error) {
@@ -82,15 +85,18 @@ async function updateLocationHandler(req, res, next) {
 
 async function deleteLocationHandler(req, res, next) {
   try {
-    const result = await deleteLocation(String(req.params.id));
-    if (result && result.error) {
-      throw new AppError(result.error, 400);
-    }
-    if (!result) {
-      throw new AppError('Not found', 404);
+    const paramParsed = locationIdParamSchema.safeParse(req.params);
+    if (!paramParsed.success) {
+      throw new AppError('Invalid location ID format', 400, 'ERR_INVALID_ID', paramParsed.error.flatten());
     }
 
+    const result = await locationsService.deleteLocation(paramParsed.data.id);
+    const adminId = req.user?._id?.toString() || req.user?.id;
+
     await writeAudit(req, 'admin.location.delete', 'location', result._id.toString(), { name: result.name });
+    if (adminId) {
+      await logUserActivity(req, 'admin.location.delete', { locationId: result._id.toString(), name: result.name }, adminId);
+    }
 
     return res.json({ success: true });
   } catch (error) {
@@ -103,5 +109,5 @@ module.exports = {
   createLocationHandler,
   getLocationByIdHandler,
   updateLocationHandler,
-  deleteLocationHandler
+  deleteLocationHandler,
 };

@@ -1,7 +1,12 @@
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
+/* ==========================================================================
+   Admin Location API Hook
+   Compliance: ISO/IEC 25010, Separation of Concerns (<300 lines)
+========================================================================== */
+
+import { fetchWithRetry } from '@/utils/fetchWithRetry';
 
 export function useLocationApi() {
-  const getAuthToken = () => localStorage.getItem('auth_token');
+  const getAuthToken = () => (typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null);
   const getBaseUrl = () => process.env.NEXT_PUBLIC_API_BASE || '';
 
   const getHeaders = (isJson = true) => {
@@ -15,48 +20,55 @@ export function useLocationApi() {
   const fetchPlans = async () => {
     const res = await fetchWithRetry(`${getBaseUrl()}/api/admin/plans`, {
       headers: getHeaders(false),
+      timeoutMs: 15000,
     });
-    if (!res.ok) throw new Error('Failed to fetch plans');
+    if (!res.ok) throw new Error('ERR_PLANS_FETCH_FAILED');
     return res.json();
   };
 
   const uploadIcon = async (file: File) => {
     const fd = new FormData();
     fd.append('icon', file);
+    const token = getAuthToken();
     const res = await fetchWithRetry(`${getBaseUrl()}/api/upload/icon`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${getAuthToken()}` },
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: fd,
+      timeoutMs: 20000,
     });
-    if (!res.ok) throw new Error('Failed to upload flag image');
+    if (!res.ok) throw new Error('ERR_LOCATION_FLAG_UPLOAD_FAILED');
     return res.json();
   };
 
-  const createLocation = async (data: any) => {
+  const createLocation = async (data: Record<string, unknown>) => {
     const res = await fetchWithRetry(`${getBaseUrl()}/api/admin/locations`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(data),
+      timeoutMs: 15000,
     });
     const resData = await res.json().catch(() => ({}));
     if (!res.ok) {
-      const err = new Error(resData?.error || 'Failed to create location');
-      (err as any).errorKey = resData?.errorKey || resData?.error;
+      const code = resData?.error?.code || resData?.error?.message || resData?.error || 'ERR_LOCATION_CREATE_FAILED';
+      const err = new Error(typeof code === 'string' ? code : 'ERR_LOCATION_CREATE_FAILED');
+      (err as any).errorKey = err.message;
       throw err;
     }
     return resData;
   };
 
-  const updateLocation = async (id: string, data: any) => {
+  const updateLocation = async (id: string, data: Record<string, unknown>) => {
     const res = await fetchWithRetry(`${getBaseUrl()}/api/admin/locations/${id}`, {
       method: 'PUT',
       headers: getHeaders(),
       body: JSON.stringify(data),
+      timeoutMs: 15000,
     });
     const resData = await res.json().catch(() => ({}));
     if (!res.ok) {
-      const err = new Error(resData?.error || 'Failed to update location');
-      (err as any).errorKey = resData?.errorKey || resData?.error;
+      const code = resData?.error?.code || resData?.error?.message || resData?.error || 'ERR_LOCATION_UPDATE_FAILED';
+      const err = new Error(typeof code === 'string' ? code : 'ERR_LOCATION_UPDATE_FAILED');
+      (err as any).errorKey = err.message;
       throw err;
     }
     return resData;
@@ -66,11 +78,13 @@ export function useLocationApi() {
     const res = await fetchWithRetry(`${getBaseUrl()}/api/admin/locations/${id}`, {
       method: 'DELETE',
       headers: getHeaders(false),
+      timeoutMs: 15000,
     });
     const resData = await res.json().catch(() => ({}));
     if (!res.ok) {
-      const err = new Error(resData?.error || 'Failed to delete location');
-      (err as any).errorKey = resData?.errorKey || resData?.error;
+      const code = resData?.error?.code || resData?.error?.message || resData?.error || 'ERR_LOCATION_DELETE_FAILED';
+      const err = new Error(typeof code === 'string' ? code : 'ERR_LOCATION_DELETE_FAILED');
+      (err as any).errorKey = err.message;
       throw err;
     }
     return resData;
@@ -79,9 +93,13 @@ export function useLocationApi() {
   const fetchLocation = async (id: string) => {
     const res = await fetchWithRetry(`${getBaseUrl()}/api/admin/locations/${id}`, {
       headers: getHeaders(false),
+      timeoutMs: 15000,
     });
     const resData = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(resData?.error || 'Failed to fetch location');
+    if (!res.ok) {
+      const code = resData?.error?.code || resData?.error?.message || resData?.error || 'ERR_LOCATION_NOT_FOUND';
+      throw new Error(typeof code === 'string' ? code : 'ERR_LOCATION_NOT_FOUND');
+    }
     return resData;
   };
 

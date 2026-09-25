@@ -597,6 +597,14 @@
     "ERR_EGG_VALIDATION_FAILED": "Validation de l'egg échouée. Veuillez vérifier les champs obligatoires.",
     "ERR_EGG_CATEGORY_NAME_REQUIRED": "Le nom de la catégorie est requis.",
     "ERR_ICON_UPLOAD_FAILED": "Échec du téléversement de l'icône de l'egg. Veuillez réessayer.",
+    "ERR_LOCATIONS_FETCH_FAILED": "Échec du chargement des emplacements. Veuillez réessayer.",
+    "ERR_LOCATION_NOT_FOUND": "Emplacement non trouvé.",
+    "ERR_LOCATION_VALIDATION_FAILED": "Validation de l'emplacement échouée. Veuillez vérifier les champs requis.",
+    "ERR_LOCATION_HAS_SERVERS": "Impossible de supprimer un emplacement contenant des serveurs existants.",
+    "ERR_LOCATION_FLAG_UPLOAD_FAILED": "Échec du téléversement du drapeau de l'emplacement.",
+    "ERR_LOCATION_CREATE_FAILED": "Échec de la création de l'emplacement.",
+    "ERR_LOCATION_UPDATE_FAILED": "Échec de la mise à jour de l'emplacement.",
+    "ERR_LOCATION_DELETE_FAILED": "Échec de la suppression de l'emplacement.",
     "ERR_STATS_FETCH_FAILED": "Échec du chargement des statistiques du tableau de bord",
     "ERR_UNAUTHORIZED": "Accès non autorisé",
     "ERR_FORBIDDEN": "Vous n'avez pas la permission d'accéder à cette ressource",
@@ -814,6 +822,10 @@
     "disabled": "Désactivé",
     "creating": "Création en cours...",
     "clearing": "Effacement en cours...",
+    "nextStep": "Étape suivante",
+    "uploading": "Téléversement en cours...",
+    "loadingPlans": "Chargement des forfaits...",
+    "noPlansFound": "Aucun forfait trouvé.",
     "saveChanges": "Enregistrer les modifications",
     "errors": {
       "loadError": "Erreur de chargement",
@@ -1651,21 +1663,76 @@
       "title": "Emplacements",
       "description": "Gérer les régions géographiques de déploiement des serveurs.",
       "actions": {
-        "newLocation": "Nouvel emplacement"
+        "newLocation": "Nouvel emplacement",
+        "createLocation": "Créer un emplacement",
+        "saveChanges": "Enregistrer les modifications",
+        "deleteLocation": "Supprimer l'emplacement"
       },
       "search": {
         "placeholder": "Rechercher des emplacements par nom ou IP de nœud..."
       },
       "table": {
-        "nodeIp": "IP du nœud"
+        "locationName": "Nom de l'emplacement",
+        "nodeIp": "IP du nœud",
+        "serverLimit": "Limite de serveurs",
+        "servers": "Serveurs",
+        "actions": "Actions",
+        "unlimited": "Illimité",
+        "requiresPlan": "Nécessite le forfait :",
+        "editLocationTitle": "Modifier l'emplacement",
+        "deleteLocationTitle": "Supprimer l'emplacement",
+        "cannotDeleteInUse": "Impossible de supprimer un emplacement utilisé par des serveurs",
+        "noLocationsFound": "Aucun emplacement trouvé. Créez votre premier emplacement pour commencer."
+      },
+      "steps": {
+        "basic": "Détails",
+        "platform": "Plateforme",
+        "permissions": "Permissions"
+      },
+      "drawers": {
+        "createTitle": "Nouvel emplacement",
+        "createSubtitle": "Ajouter un emplacement de déploiement",
+        "editTitle": "Modifier l'emplacement",
+        "editSubtitle": "Modifier les configurations de l'emplacement"
+      },
+      "form": {
+        "basicInfo": "Informations de base",
+        "basicInfoDesc": "Configurer l'identité de l'emplacement",
+        "locationName": "Nom de l'emplacement",
+        "locationNamePlaceholder": "ex. US East, EU Frankfurt",
+        "locationFlag": "Drapeau / Icône de l'emplacement",
+        "changeFlag": "Changer de drapeau (ou glisser/coller)",
+        "uploadIcon": "Téléverser une icône (ou glisser/coller)",
+        "uploadHint": "Téléversez une image PNG, JPG ou SVG (max. 5 Mo)",
+        "nodeIp": "IP du nœud",
+        "nodeIpPlaceholder": "ex. 192.168.1.1 ou node.example.com",
+        "nodeIpHint": "IP utilisée pour mesurer le ping depuis le navigateur",
+        "serverLimit": "Limite de serveurs",
+        "serverLimitPlaceholder": "0 = illimité",
+        "serverLimitHint": "Nombre maximum de serveurs dans cet emplacement (0 = illimité)",
+        "platformConfig": "Configuration de la plateforme",
+        "platformConfigDesc": "Lier cet emplacement à votre panneau Pterodactyl",
+        "platformLocationId": "ID d'emplacement de la plateforme",
+        "platformLocationIdPlaceholder": "ex. 1",
+        "platformLocationIdHint": "L'ID d'emplacement provenant de votre panneau Pterodactyl",
+        "swapMb": "Swap (Mo)",
+        "blockIoWeight": "Poids des E/S bloc",
+        "cpuPinning": "Épinglage CPU",
+        "cpuPinningPlaceholder": "ex. 0-3 (optionnel)",
+        "allowedPlans": "Forfaits autorisés",
+        "allowedPlansDesc": "Sélectionnez les forfaits autorisés à se déployer ici. Laissez vide pour tout autoriser.",
+        "allPlansAllowed": "Tous les forfaits sont autorisés",
+        "unlimitedServers": "Serveurs illimités",
+        "maxServers": "Max {limit} serveurs"
       },
       "error": {
         "title": "Échec du chargement des emplacements"
       },
       "delete": {
-        "warning1": "Les serveurs situés dans cet emplacement n'auront plus de cible de déploiement active.",
-        "warning2": "Les nœuds assignés à cet emplacement doivent être réacheminés.",
-        "warning3": "Cette action ne peut pas être annulée."
+        "warning1": "Les serveurs de cet emplacement n'auront plus de cible de déploiement active.",
+        "warning2": "Les nœuds assignés à cet emplacement devront être réacheminés.",
+        "warning3": "Cette action ne peut pas être annulée.",
+        "cannotDeleteInUse": "Impossible de supprimer un emplacement avec des serveurs actifs."
       }
     },
     "logs": {

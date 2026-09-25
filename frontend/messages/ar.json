@@ -614,6 +614,14 @@
     "ERR_EGG_VALIDATION_FAILED": "فشل التحقق من صحة النموذج. يرجى مراجعة الحقول المطلوبة.",
     "ERR_EGG_CATEGORY_NAME_REQUIRED": "اسم الفئة مطلوب.",
     "ERR_ICON_UPLOAD_FAILED": "فشل رفع أيقونة النموذج. يرجى المحاولة مرة أخرى.",
+    "ERR_LOCATIONS_FETCH_FAILED": "فشل تحميل المواقع. يرجى المحاولة مرة أخرى.",
+    "ERR_LOCATION_NOT_FOUND": "الموقع غير موجود.",
+    "ERR_LOCATION_VALIDATION_FAILED": "فشل التحقق من صحة الموقع. يرجى التحقق من الحقول المطلوبة.",
+    "ERR_LOCATION_HAS_SERVERS": "لا يمكن حذف موقع يحتوي على خوادم حالية.",
+    "ERR_LOCATION_FLAG_UPLOAD_FAILED": "فشل رفع صورة علم الموقع.",
+    "ERR_LOCATION_CREATE_FAILED": "فشل إنشاء الموقع.",
+    "ERR_LOCATION_UPDATE_FAILED": "فشل تحديث الموقع.",
+    "ERR_LOCATION_DELETE_FAILED": "فشل حذف الموقع.",
     "ERR_STATS_FETCH_FAILED": "فشل في تحميل إحصائيات لوحة التحكم",
     "ERR_UNAUTHORIZED": "وصول غير مصرح به",
     "ERR_FORBIDDEN": "ليس لديك إذن للوصول إلى هذا المورد",
@@ -831,6 +839,10 @@
     "disabled": "معطل",
     "creating": "جارٍ الإنشاء...",
     "clearing": "جارٍ المسح...",
+    "nextStep": "الخطوة التالية",
+    "uploading": "جارٍ الرفع...",
+    "loadingPlans": "جاري تحميل الخطط...",
+    "noPlansFound": "لم يتم العثور على خطط.",
     "saveChanges": "حفظ التغييرات",
     "errors": {
       "loadError": "خطأ في التحميل",
@@ -1666,23 +1678,78 @@
     },
     "locations": {
       "title": "المواقع",
-      "description": "إدارة مناطق نشر الخادم الجغرافية.",
+      "description": "إدارة مناطق نشر الخوادم الجغرافية.",
       "actions": {
-        "newLocation": "موقع جديد"
+        "newLocation": "موقع جديد",
+        "createLocation": "إنشاء موقع",
+        "saveChanges": "حفظ التغييرات",
+        "deleteLocation": "حذف الموقع"
       },
       "search": {
-        "placeholder": "البحث عن المواقع بالاسم أو عنوان IP للعقدة..."
+        "placeholder": "البحث في المواقع بالاسم أو عنوان IP للعقدة..."
       },
       "table": {
-        "nodeIp": "عنوان IP للعقدة"
+        "locationName": "اسم الموقع",
+        "nodeIp": "عنوان IP للعقدة",
+        "serverLimit": "حد الخوادم",
+        "servers": "الخوادم",
+        "actions": "الإجراءات",
+        "unlimited": "غير محدود",
+        "requiresPlan": "يتطلب خطة:",
+        "editLocationTitle": "تعديل الموقع",
+        "deleteLocationTitle": "حذف الموقع",
+        "cannotDeleteInUse": "لا يمكن حذف موقع قيد الاستخدام من قبل الخوادم",
+        "noLocationsFound": "لم يتم العثور على مواقع. أنشئ موقعك الأول للبدء."
+      },
+      "steps": {
+        "basic": "التفاصيل",
+        "platform": "المنصة",
+        "permissions": "الأذونات"
+      },
+      "drawers": {
+        "createTitle": "موقع جديد",
+        "createSubtitle": "إضافة موقع نشر جديد",
+        "editTitle": "تعديل الموقع",
+        "editSubtitle": "تعديل إعدادات الموقع"
+      },
+      "form": {
+        "basicInfo": "المعلومات الأساسية",
+        "basicInfoDesc": "تهيئة هوية الموقع",
+        "locationName": "اسم الموقع",
+        "locationNamePlaceholder": "مثال: شرق الولايات المتحدة، فرانكفورت",
+        "locationFlag": "علم / أيقونة الموقع",
+        "changeFlag": "تغيير العلم (أو إفلات/لصق)",
+        "uploadIcon": "رفع الأيقونة (أو إفلات/لصق)",
+        "uploadHint": "ارفع صورة بتنسيق PNG أو JPG أو SVG (بحد أقصى 5 ميجابايت)",
+        "nodeIp": "عنوان IP للعقدة",
+        "nodeIpPlaceholder": "مثال: 192.168.1.1 أو node.example.com",
+        "nodeIpHint": "عنوان IP المستخدم لقياس زمن الاستجابة من متصفح المستخدم",
+        "serverLimit": "حد الخوادم",
+        "serverLimitPlaceholder": "0 = غير محدود",
+        "serverLimitHint": "الحد الأقصى للخوادم في هذا الموقع (0 = غير محدود)",
+        "platformConfig": "تهيئة المنصة",
+        "platformConfigDesc": "ربط هذا الموقع بلوحة تحكم Pterodactyl",
+        "platformLocationId": "معرف موقع المنصة",
+        "platformLocationIdPlaceholder": "مثال: 1",
+        "platformLocationIdHint": "معرف الموقع من لوحة تحكم Pterodactyl الخاصة بك",
+        "swapMb": "ذاكرة التبديل (ميغابايت)",
+        "blockIoWeight": "وزن الإدخال/الإخراج للكتلة",
+        "cpuPinning": "تثبيت وحدة المعالجة المركزية",
+        "cpuPinningPlaceholder": "مثال: 0-3 (اختياري)",
+        "allowedPlans": "الخطط المسموح بها",
+        "allowedPlansDesc": "حدد الخطط المسموح بنشرها في هذا الموقع. اتركه فارغًا للسماح بجميع الخطط.",
+        "allPlansAllowed": "جميع الخطط مسموح بها",
+        "unlimitedServers": "خوادم غير محدودة",
+        "maxServers": "حد أقصى {limit} خوادم"
       },
       "error": {
         "title": "فشل تحميل المواقع"
       },
       "delete": {
-        "warning1": "لن يكون للخوادم الموجودة في هذا الموقع هدف نشر نشط بعد الآن.",
-        "warning2": "يجب إعادة توجيه العقد المعينة لهذا الموقع.",
-        "warning3": "لا يمكن التراجع عن هذا الإجراء."
+        "warning1": "لن يكون للخوادم في هذا الموقع هدف نشر نشط بعد الآن.",
+        "warning2": "يجب إعادة توجيه العقد المخصصة لهذا الموقع.",
+        "warning3": "لا يمكن التراجع عن هذا الإجراء.",
+        "cannotDeleteInUse": "لا يمكن حذف موقع يحتوي على خوادم نشطة."
       }
     },
     "logs": {

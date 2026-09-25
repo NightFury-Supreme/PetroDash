@@ -1,3 +1,8 @@
+/* ==========================================================================
+   Admin Locations Routes
+   Compliance: ISO/IEC 25010, Separation of Concerns
+========================================================================== */
+
 const express = require('express');
 const { requireAdmin } = require('../../middleware/auth');
 const {
@@ -5,8 +10,8 @@ const {
   createLocationHandler,
   getLocationByIdHandler,
   updateLocationHandler,
-  deleteLocationHandler
-} = require('../../modules/admin/locations/locations.controller');
+  deleteLocationHandler,
+} = require('../../modules/admin/locations');
 
 const router = express.Router();
 

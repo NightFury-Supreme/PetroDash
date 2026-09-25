@@ -624,6 +624,14 @@
     "ERR_EGG_VALIDATION_FAILED": "Validación de egg fallida. Verifique los campos obligatorios.",
     "ERR_EGG_CATEGORY_NAME_REQUIRED": "El nombre de la categoría es obligatorio.",
     "ERR_ICON_UPLOAD_FAILED": "Error al subir el icono del egg. Inténtelo de nuevo.",
+    "ERR_LOCATIONS_FETCH_FAILED": "Error al cargar ubicaciones. Por favor, inténtelo de nuevo.",
+    "ERR_LOCATION_NOT_FOUND": "Ubicación no encontrada.",
+    "ERR_LOCATION_VALIDATION_FAILED": "Error de validación de ubicación. Compruebe los campos obligatorios.",
+    "ERR_LOCATION_HAS_SERVERS": "No se puede eliminar una ubicación con servidores existentes.",
+    "ERR_LOCATION_FLAG_UPLOAD_FAILED": "Error al subir la imagen de la bandera de la ubicación.",
+    "ERR_LOCATION_CREATE_FAILED": "Error al crear la ubicación.",
+    "ERR_LOCATION_UPDATE_FAILED": "Error al actualizar la ubicación.",
+    "ERR_LOCATION_DELETE_FAILED": "Error al eliminar la ubicación.",
     "ERR_STATS_FETCH_FAILED": "Error al cargar las estadísticas del panel",
     "ERR_UNAUTHORIZED": "Acceso no autorizado",
     "ERR_FORBIDDEN": "No tienes permiso para acceder a este recurso",
@@ -841,6 +849,10 @@
     "disabled": "Deshabilitado",
     "creating": "Creando...",
     "clearing": "Limpiando...",
+    "nextStep": "Siguiente paso",
+    "uploading": "Subiendo...",
+    "loadingPlans": "Cargando planes...",
+    "noPlansFound": "No se encontraron planes.",
     "saveChanges": "Guardar cambios",
     "errors": {
       "loadError": "Error de carga",
@@ -1678,13 +1690,67 @@
       "title": "Ubicaciones",
       "description": "Administre las regiones geográficas de despliegue de servidores.",
       "actions": {
-        "newLocation": "Nueva ubicación"
+        "newLocation": "Nueva ubicación",
+        "createLocation": "Crear ubicación",
+        "saveChanges": "Guardar cambios",
+        "deleteLocation": "Eliminar ubicación"
       },
       "search": {
         "placeholder": "Buscar ubicaciones por nombre o IP del nodo..."
       },
       "table": {
-        "nodeIp": "IP del nodo"
+        "locationName": "Nombre de la ubicación",
+        "nodeIp": "IP del nodo",
+        "serverLimit": "Límite de servidores",
+        "servers": "Servidores",
+        "actions": "Acciones",
+        "unlimited": "Ilimitado",
+        "requiresPlan": "Requiere plan:",
+        "editLocationTitle": "Editar ubicación",
+        "deleteLocationTitle": "Eliminar ubicación",
+        "cannotDeleteInUse": "No se puede eliminar una ubicación en uso por servidores",
+        "noLocationsFound": "No se encontraron ubicaciones. Cree su primera ubicación para comenzar."
+      },
+      "steps": {
+        "basic": "Detalles",
+        "platform": "Plataforma",
+        "permissions": "Permisos"
+      },
+      "drawers": {
+        "createTitle": "Nueva ubicación",
+        "createSubtitle": "Añadir una ubicación de despliegue",
+        "editTitle": "Editar ubicación",
+        "editSubtitle": "Modificar configuraciones de la ubicación"
+      },
+      "form": {
+        "basicInfo": "Información básica",
+        "basicInfoDesc": "Configurar la identidad de la ubicación",
+        "locationName": "Nombre de la ubicación",
+        "locationNamePlaceholder": "ej. US East, EU Frankfurt",
+        "locationFlag": "Bandera / Icono de ubicación",
+        "changeFlag": "Cambiar bandera (o arrastrar/pegar)",
+        "uploadIcon": "Subir icono (o arrastrar/pegar)",
+        "uploadHint": "Suba una imagen PNG, JPG o SVG (máx. 5 MB)",
+        "nodeIp": "IP del nodo",
+        "nodeIpPlaceholder": "ej. 192.168.1.1 o node.example.com",
+        "nodeIpHint": "IP utilizada para medir el ping desde el navegador del usuario",
+        "serverLimit": "Límite de servidores",
+        "serverLimitPlaceholder": "0 = ilimitado",
+        "serverLimitHint": "Máximo de servidores en esta ubicación (0 = ilimitado)",
+        "platformConfig": "Configuración de la plataforma",
+        "platformConfigDesc": "Vincule esta ubicación a su panel de Pterodactyl",
+        "platformLocationId": "ID de ubicación de la plataforma",
+        "platformLocationIdPlaceholder": "ej. 1",
+        "platformLocationIdHint": "El ID de ubicación de su panel de Pterodactyl",
+        "swapMb": "Swap (MB)",
+        "blockIoWeight": "Peso de E/S de bloque",
+        "cpuPinning": "Fijación de CPU",
+        "cpuPinningPlaceholder": "ej. 0-3 (opcional)",
+        "allowedPlans": "Planes permitidos",
+        "allowedPlansDesc": "Seleccione qué planes están autorizados para desplegarse aquí. Deje vacío para permitir todos.",
+        "allPlansAllowed": "Todos los planes permitidos",
+        "unlimitedServers": "Servidores ilimitados",
+        "maxServers": "Máx. {limit} servidores"
       },
       "error": {
         "title": "Error al cargar las ubicaciones"
@@ -1692,7 +1758,8 @@
       "delete": {
         "warning1": "Los servidores en esta ubicación ya no tendrán un destino de despliegue activo.",
         "warning2": "Los nodos asignados a esta ubicación deben redirigirse.",
-        "warning3": "Esta acción no se puede deshacer."
+        "warning3": "Esta acción no se puede deshacer.",
+        "cannotDeleteInUse": "No se puede eliminar una ubicación con servidores activos."
       }
     },
     "logs": {

@@ -624,6 +624,14 @@
     "ERR_EGG_VALIDATION_FAILED": "एग सत्यापन विफल। कृपया आवश्यक फ़ील्ड जांचें।",
     "ERR_EGG_CATEGORY_NAME_REQUIRED": "श्रेणी का नाम आवश्यक है।",
     "ERR_ICON_UPLOAD_FAILED": "एग आइकन अपलोड करने में विफल। कृपया पुनः प्रयास करें।",
+    "ERR_LOCATIONS_FETCH_FAILED": "स्थान लोड करने में विफल। कृपया पुनः प्रयास करें।",
+    "ERR_LOCATION_NOT_FOUND": "स्थान नहीं मिला।",
+    "ERR_LOCATION_VALIDATION_FAILED": "स्थान सत्यापन विफल रहा। कृपया आवश्यक फ़ील्ड जांचें।",
+    "ERR_LOCATION_HAS_SERVERS": "मौजूदा सर्वर वाले स्थान को हटाया नहीं जा सकता।",
+    "ERR_LOCATION_FLAG_UPLOAD_FAILED": "स्थान ध्वज छवि अपलोड करने में विफल।",
+    "ERR_LOCATION_CREATE_FAILED": "स्थान बनाने में विफल।",
+    "ERR_LOCATION_UPDATE_FAILED": "स्थान अपडेट करने में विफल।",
+    "ERR_LOCATION_DELETE_FAILED": "स्थान हटाने में विफल।",
     "ERR_STATS_FETCH_FAILED": "डैशबोर्ड आंकड़े लोड करने में विफल",
     "ERR_UNAUTHORIZED": "अनधिकृत पहुंच",
     "ERR_FORBIDDEN": "आपके पास इस संसाधन तक पहुँचने की अनुमति नहीं है",
@@ -841,6 +849,10 @@
     "disabled": "अक्षम",
     "creating": "बनाया जा रहा है...",
     "clearing": "साफ़ किया जा रहा है...",
+    "nextStep": "अगला कदम",
+    "uploading": "अपलोड हो रहा है...",
+    "loadingPlans": "योजनाएं लोड हो रही हैं...",
+    "noPlansFound": "कोई योजना नहीं मिली।",
     "saveChanges": "परिवर्तन सहेजें",
     "errors": {
       "loadError": "लोड त्रुटि",
@@ -1678,21 +1690,76 @@
       "title": "स्थान",
       "description": "भौगोलिक सर्वर परिनियोजन क्षेत्रों का प्रबंधन करें।",
       "actions": {
-        "newLocation": "नया स्थान"
+        "newLocation": "नया स्थान",
+        "createLocation": "स्थान बनाएं",
+        "saveChanges": "परिवर्तन सहेजें",
+        "deleteLocation": "स्थान हटाएं"
       },
       "search": {
         "placeholder": "नाम या नोड आईपी द्वारा स्थान खोजें..."
       },
       "table": {
-        "nodeIp": "नोड आईपी"
+        "locationName": "स्थान का नाम",
+        "nodeIp": "नोड आईपी",
+        "serverLimit": "सर्वर सीमा",
+        "servers": "सर्वर",
+        "actions": "कार्रवाइयां",
+        "unlimited": "असीमित",
+        "requiresPlan": "योजना आवश्यक है:",
+        "editLocationTitle": "स्थान संपादित करें",
+        "deleteLocationTitle": "स्थान हटाएं",
+        "cannotDeleteInUse": "सक्रिय सर्वर वाले स्थान को हटाया नहीं जा सकता",
+        "noLocationsFound": "कोई स्थान नहीं मिला। आरंभ करने के लिए अपना पहला स्थान बनाएं।"
+      },
+      "steps": {
+        "basic": "विवरण",
+        "platform": "प्लेटफ़ॉर्म",
+        "permissions": "अनुमतियां"
+      },
+      "drawers": {
+        "createTitle": "नया स्थान",
+        "createSubtitle": "एक परिनियोजन स्थान जोड़ें",
+        "editTitle": "स्थान संपादित करें",
+        "editSubtitle": "स्थान कॉन्फ़िगरेशन संशोधित करें"
+      },
+      "form": {
+        "basicInfo": "मूलभूत जानकारी",
+        "basicInfoDesc": "स्थान पहचान कॉन्फ़िगर करें",
+        "locationName": "स्थान का नाम",
+        "locationNamePlaceholder": "उदा. यूएस पूर्व, ईयू फ्रैंकफर्ट",
+        "locationFlag": "स्थान ध्वज / आइकन",
+        "changeFlag": "ध्वज बदलें (या खींचें/पेस्ट करें)",
+        "uploadIcon": "आइकन अपलोड करें (या खींचें/पेस्ट करें)",
+        "uploadHint": "PNG, JPG या SVG छवि अपलोड करें (अधिकतम 5MB)",
+        "nodeIp": "नोड आईपी",
+        "nodeIpPlaceholder": "उदा. 192.168.1.1 या node.example.com",
+        "nodeIpHint": "उपयोगकर्ता ब्राउज़र से पिंग मापने के लिए प्रयुक्त आईपी",
+        "serverLimit": "सर्वर सीमा",
+        "serverLimitPlaceholder": "0 = असीमित",
+        "serverLimitHint": "इस स्थान में अधिकतम सर्वर (0 = असीमित)",
+        "platformConfig": "प्लेटफ़ॉर्म कॉन्फ़िगरेशन",
+        "platformConfigDesc": "इस स्थान को अपने Pterodactyl पैनल से लिंक करें",
+        "platformLocationId": "प्लेटफ़ॉर्म स्थान आईडी",
+        "platformLocationIdPlaceholder": "उदा. 1",
+        "platformLocationIdHint": "आपके Pterodactyl पैनल से स्थान आईडी",
+        "swapMb": "स्वैप (MB)",
+        "blockIoWeight": "ब्लॉक IO वेट",
+        "cpuPinning": "सीपीयू पिनिंग",
+        "cpuPinningPlaceholder": "उदा. 0-3 (वैकल्पिक)",
+        "allowedPlans": "अनुमत योजनाएं",
+        "allowedPlansDesc": "चुनें कि इस स्थान में किन योजनाओं को परिनियोजित करने की अनुमति है। सभी योजनाओं की अनुमति देने के लिए खाली छोड़ें।",
+        "allPlansAllowed": "सभी योजनाएं अनुमत हैं",
+        "unlimitedServers": "असीमित सर्वर",
+        "maxServers": "अधिकतम {limit} सर्वर"
       },
       "error": {
         "title": "स्थान लोड करने में विफल"
       },
       "delete": {
-        "warning1": "इस स्थान के सर्वरों के पास अब कोई सक्रिय परिनियोजन लक्ष्य नहीं होगा।",
-        "warning2": "इस स्थान को सौंपे गए नोड्स को पुनः रूट किया जाना चाहिए।",
-        "warning3": "यह क्रिया पूर्ववत नहीं की जा सकती।"
+        "warning1": "इस स्थान के सर्वर के पास अब सक्रिय परिनियोजन लक्ष्य नहीं होगा।",
+        "warning2": "इस स्थान पर असाइन किए गए नोड्स को पुनः रूट किया जाना चाहिए।",
+        "warning3": "यह कार्रवाई पूर्ववत नहीं की जा सकती।",
+        "cannotDeleteInUse": "सक्रिय सर्वर वाले स्थान को हटाया नहीं जा सकता।"
       }
     },
     "logs": {

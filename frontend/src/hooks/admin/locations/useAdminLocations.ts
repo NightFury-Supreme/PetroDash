@@ -1,10 +1,16 @@
+/* ==========================================================================
+   Admin Locations Hook
+   Compliance: ISO/IEC 25010, Strong Typing, Standard Error Handling
+========================================================================== */
+
 import { useState, useCallback } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { fetchWithRetry } from '@/utils/fetchWithRetry';
+import type { AdminLocation } from '@/components/admin/locations';
 
 export const useAdminLocations = () => {
   const router = useRouter();
-  const [locations, setLocations] = useState<any[]>([]);
+  const [locations, setLocations] = useState<AdminLocation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,25 +24,36 @@ export const useAdminLocations = () => {
     fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then(async res => {
+      .then(async (res) => {
         const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || 'Failed to fetch locations');
+        if (!res.ok) {
+          const errCode =
+            data?.error?.code || data?.error?.message || data?.error || 'ERR_LOCATIONS_FETCH_FAILED';
+          throw new Error(errCode);
+        }
         if (Array.isArray(data)) setLocations(data);
       })
-      .catch(e => setError(e.message))
+      .catch((e: any) => setError(e.message || 'ERR_LOCATIONS_FETCH_FAILED'))
       .finally(() => setLoading(false));
   }, [router]);
 
   const deleteLocation = async (id: string) => {
     const token = localStorage.getItem('auth_token');
-    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await fetchWithRetry(
+      `${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${id}`,
+      {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
     if (!res.ok) {
       let d: any = {};
-      try { d = await res.json(); } catch {}
-      throw new Error(d?.error || 'Failed to delete location');
+      try {
+        d = await res.json();
+      } catch {}
+      const errCode =
+        d?.error?.code || d?.error?.message || d?.error || 'ERR_LOCATION_DELETE_FAILED';
+      throw new Error(errCode);
     }
     fetchLocations();
   };
