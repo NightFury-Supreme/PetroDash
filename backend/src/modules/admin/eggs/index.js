@@ -9,6 +9,6 @@ const schemas = require('./eggs.schema');
 
 module.exports = {
   ...controller,
-  ...service,
-  ...schemas,
+  service,
+  schemas,
 };
