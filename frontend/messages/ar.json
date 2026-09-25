@@ -809,6 +809,7 @@
     "delete": "حذف",
     "deviceBrowser": "الجهاز / المتصفح",
     "plan": "خطة",
+    "price": "السعر",
     "server": "خادم",
     "ticket": "تذكرة",
     "item": "عنصر",
@@ -1681,6 +1682,7 @@
     },
     "locations": {
       "title": "المواقع",
+      "price": "السعر",
       "description": "إدارة مناطق نشر الخوادم الجغرافية.",
       "actions": {
         "newLocation": "موقع جديد",

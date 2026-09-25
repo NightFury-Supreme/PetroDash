@@ -88,7 +88,7 @@ export function LocationFormPermissionsSection({
                   <div className="text-xs font-medium text-white/80">
                     ${price > 0 ? price.toFixed(2) : '0.00'} {currency}
                   </div>
-                  <div className="text-[10px] text-white/40">{t('form.price')}</div>
+                  <div className="text-[10px] text-white/40">{t('price')}</div>
                 </div>
               </div>
             );

@@ -809,6 +809,7 @@
     "delete": "Löschen",
     "deviceBrowser": "Gerät / Browser",
     "plan": "Plan",
+    "price": "Preis",
     "server": "Server",
     "ticket": "Ticket",
     "item": "Artikel",
@@ -1681,6 +1682,7 @@
     },
     "locations": {
       "title": "Standorte",
+      "price": "Preis",
       "description": "Geografische Serverbereitstellungsregionen verwalten.",
       "actions": {
         "newLocation": "Neuer Standort",

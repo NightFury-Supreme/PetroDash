@@ -792,6 +792,7 @@
     "delete": "Supprimer",
     "deviceBrowser": "Appareil / Navigateur",
     "plan": "Plan",
+    "price": "Prix",
     "server": "Serveur",
     "ticket": "Ticket",
     "item": "Article",
@@ -1664,6 +1665,7 @@
     },
     "locations": {
       "title": "Emplacements",
+      "price": "Prix",
       "description": "Gérer les régions géographiques de déploiement des serveurs.",
       "actions": {
         "newLocation": "Nouvel emplacement",
