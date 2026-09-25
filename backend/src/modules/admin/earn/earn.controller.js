@@ -1,55 +1,67 @@
-const { z } = require('zod');
+/**
+ * Admin Earn Controller
+ * Complies with ISO/IEC 25010 and OWASP ASVS V14.2
+ */
+
+const { earnPatchSchema, getSessionsQuerySchema } = require('./earn.schema');
 const earnService = require('./earn.service');
 const { writeAudit } = require('../../../middleware/audit');
+const { logUserActivity } = require('../../../middleware/userActivity');
+const AppError = require('../../../utils/AppError');
 
-const earnPatchSchema = z.object({
-  linkvertise: z.object({
-    enabled: z.coerce.boolean().optional(),
-    coins: z.coerce.number().int().min(0).max(1000000).optional(),
-    cooldownSeconds: z.coerce.number().int().min(0).max(86400).optional(),
-    waitSeconds: z.coerce.number().int().min(0).max(3600).optional(),
-    maxClaimsPerDay: z.coerce.number().int().min(0).max(1000).optional(),
-    url: z.string().max(2048).optional().or(z.literal('')),
-    antiBypassToken: z.string().max(2048).optional().or(z.literal('')),
-  }).optional(),
-});
-
-class EarnController {
-  async getSettings(req, res, next) {
-    try {
-      const out = await earnService.getSettings();
-      res.json(out);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async updateSettings(req, res, next) {
-    try {
-      const parsed = earnPatchSchema.safeParse(req.body);
-      if (!parsed.success) {
-        return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
-      }
-
-      const { updatedEarn, changes } = await earnService.updateSettings(parsed.data);
-
-      await writeAudit(req, 'admin.earn.update', 'earn_settings', null, { changes: Object.keys(changes).length > 0 ? changes : undefined });
-
-      res.json(updatedEarn);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async getSessions(req, res, next) {
-    try {
-      const { userId, method, status } = req.query;
-      const list = await earnService.getSessions({ userId, method, status });
-      res.json(list);
-    } catch (error) {
-      next(error);
-    }
+async function getSettings(req, res, next) {
+  try {
+    const out = await earnService.getSettings();
+    return res.json(out);
+  } catch (error) {
+    next(error);
   }
 }
 
-module.exports = new EarnController();
+async function updateSettings(req, res, next) {
+  try {
+    const parsed = earnPatchSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new AppError('Validation failed', 400, 'ERR_EARN_VALIDATION_FAILED', parsed.error.flatten());
+    }
+
+    const { updatedEarn, changes } = await earnService.updateSettings(parsed.data);
+    const adminId = req.user?._id?.toString() || req.user?.id || req.user?.sub;
+
+    await writeAudit(req, 'admin.earn.update', 'earn_settings', 'settings', { changes });
+    if (adminId) {
+      await logUserActivity(req, 'admin.earn.update', { changes: Object.keys(changes) }, adminId);
+    }
+
+    return res.json(updatedEarn);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getSessions(req, res, next) {
+  try {
+    const parsed = getSessionsQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      throw new AppError('Invalid query parameters', 400, 'ERR_INVALID_QUERY_PARAMS', parsed.error.flatten());
+    }
+
+    const list = await earnService.getSessions(parsed.data);
+    return res.json(list);
+  } catch (error) {
+    next(error);
+  }
+}
+
+class EarnController {
+  getSettings = getSettings;
+  updateSettings = updateSettings;
+  getSessions = getSessions;
+}
+
+const controllerInstance = new EarnController();
+controllerInstance.getSettings = getSettings;
+controllerInstance.updateSettings = updateSettings;
+controllerInstance.getSessions = getSessions;
+
+module.exports = controllerInstance;

@@ -1,4 +1,5 @@
 const { getSettings, clearSettingsCache } = require('../../../lib/settings');
+const { deleteCachePattern } = require('../../../lib/redis');
 const Settings = require('../../../models/Settings');
 const EarnSession = require('../../../models/EarnSession');
 const AppError = require('../../../utils/AppError');
@@ -53,7 +54,7 @@ class EarnService {
     const lvConfigured = Boolean(String(settings?.earn?.linkvertise?.url || '').trim());
     if (settings.earn.linkvertise && settings.earn.linkvertise.enabled) {
       if (!lvConfigured) {
-        throw new AppError('Cannot enable Linkvertise: missing required URL template.', 400);
+        throw new AppError('Cannot enable Linkvertise: missing required URL template.', 400, 'ERR_EARN_LINKVERTISE_URL_REQUIRED');
       }
     }
 
@@ -61,7 +62,8 @@ class EarnService {
     
     settings.markModified('earn');
     await settings.save();
-    clearSettingsCache();
+    await clearSettingsCache();
+    await deleteCachePattern('earn:*');
 
     const newEarn = sanitizeEarn(settings.toObject().earn);
     const changes = {};

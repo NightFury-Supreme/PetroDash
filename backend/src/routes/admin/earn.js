@@ -1,6 +1,10 @@
+/**
+ * Admin Earn Routes
+ */
+
 const express = require('express');
 const { requireAdmin } = require('../../middleware/auth');
-const earnController = require('../../modules/admin/earn/earn.controller');
+const { earnController } = require('../../modules/admin/earn');
 
 const router = express.Router();
 

@@ -1,9 +1,14 @@
-"use client";
+/**
+ * Admin Earn Hook
+ * Complies with ISO/IEC 25010 and OWASP ASVS
+ */
 
-import { useCallback, useEffect, useState } from "react";
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
+'use client';
 
-export type EarnMethod = "linkvertise";
+import { useCallback, useEffect, useState } from 'react';
+import { fetchWithRetry } from '@/utils/fetchWithRetry';
+
+export type EarnMethod = 'linkvertise';
 
 export interface EarnMethodSettings {
   enabled: boolean;
@@ -13,15 +18,10 @@ export interface EarnMethodSettings {
   maxClaimsPerDay: number;
   url?: string;
   antiBypassToken?: string;
-  adslotId?: string;
-  apiKey?: string;
 }
 
 export interface AdminEarnSettings {
   linkvertise: EarnMethodSettings;
-  ads?: EarnMethodSettings;
-  offerwall?: EarnMethodSettings;
-  surveywall?: EarnMethodSettings;
 }
 
 export function useAdminEarn() {
@@ -35,19 +35,23 @@ export function useAdminEarn() {
       setLoading(true);
       setError(null);
 
-      const token = localStorage.getItem("auth_token");
-      if (!token) throw new Error("No auth token");
+      const token = localStorage.getItem('auth_token');
+      if (!token) throw new Error('ERR_UNAUTHORIZED');
 
       const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/earn`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       const d = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(d?.error || "Failed to load earn settings");
+      if (!r.ok) {
+        const errCode =
+          d?.error?.code || d?.errorCode || d?.code || d?.error?.message || d?.error || 'ERR_EARN_FETCH_FAILED';
+        throw new Error(errCode);
+      }
 
       setSettings(d as AdminEarnSettings);
     } catch (e: any) {
-      setError(String(e?.message || "Failed to load earn settings"));
+      setError(String(e?.message || 'ERR_EARN_FETCH_FAILED'));
     } finally {
       setLoading(false);
     }
@@ -58,25 +62,30 @@ export function useAdminEarn() {
       setSaving(true);
       setError(null);
 
-      const token = localStorage.getItem("auth_token");
-      if (!token) throw new Error("No auth token");
+      const token = localStorage.getItem('auth_token');
+      if (!token) throw new Error('ERR_UNAUTHORIZED');
 
       const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/earn`, {
-        method: "PATCH",
+        method: 'PATCH',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(next),
       });
 
       const d = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(d?.error || "Failed to save earn settings");
+      if (!r.ok) {
+        const errCode =
+          d?.error?.code || d?.errorCode || d?.code || d?.error?.message || d?.error || 'ERR_EARN_SAVE_FAILED';
+        throw new Error(errCode);
+      }
 
       setSettings(d as AdminEarnSettings);
       return d as AdminEarnSettings;
     } catch (e: any) {
-      setError(String(e?.message || "Failed to save earn settings"));
+      const errCode = String(e?.message || 'ERR_EARN_SAVE_FAILED');
+      setError(errCode);
       throw e;
     } finally {
       setSaving(false);

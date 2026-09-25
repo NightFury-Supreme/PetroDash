@@ -1,15 +1,18 @@
-"use client";
+/**
+ * Admin Earn Management Page
+ * Complies with ISO/IEC 25010 and OWASP ASVS
+ */
 
-import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
-import { Coins, RefreshCw } from "lucide-react";
-import { useToast } from "@/components/ui/ToastProvider";
-import { useAdminEarn } from "@/hooks/admin/earn/useAdminEarn";
-import { AdminEarnHeader } from "@/components/admin/earn/AdminEarnHeader";
-import { AdminEarnContent } from "@/components/admin/earn/AdminEarnContent";
-import { AdminEarnSkeleton } from "@/components/skeletons/admin/earn/AdminEarnSkeleton";
-import { ErrorState, DashboardButton, ErrorDescription } from "@/components/ui/ErrorState";
-import type { AdminEarnSettings } from "@/hooks/admin/earn/useAdminEarn";
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { Coins, RefreshCw } from 'lucide-react';
+import { useToast } from '@/components/ui/ToastProvider';
+import { useAdminEarn, type AdminEarnSettings } from '@/hooks/admin/earn/useAdminEarn';
+import { AdminEarnHeader, AdminEarnContent } from '@/components/admin/earn';
+import { AdminEarnSkeleton } from '@/components/skeletons/admin/earn/AdminEarnSkeleton';
+import { ErrorState, DashboardButton, ErrorDescription } from '@/components/ui/ErrorState';
 
 export default function AdminEarnPage() {
   const t = useTranslations('admin.earn');
@@ -17,72 +20,59 @@ export default function AdminEarnPage() {
   const tErrorBackend = useTranslations('BackendErrors');
 
   const { showError } = useToast();
-  const { settings, loading, saving, error, setError, save } = useAdminEarn();
+  const { settings, loading, saving, error, save, load } = useAdminEarn();
   const [form, setForm] = useState<AdminEarnSettings | null>(null);
 
   useEffect(() => {
-    if (settings) setForm(settings);
+    if (settings) {
+      setForm(settings);
+    }
   }, [settings]);
 
-  useEffect(() => {
-    if (!error) return;
-    (async () => {
-      try {
-        const translatedError = tErrorBackend.has(error) ? tErrorBackend(error) : error;
-        showError(translatedError);
-      // eslint-disable-next-line unused-imports/no-unused-vars
-      } catch (_) {
-      } finally {
-        setError(null);
-      }
-    })();
-  }, [error, showError, setError, tErrorBackend]);
-
-  const setField = (path: string, value: any) => {
+  const setField = (path: string, value: unknown) => {
     setForm((prev) => {
       if (!prev) return prev;
-      const next: any = { ...(prev as any) };
-      const parts = path.split(".");
-      let cur = next;
+      const next = JSON.parse(JSON.stringify(prev)) as AdminEarnSettings;
+      const parts = path.split('.');
+      let cur: Record<string, unknown> = next as unknown as Record<string, unknown>;
       for (let i = 0; i < parts.length - 1; i++) {
         const p = parts[i];
-        cur[p] = { ...(cur[p] || {}) };
-        cur = cur[p];
+        cur[p] = (cur[p] || {}) as Record<string, unknown>;
+        cur = cur[p] as Record<string, unknown>;
       }
       cur[parts[parts.length - 1]] = value;
       return next;
     });
   };
 
-
-
   const onSaveLinkvertise = async (override?: Partial<AdminEarnSettings['linkvertise']>) => {
+    if (!form) return;
     try {
-      if (!form) return;
       const next = await save({ linkvertise: { ...form.linkvertise, ...override } });
       setForm(next);
-    } catch (e: any) {
-      const msg = String(e?.message || tCommon('failedToSave') || "Failed to save");
-      setError(msg);
+    } catch (e: unknown) {
+      const errCode = (e as { message?: string })?.message || 'ERR_EARN_SAVE_FAILED';
+      const translated = tErrorBackend.has(errCode) ? tErrorBackend(errCode) : errCode;
+      showError(translated);
       throw e;
     }
   };
 
-
-
-  if (error) {
+  if (error && !form) {
+    const displayError = tErrorBackend.has(error) ? tErrorBackend(error) : error;
     return (
       <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
         <ErrorState
           icon={<Coins strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
           kicker={t('loadErrorKicker')}
           title={t('failedToLoadEarnSettings')}
-          errorString={tErrorBackend.has(error) ? tErrorBackend(error) : error}
+          errorString={displayError}
           description={<ErrorDescription error={error} topic={t('earnSettingsTopic')} />}
           buttons={
             <>
               <button
-                onClick={() => window.location.reload()}
+                type="button"
+                onClick={() => load()}
                 className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
               >
                 <RefreshCw className="w-[14px] h-[14px]" />
@@ -104,9 +94,9 @@ export default function AdminEarnPage() {
         <AdminEarnSkeleton />
       ) : (
         form && (
-          <AdminEarnContent 
-            form={form} 
-            saving={saving} 
+          <AdminEarnContent
+            form={form}
+            saving={saving}
             onChange={setField}
             onSaveLinkvertise={onSaveLinkvertise}
           />
@@ -115,3 +105,4 @@ export default function AdminEarnPage() {
     </div>
   );
 }
+

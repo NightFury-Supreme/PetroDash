@@ -18,6 +18,30 @@ class AppError extends Error {
 
     Error.captureStackTrace(this, this.constructor);
   }
+
+  static badRequest(message, code = 'ERR_BAD_REQUEST', details = null) {
+    return new AppError(message, 400, code, details);
+  }
+
+  static unauthorized(message = 'Unauthorized', code = 'ERR_UNAUTHORIZED', details = null) {
+    return new AppError(message, 401, code, details);
+  }
+
+  static forbidden(message = 'Forbidden', code = 'ERR_FORBIDDEN', details = null) {
+    return new AppError(message, 403, code, details);
+  }
+
+  static notFound(message = 'Not Found', code = 'ERR_NOT_FOUND', details = null) {
+    return new AppError(message, 404, code, details);
+  }
+
+  static conflict(message = 'Conflict', code = 'ERR_CONFLICT', details = null) {
+    return new AppError(message, 409, code, details);
+  }
+
+  static internal(message = 'Internal Server Error', code = 'ERR_INTERNAL_SERVER', details = null) {
+    return new AppError(message, 500, code, details);
+  }
 }
 
 module.exports = AppError;
