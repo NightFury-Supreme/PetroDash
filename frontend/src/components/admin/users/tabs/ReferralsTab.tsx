@@ -11,7 +11,7 @@ export function ReferralsTab({ referral, onSaveCode, referralPage, setReferralPa
   const referredUsers = referral?.referredUsers || [];
   const totalUsers = referral?.meta?.total || 0;
   const totalPages = Math.ceil(totalUsers / REFERRAL_PAGE_SIZE) || 1;
-  const t = useTranslations('Admin.users');
+  const t = useTranslations('admin.users');
 
   useEffect(() => {
     setCodeDraft(referral?.code || '');

@@ -11,7 +11,7 @@ export function ServersTab({ user, servers, onRefresh }: any) {
   const [deleting, setDeleting] = useState<string | null>(null);
   const { showError } = useToast();
   const modal = useModal();
-  const t = useTranslations('Admin.users');
+  const t = useTranslations('admin.users');
   const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
 

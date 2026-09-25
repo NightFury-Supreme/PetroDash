@@ -8,7 +8,7 @@ import { adminUsersApi } from "@/utils/api/adminUsers";
 export function SecurityTab({ ban, userId, onRefresh }: any) {
   const modal = useModal();
   const { showError } = useToast();
-  const t = useTranslations('Admin.users');
+  const t = useTranslations('admin.users');
   const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
   

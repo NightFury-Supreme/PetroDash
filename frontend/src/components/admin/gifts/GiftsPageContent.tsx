@@ -16,7 +16,7 @@ import { useTranslations } from 'next-intl';
 import { useAdminGift } from '@/hooks/admin/gift/useAdminGift';
 
 export default function GiftsPageContent() {
-  const t = useTranslations('admin.gift');
+  const t = useTranslations('Admin.gifts');
   const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
 

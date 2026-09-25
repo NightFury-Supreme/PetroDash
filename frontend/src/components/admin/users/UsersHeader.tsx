@@ -4,7 +4,7 @@ import React from 'react';
 import { useTranslations } from 'next-intl';
 
 export default function UsersHeader() {
-  const t = useTranslations('Admin.users');
+  const t = useTranslations('admin.users');
 
   return (
     <header className="flex flex-col gap-1">

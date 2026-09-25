@@ -18,7 +18,7 @@ export default function ForgotRequestForm({ email, setEmail, onRequest, loading 
   
   return (
     <div className="space-y-4">
-      <AuthField label={tCommon('emailLabel')} value={email} onChange={setEmail} placeholder={tCommon('emailPlaceholder')} />
+      <AuthField label={tCommon('email')} value={email} onChange={setEmail} placeholder={tCommon('emailPlaceholder')} />
       <div className="space-y-3 pt-2">
         <AuthSubmit disabled={loading || !email} onClick={onRequest}>
           {loading ? tCommon('sending') : t('submitRequest')}

@@ -75,8 +75,8 @@ export default function LoginForm({ onSuccess, onRequires2FA }: { onSuccess: (to
       <form onSubmit={onSubmit} className="space-y-4">
         {showEmailLogin && (
           <>
-            <AuthField label={tCommon('emailLabel')} value={form.emailOrUsername} onChange={(v) => setForm({ ...form, emailOrUsername: v })} placeholder={tCommon('emailPlaceholder')} error={fieldErrors.emailOrUsername} />
-            <AuthField label={tCommon('passwordLabel')} type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} placeholder={tCommon('passwordPlaceholder')} error={fieldErrors.password} />
+            <AuthField label={tCommon('email')} value={form.emailOrUsername} onChange={(v) => setForm({ ...form, emailOrUsername: v })} placeholder={tCommon('emailPlaceholder')} error={fieldErrors.emailOrUsername} />
+            <AuthField label={tCommon('password')} type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} placeholder={tCommon('passwordPlaceholder')} error={fieldErrors.password} />
             <div className="text-right text-[12px] mt-1 mb-4">
               <Link href="/forgot" className="text-[#888888] hover:text-[#FF5722] transition-colors">{t('forgotPassword')}</Link>
             </div>

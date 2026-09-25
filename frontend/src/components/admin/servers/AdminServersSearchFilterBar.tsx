@@ -72,7 +72,7 @@ export function AdminServersSearchFilterBar({
               type="button"
               onClick={() => setSearchQuery('')}
               className="w-[23px] h-[23px] flex-shrink-0 flex items-center justify-center rounded-[5px] text-[#666] hover:bg-[#222] hover:text-[#ddd] transition-colors"
-              aria-label={tCommon('actions.clearSearch')}
+              aria-label={tCommon('clearSearch')}
             >
               <X size={13} />
             </button>

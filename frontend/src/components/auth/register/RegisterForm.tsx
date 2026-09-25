@@ -90,13 +90,13 @@ export default function RegisterForm() {
       <form onSubmit={onSubmit} className="space-y-4">
         {showEmailRegister && (
           <>
-            <AuthField label={tCommon('emailLabel')} value={form.email} onChange={(v) => setForm({ ...form, email: v })} placeholder={tCommon('emailPlaceholder')} error={fieldErrors.email} />
+            <AuthField label={tCommon('email')} value={form.email} onChange={(v) => setForm({ ...form, email: v })} placeholder={tCommon('emailPlaceholder')} error={fieldErrors.email} />
             <AuthField label={t('usernameLabel')} value={form.username} onChange={(v) => setForm({ ...form, username: v })} placeholder={t('usernamePlaceholder')} error={fieldErrors.username} />
             <div className="grid grid-cols-2 gap-3">
               <AuthField label={t('firstNameLabel')} value={form.firstName} onChange={(v) => setForm({ ...form, firstName: v })} placeholder={t('firstNamePlaceholder')} error={fieldErrors.firstName} />
               <AuthField label={t('lastNameLabel')} value={form.lastName} onChange={(v) => setForm({ ...form, lastName: v })} placeholder={t('lastNamePlaceholder')} error={fieldErrors.lastName} />
             </div>
-            <AuthField label={tCommon('passwordLabel')} type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} placeholder={tCommon('passwordPlaceholder')} error={fieldErrors.password} />
+            <AuthField label={tCommon('password')} type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} placeholder={tCommon('passwordPlaceholder')} error={fieldErrors.password} />
             <AuthSubmit disabled={loading}>{loading ? tCommon('loading') : t('submitButton')}</AuthSubmit>
           </>
         )}

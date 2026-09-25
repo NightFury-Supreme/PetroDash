@@ -4,7 +4,7 @@ import { RankBadge } from "@/components/ui/RankBadge";
 import { useTranslations } from "next-intl";
 
 export default function UsersTable({ users, onManageUser }: { users: any[], onManageUser: (id: string) => void }) {
-  const t = useTranslations('Admin.users');
+  const t = useTranslations('admin.users');
 
   if (!users || users.length === 0) {
     return (

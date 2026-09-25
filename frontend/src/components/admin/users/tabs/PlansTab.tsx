@@ -12,7 +12,7 @@ export function PlansTab({ plans, allPlans, userId, onRefresh }: any) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const modal = useModal();
   const { showSuccess, showError } = useToast();
-  const t = useTranslations('Admin.users');
+  const t = useTranslations('admin.users');
   const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
   

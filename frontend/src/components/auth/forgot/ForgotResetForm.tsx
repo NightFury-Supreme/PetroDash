@@ -29,7 +29,7 @@ export default function ForgotResetForm({
 
   return (
     <div className="space-y-4">
-      <AuthField label={tCommon('emailLabel')} value={email} onChange={setEmail} placeholder={tCommon('emailPlaceholder')} />
+      <AuthField label={tCommon('email')} value={email} onChange={setEmail} placeholder={tCommon('emailPlaceholder')} />
       
       <div className="space-y-2 text-left">
         <label className="block text-[11px] font-medium text-[#888888] uppercase tracking-wider">{tCommon('codeLabel')}</label>

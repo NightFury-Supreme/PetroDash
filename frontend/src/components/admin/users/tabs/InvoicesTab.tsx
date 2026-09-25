@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 
 export function InvoicesTab({ invoices, invoicePage, invoiceTotalPages, invoiceTotal, setInvoicePage }: any) {
   const { showError } = useToast();
-  const t = useTranslations('Admin.users');
+  const t = useTranslations('admin.users');
   const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
 

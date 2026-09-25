@@ -16,7 +16,7 @@ import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 
 export default function AdminPlansTab() {
-  const t = useTranslations('Admin.Plans');
+  const t = useTranslations('Admin.plan');
   const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
   const modal = useModal();

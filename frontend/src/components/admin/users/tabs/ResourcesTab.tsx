@@ -9,7 +9,7 @@ export function ResourcesTab({ resources, setResources, userId, onRefresh: _onRe
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState<any>(null);
   const { showError } = useToast();
-  const t = useTranslations('Admin.users');
+  const t = useTranslations('admin.users');
   const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
 

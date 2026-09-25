@@ -15,7 +15,7 @@ import { useTranslations } from "next-intl";
 type LedgerItem = Record<string, any>;
 
 export default function AdminLedgerTab() {
-  const t = useTranslations('Admin.Ledger');
+  const t = useTranslations('Admin.ledger');
   const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
   

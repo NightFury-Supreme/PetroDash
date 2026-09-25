@@ -10,7 +10,7 @@ import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslations } from 'next-intl';
 
 export default function AdminShopTab() {
-  const t = useTranslations('Admin.Shop');
+  const t = useTranslations('AdminShop');
   const tErrorBackend = useTranslations('BackendErrors');
   const { showSuccess, showError } = useToast();
   const {

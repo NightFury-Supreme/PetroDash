@@ -9,7 +9,7 @@ export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefre
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState<any>("");
   const { showError } = useToast();
-  const t = useTranslations('Admin.users');
+  const t = useTranslations('admin.users');
   const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
   

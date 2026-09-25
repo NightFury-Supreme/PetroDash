@@ -7,7 +7,7 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
   const [isLoading, setIsLoading] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [touched, setTouched] = useState(false);
-  const t = useTranslations('Admin.users');
+  const t = useTranslations('admin.users');
 
   // Username availability check state
   const [usernameAvail, setUsernameAvail] = useState<'idle' | 'checking' | 'available' | 'taken' | 'error'>('idle');
