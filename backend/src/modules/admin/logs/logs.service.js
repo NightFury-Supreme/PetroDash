@@ -1,6 +1,7 @@
 const AuditLog = require('../../../models/AuditLog');
 const User = require('../../../models/User');
 const Server = require('../../../models/Server');
+const Ticket = require('../../../models/Ticket');
 const { getCache, setCache } = require('../../../lib/redis');
 
 function escapeRegex(str) {
@@ -30,7 +31,7 @@ async function getLogs(parsedQuery) {
       qOrConditions.push({ _id: q });
     }
 
-    const [matchedUsers, matchedServers] = await Promise.all([
+    const [matchedUsers, matchedServers, matchedTickets] = await Promise.all([
       User.find(
         {
           $or: [
@@ -45,6 +46,9 @@ async function getLogs(parsedQuery) {
       Server.find({ name: { $regex: escapedQ, $options: 'i' } }, '_id')
         .limit(20)
         .lean(),
+      Ticket.find({ title: { $regex: escapedQ, $options: 'i' } }, '_id')
+        .limit(20)
+        .lean(),
     ]);
 
     if (matchedUsers.length > 0) {
@@ -57,6 +61,11 @@ async function getLogs(parsedQuery) {
     if (matchedServers.length > 0) {
       const serverIds = matchedServers.map((s) => s._id.toString());
       qOrConditions.push({ resourceId: { $in: serverIds } });
+    }
+
+    if (matchedTickets.length > 0) {
+      const ticketIds = matchedTickets.map((t) => t._id.toString());
+      qOrConditions.push({ resourceId: { $in: ticketIds } });
     }
 
     filterConditions.push({ $or: qOrConditions });
@@ -121,6 +130,7 @@ async function getLogs(parsedQuery) {
 
   const userIdsToFetch = new Set();
   const serverIdsToFetch = new Set();
+  const ticketIdsToFetch = new Set();
 
   list.forEach((log) => {
     if (log.actorId && /^[0-9a-fA-F]{24}$/.test(String(log.actorId))) {
@@ -135,15 +145,20 @@ async function getLogs(parsedQuery) {
     if (log.resourceType === 'server' && log.resourceId && /^[0-9a-fA-F]{24}$/.test(String(log.resourceId))) {
       serverIdsToFetch.add(String(log.resourceId));
     }
+    if (log.resourceType === 'ticket' && log.resourceId && /^[0-9a-fA-F]{24}$/.test(String(log.resourceId))) {
+      ticketIdsToFetch.add(String(log.resourceId));
+    }
   });
 
-  const [users, servers] = await Promise.all([
+  const [users, servers, tickets] = await Promise.all([
     userIdsToFetch.size ? User.find({ _id: { $in: [...userIdsToFetch] } }, 'username role').lean() : [],
     serverIdsToFetch.size ? Server.find({ _id: { $in: [...serverIdsToFetch] } }, 'name').lean() : [],
+    ticketIdsToFetch.size ? Ticket.find({ _id: { $in: [...ticketIdsToFetch] } }, 'title').lean() : [],
   ]);
 
   const userMap = Object.fromEntries(users.map((u) => [u._id.toString(), { name: u.username, role: u.role }]));
   const serverMap = Object.fromEntries(servers.map((s) => [s._id.toString(), s.name]));
+  const ticketMap = Object.fromEntries(tickets.map((t) => [t._id.toString(), t.title]));
 
   const enrichedList = list.map((log) => {
     const copy = { ...log };
@@ -165,6 +180,10 @@ async function getLogs(parsedQuery) {
 
     if (copy.resourceType === 'server' && copy.resourceId && serverMap[String(copy.resourceId)]) {
       copy.meta.targetName = serverMap[String(copy.resourceId)];
+    }
+
+    if (copy.resourceType === 'ticket' && copy.resourceId && ticketMap[String(copy.resourceId)]) {
+      copy.meta.targetName = ticketMap[String(copy.resourceId)];
     }
 
     return copy;

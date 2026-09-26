@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface PaginationProps {
   currentPage: number;
@@ -8,7 +9,7 @@ interface PaginationProps {
   pageSize: number;
   onPageChange: (page: number) => void;
   loading?: boolean;
-  itemName?: string; // e.g., 'payments', 'logs', 'servers'
+  itemName?: string;
 }
 
 export function Pagination({
@@ -18,14 +19,20 @@ export function Pagination({
   pageSize,
   onPageChange,
   loading = false,
-  itemName = 'items'
+  itemName = 'items',
 }: PaginationProps) {
+  const t = useTranslations('Common');
+
   if (totalPages <= 1) return null;
+
+  const translatedItemName = t.has(itemName) ? t(itemName) : itemName;
+  const startItem = totalItems > 0 ? (currentPage - 1) * pageSize + 1 : 0;
+  const endItem = Math.min(currentPage * pageSize, totalItems);
 
   const getPageNumbers = () => {
     const pages = [];
     const maxVisible = 5;
-    
+
     if (totalPages <= maxVisible) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
@@ -55,9 +62,7 @@ export function Pagination({
   return (
     <div className="mt-5 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-white/[0.06] pt-5">
       <p className="text-[11px] text-white/20">
-        Showing {totalItems > 0 ? (currentPage - 1) * pageSize + 1 : 0}
-        {"-"}
-        {Math.min(currentPage * pageSize, totalItems)} of {totalItems} {itemName}
+        {t('showing')} {startItem}-{endItem} {t('of')} {totalItems} {translatedItemName}
       </p>
 
       <div className="flex items-center gap-1">
@@ -66,7 +71,7 @@ export function Pagination({
           disabled={currentPage === 1 || loading}
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           className="flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.07] text-white/30 transition hover:bg-white/[0.04] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
-          aria-label="Previous page"
+          aria-label={t('previousPage')}
         >
           <ChevronLeft size={14} />
         </button>
@@ -88,8 +93,8 @@ export function Pagination({
               disabled={loading}
               className={`flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-xs transition ${
                 currentPage === pageNumber
-                  ? "bg-[#FF5722] text-white font-medium"
-                  : "text-white/30 hover:bg-white/[0.04] hover:text-white disabled:opacity-50"
+                  ? 'bg-[#FF5722] text-white font-medium'
+                  : 'text-white/30 hover:bg-white/[0.04] hover:text-white disabled:opacity-50'
               }`}
             >
               {pageNumber}
@@ -102,7 +107,7 @@ export function Pagination({
           disabled={currentPage === totalPages || loading}
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           className="flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.07] text-white/30 transition hover:bg-white/[0.04] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
-          aria-label="Next page"
+          aria-label={t('nextPage')}
         >
           <ChevronRight size={14} />
         </button>

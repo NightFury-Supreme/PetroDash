@@ -55,7 +55,9 @@ export function SectionHeading({ children, className = '' }: { children: React.R
   );
 }
 
-export function DiffViewer({ data, prefix = '', tCommon }: { data: Record<string, unknown>; prefix?: string; tCommon: any }) {
+type TranslationFn = { (key: string): string; has: (key: string) => boolean };
+
+export function DiffViewer({ data, prefix = '', tCommon }: { data: Record<string, unknown>; prefix?: string; tCommon: TranslationFn }) {
   return (
     <>
       {Object.entries(data).map(([key, value]) => {
@@ -100,7 +102,7 @@ export function DiffViewer({ data, prefix = '', tCommon }: { data: Record<string
   );
 }
 
-export function CreatedViewer({ data, tCommon }: { data: Record<string, unknown>; tCommon: any }) {
+export function CreatedViewer({ data, tCommon }: { data: Record<string, unknown>; tCommon: TranslationFn }) {
   return (
     <>
       {Object.entries(data).map(([key, value]) => {
@@ -123,7 +125,7 @@ export function CreatedViewer({ data, tCommon }: { data: Record<string, unknown>
   );
 }
 
-export function MetaViewer({ data, tCommon }: { data: Record<string, unknown>; tCommon: any }) {
+export function MetaViewer({ data, tCommon }: { data: Record<string, unknown>; tCommon: TranslationFn }) {
   return (
     <>
       {Object.entries(data).map(([key, value]) => {
@@ -163,11 +165,13 @@ export function MetaViewer({ data, tCommon }: { data: Record<string, unknown>; t
         }
 
         if (typeof value === 'boolean') {
+          const yesLabel = tCommon && tCommon.has('yes') ? tCommon('yes') : 'Yes';
+          const noLabel = tCommon && tCommon.has('no') ? tCommon('no') : 'No';
           return (
             <div key={key} className="flex justify-between items-start gap-4 py-[7px] border-b border-white/[0.04] last:border-0">
               <span className="text-[9px] uppercase tracking-[0.1em] text-white/45 shrink-0 pt-px">{label}</span>
               <span className={`text-[11px] font-medium ${value ? 'text-emerald-400' : 'text-red-400'}`}>
-                {value ? 'Yes' : 'No'}
+                {value ? yesLabel : noLabel}
               </span>
             </div>
           );
