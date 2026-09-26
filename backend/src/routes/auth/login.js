@@ -1,20 +1,22 @@
 const express = require('express');
 const { z } = require('zod');
-const User = require('../../models/User');
-const { getSettings } = require('../../lib/settings');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { verifySync } = require('otplib');
+
+const User = require('../../models/User');
+const UserSession = require('../../models/UserSession');
+const { getSettings } = require('../../lib/settings');
 const { writeAudit } = require('../../middleware/audit');
 const { loginRateLimit } = require('../../middleware/rateLimit');
 const { logUserActivity } = require('../../middleware/userActivity');
+const SessionService = require('../../services/SessionService');
+const { serializeAuthUser, sendLoginAlert } = require('./loginHelpers');
 
 const router = express.Router();
 
-const SessionService = require('../../services/SessionService');
-const { verifySync } = require('otplib');
-
 const loginSchema = z.object({ emailOrUsername: z.string().min(1), password: z.string().min(8) });
-
+const login2faSchema = z.object({ tempToken: z.string(), code: z.string().min(6).max(8) });
 
 router.post('/login', loginRateLimit, async (req, res) => {
   const startTime = Date.now();
@@ -73,7 +75,6 @@ router.post('/login', loginRateLimit, async (req, res) => {
     }
     
     if (user.tfaEnabled) {
-      // Issue a temporary token for 2FA
       const tempToken = jwt.sign({ sub: user._id.toString(), type: '2fa' }, process.env.JWT_SECRET, { expiresIn: '5m' });
       return res.json({ requires2FA: true, tempToken });
     }
@@ -81,7 +82,6 @@ router.post('/login', loginRateLimit, async (req, res) => {
     const { token, session } = await SessionService.createSessionAndJwt(user, req);
     req.user = user;
     
-    // Log successful login
     await writeAudit(req, 'auth.login.success', 'auth', user._id.toString(), {
       loginMethod: 'email',
       emailOrUsername,
@@ -94,42 +94,17 @@ router.post('/login', loginRateLimit, async (req, res) => {
       durationMs: Date.now() - startTime,
       sessionId: session._id.toString()
     });
-    // For user activity we pass a mock req object to inject the new sessionId if req.user is not yet populated
+
     const mockReq = { ...req, user: { sub: user._id.toString(), sessionId: session._id.toString() } };
     await logUserActivity(mockReq, 'auth.login.success', { loginMethod: 'email', sessionId: session._id.toString() }, user._id.toString());
 
-    // Send login alert email (non-blocking)
-    try {
-      const { sendMailTemplate } = require('../../lib/mail');
-      await sendMailTemplate({
-        to: user.email,
-        templateKey: 'loginAlert',
-        data: {
-          ip: req.ip,
-          userAgent: req.get('User-Agent') || '',
-          time: new Date().toISOString(),
-          username: user.username,
-        }
-      });
-     
-    } catch (_) {}
+    sendLoginAlert(user, req);
     
     return res.json({ 
       token, 
-      user: { 
-        id: user._id, 
-        email: user.email, 
-        username: user.username, 
-        firstName: user.firstName, 
-        lastName: user.lastName, 
-        role: user.role, 
-        coins: Number(user.coins || 0), 
-        pterodactylUserId: user.pterodactylUserId || null, 
-        resources: user.resources 
-      } 
+      user: serializeAuthUser(user),
     });
   } catch (e) {
-    // Error logged silently for production
     await writeAudit(req, 'auth.login.error', 'auth', user?._id?.toString() || null, {
       reason: 'server_error',
       error: e.message,
@@ -142,10 +117,7 @@ router.post('/login', loginRateLimit, async (req, res) => {
   }
 });
 
-const login2faSchema = z.object({ tempToken: z.string(), code: z.string().min(6).max(8) });
-
 router.post('/login/2fa', loginRateLimit, async (req, res) => {
-
   let userId = null;
   
   try {
@@ -177,11 +149,8 @@ router.post('/login/2fa', loginRateLimit, async (req, res) => {
     
     if (code.length === 6) {
       try { isValid = verifySync({ token: code, secret: user.tfaSecret })?.valid === true; } catch { isValid = false; }
-    } 
-    // Check if it's a backup code (8 characters hex)
-    else if (code.length === 8 && user.tfaBackupCodes && user.tfaBackupCodes.includes(code)) {
+    } else if (code.length === 8 && user.tfaBackupCodes && user.tfaBackupCodes.includes(code)) {
       isValid = true;
-      // Consume backup code
       user.tfaBackupCodes = user.tfaBackupCodes.filter(c => c !== code);
       await user.save();
     }
@@ -196,11 +165,9 @@ router.post('/login/2fa', loginRateLimit, async (req, res) => {
       return res.status(401).json({ error: code.length === 8 ? 'Invalid backup code' : 'Invalid 2FA code' });
     }
     
-    // Complete login
     const { token, session } = await SessionService.createSessionAndJwt(user, req);
     req.user = user;
     
-    // Log successful 2FA login
     await writeAudit(req, 'auth.login.success', 'auth', user._id.toString(), {
       loginMethod: 'email_2fa',
       userId: user._id.toString(),
@@ -211,49 +178,25 @@ router.post('/login/2fa', loginRateLimit, async (req, res) => {
       userAgent: req.get('User-Agent'),
       sessionId: session._id.toString()
     });
+
     const mockReq = { ...req, user: { sub: user._id.toString(), sessionId: session._id.toString() } };
     await logUserActivity(mockReq, 'auth.login.success', { loginMethod: 'email_2fa', sessionId: session._id.toString() }, user._id.toString());
     
-    // Send login alert email (non-blocking)
-    try {
-      const { sendMailTemplate } = require('../../lib/mail');
-      await sendMailTemplate({
-        to: user.email,
-        templateKey: 'loginAlert',
-        data: {
-          ip: req.ip,
-          userAgent: req.get('User-Agent') || '',
-          time: new Date().toISOString(),
-          username: user.username,
-        }
-      });
-    } catch {}
+    sendLoginAlert(user, req);
     
     return res.json({ 
       token, 
-      user: { 
-        id: user._id, 
-        email: user.email, 
-        username: user.username, 
-        firstName: user.firstName, 
-        lastName: user.lastName, 
-        role: user.role, 
-        coins: Number(user.coins || 0), 
-        pterodactylUserId: user.pterodactylUserId || null, 
-        resources: user.resources 
-      } 
+      user: serializeAuthUser(user),
     });
   } catch {
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Logout route
 router.post('/logout', async (req, res) => {
   const startTime = Date.now();
   
   try {
-    // Extract user info from JWT token if present
     let user = null;
     const authHeader = req.headers.authorization;
     if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
@@ -262,20 +205,17 @@ router.post('/logout', async (req, res) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         user = await User.findById(String(decoded.sub));
         
-        // Revoke the current session
         if (decoded.sessionId) {
-          const UserSession = require('../../models/UserSession');
           await UserSession.findByIdAndDelete(decoded.sessionId);
-          req.sessionId = decoded.sessionId; // Store for audit log
+          req.sessionId = decoded.sessionId;
         }
       } catch {
-        // Invalid token during logout - logged silently
+        // Invalid token during logout ignored
       }
       
       req.user = user;
     }
     
-    // Log logout attempt
     await writeAudit(req, 'auth.logout', 'auth', user?._id?.toString() || null, {
       userId: user?._id?.toString() || null,
       username: user?.username || null,
@@ -289,7 +229,6 @@ router.post('/logout', async (req, res) => {
     
     return res.json({ message: 'Logged out successfully' });
   } catch (error) {
-    // Error logged silently for production
     await writeAudit(req, 'auth.logout.error', 'auth', null, {
       reason: 'server_error',
       error: error.message,
@@ -302,5 +241,3 @@ router.post('/logout', async (req, res) => {
 });
 
 module.exports = router;
-
-

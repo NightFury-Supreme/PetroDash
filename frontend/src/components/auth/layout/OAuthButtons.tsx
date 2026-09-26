@@ -1,8 +1,8 @@
 'use client';
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
-import { useState, useEffect, Suspense } from 'react';
+import { Suspense, useMemo } from 'react';
 import { useSearchParams } from '@/i18n/routing';
+import { useAuthSettings } from '@/hooks/useAuthSettings';
 
 interface OAuthProvider {
   name: string;
@@ -20,55 +20,43 @@ interface OAuthButtonsProps {
 
 // Inner component that uses useSearchParams — must be wrapped in Suspense by the caller
 function OAuthButtonsInner({ onError }: OAuthButtonsProps) {
-  const [providers, setProviders] = useState<OAuthProvider[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // All hooks unconditionally at top
+  const { settings, loading, error } = useAuthSettings();
   const searchParams = useSearchParams();
 
-  useEffect(() => {
-    const fetchOAuthStatus = async () => {
-      try {
-        const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/`);
-        let data: any = {}; try { data = await response.json(); } catch {}
+  if (error && onError) {
+    onError(error);
+  }
 
-        const availableProviders: OAuthProvider[] = [];
+  const providers = useMemo<OAuthProvider[]>(() => {
+    if (!settings) return [];
+    const availableProviders: OAuthProvider[] = [];
 
-        if (data.discord?.enabled) {
-          availableProviders.push({
-            name: 'Discord',
-            enabled: true,
-            clientId: data.discord.clientId || '',
-            icon: 'fab fa-discord',
-            color: '#5865F2',
-            bgColor: '#5865F2',
-            hoverColor: '#4752C4'
-          });
-        }
+    if (settings.discord?.enabled) {
+      availableProviders.push({
+        name: 'Discord',
+        enabled: true,
+        clientId: '',
+        icon: 'fab fa-discord',
+        color: '#5865F2',
+        bgColor: '#5865F2',
+        hoverColor: '#4752C4',
+      });
+    }
 
-        if (data.google?.enabled) {
-          availableProviders.push({
-            name: 'Google',
-            enabled: true,
-            clientId: data.google.clientId || '',
-            icon: 'fab fa-google',
-            color: '#4285F4',
-            bgColor: '#4285F4',
-            hoverColor: '#3367D6'
-          });
-        }
+    if (settings.google?.enabled) {
+      availableProviders.push({
+        name: 'Google',
+        enabled: true,
+        clientId: '',
+        icon: 'fab fa-google',
+        color: '#4285F4',
+        bgColor: '#4285F4',
+        hoverColor: '#3367D6',
+      });
+    }
 
-        setProviders(availableProviders);
-      } catch (error) {
-        console.error('Failed to fetch OAuth status:', error);
-        onError?.('Failed to load login options');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchOAuthStatus();
-  }, [onError]);
+    return availableProviders;
+  }, [settings]);
 
   const handleOAuthLogin = (provider: string) => {
     const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/oauth/${provider.toLowerCase()}`);
@@ -102,7 +90,7 @@ function OAuthButtonsInner({ onError }: OAuthButtonsProps) {
           style={{
             '--provider-color': provider.color,
             '--provider-bg': provider.bgColor,
-            '--provider-hover': provider.hoverColor
+            '--provider-hover': provider.hoverColor,
           } as React.CSSProperties}
         >
           <i className={`${provider.icon} text-[15px] group-hover:scale-110 transition-transform`} style={{ color: 'var(--provider-color)' }} />
@@ -116,12 +104,14 @@ function OAuthButtonsInner({ onError }: OAuthButtonsProps) {
 // Exported wrapper — always renders OAuthButtonsInner inside Suspense
 export function OAuthButtons({ onError }: OAuthButtonsProps) {
   return (
-    <Suspense fallback={
-      <div className="space-y-3">
-        <div className="h-12 bg-[#202020] rounded-lg animate-pulse" />
-        <div className="h-12 bg-[#202020] rounded-lg animate-pulse" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="space-y-3">
+          <div className="h-12 bg-[#202020] rounded-lg animate-pulse" />
+          <div className="h-12 bg-[#202020] rounded-lg animate-pulse" />
+        </div>
+      }
+    >
       <OAuthButtonsInner onError={onError} />
     </Suspense>
   );

@@ -1,41 +1,13 @@
+'use client';
+
 import { Download, Loader2 } from "lucide-react";
-
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useTranslations } from 'next-intl';
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
-import { useToast } from "@/components/ui/ToastProvider";
 import { Pagination } from '@/components/Pagination';
-
+import { useInvoices, PaymentItem } from '@/hooks/profile';
 
 export function InvoicesTab({ currency = "USD" }: { currency?: string }) {
   const t = useTranslations('Profile');
-
-    const { showError } = useToast();
-  
-  const downloadInvoice = async (id: string) => {
-    try {
-      const token = localStorage.getItem("auth_token");
-      if (!token) throw new Error("Not authenticated");
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/payments/${id}/invoice`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!r.ok) {
-        const d = await r.json().catch(() => ({}));
-        throw new Error((d as any)?.error || "Failed");
-      }
-      const blob = await r.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `invoice-${id}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (e: any) {
-      showError(String(e?.message || "Failed"));
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -46,46 +18,25 @@ export function InvoicesTab({ currency = "USD" }: { currency?: string }) {
             <p className="mt-2 text-sm text-white/35">{t('paymentHistoryDesc')}</p>
           </div>
         </div>
-        <PaymentsSection currency={currency} onDownload={downloadInvoice} />
+        <PaymentsSection currency={currency} />
       </section>
     </div>
   );
 }
 
-function PaymentsSection({ currency, onDownload }: { currency: string; onDownload: (id: string) => void; }) {
+function PaymentsSection({ currency }: { currency: string }) {
   const t = useTranslations('Profile');
-  const [payments, setPayments] = useState<any[]>([]);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalPayments, setTotalPayments] = useState(0);
-  const [loading, setLoading] = useState(true);
   const PAYMENTS_PER_PAGE = 10;
-
-  useEffect(() => {
-    let active = true;
-    const fetchPayments = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem("auth_token");
-        const res = await fetchWithRetry(
-          `${process.env.NEXT_PUBLIC_API_BASE || ''}/api/payments?paginate=true&page=${page}&pageSize=${PAYMENTS_PER_PAGE}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        const data = await res.json();
-        if (active && res.ok) {
-          setPayments(data.data || []);
-          setTotalPayments(data.meta?.total || 0);
-          setTotalPages(Math.ceil((data.meta?.total || 0) / (data.meta?.pageSize || PAYMENTS_PER_PAGE)) || 1);
-        }
-      } catch (err) {
-        console.error("Failed to fetch payments:", err);
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
-    fetchPayments();
-    return () => { active = false; };
-  }, [page]);
+  const {
+    payments,
+    page,
+    setPage,
+    totalPages,
+    totalPayments,
+    loading,
+    downloadingId,
+    downloadInvoice,
+  } = useInvoices(PAYMENTS_PER_PAGE);
 
   return (
     <div>
@@ -130,7 +81,14 @@ function PaymentsSection({ currency, onDownload }: { currency: string; onDownloa
           <div className="py-8 text-center text-xs text-[#666]">{t('noPaymentsYet')}</div>
         ) : (
           payments.map((payment, i) => (
-            <PaymentRow key={payment.id || i} payment={payment} currency={currency} onDownload={onDownload} t={t} />
+            <PaymentRow
+              key={payment.id || i}
+              payment={payment}
+              currency={currency}
+              isDownloading={downloadingId === payment.id}
+              onDownload={() => downloadInvoice(payment.id)}
+              t={t}
+            />
           ))
         )}
       </div>
@@ -149,19 +107,20 @@ function PaymentsSection({ currency, onDownload }: { currency: string; onDownloa
   );
 }
 
-function PaymentRow({ payment, currency, onDownload, t }: { payment: any; currency: string; onDownload: (id: string) => void | Promise<void>; t: any; }) {
-  const [downloading, setDownloading] = useState(false);
+function PaymentRow({
+  payment,
+  currency,
+  isDownloading,
+  onDownload,
+  t,
+}: {
+  payment: PaymentItem;
+  currency: string;
+  isDownloading: boolean;
+  onDownload: () => void;
+  t: any;
+}) {
   const isPaid = payment.status === "COMPLETED" || payment.status === "PAID";
-  
-  const handleDownload = async () => {
-    if (downloading) return;
-    setDownloading(true);
-    try {
-      await onDownload(payment.id);
-    } finally {
-      setDownloading(false);
-    }
-  };
 
   return (
     <div className="group grid grid-cols-1 gap-4 px-5 py-5 transition hover:bg-white/[0.015] md:grid-cols-[1.8fr_1fr_1.5fr_1fr_1fr_70px] md:items-center">
@@ -174,19 +133,19 @@ function PaymentRow({ payment, currency, onDownload, t }: { payment: any; curren
       <div className="min-w-0">
         <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{t('date')}</p>
         <span className="text-xs text-white/35">
-          {new Date(payment.createdAt || payment.date).toLocaleDateString()}
+          {new Date(payment.createdAt).toLocaleDateString()}
         </span>
       </div>
       <div className="min-w-0">
         <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{t('plan')}</p>
         <span className="truncate text-xs font-medium text-white/70">
-          {payment.plan?.name || payment.planId || payment.plan}
+          {payment.plan?.name || payment.planId}
         </span>
       </div>
       <div className="min-w-0">
         <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{t('amount')}</p>
         <span className="text-xs font-medium text-white/70">
-          {payment.amount?.toFixed ? payment.amount.toFixed(2) : payment.amount}
+          {typeof payment.amount === 'number' ? payment.amount.toFixed(2) : payment.amount}
           <span className="ml-1 text-white/25">{payment.currency || currency}</span>
         </span>
       </div>
@@ -198,11 +157,11 @@ function PaymentRow({ payment, currency, onDownload, t }: { payment: any; curren
         {isPaid ? (
           <button
             type="button"
-            onClick={handleDownload}
-            disabled={downloading}
+            onClick={onDownload}
+            disabled={isDownloading}
             className="inline-flex items-center gap-1 text-xs text-[#FF5722] transition-colors hover:text-[#E64D1F] focus:outline-none focus:ring-2 focus:ring-[#FF5722]/30 disabled:opacity-50 disabled:cursor-wait"
           >
-            {downloading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
+            {isDownloading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
             PDF
           </button>
         ) : (

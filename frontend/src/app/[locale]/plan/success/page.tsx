@@ -1,11 +1,9 @@
 "use client";
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
-import { useEffect, useState, useRef } from 'react';
-import { useToast } from "@/components/ui/ToastProvider";
 import { useTranslations } from 'next-intl';
-import { useRouter, useSearchParams } from "@/i18n/routing";
+import { useRouter } from "@/i18n/routing";
 import { Check, LayoutDashboard } from 'lucide-react';
+import { usePayPalCapture } from '@/hooks/shop';
 
 export const runtime = 'edge';
 
@@ -13,63 +11,7 @@ export default function PlanSuccessPage() {
   const t = useTranslations('Shop');
   const tCommon = useTranslations('Common');
   const router = useRouter();
-  const searchParams = useSearchParams();
-    const { showError } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [success, setSuccess] = useState(false);
-
-  const hasCaptured = useRef(false);
-
-  useEffect(() => {
-    if (hasCaptured.current) return;
-    hasCaptured.current = true;
-
-    const handlePaymentSuccess = async () => {
-      try {
-        const token = localStorage.getItem('auth_token');
-        if (!token) { router.push('/login'); return; }
-
-        const orderId = searchParams.get('token');
-        if (!orderId) throw new Error('No order ID found');
-
-        const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/paypal/capture-order`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ orderId })
-        });
-
-        let data: any = {}; try { data = await response.json(); } catch {}
-        if (!response.ok) throw new Error(data?.error || 'Failed to capture payment');
-
-        if (window.opener && !window.opener.closed) {
-          window.opener.postMessage({ type: 'PAYPAL_SUCCESS' }, '*');
-          window.close();
-          return;
-        }
-
-        setSuccess(true);
-        setTimeout(() => router.push('/dashboard'), 4000);
-
-      } catch (error: any) {
-        if (error.message?.includes('already captured') || error.message?.includes('ORDER_ALREADY_CAPTURED')) {
-          if (window.opener && !window.opener.closed) {
-            window.opener.postMessage({ type: 'PAYPAL_SUCCESS' }, '*');
-            window.close();
-            return;
-          }
-          setSuccess(true);
-          setTimeout(() => router.push('/dashboard'), 4000);
-          return;
-        }
-        showError(error.message || t('paymentFailed'));
-        router.push('/shop');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    handlePaymentSuccess();
-  }, [searchParams]);
+  const { loading, success } = usePayPalCapture();
 
   if (loading) {
     return (
@@ -81,13 +23,13 @@ export default function PlanSuccessPage() {
             <span className="w-3.5 h-3.5 rounded-full bg-[#FF5722] animate-bounce" />
           </div>
           <p className="m-0 mb-2.5 text-[#FF5722] text-[10px] font-semibold tracking-[0.12em] uppercase">
-          {t('processing')}
+            {t('processing')}
           </p>
           <h1 className="m-0 text-[#ededed] text-[clamp(28px,4vw,38px)] leading-[1.15] font-semibold tracking-[-0.04em]">
-          {t('confirmingPayment')}
+            {t('confirmingPayment')}
           </h1>
           <p className="max-w-[500px] mx-auto mt-3.5 text-[#888888] text-[12px] sm:text-[13px] leading-[1.7]">
-          {t('confirmingPaymentDesc')}
+            {t('confirmingPaymentDesc')}
           </p>
         </section>
       </div>
@@ -102,13 +44,13 @@ export default function PlanSuccessPage() {
             <Check className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" strokeWidth={1.5} />
           </div>
           <p className="m-0 mb-2.5 text-emerald-500 text-[10px] font-semibold tracking-[0.12em] uppercase">
-          {tCommon('success')}
+            {tCommon('success')}
           </p>
           <h1 className="m-0 text-[#ededed] text-[clamp(28px,4vw,38px)] leading-[1.15] font-semibold tracking-[-0.04em]">
-          {t('paymentCompleted')}
+            {t('paymentCompleted')}
           </h1>
           <p className="max-w-[500px] mx-auto mt-3.5 text-[#888888] text-[12px] sm:text-[13px] leading-[1.7]">
-          {t('paymentCompletedDesc')}
+            {t('paymentCompletedDesc')}
           </p>
           <div className="mt-[29px] flex justify-center gap-3">
             <button
@@ -126,9 +68,3 @@ export default function PlanSuccessPage() {
 
   return null;
 }
-
-
-
-
-
-

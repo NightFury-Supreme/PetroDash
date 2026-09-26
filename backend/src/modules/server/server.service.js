@@ -1,10 +1,13 @@
 /**
- * Server Service Layer (Dashboard Focus)
- * Optimized DB queries, strictly no Pterodactyl blocking calls.
+ * Server Service Layer (Dashboard & Query Focus)
+ * DB-Optimized queries, aggregation, and live status enrichment.
  */
 
 const Server = require('../../models/Server');
 const { getCache, setCache } = require('../../lib/redis');
+const { getServer: getPanelServer } = require('../../services/pterodactyl');
+const { hasServerLimitsChanged } = require('../../utils/security');
+const AppError = require('../../utils/AppError');
 const mongoose = require('mongoose');
 
 class ServerService {
@@ -16,7 +19,6 @@ class ServerService {
     const cached = await getCache(cacheKey);
     if (cached) return cached;
 
-    // Use MongoDB aggregation instead of pulling all documents and looping
     const result = await Server.aggregate([
       { $match: { owner: new mongoose.Types.ObjectId(userId) } },
       { $group: {
@@ -35,7 +37,6 @@ class ServerService {
       diskMb: 0, memoryMb: 0, cpuPercent: 0, backups: 0, databases: 0, allocations: 0, servers: 0
     };
 
-    // Remove _id from result
     delete usage._id;
 
     await setCache(cacheKey, usage, 60);
@@ -78,8 +79,8 @@ class ServerService {
     const locationPingCache = {};
 
     const enriched = await Promise.all(list.map(async (s) => {
-        let status = s.status || 'unknown';
-        let suspended = status === 'suspended';
+        const status = s.status || 'unknown';
+        const suspended = status === 'suspended';
         
         let isNodeDown = false;
         if (s.locationId && s.locationId._id) {
@@ -137,6 +138,83 @@ class ServerService {
 
     await setCache(cacheKey, enriched, 30);
     return enriched;
+  }
+
+  /**
+   * Fetch Single Server with Live Panel Status Sync
+   */
+  async getServer(userId, serverId) {
+    const server = await Server.findOne({ _id: String(serverId), owner: userId })
+      .populate('eggId', 'name icon')
+      .populate('locationId', 'name flag')
+      .lean();
+    if (!server) throw AppError.notFound('Server not found', 'ERR_SERVER_NOT_FOUND');
+
+    let unreachable = false;
+    let suspended = Boolean(server.status && server.status.toLowerCase() === 'suspended');
+    let errorMessage = null;
+
+    if (server.panelServerId) {
+      try {
+        const panelResponse = await getPanelServer(server.panelServerId);
+        const panel = panelResponse?.attributes;
+        const panelBuild = panel?.limits || panel?.build || {};
+        const panelFeatures = panel?.feature_limits || {};
+
+        suspended = suspended || panel?.suspended === true || panel?.suspended === 1;
+        if (panel?.status && !suspended) {
+          const isInstalling = panel.status === 'installing' || (panel.container && panel.container.installed === false);
+          if (isInstalling) {
+            server.status = 'creating';
+          } else {
+            server.status = panel.status;
+          }
+        } else if (panel && !suspended) {
+          const isInstalling = panel.container && panel.container.installed === false;
+          if (isInstalling) {
+            server.status = 'creating';
+          }
+        }
+
+        const updatedLimits = {
+          diskMb: Number(panelBuild.disk ?? panelBuild?.diskMb) ?? server.limits.diskMb,
+          memoryMb: Number(panelBuild.memory ?? panelBuild?.memoryMb) ?? server.limits.memoryMb,
+          cpuPercent: Number(panelBuild.cpu ?? panelBuild?.cpuPercent) ?? server.limits.cpuPercent,
+          backups: Number(panelFeatures.backups) ?? server.limits.backups,
+          databases: Number(panelFeatures.databases) ?? server.limits.databases,
+          allocations: Number(panelFeatures.allocations) ?? server.limits.allocations,
+        };
+
+        const hasChange = hasServerLimitsChanged(server.limits, updatedLimits);
+        if (hasChange) {
+          await Server.updateOne({ _id: server._id }, { $set: { limits: updatedLimits } });
+          Object.assign(server.limits, updatedLimits);
+        }
+      } catch (panelError) {
+        unreachable = true;
+        const detail = panelError?.response?.data?.errors?.[0]?.detail;
+        errorMessage = detail || panelError?.message || 'Pterodactyl request failed';
+        if (!suspended) {
+          server.status = 'unreachable';
+        }
+      }
+    }
+
+    const responsePayload = {
+      ...server,
+      unreachable,
+      suspended,
+      error: errorMessage,
+      eggName: server.eggId?.name,
+      eggIcon: server.eggId?.icon,
+      location: server.locationId?.name,
+      locationFlag: server.locationId?.flag
+    };
+
+    delete responsePayload.eggId;
+    delete responsePayload.locationId;
+
+    return responsePayload;
   }
 }
 

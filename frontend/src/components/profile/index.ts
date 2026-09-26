@@ -14,3 +14,7 @@ export * from './tabs/ActivityLogSection';
 export * from './ui/SideItem';
 export * from './ui/InfoRow';
 export * from './ui/SecurityItem';
+
+export * from './ProfileHeader';
+export * from './ProfileNav';
+export * from './ProfileDrawers';

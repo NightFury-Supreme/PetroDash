@@ -1,190 +1,111 @@
 const express = require('express');
 const { createRateLimiter } = require('../middleware/rateLimit');
-// const crypto = require('crypto');
 const axios = require('axios');
-// const { getSettings } = require('../lib/settings');
 const { requireAuth } = require('../middleware/auth');
 const { writeAudit } = require('../middleware/audit');
 const { logUserActivity } = require('../middleware/userActivity');
 const Plan = require('../models/Plan');
- 
 const UserPlan = require('../models/UserPlan');
 const Coupon = require('../models/Coupon');
- 
 const Payment = require('../models/Payment');
- 
 const { getAccessToken } = require('../lib/paypal');
+const AppError = require('../utils/AppError');
 
 const router = express.Router();
 
-// PayPal-supported currencies (official list)
-// https://developer.paypal.com/docs/reports/reference/paypal-supported-currencies/
-const PAYPAL_SUPPORTED_CURRENCIES = new Set([
-  'AUD', 'BRL', 'CAD', 'CNY', 'CZK', 'DKK', 'EUR', 'HKD', 'HUF', 'ILS',
-  'JPY', 'MYR', 'MXN', 'TWD', 'NZD', 'NOK', 'PHP', 'PLN', 'GBP', 'SGD',
-  'SEK', 'CHF', 'THB', 'USD'
-]);
-
-/**
- * Extract a human-readable error message from a PayPal axios error.
- */
-function extractPayPalError(err) {
-  const data = err?.response?.data;
-  if (!data) return err.message;
-  return (
-    data.details?.[0]?.description ||
-    data.message ||
-    data.error_description ||
-    data.details?.[0]?.issue ||
-    err.message
-  );
-}
-
-/**
- * Calculate the price for a given billing cycle.
- */
-function calcPrice(plan, billingCycle) {
-  switch (billingCycle) {
-    case 'quarterly':   return plan.pricePerMonth * 3;
-    case 'semi-annual': return plan.pricePerMonth * 6;
-    case 'annual':      return plan.pricePerMonth * 12;
-    case 'lifetime':
-    case 'monthly':
-    default:            return plan.pricePerMonth;
-  }
-}
+const {
+  PAYPAL_SUPPORTED_CURRENCIES,
+  extractPayPalError,
+  calcPrice,
+  handleFreePlanOrder,
+} = require('./paypalUtils');
 
 // GET /api/paypal/test — verify PayPal credentials are configured
-router.get('/test', requireAuth, async (req, res) => {
+router.get('/test', requireAuth, async (req, res, next) => {
   try {
     await getAccessToken();
     res.json({ ok: true });
   } catch (e) {
-    res.status(400).json({ error: e.message, needsConfiguration: true });
+    next(AppError.badRequest(e.message, 'ERR_PAYPAL_CONFIG', { needsConfiguration: true }));
   }
 });
 
 // POST /api/paypal/create-order
-router.post('/create-order', requireAuth, createRateLimiter(10, 60 * 1000), async (req, res) => {
+router.post('/create-order', requireAuth, createRateLimiter(10, 60 * 1000), async (req, res, next) => {
   try {
-    // requireAuth guarantees req.user is set and verified
     const userId = String(req.user?.sub || '');
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    if (!userId) throw AppError.unauthorized();
 
     const { planId, billingCycle = 'monthly', couponCode } = req.body || {};
-    if (!planId) return res.status(400).json({ error: 'planId is required' });
+    if (!planId) throw AppError.badRequest('planId is required', 'ERR_REQUIRED_FIELD');
     if (!/^[0-9a-fA-F]{24}$/.test(planId)) {
-      return res.status(400).json({ error: 'Invalid plan ID format' });
+      throw AppError.badRequest('Invalid plan ID format', 'ERR_INVALID_ID');
     }
 
     const validCycles = ['monthly', 'quarterly', 'semi-annual', 'annual', 'lifetime'];
     if (!validCycles.includes(billingCycle)) {
-      return res.status(400).json({ error: 'Invalid billing cycle' });
+      throw AppError.badRequest('Invalid billing cycle', 'ERR_INVALID_CYCLE');
     }
 
     const plan = await Plan.findById(String(planId)).lean();
-    if (!plan) return res.status(404).json({ error: 'Plan not found' });
+    if (!plan) throw AppError.notFound('Plan not found', 'ERR_PLAN_NOT_FOUND');
 
-    // Check plan availability
     const now = new Date();
-    if (plan.availableAt && now < new Date(plan.availableAt)) return res.status(400).json({ error: 'Plan not yet available' });
-    if (plan.availableUntil && now > new Date(plan.availableUntil)) return res.status(400).json({ error: 'Plan no longer available' });
+    if (plan.availableAt && now < new Date(plan.availableAt)) throw AppError.badRequest('Plan not yet available', 'ERR_PLAN_UNAVAILABLE');
+    if (plan.availableUntil && now > new Date(plan.availableUntil)) throw AppError.badRequest('Plan no longer available', 'ERR_PLAN_EXPIRED');
 
-    // Check plan stock
-    if (plan.stock === -1) return res.status(400).json({ error: 'Plan is unavailable' });
+    if (plan.stock === -1) throw AppError.badRequest('Plan is unavailable', 'ERR_PLAN_UNAVAILABLE');
     if (plan.stock > 0) {
       const purchasedCount = await UserPlan.countDocuments({ planId: { $eq: planId }, status: { $eq: 'active' } });
-      if (purchasedCount >= plan.stock) return res.status(400).json({ error: 'Plan is out of stock' });
+      if (purchasedCount >= plan.stock) throw AppError.badRequest('Plan is out of stock', 'ERR_OUT_OF_STOCK');
     }
 
-    // Check customer limits
     if (plan.limitPerCustomer > 0) {
       const userPurchases = await UserPlan.countDocuments({ userId: { $eq: req.user.sub }, planId: { $eq: planId }, status: { $eq: 'active' } });
-      if (userPurchases >= plan.limitPerCustomer) return res.status(400).json({ error: 'You have reached the purchase limit for this plan' });
+      if (userPurchases >= plan.limitPerCustomer) throw AppError.badRequest('You have reached the purchase limit for this plan', 'ERR_LIMIT_REACHED');
     }
 
-    // Validate billing cycle availability
     if (plan.billingOptions?.lifetime) {
-      if (billingCycle !== 'lifetime') return res.status(400).json({ error: 'Lifetime plans use lifetime billing cycle' });
-    } else {
-      if (plan.availableBillingCycles && !plan.availableBillingCycles.includes(billingCycle)) {
-        return res.status(400).json({ error: 'Billing cycle not available for this plan' });
-      }
+      if (billingCycle !== 'lifetime') throw AppError.badRequest('Lifetime plans use lifetime billing cycle', 'ERR_INVALID_CYCLE');
+    } else if (plan.availableBillingCycles && !plan.availableBillingCycles.includes(billingCycle)) {
+      throw AppError.badRequest('Billing cycle not available for this plan', 'ERR_INVALID_CYCLE');
     }
 
-    // Calculate price
     let finalPrice = calcPrice(plan, billingCycle);
-
-    // Apply coupon securely
     let discountAmount = 0;
     if (couponCode) {
       const coupon = await Coupon.findOne({ code: { $eq: String(couponCode).toUpperCase().trim() }, enabled: true }).lean();
-      if (!coupon) return res.status(400).json({ error: 'Invalid coupon code' });
+      if (!coupon) throw AppError.badRequest('Invalid coupon code', 'ERR_INVALID_COUPON');
 
-      if (coupon.validFrom && now < new Date(coupon.validFrom)) return res.status(400).json({ error: 'Coupon not yet valid' });
-      if (coupon.validUntil && now > new Date(coupon.validUntil)) return res.status(400).json({ error: 'Coupon expired' });
-      if (coupon.maxRedemptions && coupon.redeemedCount >= coupon.maxRedemptions) return res.status(400).json({ error: 'Coupon usage limit reached' });
+      if (coupon.validFrom && now < new Date(coupon.validFrom)) throw AppError.badRequest('Coupon not yet valid', 'ERR_COUPON_NOT_STARTED');
+      if (coupon.validUntil && now > new Date(coupon.validUntil)) throw AppError.badRequest('Coupon expired', 'ERR_COUPON_EXPIRED');
+      if (coupon.maxRedemptions && coupon.redeemedCount >= coupon.maxRedemptions) throw AppError.badRequest('Coupon usage limit reached', 'ERR_COUPON_LIMIT');
       if (coupon.appliesToPlanIds?.length && !coupon.appliesToPlanIds.map(String).includes(String(plan._id))) {
-        return res.status(400).json({ error: 'Coupon not applicable to this plan' });
+        throw AppError.badRequest('Coupon not applicable to this plan', 'ERR_COUPON_INAPPLICABLE');
       }
 
-      if (coupon.type === 'percentage') {
-        discountAmount = (finalPrice * coupon.value) / 100;
-      } else {
-        discountAmount = coupon.value;
-      }
+      discountAmount = coupon.type === 'percentage' ? (finalPrice * coupon.value) / 100 : coupon.value;
     }
     finalPrice = Math.max(0, finalPrice - discountAmount);
 
-    // Get PayPal config
     const { token, baseUrl, paypal, settings } = await getAccessToken();
-    if (!paypal.enabled) return res.status(400).json({ error: 'PayPal payments are disabled' });
+    if (!paypal.enabled) throw AppError.badRequest('PayPal payments are disabled', 'ERR_PAYPAL_DISABLED');
 
     const siteCurrency = (settings?.localization?.currency || 'USD').toUpperCase();
     if (!PAYPAL_SUPPORTED_CURRENCIES.has(siteCurrency)) {
-      return res.status(400).json({
-        error: `Currency "${siteCurrency}" is not supported by PayPal`,
-        details: `Go to Admin → Settings → Localization and select a supported currency.`,
+      throw AppError.badRequest(`Currency "${siteCurrency}" is not supported by PayPal`, 'ERR_UNSUPPORTED_CURRENCY', {
         supportedCurrencies: [...PAYPAL_SUPPORTED_CURRENCIES]
       });
     }
 
-    let amountToCharge = finalPrice;
-
-    if (amountToCharge === 0) {
-      // Direct fast-track for free plans / 100% coupons
-      const freeOrderId = `FREE-${Date.now()}-${Math.floor(Math.random()*10000)}`;
-      const payment = await Payment.create({
-        provider: 'system',
-        providerOrderId: freeOrderId,
-        userId,
-        planId: plan._id,
-        amount: 0,
-        currency: siteCurrency || 'USD',
-        status: 'CREATED',
-        meta: {
-          billingCycle,
-          couponCode: couponCode || null,
-          discountAmount,
-          isLifetime: billingCycle === 'lifetime' || Boolean(plan.billingOptions?.lifetime),
-          ip: req.ip,
-          userAgent: req.get('User-Agent')
-        }
+    if (finalPrice === 0) {
+      return handleFreePlanOrder(req, res, {
+        plan, billingCycle, couponCode, discountAmount, userId, siteCurrency,
       });
-      
-      const { processCapturedPayment } = require('../lib/paymentProcessor');
-      const result = await processCapturedPayment(payment, null, freeOrderId);
-      if (!result.success) {
-        return res.status(400).json({ error: result.error });
-      }
-      
-      await logUserActivity(req, 'shop.payment.capture', { orderId: freeOrderId, status: 'COMPLETED', bypassPaypal: true });
-      await writeAudit(req, 'shop.payment.capture', 'payment', payment._id.toString(), { orderId: freeOrderId, status: 'COMPLETED', bypassPaypal: true });
-      return res.json({ id: freeOrderId, status: 'COMPLETED', bypassPaypal: true });
     }
 
-    const amountStr = amountToCharge.toFixed(2);
-    const brandName = (paypal.businessName || 'PteroDash').slice(0, 127); // PayPal max 127 chars
+    const amountStr = finalPrice.toFixed(2);
+    const brandName = (paypal.businessName || 'PteroDash').slice(0, 127);
 
     const orderBody = {
       intent: 'CAPTURE',
@@ -209,14 +130,9 @@ router.post('/create-order', requireAuth, createRateLimiter(10, 60 * 1000), asyn
       order = r.data;
     } catch (paypalErr) {
       const msg = extractPayPalError(paypalErr);
-      console.error('[PayPal] create-order failed:', msg, paypalErr?.response?.data);
-      return res.status(paypalErr?.response?.status || 502).json({
-        error: `PayPal error: ${msg}`,
-        details: paypalErr?.response?.data?.details || undefined
-      });
+      throw AppError.badRequest(`PayPal error: ${msg}`, 'ERR_PAYPAL_GATEWAY', paypalErr?.response?.data?.details);
     }
 
-    // Persist payment intent
     await Payment.create({
       provider: 'paypal',
       providerOrderId: order.id,
@@ -239,19 +155,18 @@ router.post('/create-order', requireAuth, createRateLimiter(10, 60 * 1000), asyn
     await writeAudit(req, 'shop.payment.create', 'payment', order.id, { planId: plan._id, billingCycle, price: Number(amountStr) });
     return res.json(order);
   } catch (e) {
-    console.error('[PayPal] create-order unexpected error:', e.message);
-    return res.status(500).json({ error: 'Failed to create PayPal order' });
+    next(e instanceof AppError ? e : AppError.internal('Failed to create PayPal order'));
   }
 });
 
 // POST /api/paypal/cancel-order
-router.post('/cancel-order', requireAuth, createRateLimiter(20, 60 * 1000), async (req, res) => {
+router.post('/cancel-order', requireAuth, createRateLimiter(20, 60 * 1000), async (req, res, next) => {
   try {
     const userId = String(req.user?.sub || '');
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    if (!userId) throw AppError.unauthorized();
 
     const { orderId } = req.body || {};
-    if (!orderId) return res.status(400).json({ error: 'orderId is required' });
+    if (!orderId) throw AppError.badRequest('orderId is required', 'ERR_REQUIRED_FIELD');
 
     const payment = await Payment.findOne({ providerOrderId: orderId, userId, status: 'CREATED' });
     if (payment) {
@@ -263,28 +178,26 @@ router.post('/cancel-order', requireAuth, createRateLimiter(20, 60 * 1000), asyn
     await writeAudit(req, 'shop.payment.cancel', 'payment', orderId, {});
     return res.json({ success: true });
   } catch (e) {
-    console.error('[PayPal] cancel-order error:', e.message);
-    return res.status(500).json({ error: 'Failed to cancel order' });
+    next(e instanceof AppError ? e : AppError.internal('Failed to cancel order'));
   }
 });
 
-router.post('/capture-order', requireAuth, createRateLimiter(10, 60 * 1000), async (req, res) => {
+// POST /api/paypal/capture-order
+router.post('/capture-order', requireAuth, createRateLimiter(10, 60 * 1000), async (req, res, next) => {
   try {
     const userId = String(req.user?.sub || '');
-    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    if (!userId) throw AppError.unauthorized();
 
     const { orderId } = req.body || {};
-    if (!orderId) return res.status(400).json({ error: 'orderId is required' });
+    if (!orderId) throw AppError.badRequest('orderId is required', 'ERR_REQUIRED_FIELD');
 
-    // Strict PayPal order ID format validation
     const sanitizedOrderId = String(orderId).trim();
     if (!/^[A-Z0-9]{17,20}$/.test(sanitizedOrderId)) {
-      return res.status(400).json({ error: 'Invalid order ID format' });
+      throw AppError.badRequest('Invalid order ID format', 'ERR_INVALID_ID');
     }
 
     const { token, baseUrl } = await getAccessToken();
 
-    // Capture the order at PayPal
     let captureData;
     try {
       const r = await axios.post(
@@ -295,43 +208,30 @@ router.post('/capture-order', requireAuth, createRateLimiter(10, 60 * 1000), asy
       captureData = r.data;
     } catch (paypalErr) {
       const msg = extractPayPalError(paypalErr);
-      console.error('[PayPal] capture-order failed:', msg, paypalErr?.response?.data);
-      return res.status(paypalErr?.response?.status || 502).json({
-        error: `PayPal error: ${msg}`,
-        details: paypalErr?.response?.data?.details || undefined
-      });
+      throw AppError.badRequest(`PayPal error: ${msg}`, 'ERR_PAYPAL_GATEWAY', paypalErr?.response?.data?.details);
     }
 
-    // Validate order status
     const orderStatus = String(captureData?.status || '').toUpperCase();
     if (orderStatus !== 'COMPLETED') {
-      return res.status(400).json({ error: `Order not completed (status: ${orderStatus})` });
+      throw AppError.badRequest(`Order not completed (status: ${orderStatus})`, 'ERR_PAYMENT_INCOMPLETE');
     }
 
-    // Load and verify our payment record
     const payment = await Payment.findOne({ provider: 'paypal', providerOrderId: captureData.id });
-    if (!payment) return res.status(400).json({ error: 'Unknown order — not created through this system' });
-    if (String(payment.userId) !== userId) return res.status(403).json({ error: 'Forbidden' });
+    if (!payment) throw AppError.badRequest('Unknown order — not created through this system', 'ERR_ORDER_UNKNOWN');
+    if (String(payment.userId) !== userId) throw AppError.forbidden('Forbidden', 'ERR_FORBIDDEN');
 
     const { processCapturedPayment } = require('../lib/paymentProcessor');
     const result = await processCapturedPayment(payment, captureData, sanitizedOrderId);
 
     if (!result.success) {
-      if (result.error === 'Payment mismatch — order rejected for security' || result.error === 'Unknown order — not created through this system') {
-        return res.status(400).json({ error: result.error });
-      }
-      if (result.error === 'Plan not found' || result.error === 'User not found') {
-        return res.status(404).json({ error: result.error });
-      }
-      return res.status(500).json({ error: result.error });
+      throw AppError.badRequest(result.error || 'Failed to process payment', 'ERR_PAYMENT_FAILED');
     }
 
     await logUserActivity(req, 'shop.payment.capture', { orderId: sanitizedOrderId, status: 'COMPLETED' });
     await writeAudit(req, 'shop.payment.capture', 'payment', payment._id.toString(), { orderId: sanitizedOrderId, status: 'COMPLETED' });
     return res.json({ ok: true, order: captureData, user: { coins: result.user.coins, resources: result.user.resources } });
   } catch (e) {
-    console.error('[PayPal] capture-order unexpected error:', e.message);
-    return res.status(500).json({ error: 'Failed to capture payment' });
+    next(e instanceof AppError ? e : AppError.internal('Failed to capture payment'));
   }
 });
 

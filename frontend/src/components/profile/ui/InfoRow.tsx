@@ -1,15 +1,7 @@
 import { Check, Pencil, Save, AlertCircle } from "lucide-react";
-
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
-
-
-
-
-
-
-
+import { useCheckUsername } from '@/hooks/profile';
 
 export function InfoRow({ icon, label, description, value, editing, draft, field, status, action, customEdit, onEdit, onDraft, onSave, onCancel, forceUnchanged }: any) {
   const t = useTranslations('Profile');
@@ -17,10 +9,6 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
   const [isLoading, setIsLoading] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [touched, setTouched] = useState(false);
-
-  // Username availability check state
-  const [usernameAvail, setUsernameAvail] = useState<'idle' | 'checking' | 'available' | 'taken' | 'error'>('idle');
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const usernameVal = typeof draft === 'string' ? draft : '';
   const firstNameVal = draft?.first ?? '';
@@ -55,36 +43,12 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
         })()
       : null;
 
-  // Debounced availability check — fires only when format is valid
-  useEffect(() => {
-    if (field !== 'username' || !editing) return;
-    if (!formatValid?.valid || usernameVal.trim() === (value || '')) { 
-      setUsernameAvail('idle'); 
-      return; 
-    }
-
-    setUsernameAvail('checking');
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(async () => {
-      try {
-        const token = localStorage.getItem('auth_token');
-        const res = await fetchWithRetry(
-          `${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/check-username?username=${encodeURIComponent(usernameVal.trim())}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        const data = await res.json();
-        setUsernameAvail(data.available ? 'available' : 'taken');
-      } catch {
-        setUsernameAvail('error');
-      }
-    }, 600);
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [usernameVal, field, editing, formatValid?.valid]);
-
-  // Reset avail check when editing starts/stops
-  useEffect(() => {
-    if (!editing) { setUsernameAvail('idle'); setTouched(false); }
-  }, [editing]);
+  const { availability: usernameAvail } = useCheckUsername(
+    usernameVal,
+    value,
+    editing && field === 'username',
+    formatValid?.valid ?? false
+  );
 
   // Final combined validation shown to the user
   const validation: { valid: boolean; message: string } | null =
@@ -195,4 +159,3 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
     </div>
   );
 }
-

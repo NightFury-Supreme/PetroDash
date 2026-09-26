@@ -7,7 +7,7 @@ import AuthSubmit from '@/components/auth/layout/AuthSubmit';
 import { OAuthButtons } from '@/components/auth/layout/OAuthButtons';
 import { useAuthSettings } from '@/hooks/useAuthSettings';
 import { useToast } from '@/components/ui/ToastProvider';
-import { fetchWithRetry } from '@/utils/fetchWithRetry';
+import { useLogin } from '@/hooks/auth';
 import { useTranslations } from 'next-intl';
 
 const schema = z.object({
@@ -20,12 +20,11 @@ type FieldErrors = Partial<Record<keyof LoginForm, string>>;
 export default function LoginForm({ onSuccess, onRequires2FA }: { onSuccess: (token: string) => void; onRequires2FA: (tempToken: string) => void }) {
   const { settings } = useAuthSettings();
   const { showError } = useToast();
+  const { login, loading } = useLogin({ onSuccess, onRequires2FA });
   const t = useTranslations('Auth.login');
-  const tCommon = useTranslations('Common');
-  const tErrors = useTranslations('Auth.errors');
+  const tCommon = useTranslations('Common');
   const [form, setForm] = useState<LoginForm>({ emailOrUsername: '', password: '' });
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [loading, setLoading] = useState(false);
 
   const showEmailLogin = settings?.emailLogin ?? true;
   const showOAuth = (settings?.discord?.enabled || settings?.google?.enabled) ?? false;
@@ -43,27 +42,7 @@ export default function LoginForm({ onSuccess, onRequires2FA }: { onSuccess: (to
       setFieldErrors(errs);
       return;
     }
-    setLoading(true);
-    try {
-      const base = process.env.NEXT_PUBLIC_API_BASE || '';
-      const res = await fetchWithRetry(`${base}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(parsed.data),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || tErrors('loginFailed'));
-      if (data.requires2FA && data.tempToken) {
-        onRequires2FA(data.tempToken);
-        return;
-      }
-      if (!data?.token) throw new Error('Invalid response');
-      onSuccess(data.token);
-    } catch (err: any) {
-      showError(err.message || tErrors('loginFailed'));
-    } finally {
-      setLoading(false);
-    }
+    await login(parsed.data);
   };
 
   return (

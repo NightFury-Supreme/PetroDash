@@ -4,16 +4,16 @@ import { ArrowLeft } from 'lucide-react';
 import AuthField from '@/components/auth/layout/AuthField';
 import AuthSubmit from '@/components/auth/layout/AuthSubmit';
 import { useToast } from '@/components/ui/ToastProvider';
-import { fetchWithRetry } from '@/utils/fetchWithRetry';
+import { useTwoFactor } from '@/hooks/auth';
 import { useTranslations } from 'next-intl';
 
 export default function TwoFactorForm({ tempToken, onSuccess, onBack }: { tempToken: string; onSuccess: (token: string) => void; onBack: () => void }) {
   const [code, setCode] = useState('');
-  const [loading, setLoading] = useState(false);
   const [useBackup, setUseBackup] = useState(false);
   const { showError } = useToast();
+  const { verify2FA, loading } = useTwoFactor({ onSuccess });
   const t = useTranslations('Auth.twoFactor');
-  const tCommon = useTranslations('Common');
+  const tCommon = useTranslations('Common');
   const tErrors = useTranslations('Auth.errors');
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -35,22 +35,7 @@ export default function TwoFactorForm({ tempToken, onSuccess, onBack }: { tempTo
       }
     }
 
-    setLoading(true);
-    try {
-      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/login/2fa`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tempToken, code }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || tErrors('verifyFailed'));
-      if (!data?.token) throw new Error('Invalid response');
-      onSuccess(data.token);
-    } catch (err: any) {
-      showError(err.message || tErrors('verifyFailed'));
-    } finally {
-      setLoading(false);
-    }
+    await verify2FA(tempToken, code);
   };
 
   const isSubmitDisabled = loading || (useBackup ? code.length !== 8 : !/^\d{6}$/.test(code));

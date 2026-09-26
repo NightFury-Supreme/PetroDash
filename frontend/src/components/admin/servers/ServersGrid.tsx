@@ -6,9 +6,7 @@
 'use client';
 
 import React from 'react';
-import ServerCard from '@/components/ServerCard/ServerCard';
-import UnreachableServerCard from '@/components/ServerCard/UnreachableServerCard';
-import SuspendedServerCard from '@/components/ServerCard/SuspendedServerCard';
+import { ServerCard, UnreachableServerCard, SuspendedServerCard } from '@/components/server';
 import type { AdminServer } from './types';
 
 interface ServersGridProps {

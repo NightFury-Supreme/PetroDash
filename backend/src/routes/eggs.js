@@ -4,9 +4,11 @@ const Server = require('../models/Server');
 const { requireAuth } = require('../middleware/auth');
 const { getCache, setCache } = require('../lib/redis');
 
+const AppError = require('../utils/AppError');
+
 const router = express.Router();
 
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', requireAuth, async (req, res, next) => {
     try {
         let eggsWithCounts = await getCache('eggs:counts');
         
@@ -60,8 +62,7 @@ router.get('/', requireAuth, async (req, res) => {
             return res.json(eggsWithCounts);
         }
     } catch (error) {
-        console.error('Error fetching eggs with counts:', error);
-        res.status(500).json({ error: 'Failed to fetch eggs' });
+        next(error instanceof AppError ? error : new AppError('Failed to fetch eggs', 500, 'ERR_EGGS_FETCH_FAILED'));
     }
 });
 

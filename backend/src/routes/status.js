@@ -2,10 +2,11 @@ const express = require('express');
 const Location = require('../models/Location');
 const UptimeLog = require('../models/UptimeLog');
 const { getCache } = require('../lib/redis');
+const AppError = require('../utils/AppError');
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+router.get('/', async (req, res, next) => {
     try {
         const locations = await Location.find({}, { _id: 1, name: 1, flag: 1 }).lean();
         
@@ -108,8 +109,7 @@ router.get('/', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error fetching status data:', error);
-        res.status(500).json({ error: 'Failed to fetch status data' });
+        next(error instanceof AppError ? error : new AppError('Failed to fetch status data', 500, 'ERR_STATUS_FETCH_FAILED'));
     }
 });
 

@@ -8,8 +8,10 @@ const router = express.Router();
 const adsRateLimiter = createRateLimiter(500, 15 * 60 * 1000); // 500 requests per 15 minutes
 router.use(adsRateLimiter);
 
+const AppError = require('../utils/AppError');
+
 // GET /api/ads - Public endpoint for AdSense settings
-router.get('/', async (req, res) => {
+router.get('/', async (req, res, next) => {
   try {
     const { getCache, setCache } = require('../lib/redis');
     const cached = await getCache('api:ads');
@@ -45,12 +47,7 @@ router.get('/', async (req, res) => {
     await setCache('api:ads', settings.adsense, 60);
     return res.json(settings.adsense);
   } catch (error) {
-    console.error('Failed to fetch AdSense settings:', error);
-    
-    return res.status(500).json({
-      error: 'Failed to fetch AdSense settings',
-      message: 'An internal server error occurred'
-    });
+    next(error instanceof AppError ? error : new AppError('Failed to fetch AdSense settings', 500, 'ERR_ADSENSE_FETCH_FAILED'));
   }
 });
 

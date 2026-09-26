@@ -1,11 +1,39 @@
+"use client";
+
 import { useTranslations } from 'next-intl';
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect, useCallback } from 'react';
-import { ServerInfo, ResourceLimits, ResourceUsage } from '../types';
+import { useRouter } from '@/i18n/routing';
+import type { ServerInfo, ResourceLimits, ResourceUsage } from '@/components/dashboard/types';
+
+interface ApiServerItem {
+  _id: string;
+  name: string;
+  status?: string;
+  queuePosition?: number | null;
+  location?: string;
+  locationFlag?: string;
+  limits?: {
+    cpuPercent?: number;
+    memoryMb?: number;
+    diskMb?: number;
+    backups?: number;
+    databases?: number;
+    allocations?: number;
+  };
+  clientUrl?: string;
+  eggName?: string;
+  eggIcon?: string;
+  unreachable?: boolean;
+  error?: string;
+  suspended?: boolean;
+}
 
 export function useDashboard() {
   const tError = useTranslations('GlobalErrors');
   const tErrorBackend = useTranslations('BackendErrors');
+  const router = useRouter();
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [servers, setServers] = useState<ServerInfo[]>([]);
@@ -19,9 +47,8 @@ export function useDashboard() {
     servers: 0
   });
   const [resources, setResources] = useState<ResourceLimits | null>(null);
-  const [statusData, setStatusData] = useState<any | null>(null);
+  const [statusData, setStatusData] = useState<Record<string, unknown> | null>(null);
 
-  // Load resource usage
   const loadUsage = async (token: string) => {
     try {
       const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers/usage`, {
@@ -31,16 +58,17 @@ export function useDashboard() {
       if (!response.ok) {
         if (response.status === 401) {
           localStorage.removeItem('auth_token');
-          window.location.href = '/login';
+          router.replace('/login');
           return;
         }
-        let errorData: any = {}; try { errorData = await response.json(); } catch {}
-        const code = errorData?.error?.code;
-        const msg = errorData?.error?.message || errorData?.error;
-        throw new Error(code || msg || "failedToLoadUsageData");
+        let errorData: { error?: string | { code?: string; message?: string } } = {};
+        try { errorData = await response.json(); } catch {}
+        const code = typeof errorData?.error === 'object' ? errorData.error?.code : errorData?.error;
+        throw new Error(code || "failedToLoadUsageData");
       }
       
-      let data: any = {}; try { data = await response.json(); } catch {}
+      let data: Partial<ResourceUsage> = {};
+      try { data = await response.json(); } catch {}
       setUsage({
         diskMb: Number(data.diskMb || 0),
         memoryMb: Number(data.memoryMb || 0),
@@ -56,7 +84,6 @@ export function useDashboard() {
     }
   };
 
-  // Load user resources
   const loadResources = async (token: string) => {
     try {
       const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, {
@@ -66,24 +93,23 @@ export function useDashboard() {
       if (!response.ok) {
         if (response.status === 401) {
           localStorage.removeItem('auth_token');
-          window.location.href = '/login';
+          router.replace('/login');
           return;
         }
-        let errorData: any = {}; try { errorData = await response.json(); } catch {}
-        const code = errorData?.error?.code;
-        const msg = errorData?.error?.message || errorData?.error;
-        throw new Error(code || msg || "failedToLoadUserResources");
+        let errorData: { error?: string | { code?: string; message?: string } } = {};
+        try { errorData = await response.json(); } catch {}
+        const code = typeof errorData?.error === 'object' ? errorData.error?.code : errorData?.error;
+        throw new Error(code || "failedToLoadUserResources");
       }
       
-      let data: any = {}; try { data = await response.json(); } catch {}
+      let data: { resources?: ResourceLimits } = {};
+      try { data = await response.json(); } catch {}
       setResources(data.resources || null);
     } catch (error: unknown) {
       console.error('Failed to load resources:', error);
-      // Don't throw here, resources are not critical
     }
   };
 
-  // Load servers
   const loadServers = async (token: string) => {
     try {
       const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers`, {
@@ -93,17 +119,18 @@ export function useDashboard() {
       if (!response.ok) {
         if (response.status === 401) {
           localStorage.removeItem('auth_token');
-          window.location.href = '/login';
+          router.replace('/login');
           return;
         }
-        let errorData: any = {}; try { errorData = await response.json(); } catch {}
-        const code = errorData?.error?.code;
-        const msg = errorData?.error?.message || errorData?.error;
-        throw new Error(code || msg || "failedToLoadServers");
+        let errorData: { error?: string | { code?: string; message?: string } } = {};
+        try { errorData = await response.json(); } catch {}
+        const code = typeof errorData?.error === 'object' ? errorData.error?.code : errorData?.error;
+        throw new Error(code || "failedToLoadServers");
       }
       
-      let data: any = {}; try { data = await response.json(); } catch {}
-      const transformed: ServerInfo[] = (data || []).map((s: any) => ({
+      let data: ApiServerItem[] = [];
+      try { data = await response.json(); } catch {}
+      const transformed: ServerInfo[] = (data || []).map((s) => ({
         _id: s._id,
         name: s.name,
         status: s.status === 'active' ? 'active' : s.status === 'creating' ? 'creating' : s.status === 'queued' ? 'queued' : s.status === 'unreachable' ? 'unreachable' : s.status === 'suspended' ? 'suspended' : 'error',
@@ -136,31 +163,29 @@ export function useDashboard() {
     setError(null);
     
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       if (!token) {
         setError(tError('authenticationRequired'));
         return;
       }
 
-      // Fetch status data independently (doesn't require token, but good to do alongside)
       fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/status`)
         .then(res => res.json())
         .then(data => setStatusData(data))
         .catch(console.error);
 
-      // Load usage and resources
       await Promise.all([
         loadUsage(token),
         loadResources(token),
         loadServers(token)
       ]);
-    } catch (err: any) {
-      let msg = err.message || "failedToLoadDashboardData";
+    } catch (err: unknown) {
+      let msg = err instanceof Error ? err.message : "failedToLoadDashboardData";
       try {
-         msg = tErrorBackend(msg as any);
+         msg = tErrorBackend(msg as never);
       } catch {
          if (msg === "failedToLoadUsageData" || msg === "failedToLoadUserResources" || msg === "failedToLoadServers") {
-            msg = tError(msg as any);
+            msg = tError(msg as never);
          } else {
             msg = tErrorBackend("ERR_INTERNAL_SERVER");
          }
@@ -169,14 +194,12 @@ export function useDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [tError, tErrorBackend]);
+  }, [tError, tErrorBackend, router]);
 
-  // Load data on mount
   useEffect(() => {
     loadDashboardData();
   }, [loadDashboardData]);
 
-  // Remove server from state after deletion
   const removeServer = useCallback((serverId: string) => {
     setServers(prev => prev.filter(s => s._id !== serverId));
     setUsage(prev => ({

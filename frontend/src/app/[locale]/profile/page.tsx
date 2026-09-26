@@ -1,73 +1,88 @@
 "use client";
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
-import React, { useState } from "react";
-import { useProfile } from '@/hooks/useProfile';
-import { useTranslations } from 'next-intl';
-import ProfileSkeleton from '@/components/skeletons/profile/ProfileSkeleton';
-import { useToast } from '@/components/ui/ToastProvider';
-import { 
-  EmailVerificationDrawer,
-  PasswordDrawer, 
-  Setup2FADrawer, 
-  Disable2FADrawer, 
-  DeleteAccountDrawer,
-  ChangeEmailDrawer
-} from '@/components/profile';
-import { 
-  SideItem, 
-  Overview, 
-  Security, 
-  ActiveSessions,
-  ActivityLogSection
-} from '@/components/profile';
-import { InvoicesTab } from '@/components/profile';
-import { useRouter } from "@/i18n/routing";
-import {
-  User,
-  ShieldCheck,
-  Coins,
-  Check,
-  Trash2,
-  Monitor,
-  Activity,
-  CreditCard,
-  RefreshCw,
-} from "lucide-react";
-import { ErrorState, DashboardButton, ErrorDescription } from "@/components/ui/ErrorState";
 
-type Section = "overview" | "security" | "sessions" | "activity" | "invoices";
+import React, { useState } from "react";
+import { useTranslations } from "next-intl";
+import { User, RefreshCw } from "lucide-react";
+import { ErrorState, DashboardButton, ErrorDescription } from "@/components/ui/ErrorState";
+import ProfileSkeleton from "@/components/skeletons/profile/ProfileSkeleton";
+import { useToast } from "@/components/ui/ToastProvider";
+import {
+  useProfile,
+  useProfileEmail,
+  useProfile2FA,
+  useProfileDelete,
+} from "@/hooks/profile";
+import {
+  ProfileHeader,
+  ProfileNav,
+  ProfileDrawers,
+  ProfileSection,
+  Overview,
+  Security,
+  ActiveSessions,
+  ActivityLogSection,
+  InvoicesTab,
+} from "@/components/profile";
 
 export default function ProfilePage() {
-  const t = useTranslations('Profile');
-  const tCommon = useTranslations('Common');
-  const tError = useTranslations('BackendErrors');
-  const { form, setForm, loading, error, saveProfile, updatePassword, updateProfilePicture, sessions, revokeSession, resendVerification, verifyEmailCode } = useProfile();
+  const t = useTranslations("Profile");
+  const tCommon = useTranslations("Common");
+  const tError = useTranslations("BackendErrors");
+  const tGlobalError = useTranslations("GlobalErrors");
+
+  const {
+    form,
+    setForm,
+    loading,
+    error,
+    saveProfile,
+    updatePassword,
+    updateProfilePicture,
+    sessions,
+    revokeSession,
+    resendVerification,
+    verifyEmailCode,
+  } = useProfile();
 
   const { showError, showSuccess } = useToast();
-  const router = useRouter();
 
-  const [section, setSection] = useState<Section>("overview");
+  const [section, setSection] = useState<ProfileSection>("overview");
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState<any>("");
 
-  const [deleteOpen, setDeleteOpen] = useState(false);
-
   const [showChangeEmailDrawer, setShowChangeEmailDrawer] = useState(false);
   const [showEmailVerificationModal, setShowEmailVerificationModal] = useState(false);
-  const [resendRateLimit, setResendRateLimit] = useState(0);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [show2FASetupModal, setShow2FASetupModal] = useState(false);
-  const [show2FADisableModal, setShow2FADisableModal] = useState(false);
-  
-  const [tfaSetupData, setTfaSetupData] = useState<{ secret: string, qrCodeUrl: string } | null>(null);
-  const [tfaBackupCodes, setTfaBackupCodes] = useState<string[] | null>(null);
 
-  React.useEffect(() => {
-    if (resendRateLimit > 0) {
-      const timer = setTimeout(() => setResendRateLimit(resendRateLimit - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [resendRateLimit]);
+  const {
+    resendRateLimit,
+    setResendRateLimit,
+    changeEmail,
+    verifyEmailChange,
+  } = useProfileEmail({
+    onEmailUpdated: (email, emailVerified) => {
+      setForm((prev) => ({ ...prev, email, emailVerified }));
+    },
+  });
+
+  const {
+    show2FASetupModal,
+    setShow2FASetupModal,
+    show2FADisableModal,
+    setShow2FADisableModal,
+    tfaSetupData,
+    tfaBackupCodes,
+    setTfaBackupCodes,
+    start2FASetup,
+    verifyAndEnable2FA,
+    disable2FA,
+  } = useProfile2FA({
+    onStatusChanged: (enabled) => {
+      setForm((prev) => ({ ...prev, tfaEnabled: enabled }));
+    },
+  });
+
+  const { deleteOpen, setDeleteOpen, deleteAccount } = useProfileDelete();
 
   const beginEdit = (field: "username" | "name" | "email") => {
     if (field === "email") {
@@ -77,15 +92,12 @@ export default function ProfilePage() {
 
     if (field === "name") {
       setEditing(field);
-      setDraft({ first: form.firstName || '', last: form.lastName || '' });
+      setDraft({ first: form.firstName || "", last: form.lastName || "" });
       return;
     }
 
-    let value = '';
-    if (field === "username") value = form.username;
-    
     setEditing(field);
-    setDraft(value || '');
+    setDraft(field === "username" ? form.username : "");
   };
 
   const cancelEdit = () => {
@@ -99,106 +111,33 @@ export default function ProfilePage() {
     let updates: Record<string, string> = {};
 
     if (editing === "username") {
-      const trimmed = (draft || '').trim();
+      const trimmed = (draft || "").trim();
       if (trimmed.length < 3) {
-        showError(tError('usernameTooShort'));
+        showError(tGlobalError("usernameTooShort"));
         return false;
       }
       updates = { username: trimmed };
     }
 
     if (editing === "name") {
-      const firstName = (draft?.first || '').trim();
-      const lastName = (draft?.last || '').trim();
-      // Backend requires min 1 char for each field when provided
+      const firstName = (draft?.first || "").trim();
+      const lastName = (draft?.last || "").trim();
       if (!firstName) {
-        showError(tError('firstNameEmpty'));
+        showError(tGlobalError("firstNameEmpty"));
         return false;
       }
-      // Only send lastName if it's non-empty (backend min(1) validation)
       updates = { firstName };
       if (lastName) updates.lastName = lastName;
     }
 
     try {
       await saveProfile(updates);
-      showSuccess(t('profileUpdated'));
+      showSuccess(t("profileUpdated"));
       return true;
     } catch (e: any) {
-      showError(tError(e.message) || tError('failedToSaveProfile'));
+      showError(tError(e.message) || tGlobalError("failedToSaveProfile"));
       return false;
     }
-  };
-
-  const changeEmail = async (newEmail: string, password: string, tfaCode: string) => {
-    const token = localStorage.getItem('auth_token');
-    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/profile/email`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ email: newEmail, password: password || undefined, tfaCode: tfaCode || undefined })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'failedToUpdateEmail');
-    
-    if (data.requiresVerification) {
-      return { requiresVerification: true };
-    }
-    
-    // Refresh the user profile to get the new email and updated emailVerified status
-    const profileRes = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    if (profileRes.ok) {
-      const pData = await profileRes.json();
-      setForm(prev => ({
-        ...prev,
-        email: pData.email || prev.email,
-        emailVerified: Boolean(pData.emailVerified)
-      }));
-    }
-    return { requiresVerification: false };
-  };
-
-  const verifyEmailChange = async (newEmail: string, code: string) => {
-    const token = localStorage.getItem('auth_token');
-    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/profile/email/verify`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ email: newEmail, code })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'failedToVerifyEmail');
-    
-    const profileRes = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    if (profileRes.ok) {
-      const pData = await profileRes.json();
-      setForm(prev => ({
-        ...prev,
-        email: pData.email || prev.email,
-        emailVerified: Boolean(pData.emailVerified)
-      }));
-    }
-  };
-
-  const deleteAccount = async (password?: string, tfaCode?: string) => {
-    const token = localStorage.getItem('auth_token');
-    const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/profile`, { 
-      method: 'DELETE', 
-      headers: { 
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}` 
-      },
-      body: JSON.stringify({ password: password || undefined, tfaCode: tfaCode || undefined })
-    });
-    let d: any = {}; try { d = await r.json(); } catch {} 
-    if (!r.ok) throw new Error(d?.error || 'failedToDeleteAccount');
-    
-    setTimeout(() => {
-      localStorage.removeItem('auth_token');
-      router.push('/register');
-    }, 1000);
   };
 
   const handleVerifyEmailClick = async () => {
@@ -209,9 +148,12 @@ export default function ProfilePage() {
     } catch (e: any) {
       if (e.retryAfter) {
         setResendRateLimit(e.retryAfter);
-        localStorage.setItem('email_verify_rate_limited_until', (Date.now() + e.retryAfter * 1000).toString());
+        localStorage.setItem(
+          "email_verify_rate_limited_until",
+          (Date.now() + e.retryAfter * 1000).toString(),
+        );
       } else {
-        showError(tError(e.message) || tError('failedToSendVerificationEmail'));
+        showError(tError(e.message) || tGlobalError("failedToSendVerificationEmail"));
       }
     }
   };
@@ -221,8 +163,8 @@ export default function ProfilePage() {
       <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
         <ErrorState
           icon={<User strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
-          kicker={t('loadError')}
-          title={t('failedToLoadProfile')}
+          kicker={t("loadError")}
+          title={t("failedToLoadProfile")}
           errorString={error}
           description={<ErrorDescription error={error} topic="Profile" />}
           buttons={
@@ -232,7 +174,7 @@ export default function ProfilePage() {
                 className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
               >
                 <RefreshCw className="w-[14px] h-[14px]" />
-                {tCommon('retry')}
+                {tCommon("retry")}
               </button>
               <DashboardButton variant="secondary" />
             </>
@@ -244,156 +186,59 @@ export default function ProfilePage() {
 
   if (loading) return <ProfileSkeleton />;
 
-  const start2FASetup = async () => {
-    try {
-      const token = localStorage.getItem('auth_token');
-      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/2fa/setup`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        showError(tError(data.error) || tError('failedToSetup2FA'));
-        return;
-      }
-      setTfaSetupData(data);
-      setTfaBackupCodes(null);
-      setShow2FASetupModal(true);
-    } catch {
-      showError(tError('networkError'));
-    }
-  };
-
-  // Called from the drawer — throws on error so the drawer can handle loading state
-  const verifyAndEnable2FA = async (code: string) => {
-    const token = localStorage.getItem('auth_token');
-    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/2fa/enable`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ code })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'invalidVerificationCode');
-    setTfaBackupCodes(data.backupCodes);
-    setForm(f => ({ ...f, tfaEnabled: true }));
-  };
-
-  // Called from the drawer — throws on error so the drawer can handle loading state
-  const disable2FA = async (password: string, code: string) => {
-    const token = localStorage.getItem('auth_token');
-    const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/2fa/disable`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ password: password || undefined, code: code || undefined })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'failedToDisable2FA');
-    setForm(f => ({ ...f, tfaEnabled: false }));
-    setShow2FADisableModal(false);
-  };
-
   return (
     <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen">
       <div className="flex flex-col h-full space-y-6">
         <header>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-[#FF5722] tracking-tight">{t('profileSettings')}</h1>
-              <p className="text-[#888888] mt-1 text-sm">{t('profileSettingsDesc')}</p>
+              <h1 className="text-2xl font-bold text-[#FF5722] tracking-tight">{t("profileSettings")}</h1>
+              <p className="text-[#888888] mt-1 text-sm">{t("profileSettingsDesc")}</p>
             </div>
           </div>
         </header>
 
-        <section className="border-b border-white/[0.06] pb-8">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <div className="h-16 w-16 overflow-hidden rounded-full border border-[#2A2A2A] bg-[#222]">
-                  {form.profilePicture ? (
-                    <img src={form.profilePicture} alt={form.username} className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center font-bold text-2xl text-[#D4D4D4]">
-                       {(form.firstName || form.username || 'U').charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                </div>
-                {form.emailVerification && form.emailVerified && (
-                  <span className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-[#161616] bg-emerald-500">
-                    <Check size={11} strokeWidth={3} className="text-white" />
-                  </span>
-                )}
-              </div>
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-base font-semibold text-[#D4D4D4]">
-                    {`${form.firstName || ''} ${form.lastName || ''}`.trim() || form.username || tCommon('user')}
-                  </h2>
-                  {form.emailVerification && form.emailVerified && (
-                    <span className="rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-emerald-400">
-                      {t('verified')}
-                    </span>
-                  )}
-                </div>
-                <p className="mt-1 text-sm text-[#888]">
-                  @{form.username || tCommon('user')}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-3">
-                <Coins size={16} className="text-[#FF5722]" />
-                <div>
-                  <span className="block text-[10px] uppercase tracking-widest text-[#666]">{t('balance')}</span>
-                  <span className="text-sm font-medium text-[#D4D4D4]">{form.coins || 0} {t('coins')}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        <ProfileHeader form={form} />
 
         <div className="flex flex-col lg:flex-row gap-8 items-start">
-          <aside className="w-full lg:w-48 shrink-0 pt-1">
-            <div className="sticky top-6">
-              <div className="mb-4">
-                <p className="text-[11px] font-medium uppercase tracking-widest text-[#555]">{t('account')}</p>
-              </div>
-              <nav className="space-y-1">
-                <SideItem icon={User} label={t('overview')} active={section === "overview"} onClick={() => setSection("overview")} />
-                <SideItem icon={ShieldCheck} label={t('security')} active={section === "security"} onClick={() => setSection("security")} />
-                <SideItem icon={Monitor} label={t('activeSessions')} active={section === "sessions"} onClick={() => setSection("sessions")} />
-                <SideItem icon={Activity} label={t('activityLog')} active={section === "activity"} onClick={() => setSection("activity")} />
-                <SideItem icon={CreditCard} label={t('invoices')} active={section === "invoices"} onClick={() => setSection("invoices")} />
-              </nav>
-              
-              <div className="mt-8 border-t border-[#333] pt-6 mb-4">
-                <p className="text-[11px] font-medium uppercase tracking-widest text-[#555]">{t('accountActions')}</p>
-              </div>
-              <nav className="space-y-1">
-                <SideItem icon={Trash2} label={t('deleteAccount')} danger active={false} onClick={() => setDeleteOpen(true)} />
-              </nav>
-            </div>
-          </aside>
+          <ProfileNav
+            section={section}
+            setSection={setSection}
+            onOpenDelete={() => setDeleteOpen(true)}
+          />
 
           <div className="flex-1 min-w-0 w-full">
             <div className={section === "overview" ? "block" : "hidden"}>
-              <Overview form={form} editing={editing} draft={draft} onEdit={beginEdit} onCancel={cancelEdit} onSave={saveEdit} onDraft={setDraft} onSaveAvatar={async (url) => {
+              <Overview
+                form={form}
+                editing={editing}
+                draft={draft}
+                onEdit={beginEdit}
+                onCancel={cancelEdit}
+                onSave={saveEdit}
+                onDraft={setDraft}
+                onSaveAvatar={async (url) => {
                   try {
-                    await updateProfilePicture(url || '');
-                    showSuccess(t('profilePictureUpdated'));
+                    await updateProfilePicture(url || "");
+                    showSuccess(t("profilePictureUpdated"));
                   } catch (e: any) {
-                    showError(tError(e.message) || tError('failedToUpdateProfilePicture'));
+                    showError(tError(e.message) || tGlobalError("failedToUpdateProfilePicture"));
                   }
-                }} onChangeEmail={() => setShowChangeEmailDrawer(true)} setForm={setForm} />
-            </div>{section === "security" && (
-              <Security 
+                }}
+                onChangeEmail={() => setShowChangeEmailDrawer(true)}
+                setForm={setForm}
+              />
+            </div>
+            {section === "security" && (
+              <Security
                 emailVerified={form.emailVerified}
                 emailVerification={form.emailVerification}
                 loginMethod={form.loginMethod}
                 tfaEnabled={form.tfaEnabled}
                 emailRateLimit={resendRateLimit}
-                onChangePassword={() => setShowPasswordModal(true)} 
-                onSetup2FA={start2FASetup} 
-                onDisable2FA={() => setShow2FADisableModal(true)} 
+                onChangePassword={() => setShowPasswordModal(true)}
+                onSetup2FA={start2FASetup}
+                onDisable2FA={() => setShow2FADisableModal(true)}
                 onVerifyEmail={handleVerifyEmailClick}
               />
             )}
@@ -405,61 +250,35 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <DeleteAccountDrawer
-          isOpen={deleteOpen}
-          onClose={() => setDeleteOpen(false)}
-          onConfirm={deleteAccount}
-          loginMethod={form.loginMethod}
-          tfaEnabled={form.tfaEnabled}
-        />
-        
-        <ChangeEmailDrawer
-          isOpen={showChangeEmailDrawer}
-          onClose={() => setShowChangeEmailDrawer(false)}
-          tfaEnabled={form.tfaEnabled}
+        <ProfileDrawers
+          deleteOpen={deleteOpen}
+          setDeleteOpen={setDeleteOpen}
+          deleteAccount={deleteAccount}
+          form={form}
+          showChangeEmailDrawer={showChangeEmailDrawer}
+          setShowChangeEmailDrawer={setShowChangeEmailDrawer}
           changeEmail={changeEmail}
           verifyEmailChange={verifyEmailChange}
-        />
-
-        <EmailVerificationDrawer
-          isOpen={showEmailVerificationModal}
-          onClose={() => setShowEmailVerificationModal(false)}
-          email={form.email}
-          onVerify={verifyEmailCode}
-          onResend={resendVerification}
-          rateLimit={resendRateLimit}
-          onRateLimitChange={setResendRateLimit}
-          onChangeEmail={() => {
-            setShowEmailVerificationModal(false);
-            setShowChangeEmailDrawer(true);
-          }}
-        />
-        
-        <PasswordDrawer
-          isOpen={showPasswordModal}
-          onClose={() => setShowPasswordModal(false)}
-          tfaEnabled={form.tfaEnabled}
+          showEmailVerificationModal={showEmailVerificationModal}
+          setShowEmailVerificationModal={setShowEmailVerificationModal}
+          verifyEmailCode={verifyEmailCode}
+          resendVerification={resendVerification}
+          resendRateLimit={resendRateLimit}
+          setResendRateLimit={setResendRateLimit}
+          showPasswordModal={showPasswordModal}
+          setShowPasswordModal={setShowPasswordModal}
           updatePassword={updatePassword}
-        />
-
-        <Setup2FADrawer
-          isOpen={show2FASetupModal}
-          onClose={() => setShow2FASetupModal(false)}
+          show2FASetupModal={show2FASetupModal}
+          setShow2FASetupModal={setShow2FASetupModal}
           tfaSetupData={tfaSetupData}
           tfaBackupCodes={tfaBackupCodes}
           setTfaBackupCodes={setTfaBackupCodes}
           verifyAndEnable2FA={verifyAndEnable2FA}
-        />
-
-        <Disable2FADrawer
-          isOpen={show2FADisableModal}
-          onClose={() => setShow2FADisableModal(false)}
+          show2FADisableModal={show2FADisableModal}
+          setShow2FADisableModal={setShow2FADisableModal}
           disable2FA={disable2FA}
         />
       </div>
     </div>
   );
 }
-
-
-

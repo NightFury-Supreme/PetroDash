@@ -3,7 +3,9 @@ const router = express.Router();
 const { requireAuth } = require('../middleware/auth');
 const UserActivityLog = require('../models/UserActivityLog');
 
-router.get('/', requireAuth, async (req, res) => {
+const AppError = require('../utils/AppError');
+
+router.get('/', requireAuth, async (req, res, next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(Math.max(1, parseInt(req.query.limit) || 10), 100);
@@ -40,8 +42,7 @@ router.get('/', requireAuth, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Activity Log Error:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch activity logs' });
+    next(error instanceof AppError ? error : new AppError('Failed to fetch activity logs', 500, 'ERR_ACTIVITY_FETCH_FAILED'));
   }
 });
 

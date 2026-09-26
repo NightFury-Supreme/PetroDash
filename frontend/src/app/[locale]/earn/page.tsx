@@ -1,14 +1,18 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, Suspense } from "react";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "@/i18n/routing";
 import { useToast } from "@/components/ui/ToastProvider";
-import { useEarn } from "@/hooks/useEarn";
+import { useEarn } from "@/hooks/earn";
 import { EarnHeader, EarnList } from "@/components/earn";
 import { EarnSkeleton } from "@/components/skeletons/earn/EarnSkeleton";
 import { ErrorState, DashboardButton, ErrorDescription } from "@/components/ui/ErrorState";
 import { Coins, RefreshCw } from "lucide-react";
+
 function EarnContent() {
+  const t = useTranslations("Earn");
+  const tErrorBackend = useTranslations("BackendErrors");
   const { showSuccess, showError } = useToast();
   const searchParams = useSearchParams();
   const lvSid = searchParams.get("lvSid");
@@ -16,34 +20,24 @@ function EarnContent() {
   const didAuto = useRef(false);
   const didAutoClaim = useRef(false);
 
-  const { data, loading, error, setError, refresh, start, claim, starting } = useEarn();
-  
+  const { data, loading, error, refresh, start, claim, starting } = useEarn();
   const [pendingLvSid, setPendingLvSid] = useState<string | null>(null);
 
-  const _lvUrlKey = (sessionId: string) => `earn_lv_url_${sessionId}`;
-
   const showLinkvertise = Boolean(data?.config?.linkvertise?.enabled);
+  const canShow = useMemo(() => showLinkvertise, [showLinkvertise]);
 
-  const canShow = useMemo(() => {
-    return showLinkvertise;
-  }, [showLinkvertise]);
+  const translateError = (err: unknown, fallbackKey = "failedToClaim") => {
+    const rawMsg = err instanceof Error ? err.message : String(err || "");
+    if (tErrorBackend.has(rawMsg)) {
+      return tErrorBackend(rawMsg);
+    }
+    return t(fallbackKey);
+  };
 
   useEffect(() => {
     if (!lvSid) return;
     refresh();
   }, [lvSid, refresh]);
-
-  useEffect(() => {
-    const sid = data?.status?.linkvertise?.sessionId;
-    if (!sid) {
-      
-      return;
-    }
-    try {
-            
-    // eslint-disable-next-line unused-imports/no-unused-vars
-    } catch (_) {}
-  }, [data?.status?.linkvertise?.sessionId]);
 
   useEffect(() => {
     const sid = lvSid || data?.status?.linkvertise?.sessionId;
@@ -57,21 +51,19 @@ function EarnContent() {
         const r = await claim("linkvertise", sid, { hash });
         didAutoClaim.current = true;
         setPendingLvSid(null);
-        showSuccess(`You earned ${r.rewardCoins} coins.`);
-      } catch (e: any) {
-        const msg = String(e?.message || "Failed to claim");
+        showSuccess(t("earnedSuccess", { coins: r.rewardCoins }));
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
         const lower = msg.toLowerCase();
         const notReady = lower.includes("not ready") || lower.includes("not claimable");
         if (notReady) {
-          // Hash verification is done server-side before claimability checks.
-          // We retry the claim later without the hash.
           setPendingLvSid(sid);
           return;
         }
-        showError(msg);
+        showError(translateError(e, "failedToClaim"));
       }
     })();
-  }, [lvSid, lvHash, claim, showError, showSuccess, setError]);
+  }, [lvSid, lvHash, claim, showError, showSuccess, t, tErrorBackend]);
 
   useEffect(() => {
     const sid = pendingLvSid;
@@ -88,25 +80,22 @@ function EarnContent() {
       try {
         const r = await claim("linkvertise", sid);
         setPendingLvSid(null);
-        showSuccess(`You earned ${r.rewardCoins} coins.`);
-      } catch (e: any) {
+        showSuccess(t("earnedSuccess", { coins: r.rewardCoins }));
+      } catch (e: unknown) {
         didAutoClaim.current = false;
-        const msg = String(e?.message || "Failed to claim");
-        showError(msg);
+        showError(translateError(e, "failedToClaim"));
       }
     })();
-  }, [pendingLvSid, data?.status?.linkvertise, claim, showError, showSuccess, setError]);
-
-
+  }, [pendingLvSid, data?.status?.linkvertise, claim, showError, showSuccess, t, tErrorBackend]);
 
   const onStart = async (method: "linkvertise") => {
     try {
       if (!canShow) {
-        showError("Earn is currently disabled.");
+        showError(t("earnDisabledToast"));
         return;
       }
       if (method === "linkvertise" && !showLinkvertise) {
-        showError("Linkvertise is currently disabled.");
+        showError(t("linkvertiseDisabledToast"));
         return;
       }
 
@@ -117,39 +106,30 @@ function EarnContent() {
           await onClaim("linkvertise");
           return;
         }
-        // We intentionally do NOT use localStorage here anymore, so that we always get
-        // the freshest generated URL from the backend when resuming the session.
       }
-
-
 
       const r = await start(method);
       if (method === "linkvertise" && r?.linkvertise?.url) {
-        
         try {
           window.location.assign(r.linkvertise.url);
-        // eslint-disable-next-line unused-imports/no-unused-vars
-        } catch (_) {}
+        } catch {}
       }
-    } catch (e: any) {
-      const msg = String(e?.message || "Failed to start");
-      showError(msg);
+    } catch (e: unknown) {
+      showError(translateError(e, "failedToStart"));
     }
   };
 
   const onClaim = async (method: "linkvertise") => {
     try {
       const sessionId = data?.status?.[method]?.sessionId;
-      if (!sessionId) throw new Error("No active session");
+      if (!sessionId) throw new Error("ERR_EARN_SESSION_NOT_FOUND");
       const r = await claim(method, sessionId);
-      showSuccess(`You earned ${r.rewardCoins} coins.`);
-    } catch (e: any) {
-      const msg = String(e?.message || "Failed to claim");
-      showError(msg);
+      showSuccess(t("earnedSuccess", { coins: r.rewardCoins }));
+    } catch (e: unknown) {
+      showError(translateError(e, "failedToClaim"));
     }
   };
 
-  
   if (loading) {
     return <EarnSkeleton />;
   }
@@ -159,8 +139,8 @@ function EarnContent() {
       <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
         <ErrorState
           icon={<Coins strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
-          kicker="Load Error"
-          title="Failed to Load Earn"
+          kicker={t("loadError")}
+          title={t("failedToLoadEarn")}
           errorString={error}
           description={<ErrorDescription error={error} topic="Earn" />}
           buttons={
@@ -170,7 +150,7 @@ function EarnContent() {
                 className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
               >
                 <RefreshCw className="w-[14px] h-[14px]" />
-                Retry
+                {t("retry")}
               </button>
               <DashboardButton variant="secondary" />
             </>
@@ -184,13 +164,12 @@ function EarnContent() {
     <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white">
       <div className="flex flex-col h-full space-y-6">
         {canShow && showLinkvertise && <EarnHeader />}
-        
-        <EarnList 
-          canShow={canShow} 
-          data={data} 
-          showLinkvertise={showLinkvertise} 
-          starting={starting} 
-          onStart={onStart} 
+        <EarnList
+          canShow={canShow}
+          data={data}
+          showLinkvertise={showLinkvertise}
+          starting={starting}
+          onStart={onStart}
         />
       </div>
     </div>

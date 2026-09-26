@@ -6,4 +6,4 @@ export * from './ResourceCard';
 export * from './AdditionalResourceCard';
 export * from './ResourceUsagePanel';
 export * from './types';
-export * from './hooks/useDashboard';
+export { useDashboard } from '@/hooks/dashboard';

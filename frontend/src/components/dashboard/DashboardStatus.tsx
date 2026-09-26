@@ -1,38 +1,16 @@
 "use client";
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Activity } from 'lucide-react';
-import { useToast } from "@/components/ui/ToastProvider";
 import { useTranslations } from 'next-intl';
+import { useSystemStatus } from '@/hooks/dashboard';
 
 interface StatusHistory {
   date: string;
   status: string;
   uptime: number;
   downtimeMinutes?: number;
-}
-
-interface StatusNode {
-  id: string;
-  name: string;
-  region: string;
-  status: string;
-  uptime: number;
-  ping: number | null;
-  history: StatusHistory[];
-}
-
-interface StatusData {
-  globalUptime: number;
-  panel: {
-    status: string;
-    uptime: number;
-    ping: number | null;
-    history: StatusHistory[];
-  };
-  nodes: StatusNode[];
 }
 
 const UptimeBars = ({ history, uptime, labels, statusLabels }: { 
@@ -163,9 +141,7 @@ const StatusCard = ({
 };
 
 export function DashboardStatus() {
-  const [data, setData] = useState<StatusData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const { showError } = useToast();
+  const { data, loading } = useSystemStatus(30000);
   const t = useTranslations('Dashboard');
 
   const uptimeLabels = {
@@ -185,28 +161,6 @@ export function DashboardStatus() {
     'Degraded': t('degraded'),
     'No Data': t('noData'),
   };
-
-  useEffect(() => {
-    let isMounted = true;
-    const fetchStatus = async () => {
-      try {
-        const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/status`);
-        if (!res.ok) throw new Error(t('failedFetchStatus'));
-        const jsonData = await res.json();
-        if (isMounted) setData(jsonData);
-      } catch (err: any) {
-        if (isMounted) showError(err.message || t('failedFetchStatus'));
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-    fetchStatus();
-    const interval = setInterval(fetchStatus, 30000);
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
-  }, [showError, t]);
 
   return (
     <div className="flex flex-col h-full overflow-hidden p-6">
@@ -295,4 +249,3 @@ export function DashboardStatus() {
     </div>
   );
 }
-

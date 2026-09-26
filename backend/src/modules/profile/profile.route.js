@@ -1,8 +1,15 @@
 const express = require('express');
 const { requireAuth } = require('../../middleware/auth');
+const User = require('../../models/User');
 const profileController = require('./profile.controller');
 
 const router = express.Router();
+
+// Username availability check (public / profile edit)
+router.get('/check-username', async (req, res) => {
+  const user = await User.findOne({ username: req.query.username }).lean();
+  res.json({ available: !user });
+});
 
 router.use(requireAuth);
 
@@ -14,18 +21,11 @@ router.patch('/profile/password', profileController.updatePassword);
 
 // 2FA
 router.post('/2fa/setup', profileController.setup2FA);
-router.post('/2fa/enable', profileController.verify2FA); // Was /2fa/enable in original
-router.post('/2fa/disable', profileController.disable2FA); // Was /2fa/disable in original
+router.post('/2fa/enable', profileController.verify2FA);
+router.post('/2fa/disable', profileController.disable2FA);
 
 // Sessions
 router.get('/sessions', profileController.getSessions);
 router.delete('/sessions/:id', profileController.revokeSession);
-
-// Username check
-router.get('/check-username', async (req, res) => {
-  const User = require('../../models/User');
-  const user = await User.findOne({ username: req.query.username }).lean();
-  res.json({ available: !user });
-});
 
 module.exports = router;

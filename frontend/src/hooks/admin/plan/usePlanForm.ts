@@ -1,104 +1,8 @@
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect, useCallback } from 'react';
+import { PlanFormData, UsePlanFormReturn, initialFormData } from './types';
 
-export interface PlanFormData {
-  name: string;
-  description: string;
-  strikeThroughPrice: number;
-  pricePerMonth: number;
-  pricePerYear: number;
-  visibility: 'public' | 'unlisted';
-  availableAt: string;
-  availableUntil: string;
-  stock: number;
-  limitPerCustomer: number;
-  category: string;
-  redirectionLink: string;
-  billingOptions: {
-    renewable: boolean;
-    nonRenewable: boolean;
-    lifetime: boolean;
-  };
-  availableBillingCycles: string[];
-  productContent: {
-    recurrentResources: {
-      cpuPercent: number;
-      memoryMb: number;
-      diskMb: number;
-      swapMb: number;
-      blockIoProportion: number;
-      cpuPinning: string;
-    };
-    additionalAllocations: number;
-    databases: number;
-    backups: number;
-    coins: number;
-    serverLimit: number;
-  };
-  staffNotes: string;
-  popular: boolean;
-  sortOrder: number;
-}
-
-interface UsePlanFormReturn {
-  // State
-  loading: boolean;
-  saving: boolean;
-  error: string | null;
-  formData: PlanFormData;
-  eggs: Array<{ _id: string; name: string; description: string }>;
-  locations: Array<{ _id: string; name: string; description: string }>;
-  
-  // Actions
-  setFormData: (data: Partial<PlanFormData>) => void;
-  handleInputChange: (field: string, value: string | number | boolean | string[]) => void;
-  handleSubmit: () => Promise<void>;
-  clearError: () => void;
-  resetForm: () => void;
-  
-  // Computed
-  isFormValid: boolean;
-  validationErrors: Record<string, string>;
-}
-
-const initialFormData: PlanFormData = {
-  name: '',
-  description: '',
-  strikeThroughPrice: 0,
-  pricePerMonth: 0,
-  pricePerYear: 0,
-  visibility: 'public',
-  availableAt: '',
-  availableUntil: '',
-  stock: 0,
-  limitPerCustomer: 1,
-  category: '',
-  redirectionLink: '',
-  billingOptions: {
-    renewable: true,
-    nonRenewable: false,
-    lifetime: false,
-  },
-  availableBillingCycles: ['monthly'],
-  productContent: {
-    recurrentResources: {
-      cpuPercent: 100,
-      memoryMb: 1024,
-      diskMb: 10240,
-      swapMb: 0,
-      blockIoProportion: 100,
-      cpuPinning: '',
-    },
-    additionalAllocations: 0,
-    databases: 1,
-    backups: 1,
-    coins: 0,
-    serverLimit: 1,
-  },
-  staffNotes: '',
-  popular: false,
-  sortOrder: 0,
-};
+export * from './types';
 
 export function usePlanForm(): UsePlanFormReturn {
   const [loading, setLoading] = useState(true);
@@ -107,8 +11,8 @@ export function usePlanForm(): UsePlanFormReturn {
   const [formData, setFormDataState] = useState<PlanFormData>(initialFormData);
   const [eggs, setEggs] = useState<Array<{ _id: string; name: string; description: string }>>([]);
   const [locations, setLocations] = useState<Array<{ _id: string; name: string; description: string }>>([]);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  // Load initial data
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
@@ -144,13 +48,11 @@ export function usePlanForm(): UsePlanFormReturn {
     }
   }, []);
 
-  // Handle input changes
   const handleInputChange = useCallback((field: string, value: string | number | boolean | string[]) => {
     setFormDataState(prev => {
       if (field.includes('.')) {
         const parts = field.split('.');
         if (parts.length === 2) {
-          // Handle one level deep: parent.child
           const [parent, child] = parts;
           return {
             ...prev,
@@ -160,7 +62,6 @@ export function usePlanForm(): UsePlanFormReturn {
             }
           };
         } else if (parts.length === 3) {
-          // Handle two levels deep: parent.child.grandchild
           const [parent, child, grandchild] = parts;
           return {
             ...prev,
@@ -178,27 +79,22 @@ export function usePlanForm(): UsePlanFormReturn {
     });
   }, []);
 
-  // Set form data
   const setFormData = useCallback((data: Partial<PlanFormData>) => {
     setFormDataState(prev => ({ ...prev, ...data }));
   }, []);
 
-  // Clear error
   const clearError = useCallback(() => {
     setError(null);
   }, []);
 
-  // Reset form
   const resetForm = useCallback(() => {
     setFormDataState(initialFormData);
     setError(null);
     setValidationErrors({});
   }, []);
 
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const isFormValid = Object.keys(validationErrors).length === 0;
 
-  // Handle form submission
   const handleSubmit = useCallback(async () => {
     const errors: Record<string, string> = {};
   
@@ -213,7 +109,6 @@ export function usePlanForm(): UsePlanFormReturn {
     if (!formData.category.trim()) {
       errors.category = 'Category is required';
     }
-    
     
     if (formData.pricePerMonth < 0) {
       errors.pricePerMonth = 'Monthly price must be 0 or greater';
@@ -264,7 +159,6 @@ export function usePlanForm(): UsePlanFormReturn {
         throw new Error('Authentication required');
       }
 
-      // Transform form data to match backend expectations
       const submitData = {
         name: formData.name,
         description: formData.description,
@@ -317,7 +211,6 @@ export function usePlanForm(): UsePlanFormReturn {
         throw new Error(errorData.error || 'Failed to create plan');
       }
 
-      // Success - form will be reset by parent component
       return await response.json();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to create plan');
@@ -325,30 +218,24 @@ export function usePlanForm(): UsePlanFormReturn {
     } finally {
       setSaving(false);
     }
-  }, [formData, isFormValid]);
+  }, [formData]);
 
-  // Load data on mount
   useEffect(() => {
     loadData();
   }, [loadData]);
 
   return {
-    // State
     loading,
     saving,
     error,
     formData,
     eggs,
     locations,
-    
-    // Actions
     setFormData,
     handleInputChange,
     handleSubmit,
     clearError,
     resetForm,
-    
-    // Computed
     isFormValid,
     validationErrors,
   };

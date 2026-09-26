@@ -1,8 +1,5 @@
 const PDFDocument = require('pdfkit');
-const fs = require('fs');
-const path = require('path');
-const axios = require('axios');
-const sharp = require('sharp');
+const { colors, resolveInvoiceDomain, renderInvoiceLogo } = require('./invoicePdfHelpers');
 
 async function generateInvoicePdfBuffer(payment, plan, user, settings, frontendHost, protocol = 'https') {
   return new Promise(async (resolve, reject) => {
@@ -18,52 +15,11 @@ async function generateInvoicePdfBuffer(payment, plan, user, settings, frontendH
         resolve(Buffer.concat(buffers));
       });
       
-      // Fill background of any dynamically added pages (just in case)
       doc.on('pageAdded', () => {
-        doc.rect(0, 0, doc.page.width, doc.page.height).fill('#101010');
+        doc.rect(0, 0, doc.page.width, doc.page.height).fill(colors.bg);
       });
 
-      const brand = settings?.payments?.paypal?.businessName || settings?.siteName || 'PteroDash';
-      
-      if (frontendHost && frontendHost.startsWith('http')) {
-        try { frontendHost = new URL(frontendHost).host; } catch {}
-      }
-      
-      // Try to extract root domain (e.g. dashboard.example.com -> example.com)
-      let rootDomain = frontendHost;
-      if (frontendHost && frontendHost.includes('.')) {
-        const parts = frontendHost.split('.');
-        if (parts.length > 2 && !parts[parts.length - 2].match(/^(co|com|org|net)$/i)) {
-          rootDomain = parts.slice(-2).join('.');
-        } else if (parts.length > 3) {
-          rootDomain = parts.slice(-3).join('.');
-        }
-      }
-
-      const defaultDomain = rootDomain || (brand.toLowerCase().replace(/\s/g, '') + '.com');
-      const siteUrl = frontendHost || defaultDomain;
-      const address = settings?.payments?.paypal?.businessAddress || siteUrl;
-      const supportEmail = settings?.contactEmail && !settings.contactEmail.includes('pterodash.com') ? settings.contactEmail : `support@${defaultDomain}`;
-
-      // Theme Colors (Brightened)
-      const colors = {
-        bg: '#101010',
-        border: '#2A2A2A',
-        textPrimary: '#FFFFFF',
-        textSecondary: '#CCCCCC',
-        textMuted: '#999999',
-        orange: '#F97316',
-        orangeDarkText: '#FB923C',
-        orangeBoxBg: '#1A110D',
-        orangeBoxBorder: '#331D12',
-        emerald: '#10B981',
-        emeraldText: '#34D399',
-        emeraldBoxBg: '#092116',
-        emeraldBoxBorder: '#0F3826',
-        tableHeaderBg: '#161616',
-        darkGrayLabel: '#888888',
-        mediumGray: '#BBBBBB'
-      };
+      const { brand, address, supportEmail, host } = resolveInvoiceDomain(settings, frontendHost);
 
       // Fill background for first page
       doc.rect(0, 0, doc.page.width, doc.page.height).fill(colors.bg);
@@ -73,53 +29,7 @@ async function generateInvoicePdfBuffer(payment, plan, user, settings, frontendH
       let y = 30;
 
       // HEADER
-      let hasLogo = false;
-      let targetIcon = settings?.siteIcon;
-      if (!targetIcon && frontendHost) {
-        const baseFrontendUrl = process.env.FRONTEND_URL || `${protocol}://${frontendHost}`;
-        targetIcon = baseFrontendUrl.endsWith('/') ? `${baseFrontendUrl}logo.svg` : `${baseFrontendUrl}/logo.svg`;
-      }
-
-      if (targetIcon) {
-        try {
-          let logoBuffer;
-          if (targetIcon.startsWith('/uploads/')) {
-            const localPath = path.join(__dirname, '../../', targetIcon);
-            if (fs.existsSync(localPath)) {
-              logoBuffer = fs.readFileSync(localPath);
-            } else {
-              throw new Error('Local file not found');
-            }
-          } else {
-            let iconUrl = targetIcon;
-            if (iconUrl.startsWith('/')) {
-              iconUrl = `${protocol}://${frontendHost || 'localhost'}${iconUrl}`;
-            }
-            const logoResponse = await axios.get(iconUrl, { responseType: 'arraybuffer' });
-            logoBuffer = Buffer.from(logoResponse.data);
-          }
-          
-          logoBuffer = await sharp(logoBuffer).png().toBuffer();
-          doc.image(logoBuffer, margin, y, { width: 40, height: 40 });
-          hasLogo = true;
-        } catch (e) {
-          console.error('Failed to load siteIcon for PDF:', e.message);
-        }
-      }
-      
-      if (!hasLogo) {
-        doc.roundedRect(margin, y, 40, 40, 8).fillAndStroke(colors.orangeBoxBg, colors.orangeBoxBorder);
-        doc.save();
-        doc.translate(margin + 10, y + 10);
-        doc.scale(0.8);
-        doc.lineWidth(2).strokeColor(colors.orange);
-        doc.path('M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z').stroke();
-        doc.path('M14 2v6h6').stroke();
-        doc.path('M16 13H8').stroke();
-        doc.path('M16 17H8').stroke();
-        doc.path('M10 9H8').stroke();
-        doc.restore();
-      }
+      await renderInvoiceLogo(doc, settings, host, protocol, margin, y, colors);
 
       doc.fillColor(colors.textPrimary).fontSize(20).font('Helvetica-Bold').text(brand, margin + 55, y + 4);
       doc.fillColor(colors.textMuted).fontSize(10).font('Helvetica').text('Billing & Invoicing', margin + 55, y + 26);

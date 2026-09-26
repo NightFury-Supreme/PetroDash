@@ -1,4 +1,4 @@
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
+import { downloadInvoicePdf } from "@/utils/invoiceDownload";
 import React, { useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useToast } from "@/components/ui/ToastProvider";
@@ -216,25 +216,7 @@ function MentionPill({ type, id, name, viewerRole, onServerMentionClick }: { typ
     } else if (type === 'invoice') {
       try {
         setDownloading(true);
-        const token = localStorage.getItem("auth_token");
-        const API_BASE = process.env.NEXT_PUBLIC_API_BASE || '';
-        const endpoint = viewerRole === 'admin' 
-          ? `${API_BASE}/api/admin/payments/${id}/invoice` 
-          : `${API_BASE}/api/payments/${id}/invoice`;
-          
-        const r = await fetchWithRetry(endpoint, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!r.ok) throw new Error("Failed to download");
-        const blob = await r.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `invoice-${id}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url);
+        await downloadInvoicePdf(id, viewerRole === 'admin');
       } catch (e) {
         console.error(e);
         showError("Failed to download invoice.");

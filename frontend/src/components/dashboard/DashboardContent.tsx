@@ -1,11 +1,8 @@
-"use client";
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
-
 import { useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { useDashboard } from './hooks/useDashboard';
-import { useProfile } from '../../hooks/useProfile';
-import { useToast } from '@/components/ui/ToastProvider';
+import { useDashboard } from '@/hooks/dashboard';
+import { useProfile } from '@/hooks/useProfile';
+import { useServerDelete } from '@/hooks/server';
 import { MetricCard } from './MetricCard';
 import { DashboardStatus } from './DashboardStatus';
 import { ResourceUsagePanel } from './ResourceUsagePanel';
@@ -15,12 +12,11 @@ import { EditServerDrawer } from '../server/EditServerDrawer';
 import { Plus, RefreshCw, Server, Cpu, HardDrive, Database } from 'lucide-react';
 
 export function DashboardContent() {
-  const { showError, showSuccess } = useToast();
   const t = useTranslations('Dashboard');
   const tCommon = useTranslations('Common');
-  const tErrorBackend = useTranslations('BackendErrors');
   const { servers, usage, resources, removeServer, loadDashboardData } = useDashboard();
   const { form } = useProfile();
+  const { deleteServer, deletingId } = useServerDelete(removeServer);
   const [showCreateDrawer, setShowCreateDrawer] = useState(false);
   const [editingServerId, setEditingServerId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -37,41 +33,11 @@ export function DashboardContent() {
   }, [loadDashboardData]);
 
   const handleDelete = useCallback(async (serverId: string, serverName: string) => {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      showError(t('authRequired'));
-      return;
+    const success = await deleteServer(serverId, serverName);
+    if (!success) {
+      throw new Error('ERR_SERVER_DELETE_FAILED');
     }
-
-    try {
-      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers/${serverId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (!response.ok) {
-        let errorData: any = {}; try { errorData = await response.json(); } catch {}
-        const code = errorData?.error?.code;
-        const msg = errorData?.error?.message || errorData?.error;
-        throw new Error(code || msg || 'failedToDeleteServer');
-      }
-
-      removeServer(serverId);
-      showSuccess(t('deleteServerSuccess', { name: serverName }));
-    } catch (e: any) {
-      let msg = e.message || 'failedToDeleteServer';
-      try {
-         msg = tErrorBackend(msg as any);
-      } catch {
-         if (msg === 'failedToDeleteServer' || msg === 'authRequired') {
-            msg = t(msg as any);
-         } else {
-            msg = tErrorBackend("ERR_INTERNAL_SERVER");
-         }
-      }
-      throw new Error(msg); // DeleteDrawer will catch this translated message and call showError
-    }
-  }, [removeServer, showError, showSuccess, t, tErrorBackend]);
+  }, [deleteServer]);
 
   return (
     <div className="flex flex-col h-full">
@@ -153,6 +119,7 @@ export function DashboardContent() {
         servers={servers}
         onDelete={handleDelete}
         onEdit={(id) => setEditingServerId(id)}
+        deleting={deletingId}
       />
 
       {/* Create Server Drawer */}

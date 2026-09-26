@@ -19,17 +19,17 @@ interface GiftCodesSectionProps {
   onInitialLoad?: () => void;
 }
 
-function rewardLabel(g: any, t: (key: string) => string): string {
+function rewardLabel(g: any, t: (key: string, values?: any) => string): string {
   const parts: string[] = [];
   if (g.rewards?.coins > 0) parts.push(`${g.rewards.coins} ${t("coinsUnit")}`);
   const r = g.rewards?.resources || {};
-  if (r.diskMb > 0) parts.push(`${r.diskMb} MB Disk`);
-  if (r.memoryMb > 0) parts.push(`${r.memoryMb} MB RAM`);
-  if (r.cpuPercent > 0) parts.push(`${r.cpuPercent}% CPU`);
-  if (r.allocations > 0) parts.push(`${r.allocations} Ports`);
-  if (r.backups > 0) parts.push(`${r.backups} Backups`);
-  if (r.databases > 0) parts.push(`${r.databases} DBs`);
-  if (r.serverSlots > 0) parts.push(`${r.serverSlots} Slots`);
+  if (r.diskMb > 0) parts.push(t("resDisk", { amount: r.diskMb }));
+  if (r.memoryMb > 0) parts.push(t("resMemory", { amount: r.memoryMb }));
+  if (r.cpuPercent > 0) parts.push(t("resCpu", { amount: r.cpuPercent }));
+  if (r.allocations > 0) parts.push(t("resPorts", { amount: r.allocations }));
+  if (r.backups > 0) parts.push(t("resBackups", { amount: r.backups }));
+  if (r.databases > 0) parts.push(t("resDatabases", { amount: r.databases }));
+  if (r.serverSlots > 0) parts.push(t("resSlots", { amount: r.serverSlots }));
   return parts.length ? parts.join(" · ") : t("noRewards");
 }
 

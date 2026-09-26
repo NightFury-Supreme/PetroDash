@@ -6,8 +6,10 @@ const router = express.Router();
 
 const { getCache, setCache } = require('../lib/redis');
 
+const AppError = require('../utils/AppError');
+
 // GET /api/user/plans - list active subscriptions of the authenticated user
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', requireAuth, async (req, res, next) => {
   try {
     const cacheKey = `user:${req.user.sub}:plans`;
     const cached = await getCache(cacheKey);
@@ -26,7 +28,7 @@ router.get('/', requireAuth, async (req, res) => {
     await setCache(cacheKey, list, 30);
     res.json(list);
   } catch (e) {
-    res.status(400).json({ error: e.message });
+    next(e instanceof AppError ? e : AppError.badRequest(e.message));
   }
 });
 

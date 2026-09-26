@@ -16,7 +16,7 @@ export interface ServerInfo {
   unreachable?: boolean;
   error?: string;
   suspended?: boolean;
-  queuePosition?: number;
+  queuePosition?: number | null;
 }
 
 export interface ResourceLimits {

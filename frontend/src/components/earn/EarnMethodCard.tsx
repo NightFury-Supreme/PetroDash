@@ -1,8 +1,9 @@
 "use client";
 
-import { EarnMethod, EarnMethodStatus, EarnMethodConfig } from "@/hooks/useEarn";
 import type { ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import { Infinity } from "lucide-react";
+import type { EarnMethod, EarnMethodStatus, EarnMethodConfig } from "@/hooks/earn";
 
 function formatSeconds(s: number) {
   if (!Number.isFinite(s) || s <= 0) return "0s";
@@ -16,6 +17,18 @@ function formatSeconds(s: number) {
   return parts.join(" ");
 }
 
+interface EarnMethodCardProps {
+  method: EarnMethod;
+  title: string;
+  icon: ReactNode;
+  config: EarnMethodConfig;
+  status: EarnMethodStatus;
+  onStart: () => void;
+  starting: boolean;
+  extraAction?: ReactNode;
+  cols: string;
+}
+
 export function EarnMethodCard({
   method,
   title,
@@ -26,17 +39,8 @@ export function EarnMethodCard({
   starting,
   extraAction,
   cols,
-}: {
-  method: EarnMethod;
-  title: string;
-  icon: ReactNode;
-  config: EarnMethodConfig;
-  status: EarnMethodStatus;
-  onStart: () => void;
-  starting: boolean;
-  extraAction?: ReactNode;
-  cols: string;
-}) {
+}: EarnMethodCardProps) {
+  const t = useTranslations("Earn");
   const disabled = !config.enabled;
 
   const rewardCoins = Number(status.rewardCoins || config.coins);
@@ -44,12 +48,14 @@ export function EarnMethodCard({
   const maxClaims = Number(status.maxClaimsPerDay || config.maxClaimsPerDay);
   const retryAfter = Number(status.retryAfterSeconds || 0);
 
-  const showActionBtn = true; // Always show the button, we handle disabled states in `actionDisabled`
+  const showActionBtn = true;
 
   const descriptionForMethod = () => {
     switch (method) {
-      case "linkvertise": return "View articles to earn coins";
-      default: return "Earn coins";
+      case "linkvertise":
+        return t("linkvertiseDesc");
+      default:
+        return t("defaultDesc");
     }
   };
 
@@ -63,12 +69,12 @@ export function EarnMethodCard({
     status.state === "verifying";
 
   const actionLabel = () => {
-    if (starting) return "Starting...";
-    if (status.state === "cooldown") return `Cooldown (${formatSeconds(retryAfter)})`;
-    if (status.state === "limit_reached") return "Limit reached";
-    if (status.state === "verifying") return "Verifying...";
-    if (status.state === "waiting" || status.state === "claimable") return "Continue";
-    return "Start";
+    if (starting) return t("starting");
+    if (status.state === "cooldown") return t("cooldownTime", { time: formatSeconds(retryAfter) });
+    if (status.state === "limit_reached") return t("limitReached");
+    if (status.state === "verifying") return t("verifying");
+    if (status.state === "waiting" || status.state === "claimable") return t("continue");
+    return t("start");
   };
 
   return (
@@ -79,25 +85,27 @@ export function EarnMethodCard({
           {icon}
         </div>
         <div className="min-w-0">
-          <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Method</p>
+          <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">{t("method")}</p>
           <span className="block truncate text-sm text-[#DDDDDD] font-medium tracking-tight">
             {title}
           </span>
           <span className="block truncate text-[10px] text-[#888] mt-0.5">
-            {subtitle || "Ready"}
+            {subtitle || t("ready")}
           </span>
         </div>
       </div>
 
       {/* Reward */}
       <div className="min-w-0">
-        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Reward</p>
-        <span className="text-sm text-[#AAAAAA]">{rewardCoins || "Variable"}{rewardCoins ? " coins" : ""}</span>
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">{t("reward")}</p>
+        <span className="text-sm text-[#AAAAAA]">
+          {rewardCoins ? `${rewardCoins} ${t("coinsUnit")}` : t("variable")}
+        </span>
       </div>
 
       {/* Limit */}
       <div className="min-w-0">
-        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Daily Limit</p>
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">{t("dailyLimit")}</p>
         <span className="text-sm text-[#AAAAAA] flex items-center gap-1">
           {todayClaims} / {maxClaims || <Infinity size={14} className="inline-block opacity-70" />}
         </span>
@@ -105,16 +113,18 @@ export function EarnMethodCard({
 
       {/* Cooldown */}
       <div className="min-w-0">
-        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">Cooldown</p>
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">{t("cooldown")}</p>
         <span className="text-sm text-[#AAAAAA]">
-          {status.state === "cooldown" ? formatSeconds(retryAfter) : formatSeconds(Number(config.cooldownSeconds || 0))}
+          {status.state === "cooldown"
+            ? formatSeconds(retryAfter)
+            : formatSeconds(Number(config.cooldownSeconds || 0))}
         </span>
       </div>
 
       {/* Action */}
       <div className="min-w-0 lg:text-right mt-2 lg:mt-0">
         {!config.enabled ? (
-          <span className="text-xs text-[#555]">Disabled</span>
+          <span className="text-xs text-[#555]">{t("disabled")}</span>
         ) : (
           <div className="flex flex-wrap lg:justify-end gap-2">
             {extraAction}

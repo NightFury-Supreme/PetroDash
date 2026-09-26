@@ -1,27 +1,25 @@
 'use client';
 import { useState } from 'react';
 import { z } from 'zod';
-import { useRouter, useSearchParams } from '@/i18n/routing';
+import { useSearchParams } from '@/i18n/routing';
 import { Link } from '@/i18n/routing';
 import AuthField from '@/components/auth/layout/AuthField';
 import AuthSubmit from '@/components/auth/layout/AuthSubmit';
 import { OAuthButtons } from '@/components/auth/layout/OAuthButtons';
 import { useAuthSettings } from '@/hooks/useAuthSettings';
 import { useToast } from '@/components/ui/ToastProvider';
-import { fetchWithRetry } from '@/utils/fetchWithRetry';
+import { useRegister } from '@/hooks/auth';
 import { useTranslations } from 'next-intl';
 
 export default function RegisterForm() {
-  const router = useRouter();
   const search = useSearchParams();
   const { settings } = useAuthSettings();
   const { showError } = useToast();
+  const { register, loading, fieldErrors, setFieldErrors } = useRegister();
   const [form, setForm] = useState({ email: '', username: '', firstName: '', lastName: '', password: '' });
-  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof typeof form, string>>>({});
-  const [loading, setLoading] = useState(false);
 
   const t = useTranslations('Auth.register');
-  const tCommon = useTranslations('Common');
+  const tCommon = useTranslations('Common');
   const tErrors = useTranslations('Auth.errors');
 
   const strongPassword = z
@@ -50,32 +48,8 @@ export default function RegisterForm() {
       setFieldErrors(errs);
       return;
     }
-    setLoading(true);
-    try {
-      const ref = search?.get('ref') || undefined;
-      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...parsed.data, ...(ref ? { ref } : {}) }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        const serverFieldErrors = data?.details?.fieldErrors || {};
-        const errs: Partial<Record<keyof typeof form, string>> = {};
-        Object.entries(serverFieldErrors).forEach(([k, v]) => {
-          if (Array.isArray(v) && v.length > 0) errs[k as keyof typeof form] = v[0] as string;
-        });
-        if (Object.keys(errs).length > 0) setFieldErrors(errs);
-        throw new Error(data?.error || tErrors('registerFailed'));
-      }
-      if (!data?.token) throw new Error('Invalid response');
-      localStorage.setItem('auth_token', data.token);
-      router.push('/dashboard');
-    } catch (err: any) {
-      showError(err.message || tErrors('registerFailed'));
-    } finally {
-      setLoading(false);
-    }
+    const ref = search?.get('ref') || undefined;
+    await register(parsed.data, ref);
   };
 
   const showEmailRegister = settings?.emailLogin ?? true;

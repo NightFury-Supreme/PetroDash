@@ -7,11 +7,12 @@ const Plan = require('../models/Plan');
 
 const User = require('../models/User');
 const { getSettings } = require('../lib/settings');
+const AppError = require('../utils/AppError');
 
 const router = express.Router();
 
 // GET /api/payments - list my completed payments (most recent first)
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', requireAuth, async (req, res, next) => {
   try {
     const paginate = String(req.query.paginate || '').toLowerCase() === 'true';
     let page = Math.max(1, parseInt(String(req.query.page || '1')) || 1);
@@ -65,18 +66,18 @@ router.get('/', requireAuth, async (req, res) => {
 
     res.json(responsePayload);
   } catch (e) {
-    res.status(400).json({ error: e.message });
+    next(e instanceof AppError ? e : AppError.badRequest(e.message));
   }
 });
 
 // GET /api/payments/:id/invoice - PDF invoice download (only for COMPLETED)
-router.get('/:id/invoice', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res) => {
+router.get('/:id/invoice', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res, next) => {
   try {
     const p = await Payment.findOne({ _id: String(req.params.id), userId: req.user.sub, status: 'COMPLETED' }).lean();
-    if (!p) return res.status(404).json({ error: 'Invoice not found' });
+    if (!p) throw AppError.notFound('Invoice not found');
     const plan = await Plan.findById(p.planId).lean();
     const user = await User.findById(p.userId).lean();
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) throw AppError.notFound('User not found');
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="invoice-${p._id}.pdf"`);
@@ -91,7 +92,7 @@ router.get('/:id/invoice', requireAuth, createRateLimiter(5, 60 * 1000), async (
     
     res.send(pdfBuffer);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    next(error instanceof AppError ? error : AppError.badRequest(error.message));
   }
 });
 

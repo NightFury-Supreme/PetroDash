@@ -1,7 +1,9 @@
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
-import { useState, useEffect } from 'react';
+'use client';
 
-interface AdSenseSettings {
+import { useState, useEffect } from 'react';
+import { fetchWithRetry } from '@/utils/fetchWithRetry';
+
+export interface AdSenseSettings {
   enabled: boolean;
   publisherId: string;
   adSlots: {
@@ -19,37 +21,51 @@ interface AdSenseSettings {
     inArticle: boolean;
     matchedContent: boolean;
   };
-  adPositions: {
-    showOnDashboard: boolean;
-    showOnShop: boolean;
-    showOnPanel: boolean;
-    showOnAuth: boolean;
+  adPositions?: {
+    showOnDashboard?: boolean;
+    showOnShop?: boolean;
+    showOnPanel?: boolean;
+    showOnAuth?: boolean;
   };
 }
 
 export function useAdSenseSettings() {
   const [settings, setSettings] = useState<AdSenseSettings | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
+    let active = true;
     const loadSettings = async () => {
       try {
-        // Use public settings endpoint (we'll need to create this)
-        const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/settings/adsense`);
+        const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/ads`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
 
         if (response.ok) {
-          let data: any = {}; try { data = await response.json(); } catch {}
-          setSettings(data);
+          const data = await response.json();
+          if (active && data && typeof data === 'object' && 'enabled' in data) {
+            setSettings(data);
+          }
+        } else {
+          if (active) setHasError(true);
         }
       } catch (error) {
         console.error('Failed to load AdSense settings:', error);
+        if (active) setHasError(true);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
 
     loadSettings();
+    return () => {
+      active = false;
+    };
   }, []);
 
-  return { settings, loading };
+  return { settings, loading, hasError };
 }

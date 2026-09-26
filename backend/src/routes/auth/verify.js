@@ -5,34 +5,32 @@ const User = require('../../models/User');
 const VerificationToken = require('../../models/VerificationToken');
 const { getSettings } = require('../../lib/settings');
 const UserCreationService = require('../../services/userCreation');
- 
 const { generateSecureCode, hashString } = require('../../utils/security');
 const { verificationRateLimit, resendRateLimit } = require('../../middleware/rateLimit');
 const { logUserActivity } = require('../../middleware/userActivity');
+const AppError = require('../../utils/AppError');
 
 const router = express.Router();
 
 const verifySchema = z.object({ token: z.string().min(32).max(256) });
 
-router.get('/verify', async (req, res) => {
+router.get('/verify', async (req, res, next) => {
   try {
-    
     const parsed = verifySchema.safeParse({ token: String(req.query.token || '') });
     if (!parsed.success) {
-      // Token validation failed - logged silently
-      return res.status(400).json({ error: 'Invalid token' });
+      throw AppError.badRequest('Invalid token', 'ERR_INVALID_CODE');
     }
     
     const raw = parsed.data.token;
     const tokenHash = crypto.createHash('sha256').update(raw).digest('hex');
     
     const vt = await VerificationToken.findOne({ tokenHash, purpose: 'email_verification', usedAt: null });
-    if (!vt) return res.status(400).json({ error: 'Invalid or expired token' });
+    if (!vt) throw AppError.badRequest('Invalid or expired token', 'ERR_INVALID_CODE');
     
-    if (vt.expiresAt && vt.expiresAt < new Date()) return res.status(400).json({ error: 'Token expired' });
+    if (vt.expiresAt && vt.expiresAt < new Date()) throw AppError.badRequest('Token expired', 'ERR_TOKEN_EXPIRED');
     
     const user = await User.findById(vt.userId);
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) throw AppError.notFound('User not found', 'ERR_USER_NOT_FOUND');
     
     user.emailVerified = true;
     await user.save();
@@ -53,9 +51,8 @@ router.get('/verify', async (req, res) => {
     
     if (wantsRedirect) return res.redirect(302, redirect);
     return res.json({ ok: true });
-  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
-    return res.status(500).json({ error: 'Failed to verify email' });
+    next(e instanceof AppError ? e : AppError.internal('Failed to verify email'));
   }
 });
 
@@ -65,10 +62,12 @@ const verifyCodeSchema = z.object({
   code: z.string().length(8, 'Code must be 8 digits')
 });
 
-router.post('/verify/resend', resendRateLimit, async (req, res) => {
+router.post('/verify/resend', resendRateLimit, async (req, res, next) => {
   try {
     const parsed = resendSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
+    if (!parsed.success) {
+      throw AppError.badRequest('Invalid payload', 'ERR_INVALID_PAYLOAD', parsed.error.flatten());
+    }
     const { email } = parsed.data;
     
     // Always return success to prevent user enumeration
@@ -80,7 +79,7 @@ router.post('/verify/resend', resendRateLimit, async (req, res) => {
     const existingToken = await VerificationToken.findOne({ userId: user._id, purpose: 'email_verification', usedAt: null }).sort({ createdAt: -1 });
     if (existingToken && (Date.now() - existingToken.createdAt.getTime() < 60 * 1000)) {
       const retryAfter = 60 - Math.floor((Date.now() - existingToken.createdAt.getTime()) / 1000);
-      return res.status(429).json({ error: 'Too many requests, please try again later.', retryAfter, message: `Rate limit exceeded. Try again in ${retryAfter} seconds.` });
+      throw AppError.badRequest('Too many requests, please try again later.', 'ERR_RATE_LIMIT', { retryAfter });
     }
 
     // Generate secure 8-digit verification code
@@ -116,39 +115,35 @@ router.post('/verify/resend', resendRateLimit, async (req, res) => {
     // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (mailError) {
       // Don't leak email errors to prevent enumeration
-      // Email error logged silently for production
     }
     
     return res.json({ ok: true });
   } catch (e) {
-    console.error('Failed to send verification code:', e);
-    return res.status(500).json({ error: 'Failed to send verification code' });
+    next(e instanceof AppError ? e : AppError.internal('Failed to send verification code'));
   }
 });
 
 // POST /api/auth/verify/code - Verify email with code
-router.post('/verify/code', verificationRateLimit, async (req, res) => {
+router.post('/verify/code', verificationRateLimit, async (req, res, next) => {
   try {
     const parsed = verifyCodeSchema.safeParse(req.body);
     if (!parsed.success) {
-      return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
+      throw AppError.badRequest('Invalid payload', 'ERR_INVALID_PAYLOAD', parsed.error.flatten());
     }
     
     const { email, code } = parsed.data;
     
-    // Always perform the same operations to prevent timing attacks
     const user = await User.findOne({ email });
     if (!user) {
       // Simulate processing time to prevent enumeration
       await new Promise(resolve => setTimeout(resolve, 100));
-      return res.status(400).json({ error: 'Invalid or expired verification code' });
+      throw AppError.badRequest('Invalid or expired verification code', 'ERR_INVALID_CODE');
     }
     
     if (user.emailVerified) {
       return res.json({ ok: true, alreadyVerified: true });
     }
 
-    // Hash the provided code
     const codeHash = hashString(code);
     
     // Find verification token — MUST be scoped to this user to prevent cross-account abuse
@@ -160,36 +155,30 @@ router.post('/verify/code', verificationRateLimit, async (req, res) => {
     });
     
     if (!vt) {
-      return res.status(400).json({ error: 'Invalid or expired verification code' });
+      throw AppError.badRequest('Invalid or expired verification code', 'ERR_INVALID_CODE');
     }
     
     // Check if token is locked due to too many attempts
     if (vt.lockedUntil && vt.lockedUntil > new Date()) {
-      return res.status(429).json({ 
-        error: 'Too many failed attempts. Please try again later.',
+      throw AppError.badRequest('Too many failed attempts. Please try again later.', 'ERR_RATE_LIMIT', {
         retryAfter: Math.ceil((vt.lockedUntil - new Date()) / 1000)
       });
     }
     
     if (vt.expiresAt && vt.expiresAt < new Date()) {
-      return res.status(400).json({ error: 'Verification code has expired' });
+      throw AppError.badRequest('Verification code has expired', 'ERR_TOKEN_EXPIRED');
     }
     
-    // VULNERABILITY FIX: Use atomic increment to prevent concurrent brute-forcing
     const updatedVt = await VerificationToken.findOneAndUpdate(
       { _id: vt._id },
       { $inc: { attempts: 1 } },
       { new: true }
     );
     
-    // Check if max attempts exceeded
     if (updatedVt.attempts >= updatedVt.maxAttempts) {
-      updatedVt.lockedUntil = new Date(Date.now() + 15 * 60 * 1000); // Lock for 15 minutes
+      updatedVt.lockedUntil = new Date(Date.now() + 15 * 60 * 1000);
       await updatedVt.save();
-      return res.status(429).json({ 
-        error: 'Too many failed attempts. Please request a new code.',
-        retryAfter: 900
-      });
+      throw AppError.badRequest('Too many failed attempts. Please request a new code.', 'ERR_RATE_LIMIT', { retryAfter: 900 });
     }
     
     // Verify the user
@@ -210,15 +199,9 @@ router.post('/verify/code', verificationRateLimit, async (req, res) => {
     const { writeAudit } = require('../../middleware/audit');
     await writeAudit(req, 'auth.email.verified', 'auth', user._id.toString(), { method: 'code', changes });
     return res.json({ ok: true });
-    
-  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
-    // Error logged silently for production
-    return res.status(500).json({ error: 'Failed to verify code' });
+    next(e instanceof AppError ? e : AppError.internal('Failed to verify code'));
   }
 });
 
 module.exports = router;
-
-
-

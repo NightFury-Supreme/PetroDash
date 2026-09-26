@@ -5,6 +5,7 @@ const SessionService = require('../../services/SessionService');
 const { getSettings } = require('../../lib/settings');
 const { writeAudit } = require('../../middleware/audit');
 const { createRateLimiter } = require('../../middleware/rateLimit');
+const AppError = require('../../utils/AppError');
 
 const router = express.Router();
 
@@ -18,7 +19,7 @@ const registerSchema = z.object({
   ref: z.string().trim().optional(),
 });
 
-router.post('/register', createRateLimiter(5, 60 * 60 * 1000), async (req, res) => {
+router.post('/register', createRateLimiter(5, 60 * 60 * 1000), async (req, res, next) => {
   const startTime = Date.now();
   let user = null;
   
@@ -33,10 +34,7 @@ router.post('/register', createRateLimiter(5, 60 * 60 * 1000), async (req, res) 
         ip: req.ip,
         userAgent: req.get('User-Agent')
       });
-      return res.status(400).json({ 
-        error: 'Invalid payload', 
-        details: parsed.error.flatten() 
-      });
+      return next(AppError.badRequest('Invalid payload', 'ERR_INVALID_PAYLOAD', parsed.error.flatten()));
     }
 
     const { email, username, firstName, lastName, password, ref } = parsed.data;
@@ -51,7 +49,7 @@ router.post('/register', createRateLimiter(5, 60 * 60 * 1000), async (req, res) 
         ip: req.ip,
         userAgent: req.get('User-Agent')
       });
-      return res.status(403).json({ error: 'Email registration is disabled' });
+      return next(AppError.forbidden('Email registration is disabled', 'ERR_REGISTRATION_DISABLED'));
     }
 
     // Use unified user creation service
@@ -138,10 +136,10 @@ router.post('/register', createRateLimiter(5, 60 * 60 * 1000), async (req, res) 
     });
     
     if (error.message.includes('already in use') || error.message.includes('already exists')) {
-      return res.status(409).json({ error: error.message });
+      return next(AppError.conflict(error.message, 'ERR_USER_EXISTS'));
     }
     
-    return res.status(500).json({ error: 'Internal server error' });
+    return next(AppError.internal('Internal server error', 'ERR_INTERNAL_SERVER'));
   }
 });
 

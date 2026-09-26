@@ -1,160 +1,49 @@
 "use client";
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
-import { Link } from "@/i18n/routing";
-import { usePathname, useRouter } from "@/i18n/routing";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import type { LucideIcon } from "lucide-react";
 import {
-  LayoutDashboard,
+  PanelLeft,
+  LogOut,
   Store,
   Coins,
-  Gift,
-  Users,
-  Key,
-  Ticket,
-  Settings,
-  Headphones,
-  Shield,
-  Server,
-  Package,
-  MapPin,
-  List,
-  Sliders,
-  PanelLeft,
-  LogOut
 } from "lucide-react";
+import { usePathname, useRouter } from "@/i18n/routing";
+import { useSidebarUser } from "@/hooks/useSidebarUser";
+import { NavButton } from "./NavButton";
+import { baseLinks, supportLinks, adminOtherLinks } from "./sidebarLinks";
 
-type NavLink = { href: string; labelKey: string; icon: LucideIcon };
-
-const baseLinks: NavLink[] = [
-  { href: "/dashboard", labelKey: "dashboard", icon: LayoutDashboard },
-  { href: "/shop", labelKey: "store", icon: Store },
-  { href: "/earn", labelKey: "earn", icon: Coins },
-  { href: "/gift", labelKey: "gift", icon: Gift },
-  { href: "/referrals", labelKey: "affiliates", icon: Users },
-];
-
-const supportLinks: NavLink[] = [
-  { href: "/panel", labelKey: "panelCredentials", icon: Key },
-  { href: "/tickets", labelKey: "helpSupport", icon: Headphones },
-  { href: "/profile", labelKey: "settings", icon: Settings },
-];
-
-const adminOtherLinks: NavLink[] = [
-  { href: "/admin", labelKey: "admin", icon: Shield },
-  { href: "/admin/users", labelKey: "users", icon: Users },
-  { href: "/admin/servers", labelKey: "servers", icon: Server },
-  { href: "/admin/eggs", labelKey: "eggs", icon: Package },
-  { href: "/admin/locations", labelKey: "locations", icon: MapPin },
-  { href: "/admin/earn", labelKey: "adminEarn", icon: Coins },
-  { href: "/admin/gift", labelKey: "gifts", icon: Gift },
-  { href: "/admin/tickets", labelKey: "tickets", icon: Ticket },
-  { href: "/admin/logs", labelKey: "logs", icon: List },
-  { href: "/admin/settings", labelKey: "adminSettings", icon: Sliders },
-];
-
-
-function NavButton({
-  item,
-  collapsed,
-  isActive,
-  label,
-}: {
-  item: NavLink;
-  collapsed: boolean;
-  isActive: boolean;
-  label: string;
-}) {
-  const Icon = item.icon;
-  return (
-    <Link href={item.href} className="block">
-      <div
-        title={collapsed ? label : undefined}
-        aria-current={isActive ? "page" : undefined}
-        className={`group flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/30 ${
-          collapsed ? "justify-center" : ""
-        } ${
-          isActive
-            ? "bg-white/10 text-white"
-            : "text-zinc-500 hover:bg-white/5 hover:text-zinc-200"
-        }`}
-      >
-        <Icon size={17} strokeWidth={1.75} className="shrink-0" />
-        {!collapsed && <span className="truncate">{label}</span>}
-      </div>
-    </Link>
-  );
-}
 
 export default function Sidebar() {
-  const tError = useTranslations('GlobalErrors');
   const pathname = usePathname();
   const router = useRouter();
-  const tNav = useTranslations('Nav');
+  const tNav = useTranslations("Nav");
   const [collapsed, setCollapsed] = useState(false);
-  const [user, setUser] = useState<{ username?: string; email?: string; role?: string; coins?: number; hasActivePlans?: boolean; profilePicture?: string; firstName?: string; lastName?: string; name?: string } | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [brand, setBrand] = useState<{ name: string; icon: string; earnEnabled: boolean }>({ name: 'PetroDash', icon: '', earnEnabled: false });
+  const { user, loading, brand, logout } = useSidebarUser();
 
-  // Load collapsed state from localStorage
   useEffect(() => {
-    const savedCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+    const savedCollapsed = localStorage.getItem("sidebar_collapsed") === "true";
     setCollapsed(savedCollapsed);
   }, []);
 
-  // Save collapsed state to localStorage and dispatch event
   const toggleCollapsed = (newCollapsed: boolean) => {
     setCollapsed(newCollapsed);
-    localStorage.setItem('sidebar_collapsed', newCollapsed.toString());
-    window.dispatchEvent(new Event('sidebar-toggle'));
+    localStorage.setItem("sidebar_collapsed", newCollapsed.toString());
+    window.dispatchEvent(new Event("sidebar-toggle"));
   };
 
-  useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-    if (token) {
-      fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
-        .then(async (r) => { 
-          let d: any = {}; try { d = await r.json(); } catch {} 
-          if (!r.ok) throw new Error(d?.error || tError('failed')); 
-          // Check if user has active plans for premium badge
-          try {
-            const plansResponse = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/user/plans`, { 
-              headers: { Authorization: `Bearer ${token}` } 
-            });
-            if (plansResponse.ok) {
-              let plans: any = {}; try { plans = await plansResponse.json(); } catch {}
-              d.hasActivePlans = plans && plans.length > 0;
-            } else {
-              d.hasActivePlans = false;
-            }
-          // eslint-disable-next-line unused-imports/no-unused-vars
-          } catch (_) {
-            d.hasActivePlans = false;
-          }
-          setUser(d); 
-          setLoading(false); 
-        })
-        .catch(() => { setUser(null); setLoading(false); });
-    } else {
-      setLoading(false);
-    }
-    // Also load brand settings for icon and name
-    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/branding`)
-      .then((r) => r.json())
-      .then((s) => setBrand({ name: s?.siteName || 'PetroDash', icon: s?.siteIcon || '', earnEnabled: !!s?.earnEnabled }))
-      .catch(() => setBrand({ name: 'PetroDash', icon: '', earnEnabled: false }));
-  }, []);
-
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === "admin";
 
   const checkIsActive = (href: string) => {
-    // Special case for Admin root
-    if (href === '/admin' && pathname === '/admin') return true;
-    if (href === '/admin' && pathname !== '/admin') return false;
-    
-    return pathname === href || pathname.startsWith(href + '/');
+    if (href === "/admin" && pathname === "/admin") return true;
+    if (href === "/admin" && pathname !== "/admin") return false;
+    return pathname === href || pathname.startsWith(href + "/");
+  };
+
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    await logout();
+    router.push("/login");
   };
 
   return (
@@ -166,10 +55,10 @@ export default function Sidebar() {
       {/* Header */}
       <div className="flex items-center justify-between gap-2 px-4 pt-5 pb-7">
         <div className="flex min-w-0 items-center gap-3">
-          <img 
-            src={brand.icon || "/logo.svg"} 
-            alt={brand.name} 
-            className="w-7 h-7 rounded-md object-contain shrink-0" 
+          <img
+            src={brand.icon || "/logo.svg"}
+            alt={brand.name}
+            className="w-7 h-7 rounded-md object-contain shrink-0"
           />
           {!collapsed && (
             <span className="truncate text-sm font-semibold tracking-tight text-white">
@@ -202,26 +91,25 @@ export default function Sidebar() {
 
       {/* Scrollable Navigation */}
       <div className="flex-1 overflow-y-auto custom-scrollbar px-3 flex flex-col gap-6">
-        
         {/* Main Navigation */}
         <div>
           {!collapsed && (
             <p className="mb-2 px-2.5 text-xs font-medium uppercase tracking-wider text-zinc-600">
-              {tNav('mainNav')}
+              {tNav("mainNav")}
             </p>
           )}
           <nav className="flex flex-col gap-0.5">
             {baseLinks
-              .filter(item => item.href !== "/earn" || brand.earnEnabled)
+              .filter((item) => item.href !== "/earn" || brand.earnEnabled)
               .map((item) => (
-              <NavButton
-                key={item.href}
-                item={item}
-                label={tNav(item.labelKey)}
-                collapsed={collapsed}
-                isActive={checkIsActive(item.href)}
-              />
-            ))}
+                <NavButton
+                  key={item.href}
+                  item={item}
+                  label={tNav(item.labelKey)}
+                  collapsed={collapsed}
+                  isActive={checkIsActive(item.href)}
+                />
+              ))}
           </nav>
         </div>
 
@@ -229,7 +117,7 @@ export default function Sidebar() {
         {!collapsed && isAdmin && (
           <div>
             <p className="mb-2 px-2.5 text-xs font-medium uppercase tracking-wider text-zinc-600">
-              {tNav('admin')}
+              {tNav("admin")}
             </p>
             <nav className="flex flex-col gap-0.5">
               {adminOtherLinks.map((item) => (
@@ -241,11 +129,9 @@ export default function Sidebar() {
                   isActive={checkIsActive(item.href)}
                 />
               ))}
-              
-              {/* Store Section */}
               <NavButton
                 item={{ href: "/admin/store", labelKey: "adminStore", icon: Store }}
-                label={tNav('adminStore')}
+                label={tNav("adminStore")}
                 collapsed={collapsed}
                 isActive={checkIsActive("/admin/store")}
               />
@@ -258,7 +144,7 @@ export default function Sidebar() {
       <div className="px-3 pt-4 border-t border-white/5">
         {!collapsed && (
           <p className="mb-2 px-2.5 text-xs font-medium uppercase tracking-wider text-zinc-600">
-            {tNav('support')}
+            {tNav("support")}
           </p>
         )}
         <nav className="flex flex-col gap-0.5">
@@ -283,10 +169,14 @@ export default function Sidebar() {
         >
           <div className="flex items-center gap-2.5 min-w-0">
             {user?.profilePicture ? (
-              <img src={user.profilePicture} alt={user.username || 'User'} className="h-8 w-8 shrink-0 rounded-lg object-cover" />
+              <img
+                src={user.profilePicture}
+                alt={user.username || "User"}
+                className="h-8 w-8 shrink-0 rounded-lg object-cover"
+              />
             ) : (
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-700 text-xs font-semibold text-white">
-                {user?.username ? user.username.substring(0, 2).toUpperCase() : 'US'}
+                {user?.username ? user.username.substring(0, 2).toUpperCase() : "US"}
               </div>
             )}
             {!collapsed && (
@@ -299,19 +189,21 @@ export default function Sidebar() {
                 ) : (
                   <>
                     <span className="truncate text-[13px] font-medium text-zinc-100 leading-tight">
-                      {user?.name || (user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'User')}
+                      {user?.name || (user?.firstName ? `${user.firstName} ${user.lastName || ""}`.trim() : "User")}
                     </span>
                     <div className="flex items-center gap-1.5 mt-0.5 pr-2">
                       <div className="flex items-center gap-1 text-[11px] font-medium leading-tight text-zinc-300">
                         <Coins size={10} strokeWidth={2} />
-                        <span>{tNav('coins', { count: user?.coins ?? 0 })}</span>
+                        <span>{tNav("coins", { count: user?.coins ?? 0 })}</span>
                       </div>
                       {user?.role && (
-                        <div className={`text-[9px] font-bold px-1.5 py-0.5 rounded-[4px] uppercase tracking-wider leading-none shrink-0 ${
-                          user.role === 'admin' 
-                            ? 'bg-orange-950/50 text-orange-500 border border-orange-500/20'
-                            : 'bg-white/5 text-zinc-400 border border-white/10'
-                        }`}>
+                        <div
+                          className={`text-[9px] font-bold px-1.5 py-0.5 rounded-[4px] uppercase tracking-wider leading-none shrink-0 ${
+                            user.role === "admin"
+                              ? "bg-orange-950/50 text-orange-500 border border-orange-500/20"
+                              : "bg-white/5 text-zinc-400 border border-white/10"
+                          }`}
+                        >
                           {user.role}
                         </div>
                       )}
@@ -322,26 +214,10 @@ export default function Sidebar() {
             )}
           </div>
           {!collapsed && (
-            <button 
+            <button
               className="p-1.5 text-zinc-500 hover:text-zinc-200 transition-colors rounded-md hover:bg-white/5 shrink-0"
-              onClick={async (e) => { 
-                e.stopPropagation();
-                try {
-                  const token = localStorage.getItem('auth_token');
-                  if (token) {
-                    await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/logout`, {
-                      method: 'POST',
-                      headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                  }
-                } catch (error) {
-                  console.error('Logout error:', error);
-                } finally {
-                  localStorage.removeItem('auth_token');
-                  router.push('/login');
-                }
-              }}
-              title={tNav('signOut')}
+              onClick={handleLogout}
+              title={tNav("signOut")}
             >
               <LogOut size={16} strokeWidth={1.75} />
             </button>

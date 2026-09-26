@@ -8,7 +8,7 @@ import { useModal } from "@/components/Modal";
 import { useToast } from "@/components/ui/ToastProvider";
 import { CredentialRow } from "./CredentialRow";
 import { PanelSkeleton } from "@/components/skeletons";
-import { usePanel } from "./hooks/usePanel";
+import { usePanel } from "@/hooks/panel";
 
 export function PanelContent() {
   const t = useTranslations("Panel");

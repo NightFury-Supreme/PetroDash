@@ -2,10 +2,11 @@ const express = require('express');
 const Location = require('../models/Location');
 const { requireAuth } = require('../middleware/auth');
 const { getCache, setCache } = require('../lib/redis');
+const AppError = require('../utils/AppError');
 
 const router = express.Router();
 
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', requireAuth, async (req, res, next) => {
     try {
         let locationsWithData = await getCache('api:locations');
         
@@ -79,8 +80,7 @@ router.get('/', requireAuth, async (req, res) => {
             return res.json(locationsWithData);
         }
     } catch (error) {
-        console.error('Error fetching locations with data:', error);
-        res.status(500).json({ error: 'Failed to fetch locations' });
+        next(error instanceof AppError ? error : new AppError('Failed to fetch locations', 500, 'ERR_LOCATIONS_FETCH_FAILED'));
     }
 });
 
