@@ -1,4 +1,6 @@
 const ticketService = require('./ticket.service');
+const User = require('../../models/User');
+const { sendMailTemplate } = require('../../lib/mail');
 const { createTicketSchema, sendTicketMessageSchema, updateTicketStatusSchema } = require('./ticket.schema');
 const { getCache, setCache, deleteCachePattern } = require('../../lib/redis');
 const { logUserActivity } = require('../../middleware/userActivity');
@@ -26,32 +28,29 @@ class TicketController {
       
       const ticket = await ticketService.createTicket(userId, data);
       
-      // Send email notification (non-blocking)
-      try {
-        const User = require('../../models/User');
-        const u = await User.findById(userId).lean();
-        if (u && u.email) {
-          const { sendMailTemplate } = require('../../lib/mail');
-          let frontendHost = process.env.FRONTEND_URL || '';
-          if (frontendHost && !frontendHost.startsWith('http')) {
-            frontendHost = `https://${frontendHost}`;
+      setImmediate(async () => {
+        try {
+          const u = await User.findById(userId).lean();
+          if (u && u.email) {
+            let frontendHost = process.env.FRONTEND_URL || '';
+            if (frontendHost && !frontendHost.startsWith('http')) {
+              frontendHost = `https://${frontendHost}`;
+            }
+            await sendMailTemplate({
+              to: u.email,
+              templateKey: 'ticketCreated',
+              data: {
+                username: u.username,
+                title: ticket.title,
+                ticketId: String(ticket._id),
+                category: String(ticket.category).charAt(0).toUpperCase() + String(ticket.category).slice(1),
+                priority: String(ticket.priority).charAt(0).toUpperCase() + String(ticket.priority).slice(1),
+                frontendUrl: frontendHost
+              }
+            });
           }
-          await sendMailTemplate({ 
-            to: u.email, 
-            templateKey: 'ticketCreated', 
-            data: { 
-              username: u.username,
-              title: ticket.title,
-              ticketId: String(ticket._id),
-              category: String(ticket.category).charAt(0).toUpperCase() + String(ticket.category).slice(1),
-              priority: String(ticket.priority).charAt(0).toUpperCase() + String(ticket.priority).slice(1),
-              frontendUrl: frontendHost
-            } 
-          });
-        }
-      } catch (_) {}
-
-      // Cache invalidation
+        } catch (_) {}
+      });
       await deleteCachePattern(`tickets:mine:${userId}:*`);
       await deleteCachePattern('tickets:admin:list:*');
       await deleteCachePattern('tickets:admin:counts:*');
@@ -195,7 +194,6 @@ class TicketController {
       const data = sendTicketMessageSchema.parse(req.body);
       const result = await ticketService.sendTicketMessage(ticketId, userId, data.body);
 
-      // Cache invalidation
       await deleteCachePattern(`tickets:mine:${userId}:*`);
       await deleteCachePattern('tickets:admin:list:*');
       await deleteCachePattern('tickets:admin:counts:*');
@@ -225,7 +223,6 @@ class TicketController {
       const data = updateTicketStatusSchema.parse(req.body);
       const result = await ticketService.updateTicketStatus(ticketId, userId, data.action);
 
-      // Cache invalidation
       await deleteCachePattern(`tickets:mine:${userId}:*`);
       await deleteCachePattern('tickets:admin:list:*');
       await deleteCachePattern('tickets:admin:counts:*');

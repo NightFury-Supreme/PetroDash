@@ -4,7 +4,7 @@ import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { Server, Loader2 } from "lucide-react";
 import { Drawer } from "@/components/ui/Drawer";
 import { CreateServerDrawerSkeleton } from "./CreateServerDrawerSkeleton";
-import { useServerCreate, CreateFormData } from "@/hooks/useServerCreate";
+import { useServerCreate, CreateFormData } from "@/hooks/server";
 import { useToast } from "@/components/ui/ToastProvider";
 import { useTranslations } from "next-intl";
 import {
@@ -15,13 +15,6 @@ import { CreateServerResourcesStep } from "./steps/CreateServerResourcesStep";
 import { CreateServerSoftwareStep } from "./steps/CreateServerSoftwareStep";
 import { CreateServerLocationStep } from "./steps/CreateServerLocationStep";
 import { CreateServerSummaryStep } from "./steps/CreateServerSummaryStep";
-
-const STEPS: StepItem[] = [
-  { id: "resources", label: "Limits" },
-  { id: "software", label: "Software" },
-  { id: "location", label: "Location" },
-  { id: "summary", label: "Summary" },
-];
 
 interface CreateServerDrawerProps {
   onClose: () => void;
@@ -34,7 +27,15 @@ export function CreateServerDrawer({ onClose, onUpdate }: CreateServerDrawerProp
   const tCommon = useTranslations("Common");
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
+  const STEPS: StepItem[] = useMemo(() => [
+    { id: "resources", label: t("resourceLimits") },
+    { id: "software", label: t("software") },
+    { id: "location", label: t("location") },
+    { id: "summary", label: t("summary") },
+  ], [t]);
+
   const currentStep = STEPS[currentStepIndex].id;
+
 
   const {
     loading,

@@ -164,14 +164,14 @@ export function useServerCreate() {
 
   const clientMinViolations: Violations = useMemo(() => {
     const v: Violations = {};
-    if (form.diskMb < minLimits.diskMb) v.diskMb = `Minimum disk is ${minLimits.diskMb} MB`;
-    if (form.memoryMb < minLimits.memoryMb) v.memoryMb = `Minimum memory is ${minLimits.memoryMb} MB`;
-    if (form.cpuPercent < minLimits.cpuPercent) v.cpuPercent = `Minimum CPU is ${minLimits.cpuPercent}%`;
-    if (form.backups < minLimits.backups) v.backups = `Minimum backups is ${minLimits.backups}`;
-    if (form.databases < minLimits.databases) v.databases = `Minimum databases is ${minLimits.databases}`;
-    if (form.allocations < minLimits.allocations) v.allocations = `Minimum allocations is ${minLimits.allocations}`;
+    if (form.diskMb < minLimits.diskMb) v.diskMb = tError('minDisk', { value: minLimits.diskMb });
+    if (form.memoryMb < minLimits.memoryMb) v.memoryMb = tError('minMemory', { value: minLimits.memoryMb });
+    if (form.cpuPercent < minLimits.cpuPercent) v.cpuPercent = tError('minCpu', { value: minLimits.cpuPercent });
+    if (form.backups < minLimits.backups) v.backups = tError('minBackups', { value: minLimits.backups });
+    if (form.databases < minLimits.databases) v.databases = tError('minDatabases', { value: minLimits.databases });
+    if (form.allocations < minLimits.allocations) v.allocations = tError('minAllocations', { value: minLimits.allocations });
     return v;
-  }, [form, minLimits.allocations, minLimits.backups, minLimits.cpuPercent, minLimits.databases, minLimits.diskMb, minLimits.memoryMb]);
+  }, [form, minLimits.allocations, minLimits.backups, minLimits.cpuPercent, minLimits.databases, minLimits.diskMb, minLimits.memoryMb, tError]);
 
   const mergedViolations: Violations = useMemo(() => ({
     ...violations,

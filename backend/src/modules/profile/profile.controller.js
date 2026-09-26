@@ -33,6 +33,8 @@ exports.initiateEmailChange = async (req, res, next) => {
       return res.json({ ok: true, email: result.user.email });
     }
     
+    await logUserActivity(req, 'auth.email.change_requested', { newEmail: parsed.data.email });
+    await writeAudit(req, 'auth.email.change_requested', 'user_profile', req.user.sub, { newEmail: parsed.data.email });
     res.json({ ok: true, requiresVerification: true, message: 'Verification code sent to new email' });
   } catch (err) {
     next(err);
@@ -76,6 +78,8 @@ exports.updatePassword = async (req, res, next) => {
 exports.setup2FA = async (req, res, next) => {
   try {
     const result = await profileService.setup2FA(req.user.sub);
+    await logUserActivity(req, 'auth.2fa.setup_initiated');
+    await writeAudit(req, 'auth.2fa.setup_initiated', 'user_profile', req.user.sub);
     res.json({ ok: true, secret: result.secret, qr: result.qr });
   } catch (err) {
     next(err);

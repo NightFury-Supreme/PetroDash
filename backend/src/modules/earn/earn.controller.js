@@ -39,8 +39,8 @@ class EarnController {
 
       const result = await earnService.startSession(userId, method, parsed.data.targetUrl);
 
-      await logUserActivity(req, 'earn.start', `Started earn session via ${method}`);
-      writeAudit(req, 'earn.start', 'earn_session', result.sessionId, { method });
+      await logUserActivity(req, 'earn.start', { method });
+      await writeAudit(req, 'earn.start', 'earn_session', result.sessionId, { method });
 
       return res.json(result);
     } catch (error) {
@@ -61,13 +61,14 @@ class EarnController {
 
       const result = await earnService.claimSession(userId, method, parsed.data);
 
-      await logUserActivity(req, 'earn.claim', `Claimed ${result.rewardCoins} coins via ${method}`);
-      writeAudit(req, 'earn.claim', 'earn_session', result.sessionId, {
+      const metadata = {
         method,
         rewardCoins: result.rewardCoins,
         coinsBefore: result.coinsBefore,
         coinsAfter: result.coinsAfter,
-      });
+      };
+      await logUserActivity(req, 'earn.claim', metadata);
+      await writeAudit(req, 'earn.claim', 'earn_session', result.sessionId, metadata);
 
       return res.json(result);
     } catch (error) {

@@ -1,7 +1,5 @@
 /**
  * Server Controller Layer
- * Handles HTTP requests, validation wrapping, and delegates to services.
- * Implements ISO 27001 audit logging and standardized error handling.
  */
 
 const serverService = require('./server.service');
@@ -83,7 +81,7 @@ class ServerController {
         }
       });
 
-      writeAudit(req, 'server.create', 'server', created._id.toString(), {
+      await writeAudit(req, 'server.create', 'server', created._id.toString(), {
         serverName: created.name,
         eggId: created.eggId,
         locationId: created.locationId,
@@ -100,9 +98,7 @@ class ServerController {
         server: created, 
         panel: panelServer,
         queued: isQueued,
-        message: isQueued 
-          ? 'Node is currently full or offline. Your server has been added to the queue and will be created automatically when resources become available.' 
-          : 'Server created successfully.'
+        code: isQueued ? 'SERVER_QUEUED' : 'SERVER_CREATED'
       });
     } catch (error) {
       next(error);
@@ -120,7 +116,7 @@ class ServerController {
       const serverId = req.params.id;
       const { server, changes, user } = await serverMutationService.updateServer(userId, serverId, parsed.data);
 
-      writeAudit(req, 'server.update', 'server', server._id.toString(), { 
+      await writeAudit(req, 'server.update', 'server', server._id.toString(), { 
         changes,
         serverId: server._id,
         serverName: server.name,
@@ -135,7 +131,6 @@ class ServerController {
 
       return res.json({ 
         server,
-        message: 'Server updated successfully',
         changes: Object.keys(changes).length > 0 ? changes : undefined
       });
     } catch (error) {
@@ -151,9 +146,9 @@ class ServerController {
       const { server } = await serverMutationService.deleteServer(userId, serverId, reqHost);
 
       await logUserActivity(req, 'server.delete', { serverId: server._id, name: server.name });
-      writeAudit(req, 'server.delete', 'server', server._id.toString(), { name: server.name });
+      await writeAudit(req, 'server.delete', 'server', server._id.toString(), { name: server.name });
 
-      return res.json({ ok: true, message: 'Server deleted successfully.' });
+      return res.json({ ok: true });
     } catch (error) {
       next(error);
     }

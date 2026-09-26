@@ -3,7 +3,7 @@
 import React from "react";
 import { useTranslations } from "next-intl";
 import { Box, Server, Crown, Check } from "lucide-react";
-import type { EggOption } from "@/hooks/useServerCreate";
+import type { EggOption } from "@/hooks/server";
 
 interface CreateServerSoftwareStepProps {
   groupedEggs: Record<string, EggOption[]>;

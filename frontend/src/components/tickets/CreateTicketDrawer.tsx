@@ -172,14 +172,14 @@ export function CreateTicketDrawer({
                           <button
                             key={p._id}
                             onClick={() =>
-                              insertMentionPill("invoice", p._id, `Invoice #${p._id.slice(-6).toUpperCase()}`)
+                              insertMentionPill("invoice", p._id, `${t("invoiceLabel")}${p._id.slice(-6).toUpperCase()}`)
                             }
                             className="w-full flex items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-white/5 transition-colors"
                           >
                             <FileText size={14} className="text-emerald-400" />
                             <div className="flex flex-col">
                               <span className="text-xs font-medium text-white/80">
-                                Invoice #{p._id.slice(-6).toUpperCase()}
+                                {t("invoiceLabel")}{p._id.slice(-6).toUpperCase()}
                               </span>
                               <span className="text-[10px] text-white/40">
                                 {p.amount} {currency}

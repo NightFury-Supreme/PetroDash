@@ -11,4 +11,3 @@ export * from './settings';
 export * from './shop';
 export * from './tickets';
 export * from './users';
-export * from './useAdminServerEdit';

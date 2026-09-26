@@ -1,38 +1,14 @@
+/*
+  User Plans Router
+  Wires user plan endpoints to the user plans controller.
+*/
+
 const express = require('express');
 const { requireAuth } = require('../middleware/auth');
-const UserPlan = require('../models/UserPlan');
+const controller = require('../modules/userPlans/userPlans.controller');
 
 const router = express.Router();
 
-const { getCache, setCache } = require('../lib/redis');
-
-const AppError = require('../utils/AppError');
-
-// GET /api/user/plans - list active subscriptions of the authenticated user
-router.get('/', requireAuth, async (req, res, next) => {
-  try {
-    const cacheKey = `user:${req.user.sub}:plans`;
-    const cached = await getCache(cacheKey);
-    if (cached) return res.json(cached);
-
-    const listRaw = await UserPlan.find({ userId: req.user.sub, status: 'active' })
-      .populate('planId', 'name')
-      .sort({ endsAt: 1 })
-      .lean();
-    const list = listRaw.map((p) => {
-      // eslint-disable-next-line unused-imports/no-unused-vars
-      const { isRenewable, ...rest } = p;
-      return rest;
-    });
-    
-    await setCache(cacheKey, list, 30);
-    res.json(list);
-  } catch (e) {
-    next(e instanceof AppError ? e : AppError.badRequest(e.message));
-  }
-});
+router.get('/', requireAuth, controller.getActivePlans.bind(controller));
 
 module.exports = router;
-
-
-

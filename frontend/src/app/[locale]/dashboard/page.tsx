@@ -19,31 +19,22 @@ function DashboardContentWrapper() {
   const t = useTranslations('Dashboard');
   const tShop = useTranslations('Shop');
 
-  // Initialize
   useEffect(() => {
     setMounted(true);
-    
-    // Set minimum loading time to prevent flash
     const timer = setTimeout(() => setMinLoadingTime(false), 500);
-    
     return () => clearTimeout(timer);
-  }, []); // Remove loadDashboardData from dependency - it's handled in the hook
+  }, []);
 
-  // Handle email verification success
   useEffect(() => {
     const verified = searchParams.get('verified');
-    
     if (verified === '1') {
-      // Clear the URL parameter immediately
       const url = new URL(window.location.href);
       url.searchParams.delete('verified');
       window.history.replaceState({}, '', url.toString());
-      
       showSuccess(t('emailVerifiedSuccess'));
     }
   }, [searchParams, showSuccess, t]);
 
-  // Handle error toast
   useEffect(() => {
     if (error) {
       showError(error);
@@ -65,8 +56,8 @@ function DashboardContentWrapper() {
       <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
         <ErrorState
           icon={<LayoutDashboard strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
-          kicker={tShop('loadError', { defaultMessage: 'Load Error' })}
-          title={t('failedToLoadDashboard', { defaultMessage: 'Failed to Load Dashboard' })}
+          kicker={tShop('loadError')}
+          title={t('failedToLoadDashboard')}
           errorString={error}
           description={<ErrorDescription error={error} topic="Dashboard" />}
           buttons={
@@ -76,7 +67,7 @@ function DashboardContentWrapper() {
                 className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
               >
                 <RefreshCw className="w-[14px] h-[14px]" />
-                {tShop('retry', { defaultMessage: 'Retry' })}
+                {tShop('retry')}
               </button>
               <DashboardButton variant="secondary" />
             </>

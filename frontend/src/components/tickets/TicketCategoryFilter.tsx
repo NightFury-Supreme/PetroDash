@@ -16,7 +16,7 @@ export function TicketCategoryFilter({ categories, value, onChange }: TicketCate
   
   const uniqueCats = Array.from(new Set(categories));
   const options = [
-    { label: t('allCategories') || 'All Categories', value: '' },
+    { label: t('allCategories'), value: '' },
     ...uniqueCats.map(c => ({
       label: c, 
       value: c 
@@ -30,7 +30,7 @@ export function TicketCategoryFilter({ categories, value, onChange }: TicketCate
         onChange={onChange}
         options={options}
         renderButtonContent={() => {
-          let displayLabel = t('allCategories') || 'All Categories';
+          let displayLabel = t('allCategories');
           if (value) {
             displayLabel = value;
           }

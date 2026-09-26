@@ -2,35 +2,30 @@ const express = require('express');
 const mongoose = require('mongoose');
 const { requireAuth } = require('../middleware/auth');
 const { createRateLimiter } = require('../middleware/rateLimit');
+const { getCache, setCache } = require('../lib/redis');
+const { generateInvoicePdfBuffer } = require('../lib/invoicePdf');
 const Payment = require('../models/Payment');
 const Plan = require('../models/Plan');
-
 const User = require('../models/User');
 const { getSettings } = require('../lib/settings');
 const AppError = require('../utils/AppError');
 
 const router = express.Router();
 
-// GET /api/payments - list my completed payments (most recent first)
 router.get('/', requireAuth, async (req, res, next) => {
   try {
     const paginate = String(req.query.paginate || '').toLowerCase() === 'true';
     let page = Math.max(1, parseInt(String(req.query.page || '1')) || 1);
     let pageSize = Math.max(1, Math.min(100, parseInt(String(req.query.pageSize || '20')) || 20));
 
-    const { getCache, setCache } = require('../lib/redis');
     const cacheKey = `payments:mine:${req.user.sub}:${paginate ? `p${page}:s${pageSize}` : 'all'}`;
-
     const cached = await getCache(cacheKey);
-    if (cached) {
-      return res.json(cached);
-    }
+    if (cached) return res.json(cached);
 
     let userId;
     try { userId = new mongoose.Types.ObjectId(String(req.user.sub)); } catch { userId = req.user.sub; }
 
-    // Only show actionable or completed payments to the user - hide abandoned checkouts (CREATED/VOIDED)
-    const baseQuery = { 
+    const baseQuery = {
       userId,
       status: { $in: ['COMPLETED', 'FAILED', 'REFUNDED'] }
     };
@@ -61,7 +56,6 @@ router.get('/', requireAuth, async (req, res, next) => {
     }));
 
     const responsePayload = paginate ? { data: out, meta: { total, page, pageSize } } : out;
-    // Non-blocking cache write
     setCache(cacheKey, responsePayload, 30).catch(() => {});
 
     res.json(responsePayload);
@@ -70,26 +64,22 @@ router.get('/', requireAuth, async (req, res, next) => {
   }
 });
 
-// GET /api/payments/:id/invoice - PDF invoice download (only for COMPLETED)
 router.get('/:id/invoice', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res, next) => {
   try {
     const p = await Payment.findOne({ _id: String(req.params.id), userId: req.user.sub, status: 'COMPLETED' }).lean();
-    if (!p) throw AppError.notFound('Invoice not found');
+    if (!p) throw AppError.notFound('Invoice not found', 'ERR_INVOICE_NOT_FOUND');
     const plan = await Plan.findById(p.planId).lean();
     const user = await User.findById(p.userId).lean();
-    if (!user) throw AppError.notFound('User not found');
+    if (!user) throw AppError.notFound('User not found', 'ERR_USER_NOT_FOUND');
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="invoice-${p._id}.pdf"`);
 
     const settings = await getSettings();
-    const { generateInvoicePdfBuffer } = require('../lib/invoicePdf');
-    
-    let frontendHost = process.env.FRONTEND_URL || req.get('host');
+    const frontendHost = process.env.FRONTEND_URL || req.get('host');
     const protocol = req.protocol || 'https';
-    
+
     const pdfBuffer = await generateInvoicePdfBuffer(p, plan, user, settings, frontendHost, protocol);
-    
     res.send(pdfBuffer);
   } catch (error) {
     next(error instanceof AppError ? error : AppError.badRequest(error.message));

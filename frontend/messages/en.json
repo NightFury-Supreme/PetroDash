@@ -498,7 +498,13 @@
     "enter8CharBackupCode": "Enter your 8-character backup code.",
     "enter6DigitAuthCode": "Enter your 6-digit authenticator code.",
     "8CharBackupCodeEntered": "8-character backup code entered.",
-    "6DigitCodeEntered": "6-digit code entered."
+    "6DigitCodeEntered": "6-digit code entered.",
+    "minDisk": "Minimum disk is {value} MB",
+    "minMemory": "Minimum memory is {value} MB",
+    "minCpu": "Minimum CPU is {value}%",
+    "minBackups": "Minimum backups is {value}",
+    "minDatabases": "Minimum databases is {value}",
+    "minAllocations": "Minimum allocations is {value}"
   },
   "Gift": {
     "title": "Gift",
@@ -823,6 +829,7 @@
     "noTicketsFound": "No tickets found",
     "noTicketsDesc": "You haven't opened any tickets in this category yet.",
     "ticketId": "Ticket #",
+    "invoiceLabel": "Invoice #",
     "allTickets": "All Tickets",
     "open": "Open",
     "resolved": "Resolved",
@@ -929,6 +936,10 @@
     "validUntil": "Valid Until",
     "referralCode": "Referral Code",
     "failed": "FAILED",
+    "critical": "CRITICAL",
+    "error": "ERROR",
+    "warning": "WARN",
+    "info": "INFO",
     "system": "System",
     "emailPlaceholder": "you@example.com",
     "passwordPlaceholder": "••••••••",

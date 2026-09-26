@@ -3,7 +3,7 @@
 import React from "react";
 import { useTranslations } from "next-intl";
 import { RESOURCE_FIELDS, ResourceInputCard } from "../ResourceInputCard";
-import type { CreateFormData } from "@/hooks/useServerCreate";
+import type { CreateFormData } from "@/hooks/server";
 
 interface CreateServerResourcesStepProps {
   form: CreateFormData;

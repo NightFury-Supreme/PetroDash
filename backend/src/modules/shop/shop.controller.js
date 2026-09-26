@@ -27,7 +27,6 @@ class ShopController {
    */
   async purchaseItem(req, res, next) {
     try {
-      // 1. Input Validation
       const parsed = purchaseSchema.safeParse(req.body);
       if (!parsed.success) {
         return next(new AppError('Invalid payload', 400, 'ERR_INVALID_PAYLOAD', parsed.error.flatten()));
@@ -36,10 +35,8 @@ class ShopController {
       const { itemKey, quantity } = parsed.data;
       const userId = req.user.sub;
 
-      // 2. Execute Business Logic
       const { updatedUser, item, totalPrice, changes } = await shopService.purchaseItem(userId, itemKey, quantity);
 
-      // 3. Security Auditing (ISO 27001 / SOC2 compliance logging)
       await writeAudit(req, 'shop.purchase', 'shop', item._id.toString(), {
         itemKey,
         quantity,
@@ -55,7 +52,6 @@ class ShopController {
         changes
       });
 
-      // 4. Return Output
       return res.json({ 
         ok: true, 
         coins: updatedUser.coins, 
@@ -63,7 +59,6 @@ class ShopController {
       });
 
     } catch (error) {
-      // Handle domain-specific errors
       if (error.message === 'INVALID_ITEM_KEY') {
         return next(new AppError('Invalid item key', 400, 'ERR_SHOP_INVALID_ITEM'));
       }
@@ -78,7 +73,6 @@ class ShopController {
         return next(new AppError('Insufficient coins', 400, 'ERR_SHOP_INSUFFICIENT_COINS'));
       }
 
-      // Propagate unexpected errors
       next(error);
     }
   }

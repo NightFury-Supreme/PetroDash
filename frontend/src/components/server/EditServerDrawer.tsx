@@ -6,7 +6,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { EditServerDrawerSkeleton } from "./EditServerDrawerSkeleton";
-import { useServerEdit } from "@/hooks/useServerEdit";
+import { useServerEdit } from "@/hooks/server";
 import { Drawer } from "@/components/ui/Drawer";
 import { RESOURCE_FIELDS, ResourceInputCard, ResourceKey } from "./ResourceInputCard";
 import { useToast } from "@/components/ui/ToastProvider";

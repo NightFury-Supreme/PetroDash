@@ -30,19 +30,19 @@ export function StatusBadge({ log }: { log: LogEntry }) {
 
   if (log.success !== undefined) {
     return log.success
-      ? badge({ dot: 'bg-emerald-500', text: 'text-emerald-400', border: 'border-emerald-500/20', bg: 'bg-emerald-500/[0.06]' }, tCommon('success') || 'SUCCESS')
-      : badge({ dot: 'bg-red-500',     text: 'text-red-400',     border: 'border-red-500/20',     bg: 'bg-red-500/[0.06]'     }, tCommon('failed') || 'FAILED');
+      ? badge({ dot: 'bg-emerald-500', text: 'text-emerald-400', border: 'border-emerald-500/20', bg: 'bg-emerald-500/[0.06]' }, tCommon('success'))
+      : badge({ dot: 'bg-red-500',     text: 'text-red-400',     border: 'border-red-500/20',     bg: 'bg-red-500/[0.06]'     }, tCommon('failed'));
   }
 
   switch (log.severity) {
-    case 'CRITICAL': return badge({ dot: 'bg-red-500',    text: 'text-red-400',    border: 'border-red-500/20',    bg: 'bg-red-500/[0.06]',    pulse: true }, tCommon('critical') || 'CRITICAL');
-    case 'ERROR':    return badge({ dot: 'bg-orange-500', text: 'text-orange-400', border: 'border-orange-500/20', bg: 'bg-orange-500/[0.06]' }, tCommon('error') || 'ERROR');
-    case 'WARNING':  return badge({ dot: 'bg-yellow-500', text: 'text-yellow-400', border: 'border-yellow-500/20', bg: 'bg-yellow-500/[0.06]' }, tCommon('warning') || 'WARN');
-    case 'error':    return badge({ dot: 'bg-red-500',    text: 'text-red-400',    border: 'border-red-500/20',    bg: 'bg-red-500/[0.06]' }, tCommon('error') || 'ERROR');
-    case 'warning':  return badge({ dot: 'bg-amber-500',  text: 'text-amber-400',  border: 'border-amber-500/20',  bg: 'bg-amber-500/[0.06]' }, tCommon('warning') || 'WARNING');
+    case 'CRITICAL': return badge({ dot: 'bg-red-500',    text: 'text-red-400',    border: 'border-red-500/20',    bg: 'bg-red-500/[0.06]',    pulse: true }, tCommon('critical'));
+    case 'ERROR':    return badge({ dot: 'bg-orange-500', text: 'text-orange-400', border: 'border-orange-500/20', bg: 'bg-orange-500/[0.06]' }, tCommon('error'));
+    case 'WARNING':  return badge({ dot: 'bg-yellow-500', text: 'text-yellow-400', border: 'border-yellow-500/20', bg: 'bg-yellow-500/[0.06]' }, tCommon('warning'));
+    case 'error':    return badge({ dot: 'bg-red-500',    text: 'text-red-400',    border: 'border-red-500/20',    bg: 'bg-red-500/[0.06]' }, tCommon('error'));
+    case 'warning':  return badge({ dot: 'bg-amber-500',  text: 'text-amber-400',  border: 'border-amber-500/20',  bg: 'bg-amber-500/[0.06]' }, tCommon('warning'));
     case 'INFO':
     case 'info':
-    default:         return badge({ dot: 'bg-sky-500',    text: 'text-sky-400',    border: 'border-sky-500/20',    bg: 'bg-sky-500/[0.06]' }, tCommon('info') || 'INFO');
+    default:         return badge({ dot: 'bg-sky-500',    text: 'text-sky-400',    border: 'border-sky-500/20',    bg: 'bg-sky-500/[0.06]' }, tCommon('info'));
   }
 }
 
@@ -104,11 +104,11 @@ export function ActionCell({ log, variant, meta, tCommon }: { log: LogEntry; var
   const ctxKey = CONTEXT_META_KEYS.find(k => meta[k]);
   
   let translatedCtxLabel = ctxKey ? CONTEXT_LABELS[ctxKey] : null;
-  if (ctxKey === 'serverName') translatedCtxLabel = tCommon('server') || 'Server';
-  if (ctxKey === 'planName') translatedCtxLabel = tCommon('plan') || 'Plan';
-  if (ctxKey === 'subject') translatedCtxLabel = tCommon('ticket') || 'Ticket';
-  if (ctxKey === 'itemName') translatedCtxLabel = tCommon('item') || 'Item';
-  if (ctxKey === 'code') translatedCtxLabel = tCommon('code') || 'Code';
+  if (ctxKey === 'serverName') translatedCtxLabel = tCommon('server');
+  if (ctxKey === 'planName') translatedCtxLabel = tCommon('plan');
+  if (ctxKey === 'subject') translatedCtxLabel = tCommon('ticket');
+  if (ctxKey === 'itemName') translatedCtxLabel = tCommon('item');
+  if (ctxKey === 'code') translatedCtxLabel = tCommon('code');
 
   const ctx = ctxKey ? `${translatedCtxLabel}: ${meta[ctxKey]}` : null;
 
@@ -142,16 +142,16 @@ export function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-14 gap-y-6 w-full min-w-0">
 
         <div>
-          <SectionHeading>{t('requestInformation') || 'Request Information'}</SectionHeading>
-          <InfoRow label={t('requestId') || "Request ID"} value={log._id} mono muted />
-          <InfoRow label={t('sessionId') || "Session ID"} value={log.sessionId ?? meta.sessionId} mono muted />
-          <InfoRow label={t('ipAddress') || "IP Address"} value={ip ?? '-'} mono />
-          {log.category    && <InfoRow label={t('category') || "Category"} value={getCategoryLabel(log.category)} />}
-          {log.method      && <InfoRow label={t('method') || "Method"} value={log.method} />}
-          {log.path        && <InfoRow label={t('path') || "Path"} value={log.path} mono muted />}
+          <SectionHeading>{t('requestInformation')}</SectionHeading>
+          <InfoRow label={t('requestId')} value={log._id} mono muted />
+          <InfoRow label={t('sessionId')} value={log.sessionId ?? meta.sessionId} mono muted />
+          <InfoRow label={t('ipAddress')} value={ip ?? '-'} mono />
+          {log.category    && <InfoRow label={t('category')} value={getCategoryLabel(log.category)} />}
+          {log.method      && <InfoRow label={t('method')} value={log.method} />}
+          {log.path        && <InfoRow label={t('path')} value={log.path} mono muted />}
           {variant === 'admin' && log.resourceType && (
             <InfoRow
-              label={log.resourceType === 'user' ? (t('targetUser') || 'Target User') : log.resourceType === 'server' ? (t('targetServer') || 'Target Server') : log.resourceType === 'ticket' ? (t('targetTicket') || 'Target Ticket') : (t('resource') || 'Resource')}
+              label={log.resourceType === 'user' ? t('targetUser') : log.resourceType === 'server' ? t('targetServer') : log.resourceType === 'ticket' ? t('targetTicket') : t('resource')}
               value={log.resourceId ? (meta.targetName ? `${meta.targetName} (${log.resourceId})` : log.resourceId) : log.resourceType}
               mono
               muted
@@ -159,7 +159,7 @@ export function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: 
           )}
           {statusCode != null && (
             <div className="flex justify-between items-start gap-4 py-[7px] border-b border-white/[0.04] last:border-0">
-              <span className="text-[9px] uppercase tracking-[0.1em] text-white/45 shrink-0 pt-px">{t('statusCode') || "Status Code"}</span>
+              <span className="text-[9px] uppercase tracking-[0.1em] text-white/45 shrink-0 pt-px">{t('statusCode')}</span>
               <span className={`font-mono text-[11px] ${statusCode >= 400 ? 'text-red-400' : 'text-emerald-400'}`}>
                 {statusCode}
               </span>
@@ -170,25 +170,25 @@ export function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: 
         <div className="space-y-5 min-w-0">
           {hasChanges && (
             <div>
-              <SectionHeading>{t('valueChanges') || "Value Changes"}</SectionHeading>
+              <SectionHeading>{t('valueChanges')}</SectionHeading>
               <DiffViewer data={meta.changes as Record<string, unknown>} tCommon={tCommon} />
             </div>
           )}
           {hasChangedLegacy && (
             <div>
-              <SectionHeading>{t('changed') || "Changed"}</SectionHeading>
+              <SectionHeading>{t('changed')}</SectionHeading>
               <DiffViewer data={meta.changed as Record<string, unknown>} tCommon={tCommon} />
             </div>
           )}
           {hasCreated && (
             <div>
-              <SectionHeading>{t('created') || "Created"}</SectionHeading>
+              <SectionHeading>{t('created')}</SectionHeading>
               <CreatedViewer data={meta.created as Record<string, unknown>} tCommon={tCommon} />
             </div>
           )}
           {variant === 'admin' && hasRawMeta && (
             <div>
-              <SectionHeading>{t('additionalInfo') || "Additional Info"}</SectionHeading>
+              <SectionHeading>{t('additionalInfo')}</SectionHeading>
               <MetaViewer data={rawMeta} tCommon={tCommon} />
             </div>
           )}

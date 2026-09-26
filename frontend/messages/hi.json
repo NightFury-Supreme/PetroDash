@@ -498,7 +498,13 @@
     "enter8CharBackupCode": "अपना 8-वर्ण वाला बैकअप कोड दर्ज करें।",
     "enter6DigitAuthCode": "अपना 6-अंकीय प्रमाणक कोड दर्ज करें।",
     "8CharBackupCodeEntered": "8-वर्ण बैकअप कोड दर्ज किया गया।",
-    "6DigitCodeEntered": "6-अंकीय कोड दर्ज किया गया।"
+    "6DigitCodeEntered": "6-अंकीय कोड दर्ज किया गया।",
+    "minDisk": "न्यूनतम डिस्क {value} MB है",
+    "minMemory": "न्यूनतम मेमोरी {value} MB है",
+    "minCpu": "न्यूनतम CPU {value}% है",
+    "minBackups": "न्यूनतम बैकअप {value} है",
+    "minDatabases": "न्यूनतम डेटाबेस {value} है",
+    "minAllocations": "न्यूनतम आवंटन {value} है"
   },
   "Gift": {
     "title": "उपहार",
@@ -823,6 +829,7 @@
     "noTicketsFound": "कोई टिकट नहीं मिला",
     "noTicketsDesc": "आपने अभी तक इस श्रेणी में कोई टिकट नहीं खोला है।",
     "ticketId": "टिकट सं.",
+    "invoiceLabel": "चालान #",
     "allTickets": "सभी टिकट",
     "open": "खुला है",
     "resolved": "समाधान हो गया",
@@ -929,6 +936,10 @@
     "validUntil": "तक वैध",
     "referralCode": "रेफरल कोड",
     "failed": "विफल",
+    "critical": "गंभीर",
+    "error": "त्रुटि",
+    "warning": "चेतावनी",
+    "info": "सूचना",
     "system": "प्रणाली",
     "emailPlaceholder": "you@example.com",
     "passwordPlaceholder": "••••••••",

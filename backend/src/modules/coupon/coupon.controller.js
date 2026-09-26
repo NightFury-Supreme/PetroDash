@@ -37,8 +37,7 @@ class CouponController {
         return next(new AppError(knownError.message, knownError.status, error.message));
       }
 
-      console.error('Coupon validation error:', error);
-      next(new AppError('Failed to validate coupon', 500, 'ERR_INTERNAL_SERVER'));
+      next(AppError.internal('Failed to validate coupon', 'ERR_INTERNAL_SERVER'));
     }
   }
 }

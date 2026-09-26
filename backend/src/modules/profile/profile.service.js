@@ -40,9 +40,7 @@ class ProfileService {
       } catch {
         try {
           await PendingUpdate.create({ pterodactylUserId: user.pterodactylUserId, payload: JSON.stringify(payload) });
-        } catch (queueErr) {
-          console.error('Failed to queue Pterodactyl update:', queueErr.message);
-        }
+        } catch (_) {}
       }
     }
     
@@ -86,7 +84,7 @@ class ProfileService {
         to: oldEmail,
         templateKey: 'emailChanged',
         data: { username: user.username, newEmail: user.email, siteName: s?.siteName || 'PteroDash' }
-      }).catch(e => console.error(e));
+      }).catch(() => {});
       
       if (user.pterodactylUserId) {
         const payload = { email: user.email, username: user.username, first_name: user.firstName, last_name: user.lastName };
@@ -268,15 +266,13 @@ class ProfileService {
     for (const server of servers) {
       try {
         if (server.pterodactylServerId) await deletePanelServer(server.pterodactylServerId);
-      } catch (err) {
-        console.error('Failed to delete server from panel during account deletion:', err.message);
-      }
+      } catch (_) {}
       await Server.deleteOne({ _id: server._id });
     }
     
     if (user.pterodactylUserId) {
       try { await deletePanelUser(user.pterodactylUserId); }
-      catch (err) { console.error('Failed to delete user from panel:', err.message); }
+      catch (_) {}
     }
     
     await User.deleteOne({ _id: user._id });

@@ -48,11 +48,11 @@ export function TicketNavSidebar({
 
         {onOpenSettings && (
           <div>
-            <p className="mb-3 text-[11px] font-medium uppercase tracking-widest text-[#555]">Management</p>
+            <p className="mb-3 text-[11px] font-medium uppercase tracking-widest text-[#555]">{t('management')}</p>
             <nav className="space-y-0.5 pr-1">
               <NavItem 
                 icon={() => <i className="fas fa-cog text-[13px] text-inherit" />} 
-                label="Settings" 
+                label={t('ticketSettings')} 
                 count={null} 
                 active={false} 
                 loading={false}

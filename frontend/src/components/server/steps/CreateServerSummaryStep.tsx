@@ -13,7 +13,7 @@ import {
   Archive,
   Network,
 } from "lucide-react";
-import type { CreateFormData, EggOption, LocationOption } from "@/hooks/useServerCreate";
+import type { CreateFormData, EggOption, LocationOption } from "@/hooks/server";
 
 interface CreateServerSummaryStepProps {
   form: CreateFormData;

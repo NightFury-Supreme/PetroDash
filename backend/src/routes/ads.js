@@ -1,49 +1,33 @@
 const express = require('express');
 const { getSettings } = require('../lib/settings');
 const { createRateLimiter } = require('../middleware/rateLimit');
+const { getCache, setCache } = require('../lib/redis');
+const AppError = require('../utils/AppError');
 
 const router = express.Router();
 
-// Rate limiting for ads endpoint - increased to handle multiple ad components per page
-const adsRateLimiter = createRateLimiter(500, 15 * 60 * 1000); // 500 requests per 15 minutes
+const adsRateLimiter = createRateLimiter(500, 15 * 60 * 1000);
 router.use(adsRateLimiter);
 
-const AppError = require('../utils/AppError');
+const DEFAULT_ADS = {
+  enabled: false,
+  publisherId: '',
+  adSlots: { header: '', sidebar: '', footer: '', content: '', mobile: '' },
+  adTypes: { display: true, text: true, link: true, inFeed: false, inArticle: false, matchedContent: false }
+};
 
-// GET /api/ads - Public endpoint for AdSense settings
 router.get('/', async (req, res, next) => {
   try {
-    const { getCache, setCache } = require('../lib/redis');
     const cached = await getCache('api:ads');
     if (cached) return res.json(cached);
 
     const settings = await getSettings();
-    
+
     if (!settings || !settings.adsense) {
-      const defaultAds = {
-        enabled: false,
-        publisherId: '',
-        adSlots: {
-          header: '',
-          sidebar: '',
-          footer: '',
-          content: '',
-          mobile: ''
-        },
-        adTypes: {
-          display: true,
-          text: true,
-          link: true,
-          inFeed: false,
-          inArticle: false,
-          matchedContent: false
-        }
-      };
-      await setCache('api:ads', defaultAds, 60);
-      return res.json(defaultAds);
+      await setCache('api:ads', DEFAULT_ADS, 60);
+      return res.json(DEFAULT_ADS);
     }
 
-    // Return only AdSense settings, no sensitive data
     await setCache('api:ads', settings.adsense, 60);
     return res.json(settings.adsense);
   } catch (error) {

@@ -119,7 +119,6 @@ class TicketService {
     if (String(t.user._id) !== String(userId)) throw new AppError('Forbidden', 403, 'ERR_TICKET_FORBIDDEN');
     if (t.deletedByUser) throw new AppError('This ticket has been deleted', 403, 'ERR_TICKET_DELETED');
     
-    // Default fallback to empty array
     t.messages = [];
     return t;
   }

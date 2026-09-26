@@ -20,16 +20,16 @@ export function TicketSort({ value, onChange }: TicketSortProps) {
         renderButtonContent={() => (
           <div className="flex items-center gap-[7px]">
             <ArrowUpDown size={14} className="text-[#858585]" />
-            <span className="text-[10px] text-[#858585]">{t('sortTitle') || 'Sort'}</span>
+            <span className="text-[10px] text-[#858585]">{t('sortTitle')}</span>
           </div>
         )}
         options={[
-          { label: t('sortUpdatedNewest') || 'Updated - Newest', value: 'updated_desc' },
-          { label: t('sortUpdatedOldest') || 'Updated - Oldest', value: 'updated_asc' },
-          { label: t('sortCreatedNewest') || 'Created - Newest', value: 'created_desc' },
-          { label: t('sortCreatedOldest') || 'Created - Oldest', value: 'created_asc' },
-          { label: t('sortPriorityHigh') || 'Priority - High first', value: 'priority_desc' },
-          { label: t('sortPriorityLow') || 'Priority - Low first', value: 'priority_asc' }
+          { label: t('sortUpdatedNewest'), value: 'updated_desc' },
+          { label: t('sortUpdatedOldest'), value: 'updated_asc' },
+          { label: t('sortCreatedNewest'), value: 'created_desc' },
+          { label: t('sortCreatedOldest'), value: 'created_asc' },
+          { label: t('sortPriorityHigh'), value: 'priority_desc' },
+          { label: t('sortPriorityLow'), value: 'priority_asc' }
         ]}
       />
     </div>

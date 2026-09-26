@@ -3,7 +3,7 @@
 import React from "react";
 import { useTranslations } from "next-intl";
 import { Globe, Crown, Activity, Server, Check } from "lucide-react";
-import type { LocationOption } from "@/hooks/useServerCreate";
+import type { LocationOption } from "@/hooks/server";
 
 interface CreateServerLocationStepProps {
   locations: LocationOption[];
