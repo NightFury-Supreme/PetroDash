@@ -1,0 +1,1 @@
+export { AdminLogsSkeleton } from './AdminLogsSkeleton';

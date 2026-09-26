@@ -4,16 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { Select } from '@/components/ui/Select';
 import { Search, X, SlidersHorizontal } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import type { LogFilters } from '@/hooks/admin/logs';
 
 interface AdminLogsFiltersProps {
-  filters: {
-    actorId: string;
-    action: string;
-    resourceType: string;
-    severity: string;
-    requestId: string;
-  };
-  onFilterChange: (key: keyof AdminLogsFiltersProps['filters'], value: string) => void;
+  filters: LogFilters;
+  onFilterChange: (key: keyof LogFilters, value: string) => void;
   onSearchChange: (value: string) => void;
   onClearFilters: () => void;
   loading: boolean;
@@ -24,29 +19,23 @@ export function AdminLogsFilters({
   onFilterChange,
   onSearchChange,
   onClearFilters,
-  loading
+  loading,
 }: AdminLogsFiltersProps) {
   const t = useTranslations('AdminLogs');
-  const [searchTerm, setSearchTerm] = useState(filters.actorId || filters.requestId || '');
+  const [searchTerm, setSearchTerm] = useState(filters.q || '');
 
-  // Sync external filters clear to local search term
   useEffect(() => {
-    if (!filters.actorId && !filters.requestId) {
-      setSearchTerm('');
-    }
-  }, [filters.actorId, filters.requestId]);
+    setSearchTerm(filters.q || '');
+  }, [filters.q]);
 
-  // Debounce search changes to prevent API spam (ISO 25010 Performance)
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      // Only trigger if it actually differs from current filters to prevent double-load
-      const currentCombined = filters.actorId || filters.requestId || '';
-      if (searchTerm !== currentCombined) {
+    const timer = setTimeout(() => {
+      if (searchTerm !== (filters.q || '')) {
         onSearchChange(searchTerm);
       }
-    }, 500);
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, onSearchChange, filters.actorId, filters.requestId]);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm, onSearchChange, filters.q]);
 
   const actionOptions = [
     { value: '', label: t('allActions') },
@@ -100,14 +89,17 @@ export function AdminLogsFilters({
           <input
             type="text"
             placeholder={t('searchPlaceholder')}
-            value={filters.actorId || filters.requestId}
-            onChange={(e) => onSearchChange(e.target.value)}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             disabled={loading}
             className="w-full min-w-0 border-0 outline-none bg-transparent text-[#d5d5d5] text-[11px] placeholder:text-[#505050]"
           />
-          {(filters.actorId || filters.requestId) && (
+          {searchTerm && (
             <button
-              onClick={() => onSearchChange('')}
+              onClick={() => {
+                setSearchTerm('');
+                onSearchChange('');
+              }}
               className="w-[23px] h-[23px] flex-shrink-0 flex items-center justify-center rounded-[5px] text-[#666] hover:bg-[#222] hover:text-[#ddd] transition-colors"
               aria-label={t('clearSearch')}
             >

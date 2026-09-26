@@ -11,7 +11,7 @@ async function getLogsHandler(req, res, next) {
   try {
     const parsed = logsQuerySchema.safeParse(req.query);
     if (!parsed.success) {
-      throw new AppError('Invalid query parameters', 400, 'ERR_LOGS_QUERY_INVALID', parsed.error.flatten());
+      throw AppError.badRequest('Invalid query parameters', 'ERR_LOGS_QUERY_INVALID', parsed.error.flatten());
     }
 
     const data = await getLogs(parsed.data);

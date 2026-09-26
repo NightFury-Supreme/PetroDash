@@ -8,15 +8,16 @@ const { z } = require('zod');
 const logsQuerySchema = z.object({
   page: z.coerce.number().int().min(1).max(100).default(1),
   pageSize: z.coerce.number().int().min(1).max(200).default(50),
-  action: z.string().optional(),
-  actorId: z
-    .string()
-    .refine((val) => /^[0-9a-fA-F]{24}$/.test(val), { message: 'Invalid actor ID format' })
-    .optional(),
-  resourceType: z.string().optional(),
-  requestId: z.string().optional(),
-  severity: z.string().optional(),
-  sortBy: z.enum(['newest', 'oldest']).optional().default('newest'),
+  q: z.string().trim().max(100).optional(),
+  action: z.string().trim().optional(),
+  actorId: z.string().trim().optional(),
+  resourceType: z.string().trim().optional(),
+  requestId: z.string().trim().optional(),
+  severity: z.string().trim().optional(),
+  sortBy: z
+    .enum(['newest', 'oldest', 'date_desc', 'date_asc', 'action_asc', 'action_desc', 'type_asc'])
+    .optional()
+    .default('date_desc'),
 });
 
 module.exports = {

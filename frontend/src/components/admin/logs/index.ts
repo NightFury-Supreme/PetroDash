@@ -5,6 +5,4 @@ export { AdminLogsError } from './AdminLogsError';
 export { AdminLogsTable } from './AdminLogsTable';
 export { AdminLogsPagination } from './AdminLogsPagination';
 export { AdminLogsSort } from './AdminLogsSort';
-export * from './types';
-export { useAdminLogs } from './useAdminLogs';
-
+export * from '@/hooks/admin/logs';

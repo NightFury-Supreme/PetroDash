@@ -46,8 +46,9 @@ export function StatusBadge({ log }: { log: LogEntry }) {
   }
 }
 
-export function ActionCell({ log, variant, meta, tCommon }: { log: LogEntry; variant: Variant; meta: LogMeta; tCommon: any }) {
+export function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; meta: LogMeta }) {
   const tActivity = useTranslations('ActivityLog');
+  const tCommon = useTranslations('Common');
   
   const actionLabel = tActivity.has(log.action) ? tActivity(log.action) : getActionLabel(log.action);
   
@@ -70,7 +71,7 @@ export function ActionCell({ log, variant, meta, tCommon }: { log: LogEntry; var
               {actorName as string}
             </Link>
           ) : (
-            <span className="text-[10px] text-white/35">{tCommon('system') || 'System'}</span>
+            <span className="text-[10px] text-white/35">{tCommon('system')}</span>
           )}
           <RankBadge
             rank={log.actorRole ?? 'system'}
@@ -88,7 +89,7 @@ export function ActionCell({ log, variant, meta, tCommon }: { log: LogEntry; var
                 >
                   {meta.targetName 
                     ? String(meta.targetName) 
-                    : `${log.resourceType === 'user' ? 'User' : log.resourceType === 'server' ? 'Server' : 'Ticket'} ${log.resourceId.slice(-6)}`}
+                    : `${log.resourceType === 'user' ? tCommon('user') : log.resourceType === 'server' ? tCommon('server') : tCommon('ticket')} ${log.resourceId.slice(-6)}`}
                 </Link>
                 {log.resourceType === 'user' && Boolean(meta.targetRole) && (
                   <RankBadge rank={meta.targetRole as string} size="sm" />

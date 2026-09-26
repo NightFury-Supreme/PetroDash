@@ -5,6 +5,7 @@ export * from './eggs';
 export * from './gift';
 export * from './ledger';
 export * from './locations';
+export * from './logs';
 export * from './plan';
 export * from './servers';
 export * from './settings';

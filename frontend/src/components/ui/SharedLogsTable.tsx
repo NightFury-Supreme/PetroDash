@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ClipboardList } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useFormatter } from 'next-intl';
 import type { LogEntry, SharedLogsTableProps } from './logs/logTypes';
 import { parseUserAgent } from './logs/logHelpers';
 import { ActionCell, StatusBadge, ExpandedPanel } from './logs/LogRowDetail';
@@ -10,6 +10,7 @@ export type { LogEntry, SharedLogsTableProps };
 export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps) {
   const t = useTranslations('UI');
   const tCommon = useTranslations('Common');
+  const format = useFormatter();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const toggle = (id: string) => setExpandedId(prev => (prev === id ? null : id));
@@ -61,7 +62,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
                 onKeyDown={e => e.key === 'Enter' && toggle(log._id)}
               >
                 {/* Action */}
-                <ActionCell log={log} variant={variant} meta={meta} tCommon={tCommon} />
+                <ActionCell log={log} variant={variant} meta={meta} />
 
                 {/* Device / IP */}
                 <div className="min-w-0">
@@ -82,9 +83,13 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
                 <div className="min-w-0">
                   <p className="mb-1 text-[9px] uppercase tracking-wider text-white/30 md:hidden">{t('date')}</p>
                   <div className="text-[11px] text-white/55">
-                    {new Date(log.createdAt).toLocaleString('en-GB', {
-                      day: '2-digit', month: '2-digit', year: 'numeric',
-                      hour: '2-digit', minute: '2-digit', second: '2-digit',
+                    {format.dateTime(new Date(log.createdAt), {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      second: '2-digit',
                     })}
                   </div>
                 </div>
@@ -92,7 +97,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
                 {/* Expand toggle */}
                 <div className="flex md:justify-end">
                   <button
-                    aria-label={isExpanded ? 'Collapse' : 'Expand'}
+                    aria-label={isExpanded ? tCommon('collapse') : tCommon('expand')}
                     className="w-6 h-6 inline-flex items-center justify-center rounded border border-white/[0.12] text-white/40 hover:text-white/70 hover:border-white/[0.2] transition-colors focus:outline-none"
                     onClick={e => { e.stopPropagation(); toggle(log._id); }}
                   >

@@ -3,8 +3,7 @@ import { AdminLogsSort } from './AdminLogsSort';
 import { AdminLogsError } from './AdminLogsError';
 import { AdminLogsTable } from './AdminLogsTable';
 import { AdminLogsPagination } from './AdminLogsPagination';
-
-import { AuditLog } from './types';
+import type { AuditLog, LogFilters } from '@/hooks/admin/logs';
 
 interface AdminLogsContentProps {
   logs: AuditLog[];
@@ -13,16 +12,10 @@ interface AdminLogsContentProps {
   page: number;
   total: number;
   pageSize: number;
-  filters: {
-    action: string;
-    actorId: string;
-    resourceType: string;
-    requestId: string;
-    severity: string;
-  };
+  filters: LogFilters;
   sortBy: string;
   onPageChange: (page: number) => void;
-  onFilterChange: (key: 'action' | 'actorId' | 'resourceType' | 'requestId' | 'severity', value: string) => void;
+  onFilterChange: (key: keyof LogFilters, value: string) => void;
   onSearchChange: (value: string) => void;
   onClearFilters: () => void;
   onSortChange: (sort: string) => void;
@@ -41,13 +34,12 @@ export function AdminLogsContent({
   onFilterChange,
   onSearchChange,
   onClearFilters,
-  onSortChange
+  onSortChange,
 }: AdminLogsContentProps) {
   const totalPages = Math.ceil(total / pageSize);
 
   return (
     <>
-      {/* Filters and Sort */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-[10px] w-full">
         <div className="flex-1 w-full">
           <AdminLogsFilters
@@ -59,24 +51,18 @@ export function AdminLogsContent({
           />
         </div>
         <div className="mt-[25px] flex-shrink-0">
-          <AdminLogsSort 
-            sortBy={sortBy} 
-            setSortBy={onSortChange} 
-            loading={loading} 
+          <AdminLogsSort
+            sortBy={sortBy}
+            setSortBy={onSortChange}
+            loading={loading}
           />
         </div>
       </div>
 
-      {/* Error Display */}
       <AdminLogsError error={error} />
 
-      {/* Table */}
-      <AdminLogsTable
-        logs={logs}
-        loading={loading}
-      />
+      <AdminLogsTable logs={logs} loading={loading} />
 
-      {/* Pagination */}
       <AdminLogsPagination
         currentPage={page}
         totalPages={totalPages}

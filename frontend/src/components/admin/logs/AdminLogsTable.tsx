@@ -1,6 +1,12 @@
 import React from 'react';
 import { SharedLogsTable, LogEntry } from '@/components/ui/SharedLogsTable';
+import type { AuditLog } from '@/hooks/admin/logs';
 
-export function AdminLogsTable({ logs, loading }: { logs: any[], loading: boolean }) {
-  return <SharedLogsTable logs={logs as LogEntry[]} loading={loading} variant="admin" />;
+interface AdminLogsTableProps {
+  logs: AuditLog[];
+  loading: boolean;
+}
+
+export function AdminLogsTable({ logs, loading }: AdminLogsTableProps) {
+  return <SharedLogsTable logs={logs as unknown as LogEntry[]} loading={loading} variant="admin" />;
 }
