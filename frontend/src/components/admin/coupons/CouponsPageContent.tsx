@@ -1,157 +1,98 @@
+/* ==========================================================================
+   Admin Coupons Page Content
+   Compliance: ISO/IEC 25010, SoC (Decoupled Hooks), Clean Architecture
+========================================================================== */
+
 "use client";
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from '@/i18n/routing';
-import CouponsHeader from '@/components/admin/coupons/CouponsHeader';
-import CouponsList from '@/components/admin/coupons/CouponsList';
-import { AdminCouponsSkeleton } from '@/components/skeletons/admin/coupons/AdminCouponsSkeleton';
-import { CouponDrawer } from './CouponDrawer';
-import { Pagination } from '@/components/Pagination';
-import { useToast } from '@/components/ui/ToastProvider';
+import React, { useState } from "react";
+import { AdminCouponsSkeleton } from "@/components/skeletons/admin/coupons/AdminCouponsSkeleton";
+import { Pagination } from "@/components/Pagination";
+import { useCouponsList } from "@/hooks/admin/coupons";
+import { CouponsHeader } from "./CouponsHeader";
+import { CouponsList } from "./CouponsList";
+import { AdminCreateCouponDrawer } from "./drawers/AdminCreateCouponDrawer";
+import { AdminEditCouponDrawer } from "./drawers/AdminEditCouponDrawer";
+import { AdminDeleteCouponDrawer } from "./drawers/AdminDeleteCouponDrawer";
+import type { AdminCouponItem } from "./types";
 
-export default function CouponsPageContent() {
-  const { showSuccess, showError } = useToast();
-  const router = useRouter();
-  const [coupons, setCoupons] = useState<any[]>([]);
-  const [plans, setPlans] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [currency, setCurrency] = useState('USD');
-  
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
+export function CouponsPageContent() {
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [selectedForEdit, setSelectedForEdit] = useState<AdminCouponItem | null>(null);
+  const [selectedForDelete, setSelectedForDelete] = useState<AdminCouponItem | null>(null);
 
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [editingCoupon, setEditingCoupon] = useState<any | null>(null);
-  const [saving, setSaving] = useState(false);
+  const {
+    coupons,
+    plans,
+    currency,
+    page,
+    pagination,
+    loading,
+    error,
+    handlePageChange,
+    refetch,
+  } = useCouponsList();
 
-  const loadData = (currentPage = 1) => {
-    setLoading(true);
-    const token = localStorage.getItem('auth_token');
-    if (!token) { router.replace('/login'); return; }
-    Promise.all([
-      fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons?page=${currentPage}&limit=10`, { headers: { Authorization: `Bearer ${token}` } }),
-      fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans`, { headers: { Authorization: `Bearer ${token}` } }),
-      fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/branding`)
-    ])
-      .then(async ([cR, pR, bR]) => {
-        if (cR.ok) {
-          const cData = await cR.json();
-          setCoupons(cData.coupons || cData); // Fallback if backend wasn't updated yet
-          setTotalPages(cData.totalPages || 1);
-          setTotalItems(cData.total || (Array.isArray(cData) ? cData.length : 0));
-        }
-        if (pR.ok) {
-          const pData = await pR.json();
-          setPlans(pData.plans || pData);
-        }
-        if (bR.ok) {
-          let bData: any = {}; try { bData = await bR.json(); } catch {}
-          if (bData?.currency) setCurrency(bData.currency);
-        }
-      })
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    loadData(page);
-  }, [ page]);
-
-  const handleSaveCoupon = async (id: string | null, data: any) => {
-    const token = localStorage.getItem('auth_token');
-    setSaving(true);
-    try {
-      if (data._delete && id) {
-        const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons/${id}`, { 
-          method: 'DELETE', headers: { Authorization: `Bearer ${token}` } 
-        });
-        if (res.ok) {
-          setCoupons((prev) => prev.filter((c) => c._id !== id));
-          setIsDrawerOpen(false);
-          showSuccess("Coupon deleted successfully");
-        } else {
-          showError("Failed to delete coupon");
-        }
-        return;
-      }
-
-      if (id) {
-        if (Object.keys(data).length === 1 && data.enabled !== undefined) {
-          // just toggle
-          const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons/${id}`, {
-            method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(data)
-          });
-          if (res.ok) {
-            setCoupons((prev) => prev.map((c) => (c._id === id ? { ...c, ...data } : c)));
-            showSuccess(`Coupon ${data.enabled ? 'enabled' : 'disabled'} successfully`);
-          } else {
-            showError("Failed to toggle coupon");
-          }
-          return; // don't close drawer if just toggling
-        }
-
-        const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons/${id}`, {
-          method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(data)
-        });
-        if (res.ok) {
-          const updated = await res.json();
-          setCoupons((prev) => prev.map((c) => (c._id === id ? updated : c)));
-          setIsDrawerOpen(false);
-          showSuccess("Coupon updated successfully");
-        } else {
-          showError("Failed to update coupon");
-        }
-      } else {
-        const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(data)
-        });
-        if (res.ok) {
-          const created = await res.json();
-          setCoupons((prev) => [...prev, created]);
-          setIsDrawerOpen(false);
-          showSuccess("Coupon created successfully");
-        } else {
-          showError("Failed to create coupon");
-        }
-      }
-    } catch (err: any) {
-      showError(err?.message || "An error occurred");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  if (loading) return <AdminCouponsSkeleton />;
+  if (loading && coupons.length === 0) {
+    return <AdminCouponsSkeleton />;
+  }
 
   return (
     <div className="space-y-6">
-      <CouponsHeader onCreateNew={() => { setEditingCoupon(null); setIsDrawerOpen(true); }} />
-      <CouponsList 
-        coupons={coupons} 
-        plans={plans} 
-        onManage={(c: any) => { setEditingCoupon(c); setIsDrawerOpen(true); }} 
-        currency={currency} 
+      {error && (
+        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+          {error}
+        </div>
+      )}
+
+      <CouponsHeader onCreateNew={() => setIsCreateOpen(true)} />
+
+      <CouponsList
+        coupons={coupons}
+        currency={currency}
+        onManage={(coupon) => setSelectedForEdit(coupon)}
+        onDeleteClick={(coupon) => setSelectedForDelete(coupon)}
       />
+
       <Pagination
         currentPage={page}
-        totalPages={totalPages}
-        totalItems={totalItems}
+        totalPages={pagination.totalPages}
+        totalItems={pagination.total}
         pageSize={10}
-        onPageChange={setPage}
+        onPageChange={handlePageChange}
         itemName="coupons"
       />
-      <CouponDrawer 
-        item={editingCoupon}
-        isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-        onSave={handleSaveCoupon}
-        saving={saving}
+
+      <AdminCreateCouponDrawer
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        onSuccess={() => refetch()}
         plans={plans}
         currency={currency}
+      />
+
+      <AdminEditCouponDrawer
+        coupon={selectedForEdit}
+        isOpen={Boolean(selectedForEdit)}
+        onClose={() => setSelectedForEdit(null)}
+        onSuccess={() => refetch()}
+        onDeleteClick={(coupon) => {
+          setSelectedForEdit(null);
+          setSelectedForDelete(coupon);
+        }}
+        plans={plans}
+        currency={currency}
+      />
+
+      <AdminDeleteCouponDrawer
+        isOpen={Boolean(selectedForDelete)}
+        onClose={() => setSelectedForDelete(null)}
+        onSuccess={() => refetch()}
+        couponId={selectedForDelete?._id || null}
+        couponCode={selectedForDelete?.code || null}
       />
     </div>
   );
 }
 
-
+export default CouponsPageContent;

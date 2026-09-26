@@ -4,7 +4,7 @@
 
 const express = require('express');
 const { requireAdmin } = require('../../middleware/auth');
-const { earnController } = require('../../modules/admin/earn');
+const earnController = require('../../modules/admin/earn/earn.controller');
 
 const router = express.Router();
 

@@ -1,12 +1,21 @@
+/* ==========================================================================
+   Admin Coupons Controller
+   Compliance: ISO/IEC 25010, OWASP Input Validation, Audit Logging
+========================================================================== */
+
 const couponsService = require('./coupons.service');
 const { writeAudit } = require('../../../middleware/audit');
+const {
+  createCouponSchema,
+  updateCouponSchema,
+  listCouponsQuerySchema,
+} = require('./coupons.schema');
 
 class CouponsController {
   async listCoupons(req, res, next) {
     try {
-      const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.query.limit) || 10;
-      const response = await couponsService.listCoupons({ page, limit });
+      const parsedQuery = listCouponsQuerySchema.parse(req.query);
+      const response = await couponsService.listCoupons(parsedQuery);
       res.json(response);
     } catch (error) {
       next(error);
@@ -24,8 +33,9 @@ class CouponsController {
 
   async createCoupon(req, res, next) {
     try {
-      const coupon = await couponsService.createCoupon(req.body);
-      await writeAudit(req, 'admin.coupon.create', 'coupon', coupon._id.toString(), { created: req.body });
+      const parsedBody = createCouponSchema.parse(req.body);
+      const coupon = await couponsService.createCoupon(parsedBody);
+      await writeAudit(req, 'admin.coupon.create', 'coupon', coupon._id.toString(), { created: parsedBody });
       res.status(201).json(coupon);
     } catch (error) {
       next(error);
@@ -34,8 +44,11 @@ class CouponsController {
 
   async updateCoupon(req, res, next) {
     try {
-      const { coupon, changes } = await couponsService.updateCoupon(String(req.params.id), req.body);
-      await writeAudit(req, 'admin.coupon.update', 'coupon', coupon._id.toString(), { changes: Object.keys(changes).length > 0 ? changes : undefined });
+      const parsedBody = updateCouponSchema.parse(req.body);
+      const { coupon, changes } = await couponsService.updateCoupon(String(req.params.id), parsedBody);
+      await writeAudit(req, 'admin.coupon.update', 'coupon', coupon._id.toString(), {
+        changes: Object.keys(changes).length > 0 ? changes : undefined,
+      });
       res.json(coupon);
     } catch (error) {
       next(error);
@@ -46,7 +59,7 @@ class CouponsController {
     try {
       const coupon = await couponsService.deleteCoupon(String(req.params.id));
       await writeAudit(req, 'admin.coupon.delete', 'coupon', req.params.id, { code: coupon.code });
-      res.json({ message: 'Coupon deleted successfully' });
+      res.json({ success: true, message: 'Coupon deleted successfully' });
     } catch (error) {
       next(error);
     }

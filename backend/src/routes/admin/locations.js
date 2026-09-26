@@ -10,7 +10,7 @@ const {
   getLocationByIdHandler,
   updateLocationHandler,
   deleteLocationHandler,
-} = require('../../modules/admin/locations');
+} = require('../../modules/admin/locations/locations.controller');
 
 const router = express.Router();
 
