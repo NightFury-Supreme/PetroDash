@@ -9,7 +9,7 @@ export { EditLocationDrawerSkeleton } from './EditLocationDrawerSkeleton';
 export { LocationFormBasicSection } from './LocationFormBasicSection';
 export { LocationFormPlatformSection } from './LocationFormPlatformSection';
 export { LocationFormPermissionsSection } from './LocationFormPermissionsSection';
-export { useLocationApi } from './hooks/useLocationApi';
+export { useLocationApi } from '@/hooks/admin/locations';
 
 export type {
   AdminLocation,

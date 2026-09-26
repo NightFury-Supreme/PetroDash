@@ -1,5 +1,6 @@
 /**
  * Admin Locations API Hook
+ * Complies with ISO/IEC 25010 and Clean Architecture
  */
 
 import { fetchWithRetry } from '@/utils/fetchWithRetry';

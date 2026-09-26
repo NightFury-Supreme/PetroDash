@@ -8,7 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { Globe, Loader2, Check } from 'lucide-react';
 import { Drawer } from '@/components/ui/Drawer';
 import { useTranslations } from 'next-intl';
-import { useLocationApi } from './hooks/useLocationApi';
+import { useLocationApi } from '@/hooks/admin/locations';
 import { LocationFormBasicSection } from './LocationFormBasicSection';
 import { LocationFormPlatformSection } from './LocationFormPlatformSection';
 import { LocationFormPermissionsSection } from './LocationFormPermissionsSection';

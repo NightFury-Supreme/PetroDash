@@ -9,7 +9,7 @@ import { Globe, Trash, Loader2 } from 'lucide-react';
 import { Drawer } from '@/components/ui/Drawer';
 import { DeleteDrawer } from '@/components/ui/DeleteDrawer';
 import { useTranslations } from 'next-intl';
-import { useLocationApi } from './hooks/useLocationApi';
+import { useLocationApi } from '@/hooks/admin/locations';
 import { EditLocationDrawerSkeleton } from './EditLocationDrawerSkeleton';
 import { LocationFormBasicSection } from './LocationFormBasicSection';
 import { LocationFormPlatformSection } from './LocationFormPlatformSection';
