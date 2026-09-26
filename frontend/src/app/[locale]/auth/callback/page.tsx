@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, Suspense } from 'react';
+import { useTranslations } from 'next-intl';
 import { useToast } from "@/components/ui/ToastProvider";
 import { useRouter, useSearchParams } from "@/i18n/routing";
 
 function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-    const { showError } = useToast();
+  const { showError } = useToast();
+  const t = useTranslations('Auth');
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -15,34 +17,30 @@ function AuthCallbackContent() {
       const error = searchParams.get('error');
       const discordJoin = searchParams.get('discord_join');
 
-
       if (error) {
-        showError('OAuth authentication failed. Please try again.');
+        showError(t('oauthFailed'));
         router.push('/login');
         return;
       }
 
       if (token) {
         try {
-          // Store the token
           localStorage.setItem('auth_token', token);
-          
-          // Handle Discord join result
+
           if (discordJoin === 'success') {
             // Successfully joined Discord server
-                      } else if (discordJoin === 'failed') {
-            // Failed to join Discord server, show error
-                      }
-          
-          // Redirect to dashboard
+          } else if (discordJoin === 'failed') {
+            // Failed to join Discord server — non-blocking
+          }
+
           router.push('/dashboard');
         // eslint-disable-next-line unused-imports/no-unused-vars
-        } catch (error) {
-          showError('Failed to complete login. Please try again.');
+        } catch (err) {
+          showError(t('loginFailed'));
           router.push('/login');
         }
       } else {
-        showError('No authentication token received. Please try again.');
+        showError(t('noTokenReceived'));
         router.push('/login');
       }
     };
@@ -51,16 +49,16 @@ function AuthCallbackContent() {
   }, [searchParams]);
 
   const discordJoin = searchParams.get('discord_join');
-  
+
   return (
     <div className="min-h-screen bg-[#0b0b0f] flex items-center justify-center">
       <div className="text-center">
         <div className="w-16 h-16 bg-[#202020] rounded-xl flex items-center justify-center mx-auto mb-4">
           <i className="fas fa-spinner fa-spin text-white text-2xl"></i>
         </div>
-        <h2 className="text-xl font-bold text-white mb-2">Completing Login...</h2>
+        <h2 className="text-xl font-bold text-white mb-2">{t('completingLogin')}</h2>
         <p className="text-[#AAAAAA]">
-          {discordJoin ? 'Setting up your account and joining Discord server...' : 'Please wait while we finish setting up your account.'}
+          {discordJoin ? t('settingUpWithDiscord') : t('settingUpAccount')}
         </p>
       </div>
     </div>
@@ -68,6 +66,7 @@ function AuthCallbackContent() {
 }
 
 export default function AuthCallbackPage() {
+  const t = useTranslations('Auth');
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-[#0b0b0f] flex items-center justify-center">
@@ -75,8 +74,8 @@ export default function AuthCallbackPage() {
           <div className="w-16 h-16 bg-[#202020] rounded-xl flex items-center justify-center mx-auto mb-4">
             <i className="fas fa-spinner fa-spin text-white text-2xl"></i>
           </div>
-          <h2 className="text-xl font-bold text-white mb-2">Loading...</h2>
-          <p className="text-[#AAAAAA]">Please wait...</p>
+          <h2 className="text-xl font-bold text-white mb-2">{t('loading')}</h2>
+          <p className="text-[#AAAAAA]">{t('pleaseWait')}</p>
         </div>
       </div>
     }>

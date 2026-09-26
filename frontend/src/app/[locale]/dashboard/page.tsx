@@ -39,7 +39,7 @@ function DashboardContentWrapper() {
       url.searchParams.delete('verified');
       window.history.replaceState({}, '', url.toString());
       
-      showSuccess(t('emailVerifiedSuccess', { defaultMessage: "Email address successfully verified! You now have full access." }));
+      showSuccess(t('emailVerifiedSuccess'));
     }
   }, [searchParams, showSuccess, t]);
 

@@ -1,9 +1,14 @@
 const express = require('express');
 const { z } = require('zod');
+
 const UserCreationService = require('../../services/userCreation');
 const SessionService = require('../../services/SessionService');
+const VerificationToken = require('../../models/VerificationToken');
 const { getSettings } = require('../../lib/settings');
+const { generateSecureCode, hashString } = require('../../utils/security');
+const { sendMailTemplate } = require('../../lib/mail');
 const { writeAudit } = require('../../middleware/audit');
+const { logUserActivity } = require('../../middleware/userActivity');
 const { createRateLimiter } = require('../../middleware/rateLimit');
 const AppError = require('../../utils/AppError');
 
@@ -22,7 +27,7 @@ const registerSchema = z.object({
 router.post('/register', createRateLimiter(5, 60 * 60 * 1000), async (req, res, next) => {
   const startTime = Date.now();
   let user = null;
-  
+
   try {
     const parsed = registerSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -52,41 +57,28 @@ router.post('/register', createRateLimiter(5, 60 * 60 * 1000), async (req, res, 
       return next(AppError.forbidden('Email registration is disabled', 'ERR_REGISTRATION_DISABLED'));
     }
 
-    // Use unified user creation service
-    user = await UserCreationService.createUser({
-      email,
-      username,
-      firstName,
-      lastName,
-      password,
-      ref
-    });
+    user = await UserCreationService.createUser({ email, username, firstName, lastName, password, ref });
 
     const { token } = await SessionService.createSessionAndJwt(user, req);
     const userResponse = UserCreationService.formatUserResponse(user);
 
-    // After creation, send verification email if email login
     const emailVerificationEnabled = s?.auth?.emailVerification ?? false;
     if (emailVerificationEnabled) {
       try {
-        const { generateSecureCode, hashString } = require('../../utils/security');
-        const VerificationToken = require('../../models/VerificationToken');
-        const { sendMailTemplate } = require('../../lib/mail');
-        
         const verificationCode = generateSecureCode(8);
         const tokenHash = hashString(verificationCode);
-        const expiresAt = new Date(Date.now() + 1000 * 60 * 15); // 15 minutes
-        
+        const expiresAt = new Date(Date.now() + 1000 * 60 * 15);
+
         await VerificationToken.deleteMany({ userId: user._id, purpose: 'email_verification', usedAt: null });
-        await VerificationToken.create({ 
-          userId: user._id, 
-          tokenHash, 
-          purpose: 'email_verification', 
+        await VerificationToken.create({
+          userId: user._id,
+          tokenHash,
+          purpose: 'email_verification',
           expiresAt,
           attempts: 0,
-          maxAttempts: 5 
+          maxAttempts: 5
         });
-        
+
         await sendMailTemplate({
           to: user.email,
           templateKey: 'accountCreateWithVerification',
@@ -98,11 +90,9 @@ router.post('/register', createRateLimiter(5, 60 * 60 * 1000), async (req, res, 
     } else {
       try {
         await UserCreationService.grantReferralRewards(user);
-       
       } catch (_) {}
     }
 
-    // Log successful registration
     await writeAudit(req, 'auth.register.success', 'auth', user._id.toString(), {
       registrationMethod: 'email',
       email,
@@ -116,15 +106,10 @@ router.post('/register', createRateLimiter(5, 60 * 60 * 1000), async (req, res, 
       userAgent: req.get('User-Agent'),
       durationMs: Date.now() - startTime
     });
-    
-    const { logUserActivity } = require('../../middleware/userActivity');
     await logUserActivity(req, 'auth.register.success', { registrationMethod: 'email', ...(ref ? { referralCodeUsed: ref } : {}) }, user._id.toString());
 
     return res.status(201).json({ token, user: userResponse });
   } catch (error) {
-    // Error logged silently for production
-    
-    // Log registration failure
     await writeAudit(req, 'auth.register.failed', 'auth', user?._id?.toString() || null, {
       reason: error.message.includes('already in use') || error.message.includes('already exists') ? 'user_exists' : 'server_error',
       error: error.message,
@@ -134,15 +119,13 @@ router.post('/register', createRateLimiter(5, 60 * 60 * 1000), async (req, res, 
       userAgent: req.get('User-Agent'),
       durationMs: Date.now() - startTime
     });
-    
+
     if (error.message.includes('already in use') || error.message.includes('already exists')) {
       return next(AppError.conflict(error.message, 'ERR_USER_EXISTS'));
     }
-    
+
     return next(AppError.internal('Internal server error', 'ERR_INTERNAL_SERVER'));
   }
 });
 
 module.exports = router;
-
-

@@ -49,16 +49,16 @@ export default function AdminUserPage() {
 
   const handleDeleteUser = async () => {
     const confirmed = await modal.confirm({ 
-      title: t('deleteUserTitle', { fallback: 'Delete User' }), 
-      body: t('deleteUserConfirm', { username: data?.user?.username || 'Unknown', fallback: `Are you sure you want to permanently delete user "${data?.user?.username || 'Unknown'}" and all their servers? This action cannot be undone.` }),
-      confirmText: t('deleteUserConfirmText', { fallback: 'Delete User' }),
-      cancelText: tCommon('cancel', { fallback: 'Cancel' })
+      title: t('deleteUserTitle'), 
+      body: t('deleteUserConfirm', { username: data?.user?.username || '' }),
+      confirmText: t('deleteUserConfirmText'),
+      cancelText: tCommon('cancel')
     });
     if (!confirmed) return;
     
     const result = await deleteUserApi();
     if (result.success) {
-      showSuccess(result.message || t('userDeletedSuccessfully', { fallback: 'User deleted successfully.' }));
+      showSuccess(t('userDeletedSuccessfully'));
       router.push('/admin/users');
     } else {
       showError(tErrorBackend.has(result.error) ? tErrorBackend(result.error) : result.error);
@@ -68,7 +68,7 @@ export default function AdminUserPage() {
   const handleSaveReferralCode = async (newCode: string) => {
     const result = await saveReferralCode(newCode);
     if (result.success) {
-      showSuccess(t('referralCodeUpdated', { fallback: 'Referral code updated.' }));
+      showSuccess(t('referralCodeUpdated'));
       loadUser(referralPage);
     } else {
       showError(tErrorBackend.has(result.error) ? tErrorBackend(result.error) : result.error);

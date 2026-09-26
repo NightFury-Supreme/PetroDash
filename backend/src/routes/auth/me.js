@@ -5,10 +5,11 @@ const Server = require('../../models/Server');
 
 const { getCache, setCache, deleteCache } = require('../../lib/redis');
 const { logUserActivity } = require('../../middleware/userActivity');
+const AppError = require('../../utils/AppError');
 
 const router = express.Router();
 
-router.get('/me', requireAuth, async (req, res) => {
+router.get('/me', requireAuth, async (req, res, next) => {
   try {
     const cacheKey = `user:${req.user.sub}:profile`;
     const cachedProfile = await getCache(cacheKey);
@@ -17,12 +18,15 @@ router.get('/me', requireAuth, async (req, res) => {
     }
 
     const user = await User.findById(req.user.sub).lean();
-    if (!user) return res.status(404).json({ error: 'Not found' });
+    if (!user) return next(AppError.notFound('User not found', 'ERR_USER_NOT_FOUND'));
     // If banned, short-circuit with 403 for guard to redirect
     const ban = user.ban || {};
     const activeBan = Boolean(ban.isBanned) && (!ban.until || new Date(ban.until) > new Date());
     if (activeBan) {
-      return res.status(403).json({ error: 'Account banned', reason: ban.reason || '', until: ban.until || null });
+      return next(AppError.forbidden('Account banned', 'ERR_ACCOUNT_BANNED', {
+        reason: ban.reason || '',
+        until: ban.until || null
+      }));
     }
     
     // Get user's server count
@@ -73,25 +77,23 @@ router.get('/me', requireAuth, async (req, res) => {
     return res.json(responseData);
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) { 
-    // Error logged silently for production
-    return res.status(500).json({ error: 'Internal server error' }); 
+    return next(AppError.internal('Internal server error', 'ERR_INTERNAL_SERVER')); 
   }
 });
 
 // Update profile picture (email users only)
-router.patch('/me/profile-picture', requireAuth, async (req, res) => {
+router.patch('/me/profile-picture', requireAuth, async (req, res, next) => {
   try {
     const { profilePicture } = req.body;
     
     const user = await User.findById(req.user.sub);
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) return next(AppError.notFound('User not found', 'ERR_USER_NOT_FOUND'));
     
     // Check if user is an OAuth user (can't update profile picture manually)
     if (user.oauthProviders?.discord?.id || user.oauthProviders?.google?.id) {
-      return res.status(400).json({ 
-        error: 'OAuth users cannot manually set profile picture',
+      return next(AppError.badRequest('OAuth users cannot manually set profile picture', 'ERR_OAUTH_AVATAR_IMMUTABLE', {
         message: 'Your profile picture is managed by your OAuth provider (Discord/Google)'
-      });
+      }));
     }
     
     // Validate URL format if provided
@@ -101,7 +103,7 @@ router.patch('/me/profile-picture', requireAuth, async (req, res) => {
       try {
         const url = new URL(profilePicture.trim());
         if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-          return res.status(400).json({ error: 'Invalid URL format. Must start with http:// or https://' });
+          return next(AppError.badRequest('Invalid URL format. Must start with http:// or https://', 'ERR_INVALID_URL_SCHEME'));
         }
         
         // Validate image extension - use simple string check
@@ -110,15 +112,13 @@ router.patch('/me/profile-picture', requireAuth, async (req, res) => {
         const hasValidExtension = validExtensions.some(ext => pathname.endsWith(ext));
         
         if (!hasValidExtension) {
-          return res.status(400).json({ 
-            error: 'Invalid image URL. Must end with .jpg, .jpeg, .png, .gif, .webp, or .svg' 
-          });
+          return next(AppError.badRequest('Invalid image URL. Must end with .jpg, .jpeg, .png, .gif, .webp, or .svg', 'ERR_INVALID_IMAGE_EXT'));
         }
         
         user.profilePicture = profilePicture.trim();
       // eslint-disable-next-line unused-imports/no-unused-vars
       } catch (e) {
-        return res.status(400).json({ error: 'Invalid URL format' });
+        return next(AppError.badRequest('Invalid URL format', 'ERR_INVALID_URL'));
       }
     } else {
       // Empty string to remove profile picture
@@ -146,7 +146,7 @@ router.patch('/me/profile-picture', requireAuth, async (req, res) => {
     });
   } catch (e) {
     console.error('Profile picture update error:', e);
-    return res.status(500).json({ error: 'Failed to update profile picture' });
+    return next(AppError.internal('Failed to update profile picture', 'ERR_UPDATE_PROFILE_PICTURE_FAILED'));
   }
 });
 

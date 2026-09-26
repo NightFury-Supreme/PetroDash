@@ -1,5 +1,13 @@
 {
   "Auth": {
+    "oauthFailed": "فشلت مصادقة OAuth. يرجى المحاولة مرة أخرى.",
+    "loginFailed": "فشل إكمال تسجيل الدخول. يرجى المحاولة مرة أخرى.",
+    "noTokenReceived": "لم يتم استلام رمز المصادقة. يرجى المحاولة مرة أخرى.",
+    "completingLogin": "جارٍ إكمال تسجيل الدخول...",
+    "settingUpWithDiscord": "جارٍ إعداد حسابك والانضمام إلى خادم Discord...",
+    "settingUpAccount": "يرجى الانتظار بينما ننتهي من إعداد حسابك.",
+    "loading": "جارٍ التحميل...",
+    "pleaseWait": "يرجى الانتظار...",
     "login": {
       "title": "مرحباً بعودتك",
       "subtitle": "أدخل بيانات اعتمادك للمتابعة",
@@ -785,9 +793,22 @@
     "ERR_COUPON_VALUE_INVALID": "يجب أن تكون قيمة الخصم أكبر من 0",
     "ERR_COUPON_PERCENTAGE_EXCEEDED": "لا يمكن أن يتجاوز الخصم بالنسبة المئوية 100%",
     "ERR_COUPON_CODE_EXISTS": "توجد قسيمة بهذا الرمز بالفعل",
-    "ERR_COUPON_ALREADY_USED": "لا يمكن حذف قسيمة تم استخدامها بالفعل من قِبل المستخدمين"
+    "ERR_COUPON_ALREADY_USED": "لا يمكن حذف قسيمة تم استخدامها بالفعل من قِبل المستخدمين",
+    "ERR_CANNOT_RESOLVE_CLOSED": "لا يمكن حل تذكرة مغلقة. يرجى إعادة فتحها أولاً.",
+    "ERR_CATEGORY_CREATE_FAILED": "فشل إنشاء الفئة.",
+    "ERR_CATEGORY_UPDATE_FAILED": "فشل إعادة تسمية الفئة.",
+    "ERR_CATEGORY_DELETE_FAILED": "فشل حذف الفئة.",
+    "ERR_LOAD_CATEGORIES_FAILED": "فشل تحميل الفئات.",
+    "ERR_PAYMENTS_LOAD_FAILED": "فشل تحميل سجل المدفوعات.",
+    "ERR_REFUND_FAILED": "فشل استرداد الدفعة.",
+    "ERR_VOID_FAILED": "فشل إلغاء الدفعة.",
+    "ERR_INVOICE_FAILED": "فشل تنزيل الفاتورة.",
+    "ERR_REGISTRATION_DISABLED": "التسجيل معطل حالياً."
   },
   "Tickets": {
+    "errors": {
+      "titleAndMessageRequired": "الموضوع والرسالة مطلوبان."
+    },
     "createTicket": "إنشاء تذكرة",
     "subject": "الموضوع",
     "briefDescription": "وصف موجز لمشكلتك",

@@ -1,10 +1,10 @@
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import React, { useState, useRef } from 'react';
 import { LayoutTemplate, Upload, Trash2 } from 'lucide-react';
 import { SettingsRow, SiteIconDisplay } from '../Shared';
 import { TabProps } from '../types';
 import { useModal } from '@/components/Modal';
 import { useTranslations } from 'next-intl';
+import { useAdminBrandUpload } from '@/hooks/admin/settings';
 
 export function BrandTab({ formData, updateFormData, saveSection, loading }: TabProps) {
   const [iconFile, setIconFile] = useState<File | null>(null);
@@ -13,6 +13,7 @@ export function BrandTab({ formData, updateFormData, saveSection, loading }: Tab
   const fileInputRef = useRef<HTMLInputElement>(null);
   const modal = useModal();
   const t = useTranslations('AdminSettings');
+  const { uploadIcon } = useAdminBrandUpload();
 
   const getSafeIconUrl = () => {
     if (iconPreview) return iconPreview;
@@ -26,17 +27,15 @@ export function BrandTab({ formData, updateFormData, saveSection, loading }: Tab
     }
   };
   const safeSiteIcon = getSafeIconUrl();
-  
+
   const handleUpload = async () => {
     let finalSiteIcon = formData.siteIcon;
     if (iconFile) {
-      const token = localStorage.getItem('auth_token');
-      const fd = new FormData();
-      fd.append('icon', iconFile);
-      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/upload/icon`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
-      if (!res.ok) throw new Error(t('failedToUploadIcon'));
-      let data: any = {}; try { data = await res.json(); } catch {}
-      finalSiteIcon = data.filePath || data.url;
+      try {
+        finalSiteIcon = await uploadIcon(iconFile);
+      } catch {
+        throw new Error(t('failedToUploadIcon'));
+      }
     }
     await saveSection({ siteIcon: finalSiteIcon }, t('brandSettingsUpdated'));
   };

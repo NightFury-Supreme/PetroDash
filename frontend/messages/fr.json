@@ -1,5 +1,13 @@
 {
   "Auth": {
+    "oauthFailed": "L'authentification OAuth a échoué. Veuillez réessayer.",
+    "loginFailed": "Échec de la connexion. Veuillez réessayer.",
+    "noTokenReceived": "Aucun jeton d'authentification reçu. Veuillez réessayer.",
+    "completingLogin": "Finalisation de la connexion...",
+    "settingUpWithDiscord": "Configuration de votre compte et adhésion au serveur Discord...",
+    "settingUpAccount": "Veuillez patienter pendant la configuration de votre compte.",
+    "loading": "Chargement...",
+    "pleaseWait": "Veuillez patienter...",
     "login": {
       "title": "Bon retour",
       "subtitle": "Entrez vos identifiants pour continuer",
@@ -785,9 +793,22 @@
     "ERR_COUPON_VALUE_INVALID": "La valeur de réduction doit être supérieure à 0",
     "ERR_COUPON_PERCENTAGE_EXCEEDED": "La réduction en pourcentage ne peut pas dépasser 100 %",
     "ERR_COUPON_CODE_EXISTS": "Un bon avec ce code existe déjà",
-    "ERR_COUPON_ALREADY_USED": "Impossible de supprimer un bon qui a déjà été utilisé"
+    "ERR_COUPON_ALREADY_USED": "Impossible de supprimer un bon qui a déjà été utilisé",
+    "ERR_CANNOT_RESOLVE_CLOSED": "Impossible de résoudre un ticket fermé. Veuillez d'abord le rouvrir.",
+    "ERR_CATEGORY_CREATE_FAILED": "Échec de la création de la catégorie.",
+    "ERR_CATEGORY_UPDATE_FAILED": "Échec du renommage de la catégorie.",
+    "ERR_CATEGORY_DELETE_FAILED": "Échec de la suppression de la catégorie.",
+    "ERR_LOAD_CATEGORIES_FAILED": "Échec du chargement des catégories.",
+    "ERR_PAYMENTS_LOAD_FAILED": "Échec du chargement du grand livre des paiements.",
+    "ERR_REFUND_FAILED": "Échec du remboursement du paiement.",
+    "ERR_VOID_FAILED": "Échec de l'annulation du paiement.",
+    "ERR_INVOICE_FAILED": "Échec du téléchargement de la facture.",
+    "ERR_REGISTRATION_DISABLED": "L'inscription est actuellement désactivée."
   },
   "Tickets": {
+    "errors": {
+      "titleAndMessageRequired": "Le sujet et le message sont requis."
+    },
     "createTicket": "Créer le ticket",
     "subject": "Sujet",
     "briefDescription": "Brève description de votre problème",

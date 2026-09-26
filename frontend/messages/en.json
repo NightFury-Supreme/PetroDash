@@ -1,5 +1,13 @@
 {
   "Auth": {
+    "oauthFailed": "OAuth authentication failed. Please try again.",
+    "loginFailed": "Failed to complete login. Please try again.",
+    "noTokenReceived": "No authentication token received. Please try again.",
+    "completingLogin": "Completing Login...",
+    "settingUpWithDiscord": "Setting up your account and joining Discord server...",
+    "settingUpAccount": "Please wait while we finish setting up your account.",
+    "loading": "Loading...",
+    "pleaseWait": "Please wait...",
     "login": {
       "title": "Welcome back",
       "subtitle": "Enter your credentials to continue",
@@ -785,9 +793,22 @@
     "ERR_COUPON_VALUE_INVALID": "Discount value must be greater than 0",
     "ERR_COUPON_PERCENTAGE_EXCEEDED": "Percentage discount cannot exceed 100%",
     "ERR_COUPON_CODE_EXISTS": "A coupon with this code already exists",
-    "ERR_COUPON_ALREADY_USED": "Cannot delete coupon that has already been redeemed by users"
+    "ERR_COUPON_ALREADY_USED": "Cannot delete coupon that has already been redeemed by users",
+    "ERR_CANNOT_RESOLVE_CLOSED": "Cannot resolve a closed ticket. Please reopen it first.",
+    "ERR_CATEGORY_CREATE_FAILED": "Failed to create category.",
+    "ERR_CATEGORY_UPDATE_FAILED": "Failed to rename category.",
+    "ERR_CATEGORY_DELETE_FAILED": "Failed to delete category.",
+    "ERR_LOAD_CATEGORIES_FAILED": "Failed to load categories.",
+    "ERR_PAYMENTS_LOAD_FAILED": "Failed to load payments ledger.",
+    "ERR_REFUND_FAILED": "Failed to refund payment.",
+    "ERR_VOID_FAILED": "Failed to void payment.",
+    "ERR_INVOICE_FAILED": "Failed to download invoice.",
+    "ERR_REGISTRATION_DISABLED": "Registration is currently disabled."
   },
   "Tickets": {
+    "errors": {
+      "titleAndMessageRequired": "Subject and message are required."
+    },
     "createTicket": "Create Ticket",
     "subject": "Subject",
     "briefDescription": "Brief description of your issue",

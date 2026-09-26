@@ -205,6 +205,28 @@ export function useAdminEggMutation(eggId?: string | null) {
     }
   };
 
+  // Submit delete egg
+  const deleteEgg = async (targetId: string): Promise<void> => {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem('auth_token');
+      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/${targetId}`, {
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) {
+        throw new Error('ERR_EGG_NOT_FOUND');
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'ERR_INTERNAL_SERVER';
+      setError(msg);
+      throw err;
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return {
     form,
     setForm,
@@ -220,7 +242,9 @@ export function useAdminEggMutation(eggId?: string | null) {
     serversCount,
     createEgg,
     updateEgg,
+    deleteEgg,
     uploadIconFile,
     loadEgg,
   };
 }
+

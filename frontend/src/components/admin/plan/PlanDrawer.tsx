@@ -58,27 +58,27 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan, preload
                   }}
                   loading={saving}
                   disabled={isInvalid}
-                  label={t('disable') || "Disable"}
+                  label={t('disable')}
                   variant="danger"
                   icon={<i className="fas fa-ban mr-2"></i>}
-                  onSuccess={() => { showSuccess(t('planDisabled', { name: plan.name }) || `Plan "${plan.name}" disabled.`); onClose(); }}
+                  onSuccess={() => { showSuccess(t('planDisabled', { name: plan.name })); onClose(); }}
                   onError={(e) => showError(e)}
                 />
               )}
               <ActionButton
                 onClick={async () => {
-                  if (confirm(t('confirmDelete') || "Are you sure you want to delete this plan?")) {
+                  if (confirm(t('confirmDelete'))) {
                     await onDeletePlan(plan._id, plan.name);
                     onSaveSuccess();
                   }
                 }}
                 loading={saving}
                 disabled={plan.totalPurchases > 0}
-                title={plan.totalPurchases > 0 ? (t('cannotDeleteActivePlan') || "Cannot delete plan while it is assigned to users") : undefined}
-                label={tCommon('delete') || "Delete"}
+                title={plan.totalPurchases > 0 ? t('cannotDeleteActivePlan') : undefined}
+                label={tCommon('delete')}
                 variant="danger"
                 icon={<i className="fas fa-trash mr-2"></i>}
-                onSuccess={() => { showSuccess(t('planDeleted', { name: plan.name }) || `Plan "${plan.name}" deleted.`); onClose(); }}
+                onSuccess={() => { showSuccess(t('planDeleted', { name: plan.name })); onClose(); }}
                 onError={(e) => showError(e)}
               />
             </div>
@@ -89,7 +89,7 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan, preload
                 disabled={saving}
                 className="rounded-lg border border-[#222] bg-transparent px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#161616] hover:text-[#D4D4D4] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {tCommon('cancel') || "Cancel"}
+                {tCommon('cancel')}
               </button>
               {!plan.enabled ? (
                 <ActionButton
@@ -102,8 +102,8 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan, preload
                   loading={saving}
                   disabled={isInvalid}
                   className="min-w-[140px]"
-                  label={t('enableItem') || "Enable Item"}
-                  onSuccess={() => { showSuccess(t('planEnabled', { name: plan.name }) || `Plan "${plan.name}" enabled.`); onClose(); }}
+                  label={t('enableItem')}
+                  onSuccess={() => { showSuccess(t('planEnabled', { name: plan.name })); onClose(); }}
                   onError={(e) => showError(e)}
                 />
               ) : (
@@ -115,9 +115,9 @@ function EditPlanWrapper({ planId, onClose, onSaveSuccess, onDeletePlan, preload
                   loading={saving}
                   disabled={isInvalid}
                   className="min-w-[140px]"
-                  label={t('saveChanges') || "Save Changes"}
+                  label={t('saveChanges')}
                   icon={<i className="fas fa-save mr-2"></i>}
-                  onSuccess={() => { showSuccess(t('planSaved', { name: plan.name }) || `Plan "${plan.name}" saved.`); onClose(); }}
+                  onSuccess={() => { showSuccess(t('planSaved', { name: plan.name })); onClose(); }}
                   onError={(e) => showError(e)}
                 />
               )}
@@ -209,7 +209,7 @@ function NewPlanWrapper({ onClose, onSaveSuccess, preloadedCategories }: { onClo
                 disabled={(currentStep === 'basics' && (!formData.name || !formData.category || !formData.description)) || (currentStep === 'pricing' && (formData.pricePerMonth === undefined || formData.pricePerMonth === null))}
                 className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {tCommon('nextStep') || "Next Step"}
+                {tCommon('nextStep')}
               </button>
             ) : (
               <ActionButton
@@ -220,9 +220,9 @@ function NewPlanWrapper({ onClose, onSaveSuccess, preloadedCategories }: { onClo
                 loading={saving}
                 disabled={isInvalid}
                 className="min-w-[140px]"
-                label={t('createPlan') || "Create Plan"}
+                label={t('createPlan')}
                 icon={<i className="fas fa-plus mr-2"></i>}
-                onSuccess={() => { showSuccess(t('planCreated') || "Plan created successfully."); onClose(); }}
+                onSuccess={() => { showSuccess(t('planCreated')); onClose(); }}
                 onError={(e) => showError(e)}
               />
             )}

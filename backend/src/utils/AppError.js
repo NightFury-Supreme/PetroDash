@@ -39,6 +39,10 @@ class AppError extends Error {
     return new AppError(message, 409, code, details);
   }
 
+  static tooManyRequests(message = 'Too Many Requests', code = 'ERR_RATE_LIMIT', details = null) {
+    return new AppError(message, 429, code, details);
+  }
+
   static internal(message = 'Internal Server Error', code = 'ERR_INTERNAL_SERVER', details = null) {
     return new AppError(message, 500, code, details);
   }

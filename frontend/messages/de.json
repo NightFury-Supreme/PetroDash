@@ -1,5 +1,13 @@
 {
   "Auth": {
+    "oauthFailed": "OAuth-Authentifizierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "loginFailed": "Anmeldung konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.",
+    "noTokenReceived": "Kein Authentifizierungs-Token empfangen. Bitte versuchen Sie es erneut.",
+    "completingLogin": "Anmeldung wird abgeschlossen...",
+    "settingUpWithDiscord": "Ihr Konto wird eingerichtet und dem Discord-Server beigetreten...",
+    "settingUpAccount": "Bitte warten Sie, während wir Ihr Konto einrichten.",
+    "loading": "Wird geladen...",
+    "pleaseWait": "Bitte warten...",
     "login": {
       "title": "Willkommen zurück",
       "subtitle": "Geben Sie Ihre Anmeldedaten ein, um fortzufahren",
@@ -785,9 +793,22 @@
     "ERR_COUPON_VALUE_INVALID": "Rabattwert muss größer als 0 sein",
     "ERR_COUPON_PERCENTAGE_EXCEEDED": "Prozentualer Rabatt darf 100% nicht überschreiten",
     "ERR_COUPON_CODE_EXISTS": "Ein Gutschein mit diesem Code existiert bereits",
-    "ERR_COUPON_ALREADY_USED": "Gutscheine, die bereits eingelöst wurden, können nicht gelöscht werden"
+    "ERR_COUPON_ALREADY_USED": "Gutscheine, die bereits eingelöst wurden, können nicht gelöscht werden",
+    "ERR_CANNOT_RESOLVE_CLOSED": "Ein geschlossenes Ticket kann nicht gelöst werden. Bitte öffnen Sie es zuerst wieder.",
+    "ERR_CATEGORY_CREATE_FAILED": "Kategorie konnte nicht erstellt werden.",
+    "ERR_CATEGORY_UPDATE_FAILED": "Kategorie konnte nicht umbenannt werden.",
+    "ERR_CATEGORY_DELETE_FAILED": "Kategorie konnte nicht gelöscht werden.",
+    "ERR_LOAD_CATEGORIES_FAILED": "Kategorien konnten nicht geladen werden.",
+    "ERR_PAYMENTS_LOAD_FAILED": "Zahlungsbuch konnte nicht geladen werden.",
+    "ERR_REFUND_FAILED": "Zahlung konnte nicht erstattet werden.",
+    "ERR_VOID_FAILED": "Zahlung konnte nicht storniert werden.",
+    "ERR_INVOICE_FAILED": "Rechnung konnte nicht heruntergeladen werden.",
+    "ERR_REGISTRATION_DISABLED": "Die Registrierung ist derzeit deaktiviert."
   },
   "Tickets": {
+    "errors": {
+      "titleAndMessageRequired": "Betreff und Nachricht sind erforderlich."
+    },
     "createTicket": "Ticket erstellen",
     "subject": "Betreff",
     "briefDescription": "Kurze Beschreibung Ihres Problems",

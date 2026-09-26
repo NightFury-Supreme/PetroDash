@@ -88,7 +88,7 @@ export default function TicketsPage() {
 
   const handleCreate = async () => {
     if (!createTitle.trim() || !createMessage.trim()) {
-      showError(t('subject')); // Or a better global error
+      showError(t('errors.titleAndMessageRequired'));
       return;
     }
     setCreating(true);

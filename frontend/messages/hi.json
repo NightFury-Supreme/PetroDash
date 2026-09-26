@@ -1,5 +1,13 @@
 {
   "Auth": {
+    "oauthFailed": "OAuth प्रमाणीकरण विफल रहा। कृपया पुन: प्रयास करें।",
+    "loginFailed": "लॉगिन पूरा करने में विफल। कृपया पुन: प्रयास करें।",
+    "noTokenReceived": "कोई प्रमाणीकरण टोकन प्राप्त नहीं हुआ। कृपया पुन: प्रयास करें।",
+    "completingLogin": "लॉगिन पूरा हो रहा है...",
+    "settingUpWithDiscord": "आपका खाता सेट किया जा रहा है और Discord सर्वर से जोड़ा जा रहा है...",
+    "settingUpAccount": "कृपया प्रतीक्षा करें जब तक हम आपका खाता सेट कर रहे हैं।",
+    "loading": "लोड हो रहा है...",
+    "pleaseWait": "कृपया प्रतीक्षा करें...",
     "login": {
       "title": "वापस स्वागत है",
       "subtitle": "जारी रखने के लिए अपनी क्रेडेंशियल दर्ज करें",
@@ -785,9 +793,22 @@
     "ERR_COUPON_VALUE_INVALID": "छूट मूल्य 0 से अधिक होना चाहिए",
     "ERR_COUPON_PERCENTAGE_EXCEEDED": "प्रतिशत छूट 100% से अधिक नहीं हो सकती",
     "ERR_COUPON_CODE_EXISTS": "इस कोड वाला एक कूपन पहले से मौजूद है",
-    "ERR_COUPON_ALREADY_USED": "उपयोगकर्ताओं द्वारा पहले से भुनाए जा चुके कूपन को हटाया नहीं जा सकता"
+    "ERR_COUPON_ALREADY_USED": "उपयोगकर्ताओं द्वारा पहले से भुनाए जा चुके कूपन को हटाया नहीं जा सकता",
+    "ERR_CANNOT_RESOLVE_CLOSED": "बंद टिकट को हल नहीं किया जा सकता। कृपया इसे पहले पुनः खोलें।",
+    "ERR_CATEGORY_CREATE_FAILED": "श्रेणी बनाने में विफल।",
+    "ERR_CATEGORY_UPDATE_FAILED": "श्रेणी का नाम बदलने में विफल।",
+    "ERR_CATEGORY_DELETE_FAILED": "श्रेणी हटाने में विफल।",
+    "ERR_LOAD_CATEGORIES_FAILED": "श्रेणियां लोड करने में विफल।",
+    "ERR_PAYMENTS_LOAD_FAILED": "भुगतान बहीखाता लोड करने में विफल।",
+    "ERR_REFUND_FAILED": "भुगतान वापस करने में विफल।",
+    "ERR_VOID_FAILED": "भुगतान रद्द करने में विफल।",
+    "ERR_INVOICE_FAILED": "चालान डाउनलोड करने में विफल।",
+    "ERR_REGISTRATION_DISABLED": "पंजीकरण वर्तमान में अक्षम है।"
   },
   "Tickets": {
+    "errors": {
+      "titleAndMessageRequired": "विषय और संदेश आवश्यक हैं।"
+    },
     "createTicket": "टिकट बनाएँ",
     "subject": "विषय",
     "briefDescription": "अपनी समस्या का संक्षिप्त विवरण",

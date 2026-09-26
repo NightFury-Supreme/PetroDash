@@ -1,5 +1,13 @@
 {
   "Auth": {
+    "oauthFailed": "La autenticación OAuth falló. Por favor, inténtalo de nuevo.",
+    "loginFailed": "No se pudo completar el inicio de sesión. Por favor, inténtalo de nuevo.",
+    "noTokenReceived": "No se recibió ningún token de autenticación. Por favor, inténtalo de nuevo.",
+    "completingLogin": "Completando inicio de sesión...",
+    "settingUpWithDiscord": "Configurando tu cuenta y uniéndose al servidor de Discord...",
+    "settingUpAccount": "Por favor espera mientras terminamos de configurar tu cuenta.",
+    "loading": "Cargando...",
+    "pleaseWait": "Por favor espera...",
     "login": {
       "title": "Bienvenido",
       "subtitle": "Ingresa tus credenciales para continuar",
@@ -785,9 +793,22 @@
     "ERR_COUPON_VALUE_INVALID": "El valor del descuento debe ser mayor que 0",
     "ERR_COUPON_PERCENTAGE_EXCEEDED": "El descuento porcentual no puede exceder el 100%",
     "ERR_COUPON_CODE_EXISTS": "Ya existe un cupón con este código",
-    "ERR_COUPON_ALREADY_USED": "No se puede eliminar un cupón que ya ha sido canjeado por usuarios"
+    "ERR_COUPON_ALREADY_USED": "No se puede eliminar un cupón que ya ha sido canjeado por usuarios",
+    "ERR_CANNOT_RESOLVE_CLOSED": "No se puede resolver un ticket cerrado. Por favor, reábrelo primero.",
+    "ERR_CATEGORY_CREATE_FAILED": "Error al crear la categoría.",
+    "ERR_CATEGORY_UPDATE_FAILED": "Error al renombrar la categoría.",
+    "ERR_CATEGORY_DELETE_FAILED": "Error al eliminar la categoría.",
+    "ERR_LOAD_CATEGORIES_FAILED": "Error al cargar las categorías.",
+    "ERR_PAYMENTS_LOAD_FAILED": "Error al cargar el libro de pagos.",
+    "ERR_REFUND_FAILED": "Error al reembolsar el pago.",
+    "ERR_VOID_FAILED": "Error al anular el pago.",
+    "ERR_INVOICE_FAILED": "Error al descargar la factura.",
+    "ERR_REGISTRATION_DISABLED": "El registro está actualmente deshabilitado."
   },
   "Tickets": {
+    "errors": {
+      "titleAndMessageRequired": "El asunto y el mensaje son obligatorios."
+    },
     "createTicket": "Crear ticket",
     "subject": "Asunto",
     "briefDescription": "Breve descripción de su problema",

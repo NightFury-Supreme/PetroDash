@@ -11,7 +11,6 @@ import { useTranslations } from 'next-intl';
 import { Drawer } from '@/components/ui/Drawer';
 import { DeleteDrawer } from '@/components/ui/DeleteDrawer';
 import { useAdminEggMutation } from '@/hooks/admin/eggs/useAdminEggMutation';
-import { fetchWithRetry } from '@/utils/fetchWithRetry';
 import { EditEggDrawerSkeleton } from './EditEggDrawerSkeleton';
 import { EggFormBasicSection } from './EggFormBasicSection';
 import { EggFormPanelSection } from './EggFormPanelSection';
@@ -49,6 +48,7 @@ export function EditEggDrawer({
     loadingPlans,
     serversCount,
     updateEgg,
+    deleteEgg,
   } = useAdminEggMutation(eggId);
 
   const handleUpdate = async (e: React.FormEvent) => {
@@ -66,18 +66,11 @@ export function EditEggDrawer({
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      const token = localStorage.getItem('auth_token');
-      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs/${eggId}`, {
-        method: 'DELETE',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (!res.ok) {
-        throw new Error('ERR_EGG_NOT_FOUND');
-      }
+      await deleteEgg(eggId);
       onUpdate();
       onClose();
     } catch {
-      // Failed to delete
+      // Error tracked in hook
     } finally {
       setDeleting(false);
     }

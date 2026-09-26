@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
+import { useAdminLedger } from '@/hooks/admin/ledger';
 import { useTranslations } from 'next-intl';
 
 interface AdminLedgerTableProps {
@@ -51,31 +51,14 @@ export function AdminLedgerTable({
     const canVoid = item.status === 'CREATED' && item.provider === 'paypal';
     const canInvoice = item.status === 'COMPLETED';
 
+    const { downloadInvoice } = useAdminLedger();
+
     const handleDownloadInvoice = async (paymentId: string) => {
       setDownloading(paymentId);
       try {
-        const token = localStorage.getItem('auth_token');
-        const baseUrl = process.env.NEXT_PUBLIC_API_BASE || '';
-        const res = await fetchWithRetry(`${baseUrl}/api/admin/payments/${paymentId}/invoice`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.error || 'Failed to download invoice');
-        }
-        
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `invoice-${paymentId}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        a.remove();
+        await downloadInvoice(paymentId);
       } catch (err: any) {
-        console.error(err);
-        const errKey = err.message || '';
+        const errKey = err?.message || '';
         alert(tErrorBackend.has(errKey as any) ? tErrorBackend(errKey as any) : t('failedToDownloadInvoice'));
       } finally {
         setDownloading(null);

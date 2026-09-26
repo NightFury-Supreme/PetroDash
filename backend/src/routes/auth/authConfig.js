@@ -1,9 +1,10 @@
 const express = require('express');
 const { getSettings } = require('../../lib/settings');
+const AppError = require('../../utils/AppError');
 const router = express.Router();
 
 // GET /api/auth/ - Public endpoint to get auth configuration
-router.get('/', async (req, res) => {
+router.get('/', async (req, res, next) => {
   try {
     const settings = await getSettings();
     if (!settings) {
@@ -27,10 +28,7 @@ router.get('/', async (req, res) => {
     });
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
-    // Auth config error logged silently
-    return res.status(500).json({
-      error: 'Failed to fetch auth configuration'
-    });
+    return next(AppError.internal('Failed to fetch auth configuration', 'ERR_AUTH_CONFIG_FAILED'));
   }
 });
 

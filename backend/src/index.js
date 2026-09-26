@@ -246,11 +246,16 @@ app.use((err, req, res, next) => {
     }
 
     res.status(status).json({
-        error: {
+        error: code || message,
+        code,
+        message,
+        details: details || null,
+        errorObj: {
             code,
             message,
             ...(details && { details })
-        }
+        },
+        ...(details && typeof details === 'object' ? details : {})
     });
 });
 

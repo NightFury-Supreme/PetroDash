@@ -15,7 +15,6 @@ exports.getStats = async (req, res, next) => {
         if (error instanceof AppError) {
             return next(error);
         }
-        console.error('Stats error:', error);
-        next(new AppError('Failed to fetch dashboard stats', 500, 'ERR_STATS_FETCH_FAILED'));
+        next(AppError.internal('Failed to fetch dashboard stats', 'ERR_STATS_FETCH_FAILED'));
     }
 };
