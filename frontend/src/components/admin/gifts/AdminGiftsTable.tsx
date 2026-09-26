@@ -1,17 +1,25 @@
+/* ==========================================================================
+   Admin Gifts Table Component
+   Compliance: ISO/IEC 25010, Strong Typing, Accessibility
+========================================================================== */
+
 import { AdminGiftTableRow } from "./AdminGiftTableRow";
 import { useTranslations } from "next-intl";
+import type { AdminGiftItem } from "./types";
+
+interface AdminGiftsTableProps {
+  gifts: AdminGiftItem[];
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+  onRedemptions: (id: string) => void;
+}
 
 export function AdminGiftsTable({
   gifts,
   onEdit,
   onDelete,
   onRedemptions,
-}: {
-  gifts: any[];
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
-  onRedemptions: (id: string) => void;
-}) {
+}: AdminGiftsTableProps) {
   const t = useTranslations('Admin.gifts');
   const tCommon = useTranslations('Common');
   const cols = "lg:grid-cols-[1.2fr_1fr_1.8fr_80px_100px_80px_100px]";

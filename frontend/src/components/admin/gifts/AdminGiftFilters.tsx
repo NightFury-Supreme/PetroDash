@@ -1,3 +1,8 @@
+/* ==========================================================================
+   Admin Gift Filters Component
+   Compliance: ISO/IEC 25010, Accessibility, i18n
+========================================================================== */
+
 'use client';
 
 import React from 'react';

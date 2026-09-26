@@ -721,7 +721,10 @@
     "ERR_2FA_INVALID": "अमान्य दो-कारक प्रमाणीकरण कोड या बैकअप कोड",
     "ERR_2FA_ALREADY_ENABLED": "दो-कारक प्रमाणीकरण पहले से ही सक्षम है",
     "ERR_NOT_FOUND": "संसाधन नहीं मिला",
-    "ERR_CANNOT_REVOKE_CURRENT": "आप अपना वर्तमान सत्र रद्द नहीं कर सकते"
+    "ERR_CANNOT_REVOKE_CURRENT": "आप अपना वर्तमान सत्र रद्द नहीं कर सकते",
+    "ERR_GIFT_NOT_FOUND": "उपहार वाउचर नहीं मिला",
+    "ERR_GIFT_CODE_REQUIRED": "वाउचर कोड आवश्यक है",
+    "ERR_GIFT_CODE_EXISTS": "इस कोड वाला एक वाउचर पहले से मौजूद है"
   },
   "Tickets": {
     "createTicket": "टिकट बनाएँ",
@@ -2013,7 +2016,35 @@
       "sortUsesAsc": "उपयोग: न्यूनतम पहले",
       "sortStatusActive": "स्थिति: सक्रिय पहले",
       "sortStatusExpired": "स्थिति: समाप्त पहले",
-      "searchPlaceholder": "कोड द्वारा उपहार खोजें..."
+      "searchPlaceholder": "कोड द्वारा उपहार खोजें...",
+      "editGift": "उपहार संपादित करें",
+      "editGiftSubtitle": "वाउचर पुरस्कार, सीमाएँ और समाप्ति सेटिंग्स संशोधित करें।",
+      "statusEnabled": "सक्रिय",
+      "statusDisabled": "अक्षम",
+      "deleteGift": "उपहार हटाएं",
+      "deleteGiftSubText": "क्या आप वाकई इस उपहार वाउचर को स्थायी रूप से हटाना चाहते हैं? जिन उपयोगकर्ताओं ने इसे अभी तक भुनाया नहीं है वे इसका उपयोग नहीं कर पाएंगे।",
+      "giftEntityType": "उपहार वाउचर",
+      "deleteWarning1": "इस क्रिया को पूर्ववत नहीं किया जा सकता है।",
+      "deleteWarning2": "सभी लंबित मोचन तुरंत रद्द कर दिए जाएंगे।",
+      "viewRedemptions": "मोचन देखें",
+      "giftRedemptions": "उपहार मोचन",
+      "viewingRedemptions": "कोड के लिए मोचन देख रहे हैं: {code}",
+      "noRedemptions": "किसी भी उपयोगकर्ता ने अभी तक इस वाउचर को नहीं भुनाया है।",
+      "redeemedAt": "मोचन का समय",
+      "noRewards": "कोई पुरस्कार नहीं",
+      "coin": "सिक्का",
+      "coins": "सिक्के",
+      "cpu": "सीपीयू",
+      "ram": "रैम",
+      "disk": "डिस्क",
+      "slot": "स्लॉट",
+      "slots": "स्लॉट्स",
+      "saveChanges": "परिवर्तन सहेजें",
+      "saving": "सहेजा जा रहा है...",
+      "delete": "हटाएं",
+      "successCreated": "उपहार वाउचर सफलतापूर्वक बनाया गया।",
+      "successUpdated": "उपहार वाउचर सफलतापूर्वक अद्यतन किया गया।",
+      "successDeleted": "उपहार वाउचर सफलतापूर्वक हटा दिया गया।"
     }
   },
   "AdminSettings": {

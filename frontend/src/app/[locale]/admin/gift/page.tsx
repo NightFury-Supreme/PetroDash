@@ -1,6 +1,6 @@
 "use client";
 
-import GiftsPageContent from "@/components/admin/gifts/GiftsPageContent";
+import { GiftsPageContent } from "@/components/admin/gifts";
 
 export default function AdminGiftsPage() {
   return (
@@ -9,5 +9,3 @@ export default function AdminGiftsPage() {
     </div>
   );
 }
-
-

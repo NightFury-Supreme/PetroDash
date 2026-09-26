@@ -1,6 +1,20 @@
+/* ==========================================================================
+   Admin Gift Table Row Component
+   Compliance: ISO/IEC 25010, Strong Typing, Accessibility
+========================================================================== */
+
 import { Edit2, Trash2, Users, Coins, Cpu, MemoryStick, HardDrive, Server, User } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
+import type { AdminGiftItem } from "./types";
+
+interface AdminGiftTableRowProps {
+  gift: AdminGiftItem;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+  onRedemptions: (id: string) => void;
+  cols: string;
+}
 
 export function AdminGiftTableRow({
   gift,
@@ -8,13 +22,7 @@ export function AdminGiftTableRow({
   onDelete,
   onRedemptions,
   cols,
-}: {
-  gift: any;
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
-  onRedemptions: (id: string) => void;
-  cols: string;
-}) {
+}: AdminGiftTableRowProps) {
   const t = useTranslations('Admin.gifts');
   const tCommon = useTranslations('Common');
 
@@ -123,7 +131,7 @@ export function AdminGiftTableRow({
           <button
             onClick={() => onEdit(gift._id)}
             title={t('editGift')}
-            className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#888] hover:text-[#D4D4D4] transition-colors bg-transparent border border-[#222] rounded-lg"
+            className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#888] hover:text-[#D4D4D4] hover:bg-[#2A2A2A] transition-colors"
           >
             <Edit2 size={14} />
           </button>

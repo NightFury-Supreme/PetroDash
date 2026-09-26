@@ -721,7 +721,10 @@
     "ERR_2FA_INVALID": "رمز المصادقة الثنائية أو رمز النسخ الاحتياطي غير صالح",
     "ERR_2FA_ALREADY_ENABLED": "المصادقة الثنائية مفعّلة بالفعل",
     "ERR_NOT_FOUND": "المورد غير موجود",
-    "ERR_CANNOT_REVOKE_CURRENT": "لا يمكنك إلغاء جلستك الحالية"
+    "ERR_CANNOT_REVOKE_CURRENT": "لا يمكنك إلغاء جلستك الحالية",
+    "ERR_GIFT_NOT_FOUND": "قسيمة الهدية غير موجودة",
+    "ERR_GIFT_CODE_REQUIRED": "رمز القسيمة مطلوب",
+    "ERR_GIFT_CODE_EXISTS": "توجد قسيمة بهذا الرمز بالفعل"
   },
   "Tickets": {
     "createTicket": "إنشاء تذكرة",
@@ -2013,7 +2016,35 @@
       "sortUsesAsc": "الاستخدامات: الأقل أولاً",
       "sortStatusActive": "الحالة: النشطة أولاً",
       "sortStatusExpired": "الحالة: المنتهية الصلاحية أولاً",
-      "searchPlaceholder": "البحث عن الهدايا بالرمز..."
+      "searchPlaceholder": "البحث عن الهدايا بالرمز...",
+      "editGift": "تعديل الهدية",
+      "editGiftSubtitle": "تعديل مكافآت القسيمة والحدود وإعدادات انتهاء الصلاحية.",
+      "statusEnabled": "نشط",
+      "statusDisabled": "معطل",
+      "deleteGift": "حذف الهدية",
+      "deleteGiftSubText": "هل أنت متأكد أنك تريد حذف قسيمة الهدية هذه نهائياً؟ المستخدمون الذين لم يستردوها بعد لن يتمكنوا من استخدامها.",
+      "giftEntityType": "قسيمة هدية",
+      "deleteWarning1": "لا يمكن التراجع عن هذا الإجراء.",
+      "deleteWarning2": "سيتم إلغاء جميع عمليات الاسترداد المعلقة على الفور.",
+      "viewRedemptions": "عرض عمليات الاسترداد",
+      "giftRedemptions": "عمليات استرداد الهدايا",
+      "viewingRedemptions": "عرض عمليات الاسترداد للرمز: {code}",
+      "noRedemptions": "لم يقم أي مستخدم باسترداد هذه القسيمة بعد.",
+      "redeemedAt": "تم الاسترداد في",
+      "noRewards": "لا توجد مكافآت",
+      "coin": "عملة",
+      "coins": "عملات",
+      "cpu": "معالج",
+      "ram": "رام",
+      "disk": "قرص",
+      "slot": "مساحة",
+      "slots": "مساحات",
+      "saveChanges": "حفظ التغييرات",
+      "saving": "جاري الحفظ...",
+      "delete": "حذف",
+      "successCreated": "تم إنشاء قسيمة الهدية بنجاح.",
+      "successUpdated": "تم تحديث قسيمة الهدية بنجاح.",
+      "successDeleted": "تم حذف قسيمة الهدية بنجاح."
     }
   },
   "AdminSettings": {

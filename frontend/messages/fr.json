@@ -721,7 +721,10 @@
     "ERR_2FA_INVALID": "Code d'authentification à deux facteurs ou code de sauvegarde invalide",
     "ERR_2FA_ALREADY_ENABLED": "L'authentification à deux facteurs est déjà activée",
     "ERR_NOT_FOUND": "Ressource non trouvée",
-    "ERR_CANNOT_REVOKE_CURRENT": "Vous ne pouvez pas révoquer votre session actuelle"
+    "ERR_CANNOT_REVOKE_CURRENT": "Vous ne pouvez pas révoquer votre session actuelle",
+    "ERR_GIFT_NOT_FOUND": "Bon cadeau non trouvé",
+    "ERR_GIFT_CODE_REQUIRED": "Le code du bon est requis",
+    "ERR_GIFT_CODE_EXISTS": "Un bon avec ce code existe déjà"
   },
   "Tickets": {
     "createTicket": "Créer le ticket",
@@ -2013,7 +2016,35 @@
       "sortUsesAsc": "Utilisations : Moins en premier",
       "sortStatusActive": "Statut : Actif en premier",
       "sortStatusExpired": "Statut : Expiré en premier",
-      "searchPlaceholder": "Rechercher des cadeaux par code..."
+      "searchPlaceholder": "Rechercher des cadeaux par code...",
+      "editGift": "Modifier le cadeau",
+      "editGiftSubtitle": "Modifier les récompenses, les limites et les paramètres d'expiration du bon.",
+      "statusEnabled": "Actif",
+      "statusDisabled": "Désactivé",
+      "deleteGift": "Supprimer le cadeau",
+      "deleteGiftSubText": "Êtes-vous sûr de vouloir supprimer définitivement ce bon cadeau ? Les utilisateurs qui ne l'ont pas encore utilisé ne pourront plus l'utiliser.",
+      "giftEntityType": "Bon cadeau",
+      "deleteWarning1": "Cette action est irréversible.",
+      "deleteWarning2": "Tous les échanges en attente seront immédiatement révoqués.",
+      "viewRedemptions": "Voir les échanges",
+      "giftRedemptions": "Échanges de cadeaux",
+      "viewingRedemptions": "Affichage des échanges pour le code : {code}",
+      "noRedemptions": "Aucun utilisateur n'a encore utilisé ce bon.",
+      "redeemedAt": "Utilisé le",
+      "noRewards": "Aucune récompense",
+      "coin": "Pièce",
+      "coins": "Pièces",
+      "cpu": "CPU",
+      "ram": "RAM",
+      "disk": "Disque",
+      "slot": "Emplacement",
+      "slots": "Emplacements",
+      "saveChanges": "Enregistrer les modifications",
+      "saving": "Enregistrement...",
+      "delete": "Supprimer",
+      "successCreated": "Bon cadeau créé avec succès.",
+      "successUpdated": "Bon cadeau mis à jour avec succès.",
+      "successDeleted": "Bon cadeau supprimé avec succès."
     }
   },
   "AdminSettings": {

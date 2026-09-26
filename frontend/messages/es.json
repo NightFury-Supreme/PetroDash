@@ -721,7 +721,10 @@
     "ERR_2FA_INVALID": "Código de autenticación de dos factores o código de respaldo inválido",
     "ERR_2FA_ALREADY_ENABLED": "La autenticación de dos factores ya está habilitada",
     "ERR_NOT_FOUND": "Recurso no encontrado",
-    "ERR_CANNOT_REVOKE_CURRENT": "No puedes revocar tu sesión actual"
+    "ERR_CANNOT_REVOKE_CURRENT": "No puedes revocar tu sesión actual",
+    "ERR_GIFT_NOT_FOUND": "Cupón de regalo no encontrado",
+    "ERR_GIFT_CODE_REQUIRED": "El código de cupón es obligatorio",
+    "ERR_GIFT_CODE_EXISTS": "Ya existe un cupón con este código"
   },
   "Tickets": {
     "createTicket": "Crear ticket",
@@ -2013,7 +2016,35 @@
       "sortUsesAsc": "Usos: Menor a mayor",
       "sortStatusActive": "Estado: Activo primero",
       "sortStatusExpired": "Estado: Expirado primero",
-      "searchPlaceholder": "Buscar regalos por código..."
+      "searchPlaceholder": "Buscar regalos por código...",
+      "editGift": "Editar regalo",
+      "editGiftSubtitle": "Modifica las recompensas, los límites y la configuración de vencimiento del cupón.",
+      "statusEnabled": "Activo",
+      "statusDisabled": "Deshabilitado",
+      "deleteGift": "Eliminar regalo",
+      "deleteGiftSubText": "¿Estás seguro de que deseas eliminar permanentemente este cupón de regalo? Los usuarios que aún no lo hayan canjeado ya no podrán usarlo.",
+      "giftEntityType": "Cupón de regalo",
+      "deleteWarning1": "Esta acción no se puede deshacer.",
+      "deleteWarning2": "Todos los canjes pendientes serán revocados de inmediato.",
+      "viewRedemptions": "Ver canjes",
+      "giftRedemptions": "Canjes de regalos",
+      "viewingRedemptions": "Viendo canjes para el código: {code}",
+      "noRedemptions": "Ningún usuario ha canjeado este cupón todavía.",
+      "redeemedAt": "Canjeado el",
+      "noRewards": "Sin recompensas",
+      "coin": "Moneda",
+      "coins": "Monedas",
+      "cpu": "CPU",
+      "ram": "RAM",
+      "disk": "Disco",
+      "slot": "Ranura",
+      "slots": "Ranuras",
+      "saveChanges": "Guardar cambios",
+      "saving": "Guardando...",
+      "delete": "Eliminar",
+      "successCreated": "Cupón de regalo creado exitosamente.",
+      "successUpdated": "Cupón de regalo actualizado exitosamente.",
+      "successDeleted": "Cupón de regalo eliminado exitosamente."
     }
   },
   "AdminSettings": {

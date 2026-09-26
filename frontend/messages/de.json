@@ -721,7 +721,10 @@
     "ERR_2FA_INVALID": "Ungültiger Zwei-Faktor-Authentifizierungscode oder Backup-Code",
     "ERR_2FA_ALREADY_ENABLED": "Zwei-Faktor-Authentifizierung ist bereits aktiviert",
     "ERR_NOT_FOUND": "Ressource nicht gefunden",
-    "ERR_CANNOT_REVOKE_CURRENT": "Sie können Ihre aktuelle Sitzung nicht widerrufen"
+    "ERR_CANNOT_REVOKE_CURRENT": "Sie können Ihre aktuelle Sitzung nicht widerrufen",
+    "ERR_GIFT_NOT_FOUND": "Geschenkgutschein nicht gefunden",
+    "ERR_GIFT_CODE_REQUIRED": "Gutscheincode ist erforderlich",
+    "ERR_GIFT_CODE_EXISTS": "Ein Gutschein mit diesem Code existiert bereits"
   },
   "Tickets": {
     "createTicket": "Ticket erstellen",
@@ -2013,7 +2016,35 @@
       "sortUsesAsc": "Nutzungen: Geringste zuerst",
       "sortStatusActive": "Status: Aktiv zuerst",
       "sortStatusExpired": "Status: Abgelaufen zuerst",
-      "searchPlaceholder": "Geschenke nach Code suchen..."
+      "searchPlaceholder": "Geschenke nach Code suchen...",
+      "editGift": "Geschenk bearbeiten",
+      "editGiftSubtitle": "Gutscheinbelohnungen, Limits und Ablaufeinstellungen ändern.",
+      "statusEnabled": "Aktiv",
+      "statusDisabled": "Deaktiviert",
+      "deleteGift": "Geschenk löschen",
+      "deleteGiftSubText": "Sind Sie sicher, dass Sie diesen Geschenkgutschein dauerhaft löschen möchten? Benutzer, die ihn noch nicht eingelöst haben, können ihn nicht mehr verwenden.",
+      "giftEntityType": "Geschenkgutschein",
+      "deleteWarning1": "Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deleteWarning2": "Alle ausstehenden Einlösungen werden sofort widerrufen.",
+      "viewRedemptions": "Einlösungen anzeigen",
+      "giftRedemptions": "Geschenkeinlösungen",
+      "viewingRedemptions": "Einlösungen für Code anzeigen: {code}",
+      "noRedemptions": "Noch keine Benutzer haben diesen Gutschein eingelöst.",
+      "redeemedAt": "Eingelöst am",
+      "noRewards": "Keine Belohnungen",
+      "coin": "Münze",
+      "coins": "Münzen",
+      "cpu": "CPU",
+      "ram": "RAM",
+      "disk": "Festplatte",
+      "slot": "Slot",
+      "slots": "Slots",
+      "saveChanges": "Änderungen speichern",
+      "saving": "Speichern...",
+      "delete": "Löschen",
+      "successCreated": "Geschenkgutschein erfolgreich erstellt.",
+      "successUpdated": "Geschenkgutschein erfolgreich aktualisiert.",
+      "successDeleted": "Geschenkgutschein erfolgreich gelöscht."
     }
   },
   "AdminSettings": {

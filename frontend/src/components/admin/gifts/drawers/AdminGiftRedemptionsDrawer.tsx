@@ -1,65 +1,38 @@
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
-import { useState, useEffect, useCallback } from "react";
+/* ==========================================================================
+   Admin Gift Redemptions Drawer
+   Compliance: ISO/IEC 25010, SoC (Uses useGiftRedemptions hook)
+========================================================================== */
+
+import React from "react";
 import { Drawer } from "@/components/ui/Drawer";
-import AdminGiftRedemptionsSkeleton from "@/components/skeletons/admin/gifts/AdminGiftRedemptionsSkeleton";
+import { AdminGiftRedemptionsSkeleton } from "@/components/skeletons/admin/gifts";
 import { Users, User } from "lucide-react";
 import { Pagination } from "@/components/Pagination";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
+import { useGiftRedemptions } from "@/hooks/admin/gift";
+
+interface AdminGiftRedemptionsDrawerProps {
+  giftId: string | null;
+  onClose: () => void;
+}
 
 export function AdminGiftRedemptionsDrawer({
   giftId,
   onClose,
-}: {
-  giftId: string | null;
-  onClose: () => void;
-}) {
+}: AdminGiftRedemptionsDrawerProps) {
   const t = useTranslations('Admin.gifts');
   const tCommon = useTranslations('Common');
-  const tErrorBackend = useTranslations('GlobalErrors');
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [redemptions, setRedemptions] = useState<any[]>([]);
-  const [giftCode, setGiftCode] = useState<string>("");
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
-
-  const loadGiftRedemptions = useCallback(async (page: number) => {
-    if (!giftId) return;
-    try {
-      setLoading(true);
-      setError(null);
-      const token = localStorage.getItem("auth_token");
-      const res = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ""}/api/admin/gifts/${giftId}/redemptions?page=${page}&limit=10`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        throw new Error(d.error || "fetch_failed");
-      }
-      const data = await res.json();
-      
-      setGiftCode(data.code || "");
-      setRedemptions(data.redemptions || []);
-      if (data.pagination) setPagination(data.pagination);
-    } catch (e: any) {
-      const errKey = e.message || 'fetch_failed';
-      setError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : e.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [giftId, tErrorBackend]);
-
-  useEffect(() => {
-    if (giftId) {
-      loadGiftRedemptions(currentPage);
-    } else {
-      setRedemptions([]);
-      setCurrentPage(1);
-    }
-  }, [giftId, currentPage, loadGiftRedemptions]);
+  const {
+    redemptions,
+    giftCode,
+    loading,
+    error,
+    currentPage,
+    setCurrentPage,
+    pagination,
+  } = useGiftRedemptions(giftId);
 
   return (
     <Drawer
@@ -70,7 +43,10 @@ export function AdminGiftRedemptionsDrawer({
       icon={<Users size={20} />}
       footer={
         <div className="flex items-center justify-end w-full">
-          <button onClick={onClose} className="rounded-lg border border-[#222] bg-[#161616] px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#1A1A1A] hover:text-[#D4D4D4] bg-transparent">
+          <button
+            onClick={onClose}
+            className="rounded-lg border border-[#222] bg-[#161616] px-4 py-2 text-sm font-medium text-[#888] transition-colors hover:bg-[#1A1A1A] hover:text-[#D4D4D4]"
+          >
             {tCommon('close')}
           </button>
         </div>
@@ -88,20 +64,23 @@ export function AdminGiftRedemptionsDrawer({
         </div>
       ) : (
         <div className="-mx-6 sm:-mx-8">
-          {/* TABLE HEADER */}
+          {/* Table Header */}
           <div className="hidden gap-4 grid-cols-[1.5fr_1.5fr_1fr] border-b border-white/[0.06] px-6 sm:px-8 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30 md:grid pt-4">
             <span>{tCommon('username')}</span>
             <span>{tCommon('email')}</span>
             <span className="text-right">{t('redeemedAt')}</span>
           </div>
 
-          {/* TABLE LIST */}
+          {/* Table Rows */}
           <div className="divide-y divide-white/[0.06]">
             {redemptions.map((r, i) => (
-              <div key={i} className="group grid grid-cols-1 gap-4 px-6 sm:px-8 py-4 transition hover:bg-white/[0.015] md:grid-cols-[1.5fr_1.5fr_1fr] md:items-center">
+              <div
+                key={i}
+                className="group grid grid-cols-1 gap-4 px-6 sm:px-8 py-4 transition hover:bg-white/[0.015] md:grid-cols-[1.5fr_1.5fr_1fr] md:items-center"
+              >
                 <div className="min-w-0">
                   <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{tCommon('username')}</p>
-                  <Link 
+                  <Link
                     href={r.user?._id ? `/admin/users/${r.user._id}` : "#"}
                     className={`flex items-center gap-2 group/user ${r.user?._id ? "cursor-pointer" : "cursor-default pointer-events-none"}`}
                   >
@@ -122,28 +101,37 @@ export function AdminGiftRedemptionsDrawer({
                     </div>
                   </Link>
                 </div>
+
                 <div className="min-w-0">
                   <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{tCommon('email')}</p>
-                  <span className="block truncate text-xs text-[#888888]">{r.user?.email || 'N/A'}</span>
+                  <span className="block truncate text-sm text-[#888888]">
+                    {r.user?.email || "—"}
+                  </span>
                 </div>
+
                 <div className="min-w-0 md:text-right">
                   <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{t('redeemedAt')}</p>
-                  <span className="block truncate text-xs text-[#888888]">{new Date(r.redeemedAt).toLocaleString()}</span>
+                  <span className="text-xs text-[#666]">
+                    {r.redeemedAt ? new Date(r.redeemedAt).toLocaleString() : "—"}
+                  </span>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* PAGINATION */}
-          <Pagination
-            currentPage={currentPage}
-            totalPages={pagination.totalPages}
-            totalItems={pagination.total}
-            pageSize={10}
-            onPageChange={setCurrentPage}
-            loading={loading}
-            itemName={tCommon('redemptions')}
-          />
+          {pagination.totalPages > 1 && (
+            <div className="p-4 border-t border-white/[0.06]">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={pagination.totalPages}
+                totalItems={pagination.total}
+                pageSize={10}
+                onPageChange={setCurrentPage}
+                loading={loading}
+                itemName={t('giftRedemptions')}
+              />
+            </div>
+          )}
         </div>
       )}
     </Drawer>

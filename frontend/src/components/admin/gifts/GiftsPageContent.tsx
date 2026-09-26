@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
-import { AdminGiftsSkeleton } from '@/components/skeletons/admin/gifts/AdminGiftsSkeleton';
+import { AdminGiftsSkeleton } from '@/components/skeletons/admin/gifts';
 import { Pagination } from '@/components/Pagination';
 import { AdminGiftsTable } from './AdminGiftsTable';
 import { AdminCreateGiftDrawer } from './drawers/AdminCreateGiftDrawer';
@@ -13,7 +13,7 @@ import { AdminGiftFilters } from './AdminGiftFilters';
 import { AdminGiftSort } from './AdminGiftSort';
 import { Search, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useAdminGift } from '@/hooks/admin/gift/useAdminGift';
+import { useAdminGift } from '@/hooks/admin/gift';
 
 export default function GiftsPageContent() {
   const t = useTranslations('Admin.gifts');
