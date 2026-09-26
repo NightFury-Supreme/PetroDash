@@ -1,6 +1,6 @@
 import { downloadInvoicePdf } from "@/utils/invoiceDownload";
 import React, { useEffect, useRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useFormatter } from 'next-intl';
 import { useToast } from "@/components/ui/ToastProvider";
 import { TicketMessage } from '../types';
 import { formatRelative } from '../utils';
@@ -27,6 +27,7 @@ export function TicketDetailConversation({
   onServerMentionClick,
 }: TicketDetailConversationProps) {
   const t = useTranslations('Tickets');
+  const format = useFormatter();
   const topRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const initialScrolledRef = useRef(false);
@@ -87,9 +88,17 @@ export function TicketDetailConversation({
           const isInternal = msg.internal || msg.isInternal || false;
           const avatarUrl = authorObj?.profilePicture || null;
 
-          const msgDate = new Date(msg.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
-          const prevMsgDate = i > 0 ? new Date(messages[i-1].createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : null;
+          const msgDate = format.dateTime(new Date(msg.createdAt), { day: '2-digit', month: '2-digit', year: 'numeric' });
+          const prevMsgDate = i > 0 ? format.dateTime(new Date(messages[i-1].createdAt), { day: '2-digit', month: '2-digit', year: 'numeric' }) : null;
           const showDateDivider = msgDate !== prevMsgDate;
+
+          const relativeTimestamp = (() => {
+            try {
+              return format.relativeTime(new Date(msg.createdAt));
+            } catch {
+              return formatRelative(msg.createdAt);
+            }
+          })();
 
           return (
             <React.Fragment key={msg._id || i}>
@@ -105,7 +114,7 @@ export function TicketDetailConversation({
                 isMine={isMine}
                 isInternal={isInternal}
                 text={msg.body || (msg as any).message || ''}
-                time={formatRelative(msg.createdAt)}
+                time={relativeTimestamp}
                 avatarUrl={avatarUrl}
                 viewerRole={viewerRole}
                 onServerMentionClick={onServerMentionClick}
@@ -204,6 +213,9 @@ function RichText({ text, viewerRole, onServerMentionClick }: { text: string; vi
 function MentionPill({ type, id, name, viewerRole, onServerMentionClick }: { type: 'server'|'invoice'; id: string; name: string; viewerRole: 'admin'|'user'; onServerMentionClick?: (serverId: string) => void; }) {
   const [downloading, setDownloading] = React.useState(false);
   const { showError } = useToast();
+  const t = useTranslations('Tickets');
+  const tError = useTranslations('BackendErrors');
+  const tCommon = useTranslations('Common');
 
   const handleClick = async () => {
     if (type === 'server') {
@@ -217,9 +229,8 @@ function MentionPill({ type, id, name, viewerRole, onServerMentionClick }: { typ
       try {
         setDownloading(true);
         await downloadInvoicePdf(id, viewerRole === 'admin');
-      } catch (e) {
-        console.error(e);
-        showError("Failed to download invoice.");
+      } catch {
+        showError(tError.has('ERR_INVOICE_FAILED') ? tError('ERR_INVOICE_FAILED') : tCommon('retry'));
       } finally {
         setDownloading(false);
       }
@@ -240,7 +251,7 @@ function MentionPill({ type, id, name, viewerRole, onServerMentionClick }: { typ
           ? 'text-[#FF5722] hover:text-[#ff7448]' 
           : 'text-emerald-400 hover:text-emerald-300'
       } ${downloading ? 'opacity-50 cursor-wait' : ''}`}
-      title={type === 'server' ? 'View Server' : 'Download Invoice'}
+      title={type === 'server' ? t('viewServer') : t('downloadInvoice')}
     >
       {downloading ? (
         <Loader2 size={14} className="animate-spin mr-1" />

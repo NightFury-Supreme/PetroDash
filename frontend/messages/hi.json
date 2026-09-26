@@ -898,7 +898,11 @@
     "status": "स्थिति",
     "created": "बनाया गया",
     "pending": "लंबित",
-    "typeMessagePlaceholder": "संदेश टाइप करें (सर्वर या चालान लिंक करने के लिए @ का उपयोग करें)"
+    "typeMessagePlaceholder": "संदेश टाइप करें (सर्वर या चालान लिंक करने के लिए @ का उपयोग करें)",
+    "management": "प्रबंधन",
+    "ticketSettings": "टिकट सेटिंग्स",
+    "viewServer": "सर्वर देखें",
+    "downloadInvoice": "चालान डाउनलोड करें"
   },
   "Common": {
     "cancel": "रद्द करें",

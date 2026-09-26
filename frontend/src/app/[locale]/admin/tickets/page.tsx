@@ -107,7 +107,7 @@ export default function AdminTicketsPage() {
     <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans">
       <div className="flex flex-col h-full space-y-6">
         <header>
-          <TicketsHeader />
+          <TicketsHeader title={t('supportTickets')} description={t('manageAllUserTickets')} />
         </header>
 
         <div className="flex flex-col lg:flex-row gap-8 items-start">

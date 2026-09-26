@@ -50,8 +50,8 @@ const addMessage = async (id, data, req) => {
   const { body, internal } = data || {};
 
   const t = await Ticket.findById(String(id));
-  if (!t) throw new AppError('Ticket not found', 404, 'ERR_TICKET_NOT_FOUND');
-  if (t.deletedByUser) throw new AppError('Ticket is deleted', 403, 'ERR_TICKET_DELETED');
+  if (!t) throw AppError.notFound('Ticket not found', 'ERR_TICKET_NOT_FOUND');
+  if (t.deletedByUser) throw AppError.forbidden('Ticket is deleted', 'ERR_TICKET_DELETED');
 
   const isInternal = Boolean(internal);
 

@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { CheckCircle2, Inbox, MoreHorizontal, ShieldOff, RotateCcw, XCircle } from 'lucide-react';
 import { TicketStatusBadge } from "@/components/tickets/TicketStatusBadge";
 import { formatRelative, shortId } from "@/components/tickets/utils";
-import { useTranslations } from 'next-intl';
+import { useTranslations, useFormatter } from 'next-intl';
 
 import { useRouter } from '@/i18n/routing';
 import type { TicketStatus } from "@/components/tickets/types";
@@ -33,11 +33,20 @@ export function AdminTicketItem({ t: ticket, onAction }:{ t: Ticket; onAction: (
   const [opening, setOpening] = useState(false);
   const [menu, setMenu] = useState(false);
   const tr = useTranslations('AdminTickets');
+  const format = useFormatter();
 
   const avatarUrl =
     ticket.user?.profilePicture ||
     ticket.user?.oauthProviders?.discord?.avatar ||
     ticket.user?.oauthProviders?.google?.picture;
+
+  const relativeTime = (() => {
+    try {
+      return format.relativeTime(new Date(ticket.updatedAt));
+    } catch {
+      return formatRelative(ticket.updatedAt);
+    }
+  })();
 
   return (
     <div className={`relative transition-colors hover:bg-white/[0.015] px-2 ${opening ? 'opacity-70' : ''} ${menu ? 'z-50' : 'z-0'}`}>
@@ -59,7 +68,7 @@ export function AdminTicketItem({ t: ticket, onAction }:{ t: Ticket; onAction: (
               <div className="mt-0.5 flex items-center gap-1.5 md:hidden">
                 <span className="text-[11px] capitalize text-[#888]">{ticket.user?.username || ticket.user?.email || tr('user')}</span>
                 <span className="text-white/20">&middot;</span>
-                <span className="text-[11px] text-[#666]">{formatRelative(ticket.updatedAt)}</span>
+                <span className="text-[11px] text-[#666]">{relativeTime}</span>
               </div>
             </div>
           </div>
@@ -104,7 +113,7 @@ export function AdminTicketItem({ t: ticket, onAction }:{ t: Ticket; onAction: (
 
         {/* Updated — desktop */}
         <span className="hidden text-xs text-[#666] md:block truncate">
-          {formatRelative(ticket.updatedAt)}
+          {relativeTime}
         </span>
 
         {/* Status badge */}

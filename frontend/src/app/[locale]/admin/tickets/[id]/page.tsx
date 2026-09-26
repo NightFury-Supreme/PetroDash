@@ -103,7 +103,12 @@ export default function AdminTicketDetailPage() {
     setActionDone(null);
     try {
       await updateStatus(status);
-      showSuccess(t("ticket_marked_as", { status }));
+      const statusLabel =
+        status === 'open' ? t('statusOpen') :
+        status === 'pending' ? t('statusPending') :
+        status === 'resolved' ? t('statusResolved') :
+        status === 'closed' ? t('statusClosed') : status;
+      showSuccess(t("ticket_marked_as", { status: statusLabel }));
       setActionDone(actionKey);
       setTimeout(() => setActionDone(null), 2000);
     } catch (e: any) { showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : e.message); }
@@ -115,7 +120,11 @@ export default function AdminTicketDetailPage() {
     setActionDone(null);
     try {
       await updatePriority(priority);
-      showSuccess(t("priority_set_to", { priority }));
+      const priorityLabel =
+        priority === 'low' ? t('priorityLow') :
+        priority === 'medium' ? t('priorityMedium') :
+        priority === 'high' ? t('priorityHigh') : priority;
+      showSuccess(t("priority_set_to", { priority: priorityLabel }));
       setActionDone("priority");
       setTimeout(() => setActionDone(null), 2000);
     } catch (e: any) { showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : e.message); }

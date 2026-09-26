@@ -898,7 +898,11 @@
     "status": "Status",
     "created": "Created",
     "pending": "Pending",
-    "typeMessagePlaceholder": "Nachricht eingeben (@ verwenden, um Server oder Rechnungen zu verknüpfen)"
+    "typeMessagePlaceholder": "Nachricht eingeben (@ verwenden, um Server oder Rechnungen zu verknüpfen)",
+    "management": "Verwaltung",
+    "ticketSettings": "Ticket-Einstellungen",
+    "viewServer": "Server anzeigen",
+    "downloadInvoice": "Rechnung herunterladen"
   },
   "Common": {
     "cancel": "Abbrechen",

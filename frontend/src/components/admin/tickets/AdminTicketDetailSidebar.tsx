@@ -3,7 +3,7 @@
 import React from 'react';
 import { Select } from '@/components/ui/Select';
 import { shortId } from "@/components/tickets/utils";
-import { useTranslations } from 'next-intl';
+import { useTranslations, useFormatter } from 'next-intl';
 
 interface AdminTicketDetailSidebarProps {
   ticket: {
@@ -37,8 +37,9 @@ export function AdminTicketDetailSidebar({
   onAction,
 }: AdminTicketDetailSidebarProps) {
   const t = useTranslations('AdminTickets');
+  const format = useFormatter();
 
-  const createdDate = new Date(ticket.createdAt).toLocaleDateString("en-GB", {
+  const createdDate = format.dateTime(new Date(ticket.createdAt), {
     day: "numeric", month: "short", year: "numeric",
   });
   
@@ -106,7 +107,7 @@ export function AdminTicketDetailSidebar({
             <div className="flex justify-between text-sm">
               <span className="text-white/40">{t('updated')}</span>
               <span className="text-white/70">
-                {new Date(ticket.updatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                {format.dateTime(new Date(ticket.updatedAt), { day: "numeric", month: "short", year: "numeric" })}
               </span>
             </div>
           </div>

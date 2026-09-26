@@ -898,7 +898,11 @@
     "status": "Status",
     "created": "Created",
     "pending": "Pending",
-    "typeMessagePlaceholder": "Tapez un message (utilisez @ pour lier des serveurs ou des factures)"
+    "typeMessagePlaceholder": "Tapez un message (utilisez @ pour lier des serveurs ou des factures)",
+    "management": "Gestion",
+    "ticketSettings": "Paramètres des tickets",
+    "viewServer": "Afficher le serveur",
+    "downloadInvoice": "Télécharger la facture"
   },
   "Common": {
     "cancel": "Annuler",

@@ -898,7 +898,11 @@
     "status": "Status",
     "created": "Created",
     "pending": "Pending",
-    "typeMessagePlaceholder": "Type a message (use @ to link servers or invoices)"
+    "typeMessagePlaceholder": "Type a message (use @ to link servers or invoices)",
+    "management": "Management",
+    "ticketSettings": "Ticket Settings",
+    "viewServer": "View Server",
+    "downloadInvoice": "Download Invoice"
   },
   "Common": {
     "cancel": "Cancel",

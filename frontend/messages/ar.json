@@ -898,7 +898,11 @@
     "status": "Status",
     "created": "Created",
     "pending": "Pending",
-    "typeMessagePlaceholder": "اكتب رسالة (استخدم @ لربط الخوادم أو الفواتير)"
+    "typeMessagePlaceholder": "اكتب رسالة (استخدم @ لربط الخوادم أو الفواتير)",
+    "management": "الإدارة",
+    "ticketSettings": "إعدادات التذاكر",
+    "viewServer": "عرض الخادم",
+    "downloadInvoice": "تنزيل الفاتورة"
   },
   "Common": {
     "cancel": "إلغاء",

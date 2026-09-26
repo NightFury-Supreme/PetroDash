@@ -898,7 +898,11 @@
     "status": "Status",
     "created": "Created",
     "pending": "Pending",
-    "typeMessagePlaceholder": "Escribe un mensaje (usa @ para vincular servidores o facturas)"
+    "typeMessagePlaceholder": "Escribe un mensaje (usa @ para vincular servidores o facturas)",
+    "management": "Gestión",
+    "ticketSettings": "Configuración de tickets",
+    "viewServer": "Ver servidor",
+    "downloadInvoice": "Descargar factura"
   },
   "Common": {
     "cancel": "Cancelar",
