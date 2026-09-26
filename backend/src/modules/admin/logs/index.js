@@ -5,8 +5,11 @@
 
 const logsController = require('./logs.controller');
 const logsService = require('./logs.service');
+const logsSchemas = require('./logs.schema');
 
 module.exports = {
   logsController,
   logsService,
+  logsSchemas,
 };
+
