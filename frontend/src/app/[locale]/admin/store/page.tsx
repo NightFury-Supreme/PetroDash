@@ -1,79 +1,34 @@
 "use client";
 
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { ShoppingCart, Crown, Tag, Receipt } from 'lucide-react';
-import { SideItem } from '@/components/profile';
-import AdminShopTab from '@/components/admin/store/tabs/ShopTab';
-import AdminPlansTab from '@/components/admin/store/tabs/PlansTab';
-import AdminCouponsTab from '@/components/admin/store/tabs/CouponsTab';
-import AdminLedgerTab from '@/components/admin/store/tabs/LedgerTab';
+import React, { Suspense } from 'react';
+import {
+  AdminStoreHeader,
+  AdminStoreSidebar,
+  AdminStoreContent,
+} from '@/components/admin/store';
+import { AdminStoreSkeleton } from '@/components/skeletons/admin/store';
+import { useAdminStore } from '@/hooks/admin/store';
 
-export default function AdminStorePage() {
-  const t = useTranslations('admin.store');
-  const [tab, setTab] = useState('shop');
-
-  const handleTabChange = (t: string) => {
-    setTab(t);
-  };
+function AdminStoreInner() {
+  const { activeTab, setActiveTab } = useAdminStore();
 
   return (
     <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen">
       <div className="flex flex-col h-full space-y-6">
-        <header>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-[#FF5722] tracking-tight">{t('title')}</h1>
-              <p className="text-[#888888] mt-1 text-sm">{t('description')}</p>
-            </div>
-          </div>
-        </header>
-
+        <AdminStoreHeader />
         <div className="flex flex-col lg:flex-row gap-8 items-start">
-          {/* Vertical Sidebar */}
-          <aside className="w-full lg:w-48 shrink-0 pt-1">
-            <div className="sticky top-6">
-              <div className="mb-4">
-                <p className="text-[11px] font-medium uppercase tracking-widest text-[#555]">{t('sidebar.title')}</p>
-              </div>
-              <nav className="space-y-1">
-                <SideItem 
-                  icon={ShoppingCart} 
-                  label={t('sidebar.shop')} 
-                  active={tab === 'shop'} 
-                  onClick={() => handleTabChange('shop')} 
-                />
-                <SideItem 
-                  icon={Crown} 
-                  label={t('sidebar.plans')} 
-                  active={tab === 'plans'} 
-                  onClick={() => handleTabChange('plans')} 
-                />
-                <SideItem 
-                  icon={Tag} 
-                  label={t('sidebar.coupons')} 
-                  active={tab === 'coupons'} 
-                  onClick={() => handleTabChange('coupons')} 
-                />
-                <SideItem 
-                  icon={Receipt} 
-                  label={t('sidebar.ledger')} 
-                  active={tab === 'ledger'} 
-                  onClick={() => handleTabChange('ledger')} 
-                />
-              </nav>
-            </div>
-          </aside>
-
-          {/* Main Content */}
-          <div className="flex-1 min-w-0 w-full">
-            {tab === 'shop' && <AdminShopTab />}
-            {tab === 'plans' && <AdminPlansTab />}
-            {tab === 'coupons' && <AdminCouponsTab />}
-            {tab === 'ledger' && <AdminLedgerTab />}
-          </div>
+          <AdminStoreSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+          <AdminStoreContent activeTab={activeTab} />
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AdminStorePage() {
+  return (
+    <Suspense fallback={<AdminStoreSkeleton />}>
+      <AdminStoreInner />
+    </Suspense>
   );
 }

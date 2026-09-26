@@ -18,6 +18,7 @@ export * from './admin/plan/new';
 export * from './admin/plan/list';
 export * from './admin/plan/edit';
 export * from './admin/logs';
+export * from './admin/store';
 
 // Gift skeletons
 export * from './gift/GiftSkeleton';

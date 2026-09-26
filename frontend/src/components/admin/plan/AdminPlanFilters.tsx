@@ -31,7 +31,7 @@ export function AdminPlanFilters({
         renderButtonContent={() => (
           <div className="flex items-center gap-[7px]">
             <SlidersHorizontal size={14} className="text-[#858585]" />
-            <span className="text-[10px] text-[#858585]">{t('filters') || 'Filters'}</span>
+            <span className="text-[10px] text-[#858585]">{t('filters')}</span>
             {activeFilterCount > 0 && (
               <span className="min-w-[17px] h-[17px] inline-flex items-center justify-center px-1 rounded-[9px] bg-[#ff5722] text-white text-[8px] font-bold">
                 {activeFilterCount}
@@ -42,17 +42,17 @@ export function AdminPlanFilters({
         renderDropdown={({ close }) => (
           <div className="flex flex-col">
             <div className="min-h-[50px] flex flex-col justify-center px-3 pt-1 border-b border-[#222] pb-3">
-              <strong className="text-[#ddd] text-[11px] mb-[2px]">{t('filters') || 'Filters'}</strong>
-              <span className="text-[#555] text-[9px]">{t('narrowDownPlans') || 'Narrow down your plans'}</span>
+              <strong className="text-[#ddd] text-[11px] mb-[2px]">{t('filters')}</strong>
+              <span className="text-[#555] text-[9px]">{t('narrowDownPlans')}</span>
             </div>
             
             <div className="flex flex-col gap-[15px] p-[13px]">
               <div className="flex flex-col gap-[7px]">
-                <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">{t('category') || 'Category'}</label>
+                <label className="text-[#666] text-[8px] font-semibold uppercase tracking-[0.7px]">{t('category')}</label>
                 <Select size="sm"
                   value={categoryFilter}
                   options={[
-                    { label: t('allCategories') || "All Categories", value: "all" },
+                    { label: t('allCategories'), value: "all" },
                     ...categories.map(c => ({ label: c, value: c }))
                   ]}
                   onChange={setCategoryFilter}
@@ -65,13 +65,13 @@ export function AdminPlanFilters({
                 onClick={clearFilters} 
                 className="text-[10px] font-medium text-[#777] hover:text-[#ddd] transition-colors"
               >
-                {tCommon('clearFilters') || 'Clear filters'}
+                {tCommon('clearFilters')}
               </button>
               <button 
                 onClick={close} 
                 className="h-[35px] px-[15px] rounded-md text-[10px] font-semibold bg-[#ff5722] text-white hover:bg-[#ff6939] transition-colors"
               >
-                {tCommon('applyFilters') || 'Apply filters'}
+                {tCommon('applyFilters')}
               </button>
             </div>
           </div>

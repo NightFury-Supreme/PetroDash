@@ -8,6 +8,7 @@ const Plan = require('../../../models/Plan');
 const PlanCategory = require('../../../models/PlanCategory');
 const { getCache, setCache, deleteCachePattern } = require('../../../lib/redis');
 const { writeAudit } = require('../../../middleware/audit');
+const { logUserActivity } = require('../../../middleware/userActivity');
 const AppError = require('../../../utils/AppError');
 
 const getCategories = async () => {
@@ -76,13 +77,18 @@ const createCategory = async (name, req) => {
   await writeAudit(req, 'admin.plan_category.create', 'plan_category', category._id.toString(), {
     name: category.name,
   });
+  await logUserActivity(req, 'admin.plan_category.create', {
+    categoryId: category._id.toString(),
+    name: category.name,
+  });
 
   await deleteCachePattern('admin:plans*');
+  await deleteCachePattern('api:plans*');
 
   return { id: category._id.toString(), name: category.name, planCount: 0 };
 };
 
-const updateCategory = async (id, name) => {
+const updateCategory = async (id, name, req) => {
   if (!name || typeof name !== 'string' || !name.trim()) {
     throw new AppError('Category name is required', 400, 'ERR_CATEGORY_NAME_REQUIRED');
   }
@@ -92,10 +98,24 @@ const updateCategory = async (id, name) => {
     throw new AppError('Category not found', 404, 'ERR_CATEGORY_NOT_FOUND');
   }
 
+  const oldName = category.name;
   category.name = name.trim();
   await category.save();
 
+  if (req) {
+    await writeAudit(req, 'admin.plan_category.update', 'plan_category', id, {
+      name: category.name,
+      oldName,
+    });
+    await logUserActivity(req, 'admin.plan_category.update', {
+      categoryId: id,
+      name: category.name,
+      oldName,
+    });
+  }
+
   await deleteCachePattern('admin:plans*');
+  await deleteCachePattern('api:plans*');
 
   return { id: category._id.toString(), name: category.name };
 };
@@ -120,8 +140,13 @@ const deleteCategory = async (id, req) => {
   await writeAudit(req, 'admin.plan_category.delete', 'plan_category', id, {
     categoryName: category.name,
   });
+  await logUserActivity(req, 'admin.plan_category.delete', {
+    categoryId: id,
+    categoryName: category.name,
+  });
 
   await deleteCachePattern('admin:plans*');
+  await deleteCachePattern('api:plans*');
 };
 
 module.exports = {

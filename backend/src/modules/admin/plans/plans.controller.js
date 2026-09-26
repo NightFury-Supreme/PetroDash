@@ -41,7 +41,7 @@ const updateCategory = async (req, res, next) => {
     if (!parsed.success) {
       throw new AppError('Invalid category payload', 400, 'ERR_CATEGORY_VALIDATION_FAILED', parsed.error.flatten());
     }
-    const category = await plansService.updateCategory(req.params.id, parsed.data.name);
+    const category = await plansService.updateCategory(req.params.id, parsed.data.name, req);
     return res.json(category);
   } catch (error) {
     next(error);

@@ -38,6 +38,10 @@ const updatePayment = async (req, res, next) => {
     }
     const { p, changes } = await paymentsService.updatePayment(paramParsed.data.id, parsed.data);
     await writeAudit(req, 'admin.payment.update', 'payment', p._id.toString(), { changes });
+    await logUserActivity(req, 'admin.payment.update', {
+      paymentId: p._id.toString(),
+      changes: Object.keys(changes).length > 0 ? changes : undefined,
+    });
     return res.json({ ok: true, payment: p });
   } catch (error) {
     next(error);

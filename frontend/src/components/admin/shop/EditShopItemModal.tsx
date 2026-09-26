@@ -1,9 +1,8 @@
 "use client";
-import { ActionButton } from '@/components/admin/earn/EarnUI';
+import React, { useState, useEffect } from 'react';
+import { Loader2, Save, Ban, Check } from 'lucide-react';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslations } from 'next-intl';
-
-import { useState, useEffect } from 'react';
 import { ShopItem } from '@/hooks/admin/shop/useAdminShop';
 import { Drawer } from '@/components/ui/Drawer';
 
@@ -59,18 +58,24 @@ export function EditShopItemModal({
         formData.enabled ? (
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
-              <ActionButton
+              <button
+                type="button"
+                disabled={saving}
                 onClick={async () => {
-                  await onSave(item._id, { enabled: false });
-                  setFormData(prev => ({ ...prev, enabled: false }));
+                  try {
+                    await onSave(item._id, { enabled: false });
+                    setFormData(prev => ({ ...prev, enabled: false }));
+                    showSuccess(t('itemDisabled', { name: item.name }));
+                    onClose();
+                  } catch (e: any) {
+                    showError(tErrorBackend.has(e?.message || e) ? tErrorBackend(e?.message || e) : (e?.message || e));
+                  }
                 }}
-                loading={saving}
-                label={tCommon('disable')}
-                variant="danger"
-                icon={<i className="fas fa-ban mr-2"></i>}
-                onSuccess={() => { showSuccess(t('itemDisabled', { name: item.name })); onClose(); }}
-                onError={(e) => showError(tErrorBackend.has(e) ? tErrorBackend(e) : e)}
-              />
+                className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ban className="w-4 h-4" />}
+                <span>{tCommon('disable')}</span>
+              </button>
             </div>
             <div className="flex items-center gap-2">
               <button 
@@ -81,14 +86,23 @@ export function EditShopItemModal({
               >
                 {tCommon('cancel')}
               </button>
-              <ActionButton
-                onClick={async () => { await onSave(item._id, formData); }}
-                loading={saving}
-                label={tCommon('saveChanges')}
-                icon={<i className="fas fa-save mr-2"></i>}
-                onSuccess={() => { showSuccess(t('itemSaved', { name: item.name })); onClose(); }}
-                onError={(e) => showError(tErrorBackend.has(e) ? tErrorBackend(e) : e)}
-              />
+              <button
+                type="button"
+                disabled={saving}
+                onClick={async () => {
+                  try {
+                    await onSave(item._id, formData);
+                    showSuccess(t('itemSaved', { name: item.name }));
+                    onClose();
+                  } catch (e: any) {
+                    showError(tErrorBackend.has(e?.message || e) ? tErrorBackend(e?.message || e) : (e?.message || e));
+                  }
+                }}
+                className="flex items-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white hover:bg-[#F4511E] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                <span>{tCommon('saveChanges')}</span>
+              </button>
             </div>
           </div>
         ) : (
@@ -101,16 +115,24 @@ export function EditShopItemModal({
             >
               {tCommon('cancel')}
             </button>
-            <ActionButton
+            <button
+              type="button"
+              disabled={saving}
               onClick={async () => {
-                await onSave(item._id, { enabled: true });
-                setFormData(prev => ({ ...prev, enabled: true }));
+                try {
+                  await onSave(item._id, { enabled: true });
+                  setFormData(prev => ({ ...prev, enabled: true }));
+                  showSuccess(t('itemEnabled', { name: item.name }));
+                  onClose();
+                } catch (e: any) {
+                  showError(tErrorBackend.has(e?.message || e) ? tErrorBackend(e?.message || e) : (e?.message || e));
+                }
               }}
-              loading={saving}
-              label={t('enableItem')}
-              onSuccess={() => { showSuccess(t('itemEnabled', { name: item.name })); onClose(); }}
-              onError={(e) => showError(tErrorBackend.has(e) ? tErrorBackend(e) : e)}
-            />
+              className="flex items-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white hover:bg-[#F4511E] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+              <span>{t('enableItem')}</span>
+            </button>
           </div>
         )
       }

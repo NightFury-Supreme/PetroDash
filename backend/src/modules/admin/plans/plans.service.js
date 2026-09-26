@@ -7,6 +7,7 @@ const Plan = require('../../../models/Plan');
 const UserPlan = require('../../../models/UserPlan');
 const { getCache, setCache, deleteCachePattern } = require('../../../lib/redis');
 const { writeAudit } = require('../../../middleware/audit');
+const { logUserActivity } = require('../../../middleware/userActivity');
 const AppError = require('../../../utils/AppError');
 const categoriesService = require('./plans.categories.service');
 
@@ -109,7 +110,9 @@ const createPlan = async (data, req) => {
   await plan.save();
 
   await writeAudit(req, 'admin.plan.create', 'plan', plan._id.toString(), { created: validatedData });
+  await logUserActivity(req, 'admin.plan.create', { planId: plan._id.toString(), name: plan.name });
   await deleteCachePattern('admin:plans*');
+  await deleteCachePattern('api:plans*');
 
   return plan;
 };
@@ -168,8 +171,13 @@ const updatePlan = async (id, data, req) => {
   await writeAudit(req, 'admin.plan.update', 'plan', plan._id.toString(), {
     changes: Object.keys(changes).length > 0 ? changes : undefined,
   });
+  await logUserActivity(req, 'admin.plan.update', {
+    planId: plan._id.toString(),
+    changes: Object.keys(changes).length > 0 ? changes : undefined,
+  });
 
   await deleteCachePattern('admin:plans*');
+  await deleteCachePattern('api:plans*');
 
   return plan;
 };
@@ -203,7 +211,9 @@ const patchPlan = async (id, data, req) => {
   }
 
   await writeAudit(req, 'admin.plan.update', 'plan', plan._id.toString(), { changes });
+  await logUserActivity(req, 'admin.plan.update', { planId: plan._id.toString(), changes });
   await deleteCachePattern('admin:plans*');
+  await deleteCachePattern('api:plans*');
 
   return plan;
 };
@@ -228,7 +238,9 @@ const deletePlan = async (id, req) => {
 
   await Plan.findByIdAndDelete(String(id));
   await writeAudit(req, 'admin.plan.delete', 'plan', id, { planName: plan.name });
+  await logUserActivity(req, 'admin.plan.delete', { planId: id, planName: plan.name });
   await deleteCachePattern('admin:plans*');
+  await deleteCachePattern('api:plans*');
 };
 
 module.exports = {

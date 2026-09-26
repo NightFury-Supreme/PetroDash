@@ -5,7 +5,7 @@ import { CreditCard, RefreshCw, Plus, Search } from 'lucide-react';
 import { ErrorState, DashboardButton, ErrorDescription } from '@/components/ui/ErrorState';
 import { useToast } from "@/components/ui/ToastProvider";
 import { useModal } from '@/components/Modal';
-import { PlansListSkeleton } from '@/components/skeletons/admin/plan/list/PlansListSkeleton';
+import { PlansListSkeleton } from '@/components/skeletons';
 import { usePlansList } from '@/hooks/admin/plan/usePlansList';
 import { PlansList } from '@/components/admin/plan/PlansList';
 import { PlanDrawer } from '@/components/admin/plan/PlanDrawer';
@@ -235,7 +235,7 @@ export default function AdminPlansTab() {
             totalItems={totalItems}
             pageSize={10}
             onPageChange={setPage}
-            itemName={tCommon('pagination.plans')}
+            itemName="plans"
           />
 
         </div>

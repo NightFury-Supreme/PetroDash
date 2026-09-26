@@ -5,8 +5,9 @@
 
 const ShopItem = require('../../../models/ShopItem');
 const { ensureShopPresets } = require('../../../lib/shopPresets');
-const { getCache, setCache, deleteCachePattern } = require('../../../lib/redis');
+const { getCache, setCache, deleteCache, deleteCachePattern } = require('../../../lib/redis');
 const { writeAudit } = require('../../../middleware/audit');
+const { logUserActivity } = require('../../../middleware/userActivity');
 const AppError = require('../../../utils/AppError');
 
 const listShopItems = async () => {
@@ -41,6 +42,7 @@ const updateShopItem = async (id, data, req) => {
   );
 
   await deleteCachePattern('admin:shop*');
+  await deleteCache('api:shop');
 
   const changes = {};
   const originalItem = existingItem.toObject();
@@ -61,6 +63,11 @@ const updateShopItem = async (id, data, req) => {
   checkDiff(changes, data, originalItem, newItem);
 
   await writeAudit(req, 'admin.shop.update', 'shop_item', existingItem._id.toString(), {
+    changes: Object.keys(changes).length > 0 ? changes : undefined,
+  });
+
+  await logUserActivity(req, 'admin.shop.update', {
+    itemId: id,
     changes: Object.keys(changes).length > 0 ? changes : undefined,
   });
 

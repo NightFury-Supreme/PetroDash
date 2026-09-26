@@ -10,5 +10,6 @@ export * from './plan';
 export * from './servers';
 export * from './settings';
 export * from './shop';
+export * from './store';
 export * from './tickets';
 export * from './users';

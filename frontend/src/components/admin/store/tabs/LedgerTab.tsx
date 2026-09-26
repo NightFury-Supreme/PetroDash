@@ -154,7 +154,7 @@ export default function AdminLedgerTab() {
         totalItems={pagination.total}
         pageSize={10}
         onPageChange={setCurrentPage}
-        itemName={tCommon('pagination.payments')}
+        itemName="payments"
       />
 
       <AdminRefundDrawer

@@ -5,6 +5,7 @@
 
 const couponsService = require('./coupons.service');
 const { writeAudit } = require('../../../middleware/audit');
+const { logUserActivity } = require('../../../middleware/userActivity');
 const {
   createCouponSchema,
   updateCouponSchema,
@@ -36,6 +37,7 @@ class CouponsController {
       const parsedBody = createCouponSchema.parse(req.body);
       const coupon = await couponsService.createCoupon(parsedBody);
       await writeAudit(req, 'admin.coupon.create', 'coupon', coupon._id.toString(), { created: parsedBody });
+      await logUserActivity(req, 'admin.coupon.create', { couponId: coupon._id.toString(), code: coupon.code });
       res.status(201).json(coupon);
     } catch (error) {
       next(error);
@@ -49,6 +51,11 @@ class CouponsController {
       await writeAudit(req, 'admin.coupon.update', 'coupon', coupon._id.toString(), {
         changes: Object.keys(changes).length > 0 ? changes : undefined,
       });
+      await logUserActivity(req, 'admin.coupon.update', {
+        couponId: coupon._id.toString(),
+        code: coupon.code,
+        changes: Object.keys(changes).length > 0 ? changes : undefined,
+      });
       res.json(coupon);
     } catch (error) {
       next(error);
@@ -59,7 +66,8 @@ class CouponsController {
     try {
       const coupon = await couponsService.deleteCoupon(String(req.params.id));
       await writeAudit(req, 'admin.coupon.delete', 'coupon', req.params.id, { code: coupon.code });
-      res.json({ success: true, message: 'Coupon deleted successfully' });
+      await logUserActivity(req, 'admin.coupon.delete', { couponId: req.params.id, code: coupon.code });
+      res.json({ success: true, code: 'COUPON_DELETED' });
     } catch (error) {
       next(error);
     }
