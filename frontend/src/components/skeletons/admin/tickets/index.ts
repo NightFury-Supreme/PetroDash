@@ -1,9 +1,6 @@
 /* ==========================================================================
-   Admin Tickets Hooks Module
+   Admin Tickets Skeleton Module
    Compliance: ISO/IEC 25010 (Module Encapsulation / Barrel Pattern)
 ========================================================================== */
 
-export * from './types';
-export * from './useAdminTickets';
-export * from './useAdminTicketDetail';
-export * from './useAdminTicketCategories';
+export { AdminTicketDetailSkeleton } from "./AdminTicketDetailSkeleton";

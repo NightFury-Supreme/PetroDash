@@ -4,21 +4,20 @@ import React, { useEffect, useState, useRef } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
 import TicketsHeader from "@/components/tickets/TicketsHeader";
 import { TicketNavSidebar } from "@/components/tickets/TicketNavSidebar";
-import AdminTicketItem from "@/components/admin/tickets/AdminTicketItem";
+import { AdminTicketItem, TicketSettings } from "@/components/admin/tickets";
 import TicketsSkeleton from "@/components/skeletons/tickets/TicketsSkeleton";
-import TicketSettings from "@/components/admin/tickets/TicketSettings";
 import { TicketPagination } from "@/components/tickets/TicketPagination";
 import { TicketCategoryFilter } from "@/components/tickets/TicketCategoryFilter";
 import { TicketSort } from "@/components/tickets/TicketSort";
 import { Search, X, MessageSquare, RefreshCw } from "lucide-react";
 import { ErrorState, DashboardButton, ErrorDescription } from "@/components/ui/ErrorState";
-import { useAdminTickets } from "@/hooks/admin/tickets/useAdminTickets";
+import { useAdminTickets } from "@/hooks/admin/tickets";
 import { useTranslations } from "next-intl";
 
 const PAGE_SIZE = 25;
 
 export default function AdminTicketsPage() {
-  const t = useTranslations('admin.tickets');
+  const t = useTranslations('AdminTickets');
   const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
   const { showError } = useToast();
@@ -86,11 +85,22 @@ export default function AdminTicketsPage() {
 
   const getTabTitle = () => {
     if (activeTab === 'all') return t("all_tickets");
-    return t(`${activeTab}_tickets_title`);
+    if (activeTab === 'open') return t("open_tickets_title");
+    if (activeTab === 'pending') return t("pending_tickets_title");
+    if (activeTab === 'resolved') return t("resolved_tickets_title");
+    if (activeTab === 'closed') return t("closed_tickets_title");
+    if (activeTab === 'deleted') return t("deleted_tickets_title");
+    return t("all_tickets");
   };
 
   const getTabDescription = () => {
-    return t(`${activeTab}_tickets_desc`);
+    if (activeTab === 'all') return t("all_tickets_desc");
+    if (activeTab === 'open') return t("open_tickets_desc");
+    if (activeTab === 'pending') return t("pending_tickets_desc");
+    if (activeTab === 'resolved') return t("resolved_tickets_desc");
+    if (activeTab === 'closed') return t("closed_tickets_desc");
+    if (activeTab === 'deleted') return t("deleted_tickets_desc");
+    return "";
   };
 
   return (

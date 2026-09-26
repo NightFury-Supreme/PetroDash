@@ -9,7 +9,7 @@ interface TicketSettingsProps {
   onClose: () => void;
 }
 
-export default function TicketSettings({ onClose }: TicketSettingsProps) {
+export function TicketSettings({ onClose }: TicketSettingsProps) {
   const { categories, loading, saving, addCategory, removeCategory, save } = useAdminTicketCategories();
   const [newCategory, setNewCategory] = useState('');
 
@@ -133,3 +133,5 @@ export default function TicketSettings({ onClose }: TicketSettingsProps) {
     </Drawer>
   );
 }
+
+export default TicketSettings;

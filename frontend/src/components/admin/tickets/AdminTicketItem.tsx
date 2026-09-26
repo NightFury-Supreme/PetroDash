@@ -6,6 +6,9 @@ import { TicketStatusBadge } from "@/components/tickets/TicketStatusBadge";
 import { formatRelative, shortId } from "@/components/tickets/utils";
 import { useTranslations } from 'next-intl';
 
+import { useRouter } from '@/i18n/routing';
+import type { TicketStatus } from "@/components/tickets/types";
+
 type Ticket = { 
   _id: string; 
   title: string; 
@@ -25,7 +28,8 @@ type Ticket = {
   } 
 };
 
-export default function AdminTicketItem({ t: ticket, onAction }:{ t: Ticket; onAction: (action: 'close'|'resolve'|'delete'|'restore'|'reopen', id: string)=>Promise<void> }){
+export function AdminTicketItem({ t: ticket, onAction }:{ t: Ticket; onAction: (action: 'close'|'resolve'|'delete'|'restore'|'reopen', id: string)=>Promise<void> }){
+  const router = useRouter();
   const [opening, setOpening] = useState(false);
   const [menu, setMenu] = useState(false);
   const tr = useTranslations('AdminTickets');
@@ -40,7 +44,7 @@ export default function AdminTicketItem({ t: ticket, onAction }:{ t: Ticket; onA
       <div className="grid grid-cols-[1fr_auto] items-center gap-3 py-5 md:grid-cols-[1.5fr_2fr_100px_100px_100px_80px_36px] md:gap-4">
         
         {/* Subject + ID */}
-        <button type="button" onClick={()=>{ setOpening(true); window.location.href=`/admin/tickets/${ticket._id}`; }} className="min-w-0 text-left">
+        <button type="button" onClick={() => { setOpening(true); router.push(`/admin/tickets/${ticket._id}`); }} className="min-w-0 text-left">
           <div className="flex items-center gap-2.5">
             <div className="min-w-0">
               <div className="flex items-center gap-2">
@@ -105,7 +109,7 @@ export default function AdminTicketItem({ t: ticket, onAction }:{ t: Ticket; onA
 
         {/* Status badge */}
         <span className="hidden md:block">
-          <TicketStatusBadge status={ticket.status as any} />
+          <TicketStatusBadge status={ticket.status as TicketStatus} />
         </span>
 
         {/* Priority */}
@@ -115,7 +119,7 @@ export default function AdminTicketItem({ t: ticket, onAction }:{ t: Ticket; onA
               ticket.priority === 'medium' ? 'bg-[#FF9900]/10 text-[#FF9900] border-[#FF9900]/20' : 
               'bg-[#303030]/50 text-[#888] border-[#333]'}
           `}>
-            {ticket.priority}
+            {ticket.priority === 'high' ? tr('priorityHigh') : ticket.priority === 'medium' ? tr('priorityMedium') : ticket.priority === 'low' ? tr('priorityLow') : ticket.priority}
           </span>
         </span>
 
@@ -162,7 +166,7 @@ function AdminTicketContextMenu({ ticket: t, onAction, onClose, tr }: {
               <CtxItem icon={<Inbox size={12} />} label={tr('reopenTicket')} onClick={() => onAction('reopen')} />
             ) : (
               <>
-                <CtxItem icon={<CheckCircle2 size={12} />} label={tr('resolve')} onClick={() => onAction('resolve')} />
+                <CtxItem icon={<CheckCircle2 size={12} />} label={tr('resolveTicket')} onClick={() => onAction('resolve')} />
                 <CtxItem icon={<XCircle size={12} />} label={tr('closeTicket')} onClick={() => onAction('close')} />
               </>
             )}
@@ -195,3 +199,5 @@ function CtxItem({ icon, label, onClick, disabled = false, danger = false }: {
     </button>
   );
 }
+
+export default AdminTicketItem;

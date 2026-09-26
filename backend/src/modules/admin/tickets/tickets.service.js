@@ -163,7 +163,7 @@ const listTickets = async (queryParam) => {
 
 const getTicket = async (id) => {
   if (!/^[0-9a-fA-F]{24}$/.test(id)) {
-    throw new AppError('Invalid ticket ID format', 400, 'ERR_INVALID_ID');
+    throw AppError.badRequest('Invalid ticket ID format', 'ERR_INVALID_ID');
   }
 
   const cacheKey = `tickets:admin:detail:${id}`;
@@ -174,7 +174,7 @@ const getTicket = async (id) => {
     .populate('user', 'username email')
     .populate('assignee', 'username email')
     .lean();
-  if (!t) throw new AppError('Ticket not found', 404, 'ERR_TICKET_NOT_FOUND');
+  if (!t) throw AppError.notFound('Ticket not found', 'ERR_TICKET_NOT_FOUND');
 
   t.messages = [];
   await setCache(cacheKey, t, 30);

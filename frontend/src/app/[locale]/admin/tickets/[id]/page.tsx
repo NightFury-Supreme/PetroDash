@@ -1,22 +1,22 @@
 "use client";
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { useParams, notFound }   from "@/i18n/routing";
+import { useParams, notFound, useRouter } from "@/i18n/routing";
 import { useToast } from "@/components/ui/ToastProvider";
 import { useTranslations } from "next-intl";
 
 import { TicketDetailConversation } from "@/components/tickets/detail/TicketDetailConversation";
-import { AdminTicketComposer }      from "@/components/admin/tickets/AdminTicketComposer";
-import { AdminEditServerDrawer }    from "@/components/admin/servers/AdminEditServerDrawer";
-import { AdminTicketDetailSidebar } from "@/components/admin/tickets/AdminTicketDetailSidebar";
-import { AdminTicketDetailSkeleton } from "@/components/skeletons/admin/tickets/AdminTicketDetailSkeleton";
+import { AdminTicketComposer, AdminTicketDetailSidebar } from "@/components/admin/tickets";
+import { AdminEditServerDrawer } from "@/components/admin/servers/AdminEditServerDrawer";
+import { AdminTicketDetailSkeleton } from "@/components/skeletons/admin/tickets";
 import { shortId } from "@/components/tickets/utils";
-import { useAdminTicketDetail } from "@/hooks/admin/tickets/useAdminTickets";
+import { useAdminTicketDetail } from "@/hooks/admin/tickets";
 
 const POLL_MS = 15_000;
 
 export default function AdminTicketDetailPage() {
-  const t = useTranslations('admin.tickets');
+  const router = useRouter();
+  const t = useTranslations('AdminTickets');
   const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
   const { showError, showSuccess } = useToast();
@@ -52,7 +52,7 @@ export default function AdminTicketDetailPage() {
     updatePriority,
     handleActionAPI,
     sendReplyAPI
-  } = useAdminTicketDetail(id, POLL_MS, scrollToBottom);
+  } = useAdminTicketDetail(id, POLL_MS, scrollToBottom, () => router.push('/admin/tickets'));
 
   React.useLayoutEffect(() => {
     if (!loading && scrollContainerRef.current) {
@@ -128,7 +128,12 @@ export default function AdminTicketDetailPage() {
     else if (action === "reopen")  await updateStatusHandler("open",     "reopen");
     else if (action === "delete") {
       setActionBusy("delete");
-      try { await handleActionAPI("delete"); } catch { setActionBusy(null); }
+      try { 
+        await handleActionAPI("delete"); 
+      } catch (e: any) { 
+        setActionBusy(null); 
+        showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : e.message);
+      }
     } else if (action === "restore") {
       setActionBusy("restore");
       try { 

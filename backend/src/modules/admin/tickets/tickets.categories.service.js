@@ -6,8 +6,10 @@
 const Ticket = require('../../../models/Ticket');
 const Settings = require('../../../models/Settings');
 const { getSettings, clearSettingsCache } = require('../../../lib/settings');
+const { deleteCachePattern } = require('../../../lib/redis');
 const AppError = require('../../../utils/AppError');
 const { writeAudit } = require('../../../middleware/audit');
+const { logUserActivity } = require('../../../middleware/userActivity');
 
 const getCategories = async () => {
   const s = await getSettings();
@@ -28,7 +30,7 @@ const getCategoryUsage = async () => {
 const updateCategories = async (categoriesInput, req) => {
   let categories = categoriesInput;
   if (!Array.isArray(categories)) {
-    throw new AppError('categories must be an array of strings', 400, 'ERR_INVALID_CATEGORIES');
+    throw AppError.badRequest('categories must be an array of strings', 'ERR_INVALID_CATEGORIES');
   }
 
   categories = categories
@@ -48,7 +50,7 @@ const updateCategories = async (categoriesInput, req) => {
   if (toRemove.length > 0) {
     const inUse = await Ticket.distinct('category', { category: { $in: toRemove } });
     if (inUse.length > 0) {
-      throw new AppError('Cannot remove categories that are in use', 400, 'ERR_CATEGORY_IN_USE');
+      throw AppError.badRequest('Cannot remove categories that are in use', 'ERR_CATEGORY_IN_USE');
     }
   }
 
@@ -60,9 +62,15 @@ const updateCategories = async (categoriesInput, req) => {
   await s.save();
   clearSettingsCache();
 
+  await deleteCachePattern('tickets:admin:list:*');
+  await deleteCachePattern('tickets:admin:counts:*');
+
   if (JSON.stringify(oldCategories) !== JSON.stringify(newSet)) {
     await writeAudit(req, 'admin.settings.tickets.update', 'settings', s._id.toString(), {
       changes: { ticketCategories: { old: oldCategories, new: newSet } },
+    });
+    await logUserActivity(req, 'admin.settings.tickets.update', {
+      ticketCategories: newSet,
     });
   }
 

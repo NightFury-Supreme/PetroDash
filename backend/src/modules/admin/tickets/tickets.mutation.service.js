@@ -15,19 +15,19 @@ const { sendMailTemplate } = require('../../../lib/mail');
 
 const updateTicket = async (id, data, req) => {
   if (!/^[0-9a-fA-F]{24}$/.test(id)) {
-    throw new AppError('Invalid ticket ID format', 400, 'ERR_INVALID_ID');
+    throw AppError.badRequest('Invalid ticket ID format', 'ERR_INVALID_ID');
   }
 
   const { status, assignee, priority, tags, deletedByUser } = data || {};
   const t = await Ticket.findById(String(id));
-  if (!t) throw new AppError('Ticket not found', 404, 'ERR_TICKET_NOT_FOUND');
+  if (!t) throw AppError.notFound('Ticket not found', 'ERR_TICKET_NOT_FOUND');
 
   const originalTicket = t.toObject();
   let changed = false;
 
   if (status !== undefined && ['open', 'pending', 'resolved', 'closed'].includes(status)) {
     if (t.status === 'closed' && status === 'resolved') {
-      throw new AppError('Cannot resolve a closed ticket. Please reopen it first.', 400, 'ERR_CANNOT_RESOLVE_CLOSED');
+      throw AppError.badRequest('Cannot resolve a closed ticket. Please reopen it first.', 'ERR_CANNOT_RESOLVE_CLOSED');
     }
 
     if (t.status !== status && (status === 'resolved' || status === 'closed')) {
@@ -119,11 +119,11 @@ const updateTicket = async (id, data, req) => {
 
 const deleteTicket = async (id, req) => {
   if (!/^[0-9a-fA-F]{24}$/.test(id)) {
-    throw new AppError('Invalid ticket ID format', 400, 'ERR_INVALID_ID');
+    throw AppError.badRequest('Invalid ticket ID format', 'ERR_INVALID_ID');
   }
 
   const result = await Ticket.findByIdAndDelete(String(id));
-  if (!result) throw new AppError('Ticket not found', 404, 'ERR_TICKET_NOT_FOUND');
+  if (!result) throw AppError.notFound('Ticket not found', 'ERR_TICKET_NOT_FOUND');
 
   await deleteCachePattern('tickets:admin:list:*');
   await deleteCachePattern('tickets:admin:counts:*');
@@ -131,6 +131,16 @@ const deleteTicket = async (id, req) => {
   await deleteCachePattern(`tickets:admin:detail:${id}`);
 
   await writeAudit(req, 'admin.ticket.delete', 'ticket', result._id.toString(), { title: result.title });
+
+  await logUserActivity(
+    null,
+    'admin.ticket.delete',
+    {
+      ticketId: result._id.toString(),
+      title: result.title,
+    },
+    result.user ? result.user.toString() : null
+  );
 
   return { ok: true };
 };

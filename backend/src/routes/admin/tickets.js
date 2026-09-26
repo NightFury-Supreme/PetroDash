@@ -1,6 +1,11 @@
+/* ==========================================================================
+   Admin Tickets Router
+   Compliance: ISO/IEC 25010, OWASP ASVS (Thin router delegating to controller)
+========================================================================== */
+
 const express = require('express');
 const { requireAdmin } = require('../../middleware/auth');
-const ticketsController = require('../../modules/admin/tickets/tickets.controller');
+const { ticketsController } = require('../../modules/admin/tickets');
 
 const router = express.Router();
 

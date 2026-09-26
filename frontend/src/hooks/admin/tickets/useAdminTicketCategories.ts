@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { fetchWithRetry } from '@/utils/fetchWithRetry';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslations } from 'next-intl';
+import { getToken } from '@/components/tickets/utils';
 
 export interface Category {
   id: string;
@@ -20,7 +21,7 @@ export function useAdminTicketCategories() {
 
   const load = useCallback(async () => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
 
       const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/tickets/settings/categories`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -78,7 +79,7 @@ export function useAdminTicketCategories() {
   const save = useCallback(async () => {
     setSaving(true);
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = getToken();
       const categoryNames = categories.map((c) => c.name);
 
       const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/tickets/settings/categories`, {
@@ -99,7 +100,7 @@ export function useAdminTicketCategories() {
         return true;
       } else {
         const errKey = d?.error || 'failedToSave';
-        const errMsg = tErrorBackend.has(errKey) ? tErrorBackend(errKey) : (d?.error || t('failedToSave'));
+        const errMsg = tErrorBackend.has(errKey) ? tErrorBackend(errKey) : t('failedToSave');
         showError(errMsg);
         if (Array.isArray(d?.inUse) && d.inUse.length) {
           showError(`${errMsg}: ${d.inUse.join(', ')}`);

@@ -10,6 +10,8 @@ const User = require('../../../models/User');
 const AppError = require('../../../utils/AppError');
 const { deleteCachePattern } = require('../../../lib/redis');
 const { writeAudit } = require('../../../middleware/audit');
+const { logUserActivity } = require('../../../middleware/userActivity');
+const { sendMailTemplate } = require('../../../lib/mail');
 
 function extractAdminId(req) {
   return (req.user && (req.user.sub || req.user.userId || req.user._id || req.user.id)) || null;
@@ -73,7 +75,6 @@ const addMessage = async (id, data, req) => {
     try {
       const owner = await User.findById(t.user).lean();
       if (owner && owner.email) {
-        const { sendMailTemplate } = require('../../../lib/mail');
         let frontendHost = process.env.FRONTEND_URL || '';
         if (frontendHost && !frontendHost.startsWith('http')) frontendHost = `https://${frontendHost}`;
 
@@ -126,6 +127,18 @@ const addMessage = async (id, data, req) => {
     isInternal,
     messagePreview: body.substring(0, 50),
   });
+
+  await logUserActivity(
+    null,
+    'admin.ticket.reply',
+    {
+      ticketId: t._id.toString(),
+      title: t.title,
+      isInternal,
+      messagePreview: body.substring(0, 50),
+    },
+    t.user.toString()
+  );
 
   return { ok: true, message: savedMsg, status: t.status };
 };
