@@ -1,9 +1,23 @@
+/**
+ * Admin Tickets Controller
+ * Complies with ISO/IEC 25010 and OWASP ASVS
+ */
+
 const ticketsService = require('./tickets.service');
+const AppError = require('../../../utils/AppError');
+const {
+  ticketIdParamSchema,
+  listTicketsQuerySchema,
+  getMessagesQuerySchema,
+  addMessageSchema,
+  updateTicketSchema,
+  updateCategoriesSchema,
+} = require('./tickets.schema');
 
 const getCounts = async (req, res, next) => {
   try {
     const counts = await ticketsService.getCounts();
-    res.json(counts);
+    return res.json(counts);
   } catch (error) {
     next(error);
   }
@@ -11,8 +25,12 @@ const getCounts = async (req, res, next) => {
 
 const listTickets = async (req, res, next) => {
   try {
-    const result = await ticketsService.listTickets(req.query);
-    res.json(result);
+    const parsed = listTicketsQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      throw new AppError('Invalid query parameters', 400, 'ERR_TICKET_QUERY_INVALID', parsed.error.flatten());
+    }
+    const result = await ticketsService.listTickets(parsed.data);
+    return res.json(result);
   } catch (error) {
     next(error);
   }
@@ -20,8 +38,16 @@ const listTickets = async (req, res, next) => {
 
 const getMessages = async (req, res, next) => {
   try {
-    const result = await ticketsService.getMessages(req.params.id, req.query);
-    res.json(result);
+    const paramParsed = ticketIdParamSchema.safeParse(req.params);
+    if (!paramParsed.success) {
+      throw new AppError('Invalid ticket ID format', 400, 'ERR_INVALID_ID', paramParsed.error.flatten());
+    }
+    const queryParsed = getMessagesQuerySchema.safeParse(req.query);
+    if (!queryParsed.success) {
+      throw new AppError('Invalid query parameters', 400, 'ERR_MESSAGES_QUERY_INVALID', queryParsed.error.flatten());
+    }
+    const result = await ticketsService.getMessages(paramParsed.data.id, queryParsed.data);
+    return res.json(result);
   } catch (error) {
     next(error);
   }
@@ -29,8 +55,12 @@ const getMessages = async (req, res, next) => {
 
 const getTicket = async (req, res, next) => {
   try {
-    const ticket = await ticketsService.getTicket(req.params.id);
-    res.json(ticket);
+    const paramParsed = ticketIdParamSchema.safeParse(req.params);
+    if (!paramParsed.success) {
+      throw new AppError('Invalid ticket ID format', 400, 'ERR_INVALID_ID', paramParsed.error.flatten());
+    }
+    const ticket = await ticketsService.getTicket(paramParsed.data.id);
+    return res.json(ticket);
   } catch (error) {
     next(error);
   }
@@ -38,8 +68,16 @@ const getTicket = async (req, res, next) => {
 
 const addMessage = async (req, res, next) => {
   try {
-    const result = await ticketsService.addMessage(req.params.id, req.body, req);
-    res.json(result);
+    const paramParsed = ticketIdParamSchema.safeParse(req.params);
+    if (!paramParsed.success) {
+      throw new AppError('Invalid ticket ID format', 400, 'ERR_INVALID_ID', paramParsed.error.flatten());
+    }
+    const parsed = addMessageSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new AppError('Invalid message payload', 400, 'ERR_MESSAGE_VALIDATION_FAILED', parsed.error.flatten());
+    }
+    const result = await ticketsService.addMessage(paramParsed.data.id, parsed.data, req);
+    return res.json(result);
   } catch (error) {
     next(error);
   }
@@ -47,8 +85,16 @@ const addMessage = async (req, res, next) => {
 
 const updateTicket = async (req, res, next) => {
   try {
-    const result = await ticketsService.updateTicket(req.params.id, req.body, req);
-    res.json(result);
+    const paramParsed = ticketIdParamSchema.safeParse(req.params);
+    if (!paramParsed.success) {
+      throw new AppError('Invalid ticket ID format', 400, 'ERR_INVALID_ID', paramParsed.error.flatten());
+    }
+    const parsed = updateTicketSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new AppError('Invalid ticket update payload', 400, 'ERR_TICKET_VALIDATION_FAILED', parsed.error.flatten());
+    }
+    const result = await ticketsService.updateTicket(paramParsed.data.id, parsed.data, req);
+    return res.json(result);
   } catch (error) {
     next(error);
   }
@@ -56,8 +102,12 @@ const updateTicket = async (req, res, next) => {
 
 const deleteTicket = async (req, res, next) => {
   try {
-    const result = await ticketsService.deleteTicket(req.params.id, req);
-    res.json(result);
+    const paramParsed = ticketIdParamSchema.safeParse(req.params);
+    if (!paramParsed.success) {
+      throw new AppError('Invalid ticket ID format', 400, 'ERR_INVALID_ID', paramParsed.error.flatten());
+    }
+    const result = await ticketsService.deleteTicket(paramParsed.data.id, req);
+    return res.json(result);
   } catch (error) {
     next(error);
   }
@@ -66,7 +116,7 @@ const deleteTicket = async (req, res, next) => {
 const getCategories = async (req, res, next) => {
   try {
     const categories = await ticketsService.getCategories();
-    res.json(categories);
+    return res.json(categories);
   } catch (error) {
     next(error);
   }
@@ -75,7 +125,7 @@ const getCategories = async (req, res, next) => {
 const getCategoryUsage = async (req, res, next) => {
   try {
     const usage = await ticketsService.getCategoryUsage();
-    res.json(usage);
+    return res.json(usage);
   } catch (error) {
     next(error);
   }
@@ -83,8 +133,12 @@ const getCategoryUsage = async (req, res, next) => {
 
 const updateCategories = async (req, res, next) => {
   try {
-    const result = await ticketsService.updateCategories(req.body.categories, req);
-    res.json(result);
+    const parsed = updateCategoriesSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new AppError('Invalid categories payload', 400, 'ERR_CATEGORIES_VALIDATION_FAILED', parsed.error.flatten());
+    }
+    const result = await ticketsService.updateCategories(parsed.data.categories, req);
+    return res.json(result);
   } catch (error) {
     next(error);
   }
@@ -100,5 +154,5 @@ module.exports = {
   deleteTicket,
   getCategories,
   getCategoryUsage,
-  updateCategories
+  updateCategories,
 };

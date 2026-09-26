@@ -1,16 +1,18 @@
+/**
+ * Admin Tickets Main Service
+ * Complies with ISO/IEC 25010 (Single Responsibility, Clean Architecture)
+ */
+
 const mongoose = require('mongoose');
 const Ticket = require('../../../models/Ticket');
-const Settings = require('../../../models/Settings');
+const User = require('../../../models/User');
 const { getCache, setCache, deleteCachePattern } = require('../../../lib/redis');
-const { getSettings, clearSettingsCache } = require('../../../lib/settings');
 const AppError = require('../../../utils/AppError');
 const { writeAudit } = require('../../../middleware/audit');
-const User = require('../../../models/User');
-const TicketMessage = require('../../../models/TicketMessage');
+const { logUserActivity } = require('../../../middleware/userActivity');
 
-function extractAdminId(req) {
-  return (req.user && (req.user.sub || req.user.userId || req.user._id || req.user.id)) || null;
-}
+const categoriesService = require('./tickets.categories.service');
+const messagesService = require('./tickets.messages.service');
 
 const getCounts = async () => {
   const countsCacheKey = 'tickets:admin:counts:all';
@@ -23,20 +25,20 @@ const getCounts = async () => {
         _id: {
           category: '$category',
           status: '$status',
-          deletedByUser: '$deletedByUser'
+          deletedByUser: '$deletedByUser',
         },
-        count: { $sum: 1 }
-      }
-    }
+        count: { $sum: 1 },
+      },
+    },
   ];
 
   const results = await Ticket.aggregate(pipeline);
-  
+
   const structuredCounts = {
     total: 0,
     byStatus: { open: 0, pending: 0, resolved: 0, closed: 0 },
     byCategory: {},
-    deleted: 0
+    deleted: 0,
   };
 
   for (const r of results) {
@@ -57,7 +59,7 @@ const getCounts = async () => {
     if (!structuredCounts.byCategory[cat]) {
       structuredCounts.byCategory[cat] = { all: 0, open: 0, pending: 0, resolved: 0, closed: 0, deleted: 0 };
     }
-    
+
     if (isDeleted) {
       structuredCounts.byCategory[cat].deleted += count;
     } else {
@@ -100,7 +102,7 @@ const listTickets = async (queryParam) => {
       { $or: [{ username: searchRegex }, { email: searchRegex }] },
       { _id: 1 }
     ).lean();
-    const matchedUserIds = matchedUsers.map(u => u._id);
+    const matchedUserIds = matchedUsers.map((u) => u._id);
 
     const orConditions = [
       { title: searchRegex },
@@ -121,15 +123,26 @@ const listTickets = async (queryParam) => {
 
   let sortObj = {};
   switch (sort) {
-    case 'updated_asc':  sortObj = { updatedAt: 1 };  break;
-    case 'created_desc': sortObj = { createdAt: -1 }; break;
-    case 'created_asc':  sortObj = { createdAt: 1 };  break;
-    case 'priority_desc': sortObj = { priority: -1, updatedAt: -1 }; break;
-    case 'priority_asc':  sortObj = { priority: 1,  updatedAt: -1 }; break;
-    default: sortObj = { updatedAt: -1 };
+    case 'updated_asc':
+      sortObj = { updatedAt: 1 };
+      break;
+    case 'created_desc':
+      sortObj = { createdAt: -1 };
+      break;
+    case 'created_asc':
+      sortObj = { createdAt: 1 };
+      break;
+    case 'priority_desc':
+      sortObj = { priority: -1, updatedAt: -1 };
+      break;
+    case 'priority_asc':
+      sortObj = { priority: 1, updatedAt: -1 };
+      break;
+    default:
+      sortObj = { updatedAt: -1 };
   }
 
-  const cacheKey = `tickets:admin:list:${q||''}:${status||''}:${priority||''}:${category||''}:${deleted||''}:${sort}:${pageNum}:${limitNum}`;
+  const cacheKey = `tickets:admin:list:${q || ''}:${status || ''}:${priority || ''}:${category || ''}:${deleted || ''}:${sort}:${pageNum}:${limitNum}`;
   const cachedTickets = await getCache(cacheKey);
   if (cachedTickets) {
     return cachedTickets;
@@ -150,41 +163,9 @@ const listTickets = async (queryParam) => {
   return responseData;
 };
 
-const getMessages = async (id, queryParam) => {
-  if (!/^[0-9a-fA-F]{24}$/.test(id)) {
-    throw new AppError('Invalid ticket ID format', 400);
-  }
-
-  const limit = parseInt(queryParam.limit) || 50;
-  const before = queryParam.before;
-  const since = queryParam.since;
-
-  const query = { ticket: id };
-  if (before && /^[0-9a-fA-F]{24}$/.test(before)) {
-    query._id = { $lt: new mongoose.Types.ObjectId(String(before)) };
-  }
-  if (since && /^[0-9a-fA-F]{24}$/.test(since)) {
-    query._id = { ...query._id, $gt: new mongoose.Types.ObjectId(String(since)) };
-  }
-
-  const messages = await TicketMessage.find(query)
-    .sort({ _id: -1 })
-    .limit(limit + 1)
-    .populate('author', 'username email profilePicture')
-    .lean();
-
-  const hasMore = messages.length > limit;
-  if (hasMore) messages.pop();
-
-  return {
-    messages: messages.reverse(),
-    hasMore
-  };
-};
-
 const getTicket = async (id) => {
   if (!/^[0-9a-fA-F]{24}$/.test(id)) {
-    throw new AppError('Invalid ticket ID format', 400);
+    throw new AppError('Invalid ticket ID format', 400, 'ERR_INVALID_ID');
   }
 
   const cacheKey = `tickets:admin:detail:${id}`;
@@ -195,113 +176,30 @@ const getTicket = async (id) => {
     .populate('user', 'username email')
     .populate('assignee', 'username email')
     .lean();
-  if (!t) throw new AppError('Not found', 404);
+  if (!t) throw new AppError('Ticket not found', 404, 'ERR_TICKET_NOT_FOUND');
 
   t.messages = [];
-
   await setCache(cacheKey, t, 30);
   return t;
 };
 
-const addMessage = async (id, data, req) => {
-  const adminId = extractAdminId(req);
-  const { body, internal } = data || {};
-  
-  if (!body || typeof body !== 'string' || !body.trim()) {
-    throw new AppError('Message body required', 400);
-  }
-  if (body.trim().length > 5000) {
-    throw new AppError('Message cannot exceed 5000 characters', 400);
-  }
-  if (!/^[0-9a-fA-F]{24}$/.test(id)) {
-    throw new AppError('Invalid ticket ID format', 400);
-  }
-
-  const t = await Ticket.findById(String(id));
-  if (!t) throw new AppError('Not found', 404);
-  if (t.deletedByUser) throw new AppError('Ticket is deleted', 403);
-
-  const isInternal = !!internal;
-
-  const savedMsg = await TicketMessage.create({
-    ticket: t._id,
-    author: adminId,
-    authorRole: 'admin',
-    body: body.trim(),
-    internal: isInternal,
-    createdAt: new Date()
-  });
-
-  t.updatedAt = new Date();
-  if (!isInternal) {
-    t.lastAdminReplyAt = new Date();
-    if (t.status === 'open') t.status = 'pending';
-  }
-  await t.save();
-
-  if (!isInternal) {
-    try {
-      const owner = await User.findById(t.user).lean();
-      if (owner && owner.email) {
-        const { sendMailTemplate } = require('../../../lib/mail');
-        let frontendHost = process.env.FRONTEND_URL || '';
-        if (frontendHost && !frontendHost.startsWith('http')) frontendHost = `https://${frontendHost}`;
-        
-        let statusBg = '#2b2512', statusColor = '#fde047', statusBorder = '#453413';
-        if (t.status === 'open') { statusBg = '#102a1d'; statusColor = '#86efac'; statusBorder = '#144026'; }
-        else if (t.status === 'resolved') { statusBg = '#18253a'; statusColor = '#93c5fd'; statusBorder = '#1a396b'; }
-        else if (t.status === 'closed') { statusBg = '#303030'; statusColor = '#AAAAAA'; statusBorder = '#404040'; }
-
-        await sendMailTemplate({
-          to: owner.email,
-          templateKey: 'ticketReply',
-          data: { 
-            username: owner.username,
-            title: t.title, 
-            snippet: String(body).slice(0, 200),
-            ticketId: String(t._id),
-            category: String(t.category).charAt(0).toUpperCase() + String(t.category).slice(1),
-            priority: String(t.priority).charAt(0).toUpperCase() + String(t.priority).slice(1),
-            status: String(t.status).charAt(0).toUpperCase() + String(t.status).slice(1),
-            statusBg,
-            statusColor,
-            statusBorder,
-            frontendUrl: frontendHost
-          }
-        });
-      }
-    } catch (_) {}
-  }
-
-  await deleteCachePattern('tickets:admin:list:*');
-  await deleteCachePattern('tickets:admin:counts:*');
-  await deleteCachePattern(`tickets:mine:${t.user}:*`);
-  await deleteCachePattern(`tickets:admin:detail:${id}`);
-
-  await savedMsg.populate('author', 'username email profilePicture');
-
-  await writeAudit(req, 'admin.ticket.reply', 'ticket', t._id.toString(), { isInternal, messagePreview: body.substring(0, 50) });
-
-  return { ok: true, message: savedMsg, status: t.status };
-};
-
 const updateTicket = async (id, data, req) => {
   if (!/^[0-9a-fA-F]{24}$/.test(id)) {
-    throw new AppError('Invalid ticket ID format', 400);
+    throw new AppError('Invalid ticket ID format', 400, 'ERR_INVALID_ID');
   }
 
   const { status, assignee, priority, tags, deletedByUser } = data || {};
   const t = await Ticket.findById(String(id));
-  if (!t) throw new AppError('Not found', 404);
+  if (!t) throw new AppError('Ticket not found', 404, 'ERR_TICKET_NOT_FOUND');
 
   const originalTicket = t.toObject();
   let changed = false;
-  
+
   if (status !== undefined && ['open', 'pending', 'resolved', 'closed'].includes(status)) {
     if (t.status === 'closed' && status === 'resolved') {
-      throw new AppError('Cannot resolve a closed ticket. Please reopen it first.', 400);
+      throw new AppError('Cannot resolve a closed ticket. Please reopen it first.', 400, 'ERR_CANNOT_RESOLVE_CLOSED');
     }
-    
+
     if (t.status !== status && (status === 'resolved' || status === 'closed')) {
       try {
         const owner = await User.findById(t.user).lean();
@@ -318,33 +216,33 @@ const updateTicket = async (id, data, req) => {
               ticketId: String(t._id),
               category: String(t.category).charAt(0).toUpperCase() + String(t.category).slice(1),
               priority: String(t.priority).charAt(0).toUpperCase() + String(t.priority).slice(1),
-              frontendUrl: frontendHost
-            }
+              frontendUrl: frontendHost,
+            },
           });
         }
-      } catch {}
+      } catch (_) {}
     }
-    
+
     t.status = status;
     if (status === 'closed') t.closedAt = t.closedAt || new Date();
     changed = true;
   }
-  
+
   if (priority !== undefined && ['low', 'medium', 'high'].includes(priority)) {
     t.priority = priority;
     changed = true;
   }
-  
+
   if (assignee !== undefined) {
     t.assignee = assignee ? new mongoose.Types.ObjectId(String(assignee)) : null;
     changed = true;
   }
-  
+
   if (Array.isArray(tags)) {
     t.tags = tags.slice(0, 20);
     changed = true;
   }
-  
+
   if (typeof deletedByUser === 'boolean') {
     t.deletedByUser = deletedByUser;
     changed = true;
@@ -353,7 +251,7 @@ const updateTicket = async (id, data, req) => {
   if (changed) {
     t.updatedAt = new Date();
     await t.save();
-    
+
     await deleteCachePattern('tickets:admin:list:*');
     await deleteCachePattern('tickets:admin:counts:*');
     await deleteCachePattern(`tickets:mine:${t.user}:*`);
@@ -368,17 +266,23 @@ const updateTicket = async (id, data, req) => {
       if (oldAssignee !== newAssignee) changes.assignee = { old: oldAssignee, new: newAssignee };
     }
     if (Array.isArray(tags)) changes.tags = { old: originalTicket.tags || [], new: tags.slice(0, 20) };
-    if (typeof deletedByUser === 'boolean' && deletedByUser !== originalTicket.deletedByUser) changes.deletedByUser = { old: originalTicket.deletedByUser, new: deletedByUser };
+    if (typeof deletedByUser === 'boolean' && deletedByUser !== originalTicket.deletedByUser) {
+      changes.deletedByUser = { old: originalTicket.deletedByUser, new: deletedByUser };
+    }
 
     await writeAudit(req, 'admin.ticket.update', 'ticket', t._id.toString(), { changes });
-    
-    const { logUserActivity } = require('../../../middleware/userActivity');
-    await logUserActivity(null, 'admin.ticket.update', {
-      ticketId: t._id.toString(),
-      title: t.title,
-      updatedByAdmin: true,
-      changes: Object.keys(changes).length > 0 ? changes : undefined
-    }, t.user.toString());
+
+    await logUserActivity(
+      null,
+      'admin.ticket.update',
+      {
+        ticketId: t._id.toString(),
+        title: t.title,
+        updatedByAdmin: true,
+        changes: Object.keys(changes).length > 0 ? changes : undefined,
+      },
+      t.user.toString()
+    );
   }
 
   return { ok: true, status: t.status, priority: t.priority };
@@ -386,90 +290,31 @@ const updateTicket = async (id, data, req) => {
 
 const deleteTicket = async (id, req) => {
   if (!/^[0-9a-fA-F]{24}$/.test(id)) {
-    throw new AppError('Invalid ticket ID format', 400);
+    throw new AppError('Invalid ticket ID format', 400, 'ERR_INVALID_ID');
   }
-  
+
   const result = await Ticket.findByIdAndDelete(String(id));
-  if (!result) throw new AppError('Not found', 404);
-  
+  if (!result) throw new AppError('Ticket not found', 404, 'ERR_TICKET_NOT_FOUND');
+
   await deleteCachePattern('tickets:admin:list:*');
   await deleteCachePattern('tickets:admin:counts:*');
   if (result.user) await deleteCachePattern(`tickets:mine:${result.user}:*`);
   await deleteCachePattern(`tickets:admin:detail:${id}`);
-  
+
   await writeAudit(req, 'admin.ticket.delete', 'ticket', result._id.toString(), { title: result.title });
 
   return { ok: true };
 };
 
-const getCategories = async () => {
-  const s = await getSettings();
-  const categories = (s && Array.isArray(s.ticketCategories) ? s.ticketCategories : []);
-  return { categories };
-};
-
-const getCategoryUsage = async () => {
-  const agg = await Ticket.aggregate([
-    { $match: { category: { $type: 'string', $gt: '' }, deletedByUser: { $ne: true } } },
-    { $group: { _id: '$category', count: { $sum: 1 } } }
-  ]);
-  const usage = {};
-  for (const row of agg) usage[row._id] = row.count;
-  return { usage };
-};
-
-const updateCategories = async (categoriesInput, req) => {
-  let categories = categoriesInput;
-  if (!Array.isArray(categories)) {
-    throw new AppError('categories must be an array of strings', 400);
-  }
-  
-  categories = categories
-    .map((c) => (typeof c === 'string' ? c.trim() : ''))
-    .filter((c) => c)
-    .map((c) => c.slice(0, 50));
-    
-  if (categories.length === 0) categories = ['general'];
-  const newSet = Array.from(new Set(categories));
-
-  const existingSettings = await Settings.findOne({});
-  const current = (existingSettings && Array.isArray(existingSettings.ticketCategories))
-    ? existingSettings.ticketCategories : [];
-  
-  const toRemove = current.filter((c) => !newSet.includes(c));
-  if (toRemove.length > 0) {
-    const inUse = await Ticket.distinct('category', { category: { $in: toRemove } });
-    if (inUse.length > 0) {
-      throw new AppError('Cannot remove categories that are in use', 400); // Should theoretically attach `inUse` but AppError primarily takes a message.
-    }
-  }
-
-  let s = existingSettings;
-  if (!s) s = await Settings.create({});
-  
-  const oldCategories = s.ticketCategories || [];
-  s.ticketCategories = newSet;
-  await s.save();
-  clearSettingsCache();
-  
-  if (JSON.stringify(oldCategories) !== JSON.stringify(newSet)) {
-    await writeAudit(req, 'admin.settings.tickets.update', 'settings', s._id.toString(), { 
-      changes: { ticketCategories: { old: oldCategories, new: newSet } } 
-    });
-  }
-
-  return { ok: true, categories: s.ticketCategories };
-};
-
 module.exports = {
   getCounts,
   listTickets,
-  getMessages,
   getTicket,
-  addMessage,
   updateTicket,
   deleteTicket,
-  getCategories,
-  getCategoryUsage,
-  updateCategories
+  getMessages: messagesService.getMessages,
+  addMessage: messagesService.addMessage,
+  getCategories: categoriesService.getCategories,
+  getCategoryUsage: categoriesService.getCategoryUsage,
+  updateCategories: categoriesService.updateCategories,
 };

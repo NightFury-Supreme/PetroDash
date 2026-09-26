@@ -5,8 +5,11 @@
 
 const settingsController = require('./settings.controller');
 const settingsService = require('./settings.service');
+const settingsSchemas = require('./settings.schema');
 
 module.exports = {
   settingsController,
   settingsService,
+  settingsSchemas,
 };
+

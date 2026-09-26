@@ -1,9 +1,22 @@
+/**
+ * Admin Plans Controller
+ * Complies with ISO/IEC 25010 and OWASP ASVS
+ */
+
 const plansService = require('./plans.service');
+const AppError = require('../../../utils/AppError');
+const {
+  createCategorySchema,
+  updateCategorySchema,
+  createPlanSchema,
+  updatePlanSchema,
+  patchPlanSchema,
+} = require('./plans.schema');
 
 const getCategories = async (req, res, next) => {
   try {
     const categories = await plansService.getCategories();
-    res.json(categories);
+    return res.json(categories);
   } catch (error) {
     next(error);
   }
@@ -11,8 +24,12 @@ const getCategories = async (req, res, next) => {
 
 const createCategory = async (req, res, next) => {
   try {
-    const category = await plansService.createCategory(req.body.name, req);
-    res.status(201).json(category);
+    const parsed = createCategorySchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new AppError('Invalid category payload', 400, 'ERR_CATEGORY_VALIDATION_FAILED', parsed.error.flatten());
+    }
+    const category = await plansService.createCategory(parsed.data.name, req);
+    return res.status(201).json(category);
   } catch (error) {
     next(error);
   }
@@ -20,8 +37,12 @@ const createCategory = async (req, res, next) => {
 
 const updateCategory = async (req, res, next) => {
   try {
-    const category = await plansService.updateCategory(req.params.id, req.body.name);
-    res.json(category);
+    const parsed = updateCategorySchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new AppError('Invalid category payload', 400, 'ERR_CATEGORY_VALIDATION_FAILED', parsed.error.flatten());
+    }
+    const category = await plansService.updateCategory(req.params.id, parsed.data.name);
+    return res.json(category);
   } catch (error) {
     next(error);
   }
@@ -30,7 +51,7 @@ const updateCategory = async (req, res, next) => {
 const deleteCategory = async (req, res, next) => {
   try {
     await plansService.deleteCategory(req.params.id, req);
-    res.json({ success: true });
+    return res.json({ success: true });
   } catch (error) {
     next(error);
   }
@@ -38,10 +59,10 @@ const deleteCategory = async (req, res, next) => {
 
 const listPlans = async (req, res, next) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
     const result = await plansService.listPlans(page, limit);
-    res.json(result);
+    return res.json(result);
   } catch (error) {
     next(error);
   }
@@ -50,7 +71,7 @@ const listPlans = async (req, res, next) => {
 const getPlan = async (req, res, next) => {
   try {
     const plan = await plansService.getPlan(req.params.id);
-    res.json(plan);
+    return res.json(plan);
   } catch (error) {
     next(error);
   }
@@ -58,38 +79,38 @@ const getPlan = async (req, res, next) => {
 
 const createPlan = async (req, res, next) => {
   try {
-    const plan = await plansService.createPlan(req.body, req);
-    res.status(201).json(plan);
+    const parsed = createPlanSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new AppError('Plan validation failed', 400, 'ERR_PLAN_VALIDATION_FAILED', parsed.error.flatten());
+    }
+    const plan = await plansService.createPlan(parsed.data, req);
+    return res.status(201).json(plan);
   } catch (error) {
-    if (error.name === 'ZodError') {
-      return res.status(400).json({ error: 'Validation failed', details: error.errors });
-    }
-    if (error.name === 'ValidationError') {
-      const fields = Object.fromEntries(
-        Object.entries(error.errors).map(([k, v]) => [k, v.message])
-      );
-      return res.status(400).json({ error: 'Plan validation failed', fields });
-    }
     next(error);
   }
 };
 
 const updatePlan = async (req, res, next) => {
   try {
-    const plan = await plansService.updatePlan(req.params.id, req.body, req);
-    res.json(plan);
-  } catch (error) {
-    if (error.name === 'ZodError') {
-      return res.status(400).json({ error: 'Validation failed', details: error.errors });
+    const parsed = updatePlanSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new AppError('Plan validation failed', 400, 'ERR_PLAN_VALIDATION_FAILED', parsed.error.flatten());
     }
+    const plan = await plansService.updatePlan(req.params.id, parsed.data, req);
+    return res.json(plan);
+  } catch (error) {
     next(error);
   }
 };
 
 const patchPlan = async (req, res, next) => {
   try {
-    const plan = await plansService.patchPlan(req.params.id, req.body, req);
-    res.json(plan);
+    const parsed = patchPlanSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new AppError('Plan patch validation failed', 400, 'ERR_PLAN_PATCH_VALIDATION_FAILED', parsed.error.flatten());
+    }
+    const plan = await plansService.patchPlan(req.params.id, parsed.data, req);
+    return res.json(plan);
   } catch (error) {
     next(error);
   }
@@ -98,7 +119,7 @@ const patchPlan = async (req, res, next) => {
 const deletePlan = async (req, res, next) => {
   try {
     await plansService.deletePlan(req.params.id, req);
-    res.json({ message: 'Plan deleted successfully' });
+    return res.json({ success: true });
   } catch (error) {
     next(error);
   }
@@ -114,5 +135,5 @@ module.exports = {
   createPlan,
   updatePlan,
   patchPlan,
-  deletePlan
+  deletePlan,
 };
