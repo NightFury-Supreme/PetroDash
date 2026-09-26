@@ -21,23 +21,27 @@ const rewardSchema = z.object({
   planIds: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid plan ID')).optional(),
 }).partial();
 
+const dateStringSchema = z.string().refine((val) => !val || !isNaN(Date.parse(val)), {
+  message: 'Invalid date format',
+}).nullable().optional();
+
 const createGiftSchema = z.object({
   code: z.string().trim().min(1, 'ERR_GIFT_CODE_REQUIRED').max(50),
-  description: z.string().max(255).optional().default(''),
+  description: z.string().max(100).optional().default(''),
   rewards: rewardSchema.optional(),
   maxRedemptions: z.number().int().min(0).max(1_000_000).default(0),
-  validFrom: z.string().nullable().optional(),
-  validUntil: z.string().nullable().optional(),
+  validFrom: dateStringSchema,
+  validUntil: dateStringSchema,
   enabled: z.boolean().default(true),
 });
 
 const updateGiftSchema = z.object({
   code: z.string().trim().min(1).max(50).optional(),
-  description: z.string().max(255).optional(),
+  description: z.string().max(100).optional(),
   rewards: rewardSchema.optional(),
   maxRedemptions: z.number().int().min(0).max(1_000_000).optional(),
-  validFrom: z.string().nullable().optional(),
-  validUntil: z.string().nullable().optional(),
+  validFrom: dateStringSchema,
+  validUntil: dateStringSchema,
   enabled: z.boolean().optional(),
 });
 

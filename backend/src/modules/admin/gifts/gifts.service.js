@@ -10,6 +10,12 @@ const { getCache, setCache, deleteCachePattern } = require('../../../lib/redis')
 
 const CACHE_TTL_SECONDS = 60;
 
+const parseDate = (d) => {
+  if (!d) return null;
+  const parsed = new Date(d);
+  return isNaN(parsed.getTime()) ? null : parsed;
+};
+
 class GiftsService {
   async listGifts({ search = '', tab = 'all', page = 1, limit = 10, sort = 'newest' }) {
     const cacheKey = `admin:gifts:list:${search}:${tab}:${page}:${limit}:${sort}`;
@@ -26,11 +32,13 @@ class GiftsService {
       filter.enabled = true;
       filter.$and = [
         { $or: [{ validUntil: null }, { validUntil: { $exists: false } }, { validUntil: { $gt: now } }] },
+        { $or: [{ validFrom: null }, { validFrom: { $exists: false } }, { validFrom: { $lte: now } }] },
       ];
     } else if (tab === 'inactive') {
       filter.$or = [
         { enabled: false },
         { validUntil: { $lte: now } },
+        { validFrom: { $gt: now } },
       ];
     }
 
@@ -157,8 +165,8 @@ class GiftsService {
         planIds: Array.isArray(rewards.planIds) ? rewards.planIds : [],
       },
       maxRedemptions: maxRedemptions ? Math.max(0, Math.min(1_000_000, parseInt(maxRedemptions, 10))) : 0,
-      validFrom: validFrom ? new Date(validFrom) : undefined,
-      validUntil: validUntil ? new Date(validUntil) : undefined,
+      validFrom: parseDate(validFrom) || undefined,
+      validUntil: parseDate(validUntil) || undefined,
       enabled: enabled !== undefined ? !!enabled : true,
       createdBy: userId,
       source: 'admin',
@@ -190,8 +198,8 @@ class GiftsService {
     }
     if (description !== undefined) gift.description = description;
     if (maxRedemptions !== undefined) gift.maxRedemptions = Math.max(0, parseInt(maxRedemptions, 10));
-    if (validFrom !== undefined) gift.validFrom = validFrom ? new Date(validFrom) : null;
-    if (validUntil !== undefined) gift.validUntil = validUntil ? new Date(validUntil) : null;
+    if (validFrom !== undefined) gift.validFrom = parseDate(validFrom);
+    if (validUntil !== undefined) gift.validUntil = parseDate(validUntil);
     if (enabled !== undefined) gift.enabled = !!enabled;
 
     if (rewards !== undefined) {
@@ -204,6 +212,7 @@ class GiftsService {
         }
       }
       if (rewards.planIds) gift.rewards.planIds = rewards.planIds;
+      gift.markModified('rewards');
     }
 
     await gift.save();
