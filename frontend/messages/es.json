@@ -967,6 +967,13 @@
     "loadingPlans": "Cargando planes...",
     "noPlansFound": "No se encontraron planes.",
     "saveChanges": "Guardar cambios",
+    "gifts": "Regalos",
+    "filters": "Filtros",
+    "sort": "Ordenar",
+    "close": "Cerrar",
+    "never": "Nunca",
+    "yes": "Sí",
+    "no": "No",
     "errors": {
       "loadError": "Error de carga",
       "error": "Error"
@@ -2114,6 +2121,7 @@
       "editGiftSubtitle": "Modifica las recompensas, los límites y la configuración de vencimiento del cupón.",
       "statusEnabled": "Activo",
       "statusDisabled": "Deshabilitado",
+      "statusExpired": "Caducado",
       "deleteGift": "Eliminar regalo",
       "deleteGiftSubText": "¿Estás seguro de que deseas eliminar permanentemente este cupón de regalo? Los usuarios que aún no lo hayan canjeado ya no podrán usarlo.",
       "giftEntityType": "Cupón de regalo",
@@ -2137,7 +2145,8 @@
       "delete": "Eliminar",
       "successCreated": "Cupón de regalo creado exitosamente.",
       "successUpdated": "Cupón de regalo actualizado exitosamente.",
-      "successDeleted": "Cupón de regalo eliminado exitosamente."
+      "successDeleted": "Cupón de regalo eliminado exitosamente.",
+      "actions": "Acciones"
     },
     "coupons": {
       "title": "Cupones",

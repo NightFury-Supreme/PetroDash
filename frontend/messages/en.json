@@ -967,6 +967,13 @@
     "loadingPlans": "Loading plans...",
     "noPlansFound": "No plans found.",
     "saveChanges": "Save Changes",
+    "gifts": "Gifts",
+    "filters": "Filters",
+    "sort": "Sort",
+    "close": "Close",
+    "never": "Never",
+    "yes": "Yes",
+    "no": "No",
     "errors": {
       "loadError": "Load Error",
       "error": "Error"
@@ -2125,6 +2132,7 @@
       "editGiftSubtitle": "Modify voucher rewards, limits, and expiration settings.",
       "statusEnabled": "Active",
       "statusDisabled": "Disabled",
+      "statusExpired": "Expired",
       "deleteGift": "Delete Gift",
       "deleteGiftSubText": "Are you sure you want to permanently delete this gift voucher? Users who have not yet redeemed it will no longer be able to use it.",
       "giftEntityType": "Gift Voucher",
@@ -2148,7 +2156,8 @@
       "delete": "Delete",
       "successCreated": "Gift voucher created successfully.",
       "successUpdated": "Gift voucher updated successfully.",
-      "successDeleted": "Gift voucher deleted successfully."
+      "successDeleted": "Gift voucher deleted successfully.",
+      "actions": "Actions"
     },
     "coupons": {
       "title": "Coupons",

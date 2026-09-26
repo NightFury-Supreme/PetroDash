@@ -967,6 +967,13 @@
     "loadingPlans": "جاري تحميل الخطط...",
     "noPlansFound": "لم يتم العثور على خطط.",
     "saveChanges": "حفظ التغييرات",
+    "gifts": "هدايا",
+    "filters": "تصفية",
+    "sort": "ترتيب",
+    "close": "إغلاق",
+    "never": "أبداً",
+    "yes": "نعم",
+    "no": "لا",
     "errors": {
       "loadError": "خطأ في التحميل",
       "error": "خطأ"
@@ -2114,6 +2121,7 @@
       "editGiftSubtitle": "تعديل مكافآت القسيمة والحدود وإعدادات انتهاء الصلاحية.",
       "statusEnabled": "نشط",
       "statusDisabled": "معطل",
+      "statusExpired": "منتهي الصلاحية",
       "deleteGift": "حذف الهدية",
       "deleteGiftSubText": "هل أنت متأكد أنك تريد حذف قسيمة الهدية هذه نهائياً؟ المستخدمون الذين لم يستردوها بعد لن يتمكنوا من استخدامها.",
       "giftEntityType": "قسيمة هدية",
@@ -2137,7 +2145,8 @@
       "delete": "حذف",
       "successCreated": "تم إنشاء قسيمة الهدية بنجاح.",
       "successUpdated": "تم تحديث قسيمة الهدية بنجاح.",
-      "successDeleted": "تم حذف قسيمة الهدية بنجاح."
+      "successDeleted": "تم حذف قسيمة الهدية بنجاح.",
+      "actions": "الإجراءات"
     },
     "coupons": {
       "title": "قسائم التخفيض",

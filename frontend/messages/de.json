@@ -967,6 +967,13 @@
     "loadingPlans": "Tarife werden geladen...",
     "noPlansFound": "Keine Tarife gefunden.",
     "saveChanges": "Änderungen speichern",
+    "gifts": "Geschenke",
+    "filters": "Filter",
+    "sort": "Sortieren",
+    "close": "Schließen",
+    "never": "Nie",
+    "yes": "Ja",
+    "no": "Nein",
     "errors": {
       "loadError": "Ladefehler",
       "error": "Fehler"
@@ -2114,6 +2121,7 @@
       "editGiftSubtitle": "Gutscheinbelohnungen, Limits und Ablaufeinstellungen ändern.",
       "statusEnabled": "Aktiv",
       "statusDisabled": "Deaktiviert",
+      "statusExpired": "Abgelaufen",
       "deleteGift": "Geschenk löschen",
       "deleteGiftSubText": "Sind Sie sicher, dass Sie diesen Geschenkgutschein dauerhaft löschen möchten? Benutzer, die ihn noch nicht eingelöst haben, können ihn nicht mehr verwenden.",
       "giftEntityType": "Geschenkgutschein",
@@ -2137,7 +2145,8 @@
       "delete": "Löschen",
       "successCreated": "Geschenkgutschein erfolgreich erstellt.",
       "successUpdated": "Geschenkgutschein erfolgreich aktualisiert.",
-      "successDeleted": "Geschenkgutschein erfolgreich gelöscht."
+      "successDeleted": "Geschenkgutschein erfolgreich gelöscht.",
+      "actions": "Aktionen"
     },
     "coupons": {
       "title": "Gutscheine",

@@ -967,6 +967,13 @@
     "loadingPlans": "Chargement des forfaits...",
     "noPlansFound": "Aucun forfait trouvé.",
     "saveChanges": "Enregistrer les modifications",
+    "gifts": "Cadeaux",
+    "filters": "Filtres",
+    "sort": "Trier",
+    "close": "Fermer",
+    "never": "Jamais",
+    "yes": "Oui",
+    "no": "Non",
     "errors": {
       "loadError": "Erreur de chargement",
       "error": "Erreur"
@@ -2114,6 +2121,7 @@
       "editGiftSubtitle": "Modifier les récompenses, les limites et les paramètres d'expiration du bon.",
       "statusEnabled": "Actif",
       "statusDisabled": "Désactivé",
+      "statusExpired": "Expiré",
       "deleteGift": "Supprimer le cadeau",
       "deleteGiftSubText": "Êtes-vous sûr de vouloir supprimer définitivement ce bon cadeau ? Les utilisateurs qui ne l'ont pas encore utilisé ne pourront plus l'utiliser.",
       "giftEntityType": "Bon cadeau",
@@ -2137,7 +2145,8 @@
       "delete": "Supprimer",
       "successCreated": "Bon cadeau créé avec succès.",
       "successUpdated": "Bon cadeau mis à jour avec succès.",
-      "successDeleted": "Bon cadeau supprimé avec succès."
+      "successDeleted": "Bon cadeau supprimé avec succès.",
+      "actions": "Actions"
     },
     "coupons": {
       "title": "Bons de réduction",

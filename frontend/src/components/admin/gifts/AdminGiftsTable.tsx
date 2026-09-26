@@ -45,7 +45,7 @@ export function AdminGiftsTable({
         <span>{t('uses')}</span>
         <span>{t('expires')}</span>
         <span>{tCommon('status')}</span>
-        <span className="text-right">{tCommon('actions')}</span>
+        <span className="text-right">{t('actions')}</span>
       </div>
 
       {/* TABLE LIST */}
