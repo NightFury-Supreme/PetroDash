@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 // Server component wrapper to fetch branding and render client form
-import AuthCard from '@/components/auth/layout/AuthCard';
+import { AuthCard } from '@/components/auth';
 import RegisterClient from './view';
 
 async function fetchBranding() {
@@ -21,7 +21,7 @@ export default async function RegisterPage() {
   const brand = await fetchBranding();
   return (
     <main className="bg-[#0F0F0F] min-h-screen text-white">
-      <AuthCard title="Create account" subtitle="It only takes a minute" siteName={brand.siteName} siteIcon={brand.siteIcon}>
+      <AuthCard siteName={brand.siteName} siteIcon={brand.siteIcon}>
         <RegisterClient />
       </AuthCard>
     </main>

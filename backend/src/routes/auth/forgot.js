@@ -51,8 +51,8 @@ router.post('/forgot', passwordResetRateLimit, async (req, res, next) => {
           siteName: settings?.siteName || 'PteroDash'
         }
       });
-    } catch (e) {
-      console.error('Failed to send password reset email:', e);
+    } catch {
+      // Non-blocking mail dispatch
     }
 
     await logUserActivity(req, 'auth.password.reset.requested', {}, user._id.toString());

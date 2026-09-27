@@ -1,5 +1,6 @@
 const express = require('express');
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 const { z } = require('zod');
 
 const User = require('../../models/User');
@@ -17,6 +18,25 @@ const AppError = require('../../utils/AppError');
 const router = express.Router();
 
 const verifySchema = z.object({ token: z.string().min(32).max(256) });
+
+async function resolveEmailFromRequest(req) {
+  if (req.body?.email && typeof req.body.email === 'string' && req.body.email.includes('@')) {
+    return req.body.email.trim();
+  }
+  const authHeader = req.headers.authorization;
+  if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+    try {
+      const decoded = jwt.verify(authHeader.substring(7), process.env.JWT_SECRET);
+      if (decoded?.sub) {
+        const u = await User.findById(decoded.sub).select('email').lean();
+        if (u?.email) return u.email;
+      }
+    } catch {
+      // Ignore token decode failure
+    }
+  }
+  return null;
+}
 
 router.get('/verify', async (req, res, next) => {
   try {
@@ -58,19 +78,12 @@ router.get('/verify', async (req, res, next) => {
   }
 });
 
-const resendSchema = z.object({ email: z.string().email() });
-const verifyCodeSchema = z.object({
-  email: z.string().email(),
-  code: z.string().length(8, 'Code must be 8 digits')
-});
-
 router.post('/verify/resend', resendRateLimit, async (req, res, next) => {
   try {
-    const parsed = resendSchema.safeParse(req.body);
-    if (!parsed.success) {
-      throw AppError.badRequest('Invalid payload', 'ERR_INVALID_PAYLOAD', parsed.error.flatten());
+    const email = await resolveEmailFromRequest(req);
+    if (!email) {
+      throw AppError.badRequest('Valid email is required', 'ERR_INVALID_PAYLOAD');
     }
-    const { email } = parsed.data;
 
     const user = await User.findOne({ email });
     if (!user) return res.json({ ok: true });
@@ -107,9 +120,8 @@ router.post('/verify/resend', resendRateLimit, async (req, res, next) => {
           siteName: settings?.siteName || 'PteroDash'
         },
       });
-    // eslint-disable-next-line unused-imports/no-unused-vars
-    } catch (mailError) {
-      // Non-blocking — don't leak email errors to prevent enumeration
+    } catch {
+      // Non-blocking — prevents email enumeration
     }
 
     await logUserActivity(req, 'auth.email.verify.resent', {}, user._id.toString());
@@ -121,14 +133,14 @@ router.post('/verify/resend', resendRateLimit, async (req, res, next) => {
   }
 });
 
-router.post('/verify/code', verificationRateLimit, async (req, res, next) => {
+async function handleVerifyCode(req, res, next) {
   try {
-    const parsed = verifyCodeSchema.safeParse(req.body);
-    if (!parsed.success) {
-      throw AppError.badRequest('Invalid payload', 'ERR_INVALID_PAYLOAD', parsed.error.flatten());
-    }
+    const email = await resolveEmailFromRequest(req);
+    const code = String(req.body?.code || '').trim();
 
-    const { email, code } = parsed.data;
+    if (!email || code.length !== 8) {
+      throw AppError.badRequest('Valid email and 8-digit verification code are required', 'ERR_INVALID_PAYLOAD');
+    }
 
     const user = await User.findOne({ email });
     if (!user) {
@@ -190,6 +202,9 @@ router.post('/verify/code', verificationRateLimit, async (req, res, next) => {
   } catch (e) {
     next(e instanceof AppError ? e : AppError.internal('Failed to verify code'));
   }
-});
+}
+
+router.post('/verify/code', verificationRateLimit, handleVerifyCode);
+router.post('/verify', verificationRateLimit, handleVerifyCode);
 
 module.exports = router;

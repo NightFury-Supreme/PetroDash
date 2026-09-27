@@ -1,6 +1,5 @@
 'use client';
-import AuthCard from '@/components/auth/layout/AuthCard';
-import VerifyCoordinator from '@/components/auth/verify/VerifyCoordinator';
+import { AuthCard, VerifyCoordinator } from '@/components/auth';
 import { useTranslations } from 'next-intl';
 
 export default function VerifyPage() {

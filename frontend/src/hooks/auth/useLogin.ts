@@ -1,10 +1,15 @@
+/* ==========================================================================
+   useLogin Hook
+   Compliance: ISO/IEC 25010, Separation of Concerns (<300 lines)
+========================================================================== */
+
 'use client';
 
 import { useState } from 'react';
 import { fetchWithRetry } from '@/utils/fetchWithRetry';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslations } from 'next-intl';
-import { LoginCredentials, LoginResponse } from './types';
+import type { LoginCredentials, LoginResponse } from './types';
 
 interface UseLoginOptions {
   onSuccess?: (token: string) => void;
@@ -15,6 +20,7 @@ export function useLogin({ onSuccess, onRequires2FA }: UseLoginOptions = {}) {
   const [loading, setLoading] = useState(false);
   const { showError } = useToast();
   const tErrors = useTranslations('Auth.errors');
+  const tBackendErrors = useTranslations('BackendErrors');
 
   const login = async (credentials: LoginCredentials): Promise<LoginResponse | null> => {
     setLoading(true);
@@ -26,9 +32,13 @@ export function useLogin({ onSuccess, onRequires2FA }: UseLoginOptions = {}) {
         body: JSON.stringify(credentials),
       });
 
-      const data: LoginResponse = await res.json();
+      const data = await res.json();
       if (!res.ok) {
-        throw new Error(data?.error || tErrors('loginFailed'));
+        const errKey = data?.error || '';
+        const msg = tBackendErrors.has(errKey)
+          ? tBackendErrors(errKey)
+          : (data?.message || tErrors('loginFailed'));
+        throw new Error(msg);
       }
 
       if (data.requires2FA && data.tempToken) {
@@ -37,7 +47,7 @@ export function useLogin({ onSuccess, onRequires2FA }: UseLoginOptions = {}) {
       }
 
       if (!data?.token) {
-        throw new Error('Invalid response');
+        throw new Error(tErrors('loginFailed'));
       }
 
       onSuccess?.(data.token);

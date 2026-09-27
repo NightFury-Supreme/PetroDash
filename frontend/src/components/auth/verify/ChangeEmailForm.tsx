@@ -1,4 +1,11 @@
+/* ==========================================================================
+   Change Email Form Component
+   Compliance: ISO/IEC 25010, User Input Validation
+========================================================================== */
+
 'use client';
+
+import React from 'react';
 import AuthSubmit from '@/components/auth/layout/AuthSubmit';
 import AuthField from '@/components/auth/layout/AuthField';
 import { useTranslations } from 'next-intl';
@@ -18,35 +25,70 @@ interface ChangeEmailFormProps {
 }
 
 export default function ChangeEmailForm({
-  newEmail, setNewEmail, password = '', setPassword, tfaCode = '', setTfaCode, loginMethod, tfaEnabled, onSave, onCancel, loading
+  newEmail,
+  setNewEmail,
+  password = '',
+  setPassword,
+  tfaCode = '',
+  setTfaCode,
+  loginMethod,
+  tfaEnabled,
+  onSave,
+  onCancel,
+  loading,
 }: ChangeEmailFormProps) {
   const t = useTranslations('Auth.verify');
   const tCommon = useTranslations('Common');
-  // const tCommon = useTranslations('Auth.common');
 
   return (
     <div className="space-y-4">
       <p className="text-[13px] text-[#888888] mb-6 text-center">{t('changeEmailSubtitle')}</p>
-      
+
       <div className="space-y-4 text-left">
-        <AuthField label={t('newEmailLabel')} type="email" value={newEmail} onChange={setNewEmail} placeholder={t('newEmailPlaceholder')} />
-        
+        <AuthField
+          label={t('newEmailLabel')}
+          type="email"
+          value={newEmail}
+          onChange={setNewEmail}
+          placeholder={t('newEmailPlaceholder')}
+        />
+
         {loginMethod === 'email' && (
-          <AuthField label={t('currentPasswordLabel')} type="password" value={password} onChange={setPassword} placeholder="        " />
+          <AuthField
+            label={t('currentPasswordLabel')}
+            type="password"
+            value={password}
+            onChange={setPassword}
+            placeholder={tCommon('passwordPlaceholder')}
+          />
         )}
-        
+
         {tfaEnabled && (
           <div className="space-y-2">
-            <label className="block text-[11px] font-medium text-[#888888] uppercase tracking-wider">{t('tfaCodeLabel')}</label>
-            <input type="text" maxLength={6} value={tfaCode} onChange={e => setTfaCode(e.target.value.replace(/\D/g, ''))} placeholder="123456" className="w-full h-[42px] px-[13px] text-center font-mono tracking-[0.2em] bg-[#121212] border border-[#282828] rounded-[7px] text-[#d5d5d5] placeholder-[#666] focus:outline-none focus:border-[#454545] focus:bg-[#151515] transition-colors" />
+            <label className="block text-[11px] font-medium text-[#888888] uppercase tracking-wider">
+              {t('tfaCodeLabel')}
+            </label>
+            <input
+              type="text"
+              maxLength={6}
+              value={tfaCode}
+              onChange={(e) => setTfaCode(e.target.value.replace(/\D/g, ''))}
+              placeholder="123456"
+              className="w-full h-[42px] px-[13px] text-center font-mono tracking-[0.2em] bg-[#121212] border border-[#282828] rounded-[7px] text-[#d5d5d5] placeholder-[#666] focus:outline-none focus:border-[#454545] focus:bg-[#151515] transition-colors"
+            />
           </div>
         )}
-        
+
         <div className="space-y-3 mt-6">
           <AuthSubmit disabled={loading} onClick={onSave}>
             {loading ? tCommon('updating') : t('changeEmailButton')}
           </AuthSubmit>
-          <button onClick={onCancel} disabled={loading} className="w-full h-[42px] bg-[#222] hover:bg-[#333] disabled:opacity-50 text-white font-semibold rounded-[7px] transition-colors flex items-center justify-center gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={loading}
+            className="w-full h-[42px] bg-[#222] hover:bg-[#333] disabled:opacity-50 text-white font-semibold rounded-[7px] transition-colors flex items-center justify-center gap-2 cursor-pointer"
+          >
             {tCommon('cancel')}
           </button>
         </div>

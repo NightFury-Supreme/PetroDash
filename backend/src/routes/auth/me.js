@@ -145,8 +145,7 @@ router.patch('/me/profile-picture', requireAuth, async (req, res, next) => {
       message: 'Profile picture updated successfully',
       profilePicture: user.profilePicture
     });
-  } catch (e) {
-    console.error('Profile picture update error:', e);
+  } catch (_e) {
     return next(AppError.internal('Failed to update profile picture', 'ERR_UPDATE_PROFILE_PICTURE_FAILED'));
   }
 });

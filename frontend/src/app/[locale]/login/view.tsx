@@ -1,5 +1,5 @@
 'use client';
-import LoginCoordinator from '@/components/auth/login/LoginCoordinator';
+import { LoginCoordinator } from '@/components/auth';
 
 export default function LoginClient() {
   return <LoginCoordinator />;

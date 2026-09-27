@@ -84,8 +84,8 @@ router.post('/register', createRateLimiter(5, 60 * 60 * 1000), async (req, res, 
           templateKey: 'accountCreateWithVerification',
           data: { username: user.username, verificationCode, siteName: s?.siteName || 'PteroDash' },
         });
-      } catch (e) {
-        console.error('Failed to send verification email during registration:', e);
+      } catch {
+        // Non-blocking verification mail dispatch
       }
     } else {
       try {

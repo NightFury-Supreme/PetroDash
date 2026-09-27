@@ -1,3 +1,8 @@
+/* ==========================================================================
+   useForgot Hook
+   Compliance: ISO/IEC 25010, Separation of Concerns (<300 lines)
+========================================================================== */
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -15,6 +20,7 @@ export function useForgot() {
 
   const t = useTranslations('Auth.forgot');
   const tErrors = useTranslations('Auth.errors');
+  const tBackendErrors = useTranslations('BackendErrors');
 
   useEffect(() => {
     if (rateLimit > 0) {
@@ -41,7 +47,11 @@ export function useForgot() {
       }
 
       const data = await res.json().catch(() => ({}));
-      showError(data?.error || tErrors('failedSendReset'));
+      const errKey = data?.error || '';
+      const msg = tBackendErrors.has(errKey)
+        ? tBackendErrors(errKey)
+        : (data?.message || tErrors('failedSendReset'));
+      showError(msg);
       return false;
     } catch {
       showError(tErrors('failedSendReset'));
@@ -69,7 +79,11 @@ export function useForgot() {
       }
 
       const data = await res.json().catch(() => ({}));
-      showError(data?.error || tErrors('failedReset'));
+      const errKey = data?.error || '';
+      const msg = tBackendErrors.has(errKey)
+        ? tBackendErrors(errKey)
+        : (data?.message || tErrors('failedReset'));
+      showError(msg);
       return false;
     } catch {
       showError(tErrors('failedReset'));
@@ -97,7 +111,11 @@ export function useForgot() {
       }
 
       const data = await res.json().catch(() => ({}));
-      showError(data?.error || tErrors('failedResend'));
+      const errKey = data?.error || '';
+      const msg = tBackendErrors.has(errKey)
+        ? tBackendErrors(errKey)
+        : (data?.message || tErrors('failedResend'));
+      showError(msg);
       return false;
     } catch {
       showError(tErrors('failedResend'));

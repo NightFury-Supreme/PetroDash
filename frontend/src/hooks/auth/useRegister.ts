@@ -1,3 +1,8 @@
+/* ==========================================================================
+   useRegister Hook
+   Compliance: ISO/IEC 25010, Separation of Concerns (<300 lines)
+========================================================================== */
+
 'use client';
 
 import { useState } from 'react';
@@ -5,7 +10,7 @@ import { useRouter } from '@/i18n/routing';
 import { fetchWithRetry } from '@/utils/fetchWithRetry';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslations } from 'next-intl';
-import { RegisterFormData } from './types';
+import type { RegisterFormData } from './types';
 
 export function useRegister() {
   const router = useRouter();
@@ -13,6 +18,7 @@ export function useRegister() {
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof RegisterFormData, string>>>({});
   const { showError } = useToast();
   const tErrors = useTranslations('Auth.errors');
+  const tBackendErrors = useTranslations('BackendErrors');
 
   const register = async (formData: RegisterFormData, ref?: string): Promise<boolean> => {
     setLoading(true);
@@ -37,11 +43,15 @@ export function useRegister() {
         if (Object.keys(errs).length > 0) {
           setFieldErrors(errs);
         }
-        throw new Error(data?.error || tErrors('registerFailed'));
+        const errKey = data?.error || '';
+        const msg = tBackendErrors.has(errKey)
+          ? tBackendErrors(errKey)
+          : (data?.message || tErrors('registerFailed'));
+        throw new Error(msg);
       }
 
       if (!data?.token) {
-        throw new Error('Invalid response');
+        throw new Error(tErrors('registerFailed'));
       }
 
       localStorage.setItem('auth_token', data.token);

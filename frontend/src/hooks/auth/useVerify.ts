@@ -1,3 +1,8 @@
+/* ==========================================================================
+   useVerify Hook
+   Compliance: ISO/IEC 25010, Separation of Concerns (<300 lines)
+========================================================================== */
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -11,6 +16,7 @@ export function useVerify() {
   const { showError, showSuccess } = useToast();
   const tErrors = useTranslations('Auth.errors');
   const tVerify = useTranslations('Auth.verify');
+  const tBackendErrors = useTranslations('BackendErrors');
 
   const [email, setEmail] = useState('');
   const [loginMethod, setLoginMethod] = useState('');
@@ -73,10 +79,10 @@ export function useVerify() {
       const token = localStorage.getItem('auth_token');
       if (!token) return false;
       const base = process.env.NEXT_PUBLIC_API_BASE || '';
-      const res = await fetchWithRetry(`${base}/api/auth/verify`, {
+      const res = await fetchWithRetry(`${base}/api/auth/verify/code`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ email, code }),
       });
       if (res.ok) {
         showSuccess(tVerify('successVerified'));
@@ -84,7 +90,11 @@ export function useVerify() {
         return true;
       }
       const data = await res.json().catch(() => ({}));
-      showError(data?.error || tErrors('invalidVerifyCode'));
+      const errKey = data?.error || '';
+      const msg = tBackendErrors.has(errKey)
+        ? tBackendErrors(errKey)
+        : (data?.message || tErrors('invalidVerifyCode'));
+      showError(msg);
       return false;
     } catch {
       showError(tErrors('invalidVerifyCode'));
@@ -103,7 +113,8 @@ export function useVerify() {
       const base = process.env.NEXT_PUBLIC_API_BASE || '';
       const res = await fetchWithRetry(`${base}/api/auth/verify/resend`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ email }),
       });
       if (res.ok) {
         setRateLimit(60);
@@ -117,7 +128,11 @@ export function useVerify() {
         setRateLimit(retry);
         showError(data.message || tErrors('rateLimitExceeded'));
       } else {
-        showError(data.error || tErrors('failedSendVerify'));
+        const errKey = data?.error || '';
+        const msg = tBackendErrors.has(errKey)
+          ? tBackendErrors(errKey)
+          : (data?.message || tErrors('failedSendVerify'));
+        showError(msg);
       }
       return false;
     } catch {
@@ -146,7 +161,11 @@ export function useVerify() {
         return true;
       }
       const data = await res.json().catch(() => ({}));
-      showError(data.error || tErrors('failedUpdateEmail'));
+      const errKey = data?.error || '';
+      const msg = tBackendErrors.has(errKey)
+        ? tBackendErrors(errKey)
+        : (data?.message || tErrors('failedUpdateEmail'));
+      showError(msg);
       return false;
     } catch {
       showError(tErrors('networkErrorUpdateEmail'));

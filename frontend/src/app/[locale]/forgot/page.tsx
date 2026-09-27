@@ -1,6 +1,5 @@
 'use client';
-import AuthCard from '@/components/auth/layout/AuthCard';
-import ForgotCoordinator from '@/components/auth/forgot/ForgotCoordinator';
+import { AuthCard, ForgotCoordinator } from '@/components/auth';
 
 export default function ForgotPage() {
   return (

@@ -1,14 +1,12 @@
-export * from './AuthGuard';
-export * from './forgot/ForgotCoordinator';
-export * from './layout/AuthCard';
-export * from './layout/AuthField';
-export * from './layout/AuthSubmit';
-export * from './layout/LanguageSwitcher';
-export * from './layout/OAuthButtons';
-export * from './login/LoginCoordinator';
-export * from './login/LoginForm';
-export * from './login/TwoFactorForm';
-export * from './register/RegisterForm';
-export * from './verify/ChangeEmailForm';
-export * from './verify/VerifyCodeForm';
-export * from './verify/VerifyCoordinator';
+/**
+ * Auth Module Root Barrel Export
+ * Complies with ISO/IEC 25010 (Module Encapsulation & Facade Pattern)
+ */
+
+export { default as AuthGuard } from './AuthGuard';
+
+export * from './forgot';
+export * from './layout';
+export * from './login';
+export * from './register';
+export * from './verify';

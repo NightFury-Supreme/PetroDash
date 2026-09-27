@@ -1,3 +1,8 @@
+/* ==========================================================================
+   useTwoFactor Hook
+   Compliance: ISO/IEC 25010, Separation of Concerns (<300 lines)
+========================================================================== */
+
 'use client';
 
 import { useState } from 'react';
@@ -13,6 +18,7 @@ export function useTwoFactor({ onSuccess }: UseTwoFactorOptions = {}) {
   const [loading, setLoading] = useState(false);
   const { showError } = useToast();
   const tErrors = useTranslations('Auth.errors');
+  const tBackendErrors = useTranslations('BackendErrors');
 
   const verify2FA = async (tempToken: string, code: string): Promise<boolean> => {
     setLoading(true);
@@ -26,11 +32,15 @@ export function useTwoFactor({ onSuccess }: UseTwoFactorOptions = {}) {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data?.error || tErrors('verifyFailed'));
+        const errKey = data?.error || '';
+        const msg = tBackendErrors.has(errKey)
+          ? tBackendErrors(errKey)
+          : (data?.message || tErrors('verifyFailed'));
+        throw new Error(msg);
       }
 
       if (!data?.token) {
-        throw new Error('Invalid response');
+        throw new Error(tErrors('verifyFailed'));
       }
 
       onSuccess?.(data.token);
