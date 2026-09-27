@@ -35,6 +35,19 @@ export function ShopItemsList({
     return unit;
   };
 
+  const getItemName = (key: string, defaultName: string) => {
+    switch (key) {
+      case 'allocations': return t('nameAllocations');
+      case 'backups': return t('nameBackups');
+      case 'cpuPercent': return t('nameCpuPercent');
+      case 'databases': return t('nameDatabases');
+      case 'diskMb': return t('nameDiskMb');
+      case 'memoryMb': return t('nameMemoryMb');
+      case 'serverSlots': return t('nameServerSlots');
+      default: return defaultName;
+    }
+  };
+
   const getDescriptionForKey = (key: string, name: string) => {
     switch (key) {
       case 'allocations': return t('descAllocations');
@@ -70,23 +83,25 @@ export function ShopItemsList({
       </div>
 
       <div className="divide-y divide-white/[0.06]">
-        {items.map((item) => (
-          <div
-            key={item._id || item.key}
-            className="flex flex-col gap-4 px-5 py-4 transition hover:bg-white/[0.015] md:grid md:grid-cols-[2fr_1fr_1fr_1fr_1fr_100px] md:items-center"
-          >
-            {/* Identity */}
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/[0.07] bg-white/[0.035]">
-                <i className={`${getIconForItem(item.key)} text-sm text-white/50`}></i>
+        {items.map((item) => {
+          const itemName = getItemName(item.key, item.name);
+          return (
+            <div
+              key={item._id || item.key}
+              className="flex flex-col gap-4 px-5 py-4 transition hover:bg-white/[0.015] md:grid md:grid-cols-[2fr_1fr_1fr_1fr_1fr_100px] md:items-center"
+            >
+              {/* Identity */}
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/[0.07] bg-white/[0.035]">
+                  <i className={`${getIconForItem(item.key)} text-sm text-white/50`}></i>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-white/80 truncate">
+                    {itemName}
+                  </p>
+                  <p className="text-xs text-white/30 truncate">{getDescriptionForKey(item.key, itemName)}</p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-white/80 truncate">
-                  {item.name}
-                </p>
-                <p className="text-xs text-white/30 truncate">{getDescriptionForKey(item.key, item.name)}</p>
-              </div>
-            </div>
 
             {/* Included amount */}
             <div className="flex items-center gap-1.5">
@@ -129,7 +144,7 @@ export function ShopItemsList({
               </button>
             </div>
           </div>
-        ))}
+        ); })}
       </div>
     </div>
   );

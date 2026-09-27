@@ -43,21 +43,23 @@ export default function AdminPlansTab() {
     loadPlans,
   } = usePlansList();
 
-  const handleDelete = async (planId: string, planName: string) => {
+  const handleDelete = async (planId: string, planName: string): Promise<boolean> => {
     const confirmed = await modal.confirm({
       title: t('modals.deleteTitle'),
       body: t('modals.deleteBody', { planName }),
       confirmText: tCommon('delete')
     });
 
-    if (!confirmed) return;
+    if (!confirmed) return false;
 
     try {
       const result = await deletePlan(planId, planName);
       showSuccess(result.message);
+      return true;
     } catch (err: any) {
       const errKey = err.message;
       showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : errKey);
+      return false;
     }
   };
 
@@ -138,7 +140,7 @@ export default function AdminPlansTab() {
       <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
         <ErrorState
           icon={<CreditCard strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
-          kicker={tCommon('errors.loadErrorKicker')}
+          kicker={tCommon('errors.loadError')}
           title={t('errors.failedToLoadTitle')}
           errorString={error}
           description={<ErrorDescription error={error} topic={t('title')} />}

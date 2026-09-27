@@ -1018,11 +1018,15 @@
     "filters": "Filtros",
     "sort": "Ordenar",
     "close": "Cerrar",
+    "manage": "Administrar",
+    "noLimit": "Sin límite",
+    "na": "N/A",
     "never": "Nunca",
     "yes": "Sí",
     "no": "No",
     "errors": {
       "loadError": "Error de carga",
+      "loadErrorKicker": "Error de carga",
       "error": "Error"
     },
     "error": {
@@ -2472,6 +2476,13 @@
     "descMemoryMb": "Asignación de capacidad de memoria RAM",
     "descServerSlots": "Instancias de servidor totales permitidas",
     "descDefault": "Paquete de recursos para {name}",
+    "nameAllocations": "Puertos",
+    "nameBackups": "Copias de seguridad",
+    "nameCpuPercent": "CPU",
+    "nameDatabases": "Bases de datos",
+    "nameDiskMb": "Disco",
+    "nameMemoryMb": "Memoria",
+    "nameServerSlots": "Espacios de servidor",
     "success": {
       "itemUpdated": "Artículo de la tienda actualizado con éxito."
     },

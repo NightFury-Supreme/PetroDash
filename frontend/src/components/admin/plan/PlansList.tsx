@@ -11,7 +11,7 @@ export type { Plan };
 interface PlansListProps {
   plans: Plan[];
   deleting: string | null;
-  onDelete: (planId: string, planName: string) => Promise<void>;
+  onDelete: (planId: string, planName: string) => Promise<void | boolean>;
   onToggleEnabled: (plan: Plan) => Promise<void>;
   onMakeUnlisted: (plan: Plan) => Promise<void>;
   onMakePublic: (plan: Plan) => Promise<void>;

@@ -1018,11 +1018,15 @@
     "filters": "Filtres",
     "sort": "Trier",
     "close": "Fermer",
+    "manage": "Gérer",
+    "noLimit": "Aucune limite",
+    "na": "N/D",
     "never": "Jamais",
     "yes": "Oui",
     "no": "Non",
     "errors": {
       "loadError": "Erreur de chargement",
+      "loadErrorKicker": "Erreur de chargement",
       "error": "Erreur"
     },
     "error": {
@@ -2472,6 +2476,13 @@
     "descMemoryMb": "Allocation de capacité de mémoire vive (RAM)",
     "descServerSlots": "Total d'instances de serveurs autorisées",
     "descDefault": "Pack de ressources pour {name}",
+    "nameAllocations": "Ports",
+    "nameBackups": "Sauvegardes",
+    "nameCpuPercent": "Processeur",
+    "nameDatabases": "Bases de données",
+    "nameDiskMb": "Disque",
+    "nameMemoryMb": "Mémoire",
+    "nameServerSlots": "Emplacements de serveur",
     "success": {
       "itemUpdated": "Article de boutique mis à jour avec succès."
     },

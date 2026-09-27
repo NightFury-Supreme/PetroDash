@@ -1018,11 +1018,15 @@
     "filters": "फ़िल्टर",
     "sort": "क्रमबद्ध करें",
     "close": "बंद करें",
+    "manage": "प्रबंधित करें",
+    "noLimit": "कोई सीमा नहीं",
+    "na": "लागू नहीं",
     "never": "कभी नहीं",
     "yes": "हाँ",
     "no": "नहीं",
     "errors": {
       "loadError": "लोड त्रुटि",
+      "loadErrorKicker": "लोड त्रुटि",
       "error": "त्रुटि"
     },
     "error": {
@@ -2472,6 +2476,13 @@
     "descMemoryMb": "रैम मेमोरी क्षमता आवंटन",
     "descServerSlots": "कुल स्वीकार्य सर्वर इंस्टेंस",
     "descDefault": "{name} के लिए संसाधन पैकेज",
+    "nameAllocations": "पोर्ट",
+    "nameBackups": "बैकअप",
+    "nameCpuPercent": "सीपीयू",
+    "nameDatabases": "डेटाबेस",
+    "nameDiskMb": "डिस्क",
+    "nameMemoryMb": "मेमोरी",
+    "nameServerSlots": "सर्वर स्लॉट",
     "success": {
       "itemUpdated": "दुकान की वस्तु सफलतापूर्वक अपडेट की गई।"
     },

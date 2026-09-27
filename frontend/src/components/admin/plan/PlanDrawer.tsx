@@ -16,7 +16,7 @@ export interface PlanDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onSaveSuccess: () => void;
-  onDeletePlan: (planId: string, planName: string) => Promise<void>;
+  onDeletePlan: (planId: string, planName: string) => Promise<boolean | void>;
   preloadedCategories?: Array<{ id: string; name: string; planCount: number }>;
 }
 
@@ -30,7 +30,7 @@ function EditPlanWrapper({
   planId: string;
   onClose: () => void;
   onSaveSuccess: () => void;
-  onDeletePlan: (planId: string, planName: string) => Promise<void>;
+  onDeletePlan: (planId: string, planName: string) => Promise<boolean | void>;
   preloadedCategories?: Array<{ id: string; name: string; planCount: number }>;
 }) {
   const { loading, saving, error, plan, validationErrors, loadPlan, handleInputChange, handleSubmit } = usePlanEdit();
@@ -83,15 +83,14 @@ function EditPlanWrapper({
                 disabled={saving || plan.totalPurchases > 0}
                 title={plan.totalPurchases > 0 ? t('cannotDeleteActivePlan') : undefined}
                 onClick={async () => {
-                  if (confirm(t('confirmDelete'))) {
-                    try {
-                      await onDeletePlan(plan._id, plan.name);
-                      showSuccess(t('planDeleted', { name: plan.name }));
+                  try {
+                    const deleted = await onDeletePlan(plan._id, plan.name);
+                    if (deleted !== false) {
                       onSaveSuccess();
                       onClose();
-                    } catch (e: any) {
-                      showError(tErrorBackend.has(e?.message || e) ? tErrorBackend(e?.message || e) : (e?.message || e));
                     }
+                  } catch (e: any) {
+                    showError(tErrorBackend.has(e?.message || e) ? tErrorBackend(e?.message || e) : (e?.message || e));
                   }
                 }}
                 className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

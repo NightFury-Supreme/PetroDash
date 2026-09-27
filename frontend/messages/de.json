@@ -1018,11 +1018,15 @@
     "filters": "Filter",
     "sort": "Sortieren",
     "close": "Schließen",
+    "manage": "Verwalten",
+    "noLimit": "Kein Limit",
+    "na": "N/A",
     "never": "Nie",
     "yes": "Ja",
     "no": "Nein",
     "errors": {
       "loadError": "Ladefehler",
+      "loadErrorKicker": "Ladefehler",
       "error": "Fehler"
     },
     "error": {
@@ -2472,6 +2476,13 @@
     "descMemoryMb": "Zuweisung von RAM-Speicherkapazität",
     "descServerSlots": "Gesamtzahl zulässiger Serverinstanzen",
     "descDefault": "Ressourcenpaket für {name}",
+    "nameAllocations": "Ports",
+    "nameBackups": "Backups",
+    "nameCpuPercent": "CPU",
+    "nameDatabases": "Datenbanken",
+    "nameDiskMb": "Festplatte",
+    "nameMemoryMb": "Speicher",
+    "nameServerSlots": "Server-Slots",
     "success": {
       "itemUpdated": "Shop-Artikel erfolgreich aktualisiert."
     },

@@ -46,14 +46,29 @@ export function EditShopItemModal({
     }));
   };
 
+  const getItemName = (key: string, defaultName: string) => {
+    switch (key) {
+      case 'allocations': return t('nameAllocations');
+      case 'backups': return t('nameBackups');
+      case 'cpuPercent': return t('nameCpuPercent');
+      case 'databases': return t('nameDatabases');
+      case 'diskMb': return t('nameDiskMb');
+      case 'memoryMb': return t('nameMemoryMb');
+      case 'serverSlots': return t('nameServerSlots');
+      default: return defaultName;
+    }
+  };
+
   if (!isOpen || !item) return null;
+
+  const itemName = getItemName(item.key, item.name);
 
   return (
     <Drawer
       isOpen={isOpen}
       onClose={onClose}
-      title={t('editItem', { name: item.name })}
-      subtitle={t('editItemDescription', { name: item.name })}
+      title={t('editItem', { name: itemName })}
+      subtitle={t('editItemDescription', { name: itemName })}
       footer={
         formData.enabled ? (
           <div className="flex items-center justify-between w-full">
@@ -65,7 +80,7 @@ export function EditShopItemModal({
                   try {
                     await onSave(item._id, { enabled: false });
                     setFormData(prev => ({ ...prev, enabled: false }));
-                    showSuccess(t('itemDisabled', { name: item.name }));
+                    showSuccess(t('itemDisabled', { name: itemName }));
                     onClose();
                   } catch (e: any) {
                     showError(tErrorBackend.has(e?.message || e) ? tErrorBackend(e?.message || e) : (e?.message || e));
@@ -92,7 +107,7 @@ export function EditShopItemModal({
                 onClick={async () => {
                   try {
                     await onSave(item._id, formData);
-                    showSuccess(t('itemSaved', { name: item.name }));
+                    showSuccess(t('itemSaved', { name: itemName }));
                     onClose();
                   } catch (e: any) {
                     showError(tErrorBackend.has(e?.message || e) ? tErrorBackend(e?.message || e) : (e?.message || e));
@@ -122,7 +137,7 @@ export function EditShopItemModal({
                 try {
                   await onSave(item._id, { enabled: true });
                   setFormData(prev => ({ ...prev, enabled: true }));
-                  showSuccess(t('itemEnabled', { name: item.name }));
+                  showSuccess(t('itemEnabled', { name: itemName }));
                   onClose();
                 } catch (e: any) {
                   showError(tErrorBackend.has(e?.message || e) ? tErrorBackend(e?.message || e) : (e?.message || e));

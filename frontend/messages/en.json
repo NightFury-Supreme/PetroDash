@@ -1018,11 +1018,15 @@
     "filters": "Filters",
     "sort": "Sort",
     "close": "Close",
+    "manage": "Manage",
+    "noLimit": "No limit",
+    "na": "N/A",
     "never": "Never",
     "yes": "Yes",
     "no": "No",
     "errors": {
       "loadError": "Load Error",
+      "loadErrorKicker": "Load Error",
       "error": "Error"
     },
     "error": {
@@ -2485,6 +2489,13 @@
     "descMemoryMb": "RAM memory capacity allocation",
     "descServerSlots": "Total allowable server instances",
     "descDefault": "Resource package for {name}",
+    "nameAllocations": "Ports",
+    "nameBackups": "Backups",
+    "nameCpuPercent": "CPU",
+    "nameDatabases": "Databases",
+    "nameDiskMb": "Disk",
+    "nameMemoryMb": "Memory",
+    "nameServerSlots": "Server Slots",
     "success": {
       "itemUpdated": "Shop item updated successfully."
     },
