@@ -20,14 +20,17 @@ export function useAdminBrandUpload() {
       });
 
       if (!res.ok) {
-        throw new Error('ERR_ICON_UPLOAD_FAILED');
+        const errJson = await res.json().catch(() => null);
+        const code = errJson?.code || errJson?.error || 'ERR_ICON_UPLOAD_FAILED';
+        throw new Error(code);
       }
 
       const data = await res.json();
       return data.filePath || data.url || '';
     } catch (err: any) {
-      setError(err?.message || 'ERR_ICON_UPLOAD_FAILED');
-      throw err;
+      const code = err?.message || 'ERR_ICON_UPLOAD_FAILED';
+      setError(code);
+      throw new Error(code);
     } finally {
       setUploading(false);
     }

@@ -14,7 +14,7 @@ async function getOrCreate() {
     }
     return doc;
   } catch (_error) {
-    throw new AppError('Failed to access settings database', 500);
+    throw AppError.internal('Failed to access settings database', 'ERR_SETTINGS_DB_ACCESS');
   }
 }
 
@@ -157,10 +157,10 @@ async function updateSettings(parsedData) {
     const returnUrl = String(paypalCfg.returnUrl || '').trim();
     const cancelUrl = String(paypalCfg.cancelUrl || '').trim();
     if (returnUrl && !isValidUrl(returnUrl)) {
-      throw new AppError('Invalid return URL format', 400, { formErrors: [], fieldErrors: { payments: ['Invalid return URL format'] } });
+      throw AppError.badRequest('Invalid return URL format', 'ERR_INVALID_RETURN_URL', { formErrors: [], fieldErrors: { payments: ['Invalid return URL format'] } });
     }
     if (cancelUrl && !isValidUrl(cancelUrl)) {
-      throw new AppError('Invalid cancel URL format', 400, { formErrors: [], fieldErrors: { payments: ['Invalid cancel URL format'] } });
+      throw AppError.badRequest('Invalid cancel URL format', 'ERR_INVALID_CANCEL_URL', { formErrors: [], fieldErrors: { payments: ['Invalid cancel URL format'] } });
     }
   }
 
@@ -174,8 +174,8 @@ async function updateSettings(parsedData) {
   if (authUpdated) {
     try {
       await reconfigureStrategies();
-    } catch (error) {
-      console.error('Failed to reconfigure OAuth strategies after settings update:', error);
+    } catch (_error) {
+      // Reconfiguration non-fatal fallback
     }
   }
 
@@ -187,8 +187,8 @@ async function updateSettings(parsedData) {
       }
       Object.assign(defaultResources, parsedData.defaults);
       await defaultResources.save();
-    } catch (error) {
-      console.error('Failed to update default resources:', error);
+    } catch (_error) {
+      // Default resources update non-fatal fallback
     }
   }
 

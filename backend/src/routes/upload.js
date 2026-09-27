@@ -9,6 +9,7 @@ const { upload, handleUploadError, deleteFile, validateMagicBytes } = require('.
 const { requireAdmin } = require('../middleware/auth');
 const { createRateLimiter } = require('../middleware/rateLimit');
 const { writeAudit } = require('../middleware/audit');
+const { logUserActivity } = require('../middleware/userActivity');
 const AppError = require('../utils/AppError');
 
 const router = express.Router();
@@ -25,7 +26,7 @@ router.post('/icon', requireAdmin, uploadLimiter, (req, res, next) => {
 
     try {
       if (!req.file) {
-        throw new AppError('No file uploaded', 400, 'ERR_UPLOAD_NO_FILE');
+        throw AppError.badRequest('No file uploaded', 'ERR_UPLOAD_NO_FILE');
       }
 
       // Second line of defence: verify actual file content via magic bytes.
@@ -33,14 +34,14 @@ router.post('/icon', requireAdmin, uploadLimiter, (req, res, next) => {
       const safePath = path.resolve(uploadsDir, path.basename(req.file.filename));
 
       if (!safePath.startsWith(uploadsDir)) {
-        throw new AppError('Invalid file path', 403, 'ERR_UPLOAD_INVALID_PATH');
+        throw AppError.forbidden('Invalid file path', 'ERR_UPLOAD_INVALID_PATH');
       }
 
       if (!validateMagicBytes(safePath)) {
         try {
           fs.unlinkSync(safePath);
         } catch (_) {}
-        throw new AppError('File content does not match a valid image', 400, 'ERR_LOCATION_FLAG_UPLOAD_FAILED');
+        throw AppError.badRequest('File content does not match a valid image', 'ERR_UPLOAD_INVALID_IMAGE');
       }
 
       const filePath = `/uploads/${req.file.filename}`;
@@ -50,16 +51,16 @@ router.post('/icon', requireAdmin, uploadLimiter, (req, res, next) => {
         size: req.file.size,
         mimetype: req.file.mimetype,
       });
+      await logUserActivity(req, 'admin.upload.icon', { filename: req.file.filename });
 
       return res.status(200).json({
-        message: 'File uploaded successfully',
         filePath,
         filename: req.file.filename,
         size: req.file.size,
         mimetype: req.file.mimetype,
       });
     } catch (error) {
-      next(error instanceof AppError ? error : new AppError('Failed to upload file', 500, 'ERR_LOCATION_FLAG_UPLOAD_FAILED'));
+      next(error instanceof AppError ? error : AppError.internal('Failed to upload file', 'ERR_UPLOAD_FAILED'));
     }
   });
 });
@@ -70,23 +71,24 @@ router.delete('/icon', requireAdmin, async (req, res, next) => {
     const { filePath } = req.body;
 
     if (!filePath) {
-      throw new AppError('File path is required', 400, 'ERR_UPLOAD_PATH_REQUIRED');
+      throw AppError.badRequest('File path is required', 'ERR_UPLOAD_PATH_REQUIRED');
     }
 
     if (typeof filePath !== 'string' || filePath.length > 255) {
-      throw new AppError('Invalid file path format', 400, 'ERR_UPLOAD_INVALID_FORMAT');
+      throw AppError.badRequest('Invalid file path format', 'ERR_UPLOAD_INVALID_FORMAT');
     }
 
     const deleted = deleteFile(filePath);
     if (!deleted) {
-      throw new AppError('File not found or cannot be deleted', 404, 'ERR_UPLOAD_FILE_NOT_FOUND');
+      throw AppError.notFound('File not found or cannot be deleted', 'ERR_UPLOAD_FILE_NOT_FOUND');
     }
 
     await writeAudit(req, 'admin.upload.delete', 'upload', path.basename(filePath), { filePath });
+    await logUserActivity(req, 'admin.upload.delete', { filePath });
 
-    return res.status(200).json({ message: 'File deleted successfully' });
+    return res.status(200).json({ ok: true });
   } catch (error) {
-    next(error instanceof AppError ? error : new AppError('Failed to delete file', 500, 'ERR_UPLOAD_DELETE_FAILED'));
+    next(error instanceof AppError ? error : AppError.internal('Failed to delete file', 'ERR_UPLOAD_DELETE_FAILED'));
   }
 });
 

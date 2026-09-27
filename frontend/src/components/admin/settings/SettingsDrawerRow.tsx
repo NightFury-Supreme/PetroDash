@@ -60,7 +60,7 @@ export function SettingsDrawerRow({
       <Drawer
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        title={`${t('configure')} ${label}`}
+        title={t('configureTitle', { item: label })}
         subtitle={typeof description === 'string' ? description : t('updateThisSetting')}
         icon={icon}
         footer={

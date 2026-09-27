@@ -7,6 +7,7 @@ const { getSettings, updateSettings } = require('./settings.service');
 const { settingsPayloadSchema } = require('./settings.schema');
 const AppError = require('../../../utils/AppError');
 const { writeAudit } = require('../../../middleware/audit');
+const { logUserActivity } = require('../../../middleware/userActivity');
 
 async function getSettingsHandler(req, res, next) {
   try {
@@ -21,12 +22,13 @@ async function updateSettingsHandler(req, res, next) {
   try {
     const parsed = settingsPayloadSchema.safeParse(req.body);
     if (!parsed.success) {
-      throw new AppError('Invalid payload', 400, 'ERR_SETTINGS_VALIDATION_FAILED', parsed.error.flatten());
+      throw AppError.badRequest('Invalid payload', 'ERR_SETTINGS_VALIDATION_FAILED', parsed.error.flatten());
     }
 
     const { response, changes, settingsId } = await updateSettings(parsed.data);
 
     await writeAudit(req, 'admin.settings.update', 'settings', settingsId, { changes });
+    await logUserActivity(req, 'admin.settings.update', { settingsId });
 
     return res.json(response);
   } catch (error) {

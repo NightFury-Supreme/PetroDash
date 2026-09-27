@@ -33,8 +33,8 @@ export function BrandTab({ formData, updateFormData, saveSection, loading }: Tab
     if (iconFile) {
       try {
         finalSiteIcon = await uploadIcon(iconFile);
-      } catch {
-        throw new Error(t('failedToUploadIcon'));
+      } catch (err: any) {
+        throw new Error(err?.message || 'ERR_ICON_UPLOAD_FAILED');
       }
     }
     await saveSection({ siteIcon: finalSiteIcon }, t('brandSettingsUpdated'));

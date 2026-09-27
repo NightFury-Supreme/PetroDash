@@ -87,21 +87,22 @@ export const useAdminSettings = () => {
     
     try {
       const token = localStorage.getItem('auth_token');
-      if (!token) throw new Error('Authentication token not found');
+      if (!token) throw new Error('ERR_UNAUTHORIZED');
 
       const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/settings`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to load settings' }));
-        throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`);
+        const errorData = await response.json().catch(() => null);
+        const code = errorData?.code || errorData?.error || 'ERR_SETTINGS_LOAD_FAILED';
+        throw new Error(code);
       }
 
       let data: any = {}; try { data = await response.json(); } catch {}
       setSettings(data);
     } catch (e: any) {
-      setError(e.message || 'Failed to load settings');
+      setError(e.message || 'ERR_SETTINGS_LOAD_FAILED');
       throw e;
     } finally {
       setLoading(false);
@@ -111,7 +112,7 @@ export const useAdminSettings = () => {
   const saveSettings = useCallback(async (newSettings: Partial<Settings>) => {
     try {
       const token = localStorage.getItem('auth_token');
-      if (!token) throw new Error('Authentication token not found');
+      if (!token) throw new Error('ERR_UNAUTHORIZED');
 
       const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/settings`, {
         method: 'PATCH',
@@ -123,15 +124,16 @@ export const useAdminSettings = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to save settings' }));
-        throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`);
+        const errorData = await response.json().catch(() => null);
+        const code = errorData?.code || errorData?.error || 'ERR_SETTINGS_SAVE_FAILED';
+        throw new Error(code);
       }
 
       let data: any = {}; try { data = await response.json(); } catch {}
       setSettings(data);
       return data as Settings;
     } catch (e: any) {
-      throw new Error(e.message || 'Failed to save settings');
+      throw e;
     }
   }, []);
 

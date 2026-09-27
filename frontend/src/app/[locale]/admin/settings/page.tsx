@@ -6,10 +6,10 @@ import { Settings, RefreshCw } from 'lucide-react';
 import { ErrorState, DashboardButton, ErrorDescription } from '@/components/ui/ErrorState';
 import { AdminSettingsHeader, AdminSettingsContent } from '@/components/admin/settings';
 import { AdminSettingsSkeleton } from '@/components/skeletons/admin/settings';
-import { useAdminSettings } from '@/hooks/admin/settings/useAdminSettings';
+import { useAdminSettings } from '@/hooks/admin/settings';
 
 export default function AdminSettingsPage() {
-  const t = useTranslations('admin.settings');
+  const t = useTranslations('AdminSettings');
   const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
   
@@ -25,16 +25,16 @@ export default function AdminSettingsPage() {
   }
 
   if (error || !settings) {
-    const displayError = error && tErrorBackend.has(error) ? tErrorBackend(error) : error;
+    const displayError = error && tErrorBackend.has(error as any) ? tErrorBackend(error as any) : error;
     
     return (
       <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
         <ErrorState
           icon={<Settings strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
           kicker={tCommon('errors.loadError')}
-          title={t('errors.failedToLoad')}
+          title={t('failedToLoadSettings')}
           errorString={displayError || ''}
-          description={<ErrorDescription error={displayError || t('errors.unableToLoad')} topic={t('title')} />}
+          description={<ErrorDescription error={displayError || t('unableToConnectSettings')} topic={t('systemSettings')} />}
           buttons={
             <>
               <button
@@ -56,7 +56,9 @@ export default function AdminSettingsPage() {
     try {
       return await saveSettings(newSettings);
     } catch (err: any) {
-      showError(err.message || t('errors.failedToSave'));
+      const errCode = err?.message || 'ERR_SETTINGS_SAVE_FAILED';
+      const msg = tErrorBackend.has(errCode as any) ? tErrorBackend(errCode as any) : t('failedToSaveSettings');
+      showError(msg);
       throw err;
     }
   };
