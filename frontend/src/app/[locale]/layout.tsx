@@ -56,10 +56,6 @@ export default async function RootLayout({
           locale={locale}
           now={new Date()}
           timeZone="UTC"
-          getMessageFallback={({ key }) => {
-            const parts = key.split('.');
-            return parts[parts.length - 1];
-          }}
         >
           <Providers>
             <LayoutWithAds>
