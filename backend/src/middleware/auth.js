@@ -19,7 +19,7 @@ async function requireAuth(req, res, next) {
         const cacheKey = `user:auth:${userId}`;
         let u = await getCache(cacheKey);
         if (!u) {
-            u = await User.findById(userId).select('ban role').lean();
+            u = await User.findById(userId).select('ban role username').lean();
             if (u) {
                 await setCache(cacheKey, u, 60);
             }
@@ -33,7 +33,9 @@ async function requireAuth(req, res, next) {
         if (active) {
             return next(AppError.forbidden('Account banned', 'ERR_ACCOUNT_BANNED', { 
                 reason: String(ban.reason || ''), 
-                until: ban.until || null 
+                until: ban.until || null,
+                username: u.username || payload?.username || '',
+                userId: String(u._id || userId)
             }));
         }
         

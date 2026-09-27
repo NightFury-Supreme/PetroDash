@@ -676,6 +676,11 @@
     "btnLogout": "साइन आउट",
     "btnCheckStatus": "स्थिति जांचें",
     "checkingStatus": "जांच कर रहे हैं...",
+    "greeting": "नमस्ते {username},",
+    "defaultUser": "उपयोगकर्ता",
+    "userIdLabel": "उपयोगकर्ता आईडी",
+    "copied": "कॉपी किया गया!",
+    "clickToCopyId": "उपयोगकर्ता आईडी कॉपी करने के लिए क्लिक करें",
     "statusStillBanned": "आपका खाता अभी भी निलंबित है।",
     "statusUnbanned": "प्रतिबंध हटा दिया गया! डैशबोर्ड पर पुनर्निर्देशित किया जा रहा है..."
   },

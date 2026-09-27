@@ -676,6 +676,11 @@
     "btnLogout": "Sign Out",
     "btnCheckStatus": "Check Status",
     "checkingStatus": "Checking...",
+    "greeting": "Hey {username},",
+    "defaultUser": "there",
+    "userIdLabel": "User ID",
+    "copied": "Copied!",
+    "clickToCopyId": "Click to copy User ID",
     "statusStillBanned": "Your account is still suspended.",
     "statusUnbanned": "Ban lifted! Redirecting to dashboard..."
   },

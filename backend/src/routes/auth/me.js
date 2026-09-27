@@ -25,7 +25,9 @@ router.get('/me', requireAuth, async (req, res, next) => {
     if (activeBan) {
       return next(AppError.forbidden('Account banned', 'ERR_ACCOUNT_BANNED', {
         reason: ban.reason || '',
-        until: ban.until || null
+        until: ban.until || null,
+        username: user.username || '',
+        userId: user._id ? user._id.toString() : ''
       }));
     }
     

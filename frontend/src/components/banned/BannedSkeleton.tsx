@@ -34,9 +34,12 @@ export function BannedSkeleton() {
 
         {/* Description Placeholder */}
         <div className="w-full max-w-[500px] flex flex-col items-center space-y-2.5 mt-2">
+          {/* Greeting Placeholder */}
+          <div className="h-4 w-36 bg-[#1A1A1A] rounded animate-pulse" />
           <div className="h-4 w-full max-w-[420px] bg-[#1A1A1A] rounded animate-pulse" />
           <div className="h-3.5 w-full max-w-[320px] bg-[#1A1A1A] rounded animate-pulse" />
-          <div className="h-3 w-full max-w-[260px] bg-[#1A1A1A] rounded animate-pulse" />
+          <div className="h-5 w-40 bg-[#1A1A1A] rounded animate-pulse" />
+          <div className="h-3 w-56 bg-[#1A1A1A] rounded animate-pulse" />
         </div>
 
         {/* Action Buttons Placeholder */}

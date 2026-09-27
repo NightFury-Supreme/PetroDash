@@ -676,6 +676,11 @@
     "btnLogout": "Se déconnecter",
     "btnCheckStatus": "Vérifier le statut",
     "checkingStatus": "Vérification en cours...",
+    "greeting": "Bonjour {username},",
+    "defaultUser": "utilisateur",
+    "userIdLabel": "Identifiant utilisateur",
+    "copied": "Copié !",
+    "clickToCopyId": "Cliquez pour copier l'identifiant",
     "statusStillBanned": "Votre compte est toujours suspendu.",
     "statusUnbanned": "Suspension levée ! Redirection vers le tableau de bord..."
   },
