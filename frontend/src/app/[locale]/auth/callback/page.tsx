@@ -16,6 +16,13 @@ function AuthCallbackContent() {
       const token = searchParams.get('token');
       const error = searchParams.get('error');
       const discordJoin = searchParams.get('discord_join');
+      const redirectTo = (() => {
+        const raw = searchParams.get('redirect');
+        if (!raw) return '/dashboard';
+        const decoded = decodeURIComponent(raw);
+        // Safe same-origin relative path only
+        return decoded.startsWith('/') && !decoded.startsWith('//') ? decoded : '/dashboard';
+      })();
 
       if (error) {
         showError(t('oauthFailed'));
@@ -33,7 +40,7 @@ function AuthCallbackContent() {
             // Failed to join Discord server — non-blocking
           }
 
-          router.push('/dashboard');
+          router.push(redirectTo as any);
         // eslint-disable-next-line unused-imports/no-unused-vars
         } catch (err) {
           showError(t('loginFailed'));

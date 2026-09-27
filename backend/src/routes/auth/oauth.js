@@ -25,8 +25,8 @@ router.get('/discord', async (req, res, next) => {
   await reconfigureStrategies();
 
   const options = {};
-  if (req.query.ref) {
-    options.state = Buffer.from(JSON.stringify({ ref: req.query.ref })).toString('base64');
+  if (req.query.redirect) {
+    options.state = Buffer.from(JSON.stringify({ redirect: req.query.redirect })).toString('base64');
   }
 
   passport.authenticate('discord', options)(req, res, next);
@@ -54,6 +54,19 @@ router.get('/discord/callback', async (req, res, next) => {
     const callbackUrl = new URL(`${process.env.FRONTEND_URL}/auth/callback`);
     callbackUrl.searchParams.set('token', token);
 
+    // Decode redirect from OAuth state and forward it
+    try {
+      const rawState = req.query.state || (req.user && req.user._state);
+      if (rawState) {
+        const stateObj = JSON.parse(Buffer.from(String(rawState), 'base64').toString('utf8'));
+        if (stateObj?.redirect && typeof stateObj.redirect === 'string' && stateObj.redirect.startsWith('/') && !stateObj.redirect.startsWith('//')) {
+          callbackUrl.searchParams.set('redirect', stateObj.redirect);
+        }
+      }
+    } catch {
+      // Ignore malformed state — degrade gracefully to /dashboard
+    }
+
     if (joinResult) {
       callbackUrl.searchParams.set('discord_join', joinResult.success ? 'success' : 'failed');
       if (!joinResult.success) {
@@ -78,8 +91,8 @@ router.get('/google', async (req, res, next) => {
   await reconfigureStrategies();
 
   const options = { scope: ['profile', 'email'] };
-  if (req.query.ref) {
-    options.state = Buffer.from(JSON.stringify({ ref: req.query.ref })).toString('base64');
+  if (req.query.redirect) {
+    options.state = Buffer.from(JSON.stringify({ redirect: req.query.redirect })).toString('base64');
   }
 
   passport.authenticate('google', options)(req, res, next);
@@ -103,7 +116,24 @@ router.get('/google/callback', async (req, res, next) => {
     }
 
     const { token } = await handleOAuthSuccess(req, 'google');
-    res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
+
+    const callbackUrl = new URL(`${process.env.FRONTEND_URL}/auth/callback`);
+    callbackUrl.searchParams.set('token', token);
+
+    // Decode redirect from OAuth state and forward it
+    try {
+      const rawState = req.query.state || (req.user && req.user._state);
+      if (rawState) {
+        const stateObj = JSON.parse(Buffer.from(String(rawState), 'base64').toString('utf8'));
+        if (stateObj?.redirect && typeof stateObj.redirect === 'string' && stateObj.redirect.startsWith('/') && !stateObj.redirect.startsWith('//')) {
+          callbackUrl.searchParams.set('redirect', stateObj.redirect);
+        }
+      }
+    } catch {
+      // Ignore malformed state — degrade gracefully to /dashboard
+    }
+
+    res.redirect(callbackUrl.toString());
   } catch (error) {
     next(error);
   }

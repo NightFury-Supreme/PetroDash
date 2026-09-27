@@ -58,9 +58,10 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
           : null;
 
         if (!token) {
-          if (redirectingToRef.current !== "/login") {
-            redirectingToRef.current = "/login";
-            router.replace("/login");
+          const loginDest = `/login?redirect=${encodeURIComponent(pathname)}`;
+          if (redirectingToRef.current !== loginDest) {
+            redirectingToRef.current = loginDest;
+            router.replace({ pathname: '/login', query: { redirect: pathname } });
           }
           return;
         }
@@ -96,9 +97,10 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         // — Unauthorized (invalid token) —
         if (meRes.status === 401) {
           try { localStorage.removeItem("auth_token"); } catch {}
-          if (redirectingToRef.current !== "/login") {
-            redirectingToRef.current = "/login";
-            router.replace("/login");
+          const loginDest = `/login?redirect=${encodeURIComponent(pathname)}`;
+          if (redirectingToRef.current !== loginDest) {
+            redirectingToRef.current = loginDest;
+            router.replace({ pathname: '/login', query: { redirect: pathname } });
           }
           return;
         }

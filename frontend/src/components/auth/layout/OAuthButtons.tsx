@@ -60,9 +60,9 @@ function OAuthButtonsInner({ onError }: OAuthButtonsProps) {
 
   const handleOAuthLogin = (provider: string) => {
     const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/oauth/${provider.toLowerCase()}`);
-    const ref = searchParams?.get('ref');
-    if (ref) {
-      url.searchParams.set('ref', ref);
+    const redirect = searchParams?.get('redirect');
+    if (redirect) {
+      url.searchParams.set('redirect', redirect);
     }
     window.location.href = url.toString();
   };
