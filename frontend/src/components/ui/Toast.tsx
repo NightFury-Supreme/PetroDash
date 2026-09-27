@@ -33,11 +33,11 @@ export function Toast({ message, type = 'error', duration = 3500, onDismiss }: T
   }, [duration, onDismiss]);
 
   const isError = type === 'error';
-  const isAuthPage = pathname?.startsWith('/login') || pathname?.startsWith('/register') || pathname?.startsWith('/forgot') || pathname?.startsWith('/verify') || pathname === '/';
+  const isFullWidthPage = pathname?.startsWith('/login') || pathname?.startsWith('/register') || pathname?.startsWith('/forgot') || pathname?.startsWith('/verify') || pathname?.startsWith('/banned') || pathname === '/';
 
   return (
     <div
-      style={{ left: isAuthPage ? '0px' : 'var(--sidebar-width, 16rem)' }}
+      style={{ left: isFullWidthPage ? '0px' : 'var(--sidebar-width, 16rem)' }}
       className={`fixed bottom-0 right-0 z-[9999] transition-transform duration-300 ease-out max-md:!left-0 ${
         visible ? 'translate-y-0' : 'translate-y-full'
       }`}
