@@ -3,10 +3,12 @@
    Compliance: ISO/IEC 25010 (Single Responsibility Principle)
 ========================================================================== */
 
-export interface BannedDetailsCardProps {
+export interface BannedDetailsGridProps {
   reason: string;
   untilText: string | null;
 }
+
+export type BannedDetailsCardProps = BannedDetailsGridProps;
 
 export interface BannedActionsProps {
   onLogout: () => void;

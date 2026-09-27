@@ -677,7 +677,16 @@
     "btnCheckStatus": "Status prüfen",
     "checkingStatus": "Wird geprüft...",
     "statusStillBanned": "Ihr Konto ist weiterhin gesperrt.",
-    "statusUnbanned": "Sperre aufgehoben! Weiterleitung zum Dashboard..."
+    "statusUnbanned": "Sperre aufgehoben! Weiterleitung zum Dashboard...",
+    "reasonNote": "Verstoß durch die Plattformadministration erfasst",
+    "temporaryNotice": "Der Zugriff wird nach dem angegebenen Datum automatisch wiederhergestellt.",
+    "permanentNotice": "Diese Einschränkung ist dauerhaft, sofern sie nicht im Einspruchsverfahren aufgehoben wird.",
+    "scopeLabel": "Einschränkungsumfang",
+    "scopeTitle": "Vollständige Plattformsperre",
+    "scopeDescription": "Serversteuerungen, API-Zugangsdaten und Dashboard-Verwaltung sind gesperrt.",
+    "appealLabel": "Support & Einspruch",
+    "appealTitle": "Einspruch einlegen",
+    "appealHint": "Geben Sie bei Ihrer Anfrage Ihren Benutzernamen und Ihre Konto-E-Mail an."
   },
   "BackendErrors": {
     "ERR_SERVER_TIMEOUT": "Zeitüberschreitung der Anforderung. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",

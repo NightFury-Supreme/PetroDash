@@ -677,7 +677,16 @@
     "btnCheckStatus": "Vérifier le statut",
     "checkingStatus": "Vérification en cours...",
     "statusStillBanned": "Votre compte est toujours suspendu.",
-    "statusUnbanned": "Suspension levée ! Redirection vers le tableau de bord..."
+    "statusUnbanned": "Suspension levée ! Redirection vers le tableau de bord...",
+    "reasonNote": "Infraction enregistrée par l'administration de la plateforme",
+    "temporaryNotice": "L'accès sera rétabli automatiquement après la date indiquée.",
+    "permanentNotice": "Cette restriction est permanente sauf si elle est annulée par un recours.",
+    "scopeLabel": "Périmètre de restriction",
+    "scopeTitle": "Suspension complète de la plateforme",
+    "scopeDescription": "Les commandes de serveur, les identifiants API et le tableau de bord sont verrouillés.",
+    "appealLabel": "Assistance et recours",
+    "appealTitle": "Déposer un recours",
+    "appealHint": "Indiquez votre nom d'utilisateur et l'e-mail de votre compte dans votre demande."
   },
   "BackendErrors": {
     "ERR_SERVER_TIMEOUT": "Délai d'attente de la demande dépassé. Veuillez vérifier votre connexion et réessayer.",

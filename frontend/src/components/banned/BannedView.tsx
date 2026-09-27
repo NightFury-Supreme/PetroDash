@@ -11,7 +11,7 @@ import React from 'react';
 import { useTranslations } from 'next-intl';
 import { Ban } from 'lucide-react';
 import { useBannedStatus } from '@/hooks/auth';
-import { BannedDetailsCard } from './BannedDetailsCard';
+import { BannedDetailsGrid } from './BannedDetailsGrid';
 import { BannedActions } from './BannedActions';
 
 export function BannedView() {
@@ -51,8 +51,8 @@ export function BannedView() {
           {t('subtitle')}
         </p>
 
-        {/* Details Card */}
-        <BannedDetailsCard reason={reason} untilText={untilText} />
+        {/* Details Resource Grid */}
+        <BannedDetailsGrid reason={reason} untilText={untilText} />
 
         {/* Action Buttons */}
         <BannedActions onLogout={logout} onRefresh={checkNow} checking={checking} />
