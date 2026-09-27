@@ -183,8 +183,17 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     }
   }, [pathname, router]);
 
-  
-
+  // — Global account:banned event listener —
+  useEffect(() => {
+    const handleAccountBanned = () => {
+      if (redirectingToRef.current !== "/banned") {
+        redirectingToRef.current = "/banned";
+        router.replace("/banned");
+      }
+    };
+    window.addEventListener("account:banned", handleAccountBanned);
+    return () => window.removeEventListener("account:banned", handleAccountBanned);
+  }, [router]);
   return <>{children}</>;
 }
 

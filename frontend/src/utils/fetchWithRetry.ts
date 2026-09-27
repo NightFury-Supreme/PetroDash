@@ -1,3 +1,8 @@
+/* ==========================================================================
+   fetchWithRetry Utility
+   Compliance: ISO/IEC 25010 (Fault Tolerance, Resilience, Rate-Limit Backoff)
+========================================================================== */
+
 export interface FetchWithRetryInit extends RequestInit {
   timeoutMs?: number;
 }
@@ -12,18 +17,18 @@ export async function fetchWithRetry(
   const cacheKey = isGet ? `${String(input)}_${init?.headers ? JSON.stringify(init.headers) : ''}` : null;
 
   // Deduplicate concurrent identical GET requests
-  if (cacheKey) {
-    const _win = window as any;
+  if (cacheKey && typeof window !== 'undefined') {
+    const _win = window as unknown as { __fetchDedup?: Map<string, Promise<Response>> };
     _win.__fetchDedup = _win.__fetchDedup || new Map();
     if (_win.__fetchDedup.has(cacheKey)) {
-      const p = _win.__fetchDedup.get(cacheKey);
+      const p = _win.__fetchDedup.get(cacheKey)!;
       const res = await p;
-      return res.clone(); // Clone so multiple callers can read the body
+      return res.clone();
     }
   }
 
   const doFetch = async () => {
-    let lastError: any = null;
+    let lastError: unknown = null;
     const timeoutLimit = init?.timeoutMs || 15000;
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
@@ -37,6 +42,32 @@ export async function fetchWithRetry(
         }, timeoutLimit);
         const res = await fetch(input, { ...init, signal: controller.signal });
         clearTimeout(timeout);
+
+        // Global interception for Account Banned responses
+        if (res.status === 403 && typeof window !== 'undefined') {
+          try {
+            const clone = res.clone();
+            clone.json().then((d) => {
+              if (d?.error === 'ERR_ACCOUNT_BANNED') {
+                try {
+                  sessionStorage.setItem('is_banned', 'true');
+                  if (d?.details?.reason) sessionStorage.setItem('ban_reason', String(d.details.reason));
+                  if (d?.details?.until) sessionStorage.setItem('ban_until', String(d.details.until));
+                  if (d?.details?.username) sessionStorage.setItem('ban_username', String(d.details.username));
+                } catch {
+                  // sessionStorage unavailable
+                }
+                if (!window.location.pathname.includes('/banned')) {
+                  window.dispatchEvent(new CustomEvent('account:banned', { detail: d?.details }));
+                  window.location.replace('/banned');
+                }
+              }
+            }).catch(() => {});
+          } catch {
+            // Ignore clone errors
+          }
+        }
+
         if (res.status === 429 || (res.status >= 500 && res.status < 600)) {
           if (attempt < retries) {
             await new Promise((r) => setTimeout(r, backoffMs * (attempt + 1)));
@@ -44,13 +75,14 @@ export async function fetchWithRetry(
           }
         }
         return res;
-      } catch (e: any) {
+      } catch (e: unknown) {
         lastError = e;
         if (attempt < retries) {
           await new Promise((r) => setTimeout(r, backoffMs * (attempt + 1)));
           continue;
         }
-        if (e?.name === 'AbortError' || e?.message?.toLowerCase().includes('aborted')) {
+        const errObj = e as { name?: string; message?: string };
+        if (errObj?.name === 'AbortError' || errObj?.message?.toLowerCase().includes('aborted')) {
           const timeoutErr = new Error('ERR_SERVER_TIMEOUT');
           timeoutErr.name = 'AbortError';
           throw timeoutErr;
@@ -58,24 +90,32 @@ export async function fetchWithRetry(
         throw e;
       }
     }
-    throw lastError || new Error('ERR_NETWORK');
+    throw (lastError as Error) || new Error('ERR_NETWORK');
   };
 
   if (!cacheKey) return doFetch();
 
   const promise = doFetch();
-  const _win = window as any;
-  _win.__fetchDedup.set(cacheKey, promise);
-  
+  if (typeof window !== 'undefined') {
+    const _win = window as unknown as { __fetchDedup?: Map<string, Promise<Response>> };
+    _win.__fetchDedup = _win.__fetchDedup || new Map();
+    _win.__fetchDedup.set(cacheKey, promise);
+  }
+
   try {
     const res = await promise;
-    // Keep in cache for 500ms to collapse rapid subsequent calls
     setTimeout(() => {
-      _win.__fetchDedup.delete(cacheKey);
+      if (typeof window !== 'undefined') {
+        const _win = window as unknown as { __fetchDedup?: Map<string, Promise<Response>> };
+        _win.__fetchDedup?.delete(cacheKey);
+      }
     }, 500);
     return res.clone();
   } catch (e) {
-    _win.__fetchDedup.delete(cacheKey);
+    if (typeof window !== 'undefined') {
+      const _win = window as unknown as { __fetchDedup?: Map<string, Promise<Response>> };
+      _win.__fetchDedup?.delete(cacheKey);
+    }
     throw e;
   }
 }

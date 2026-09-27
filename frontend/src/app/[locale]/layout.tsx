@@ -51,7 +51,16 @@ export default async function RootLayout({
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <NextIntlClientProvider messages={messages} locale={locale} now={new Date()} timeZone="UTC">
+        <NextIntlClientProvider
+          messages={messages}
+          locale={locale}
+          now={new Date()}
+          timeZone="UTC"
+          getMessageFallback={({ key }) => {
+            const parts = key.split('.');
+            return parts[parts.length - 1];
+          }}
+        >
           <Providers>
             <LayoutWithAds>
               <AuthGuard>
