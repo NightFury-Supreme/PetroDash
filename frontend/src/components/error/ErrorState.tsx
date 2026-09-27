@@ -13,7 +13,7 @@ import type { ErrorStateProps } from './Error.types';
 
 export function ErrorState({
   icon,
-  kicker,
+  kicker: _kicker,
   title,
   description,
   buttons,
@@ -28,19 +28,15 @@ export function ErrorState({
   const renderedHeader = header !== undefined ? header : (fullScreen ? <ErrorHeader /> : null);
   const t = useTranslations('ErrorState');
 
-  let displayKicker = kicker;
   let displayTitle = title;
 
   if (errorString) {
     const e = errorString.toLowerCase();
     if (e.includes('rate limit') || e.includes('too many requests')) {
-      displayKicker = t('kickerRateLimited');
       displayTitle = t('titleTooManyRequests');
     } else if (e.includes('forbidden') || e.includes('unauthorized') || e.includes('access denied')) {
-      displayKicker = t('kickerAccessDenied');
       displayTitle = t('titleForbidden');
     } else if (e.includes('not found')) {
-      displayKicker = t('kickerNotFound');
       displayTitle = t('titleNotFound');
     }
   }
@@ -57,9 +53,6 @@ export function ErrorState({
           <div className="mx-auto mb-[24px] flex items-center justify-center text-[#FF5722]" aria-hidden="true">
             {icon}
           </div>
-          <p className="m-0 mb-2.5 text-[#FF5722] text-[10px] font-semibold tracking-[0.12em] uppercase">
-            {displayKicker}
-          </p>
           <h1
             id="error-title"
             className="m-0 text-[#ededed] text-[clamp(28px,4vw,38px)] leading-[1.15] font-semibold tracking-[-0.04em] break-words"

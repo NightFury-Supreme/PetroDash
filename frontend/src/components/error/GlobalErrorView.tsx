@@ -11,45 +11,39 @@ import type { GlobalErrorViewProps } from './Error.types';
 
 const DICTIONARY: Record<
   string,
-  { kicker: string; title: string; defaultMsg: string; reload: string }
+  { title: string; defaultMsg: string; reload: string }
 > = {
   en: {
-    kicker: 'Critical Error',
     title: 'Application Error',
     defaultMsg:
       'We encountered a critical unexpected issue while loading this page. Please reload the application.',
     reload: 'Reload Application',
   },
   hi: {
-    kicker: 'गंभीर त्रुटि',
     title: 'एप्लिकेशन त्रुटि',
     defaultMsg:
       'इस पृष्ठ को लोड करते समय हमें एक अप्रत्याशित समस्या का सामना करना पड़ा। कृपया एप्लिकेशन पुनः लोड करें।',
     reload: 'एप्लिकेशन पुनः लोड करें',
   },
   es: {
-    kicker: 'Error Crítico',
     title: 'Error de Aplicación',
     defaultMsg:
       'Encontramos un problema inesperado crítico al cargar esta página. Por favor recarga la aplicación.',
     reload: 'Recargar Aplicación',
   },
   fr: {
-    kicker: 'Erreur Critique',
     title: "Erreur d'Application",
     defaultMsg:
       'Nous avons rencontré un problème critique inattendu lors du chargement de cette page. Veuillez recharger l’application.',
     reload: "Recharger l'Application",
   },
   de: {
-    kicker: 'Kritischer Fehler',
     title: 'Anwendungsfehler',
     defaultMsg:
       'Beim Laden dieser Seite ist ein kritisches unerwartetes Problem aufgetreten. Bitte laden Sie die Anwendung neu.',
     reload: 'Anwendung neu laden',
   },
   ar: {
-    kicker: 'خطأ فادح',
     title: 'خطأ في التطبيق',
     defaultMsg:
       'واجهنا مشكلة غير متوقعة أثناء تحميل هذه الصفحة. يرجى إعادة تحميل التطبيق.',
@@ -112,9 +106,6 @@ export function GlobalErrorView({ error }: GlobalErrorViewProps) {
                 <path d="m13 6-4 6h6l-4 6" />
               </svg>
             </div>
-            <p className="m-0 mb-2.5 text-[#FF5722] text-[10px] font-semibold tracking-[0.12em] uppercase">
-              {t.kicker}
-            </p>
             <h1
               id="error-title"
               className="m-0 text-[#ededed] text-[clamp(28px,4vw,38px)] leading-[1.15] font-semibold tracking-[-0.04em]"

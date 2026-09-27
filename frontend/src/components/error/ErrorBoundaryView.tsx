@@ -9,7 +9,7 @@ import React, { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { ErrorState } from './ErrorState';
 import { ErrorHeader } from './ErrorHeader';
-import { DashboardButton, GoBackButton } from './ErrorButtons';
+import { GoBackButton } from './ErrorButtons';
 import type { ErrorBoundaryViewProps } from './Error.types';
 
 export function ErrorBoundaryView({ error, reset }: ErrorBoundaryViewProps) {
@@ -48,7 +48,6 @@ export function ErrorBoundaryView({ error, reset }: ErrorBoundaryViewProps) {
           <path d="m13 6-4 6h6l-4 6" />
         </svg>
       }
-      kicker={t('applicationError')}
       title={t('somethingWentWrong')}
       description={<p>{displayMessage}</p>}
       buttons={
@@ -69,7 +68,6 @@ export function ErrorBoundaryView({ error, reset }: ErrorBoundaryViewProps) {
             </svg>
             {t('tryAgain')}
           </button>
-          <DashboardButton variant="secondary" />
           <GoBackButton />
         </>
       }

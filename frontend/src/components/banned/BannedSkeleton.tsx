@@ -26,9 +26,6 @@ export function BannedSkeleton() {
             aria-hidden="true"
           />
 
-        {/* Kicker Placeholder */}
-        <div className="mb-2.5 h-2.5 w-28 bg-[#1A1A1A] rounded animate-pulse" />
-
         {/* Title Placeholder */}
         <div className="mb-3.5 h-8 sm:h-10 w-64 bg-[#1A1A1A] rounded animate-pulse" />
 

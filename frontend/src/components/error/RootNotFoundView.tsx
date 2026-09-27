@@ -45,9 +45,6 @@ export function RootNotFoundView() {
               <path d="m13 6-4 6h6l-4 6" />
             </svg>
           </div>
-          <p className="text-[#FF5722] text-xs font-semibold tracking-widest uppercase mb-2">
-            404 Not Found
-          </p>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#EDEDED] mb-3">
             Page Not Found
           </h1>

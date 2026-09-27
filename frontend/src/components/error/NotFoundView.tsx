@@ -36,7 +36,6 @@ export function NotFoundView() {
           <path d="m13 6-4 6h6l-4 6" />
         </svg>
       }
-      kicker={t('notFound404')}
       title={t('pageNotFound')}
       description={<p>{t('pageNotFoundDesc')}</p>}
       buttons={

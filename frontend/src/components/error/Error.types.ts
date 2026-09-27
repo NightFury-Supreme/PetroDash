@@ -7,7 +7,7 @@ import { type ReactNode } from 'react';
 
 export interface ErrorStateProps {
   icon: ReactNode;
-  kicker: string;
+  kicker?: string;
   title: string;
   description: ReactNode;
   buttons?: ReactNode;
