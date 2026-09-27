@@ -20,7 +20,6 @@ export function DeleteAccountDrawer({ isOpen,
   tfaEnabled?: boolean;
 }) {
   const t = useTranslations('Profile');
-  const tErrorBackend = useTranslations('BackendErrors');
 const [password, setPassword] = useState('');
   const [tfaCode, setTfaCode] = useState('');
   const [confirmPhrase, setConfirmPhrase] = useState('');
@@ -43,8 +42,7 @@ const [password, setPassword] = useState('');
       // Wait for redirect to happen in page.tsx
     } catch (e: any) {
       
-        const errKey = e.details?.[0]?.message || e.message;
-        showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : (e.message || 'An error occurred'));
+        showError(e.message);
     
       setIsLoading(false);
     }

@@ -5,7 +5,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { fetchWithRetry } from '@/utils/fetchWithRetry';
-import { useTranslations } from 'next-intl';
 
 export interface RedemptionRecord {
   user: {
@@ -24,7 +23,6 @@ export function useGiftRedemptions(giftId: string | null) {
   const [giftCode, setGiftCode] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
-  const tError = useTranslations('BackendErrors');
 
   const loadRedemptions = useCallback(async (page: number) => {
     if (!giftId) return;
@@ -40,8 +38,7 @@ export function useGiftRedemptions(giftId: string | null) {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         const errKey = data.error || 'ERR_GIFT_NOT_FOUND';
-        const localizedMsg = tError.has(errKey) ? tError(errKey) : (data.error || tError('ERR_INTERNAL_SERVER_ERROR'));
-        setError(localizedMsg);
+        setError(errKey);
         return;
       }
 
@@ -50,12 +47,11 @@ export function useGiftRedemptions(giftId: string | null) {
       if (data.pagination) setPagination(data.pagination);
     } catch (e: unknown) {
       const errMsg = e instanceof Error ? e.message : 'ERR_INTERNAL_SERVER_ERROR';
-      const localizedMsg = tError.has(errMsg) ? tError(errMsg) : (errMsg || tError('ERR_INTERNAL_SERVER_ERROR'));
-      setError(localizedMsg);
+      setError(errMsg);
     } finally {
       setLoading(false);
     }
-  }, [giftId, tError]);
+  }, [giftId]);
 
   useEffect(() => {
     if (giftId) {

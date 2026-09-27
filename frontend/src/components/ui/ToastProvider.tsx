@@ -8,7 +8,6 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { Toast } from './Toast';
-import { resolveErrorMessage, normalizeErrorCode } from '@/utils/formatApiError';
 
 type ToastContextType = {
   showError: (message: string) => void;
@@ -26,17 +25,17 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const showError = useCallback((rawMessage: string) => {
     if (!rawMessage || typeof rawMessage !== 'string') {
-      setToast({ message: tBackendErrors('ERR_INTERNAL_SERVER'), type: 'error', id: Date.now() });
+      setToast({ message: tCommon('somethingWentWrong'), type: 'error', id: Date.now() });
       return;
     }
 
-    const code = normalizeErrorCode(rawMessage);
+    const trimmed = rawMessage.trim();
 
     // Account Banned: Notification & event dispatch for AuthGuard to route gracefully
-    if (code === 'ERR_ACCOUNT_BANNED' || code.includes('ERR_ACCOUNT_BANNED')) {
+    if (trimmed === 'ERR_ACCOUNT_BANNED' || trimmed.includes('ERR_ACCOUNT_BANNED')) {
       const msg = tBackendErrors.has('ERR_ACCOUNT_BANNED')
         ? tBackendErrors('ERR_ACCOUNT_BANNED')
-        : 'Your account has been suspended.';
+        : trimmed;
       setToast({ message: msg, type: 'error', id: Date.now() });
 
       if (typeof window !== 'undefined') {
@@ -50,16 +49,17 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const resolved = resolveErrorMessage(rawMessage, {
-      tBackendErrors: (k) => tBackendErrors(k),
-      hasBackendError: (k) => tBackendErrors.has(k),
-      tGlobalErrors: (k) => tGlobalErrors(k),
-      hasGlobalError: (k) => tGlobalErrors.has(k),
-      tErrorState: (k, v) => tError(k, v),
-      tCommon: (k) => tCommon(k),
-    });
+    // Direct translation from translation namespaces
+    let displayMessage = trimmed;
+    if (tBackendErrors.has(trimmed)) {
+      displayMessage = tBackendErrors(trimmed);
+    } else if (tGlobalErrors.has(trimmed)) {
+      displayMessage = tGlobalErrors(trimmed);
+    } else if (tError.has(trimmed)) {
+      displayMessage = tError(trimmed);
+    }
 
-    setToast({ message: resolved, type: 'error', id: Date.now() });
+    setToast({ message: displayMessage, type: 'error', id: Date.now() });
   }, [tError, tBackendErrors, tGlobalErrors, tCommon]);
 
   const showSuccess = useCallback((message: string) => {

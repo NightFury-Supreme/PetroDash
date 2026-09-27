@@ -24,7 +24,6 @@ export function ResourcesTab({
   const { showError } = useToast();
   const t = useTranslations('admin.users');
   const tCommon = useTranslations('Common');
-  const tErrorBackend = useTranslations('BackendErrors');
 
   const beginEdit = (field: string) => {
     setEditing(field);
@@ -44,7 +43,7 @@ export function ResourcesTab({
       setEditing(null);
       return true;
     } catch (e: any) {
-      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
+      showError(e.message || tCommon('error'));
       return false;
     }
   };

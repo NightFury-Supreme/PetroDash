@@ -27,7 +27,6 @@ export function EditShopItemModal({
   const t = useTranslations('AdminShop');
   const tShop = useTranslations('Shop');
   const tCommon = useTranslations('Common');
-  const tErrorBackend = useTranslations('BackendErrors');
 
   useEffect(() => {
     if (item) {
@@ -74,7 +73,7 @@ export function EditShopItemModal({
                     showSuccess(t('itemDisabled', { name: itemName }));
                     onClose();
                   } catch (e: any) {
-                    showError(tErrorBackend.has(e?.message || e) ? tErrorBackend(e?.message || e) : (e?.message || e));
+                    showError(e?.message || 'ERR_INTERNAL_SERVER');
                   }
                 }}
                 className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -101,7 +100,7 @@ export function EditShopItemModal({
                     showSuccess(t('itemSaved', { name: itemName }));
                     onClose();
                   } catch (e: any) {
-                    showError(tErrorBackend.has(e?.message || e) ? tErrorBackend(e?.message || e) : (e?.message || e));
+                    showError(e?.message || 'ERR_INTERNAL_SERVER');
                   }
                 }}
                 className="flex items-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white hover:bg-[#F4511E] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -131,7 +130,7 @@ export function EditShopItemModal({
                   showSuccess(t('itemEnabled', { name: itemName }));
                   onClose();
                 } catch (e: any) {
-                  showError(tErrorBackend.has(e?.message || e) ? tErrorBackend(e?.message || e) : (e?.message || e));
+                  showError((e?.message || e));
                 }
               }}
               className="flex items-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white hover:bg-[#F4511E] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

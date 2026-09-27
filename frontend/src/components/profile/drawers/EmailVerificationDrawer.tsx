@@ -25,7 +25,6 @@ export function EmailVerificationDrawer({ isOpen,
   onChangeEmail?: () => void;
 }) {
   const t = useTranslations('Profile');
-  const tErrorBackend = useTranslations('BackendErrors');
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
@@ -39,8 +38,7 @@ export function EmailVerificationDrawer({ isOpen,
       showSuccess(t('verifyEmailTitle') ? (t('verifyEmailTitle') + " successful.") : "Email verified successfully.");
       handleClose();
     } catch (e: any) {
-      const errKey = e.details?.[0]?.message || e.message;
-      showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : (e.message || 'An error occurred'));
+                    showError(e.message);
     } finally {
       setIsLoading(false);
     }
@@ -103,8 +101,7 @@ export function EmailVerificationDrawer({ isOpen,
                 } catch (e: any) {
                   if (e.retryAfter) onRateLimitChange(e.retryAfter);
                   else {
-                    const errKey = e.details?.[0]?.message || e.message;
-                    showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : (e.message || 'An error occurred'));
+                    showError((e.message || 'An error occurred'));
                   }
                 } finally {
                   setResendLoading(false);

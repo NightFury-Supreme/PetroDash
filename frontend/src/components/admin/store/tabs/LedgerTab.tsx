@@ -14,7 +14,6 @@ import { useAdminLedger } from "@/hooks/admin/ledger";
 export default function AdminLedgerTab() {
   const t = useTranslations('Admin.ledger');
   const tCommon = useTranslations('Common');
-  const tErrorBackend = useTranslations('BackendErrors');
 
   const [status, setStatus] = useState<string>("");
   const [provider, setProvider] = useState<string>("");
@@ -69,7 +68,7 @@ export default function AdminLedgerTab() {
       refresh(currentPage);
     } catch (e: any) {
       const errKey = e.message;
-      showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : errKey);
+      showError(errKey);
     }
   };
 
@@ -89,7 +88,7 @@ export default function AdminLedgerTab() {
       refresh(currentPage);
     } catch (e: any) {
       const errKey = e.message;
-      showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : errKey);
+      showError(errKey);
     }
   };
 

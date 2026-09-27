@@ -17,7 +17,6 @@ export function Disable2FADrawer({ isOpen,
   disable2FA: (password: string, code: string) => Promise<void>;
 }) {
   const t = useTranslations('Profile');
-  const tErrorBackend = useTranslations('BackendErrors');
   const [tfaPassword, setTfaPassword] = useState('');
   const [tfaVerifyCode, setTfaVerifyCode] = useState('');
   const [useBackupCode, setUseBackupCode] = useState(false);
@@ -57,8 +56,7 @@ export function Disable2FADrawer({ isOpen,
       showSuccess(t('disable2faTitle') ? (t('disable2faTitle') + " successful.") : "2FA disabled successfully.");
       handleClose();
     } catch (e: any) {
-      const errKey = e.details?.[0]?.message || e.message;
-      showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : (e.message || 'An error occurred'));
+      showError(e.message);
     } finally {
       setIsLoading(false);
     }

@@ -19,7 +19,6 @@ export function PasswordDrawer({ isOpen,
   updatePassword: (current: string, newPass: string, tfa: string) => Promise<void>;
 }) {
   const t = useTranslations('Profile');
-  const tErrorBackend = useTranslations('BackendErrors');
   const tError = useTranslations('GlobalErrors');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -66,8 +65,7 @@ export function PasswordDrawer({ isOpen,
       handleClose();
     } catch (e: any) {
       
-        const errKey = e.details?.[0]?.message || e.message;
-        showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : (e.message || 'An error occurred'));
+        showError(e.message);
     
     } finally {
       setIsLoading(false);

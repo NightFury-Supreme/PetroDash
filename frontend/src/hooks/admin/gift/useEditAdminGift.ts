@@ -50,7 +50,6 @@ export function useEditAdminGift(giftId: string | null, isOpen: boolean, onSucce
 
   const { showSuccess, showError } = useToast();
   const t = useTranslations('Admin.gifts');
-  const tError = useTranslations('BackendErrors');
 
   const fetchGiftDetails = useCallback(async () => {
     if (!giftId || !isOpen) return;
@@ -65,9 +64,8 @@ export function useEditAdminGift(giftId: string | null, isOpen: boolean, onSucce
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         const errKey = data.error || 'ERR_GIFT_NOT_FOUND';
-        const localizedMsg = tError.has(errKey) ? tError(errKey) : (data.error || tError('ERR_INTERNAL_SERVER_ERROR'));
-        setError(localizedMsg);
-        showError(localizedMsg);
+        setError(errKey);
+        showError(errKey);
         return;
       }
 
@@ -86,13 +84,12 @@ export function useEditAdminGift(giftId: string | null, isOpen: boolean, onSucce
       });
     } catch (e: unknown) {
       const errMsg = e instanceof Error ? e.message : 'ERR_INTERNAL_SERVER_ERROR';
-      const localizedMsg = tError.has(errMsg) ? tError(errMsg) : (errMsg || tError('ERR_INTERNAL_SERVER_ERROR'));
-      setError(localizedMsg);
-      showError(localizedMsg);
+      setError(errMsg);
+      showError(errMsg);
     } finally {
       setLoading(false);
     }
-  }, [giftId, isOpen, tError, showError]);
+  }, [giftId, isOpen, showError]);
 
   useEffect(() => {
     if (isOpen && giftId) {
@@ -140,9 +137,8 @@ export function useEditAdminGift(giftId: string | null, isOpen: boolean, onSucce
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         const errKey = data.error || 'ERR_INTERNAL_SERVER_ERROR';
-        const localizedMsg = tError.has(errKey) ? tError(errKey) : (data.error || tError('ERR_INTERNAL_SERVER_ERROR'));
-        setError(localizedMsg);
-        showError(localizedMsg);
+        setError(errKey);
+        showError(errKey);
         return false;
       }
 
@@ -151,9 +147,8 @@ export function useEditAdminGift(giftId: string | null, isOpen: boolean, onSucce
       return true;
     } catch (e: unknown) {
       const errMsg = e instanceof Error ? e.message : 'ERR_INTERNAL_SERVER_ERROR';
-      const localizedMsg = tError.has(errMsg) ? tError(errMsg) : (errMsg || tError('ERR_INTERNAL_SERVER_ERROR'));
-      setError(localizedMsg);
-      showError(localizedMsg);
+      setError(errMsg);
+      showError(errMsg);
       return false;
     } finally {
       setSaving(false);

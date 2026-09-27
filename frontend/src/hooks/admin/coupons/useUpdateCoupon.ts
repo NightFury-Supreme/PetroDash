@@ -14,7 +14,6 @@ export function useUpdateCoupon(onSuccess?: () => void) {
   const [error, setError] = useState<string | null>(null);
   const { showSuccess, showError } = useToast();
   const t = useTranslations('Admin.coupons');
-  const tError = useTranslations('BackendErrors');
 
   const updateCoupon = async (couponId: string, payload: UpdateCouponPayload) => {
     try {
@@ -45,9 +44,8 @@ export function useUpdateCoupon(onSuccess?: () => void) {
 
       if (!res.ok) {
         const errKey = data.error || 'ERR_INTERNAL_SERVER_ERROR';
-        const localizedMsg = tError.has(errKey) ? tError(errKey) : (data.error || tError('ERR_INTERNAL_SERVER_ERROR'));
-        setError(localizedMsg);
-        showError(localizedMsg);
+        setError(errKey);
+        showError(errKey);
         return false;
       }
 
@@ -56,9 +54,8 @@ export function useUpdateCoupon(onSuccess?: () => void) {
       return true;
     } catch (e: unknown) {
       const errMsg = e instanceof Error ? e.message : 'ERR_INTERNAL_SERVER_ERROR';
-      const localizedMsg = tError.has(errMsg) ? tError(errMsg) : (errMsg || tError('ERR_INTERNAL_SERVER_ERROR'));
-      setError(localizedMsg);
-      showError(localizedMsg);
+      setError(errMsg);
+      showError(errMsg);
       return false;
     } finally {
       setSaving(false);

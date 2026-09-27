@@ -25,7 +25,6 @@ import { useTranslations } from 'next-intl';
 export default function AdminUsersListPage() {
   const t = useTranslations('admin.users');
   const tCommon = useTranslations('Common');
-  const tErrorBackend = useTranslations('BackendErrors');
   const { showSuccess, showError } = useToast();
 
   const [activeTab, setActiveTab] = useState<UserTab>('all');
@@ -76,7 +75,7 @@ export default function AdminUsersListPage() {
       await toggleBanUser(user);
       showSuccess(t('banUpdatedSuccess'));
     } catch (e: any) {
-      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
+      showError(e.message || tCommon('error'));
     }
   };
 
@@ -87,7 +86,7 @@ export default function AdminUsersListPage() {
       showSuccess(t('userDeletedSuccessfully'));
       setUserToDelete(null);
     } catch (e: any) {
-      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
+      showError(e.message || tCommon('error'));
     }
   };
 
@@ -98,7 +97,7 @@ export default function AdminUsersListPage() {
           icon={<Users strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
           kicker={t('loadErrorKicker')}
           title={t('failedToLoadUsers')}
-          errorString={tErrorBackend.has(error) ? tErrorBackend(error) : error}
+          errorString={error}
           description={<ErrorDescription error={error} topic={t('usersTopic')} />}
           buttons={
             <>

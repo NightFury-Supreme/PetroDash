@@ -37,7 +37,6 @@ function EditPlanWrapper({
   const { showSuccess, showError } = useToast();
   const t = useTranslations('Admin.plan');
   const tCommon = useTranslations('Common');
-  const tErrorBackend = useTranslations('BackendErrors');
 
   useEffect(() => {
     loadPlan(planId);
@@ -69,7 +68,7 @@ function EditPlanWrapper({
                       onSaveSuccess();
                       onClose();
                     } catch (e: any) {
-                      showError(tErrorBackend.has(e?.message || e) ? tErrorBackend(e?.message || e) : (e?.message || e));
+                    showError(e?.message || 'ERR_INTERNAL_SERVER');
                     }
                   }}
                   className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -90,7 +89,7 @@ function EditPlanWrapper({
                       onClose();
                     }
                   } catch (e: any) {
-                    showError(tErrorBackend.has(e?.message || e) ? tErrorBackend(e?.message || e) : (e?.message || e));
+                    showError((e?.message || e));
                   }
                 }}
                 className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -121,7 +120,7 @@ function EditPlanWrapper({
                       onSaveSuccess();
                       onClose();
                     } catch (e: any) {
-                      showError(tErrorBackend.has(e?.message || e) ? tErrorBackend(e?.message || e) : (e?.message || e));
+                    showError(e?.message || 'ERR_INTERNAL_SERVER');
                     }
                   }}
                   className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
@@ -140,7 +139,7 @@ function EditPlanWrapper({
                       onSaveSuccess();
                       onClose();
                     } catch (e: any) {
-                      showError(tErrorBackend.has(e?.message || e) ? tErrorBackend(e?.message || e) : (e?.message || e));
+                    showError(e?.message || 'ERR_INTERNAL_SERVER');
                     }
                   }}
                   className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"
@@ -164,7 +163,7 @@ function EditPlanWrapper({
       ) : error || !plan ? (
         <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
           <div className="text-red-500/60 text-sm">
-            {tErrorBackend.has(error || '') ? tErrorBackend(error || '') : (error || t('noCategoriesFound'))}
+            {(error || t('noCategoriesFound'))}
           </div>
           <button
             onClick={() => loadPlan(planId)}
@@ -210,7 +209,6 @@ function NewPlanWrapper({
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const t = useTranslations('Admin.plan');
   const tCommon = useTranslations('Common');
-  const tErrorBackend = useTranslations('BackendErrors');
 
   const steps = [
     { id: 'basics', label: t('stepBasics') },
@@ -273,7 +271,7 @@ function NewPlanWrapper({
                     onSaveSuccess();
                     onClose();
                   } catch (e: any) {
-                    showError(tErrorBackend.has(e?.message || e) ? tErrorBackend(e?.message || e) : (e?.message || e));
+                    showError((e?.message || e));
                   }
                 }}
                 className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#F4511E] disabled:opacity-50 disabled:cursor-not-allowed"

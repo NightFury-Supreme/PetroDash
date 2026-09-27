@@ -27,8 +27,6 @@ import {
 export default function ProfilePage() {
   const t = useTranslations("Profile");
   const tCommon = useTranslations("Common");
-  const tError = useTranslations("BackendErrors");
-  const tGlobalError = useTranslations("GlobalErrors");
 
   const {
     form,
@@ -113,7 +111,7 @@ export default function ProfilePage() {
     if (editing === "username") {
       const trimmed = (draft || "").trim();
       if (trimmed.length < 3) {
-        showError(tGlobalError("usernameTooShort"));
+        showError("usernameTooShort");
         return false;
       }
       updates = { username: trimmed };
@@ -123,7 +121,7 @@ export default function ProfilePage() {
       const firstName = (draft?.first || "").trim();
       const lastName = (draft?.last || "").trim();
       if (!firstName) {
-        showError(tGlobalError("firstNameEmpty"));
+        showError("firstNameEmpty");
         return false;
       }
       updates = { firstName };
@@ -135,7 +133,7 @@ export default function ProfilePage() {
       showSuccess(t("profileUpdated"));
       return true;
     } catch (e: any) {
-      showError(tError(e.message) || tGlobalError("failedToSaveProfile"));
+      showError(e.message);
       return false;
     }
   };
@@ -153,7 +151,7 @@ export default function ProfilePage() {
           (Date.now() + e.retryAfter * 1000).toString(),
         );
       } else {
-        showError(tError(e.message) || tGlobalError("failedToSendVerificationEmail"));
+        showError(e.message);
       }
     }
   };
@@ -222,7 +220,7 @@ export default function ProfilePage() {
                     await updateProfilePicture(url || "");
                     showSuccess(t("profilePictureUpdated"));
                   } catch (e: any) {
-                    showError(tError(e.message) || tGlobalError("failedToUpdateProfilePicture"));
+                    showError(e.message);
                   }
                 }}
                 onChangeEmail={() => setShowChangeEmailDrawer(true)}

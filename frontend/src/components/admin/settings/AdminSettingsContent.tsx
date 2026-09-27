@@ -24,7 +24,6 @@ export function AdminSettingsContent({
   const [saving, setSaving] = useState(false);
   const { showSuccess, showError } = useToast();
   const t = useTranslations('AdminSettings');
-  const tErrorBackend = useTranslations('BackendErrors');
 
   useEffect(() => {
     setFormData(settings);
@@ -58,7 +57,7 @@ export function AdminSettingsContent({
       showSuccess(successBody);
     } catch (error: any) {
       const errKey = error instanceof Error ? error.message : "failedToSaveSettings";
-      showError(tErrorBackend.has(errKey as any) ? tErrorBackend(errKey as any) : (error instanceof Error ? error.message : t('failedToSaveSettings')));
+      showError(errKey);
     } finally {
       setSaving(false);
     }

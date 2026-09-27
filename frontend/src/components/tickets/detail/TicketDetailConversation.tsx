@@ -214,8 +214,6 @@ function MentionPill({ type, id, name, viewerRole, onServerMentionClick }: { typ
   const [downloading, setDownloading] = React.useState(false);
   const { showError } = useToast();
   const t = useTranslations('Tickets');
-  const tError = useTranslations('BackendErrors');
-  const tCommon = useTranslations('Common');
 
   const handleClick = async () => {
     if (type === 'server') {
@@ -230,7 +228,7 @@ function MentionPill({ type, id, name, viewerRole, onServerMentionClick }: { typ
         setDownloading(true);
         await downloadInvoicePdf(id, viewerRole === 'admin');
       } catch {
-        showError(tError.has('ERR_INVOICE_FAILED') ? tError('ERR_INVOICE_FAILED') : tCommon('retry'));
+        showError('ERR_INVOICE_FAILED');
       } finally {
         setDownloading(false);
       }

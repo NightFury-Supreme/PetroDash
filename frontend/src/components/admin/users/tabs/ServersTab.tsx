@@ -19,7 +19,6 @@ export function ServersTab({ user, servers, onDeleteServer, onRefresh }: Servers
   const modal = useModal();
   const t = useTranslations('admin.users');
   const tCommon = useTranslations('Common');
-  const tErrorBackend = useTranslations('BackendErrors');
 
   const formattedServers = (servers || []).map((s: any) => ({
     ...s,
@@ -64,7 +63,7 @@ export function ServersTab({ user, servers, onDeleteServer, onRefresh }: Servers
       await onDeleteServer(id);
       onRefresh();
     } catch (e: any) {
-      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
+      showError(e.message || tCommon('error'));
     } finally {
       setDeleting(null);
     }

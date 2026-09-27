@@ -21,7 +21,6 @@ export function ChangeEmailDrawer({ isOpen,
   verifyEmailChange?: (newEmail: string, code: string) => Promise<void>;
 }) {
   const t = useTranslations('Profile');
-  const tErrorBackend = useTranslations('BackendErrors');
   const tError = useTranslations('GlobalErrors');
   const [step, setStep] = useState<1 | 2>(1);
   const [newEmail, setNewEmail] = useState('');
@@ -109,8 +108,7 @@ export function ChangeEmailDrawer({ isOpen,
       }
     } catch (e: any) {
       
-        const errKey = e.details?.[0]?.message || e.message;
-        showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : (e.message || 'An error occurred'));
+      showError(e.message);
     
     } finally {
       setIsLoading(false);
@@ -126,8 +124,7 @@ export function ChangeEmailDrawer({ isOpen,
       showSuccess(t('emailVerifiedSuccess'));
       handleClose();
     } catch (e: any) {
-      const errKey = e.details?.[0]?.message || e.message;
-      showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : (e.message || 'An error occurred'));
+      showError((e.message || 'An error occurred'));
     } finally {
       setIsLoading(false);
     }

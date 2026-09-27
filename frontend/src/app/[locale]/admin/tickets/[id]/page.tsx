@@ -18,7 +18,6 @@ export default function AdminTicketDetailPage() {
   const router = useRouter();
   const t = useTranslations('AdminTickets');
   const tCommon = useTranslations('Common');
-  const tErrorBackend = useTranslations('BackendErrors');
   const { showError, showSuccess } = useToast();
   const { id } = useParams() as { id: string };
 
@@ -89,7 +88,7 @@ export default function AdminTicketDetailPage() {
       showSuccess(t("message_sent"));
     } catch (e: any) {
       setReplyText(sentText);
-      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : e.message);
+      showError(e.message);
     }
     setReplying(false);
   };
@@ -111,7 +110,7 @@ export default function AdminTicketDetailPage() {
       showSuccess(t("ticket_marked_as", { status: statusLabel }));
       setActionDone(actionKey);
       setTimeout(() => setActionDone(null), 2000);
-    } catch (e: any) { showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : e.message); }
+    } catch (e: any) { showError(e.message); }
     setActionBusy(null);
   };
 
@@ -127,7 +126,7 @@ export default function AdminTicketDetailPage() {
       showSuccess(t("priority_set_to", { priority: priorityLabel }));
       setActionDone("priority");
       setTimeout(() => setActionDone(null), 2000);
-    } catch (e: any) { showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : e.message); }
+    } catch (e: any) { showError(e.message); }
     setActionBusy(null);
   };
 
@@ -141,7 +140,7 @@ export default function AdminTicketDetailPage() {
         await handleActionAPI("delete"); 
       } catch (e: any) { 
         setActionBusy(null); 
-        showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : e.message);
+        showError(e.message);
       }
     } else if (action === "restore") {
       setActionBusy("restore");
@@ -151,15 +150,15 @@ export default function AdminTicketDetailPage() {
         setActionDone("restore"); 
         setTimeout(() => setActionDone(null), 2000); 
       } catch (e: any) {
-        showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : e.message);
+        showError(e.message);
       }
       setActionBusy(null);
     }
   };
 
   useEffect(() => {
-    if (error) showError(tErrorBackend.has(error) ? tErrorBackend(error) : error);
-  }, [error, showError, tErrorBackend]);
+    if (error) showError(error);
+  }, [error, showError]);
 
   if (loading) return <AdminTicketDetailSkeleton />;
   

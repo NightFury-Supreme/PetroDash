@@ -2,6 +2,8 @@
 
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { Loader2, Check, AlertTriangle } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { HoldButton } from "@/components/ui/HoldButton";
 
 type ModalKind = "info" | "success" | "error" | "confirm" | "prompt";
 
@@ -47,10 +49,6 @@ const ModalContext = createContext<{
   prompt: (opts: ModalOptions) => Promise<string | null>;
 } | null>(null);
 
-import { useTranslations } from "next-intl";
-import { resolveErrorMessage, normalizeErrorCode } from "@/utils/formatApiError";
-import { HoldButton } from "@/components/ui/HoldButton";
-
 export function ModalProvider({ children }: { children: React.ReactNode }) {
   const tCommon = useTranslations('Common');
   const tBackendErrors = useTranslations('BackendErrors');
@@ -67,24 +65,19 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
   });
 
   const translate = useCallback((raw: unknown): string => {
-    return resolveErrorMessage(raw, {
-      tBackendErrors: (k) => tBackendErrors(k),
-      hasBackendError: (k) => tBackendErrors.has(k),
-      tGlobalErrors: (k) => tGlobalErrors(k),
-      hasGlobalError: (k) => tGlobalErrors.has(k),
-      tErrorState: (k, v) => tErrorState(k, v),
-      tCommon: (k) => tCommon(k),
-    });
-  }, [tBackendErrors, tGlobalErrors, tErrorState, tCommon]);
+    if (!raw || typeof raw !== 'string') return '';
+    const key = raw.trim();
+    if (tBackendErrors.has(key)) return tBackendErrors(key);
+    if (tGlobalErrors.has(key)) return tGlobalErrors(key);
+    if (tErrorState.has(key)) return tErrorState(key);
+    return key;
+  }, [tBackendErrors, tGlobalErrors, tErrorState]);
 
   const openModal = useCallback((kind: ModalKind, opts: ModalOptions) => {
     return new Promise<any>((resolve) => {
       let resolvedTitle = opts.title;
       if (resolvedTitle) {
-        const norm = normalizeErrorCode(resolvedTitle);
-        if (norm.startsWith('ERR_') || tBackendErrors.has(norm) || tGlobalErrors.has(norm)) {
-          resolvedTitle = translate(norm);
-        }
+        resolvedTitle = translate(resolvedTitle);
       } else {
         resolvedTitle = 
           kind === "error" ? tCommon('errorTitle') :
@@ -96,14 +89,11 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
 
       let resolvedBody = opts.body || "";
       if (resolvedBody) {
-        const norm = normalizeErrorCode(resolvedBody);
-        if (norm.startsWith('ERR_') || tBackendErrors.has(norm) || tGlobalErrors.has(norm)) {
-          resolvedBody = translate(norm);
-        }
+        resolvedBody = translate(resolvedBody);
       }
 
       // Check if this is an account ban modal
-      const possibleBanCode = normalizeErrorCode(opts.body || opts.title);
+      const possibleBanCode = String(opts.body || opts.title || '').trim();
       if (possibleBanCode === 'ERR_ACCOUNT_BANNED' && typeof window !== 'undefined') {
         try {
           sessionStorage.setItem('is_banned', 'true');
@@ -137,7 +127,7 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
         error: undefined,
       });
     });
-  }, [translate, tCommon, tBackendErrors, tGlobalErrors]);
+  }, [translate, tCommon]);
 
   const api = useMemo(() => ({
     confirm: (opts: ModalOptions) => openModal("confirm", opts) as Promise<boolean>,
@@ -174,7 +164,6 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
       close(state.kind === "prompt" ? (state.inputValue || '') : (state.kind === "confirm" ? true : undefined));
     }
   };
-
 
   return (
     <ModalContext.Provider value={api}>
@@ -323,6 +312,3 @@ export function useModal() {
   if (!ctx) throw new Error("useModal must be used within ModalProvider");
   return ctx;
 }
-
-
-

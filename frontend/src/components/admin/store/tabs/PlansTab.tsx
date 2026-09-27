@@ -18,7 +18,6 @@ import { useTranslations } from 'next-intl';
 export default function AdminPlansTab() {
   const t = useTranslations('Admin.plan');
   const tCommon = useTranslations('Common');
-  const tErrorBackend = useTranslations('BackendErrors');
   const modal = useModal();
   const { showSuccess, showError } = useToast();
   
@@ -58,7 +57,7 @@ export default function AdminPlansTab() {
       return true;
     } catch (err: any) {
       const errKey = err.message;
-      showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : errKey);
+      showError(errKey);
       return false;
     }
   };
@@ -69,7 +68,7 @@ export default function AdminPlansTab() {
       showSuccess(result.message);
     } catch (err: any) {
       const errKey = err.message;
-      showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : errKey);
+      showError(errKey);
     }
   };
 
@@ -79,7 +78,7 @@ export default function AdminPlansTab() {
       showSuccess(result.message);
     } catch (err: any) {
       const errKey = err.message;
-      showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : errKey);
+      showError(errKey);
     }
   };
 
@@ -89,7 +88,7 @@ export default function AdminPlansTab() {
       showSuccess(result.message);
     } catch (err: any) {
       const errKey = err.message;
-      showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : errKey);
+      showError(errKey);
     }
   };
 

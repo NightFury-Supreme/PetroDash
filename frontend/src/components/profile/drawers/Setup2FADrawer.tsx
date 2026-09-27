@@ -23,7 +23,6 @@ export function Setup2FADrawer({ isOpen,
   verifyAndEnable2FA: (code: string) => Promise<void>;
 }) {
   const t = useTranslations('Profile');
-  const tErrorBackend = useTranslations('BackendErrors');
   const [tfaVerifyCode, setTfaVerifyCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -51,8 +50,7 @@ export function Setup2FADrawer({ isOpen,
       await verifyAndEnable2FA(tfaVerifyCode);
       showSuccess(t('tfaEnabledSuccess'));
     } catch (e: any) {
-      const errKey = e.details?.[0]?.message || e.message;
-      showError(tErrorBackend.has(errKey) ? tErrorBackend(errKey) : (e.message || 'An error occurred'));
+      showError(e.message);
     } finally {
       setIsLoading(false);
     }

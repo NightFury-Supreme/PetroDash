@@ -13,7 +13,6 @@ import { usePanel } from "@/hooks/panel";
 export function PanelContent() {
   const t = useTranslations("Panel");
   const tCommon = useTranslations('Common');
-  const tError = useTranslations("BackendErrors");
   const { showSuccess, showError } = useToast();
   const modal = useModal();
   
@@ -61,11 +60,7 @@ export function PanelContent() {
       await hookResetPassword();
       showSuccess(t("passwordResetSuccess"));
     } catch (err: any) {
-      try {
-        showError(tError(err.message as any));
-      } catch {
-        showError(tError("ERR_INTERNAL_SERVER"));
-      }
+      showError(err.message || 'ERR_INTERNAL_SERVER');
     }
   };
 
@@ -76,15 +71,11 @@ export function PanelContent() {
     
     // Safely map standardized backend error codes, fallback to generic if unknown
     const displayError = (() => {
-      try {
-        return tError(error as any);
-      } catch {
         // If code doesn't exist in translation, or is a raw English network error
         if (error.toLowerCase() === "failed to fetch" || error.toLowerCase().includes("network error") || error === "ERR_NETWORK") {
-          return tError("ERR_NETWORK");
+          return "ERR_NETWORK";
         }
-        return tError("ERR_INTERNAL_SERVER");
-      }
+        return error;
     })();
 
     return (

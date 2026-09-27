@@ -17,7 +17,6 @@ export function SecurityTab({ ban, userId: _userId, onBanUser, onUnbanUser, onRe
   const { showError } = useToast();
   const t = useTranslations('admin.users');
   const tCommon = useTranslations('Common');
-  const tErrorBackend = useTranslations('BackendErrors');
   const locale = useLocale();
 
   const [showBanModal, setShowBanModal] = useState(false);
@@ -41,7 +40,7 @@ export function SecurityTab({ ban, userId: _userId, onBanUser, onUnbanUser, onRe
       setShowBanModal(false);
       onRefresh?.();
     } catch (e: any) {
-      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
+      showError(e.message || tCommon('error'));
     } finally {
       setBanning(false);
     }
@@ -55,7 +54,7 @@ export function SecurityTab({ ban, userId: _userId, onBanUser, onUnbanUser, onRe
       await onUnbanUser();
       onRefresh?.();
     } catch (e: any) {
-      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
+      showError(e.message || tCommon('error'));
     } finally {
       setBanning(false);
     }

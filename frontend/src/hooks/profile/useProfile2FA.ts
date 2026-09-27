@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useTranslations } from "next-intl";
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useToast } from "@/components/ui/ToastProvider";
 
@@ -10,7 +9,6 @@ export interface UseProfile2FAProps {
 }
 
 export function useProfile2FA({ onStatusChanged }: UseProfile2FAProps = {}) {
-  const tError = useTranslations('BackendErrors');
   const { showError } = useToast();
 
   const [show2FASetupModal, setShow2FASetupModal] = useState(false);
@@ -27,16 +25,16 @@ export function useProfile2FA({ onStatusChanged }: UseProfile2FAProps = {}) {
       });
       const data = await res.json();
       if (!res.ok) {
-        showError(tError(data.error) || tError('failedToSetup2FA'));
+        showError(data.error || 'ERR_INTERNAL_SERVER');
         return;
       }
       setTfaSetupData(data);
       setTfaBackupCodes(null);
       setShow2FASetupModal(true);
     } catch {
-      showError(tError('networkError'));
+      showError('networkError');
     }
-  }, [showError, tError]);
+  }, [showError]);
 
   const verifyAndEnable2FA = useCallback(async (code: string) => {
     const token = localStorage.getItem('auth_token');
