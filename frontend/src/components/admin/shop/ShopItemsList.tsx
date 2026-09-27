@@ -3,6 +3,7 @@
 import { Edit2 } from 'lucide-react';
 import { ShopItem } from '@/hooks/admin/shop/useAdminShop';
 import { useTranslations } from 'next-intl';
+import { getLocalizedItemName, getLocalizedItemDescription, getShopIcon } from '@/components/shop/shopUtils';
 
 interface ShopItemsListProps {
   items: ShopItem[];
@@ -14,18 +15,9 @@ export function ShopItemsList({
   onStartEditing,
 }: ShopItemsListProps) {
   const t = useTranslations('AdminShop');
+  const tShop = useTranslations('Shop');
   const tCommon = useTranslations('Common');
-  const getIconForItem = (key: string) => {
-    const k = key.toLowerCase();
-    if (k.includes('disk')) return 'fas fa-hdd';
-    if (k.includes('memory') || k.includes('ram')) return 'fas fa-memory';
-    if (k.includes('cpu')) return 'fas fa-microchip';
-    if (k.includes('backup')) return 'fas fa-archive';
-    if (k.includes('database')) return 'fas fa-database';
-    if (k.includes('alloc')) return 'fas fa-plug';
-    if (k.includes('slot') || k.includes('server')) return 'fas fa-server';
-    return 'fas fa-cubes';
-  };
+
 
   const formatUnit = (unit?: string) => {
     if (!unit) return '';
@@ -35,31 +27,9 @@ export function ShopItemsList({
     return unit;
   };
 
-  const getItemName = (key: string, defaultName: string) => {
-    switch (key) {
-      case 'allocations': return t('nameAllocations');
-      case 'backups': return t('nameBackups');
-      case 'cpuPercent': return t('nameCpuPercent');
-      case 'databases': return t('nameDatabases');
-      case 'diskMb': return t('nameDiskMb');
-      case 'memoryMb': return t('nameMemoryMb');
-      case 'serverSlots': return t('nameServerSlots');
-      default: return defaultName;
-    }
-  };
 
-  const getDescriptionForKey = (key: string, name: string) => {
-    switch (key) {
-      case 'allocations': return t('descAllocations');
-      case 'backups': return t('descBackups');
-      case 'cpuPercent': return t('descCpuPercent');
-      case 'databases': return t('descDatabases');
-      case 'diskMb': return t('descDiskMb');
-      case 'memoryMb': return t('descMemoryMb');
-      case 'serverSlots': return t('descServerSlots');
-      default: return t('descDefault', { name });
-    }
-  };
+
+
 
   if (items.length === 0) {
     return (
@@ -84,7 +54,9 @@ export function ShopItemsList({
 
       <div className="divide-y divide-white/[0.06]">
         {items.map((item) => {
-          const itemName = getItemName(item.key, item.name);
+          const Icon = getShopIcon(item.key || item.name);
+          const itemName = getLocalizedItemName(item.key, item.name, tShop);
+          const itemDesc = getLocalizedItemDescription(item.key, item.name, tShop);
           return (
             <div
               key={item._id || item.key}
@@ -93,13 +65,13 @@ export function ShopItemsList({
               {/* Identity */}
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/[0.07] bg-white/[0.035]">
-                  <i className={`${getIconForItem(item.key)} text-sm text-white/50`}></i>
+                  <Icon className="h-4 w-4 text-white/50" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-white/80 truncate">
                     {itemName}
                   </p>
-                  <p className="text-xs text-white/30 truncate">{getDescriptionForKey(item.key, itemName)}</p>
+                  <p className="text-xs text-white/30 truncate">{itemDesc}</p>
                 </div>
               </div>
 

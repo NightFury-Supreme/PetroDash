@@ -5,6 +5,7 @@ import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslations } from 'next-intl';
 import { ShopItem } from '@/hooks/admin/shop/useAdminShop';
 import { Drawer } from '@/components/ui/Drawer';
+import { getLocalizedItemName } from '@/components/shop/shopUtils';
 
 interface EditShopItemModalProps {
   item: ShopItem | null;
@@ -24,6 +25,7 @@ export function EditShopItemModal({
   const [formData, setFormData] = useState<Partial<ShopItem>>({});
   const { showSuccess, showError } = useToast();
   const t = useTranslations('AdminShop');
+  const tShop = useTranslations('Shop');
   const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
 
@@ -46,22 +48,11 @@ export function EditShopItemModal({
     }));
   };
 
-  const getItemName = (key: string, defaultName: string) => {
-    switch (key) {
-      case 'allocations': return t('nameAllocations');
-      case 'backups': return t('nameBackups');
-      case 'cpuPercent': return t('nameCpuPercent');
-      case 'databases': return t('nameDatabases');
-      case 'diskMb': return t('nameDiskMb');
-      case 'memoryMb': return t('nameMemoryMb');
-      case 'serverSlots': return t('nameServerSlots');
-      default: return defaultName;
-    }
-  };
+
 
   if (!isOpen || !item) return null;
 
-  const itemName = getItemName(item.key, item.name);
+  const itemName = getLocalizedItemName(item.key, item.name, tShop);
 
   return (
     <Drawer

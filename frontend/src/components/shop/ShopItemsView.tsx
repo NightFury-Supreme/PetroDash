@@ -2,7 +2,7 @@
 import { useTranslations } from 'next-intl';
 
 import { Coins, ShoppingBag } from "lucide-react";
-import { getShopIcon, MAX_QUANTITY, getLocalizedItemName } from "./shopUtils";
+import { getShopIcon, MAX_QUANTITY, getLocalizedItemName, getLocalizedItemDescription } from "./shopUtils";
 
 interface ShopItemsViewProps {
   items: any[];
@@ -37,22 +37,22 @@ export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
 
           <div className="divide-y divide-white/[0.06]">
             {items.map((item) => {
-              const Icon = getShopIcon(item.name);
+              const Icon = getShopIcon(item.key || item.name);
               
               
 
-                const getDescriptionForKey = (key: string, name: string) => {
-                  switch (key) {
-                    case 'allocations': return t('descAllocations');
-                    case 'backups': return t('descBackups');
-                    case 'cpuPercent': return t('descCpu');
-                    case 'databases': return t('descDatabases');
-                    case 'diskMb': return t('descDisk');
-                    case 'memoryMb': return t('descMemory');
-                    case 'serverSlots': return t('descServerSlots');
-                    default: return t('addExtra', { name });
-                  }
-                };
+
+
+
+
+
+
+
+
+
+
+
+
 
               const formatUnit = (unit?: string) => {
                 if (!unit || unit === 'count') return '';
@@ -71,7 +71,7 @@ export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-white/80 truncate">{getLocalizedItemName(item.key, item.name, t)}</p>
-                      <p className="text-xs text-white/30 truncate">{getDescriptionForKey(item.key, item.name)}</p>
+                      <p className="text-xs text-white/30 truncate">{getLocalizedItemDescription(item.key, item.name, t)}</p>
                     </div>
                   </div>
 

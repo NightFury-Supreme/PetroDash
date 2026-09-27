@@ -1,4 +1,4 @@
-import { Archive, Box, Cpu, Database, HardDrive, MemoryStick, Network, Zap } from "lucide-react";
+import { Archive, Cpu, Database, HardDrive, MemoryStick, Network, Server, Zap } from "lucide-react";
 
 export const MAX_QUANTITY = 100;
 
@@ -11,7 +11,7 @@ export function getShopIcon(name: string = "") {
   if (n.includes("port") || n.includes("network") || n.includes("alloc")) return Network;
   if (n.includes("backup")) return Archive;
   if (n.includes("database") || n.includes("db")) return Database;
-  if (n.includes("server") || n.includes("slot")) return Box;
+  if (n.includes("server") || n.includes("slot")) return Server;
   return Zap;
 }
 
@@ -61,5 +61,19 @@ export function getLocalizedItemName(itemKey: string, defaultName: string, t: an
   };
   const key = map[itemKey];
   return key ? t(key) : defaultName;
+}
+
+export function getLocalizedItemDescription(itemKey: string, defaultName: string, t: any): string {
+  const map: Record<string, string> = {
+    'diskMb': 'descDisk',
+    'memoryMb': 'descMemory',
+    'cpuPercent': 'descCpu',
+    'backups': 'descBackups',
+    'databases': 'descDatabases',
+    'allocations': 'descAllocations',
+    'serverSlots': 'descServerSlots'
+  };
+  const key = map[itemKey];
+  return key && t.has(key) ? t(key) : (t.has('addExtra') ? t('addExtra', { name: defaultName }) : defaultName);
 }
 
