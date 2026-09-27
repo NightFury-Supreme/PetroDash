@@ -678,9 +678,6 @@
     "checkingStatus": "جاري التحقق...",
     "greeting": "مرحباً {username}،",
     "defaultUser": "المستخدم",
-    "userIdLabel": "معرّف المستخدم",
-    "copied": "تم النسخ!",
-    "clickToCopyId": "انقر لنسخ معرّف المستخدم",
     "statusStillBanned": "حسابك لا يزال معلقاً.",
     "statusUnbanned": "تم رفع الحظر! جارٍ إعادة التوجيه إلى لوحة التحكم..."
   },

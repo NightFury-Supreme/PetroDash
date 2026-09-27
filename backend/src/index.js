@@ -246,16 +246,9 @@ app.use((err, req, res, next) => {
     }
 
     res.status(status).json({
-        error: code || message,
-        code,
+        error: code || 'ERR_INTERNAL_SERVER',
         message,
         details: details || null,
-        errorObj: {
-            code,
-            message,
-            ...(details && { details })
-        },
-        ...(details && typeof details === 'object' ? details : {})
     });
 });
 

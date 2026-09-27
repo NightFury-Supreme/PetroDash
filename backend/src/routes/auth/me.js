@@ -27,7 +27,6 @@ router.get('/me', requireAuth, async (req, res, next) => {
         reason: ban.reason || '',
         until: ban.until || null,
         username: user.username || '',
-        userId: user._id ? user._id.toString() : ''
       }));
     }
     

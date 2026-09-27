@@ -678,9 +678,6 @@
     "checkingStatus": "Wird geprüft...",
     "greeting": "Hallo {username},",
     "defaultUser": "Benutzer",
-    "userIdLabel": "Benutzer-ID",
-    "copied": "Kopiert!",
-    "clickToCopyId": "Klicken, um Benutzer-ID zu kopieren",
     "statusStillBanned": "Ihr Konto ist weiterhin gesperrt.",
     "statusUnbanned": "Sperre aufgehoben! Weiterleitung zum Dashboard..."
   },

@@ -7,9 +7,9 @@
 
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import { useTranslations } from 'next-intl';
-import { Ban, Copy, Check } from 'lucide-react';
+import { Ban } from 'lucide-react';
 import { useBannedStatus } from '@/hooks/auth';
 import { ErrorState, ErrorHeader } from '@/components/error';
 import { BannedActions } from './BannedActions';
@@ -17,15 +17,7 @@ import { BannedSkeleton } from './BannedSkeleton';
 
 export function BannedView() {
   const t = useTranslations('Banned');
-  const { reason, untilText, username, userId, logout, checkNow, checking, loading } = useBannedStatus();
-  const [copied, setCopied] = useState<boolean>(false);
-
-  const handleCopyUserId = useCallback(() => {
-    if (!userId) return;
-    navigator.clipboard.writeText(userId);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }, [userId]);
+  const { reason, untilText, username, logout, checkNow, checking, loading } = useBannedStatus();
 
   if (loading) {
     return <BannedSkeleton />;
@@ -57,23 +49,6 @@ export function BannedView() {
               {untilText ? t('bannedUntil', { date: untilText }) : t('lifetimeBan')}
             </span>
           </p>
-
-          {userId && (
-            <div className="flex items-center justify-center gap-2 pt-1 text-[11px] text-[#777]" suppressHydrationWarning>
-              <span>{t('userIdLabel')}:</span>
-              <button
-                type="button"
-                onClick={handleCopyUserId}
-                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-white/[0.04] hover:bg-white/[0.08] text-[#AAA] hover:text-white transition-colors font-mono cursor-pointer border border-white/[0.06]"
-                title={t('clickToCopyId')}
-                aria-label={t('clickToCopyId')}
-              >
-                <span>{userId}</span>
-                {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-[#777]" />}
-              </button>
-              {copied && <span className="text-emerald-400 text-[11px] font-medium">{t('copied')}</span>}
-            </div>
-          )}
 
           <p className="text-[11px] text-[#666]">
             {t('contactSupport')}

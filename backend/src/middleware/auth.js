@@ -31,11 +31,10 @@ async function requireAuth(req, res, next) {
         const active = Boolean(ban.isBanned) && (!ban.until || new Date(ban.until) > new Date());
         
         if (active) {
-            return next(AppError.forbidden('Account banned', 'ERR_ACCOUNT_BANNED', { 
-                reason: String(ban.reason || ''), 
+            return next(AppError.forbidden('Account banned', 'ERR_ACCOUNT_BANNED', {
+                reason: String(ban.reason || ''),
                 until: ban.until || null,
                 username: u.username || payload?.username || '',
-                userId: String(u._id || userId)
             }));
         }
         

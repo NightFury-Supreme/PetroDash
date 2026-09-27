@@ -80,12 +80,11 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
           try { d = await meRes.json(); } catch {}
           try {
             sessionStorage.setItem("is_banned", "true");
-            if (d?.reason) sessionStorage.setItem("ban_reason", d.reason);
+            if (d?.details?.reason) sessionStorage.setItem("ban_reason", d.details.reason);
             else sessionStorage.setItem("ban_reason", "");
-            if (d?.until) sessionStorage.setItem("ban_until", String(d.until));
+            if (d?.details?.until) sessionStorage.setItem("ban_until", String(d.details.until));
             else sessionStorage.removeItem("ban_until");
-            if (d?.username) sessionStorage.setItem("ban_username", String(d.username));
-            if (d?.userId) sessionStorage.setItem("ban_user_id", String(d.userId));
+            if (d?.details?.username) sessionStorage.setItem("ban_username", String(d.details.username));
           } catch {}
           if (redirectingToRef.current !== "/banned") {
             redirectingToRef.current = "/banned";

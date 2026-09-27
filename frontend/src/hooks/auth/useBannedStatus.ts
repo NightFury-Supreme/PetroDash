@@ -11,23 +11,21 @@ import { useTranslations, useLocale } from 'next-intl';
 import { fetchWithRetry } from '@/utils/fetchWithRetry';
 import { useToast } from '@/components/ui/ToastProvider';
 
-function extractFromJwt(): { username: string; userId: string } {
+/** Extracts username from the local JWT without an API call. */
+function extractUsernameFromJwt(): string {
   try {
     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-    if (!token) return { username: '', userId: '' };
+    if (!token) return '';
     const parts = token.split('.');
     if (parts.length >= 2) {
       const payloadStr = atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'));
       const payload = JSON.parse(payloadStr);
-      return {
-        username: typeof payload.username === 'string' ? payload.username : '',
-        userId: typeof payload.sub === 'string' ? payload.sub : (typeof payload.userId === 'string' ? payload.userId : ''),
-      };
+      return typeof payload.username === 'string' ? payload.username : '';
     }
   } catch {
-    // Ignore decode errors
+    // Ignore decode errors — degrade gracefully
   }
-  return { username: '', userId: '' };
+  return '';
 }
 
 export function useBannedStatus() {
@@ -39,32 +37,27 @@ export function useBannedStatus() {
   const [reason, setReason] = useState<string>('');
   const [until, setUntil] = useState<string | null>(null);
   const [username, setUsername] = useState<string>('');
-  const [userId, setUserId] = useState<string>('');
   const [checking, setChecking] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const isMountedRef = useRef<boolean>(true);
 
-  // Read initial cache from sessionStorage and JWT on mount
+  // Seed initial state from sessionStorage and JWT on mount
   useEffect(() => {
     isMountedRef.current = true;
     try {
       const r = sessionStorage.getItem('ban_reason') || '';
       const u = sessionStorage.getItem('ban_until') || null;
       let uname = sessionStorage.getItem('ban_username') || '';
-      let uid = sessionStorage.getItem('ban_user_id') || '';
 
-      if (!uname || !uid) {
-        const fromJwt = extractFromJwt();
-        if (!uname) uname = fromJwt.username;
-        if (!uid) uid = fromJwt.userId;
+      if (!uname) {
+        uname = extractUsernameFromJwt();
       }
 
       if (r) setReason(r);
       if (u) setUntil(u);
       if (uname) setUsername(uname);
-      if (uid) setUserId(uid);
     } catch {
-      // sessionStorage unavailable
+      // sessionStorage unavailable — degrade gracefully
     } finally {
       setLoading(false);
     }
@@ -88,13 +81,12 @@ export function useBannedStatus() {
       });
 
       if (res.ok) {
-        // Ban lifted or account active
+        // Ban lifted — clear all ban context and redirect to dashboard
         try {
           sessionStorage.removeItem('is_banned');
           sessionStorage.removeItem('ban_reason');
           sessionStorage.removeItem('ban_until');
           sessionStorage.removeItem('ban_username');
-          sessionStorage.removeItem('ban_user_id');
         } catch {
           // ignore
         }
@@ -108,24 +100,20 @@ export function useBannedStatus() {
       }
 
       if (res.status === 403) {
-        // Still banned — refresh latest reason, expiration, username, and userId
+        // Still banned — refresh latest reason, expiration, and username
         const d = await res.json().catch(() => ({}));
-        const newReason = d?.reason !== undefined ? String(d.reason) : '';
-        const newUntil = d?.until !== undefined ? (d.until ? String(d.until) : null) : null;
-        let newUsername = d?.username ? String(d.username) : '';
-        let newUserId = d?.userId ? String(d.userId) : '';
+        const newReason = d?.details?.reason !== undefined ? String(d.details.reason) : '';
+        const newUntil = d?.details?.until !== undefined ? (d.details.until ? String(d.details.until) : null) : null;
+        let newUsername = d?.details?.username ? String(d.details.username) : '';
 
-        if (!newUsername || !newUserId) {
-          const fromJwt = extractFromJwt();
-          if (!newUsername) newUsername = fromJwt.username;
-          if (!newUserId) newUserId = fromJwt.userId;
+        if (!newUsername) {
+          newUsername = extractUsernameFromJwt();
         }
 
         if (isMountedRef.current) {
           setReason(newReason);
           setUntil(newUntil);
           if (newUsername) setUsername(newUsername);
-          if (newUserId) setUserId(newUserId);
         }
 
         try {
@@ -134,7 +122,6 @@ export function useBannedStatus() {
           if (newUntil) sessionStorage.setItem('ban_until', newUntil);
           else sessionStorage.removeItem('ban_until');
           if (newUsername) sessionStorage.setItem('ban_username', newUsername);
-          if (newUserId) sessionStorage.setItem('ban_user_id', newUserId);
         } catch {
           // ignore
         }
@@ -146,14 +133,13 @@ export function useBannedStatus() {
       }
 
       if (res.status === 401) {
-        // Token revoked or session dead
+        // Token revoked or session dead — clear all context and redirect to login
         try {
           localStorage.removeItem('auth_token');
           sessionStorage.removeItem('is_banned');
           sessionStorage.removeItem('ban_reason');
           sessionStorage.removeItem('ban_until');
           sessionStorage.removeItem('ban_username');
-          sessionStorage.removeItem('ban_user_id');
         } catch {
           // ignore
         }
@@ -162,11 +148,11 @@ export function useBannedStatus() {
         }
       }
     } catch {
-      // Network drop — don't boot user immediately
+      // Network drop — don't boot user, wait for next poll
     }
   }, [router, showSuccess, showError, t]);
 
-  // Periodic polling every 5 seconds
+  // Poll every 5 seconds to detect ban lift
   useEffect(() => {
     check(false);
     const intervalId = setInterval(() => {
@@ -196,7 +182,6 @@ export function useBannedStatus() {
       sessionStorage.removeItem('ban_reason');
       sessionStorage.removeItem('ban_until');
       sessionStorage.removeItem('ban_username');
-      sessionStorage.removeItem('ban_user_id');
     } catch {
       // ignore
     }
@@ -216,7 +201,6 @@ export function useBannedStatus() {
     reason,
     untilText,
     username,
-    userId,
     checking,
     checkNow,
     logout,

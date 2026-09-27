@@ -678,9 +678,6 @@
     "checkingStatus": "Verificando...",
     "greeting": "Hola {username},",
     "defaultUser": "usuario",
-    "userIdLabel": "ID de usuario",
-    "copied": "¡Copiado!",
-    "clickToCopyId": "Haz clic para copiar el ID de usuario",
     "statusStillBanned": "Tu cuenta todavía está suspendida.",
     "statusUnbanned": "¡Suspensión levantada! Redirigiendo al panel de control..."
   },
