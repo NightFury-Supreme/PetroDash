@@ -20,6 +20,7 @@ export function useBannedStatus() {
   const [reason, setReason] = useState<string>('');
   const [until, setUntil] = useState<string | null>(null);
   const [checking, setChecking] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const isMountedRef = useRef<boolean>(true);
 
   // Read initial cache from sessionStorage on mount
@@ -32,6 +33,8 @@ export function useBannedStatus() {
       if (u) setUntil(u);
     } catch {
       // sessionStorage unavailable
+    } finally {
+      setLoading(false);
     }
     return () => {
       isMountedRef.current = false;
@@ -165,5 +168,6 @@ export function useBannedStatus() {
     checking,
     checkNow,
     logout,
+    loading,
   };
 }

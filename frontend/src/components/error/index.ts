@@ -4,6 +4,7 @@
  */
 
 export { ErrorState } from './ErrorState';
+export { ErrorHeader } from './ErrorHeader';
 export { DashboardButton, GoBackButton } from './ErrorButtons';
 export { ErrorDescription } from './ErrorDescription';
 export { NotFoundView } from './NotFoundView';

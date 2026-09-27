@@ -11,16 +11,22 @@ import React from 'react';
 import { useTranslations } from 'next-intl';
 import { Ban } from 'lucide-react';
 import { useBannedStatus } from '@/hooks/auth';
-import { ErrorState } from '@/components/error';
+import { ErrorState, ErrorHeader } from '@/components/error';
 import { BannedActions } from './BannedActions';
+import { BannedSkeleton } from './BannedSkeleton';
 
 export function BannedView() {
   const t = useTranslations('Banned');
-  const { reason, untilText, logout, checkNow, checking } = useBannedStatus();
+  const { reason, untilText, logout, checkNow, checking, loading } = useBannedStatus();
+
+  if (loading) {
+    return <BannedSkeleton />;
+  }
 
   return (
     <ErrorState
       fullScreen={true}
+      header={<ErrorHeader />}
       icon={<Ban strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
       kicker={t('kicker')}
       title={t('title')}

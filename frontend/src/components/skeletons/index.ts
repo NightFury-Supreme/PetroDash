@@ -22,3 +22,6 @@ export * from './admin/store';
 
 // Gift skeletons
 export * from './gift/GiftSkeleton';
+
+// Banned skeleton
+export { BannedSkeleton } from '../banned/BannedSkeleton';

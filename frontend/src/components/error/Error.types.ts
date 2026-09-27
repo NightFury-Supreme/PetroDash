@@ -13,6 +13,7 @@ export interface ErrorStateProps {
   buttons?: ReactNode;
   fullScreen?: boolean;
   errorString?: string | null;
+  header?: ReactNode;
 }
 
 export interface DashboardButtonProps {

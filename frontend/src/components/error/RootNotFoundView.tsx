@@ -9,8 +9,22 @@ import Link from 'next/link';
 export function RootNotFoundView() {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-[#0F0F0F] text-white flex flex-col items-center justify-center p-4 font-sans antialiased">
-        <main className="text-center max-w-[500px]">
+      <body className="min-h-screen bg-[#0F0F0F] text-white flex flex-col font-sans antialiased">
+        <header role="banner" className="w-full border-b border-white/[0.06] bg-[#0F0F0F]/80 backdrop-blur-md sticky top-0 z-50 shrink-0">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+            <Link
+              href="/"
+              className="flex items-center gap-2.5 text-white transition-opacity hover:opacity-85 focus:outline-none focus:ring-2 focus:ring-[#FF5722] rounded-md px-1 py-0.5"
+              aria-label="PteroDash home"
+            >
+              <img src="/logo.svg" alt="PteroDash" className="h-7 w-auto object-contain" />
+              <span className="font-bold tracking-tight text-base sm:text-lg">
+                PteroDash
+              </span>
+            </Link>
+          </div>
+        </header>
+        <main className="flex-1 flex flex-col items-center justify-center p-4">
           <div className="mx-auto mb-6 flex items-center justify-center text-[#FF5722]" aria-hidden="true">
             <svg
               viewBox="0 0 24 24"

@@ -8,6 +8,7 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { ErrorState } from './ErrorState';
+import { ErrorHeader } from './ErrorHeader';
 import { DashboardButton, GoBackButton } from './ErrorButtons';
 
 export function NotFoundView() {
@@ -16,6 +17,7 @@ export function NotFoundView() {
   return (
     <ErrorState
       fullScreen={true}
+      header={<ErrorHeader />}
       icon={
         <svg
           viewBox="0 0 24 24"
