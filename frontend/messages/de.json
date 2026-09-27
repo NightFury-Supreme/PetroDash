@@ -664,13 +664,20 @@
     "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut."
   },
   "Banned": {
+    "kicker": "Konto Gesperrt",
     "title": "Konto Gesperrt",
-    "subtitle": "Sie können derzeit nicht auf den Dienst zugreifen.",
+    "subtitle": "Aufgrund einer Kontobeschränkung können Sie derzeit nicht auf die Plattform zugreifen.",
     "reasonLabel": "Grund:",
     "statusLabel": "Status:",
     "bannedUntil": "Gesperrt bis {date}",
-    "lifetimeBan": "Lebenslange Sperre",
-    "contactSupport": "Wenn Sie glauben, dass dies ein Fehler ist, kontaktieren Sie bitte den Support."
+    "lifetimeBan": "Dauerhafte Sperre",
+    "noReasonProvided": "Kein bestimmter Grund angegeben",
+    "contactSupport": "Wenn Sie der Meinung sind, dass diese Sperre ein Fehler ist, wenden Sie sich bitte an unser Support-Team.",
+    "btnLogout": "Abmelden",
+    "btnCheckStatus": "Status prüfen",
+    "checkingStatus": "Wird geprüft...",
+    "statusStillBanned": "Ihr Konto ist weiterhin gesperrt.",
+    "statusUnbanned": "Sperre aufgehoben! Weiterleitung zum Dashboard..."
   },
   "BackendErrors": {
     "ERR_SERVER_TIMEOUT": "Zeitüberschreitung der Anforderung. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",

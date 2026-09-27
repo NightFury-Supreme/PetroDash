@@ -664,13 +664,20 @@
     "unexpectedError": "An unexpected error occurred. Please try again."
   },
   "Banned": {
+    "kicker": "Account Suspended",
     "title": "Account Banned",
-    "subtitle": "You cannot access the service at this time.",
+    "subtitle": "You cannot access the platform at this time due to an account restriction.",
     "reasonLabel": "Reason:",
     "statusLabel": "Status:",
-    "bannedUntil": "Banned until {date}",
-    "lifetimeBan": "Lifetime ban",
-    "contactSupport": "If you believe this is a mistake, please contact support."
+    "bannedUntil": "Suspended until {date}",
+    "lifetimeBan": "Permanent Suspension",
+    "noReasonProvided": "No specific reason provided",
+    "contactSupport": "If you believe this restriction is a mistake, please contact our support team.",
+    "btnLogout": "Sign Out",
+    "btnCheckStatus": "Check Status",
+    "checkingStatus": "Checking...",
+    "statusStillBanned": "Your account is still suspended.",
+    "statusUnbanned": "Ban lifted! Redirecting to dashboard..."
   },
   "BackendErrors": {
     "ERR_SERVER_TIMEOUT": "The server took too long to respond. Please check your connection and try again.",

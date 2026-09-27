@@ -664,13 +664,20 @@
     "unexpectedError": "Une erreur inattendue s'est produite. Veuillez réessayer."
   },
   "Banned": {
+    "kicker": "Compte Suspendu",
     "title": "Compte Banni",
-    "subtitle": "Vous ne pouvez pas accéder au service pour le moment.",
+    "subtitle": "Vous ne pouvez pas accéder à la plateforme pour le moment en raison d'une restriction de compte.",
     "reasonLabel": "Raison :",
     "statusLabel": "Statut :",
-    "bannedUntil": "Banni jusqu'au {date}",
-    "lifetimeBan": "Bannissement à vie",
-    "contactSupport": "Si vous pensez que c'est une erreur, veuillez contacter le support."
+    "bannedUntil": "Suspendu jusqu'au {date}",
+    "lifetimeBan": "Suspension définitive",
+    "noReasonProvided": "Aucune raison spécifique fournie",
+    "contactSupport": "Si vous pensez que cette restriction est une erreur, veuillez contacter notre équipe d'assistance.",
+    "btnLogout": "Se déconnecter",
+    "btnCheckStatus": "Vérifier le statut",
+    "checkingStatus": "Vérification en cours...",
+    "statusStillBanned": "Votre compte est toujours suspendu.",
+    "statusUnbanned": "Suspension levée ! Redirection vers le tableau de bord..."
   },
   "BackendErrors": {
     "ERR_SERVER_TIMEOUT": "Délai d'attente de la demande dépassé. Veuillez vérifier votre connexion et réessayer.",

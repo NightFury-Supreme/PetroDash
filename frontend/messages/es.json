@@ -664,13 +664,20 @@
     "unexpectedError": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo."
   },
   "Banned": {
+    "kicker": "Cuenta Suspendida",
     "title": "Cuenta Prohibida",
-    "subtitle": "No puedes acceder al servicio en este momento.",
+    "subtitle": "No puedes acceder a la plataforma en este momento debido a una restricción en tu cuenta.",
     "reasonLabel": "Motivo:",
     "statusLabel": "Estado:",
-    "bannedUntil": "Prohibido hasta {date}",
-    "lifetimeBan": "Prohibición de por vida",
-    "contactSupport": "Si crees que esto es un error, por favor contacta al soporte."
+    "bannedUntil": "Suspendido hasta {date}",
+    "lifetimeBan": "Suspensión permanente",
+    "noReasonProvided": "No se proporcionó ningún motivo específico",
+    "contactSupport": "Si crees que esta restricción es un error, por favor contacta a nuestro equipo de soporte.",
+    "btnLogout": "Cerrar sesión",
+    "btnCheckStatus": "Verificar estado",
+    "checkingStatus": "Verificando...",
+    "statusStillBanned": "Tu cuenta todavía está suspendida.",
+    "statusUnbanned": "¡Suspensión levantada! Redirigiendo al panel de control..."
   },
   "BackendErrors": {
     "ERR_SERVER_TIMEOUT": "Se agotó el tiempo de espera de la solicitud. Por favor verifique su conexión e intente nuevamente.",

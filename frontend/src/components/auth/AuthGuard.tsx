@@ -79,7 +79,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
           let d: any = {};
           try { d = await meRes.json(); } catch {}
           try {
+            sessionStorage.setItem("is_banned", "true");
             if (d?.reason) sessionStorage.setItem("ban_reason", d.reason);
+            else sessionStorage.setItem("ban_reason", "");
             if (d?.until) sessionStorage.setItem("ban_until", String(d.until));
             else sessionStorage.removeItem("ban_until");
           } catch {}
@@ -125,6 +127,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
         // — All good — clear any stale ban/verify context —
         try {
+          sessionStorage.removeItem("is_banned");
           sessionStorage.removeItem("ban_reason");
           sessionStorage.removeItem("ban_until");
           sessionStorage.removeItem("verify_email");
@@ -149,7 +152,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!pathname.startsWith("/banned")) return;
     try {
-      const hasBan = Boolean(sessionStorage.getItem("ban_reason"));
+      const hasBan = Boolean(sessionStorage.getItem("is_banned") || sessionStorage.getItem("ban_reason"));
       if (!hasBan && redirectingToRef.current !== "/login") {
         const token = localStorage.getItem("auth_token");
         const dest = token ? "/" : "/login";
