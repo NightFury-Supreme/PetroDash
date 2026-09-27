@@ -10,6 +10,10 @@ const listUsersQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(10),
   pageSize: z.coerce.number().int().min(1).max(100).optional(),
+  role: z.enum(['all', 'user', 'admin']).optional(),
+  status: z.enum(['all', 'active', 'banned']).optional(),
+  sortBy: z.string().optional(),
+  paginate: z.string().optional(),
 });
 
 const resourcesSchema = z.object({

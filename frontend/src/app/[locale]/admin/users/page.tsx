@@ -1,20 +1,35 @@
-"use client";
+/* ==========================================================================
+   Admin Users List Page
+   Compliance: ISO/IEC 25010, Single Responsibility Principle (<300 lines)
+========================================================================== */
 
-import React from 'react';
-import { useRouter } from "@/i18n/routing";
+'use client';
+
+import React, { useState } from 'react';
 import { Users, RefreshCw } from 'lucide-react';
 import { ErrorState, DashboardButton, ErrorDescription } from '@/components/ui/ErrorState';
 import AdminUsersSkeleton from '@/components/skeletons/admin/user/AdminUsersSkeleton';
-import { UsersHeader, UsersTable } from '@/components/admin/users';
+import {
+  UsersHeader,
+  AdminUsersSidebar,
+  AdminUsersSearchFilterBar,
+  UsersTable,
+  UserTab,
+} from '@/components/admin/users';
 import { Pagination } from '@/components/Pagination';
+import { DeleteDrawer } from '@/components/ui/DeleteDrawer';
+import { useToast } from '@/components/ui/ToastProvider';
 import { useAdminUsers } from '@/hooks/admin/users';
 import { useTranslations } from 'next-intl';
 
 export default function AdminUsersListPage() {
-  const router = useRouter();
   const t = useTranslations('admin.users');
   const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
+  const { showSuccess, showError } = useToast();
+
+  const [activeTab, setActiveTab] = useState<UserTab>('all');
+  const [userToDelete, setUserToDelete] = useState<{ id: string; username: string } | null>(null);
 
   const {
     users,
@@ -24,8 +39,57 @@ export default function AdminUsersListPage() {
     search,
     setSearch,
     setCurrentPage,
-    setLoading
+    pageSize,
+    roleFilter,
+    setRoleFilter,
+    statusFilter,
+    setStatusFilter,
+    sortBy,
+    setSortBy,
+    banningUserId,
+    deletingUserId,
+    toggleBanUser,
+    deleteUser,
+    refreshUsers,
   } = useAdminUsers();
+
+  const handleSelectTab = (tab: UserTab) => {
+    setActiveTab(tab);
+    setCurrentPage(1);
+    if (tab === 'all') {
+      setStatusFilter('all');
+      setRoleFilter('all');
+    } else if (tab === 'active') {
+      setStatusFilter('active');
+      setRoleFilter('all');
+    } else if (tab === 'banned') {
+      setStatusFilter('banned');
+      setRoleFilter('all');
+    } else if (tab === 'admins') {
+      setRoleFilter('admin');
+      setStatusFilter('all');
+    }
+  };
+
+  const handleToggleBan = async (user: any) => {
+    try {
+      await toggleBanUser(user);
+      showSuccess(t('banUpdatedSuccess'));
+    } catch (e: any) {
+      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!userToDelete) return;
+    try {
+      await deleteUser(userToDelete.id);
+      showSuccess(t('userDeletedSuccessfully'));
+      setUserToDelete(null);
+    } catch (e: any) {
+      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
+    }
+  };
 
   if (error) {
     return (
@@ -40,7 +104,7 @@ export default function AdminUsersListPage() {
             <>
               <button
                 type="button"
-                onClick={() => window.location.reload()}
+                onClick={() => refreshUsers()}
                 className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
               >
                 <RefreshCw className="w-[14px] h-[14px]" />
@@ -61,36 +125,72 @@ export default function AdminUsersListPage() {
   return (
     <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen">
       <div className="space-y-6">
-        <UsersHeader />
+        <UsersHeader total={pagination.total} />
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-8">
-          <input
-            value={search}
-            onChange={(e) => { 
-              setLoading(true); 
-              setSearch(e.target.value); 
-              setCurrentPage(1);
-            }}
-            placeholder={t('searchPlaceholder')}
-            className="w-full sm:max-w-md px-4 py-2.5 rounded-lg border border-white/[0.06] bg-white/[0.02] text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/[0.1] focus:bg-white/[0.03] transition-colors"
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+          <AdminUsersSidebar
+            activeTab={activeTab}
+            onSelectTab={handleSelectTab}
           />
-          
-          <div className="text-[11px] font-medium uppercase tracking-wider text-[#555]">
-            {t('totalUsers')} <span className="text-white/70">{pagination.total}</span>
+
+          <div className="flex-1 min-w-0 w-full">
+            <AdminUsersSearchFilterBar
+              searchQuery={search}
+              setSearchQuery={(q) => {
+                setSearch(q);
+                setCurrentPage(1);
+              }}
+              roleFilter={roleFilter}
+              setRoleFilter={(r) => {
+                setRoleFilter(r);
+                setCurrentPage(1);
+              }}
+              statusFilter={statusFilter}
+              setStatusFilter={(s) => {
+                setStatusFilter(s);
+                setCurrentPage(1);
+              }}
+              sortBy={sortBy}
+              setSortBy={(sort) => {
+                setSortBy(sort);
+                setCurrentPage(1);
+              }}
+            />
+
+            <UsersTable
+              users={users}
+              onDelete={(id, username) => setUserToDelete({ id, username })}
+              onToggleBan={handleToggleBan}
+              banningUserId={banningUserId}
+              deletingUserId={deletingUserId}
+            />
+
+            <Pagination
+              currentPage={pagination.page}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.total}
+              pageSize={pageSize}
+              onPageChange={(p) => setCurrentPage(p)}
+              itemName={tCommon('users')}
+            />
           </div>
         </div>
-
-        <UsersTable users={users} onManageUser={(id) => router.push(`/admin/users/${id}`)} />
-        
-        <Pagination
-          currentPage={pagination.page}
-          totalPages={pagination.totalPages}
-          totalItems={pagination.total}
-          pageSize={10}
-          onPageChange={(p) => { setLoading(true); setCurrentPage(p); }}
-          itemName={tCommon('users')}
-        />
       </div>
+
+      {userToDelete && (
+        <DeleteDrawer
+          isOpen={Boolean(userToDelete)}
+          onClose={() => setUserToDelete(null)}
+          onConfirm={handleConfirmDelete}
+          entityType={t('deleteUserEntity')}
+          entityName={userToDelete.username}
+          warningPoints={[
+            t('deleteWarning1'),
+            t('deleteWarning2'),
+            t('deleteWarning3'),
+          ]}
+        />
+      )}
     </div>
   );
 }

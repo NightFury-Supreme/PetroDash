@@ -15,11 +15,11 @@ const mutationService = require('./users.admin.mutation.service');
 const serversService = require('./users.admin.servers.service');
 const plansService = require('./users.admin.plans.service');
 
-const listUsers = async ({ search, page = '1', limit = '10', pageSize }) => {
+const listUsers = async ({ search, page = '1', limit = '10', pageSize, role, status, sortBy }) => {
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
   const limitNum = Math.min(100, Math.max(1, parseInt(pageSize || limit, 10) || 10));
 
-  const cacheKey = `admin:users:${search || ''}:${pageNum}:${limitNum}`;
+  const cacheKey = `admin:users:${search || ''}:${role || 'all'}:${status || 'all'}:${sortBy || 'newest'}:${pageNum}:${limitNum}`;
   const cached = await getCache(cacheKey);
   if (cached) return cached;
 
@@ -35,8 +35,35 @@ const listUsers = async ({ search, page = '1', limit = '10', pageSize }) => {
     filter = { $or: or };
   }
 
+  if (role && role !== 'all') {
+    filter.role = role;
+  }
+
+  if (status && status !== 'all') {
+    if (status === 'banned') {
+      filter['ban.isBanned'] = true;
+    } else if (status === 'active') {
+      filter.$and = filter.$and || [];
+      filter.$and.push({
+        $or: [
+          { 'ban.isBanned': false },
+          { 'ban.isBanned': { $exists: false } },
+          { 'ban': { $exists: false } }
+        ]
+      });
+    }
+  }
+
+  let sort = { createdAt: -1 };
+  if (sortBy === 'oldest') sort = { createdAt: 1 };
+  else if (sortBy === 'username_asc') sort = { username: 1 };
+  else if (sortBy === 'username_desc') sort = { username: -1 };
+  else if (sortBy === 'coins_desc') sort = { coins: -1 };
+  else if (sortBy === 'coins_asc') sort = { coins: 1 };
+
   const total = await User.countDocuments(filter);
   const users = await User.find(filter, { passwordHash: 0 })
+    .sort(sort)
     .skip((pageNum - 1) * limitNum)
     .limit(limitNum)
     .lean();

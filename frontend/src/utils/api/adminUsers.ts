@@ -57,5 +57,12 @@ export const adminUsersApi = {
       headers: { Authorization: `Bearer ${token}` }
     });
     return { res: r, data: await r.json().catch(() => ({})) };
+  },
+  deleteUser: async (userId: string, token: string) => {
+    const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/users/${userId}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return { res: r, data: await r.json().catch(() => ({})) };
   }
 };
