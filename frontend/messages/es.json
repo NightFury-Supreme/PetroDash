@@ -939,6 +939,7 @@
   },
   "Common": {
     "cancel": "Cancelar",
+    "edit": "Editar",
     "status": "Estado",
     "loading": "Cargando...",
     "saving": "Guardando...",

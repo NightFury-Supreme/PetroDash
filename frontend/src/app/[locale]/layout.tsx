@@ -7,7 +7,7 @@ import AuthGuard from '@/components/auth/AuthGuard';
 import LayoutWithAds from '@/components/ads/LayoutWithAds';
 
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 
@@ -40,7 +40,8 @@ export default async function RootLayout({
     notFound();
   }
 
-  const messages = await getMessages();
+  setRequestLocale(locale);
+  const messages = await getMessages({ locale });
   // RTL support: Arabic uses right-to-left layout
   const dir: 'ltr' | 'rtl' = locale === 'ar' ? 'rtl' : 'ltr';
 
