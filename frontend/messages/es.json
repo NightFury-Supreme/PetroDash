@@ -677,16 +677,7 @@
     "btnCheckStatus": "Verificar estado",
     "checkingStatus": "Verificando...",
     "statusStillBanned": "Tu cuenta todavía está suspendida.",
-    "statusUnbanned": "¡Suspensión levantada! Redirigiendo al panel de control...",
-    "reasonNote": "Infracción registrada por la administración de la plataforma",
-    "temporaryNotice": "El acceso se restaurará automáticamente después de la fecha especificada.",
-    "permanentNotice": "Esta restricción es permanente a menos que sea anulada mediante una apelación.",
-    "scopeLabel": "Alcance de la restricción",
-    "scopeTitle": "Suspensión completa de la plataforma",
-    "scopeDescription": "Los controles del servidor, las credenciales de API y la gestión del panel están bloqueados.",
-    "appealLabel": "Soporte y apelación",
-    "appealTitle": "Enviar una apelación",
-    "appealHint": "Incluye tu nombre de usuario y correo electrónico de la cuenta en tu consulta."
+    "statusUnbanned": "¡Suspensión levantada! Redirigiendo al panel de control..."
   },
   "BackendErrors": {
     "ERR_SERVER_TIMEOUT": "Se agotó el tiempo de espera de la solicitud. Por favor verifique su conexión e intente nuevamente.",

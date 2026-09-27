@@ -11,7 +11,7 @@ import React from 'react';
 import { useTranslations } from 'next-intl';
 import { Ban } from 'lucide-react';
 import { useBannedStatus } from '@/hooks/auth';
-import { BannedDetailsGrid } from './BannedDetailsGrid';
+import { ErrorState } from '@/components/error';
 import { BannedActions } from './BannedActions';
 
 export function BannedView() {
@@ -19,45 +19,32 @@ export function BannedView() {
   const { reason, untilText, logout, checkNow, checking } = useBannedStatus();
 
   return (
-    <div
-      role="region"
-      aria-labelledby="banned-title"
-      className="flex flex-col items-center justify-center w-full font-sans min-h-screen bg-[#0F0F0F] text-white py-12 px-4"
-    >
-      <section className="text-center w-full max-w-[620px]">
-        {/* Top Centered Icon */}
-        <div
-          className="mx-auto mb-[24px] flex items-center justify-center text-[#FF5722]"
-          aria-hidden="true"
-        >
-          <Ban strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />
+    <ErrorState
+      fullScreen={true}
+      icon={<Ban strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
+      kicker={t('kicker')}
+      title={t('title')}
+      description={
+        <div className="space-y-2" suppressHydrationWarning>
+          <p>{t('subtitle')}</p>
+
+          <p className="text-[12px] sm:text-[13px] leading-relaxed" suppressHydrationWarning>
+            <span className="text-[#666]">{t('reasonLabel')} </span>
+            <span className="text-[#DDDDDD]">{reason || t('noReasonProvided')}</span>
+            <span className="text-[#444] mx-2.5 select-none" aria-hidden="true">|</span>
+            <span className="text-[#666]">{t('statusLabel')} </span>
+            <span className={untilText ? 'text-[#FF5722]' : 'text-[#FF4444]'}>
+              {untilText ? t('bannedUntil', { date: untilText }) : t('lifetimeBan')}
+            </span>
+          </p>
+
+          <p className="text-[11px] text-[#666]">
+            {t('contactSupport')}
+          </p>
         </div>
-
-        {/* Kicker */}
-        <p className="m-0 mb-2.5 text-[#FF5722] text-[10px] font-semibold tracking-[0.12em] uppercase">
-          {t('kicker')}
-        </p>
-
-        {/* Title */}
-        <h1
-          id="banned-title"
-          className="m-0 text-[#ededed] text-[clamp(28px,4vw,38px)] leading-[1.15] font-semibold tracking-[-0.04em] break-words"
-        >
-          {t('title')}
-        </h1>
-
-        {/* Subtitle */}
-        <p className="max-w-[500px] mx-auto mt-3.5 text-[#888888] text-[12px] sm:text-[13px] leading-[1.7]">
-          {t('subtitle')}
-        </p>
-
-        {/* Details Resource Grid */}
-        <BannedDetailsGrid reason={reason} untilText={untilText} />
-
-        {/* Action Buttons */}
-        <BannedActions onLogout={logout} onRefresh={checkNow} checking={checking} />
-      </section>
-    </div>
+      }
+      buttons={<BannedActions onLogout={logout} onRefresh={checkNow} checking={checking} />}
+    />
   );
 }
 

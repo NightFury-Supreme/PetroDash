@@ -677,16 +677,7 @@
     "btnCheckStatus": "Check Status",
     "checkingStatus": "Checking...",
     "statusStillBanned": "Your account is still suspended.",
-    "statusUnbanned": "Ban lifted! Redirecting to dashboard...",
-    "reasonNote": "Infraction recorded by platform administration",
-    "temporaryNotice": "Access will be restored automatically after the specified date.",
-    "permanentNotice": "This restriction is permanent unless overturned via appeal.",
-    "scopeLabel": "Restriction Scope",
-    "scopeTitle": "Full Platform Suspension",
-    "scopeDescription": "Server controls, API credentials, and dashboard management are locked.",
-    "appealLabel": "Support & Appeal",
-    "appealTitle": "Submit an Appeal",
-    "appealHint": "Include your username and account email with your inquiry."
+    "statusUnbanned": "Ban lifted! Redirecting to dashboard..."
   },
   "BackendErrors": {
     "ERR_SERVER_TIMEOUT": "The server took too long to respond. Please check your connection and try again.",
