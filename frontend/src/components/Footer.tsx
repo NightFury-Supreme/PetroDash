@@ -6,7 +6,11 @@ import { useTranslations } from 'next-intl';
 import { useBranding } from '@/hooks/useBranding';
 import { useSystemStatus } from '@/hooks/dashboard';
 
-export default function Footer() {
+export interface FooterProps {
+  className?: string;
+}
+
+export function Footer({ className }: FooterProps = {}) {
   const { branding } = useBranding();
   const { data: statusData, loading: statusLoading, error: statusError } = useSystemStatus(60000);
   const currentYear = new Date().getFullYear();
@@ -29,7 +33,7 @@ export default function Footer() {
   }, [statusLoading, statusError, statusData]);
 
   return (
-    <footer className="w-full py-6 mt-12 px-4 sm:px-6">
+    <footer className={`w-full py-6 px-4 sm:px-6 ${className ?? 'mt-12'}`}>
       <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-[13px] text-[#555]">
         {/* Left - Copyright */}
         <div className="flex items-center gap-2">
@@ -81,3 +85,5 @@ export default function Footer() {
     </footer>
   );
 }
+
+export default Footer;

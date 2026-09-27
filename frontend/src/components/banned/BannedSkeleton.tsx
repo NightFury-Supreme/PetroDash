@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { ErrorHeader } from '@/components/error';
+import Footer from '@/components/Footer';
 
 export function BannedSkeleton() {
   return (
@@ -14,7 +15,7 @@ export function BannedSkeleton() {
       role="status"
       aria-label="Loading account restriction details..."
       aria-live="polite"
-      className="flex flex-col w-full font-sans min-h-screen bg-[#0F0F0F] text-white"
+      className="flex flex-col w-full font-sans min-h-screen bg-[#0F0F0F] text-white justify-between"
     >
       <ErrorHeader />
       <div className="flex-1 flex flex-col items-center justify-center py-12 px-4">
@@ -45,6 +46,7 @@ export function BannedSkeleton() {
         </div>
       </section>
       </div>
+      <Footer className="mt-auto" />
     </div>
   );
 }

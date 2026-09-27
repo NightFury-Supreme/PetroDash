@@ -6,6 +6,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import packageInfo from '../../../package.json';
 import type { GlobalErrorViewProps } from './Error.types';
 
 const DICTIONARY: Record<
@@ -72,11 +73,28 @@ export function GlobalErrorView({ error }: GlobalErrorViewProps) {
 
   const displayMessage = error.message && !isServerOmitted ? error.message : t.defaultMsg;
 
+  const currentYear = new Date().getFullYear();
+
   return (
     <html lang={locale || 'en'} dir={dir}>
-      <body>
-        <div className="flex flex-col items-center justify-center w-full flex-1 bg-[#0F0F0F] min-h-screen text-sans">
-          <section className="text-center w-full max-w-[620px] px-4" aria-labelledby="error-title">
+      <body className="min-h-screen bg-[#0F0F0F] text-white flex flex-col justify-between font-sans antialiased">
+        <header role="banner" className="w-full bg-[#0F0F0F]/80 backdrop-blur-md sticky top-0 z-50 shrink-0">
+          <div className="w-full px-4 sm:px-6 py-4 flex items-center justify-between">
+            <a
+              href="/"
+              className="flex items-center gap-2.5 text-white transition-opacity hover:opacity-85 focus:outline-none focus:ring-2 focus:ring-[#FF5722] rounded-md px-1 py-0.5"
+              aria-label="PteroDash home"
+            >
+              <img src="/logo.svg" alt="PteroDash" className="h-7 w-auto object-contain" />
+              <span className="font-bold tracking-tight text-base sm:text-lg">
+                PteroDash
+              </span>
+            </a>
+          </div>
+        </header>
+
+        <main className="flex-1 flex flex-col items-center justify-center py-12 px-4">
+          <section className="text-center w-full max-w-[620px]" aria-labelledby="error-title">
             <div className="mx-auto mb-[24px] flex items-center justify-center text-[#FF5722]" aria-hidden="true">
               <svg
                 viewBox="0 0 24 24"
@@ -125,7 +143,33 @@ export function GlobalErrorView({ error }: GlobalErrorViewProps) {
               </button>
             </div>
           </section>
-        </div>
+        </main>
+
+        <footer className="w-full py-6 mt-auto px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-[13px] text-[#555]">
+            <div className="flex items-center gap-2">
+              <span>© {currentYear} PteroDash</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1.5 cursor-default">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="hover:text-white transition-colors">All Systems Operational</span>
+              </div>
+              <span className="text-[#333]">•</span>
+              <span>
+                Powered by{' '}
+                <a
+                  href="https://github.com/NightFury-Supreme/PetroDash"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white transition-colors font-medium text-[#777]"
+                >
+                  PteroDash v{packageInfo.version}
+                </a>
+              </span>
+            </div>
+          </div>
+        </footer>
       </body>
     </html>
   );

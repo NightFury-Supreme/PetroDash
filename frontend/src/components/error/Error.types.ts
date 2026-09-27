@@ -14,6 +14,8 @@ export interface ErrorStateProps {
   fullScreen?: boolean;
   errorString?: string | null;
   header?: ReactNode;
+  footer?: ReactNode;
+  showFooter?: boolean;
 }
 
 export interface DashboardButtonProps {

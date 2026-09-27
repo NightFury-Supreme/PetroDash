@@ -1,7 +1,6 @@
 "use client";
 
 import { HeaderAd, FooterAd, MobileAd } from './AdSense';
-import Footer from '@/components/Footer';
 import { usePathname } from '@/i18n/routing';
 
 interface LayoutWithAdsProps {
@@ -28,6 +27,11 @@ const SHELL_PAGES = [
 export default function LayoutWithAds({ children }: LayoutWithAdsProps) {
   const pathname = usePathname();
   
+  // Banned page has standalone layout with ErrorHeader, centered content, and dashboard Footer
+  if (pathname.startsWith('/banned')) {
+    return <>{children}</>;
+  }
+
   // Check if current page uses Shell component
   const usesShell = SHELL_PAGES.some(page => pathname.startsWith(page));
   
@@ -50,9 +54,6 @@ export default function LayoutWithAds({ children }: LayoutWithAdsProps) {
       
       {/* Footer Ad */}
       <FooterAd />
-      
-      {/* Footer - only show for pages that don't use Shell */}
-      {!usesShell && <Footer />}
     </div>
   );
 }

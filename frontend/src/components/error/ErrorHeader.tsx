@@ -11,7 +11,11 @@ import { Link } from '@/i18n/routing';
 import { useBranding } from '@/hooks/useBranding';
 import LanguageSwitcher from '@/components/auth/layout/LanguageSwitcher';
 
-export function ErrorHeader() {
+export interface ErrorHeaderProps {
+  className?: string;
+}
+
+export function ErrorHeader({ className = '' }: ErrorHeaderProps) {
   const { branding } = useBranding();
   const siteName = branding.siteName || 'PteroDash';
   const siteIcon = branding.siteIcon || '/logo.svg';
@@ -19,9 +23,9 @@ export function ErrorHeader() {
   return (
     <header
       role="banner"
-      className="w-full border-b border-white/[0.06] bg-[#0F0F0F]/80 backdrop-blur-md sticky top-0 z-50 shrink-0"
+      className={`w-full bg-[#0F0F0F]/80 backdrop-blur-md sticky top-0 z-50 shrink-0 ${className}`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+      <div className="w-full px-4 sm:px-6 py-4 flex items-center justify-between">
         <Link
           href="/"
           className="flex items-center gap-2.5 text-white transition-opacity hover:opacity-85 focus:outline-none focus:ring-2 focus:ring-[#FF5722] rounded-md px-1 py-0.5"
@@ -45,4 +49,5 @@ export function ErrorHeader() {
   );
 }
 
+export { ErrorHeader as CommonHeader };
 export default ErrorHeader;

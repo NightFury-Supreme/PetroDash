@@ -7,6 +7,8 @@
 
 import React from 'react';
 import { useTranslations } from 'next-intl';
+import Footer from '@/components/Footer';
+import { ErrorHeader } from './ErrorHeader';
 import type { ErrorStateProps } from './Error.types';
 
 export function ErrorState({
@@ -18,8 +20,12 @@ export function ErrorState({
   fullScreen = false,
   errorString,
   header,
+  footer,
+  showFooter,
 }: ErrorStateProps) {
-  const minHeightClass = fullScreen ? 'min-h-screen bg-[#0F0F0F]' : 'flex-1 min-h-0';
+  const minHeightClass = fullScreen ? 'min-h-screen bg-[#0F0F0F] justify-between' : 'flex-1 min-h-0';
+  const shouldRenderFooter = showFooter !== undefined ? showFooter : fullScreen;
+  const renderedHeader = header !== undefined ? header : (fullScreen ? <ErrorHeader /> : null);
   const t = useTranslations('ErrorState');
 
   let displayKicker = kicker;
@@ -45,7 +51,7 @@ export function ErrorState({
       aria-labelledby="error-title"
       className={`flex flex-col w-full text-sans ${minHeightClass} min-h-[calc(100vh-60px)]`}
     >
-      {header}
+      {renderedHeader}
       <div className="flex-1 flex flex-col items-center justify-center py-12 px-4">
         <section className="text-center w-full max-w-[620px]">
           <div className="mx-auto mb-[24px] flex items-center justify-center text-[#FF5722]" aria-hidden="true">
@@ -70,6 +76,7 @@ export function ErrorState({
           )}
         </section>
       </div>
+      {shouldRenderFooter && (footer ?? <Footer className="mt-auto" />)}
     </div>
   );
 }

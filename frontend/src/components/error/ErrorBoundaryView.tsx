@@ -8,6 +8,7 @@
 import React, { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { ErrorState } from './ErrorState';
+import { ErrorHeader } from './ErrorHeader';
 import { DashboardButton, GoBackButton } from './ErrorButtons';
 import type { ErrorBoundaryViewProps } from './Error.types';
 
@@ -27,7 +28,8 @@ export function ErrorBoundaryView({ error, reset }: ErrorBoundaryViewProps) {
 
   return (
     <ErrorState
-      fullScreen={false}
+      fullScreen={true}
+      header={<ErrorHeader />}
       icon={
         <svg
           viewBox="0 0 24 24"

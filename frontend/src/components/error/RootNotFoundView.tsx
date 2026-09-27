@@ -5,13 +5,16 @@
 
 import React from 'react';
 import Link from 'next/link';
+import packageInfo from '../../../package.json';
 
 export function RootNotFoundView() {
+  const currentYear = new Date().getFullYear();
+
   return (
     <html lang="en">
-      <body className="min-h-screen bg-[#0F0F0F] text-white flex flex-col font-sans antialiased">
-        <header role="banner" className="w-full border-b border-white/[0.06] bg-[#0F0F0F]/80 backdrop-blur-md sticky top-0 z-50 shrink-0">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+      <body className="min-h-screen bg-[#0F0F0F] text-white flex flex-col justify-between font-sans antialiased">
+        <header role="banner" className="w-full bg-[#0F0F0F]/80 backdrop-blur-md sticky top-0 z-50 shrink-0">
+          <div className="w-full px-4 sm:px-6 py-4 flex items-center justify-between">
             <Link
               href="/"
               className="flex items-center gap-2.5 text-white transition-opacity hover:opacity-85 focus:outline-none focus:ring-2 focus:ring-[#FF5722] rounded-md px-1 py-0.5"
@@ -60,6 +63,31 @@ export function RootNotFoundView() {
             </Link>
           </div>
         </main>
+        <footer className="w-full py-6 mt-auto px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-[13px] text-[#555]">
+            <div className="flex items-center gap-2">
+              <span>© {currentYear} PteroDash</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1.5 cursor-default">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="hover:text-white transition-colors">All Systems Operational</span>
+              </div>
+              <span className="text-[#333]">•</span>
+              <span>
+                Powered by{' '}
+                <a
+                  href="https://github.com/NightFury-Supreme/PetroDash"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white transition-colors font-medium text-[#777]"
+                >
+                  PteroDash v{packageInfo.version}
+                </a>
+              </span>
+            </div>
+          </div>
+        </footer>
       </body>
     </html>
   );
