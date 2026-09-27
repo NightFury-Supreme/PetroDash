@@ -3,7 +3,7 @@ import { InfoRow } from "@/components/admin/users/AdminInfoRow";
 import { Key, User } from "lucide-react";
 import { Pagination } from "@/components/Pagination";
 import { Link } from "@/i18n/routing";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 interface ReferralsTabProps {
   referral: any;
@@ -26,6 +26,7 @@ export function ReferralsTab({
   const totalUsers = referral?.meta?.total || 0;
   const totalPages = Math.ceil(totalUsers / REFERRAL_PAGE_SIZE) || 1;
   const t = useTranslations('admin.users');
+  const locale = useLocale();
 
   useEffect(() => {
     setCodeDraft(referral?.code || '');
@@ -139,7 +140,7 @@ export function ReferralsTab({
                 <div className="flex items-center">
                   <p className="text-xs text-white/35">
                     {u.createdAt
-                      ? new Date(u.createdAt).toLocaleDateString('en-US', {
+                      ? new Date(u.createdAt).toLocaleDateString(locale, {
                           year: 'numeric',
                           month: 'short',
                           day: 'numeric',

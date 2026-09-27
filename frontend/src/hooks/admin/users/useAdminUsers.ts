@@ -26,7 +26,7 @@ export function useAdminUsers(initialSearch = '', initialPage = 1, pageSize = 10
     fetchWithRetry(url.toString(), { headers: { Authorization: `Bearer ${token}` } })
       .then(async (r) => { 
         let d: any = {}; try { d = await r.json(); } catch {} 
-        if (!r.ok) throw new Error(d?.error || 'Failed'); 
+        if (!r.ok) throw new Error(d?.error || d?.code || 'ERR_FETCH_FAILED'); 
         
         setUsers(d.data || d.users || []);
         setPagination({

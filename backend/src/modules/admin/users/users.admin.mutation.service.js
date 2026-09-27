@@ -246,6 +246,12 @@ const deleteUser = async (req, id) => {
     serverErrors: serverErrors.length,
     pterodactylError: !!pterodactylError,
   });
+  await logUserActivity(null, 'admin.user.delete', {
+    serversDeleted: deletedServers,
+    serverErrors: serverErrors.length,
+    pterodactylError: !!pterodactylError,
+    updatedByAdmin: true,
+  }, user._id.toString());
 
   await deleteCachePattern('admin:users*');
 
@@ -258,9 +264,6 @@ const deleteUser = async (req, id) => {
     totalServers: servers.length,
     serverErrors,
     pterodactylError,
-    message: hasWarnings
-      ? 'User deleted but some cleanup operations failed. Check server logs for details.'
-      : 'User and all associated data deleted successfully.',
   };
 };
 

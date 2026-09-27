@@ -2,7 +2,7 @@ import { downloadInvoicePdf } from "@/utils/invoiceDownload";
 import React from "react";
 import { useToast } from "@/components/ui/ToastProvider";
 import { Download, ChevronLeft, ChevronRight } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 interface InvoicesTabProps {
   invoices: any[];
@@ -23,6 +23,7 @@ export function InvoicesTab({
   const t = useTranslations('admin.users');
   const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
+  const locale = useLocale();
 
   const downloadInvoice = async (id: string) => {
     try {
@@ -61,7 +62,7 @@ export function InvoicesTab({
                   key={inv._id}
                   className="grid grid-cols-1 gap-4 px-5 py-4 items-center md:grid-cols-[100px_1fr_100px_120px_100px] transition hover:bg-white/[0.02]"
                 >
-                  <p className="text-xs text-[#888]">{new Date(inv.createdAt).toLocaleDateString()}</p>
+                  <p className="text-xs text-[#888]">{new Date(inv.createdAt).toLocaleDateString(locale)}</p>
                   <p className="text-sm text-[#D4D4D4]">
                     {inv.type === 'ADD_FUNDS' ? t('addedFunds') : t('planPurchase')}
                   </p>

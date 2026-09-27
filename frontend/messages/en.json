@@ -863,7 +863,26 @@
     "ERR_RESOURCES_EXCEEDED": "Requested resources exceed available limits.",
     "ERR_PANEL_RENAME_FAILED": "Failed to rename server in panel.",
     "ERR_PLAN_INSTANCE_NOT_FOUND": "Active plan instance not found.",
-    "ERR_SERVER_VALIDATION_FAILED": "Server update validation failed."
+    "ERR_SERVER_VALIDATION_FAILED": "Server update validation failed.",
+    "ERR_CLEANUP_PARTIAL": "User deleted but some cleanup operations failed. Check server logs.",
+    "SUCCESS_USER_DELETED": "User and all associated data deleted successfully.",
+    "ERR_LOAD_USER_FAILED": "Failed to load user details.",
+    "ERR_UPDATE_USER_FAILED": "Failed to update user details.",
+    "ERR_UPDATE_ROLE_FAILED": "Failed to update user role.",
+    "ERR_UPDATE_RESOURCES_FAILED": "Failed to update user resources.",
+    "ERR_BAN_USER_FAILED": "Failed to apply ban on user.",
+    "ERR_UNBAN_USER_FAILED": "Failed to unban user.",
+    "ERR_ADD_PLAN_FAILED": "Failed to assign plan to user.",
+    "ERR_REMOVE_PLAN_FAILED": "Failed to remove plan from user.",
+    "ERR_REMOVE_PLAN_INSTANCE_FAILED": "Failed to remove plan instance.",
+    "ERR_DELETE_SERVER_FAILED": "Failed to delete server.",
+    "ERR_SAVE_REFERRAL_CODE_FAILED": "Failed to update referral code.",
+    "ERR_DELETE_USER_FAILED": "Failed to delete user.",
+    "ERR_REFERRAL_CODE_EMPTY": "Referral code cannot be empty.",
+    "ERR_REFERRAL_CODE_MIN": "Referral code must be at least 3 characters.",
+    "ERR_REFERRAL_CODE_FORMAT": "Referral code can only contain letters, numbers, hyphens and underscores.",
+    "ERR_INVALID_URL": "Must be a valid URL.",
+    "ERR_FETCH_FAILED": "Failed to fetch data."
   },
   "Tickets": {
     "errors": {
@@ -1719,7 +1738,8 @@
       "actionCol": "Action",
       "noReferralsYet": "No users have been referred yet.",
       "usersItemName": "users",
-      "descriptionCol": "Description"
+      "descriptionCol": "Description",
+      "perMonth": "/mo"
     },
     "servers": {
       "title": "Servers",

@@ -863,7 +863,26 @@
     "ERR_RESOURCES_EXCEEDED": "Los recursos solicitados superan los límites disponibles.",
     "ERR_PANEL_RENAME_FAILED": "No se pudo cambiar el nombre del servidor en el panel.",
     "ERR_PLAN_INSTANCE_NOT_FOUND": "Instancia de plan activa no encontrada.",
-    "ERR_SERVER_VALIDATION_FAILED": "Error de validación al actualizar el servidor."
+    "ERR_SERVER_VALIDATION_FAILED": "Error de validación al actualizar el servidor.",
+    "ERR_CLEANUP_PARTIAL": "Usuario eliminado pero algunas operaciones de limpieza fallaron.",
+    "SUCCESS_USER_DELETED": "Usuario y todos los datos asociados eliminados exitosamente.",
+    "ERR_LOAD_USER_FAILED": "No se pudieron cargar los detalles del usuario.",
+    "ERR_UPDATE_USER_FAILED": "No se pudieron actualizar los detalles del usuario.",
+    "ERR_UPDATE_ROLE_FAILED": "No se pudo actualizar el rol del usuario.",
+    "ERR_UPDATE_RESOURCES_FAILED": "No se pudieron actualizar los recursos del usuario.",
+    "ERR_BAN_USER_FAILED": "No se pudo aplicar la suspensión al usuario.",
+    "ERR_UNBAN_USER_FAILED": "No se pudo reactivar al usuario.",
+    "ERR_ADD_PLAN_FAILED": "No se pudo asignar el plan al usuario.",
+    "ERR_REMOVE_PLAN_FAILED": "No se pudo eliminar el plan del usuario.",
+    "ERR_REMOVE_PLAN_INSTANCE_FAILED": "No se pudo eliminar la instancia del plan.",
+    "ERR_DELETE_SERVER_FAILED": "No se pudo eliminar el servidor.",
+    "ERR_SAVE_REFERRAL_CODE_FAILED": "No se pudo actualizar el código de referido.",
+    "ERR_DELETE_USER_FAILED": "No se pudo eliminar el usuario.",
+    "ERR_REFERRAL_CODE_EMPTY": "El código de referido no puede estar vacío.",
+    "ERR_REFERRAL_CODE_MIN": "El código de referido debe tener al menos 3 caracteres.",
+    "ERR_REFERRAL_CODE_FORMAT": "El código de referido solo puede contener letras, números, guiones y guiones bajos.",
+    "ERR_INVALID_URL": "Debe ser una URL válida.",
+    "ERR_FETCH_FAILED": "Error al obtener datos."
   },
   "Tickets": {
     "errors": {
@@ -1708,7 +1727,8 @@
       "actionCol": "Acción",
       "noReferralsYet": "Aún no se han referido usuarios.",
       "usersItemName": "usuarios",
-      "descriptionCol": "Descripción"
+      "descriptionCol": "Descripción",
+      "perMonth": "/mes"
     },
     "servers": {
       "title": "Servidores",

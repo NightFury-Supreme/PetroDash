@@ -863,7 +863,26 @@
     "ERR_RESOURCES_EXCEEDED": "الموارد المطلوبة تتجاوز الحدود المتاحة.",
     "ERR_PANEL_RENAME_FAILED": "فشل إعادة تسمية الخادم في اللوحة.",
     "ERR_PLAN_INSTANCE_NOT_FOUND": "لم يتم العثور على نموذج خطة نشطة.",
-    "ERR_SERVER_VALIDATION_FAILED": "فشل التحقق من صحة تحديث الخادم."
+    "ERR_SERVER_VALIDATION_FAILED": "فشل التحقق من صحة تحديث الخادم.",
+    "ERR_CLEANUP_PARTIAL": "تم حذف المستخدم ولكن فشلت بعض عمليات التنظيف.",
+    "SUCCESS_USER_DELETED": "تم حذف المستخدم وجميع البيانات المرتبطة به بنجاح.",
+    "ERR_LOAD_USER_FAILED": "فشل تحميل تفاصيل المستخدم.",
+    "ERR_UPDATE_USER_FAILED": "فشل تحديث تفاصيل المستخدم.",
+    "ERR_UPDATE_ROLE_FAILED": "فشل تحديث دور المستخدم.",
+    "ERR_UPDATE_RESOURCES_FAILED": "فشل تحديث موارد المستخدم.",
+    "ERR_BAN_USER_FAILED": "فشل تطبيق الحظر على المستخدم.",
+    "ERR_UNBAN_USER_FAILED": "فشل إلغاء حظر المستخدم.",
+    "ERR_ADD_PLAN_FAILED": "فشل تعيين الخطة للمستخدم.",
+    "ERR_REMOVE_PLAN_FAILED": "فشل إزالة الخطة من المستخدم.",
+    "ERR_REMOVE_PLAN_INSTANCE_FAILED": "فشل إزالة نسخة الخطة.",
+    "ERR_DELETE_SERVER_FAILED": "فشل حذف الخادم.",
+    "ERR_SAVE_REFERRAL_CODE_FAILED": "فشل تحديث رمز الإحالة.",
+    "ERR_DELETE_USER_FAILED": "فشل حذف المستخدم.",
+    "ERR_REFERRAL_CODE_EMPTY": "لا يمكن أن يكون رمز الإحالة فارغاً.",
+    "ERR_REFERRAL_CODE_MIN": "يجب أن يتكون رمز الإحالة من 3 أحرف على الأقل.",
+    "ERR_REFERRAL_CODE_FORMAT": "يمكن أن يحتوي رمز الإحالة على أحرف وأرقام وشرطات سفلية وشرطات فقط.",
+    "ERR_INVALID_URL": "يجب أن يكون رابطاً صالحاً.",
+    "ERR_FETCH_FAILED": "فشل جلب البيانات."
   },
   "Tickets": {
     "errors": {
@@ -1708,7 +1727,8 @@
       "actionCol": "الإجراء",
       "noReferralsYet": "لم تتم إحالة أي مستخدمين بعد.",
       "usersItemName": "مستخدمين",
-      "descriptionCol": "الوصف"
+      "descriptionCol": "الوصف",
+      "perMonth": "/شهر"
     },
     "servers": {
       "title": "الخوادم",

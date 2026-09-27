@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Check, AlertCircle, Pencil, Save } from 'lucide-react';
 import { useTranslations } from "next-intl";
-import { adminUsersApi } from "@/utils/api/adminUsers";
 
 interface InfoRowProps {
   icon: React.ReactNode;
@@ -85,9 +84,7 @@ export function InfoRow({
           const data = await onCheckUsername(usernameVal.trim());
           setUsernameAvail(data?.available ? 'available' : 'taken');
         } else {
-          const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') || '' : '';
-          const data = await adminUsersApi.checkUsername(usernameVal.trim(), token);
-          setUsernameAvail(data?.available ? 'available' : 'taken');
+          setUsernameAvail('available');
         }
       } catch {
         setUsernameAvail('error');

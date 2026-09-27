@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
 import { useModal } from "@/components/Modal";
 import { ShieldAlert } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 interface SecurityTabProps {
   ban: any;
@@ -18,6 +18,7 @@ export function SecurityTab({ ban, userId: _userId, onBanUser, onUnbanUser, onRe
   const t = useTranslations('admin.users');
   const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
+  const locale = useLocale();
 
   const [showBanModal, setShowBanModal] = useState(false);
   const [banForm, setBanForm] = useState({ reason: '', durationMinutes: undefined as number | undefined });
@@ -137,7 +138,7 @@ export function SecurityTab({ ban, userId: _userId, onBanUser, onUnbanUser, onRe
               <p className="mt-1 text-xs text-white/50">
                 {activeBan
                   ? `${t('bannedFor')} ${ban.reason || t('noReasonProvided')}. ${
-                      ban.until ? `${t('expires')} ${new Date(ban.until).toLocaleString()}` : t('permanent')
+                      ban.until ? `${t('expires')} ${new Date(ban.until).toLocaleString(locale)}` : t('permanent')
                     }`
                   : t('fullAccessMsg')}
               </p>

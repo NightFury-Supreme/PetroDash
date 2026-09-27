@@ -863,7 +863,26 @@
     "ERR_RESOURCES_EXCEEDED": "Angeforderte Ressourcen überschreiten die verfügbaren Limits.",
     "ERR_PANEL_RENAME_FAILED": "Fehler beim Umbenennen des Servers im Panel.",
     "ERR_PLAN_INSTANCE_NOT_FOUND": "Aktive Plan-Instanz nicht gefunden.",
-    "ERR_SERVER_VALIDATION_FAILED": "Validierung der Serveraktualisierung fehlgeschlagen."
+    "ERR_SERVER_VALIDATION_FAILED": "Validierung der Serveraktualisierung fehlgeschlagen.",
+    "ERR_CLEANUP_PARTIAL": "Benutzer gelöscht, aber einige Bereinigungsvorgänge sind fehlgeschlagen.",
+    "SUCCESS_USER_DELETED": "Benutzer und alle zugehörigen Daten erfolgreich gelöscht.",
+    "ERR_LOAD_USER_FAILED": "Benutzerdetails konnten nicht geladen werden.",
+    "ERR_UPDATE_USER_FAILED": "Benutzerdetails konnten nicht aktualisiert werden.",
+    "ERR_UPDATE_ROLE_FAILED": "Benutzerrolle konnte nicht aktualisiert werden.",
+    "ERR_UPDATE_RESOURCES_FAILED": "Benutzerressourcen konnten nicht aktualisiert werden.",
+    "ERR_BAN_USER_FAILED": "Benutzersperre konnte nicht angewendet werden.",
+    "ERR_UNBAN_USER_FAILED": "Benutzer konnte nicht entsperrt werden.",
+    "ERR_ADD_PLAN_FAILED": "Plan konnte dem Benutzer nicht zugewiesen werden.",
+    "ERR_REMOVE_PLAN_FAILED": "Plan konnte nicht vom Benutzer entfernt werden.",
+    "ERR_REMOVE_PLAN_INSTANCE_FAILED": "Plan-Instanz konnte nicht entfernt werden.",
+    "ERR_DELETE_SERVER_FAILED": "Server konnte nicht gelöscht werden.",
+    "ERR_SAVE_REFERRAL_CODE_FAILED": "Empfehlungscode konnte nicht aktualisiert werden.",
+    "ERR_DELETE_USER_FAILED": "Benutzer konnte nicht gelöscht werden.",
+    "ERR_REFERRAL_CODE_EMPTY": "Empfehlungscode darf nicht leer sein.",
+    "ERR_REFERRAL_CODE_MIN": "Empfehlungscode muss mindestens 3 Zeichen lang sein.",
+    "ERR_REFERRAL_CODE_FORMAT": "Empfehlungscode darf nur Buchstaben, Zahlen, Bindestriche und Unterstriche enthalten.",
+    "ERR_INVALID_URL": "Muss eine gültige URL sein.",
+    "ERR_FETCH_FAILED": "Daten konnten nicht abgerufen werden."
   },
   "Tickets": {
     "errors": {
@@ -1708,7 +1727,8 @@
       "actionCol": "Aktion",
       "noReferralsYet": "Es wurden noch keine Benutzer eingeladen.",
       "usersItemName": "Benutzer",
-      "descriptionCol": "Beschreibung"
+      "descriptionCol": "Beschreibung",
+      "perMonth": "/Monat"
     },
     "servers": {
       "title": "Server",

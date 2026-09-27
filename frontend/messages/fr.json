@@ -863,7 +863,26 @@
     "ERR_RESOURCES_EXCEEDED": "Les ressources demandées dépassent les limites disponibles.",
     "ERR_PANEL_RENAME_FAILED": "Échec du renommage du serveur dans le panneau.",
     "ERR_PLAN_INSTANCE_NOT_FOUND": "Instance de plan active introuvable.",
-    "ERR_SERVER_VALIDATION_FAILED": "Échec de la validation de la mise à jour du serveur."
+    "ERR_SERVER_VALIDATION_FAILED": "Échec de la validation de la mise à jour du serveur.",
+    "ERR_CLEANUP_PARTIAL": "Utilisateur supprimé mais certaines opérations de nettoyage ont échoué.",
+    "SUCCESS_USER_DELETED": "Utilisateur et données associées supprimés avec succès.",
+    "ERR_LOAD_USER_FAILED": "Impossible de charger les détails de l'utilisateur.",
+    "ERR_UPDATE_USER_FAILED": "Impossible de mettre à jour les détails de l'utilisateur.",
+    "ERR_UPDATE_ROLE_FAILED": "Impossible de mettre à jour le rôle de l'utilisateur.",
+    "ERR_UPDATE_RESOURCES_FAILED": "Impossible de mettre à jour les ressources de l'utilisateur.",
+    "ERR_BAN_USER_FAILED": "Impossible d'appliquer le bannissement.",
+    "ERR_UNBAN_USER_FAILED": "Impossible de débannir l'utilisateur.",
+    "ERR_ADD_PLAN_FAILED": "Impossible d'attribuer le plan à l'utilisateur.",
+    "ERR_REMOVE_PLAN_FAILED": "Impossible de retirer le plan de l'utilisateur.",
+    "ERR_REMOVE_PLAN_INSTANCE_FAILED": "Impossible de supprimer l'instance de plan.",
+    "ERR_DELETE_SERVER_FAILED": "Impossible de supprimer le serveur.",
+    "ERR_SAVE_REFERRAL_CODE_FAILED": "Impossible de mettre à jour le code de parrainage.",
+    "ERR_DELETE_USER_FAILED": "Impossible de supprimer l'utilisateur.",
+    "ERR_REFERRAL_CODE_EMPTY": "Le code de parrainage ne peut pas être vide.",
+    "ERR_REFERRAL_CODE_MIN": "Le code de parrainage doit comporter au moins 3 caractères.",
+    "ERR_REFERRAL_CODE_FORMAT": "Le code de parrainage ne peut contenir que des lettres, chiffres, tirets et tirets bas.",
+    "ERR_INVALID_URL": "Doit être une URL valide.",
+    "ERR_FETCH_FAILED": "Impossible de récupérer les données."
   },
   "Tickets": {
     "errors": {
@@ -1708,7 +1727,8 @@
       "actionCol": "Action",
       "noReferralsYet": "Aucun utilisateur n'a encore été parrainé.",
       "usersItemName": "utilisateurs",
-      "descriptionCol": "Description"
+      "descriptionCol": "Description",
+      "perMonth": "/mois"
     },
     "servers": {
       "title": "Serveurs",

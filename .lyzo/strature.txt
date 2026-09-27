@@ -13,7 +13,8 @@ also make sure here redis is using properly everywhere as needed
 also make sure everything is optimzied, db optimized, smooth and profasnla and no any ducktaps
 Also use same language code for same messages, find if any found and use it in everywhere as needed
 Make sure that comments are not added and removed which is to ai its self etc et, which makes obious that code is written by ai
-use subagents as needed
+also use subagents as needed
+Also no stop when run task, check continues 
 
 
 Also complay with this much rule is must, fully strict, no drop any consideration

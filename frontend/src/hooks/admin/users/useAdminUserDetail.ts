@@ -38,7 +38,7 @@ export function useAdminUserDetail(id: string) {
       const r = await fetchWithRetry(url.toString(), { headers: { Authorization: `Bearer ${token}` } });
       const d = await r.json();
       if (!r.ok) {
-        throw new Error(d.error || 'Failed to load user');
+        throw new Error(d.error || d.code || 'ERR_LOAD_USER_FAILED');
       }
       setData(d);
       setUserForm({ ...d.user });
@@ -46,8 +46,8 @@ export function useAdminUserDetail(id: string) {
       setPlans(d.plans || []);
       setReferral(d.referral || {});
       setBan(d.user?.ban || d.ban || { isBanned: false, reason: '', until: null });
-    } catch (e: any) {
-      console.error('Failed to load user:', e.message);
+    } catch {
+      // Load error caught
     } finally {
       setLoading(false);
     }
@@ -96,7 +96,7 @@ export function useAdminUserDetail(id: string) {
     if (!res.ok) {
       const firstError = resData.details?.fieldErrors
         ? String(Object.values(resData.details.fieldErrors).flat()[0])
-        : resData.error || 'Failed to update user';
+        : resData.error || resData.code || 'ERR_UPDATE_USER_FAILED';
       throw new Error(firstError);
     }
     setUserForm((prev: any) => ({ ...prev, ...payload }));
@@ -106,7 +106,7 @@ export function useAdminUserDetail(id: string) {
   const updateRole = async (newRole: string) => {
     const token = getAuthToken();
     const { res, data: resData } = await adminUsersApi.updateUser(id, { role: newRole }, token);
-    if (!res.ok) throw new Error(resData?.error || 'Failed to update role');
+    if (!res.ok) throw new Error(resData?.error || resData?.code || 'ERR_UPDATE_ROLE_FAILED');
     setUserForm((prev: any) => ({ ...prev, role: newRole }));
     return resData;
   };
@@ -114,7 +114,7 @@ export function useAdminUserDetail(id: string) {
   const updateResources = async (newResources: Record<string, number>) => {
     const token = getAuthToken();
     const { res, data: resData } = await adminUsersApi.updateUser(id, { resources: newResources }, token);
-    if (!res.ok) throw new Error(resData?.error || 'Failed to update resources');
+    if (!res.ok) throw new Error(resData?.error || resData?.code || 'ERR_UPDATE_RESOURCES_FAILED');
     setResources(newResources);
     return resData;
   };
@@ -129,7 +129,7 @@ export function useAdminUserDetail(id: string) {
     const r = await adminUsersApi.banUser(id, payload, token);
     if (!r.ok) {
       const d = await r.json().catch(() => ({}));
-      throw new Error(d.error || 'Failed to apply ban');
+      throw new Error(d.error || d.code || 'ERR_BAN_USER_FAILED');
     }
     await loadUser(referralPage);
   };
@@ -139,7 +139,7 @@ export function useAdminUserDetail(id: string) {
     const r = await adminUsersApi.banUser(id, { isBanned: false }, token);
     if (!r.ok) {
       const d = await r.json().catch(() => ({}));
-      throw new Error(d.error || 'Failed to unban user');
+      throw new Error(d.error || d.code || 'ERR_UNBAN_USER_FAILED');
     }
     await loadUser(referralPage);
   };
@@ -147,7 +147,7 @@ export function useAdminUserDetail(id: string) {
   const addPlan = async (planId: string, months = 1) => {
     const token = getAuthToken();
     const { res, data: resData } = await adminUsersApi.addPlan(id, { planId, months }, token);
-    if (!res.ok) throw new Error(resData?.error || 'Failed to add plan');
+    if (!res.ok) throw new Error(resData?.error || resData?.code || 'ERR_ADD_PLAN_FAILED');
     await loadUser(referralPage);
     return resData;
   };
@@ -155,21 +155,21 @@ export function useAdminUserDetail(id: string) {
   const removePlan = async (planId: string) => {
     const token = getAuthToken();
     const r = await adminUsersApi.removePlan(id, planId, token);
-    if (!r.ok) throw new Error('Failed to remove plan');
+    if (!r.ok) throw new Error('ERR_REMOVE_PLAN_FAILED');
     await loadUser(referralPage);
   };
 
   const removePlanInstance = async (instanceId: string) => {
     const token = getAuthToken();
     const r = await adminUsersApi.removePlanInstance(id, instanceId, token);
-    if (!r.ok) throw new Error('Failed to remove plan instance');
+    if (!r.ok) throw new Error('ERR_REMOVE_PLAN_INSTANCE_FAILED');
     await loadUser(referralPage);
   };
 
   const deleteServer = async (serverId: string) => {
     const token = getAuthToken();
     const { res, data: resData } = await adminUsersApi.deleteServer(serverId, token);
-    if (!res.ok) throw new Error(resData?.error || 'Failed to delete server');
+    if (!res.ok) throw new Error(resData?.error || resData?.code || 'ERR_DELETE_SERVER_FAILED');
     await loadUser(referralPage);
   };
 
@@ -183,11 +183,11 @@ export function useAdminUserDetail(id: string) {
         body: JSON.stringify({ referralCode: newCode })
       });
       const d = await r.json();
-      if (!r.ok) throw new Error(d.error || 'Failed to save referral code');
+      if (!r.ok) throw new Error(d.error || d.code || 'ERR_SAVE_REFERRAL_CODE_FAILED');
       await loadUser(referralPage);
       return { success: true };
     } catch (e: any) {
-      return { success: false, error: e.message || 'Failed' };
+      return { success: false, error: e.message || 'ERR_SAVE_REFERRAL_CODE_FAILED' };
     } finally {
       setSaving(false);
     }
@@ -201,10 +201,10 @@ export function useAdminUserDetail(id: string) {
         headers: { Authorization: `Bearer ${token}` }
       });
       const d = await r.json();
-      if (!r.ok) throw new Error(d?.error || 'Failed to delete user');
-      return { success: true, message: d.message || 'User deleted successfully.' };
+      if (!r.ok) throw new Error(d?.error || d?.code || 'ERR_DELETE_USER_FAILED');
+      return { success: true, message: d?.code || 'SUCCESS_USER_DELETED' };
     } catch (e: any) {
-      return { success: false, error: e.message || 'Failed to delete user' };
+      return { success: false, error: e.message || 'ERR_DELETE_USER_FAILED' };
     }
   };
 

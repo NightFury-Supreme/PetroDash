@@ -183,7 +183,7 @@ export function PlansTab({
                         `}
                       >
                         <span className="truncate">
-                          {p.name} - ${p.pricePerMonth}/mo
+                          {p.name} - ${p.pricePerMonth}{t('perMonth')}
                         </span>
                         {newPlanId === p._id && <Check size={12} />}
                       </button>

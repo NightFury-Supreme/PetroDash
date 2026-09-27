@@ -33,10 +33,10 @@ const updateUserSchema = z.object({
   referralCode: z
     .string()
     .trim()
-    .min(1, 'Referral code cannot be empty')
-    .min(3, 'Referral code must be at least 3 characters')
+    .min(1, 'ERR_REFERRAL_CODE_EMPTY')
+    .min(3, 'ERR_REFERRAL_CODE_MIN')
     .max(20)
-    .regex(/^[A-Za-z0-9_-]+$/, 'Referral code can only contain letters, numbers, hyphens and underscores')
+    .regex(/^[A-Za-z0-9_-]+$/, 'ERR_REFERRAL_CODE_FORMAT')
     .optional(),
   ban: z
     .object({
@@ -46,7 +46,7 @@ const updateUserSchema = z.object({
     })
     .partial()
     .optional(),
-  profilePicture: z.string().url('Must be a valid URL').or(z.literal('')).optional(),
+  profilePicture: z.string().url('ERR_INVALID_URL').or(z.literal('')).optional(),
 });
 
 const banUserSchema = z.object({

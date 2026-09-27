@@ -863,7 +863,26 @@
     "ERR_RESOURCES_EXCEEDED": "अनुरोधित संसाधन उपलब्ध सीमाओं से अधिक हैं।",
     "ERR_PANEL_RENAME_FAILED": "पैनल में सर्वर का नाम बदलने में विफल।",
     "ERR_PLAN_INSTANCE_NOT_FOUND": "सक्रिय प्लान इंस्टेंस नहीं मिला।",
-    "ERR_SERVER_VALIDATION_FAILED": "सर्वर अपडेट सत्यापन विफल रहा।"
+    "ERR_SERVER_VALIDATION_FAILED": "सर्वर अपडेट सत्यापन विफल रहा।",
+    "ERR_CLEANUP_PARTIAL": "उपयोगकर्ता हटा दिया गया लेकिन कुछ सफ़ाई कार्य विफल रहे। सर्वर लॉग देखें।",
+    "SUCCESS_USER_DELETED": "उपयोगकर्ता और उससे संबंधित डेटा सफलतापूर्वक हटा दिया गया।",
+    "ERR_LOAD_USER_FAILED": "उपयोगकर्ता विवरण लोड करने में विफल।",
+    "ERR_UPDATE_USER_FAILED": "उपयोगकर्ता विवरण अपडेट करने में विफल।",
+    "ERR_UPDATE_ROLE_FAILED": "उपयोगकर्ता भूमिका अपडेट करने में विफल।",
+    "ERR_UPDATE_RESOURCES_FAILED": "उपयोगकर्ता संसाधन अपडेट करने में विफल।",
+    "ERR_BAN_USER_FAILED": "उपयोगकर्ता पर प्रतिबंध लगाने में विफल।",
+    "ERR_UNBAN_USER_FAILED": "उपयोगकर्ता से प्रतिबंध हटाने में विफल।",
+    "ERR_ADD_PLAN_FAILED": "उपयोगकर्ता को योजना सौंपने में विफल।",
+    "ERR_REMOVE_PLAN_FAILED": "उपयोगकर्ता से योजना हटाने में विफल।",
+    "ERR_REMOVE_PLAN_INSTANCE_FAILED": "योजना इंस्टेंस हटाने में विफल।",
+    "ERR_DELETE_SERVER_FAILED": "सर्वर हटाने में विफल।",
+    "ERR_SAVE_REFERRAL_CODE_FAILED": "रेफरल कोड अपडेट करने में विफल।",
+    "ERR_DELETE_USER_FAILED": "उपयोगकर्ता को हटाने में विफल।",
+    "ERR_REFERRAL_CODE_EMPTY": "रेफरल कोड खाली नहीं हो सकता।",
+    "ERR_REFERRAL_CODE_MIN": "रेफरल कोड कम से कम 3 वर्णों का होना चाहिए।",
+    "ERR_REFERRAL_CODE_FORMAT": "रेफरल कोड में केवल अक्षर, संख्याएं, हाइफ़न और अंडरस्कोर हो सकते हैं।",
+    "ERR_INVALID_URL": "वैध URL होना चाहिए।",
+    "ERR_FETCH_FAILED": "डेटा लाने में विफल।"
   },
   "Tickets": {
     "errors": {
@@ -1708,7 +1727,8 @@
       "actionCol": "कार्रवाई",
       "noReferralsYet": "अभी तक किसी भी उपयोगकर्ता को रेफर नहीं किया गया है।",
       "usersItemName": "उपयोगकर्ता",
-      "descriptionCol": "विवरण"
+      "descriptionCol": "विवरण",
+      "perMonth": "/माह"
     },
     "servers": {
       "title": "सर्वर",
