@@ -113,9 +113,17 @@ export function useSidebarUser() {
       }
     };
 
+    const handleRefresh = () => {
+      refreshUser();
+    };
+
     window.addEventListener("coins:update", handleCoinsUpdate as EventListener);
+    window.addEventListener("focus", handleRefresh);
+    window.addEventListener("user:refresh", handleRefresh);
     return () => {
       window.removeEventListener("coins:update", handleCoinsUpdate as EventListener);
+      window.removeEventListener("focus", handleRefresh);
+      window.removeEventListener("user:refresh", handleRefresh);
     };
   }, [refreshUser]);
 

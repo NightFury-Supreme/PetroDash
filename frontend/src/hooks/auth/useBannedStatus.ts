@@ -8,6 +8,7 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { useLocale } from 'next-intl';
+import { fetchWithRetry } from '@/utils/fetchWithRetry';
 
 /** Extracts username from the local JWT without an API call. */
 function extractUsernameFromJwt(): string {
@@ -60,6 +61,98 @@ export function useBannedStatus() {
       isMountedRef.current = false;
     };
   }, []);
+
+  const check = useCallback(async () => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      if (!token) {
+        if (isMountedRef.current) router.replace('/login');
+        return;
+      }
+
+      const base = process.env.NEXT_PUBLIC_API_BASE || '';
+      const res = await fetchWithRetry(`${base}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store',
+      });
+
+      if (res.ok) {
+        // Ban lifted — clear all ban context and redirect to dashboard
+        try {
+          sessionStorage.removeItem('is_banned');
+          sessionStorage.removeItem('ban_reason');
+          sessionStorage.removeItem('ban_until');
+          sessionStorage.removeItem('ban_username');
+        } catch {
+          // ignore
+        }
+        if (isMountedRef.current) {
+          router.replace('/');
+        }
+        return;
+      }
+
+      if (res.status === 403) {
+        // Still banned — refresh latest reason, expiration, and username silently without toasts
+        const d = await res.json().catch(() => ({}));
+        const newReason = d?.details?.reason !== undefined ? String(d.details.reason) : '';
+        const newUntil = d?.details?.until !== undefined ? (d.details.until ? String(d.details.until) : null) : null;
+        let newUsername = d?.details?.username ? String(d.details.username) : '';
+
+        if (!newUsername) {
+          newUsername = extractUsernameFromJwt();
+        }
+
+        if (isMountedRef.current) {
+          setReason(newReason);
+          setUntil(newUntil);
+          if (newUsername) setUsername(newUsername);
+        }
+
+        try {
+          sessionStorage.setItem('is_banned', 'true');
+          sessionStorage.setItem('ban_reason', newReason);
+          if (newUntil) sessionStorage.setItem('ban_until', newUntil);
+          else sessionStorage.removeItem('ban_until');
+          if (newUsername) sessionStorage.setItem('ban_username', newUsername);
+        } catch {
+          // ignore
+        }
+        return;
+      }
+
+      if (res.status === 401) {
+        // Token revoked or session dead — clear all context and redirect to login
+        try {
+          localStorage.removeItem('auth_token');
+          sessionStorage.removeItem('is_banned');
+          sessionStorage.removeItem('ban_reason');
+          sessionStorage.removeItem('ban_until');
+          sessionStorage.removeItem('ban_username');
+        } catch {
+          // ignore
+        }
+        if (isMountedRef.current) {
+          router.replace('/login');
+        }
+      }
+    } catch {
+      // Network drop — don't boot user
+    }
+  }, [router]);
+
+  // Check ban state silently on mount, tab focus, and background poll
+  useEffect(() => {
+    check();
+    const intervalId = setInterval(check, 10000);
+    const onFocus = () => check();
+    window.addEventListener('focus', onFocus);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [check]);
 
   const logout = useCallback(() => {
     try {

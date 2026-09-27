@@ -27,6 +27,12 @@ async function requireAuth(req, res, next) {
         
         if (!u) return next(AppError.unauthorized('Unauthorized', 'ERR_UNAUTHORIZED'));
         
+        req.user = {
+            ...payload,
+            role: u.role || payload?.role || 'user',
+            username: u.username || payload?.username || '',
+        };
+        
         const ban = u.ban || {};
         const active = Boolean(ban.isBanned) && (!ban.until || new Date(ban.until) > new Date());
         

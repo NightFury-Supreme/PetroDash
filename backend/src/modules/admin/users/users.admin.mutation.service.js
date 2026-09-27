@@ -15,7 +15,7 @@ const {
   suspendServer,
   unsuspendServer,
 } = require('../../../services/pterodactyl');
-const { deleteCachePattern } = require('../../../lib/redis');
+const { deleteCache, deleteCachePattern } = require('../../../lib/redis');
 const { sendMailTemplate } = require('../../../lib/mail');
 const { writeAudit } = require('../../../middleware/audit');
 const { logUserActivity } = require('../../../middleware/userActivity');
@@ -158,6 +158,11 @@ const updateUser = async (req, id, data) => {
     await logUserActivity(null, 'admin.user.update', { changes, updatedByAdmin: true }, user._id.toString());
   }
 
+  const targetUserId = user._id.toString();
+  await deleteCache(`user:auth:${targetUserId}`);
+  await deleteCache(`user:${targetUserId}:profile`);
+  await deleteCachePattern(`user:auth:${targetUserId}*`);
+  await deleteCachePattern(`user:${targetUserId}:*`);
   await deleteCachePattern('admin:users*');
 
   return { user };
@@ -204,6 +209,11 @@ const banUser = async (req, id, { isBanned, reason, durationMinutes }) => {
     until: user.ban.until,
   });
   await logUserActivity(null, isBanned ? 'admin.user.ban' : 'admin.user.unban', { reason: user.ban.reason, until: user.ban.until }, user._id.toString());
+  const targetUserId = user._id.toString();
+  await deleteCache(`user:auth:${targetUserId}`);
+  await deleteCache(`user:${targetUserId}:profile`);
+  await deleteCachePattern(`user:auth:${targetUserId}*`);
+  await deleteCachePattern(`user:${targetUserId}:*`);
   await deleteCachePattern('admin:users*');
 
   return { ok: true, ban: user.ban };
@@ -253,6 +263,11 @@ const deleteUser = async (req, id) => {
     updatedByAdmin: true,
   }, user._id.toString());
 
+  const targetUserId = user._id.toString();
+  await deleteCache(`user:auth:${targetUserId}`);
+  await deleteCache(`user:${targetUserId}:profile`);
+  await deleteCachePattern(`user:auth:${targetUserId}*`);
+  await deleteCachePattern(`user:${targetUserId}:*`);
   await deleteCachePattern('admin:users*');
 
   const hasWarnings = serverErrors.length > 0 || !!pterodactylError;

@@ -136,6 +136,15 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
           sessionStorage.removeItem("verify_email");
         } catch {}
 
+        // Restrict /admin to admin role
+        if (pathname.startsWith('/admin') && userData?.role !== 'admin') {
+          if (redirectingToRef.current !== '/') {
+            redirectingToRef.current = '/';
+            router.replace('/');
+          }
+          return;
+        }
+
         // Reset redirect tracker since we're validated now
         redirectingToRef.current = null;
         checkedPathRef.current = pathname;

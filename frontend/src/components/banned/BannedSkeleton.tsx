@@ -6,14 +6,17 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import { ErrorHeader } from '@/components/error';
 import Footer from '@/components/Footer';
 
 export function BannedSkeleton() {
+  const t = useTranslations('Banned');
+
   return (
     <div
       role="status"
-      aria-label="Loading account restriction details..."
+      aria-label={t('title')}
       aria-live="polite"
       className="flex flex-col w-full font-sans min-h-screen bg-[#0F0F0F] text-white justify-between"
     >
@@ -39,9 +42,8 @@ export function BannedSkeleton() {
         </div>
 
         {/* Action Buttons Placeholder */}
-        <div className="mt-[29px] flex justify-center gap-3">
+        <div className="mt-[29px] flex justify-center">
           <div className="h-[37px] w-28 bg-[#1A1A1A] rounded-md animate-pulse" />
-          <div className="h-[37px] w-32 bg-[#1A1A1A] rounded-md animate-pulse" />
         </div>
       </section>
       </div>
