@@ -210,9 +210,9 @@ export function SettingsRow({
 export { SettingsDrawerRow } from './SettingsDrawerRow';
 
 
-export function SiteIconDisplay({ src }: { src: string }) {
+export function SiteIconDisplay({ src, alt = '' }: { src: string; alt?: string }) {
   const [error, setError] = useState(false);
   
   if (error || !src) return <ImageIcon size={16} />;
-  return <img src={src} alt="Icon" className="w-full h-full object-cover rounded-md" onError={() => setError(true)} />;
+  return <img src={src} alt={alt} className="w-full h-full object-cover rounded-md" onError={() => setError(true)} />;
 }

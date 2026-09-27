@@ -62,7 +62,20 @@ export function BrandTab({ formData, updateFormData, saveSection, loading }: Tab
             />
           </SettingsRow>
           
-          <SettingsRow icon={<SiteIconDisplay src={safeSiteIcon || '/logo.svg'} />} label={t('siteIcon')} description={t('siteIconDesc')} displayValue="" onSave={handleUpload}>
+          <SettingsRow 
+            icon={<SiteIconDisplay src={safeSiteIcon || '/logo.svg'} alt={t('siteIcon')} />} 
+            label={t('siteIcon')} 
+            description={t('siteIconDesc')} 
+            displayValue={formData.siteIcon ? (
+              <div className="flex items-center gap-2">
+                <div className="h-6 w-6 rounded border border-white/10 overflow-hidden bg-white/5 shrink-0">
+                  <SiteIconDisplay src={safeSiteIcon || '/logo.svg'} alt={t('siteIcon')} />
+                </div>
+                <span className="text-xs text-[#AAA] truncate max-w-[200px]">{formData.siteIcon}</span>
+              </div>
+            ) : t('notSet')} 
+            onSave={handleUpload}
+          >
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full max-w-md">
               <div
                 className="flex-1 min-w-0"

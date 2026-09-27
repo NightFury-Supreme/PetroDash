@@ -44,6 +44,7 @@ export interface Settings {
   };
   localization?: {
     currency: string;
+    timezone?: string;
   };
   defaults: {
     cpuPercent: number;
