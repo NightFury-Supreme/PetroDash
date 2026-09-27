@@ -94,7 +94,7 @@ export function TicketDetailConversation({
 
           const relativeTimestamp = (() => {
             try {
-              return format.relativeTime(new Date(msg.createdAt));
+              return format.relativeTime(new Date(msg.createdAt), { now: new Date() });
             } catch {
               return formatRelative(msg.createdAt);
             }

@@ -42,7 +42,7 @@ export function AdminTicketItem({ t: ticket, onAction }:{ t: Ticket; onAction: (
 
   const relativeTime = (() => {
     try {
-      return format.relativeTime(new Date(ticket.updatedAt));
+      return format.relativeTime(new Date(ticket.updatedAt), { now: new Date() });
     } catch {
       return formatRelative(ticket.updatedAt);
     }

@@ -8,6 +8,8 @@ export default getRequestConfig(async ({ requestLocale }) => {
   }
   return {
     locale,
+    now: new Date(),
+    timeZone: 'UTC',
     messages: (await import(`../../messages/${locale}.json`)).default,
     onError(error) {
       if (error.code === 'MISSING_MESSAGE') {
