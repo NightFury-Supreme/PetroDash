@@ -8,6 +8,7 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { Toast } from './Toast';
+import { resolveErrorMessage, normalizeErrorCode } from '@/utils/formatApiError';
 
 type ToastContextType = {
   showError: (message: string) => void;
@@ -29,17 +30,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Strip namespaces if raw key was passed (e.g. BackendErrors.ERR_ACCOUNT_BANNED)
-    let code = rawMessage.trim();
-    if (code.startsWith('BackendErrors.')) {
-      code = code.replace('BackendErrors.', '');
-    } else if (code.startsWith('GlobalErrors.')) {
-      code = code.replace('GlobalErrors.', '');
-    } else if (code.startsWith('ErrorState.')) {
-      code = code.replace('ErrorState.', '');
-    }
+    const code = normalizeErrorCode(rawMessage);
 
-    // 1. Account Banned: Global detection & graceful redirection to /banned
+    // Account Banned: Notification & event dispatch for AuthGuard to route gracefully
     if (code === 'ERR_ACCOUNT_BANNED' || code.includes('ERR_ACCOUNT_BANNED')) {
       const msg = tBackendErrors.has('ERR_ACCOUNT_BANNED')
         ? tBackendErrors('ERR_ACCOUNT_BANNED')
@@ -52,69 +45,21 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         } catch {
           // ignore
         }
-        if (!window.location.pathname.includes('/banned')) {
-          window.dispatchEvent(new CustomEvent('account:banned'));
-          setTimeout(() => {
-            window.location.replace('/banned');
-          }, 300);
-        }
+        window.dispatchEvent(new CustomEvent('account:banned'));
       }
       return;
     }
 
-    // 2. Direct lookup in BackendErrors
-    if (tBackendErrors.has(code)) {
-      setToast({ message: tBackendErrors(code), type: 'error', id: Date.now() });
-      return;
-    }
+    const resolved = resolveErrorMessage(rawMessage, {
+      tBackendErrors: (k) => tBackendErrors(k),
+      hasBackendError: (k) => tBackendErrors.has(k),
+      tGlobalErrors: (k) => tGlobalErrors(k),
+      hasGlobalError: (k) => tGlobalErrors.has(k),
+      tErrorState: (k, v) => tError(k, v),
+      tCommon: (k) => tCommon(k),
+    });
 
-    // 3. Direct lookup in GlobalErrors
-    if (tGlobalErrors.has(code)) {
-      setToast({ message: tGlobalErrors(code), type: 'error', id: Date.now() });
-      return;
-    }
-
-    // 4. Normalized standard errors
-    const lower = code.toLowerCase();
-    let expandedMessage = rawMessage;
-
-    if (
-      lower === 'forbidden' ||
-      lower === 'unauthorized' ||
-      lower === 'access denied' ||
-      code === 'ERR_FORBIDDEN' ||
-      code === 'ERR_UNAUTHORIZED'
-    ) {
-      expandedMessage = tError('descForbidden');
-    } else if (lower === 'not found' || code === 'ERR_NOT_FOUND') {
-      expandedMessage = tError('descNotFound', { topic: tCommon('item') || 'resource' });
-    } else if (
-      lower.includes('failed to fetch') ||
-      lower.includes('network error') ||
-      code === 'ERR_NETWORK'
-    ) {
-      expandedMessage = tError('descNetwork');
-    } else if (
-      lower.includes('too many requests') ||
-      lower.includes('rate limit') ||
-      code === 'ERR_RATE_LIMIT'
-    ) {
-      expandedMessage = tError('descRateLimit');
-    } else if (code === 'ERR_SERVER_TIMEOUT') {
-      expandedMessage = tBackendErrors.has('ERR_SERVER_TIMEOUT')
-        ? tBackendErrors('ERR_SERVER_TIMEOUT')
-        : tError('descNetwork');
-    } else if (code === 'ERR_INTERNAL_SERVER') {
-      expandedMessage = tBackendErrors.has('ERR_INTERNAL_SERVER')
-        ? tBackendErrors('ERR_INTERNAL_SERVER')
-        : 'Internal Server Error';
-    } else if (code.startsWith('ERR_')) {
-      // Unmapped machine code: format to human sentence rather than showing ugly ERR_*
-      const friendly = code.replace(/^ERR_/, '').replace(/_/g, ' ').toLowerCase();
-      expandedMessage = friendly.charAt(0).toUpperCase() + friendly.slice(1) + '.';
-    }
-
-    setToast({ message: expandedMessage, type: 'error', id: Date.now() });
+    setToast({ message: resolved, type: 'error', id: Date.now() });
   }, [tError, tBackendErrors, tGlobalErrors, tCommon]);
 
   const showSuccess = useCallback((message: string) => {

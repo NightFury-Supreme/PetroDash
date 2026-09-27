@@ -7,6 +7,7 @@
 const ShopItem = require('../../models/ShopItem');
 const User = require('../../models/User');
 const { getCache, setCache, deleteCache } = require('../../lib/redis');
+const AppError = require('../../utils/AppError');
 
 // Hardcoded whitelist to prevent arbitrary field updates via itemKey injections (CWE-20, CWE-915)
 const ALLOWED_ITEM_KEYS = new Set([
@@ -42,16 +43,16 @@ class ShopService {
    */
   async purchaseItem(userId, itemKey, quantity) {
     if (!ALLOWED_ITEM_KEYS.has(itemKey)) {
-      throw new Error('INVALID_ITEM_KEY');
+      throw AppError.badRequest('Invalid item key', 'ERR_SHOP_INVALID_ITEM');
     }
 
     const item = await ShopItem.findOne({ key: itemKey, enabled: true }).lean();
     if (!item) {
-      throw new Error('ITEM_NOT_FOUND');
+      throw AppError.notFound('Item not found', 'ERR_SHOP_ITEM_NOT_FOUND');
     }
 
     if (quantity > Number(item.maxPerPurchase || 0)) {
-      throw new Error(`MAX_PER_PURCHASE_EXCEEDED:${item.maxPerPurchase}`);
+      throw AppError.badRequest(`Max ${item.maxPerPurchase} per purchase`, 'ERR_SHOP_MAX_PER_PURCHASE', { max: item.maxPerPurchase });
     }
 
     const totalPrice = Number(item.pricePerUnit) * quantity;
@@ -71,7 +72,7 @@ class ShopService {
     );
 
     if (!updatedUser) {
-      throw new Error('INSUFFICIENT_COINS');
+      throw AppError.badRequest('Insufficient coins', 'ERR_SHOP_INSUFFICIENT_COINS');
     }
 
     // Invalidate user profile cache safely

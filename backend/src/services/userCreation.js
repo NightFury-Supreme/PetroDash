@@ -3,6 +3,7 @@ const DefaultResources = require('../models/DefaultResources');
 const { getSettings } = require('../lib/settings');
 const { createPanelUser, checkUserExists } = require('./pterodactyl');
 const bcrypt = require('bcryptjs');
+const AppError = require('../utils/AppError');
 
 /**
  * Unified user creation service for both normal registration and OAuth
@@ -26,16 +27,16 @@ class UserCreationService {
     // Check for existing users in database
     const existing = await User.findOne({ $or: [{ email }, { username }] }).lean();
     if (existing) {
-      throw new Error('Email or username already in use');
+      throw AppError.conflict('Email or username already in use', 'ERR_USER_EXISTS');
     }
 
     // Check Pterodactyl panel for existing users
     const pterodactylCheck = await checkUserExists(email, username);
     if (pterodactylCheck.emailExists) {
-      throw new Error('Email already exists in Pterodactyl panel');
+      throw AppError.conflict('Email already exists in Pterodactyl panel', 'ERR_EMAIL_IN_USE');
     }
     if (pterodactylCheck.usernameExists) {
-      throw new Error('Username already exists in Pterodactyl panel');
+      throw AppError.conflict('Username already exists in Pterodactyl panel', 'ERR_USERNAME_IN_USE');
     }
 
     // Get default resources

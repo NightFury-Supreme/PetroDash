@@ -12,6 +12,7 @@ const GiftRedemption = require('../../models/GiftRedemption');
 const Plan = require('../../models/Plan');
 const UserPlan = require('../../models/UserPlan');
 const { getCache, setCache, deleteCachePattern } = require('../../lib/redis');
+const AppError = require('../../utils/AppError');
 
 class GiftService {
   /**
@@ -22,7 +23,7 @@ class GiftService {
 
     // Limit total active user-created codes to prevent abuse
     const activeCount = await Gift.countDocuments({ createdBy: userId, source: 'user', enabled: true });
-    if (activeCount >= 50) throw new Error('TOO_MANY_ACTIVE_CODES');
+    if (activeCount >= 50) throw AppError.badRequest('Too many active codes', 'ERR_TOO_MANY_ACTIVE_CODES');
 
     // Deduct upfront atomically to prevent TOCTOU abuse
     const user = await User.findOneAndUpdate(
@@ -30,7 +31,13 @@ class GiftService {
       { $inc: { coins: -totalCost } },
       { new: true }
     );
-    if (!user) throw new Error(`INSUFFICIENT_COINS:${totalCost}:${coins}:${maxRedemptions}`);
+    if (!user) {
+      throw AppError.badRequest(
+        `Insufficient coins. Creating a gift code for ${maxRedemptions} users with ${coins} coins requires ${totalCost} coins in total.`,
+        'ERR_INSUFFICIENT_COINS',
+        { total: totalCost, coins, users: maxRedemptions }
+      );
+    }
 
     // Generate unique code securely
     let code = '';
@@ -39,7 +46,7 @@ class GiftService {
       const exists = await Gift.exists({ code: c });
       if (!exists) { code = c; break; }
     }
-    if (!code) throw new Error('FAILED_TO_GENERATE_CODE');
+    if (!code) throw AppError.internal('Failed to generate gift code', 'ERR_FAILED_TO_GENERATE_CODE');
 
     const validUntil = new Date();
     validUntil.setDate(validUntil.getDate() + expiresInDays);
@@ -124,11 +131,11 @@ class GiftService {
     
     // First fast-check without transaction
     let gift = await Gift.findOne({ code: codeUpper });
-    if (!gift || !gift.enabled) throw new Error('INVALID');
+    if (!gift || !gift.enabled) throw AppError.notFound('Invalid or disabled gift code', 'ERR_GIFT_INVALID');
     const nowFast = new Date();
-    if (gift.validFrom && nowFast < gift.validFrom) throw new Error('NOT_ACTIVE');
-    if (gift.validUntil && nowFast > gift.validUntil) throw new Error('EXPIRED');
-    if (gift.maxRedemptions && gift.redeemedCount >= gift.maxRedemptions) throw new Error('LIMIT');
+    if (gift.validFrom && nowFast < gift.validFrom) throw AppError.badRequest('Gift code not active yet', 'ERR_GIFT_NOT_ACTIVE');
+    if (gift.validUntil && nowFast > gift.validUntil) throw AppError.badRequest('Gift code has expired', 'ERR_GIFT_EXPIRED');
+    if (gift.maxRedemptions && gift.redeemedCount >= gift.maxRedemptions) throw AppError.badRequest('Gift code limit reached', 'ERR_GIFT_LIMIT_REACHED');
     
     let result;
     const session = await mongoose.startSession();
@@ -137,16 +144,16 @@ class GiftService {
         const now = new Date();
         gift = await Gift.findOne({ code: codeUpper }).session(session);
         
-        if (!gift || !gift.enabled) throw new Error('INVALID');
-        if (gift.validFrom && now < gift.validFrom) throw new Error('NOT_ACTIVE');
-        if (gift.validUntil && now > gift.validUntil) throw new Error('EXPIRED');
-        if (gift.maxRedemptions && gift.redeemedCount >= gift.maxRedemptions) throw new Error('LIMIT');
+        if (!gift || !gift.enabled) throw AppError.notFound('Invalid or disabled gift code', 'ERR_GIFT_INVALID');
+        if (gift.validFrom && now < gift.validFrom) throw AppError.badRequest('Gift code not active yet', 'ERR_GIFT_NOT_ACTIVE');
+        if (gift.validUntil && now > gift.validUntil) throw AppError.badRequest('Gift code has expired', 'ERR_GIFT_EXPIRED');
+        if (gift.maxRedemptions && gift.redeemedCount >= gift.maxRedemptions) throw AppError.badRequest('Gift code limit reached', 'ERR_GIFT_LIMIT_REACHED');
         
         const alreadyRedeemed = await GiftRedemption.exists({ gift: gift._id, user: userId }).session(session);
-        if (alreadyRedeemed) throw new Error('DUP');
+        if (alreadyRedeemed) throw AppError.badRequest('You have already redeemed this gift code', 'ERR_GIFT_ALREADY_REDEEMED');
 
         const user = await User.findById(userId).session(session);
-        if (!user) throw new Error('NOUSER');
+        if (!user) throw AppError.notFound('User not found', 'ERR_USER_NOT_FOUND');
 
         const oldCoins = user.coins || 0;
         const oldResources = { ...(user.resources || {}) };

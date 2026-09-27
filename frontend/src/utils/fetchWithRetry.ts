@@ -43,26 +43,22 @@ export async function fetchWithRetry(
         const res = await fetch(input, { ...init, signal: controller.signal });
         clearTimeout(timeout);
 
-        // Global interception for Account Banned responses
+        // Global event dispatch for Account Banned responses
         if (res.status === 403 && typeof window !== 'undefined') {
           try {
             const clone = res.clone();
-            clone.json().then((d) => {
-              if (d?.error === 'ERR_ACCOUNT_BANNED') {
-                try {
-                  sessionStorage.setItem('is_banned', 'true');
-                  if (d?.details?.reason) sessionStorage.setItem('ban_reason', String(d.details.reason));
-                  if (d?.details?.until) sessionStorage.setItem('ban_until', String(d.details.until));
-                  if (d?.details?.username) sessionStorage.setItem('ban_username', String(d.details.username));
-                } catch {
-                  // sessionStorage unavailable
-                }
-                if (!window.location.pathname.includes('/banned')) {
-                  window.dispatchEvent(new CustomEvent('account:banned', { detail: d?.details }));
-                  window.location.replace('/banned');
-                }
+            const body = await clone.json().catch(() => null);
+            if (body?.error === 'ERR_ACCOUNT_BANNED') {
+              try {
+                sessionStorage.setItem('is_banned', 'true');
+                if (body?.details?.reason) sessionStorage.setItem('ban_reason', String(body.details.reason));
+                if (body?.details?.until) sessionStorage.setItem('ban_until', String(body.details.until));
+                if (body?.details?.username) sessionStorage.setItem('ban_username', String(body.details.username));
+              } catch {
+                // Ignore storage failures in restricted contexts
               }
-            }).catch(() => {});
+              window.dispatchEvent(new CustomEvent('account:banned', { detail: body?.details }));
+            }
           } catch {
             // Ignore clone errors
           }

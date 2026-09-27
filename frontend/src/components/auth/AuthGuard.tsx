@@ -185,7 +185,16 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   // — Global account:banned event listener —
   useEffect(() => {
-    const handleAccountBanned = () => {
+    const handleAccountBanned = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      if (customEvent.detail) {
+        try {
+          sessionStorage.setItem("is_banned", "true");
+          if (customEvent.detail.reason) sessionStorage.setItem("ban_reason", String(customEvent.detail.reason));
+          if (customEvent.detail.until) sessionStorage.setItem("ban_until", String(customEvent.detail.until));
+          if (customEvent.detail.username) sessionStorage.setItem("ban_username", String(customEvent.detail.username));
+        } catch {}
+      }
       if (redirectingToRef.current !== "/banned") {
         redirectingToRef.current = "/banned";
         router.replace("/banned");

@@ -4,24 +4,25 @@
 
 const Coupon = require('../../models/Coupon');
 const Plan = require('../../models/Plan');
+const AppError = require('../../utils/AppError');
 
 class CouponService {
   async validateCoupon(code, planId) {
     const plan = await Plan.findById(String(planId)).lean();
-    if (!plan) throw new Error('PLAN_NOT_FOUND');
+    if (!plan) throw AppError.notFound('Plan not found', 'ERR_PLAN_NOT_FOUND');
 
     const coupon = await Coupon.findOne({ code: code.toUpperCase() });
-    if (!coupon) throw new Error('INVALID_COUPON');
-    if (!coupon.enabled) throw new Error('COUPON_DISABLED');
+    if (!coupon) throw AppError.notFound('Invalid coupon', 'ERR_COUPON_INVALID');
+    if (!coupon.enabled) throw AppError.badRequest('Coupon is disabled', 'ERR_COUPON_DISABLED');
 
     const now = new Date();
-    if (coupon.validFrom && now < coupon.validFrom) throw new Error('COUPON_NOT_YET_VALID');
-    if (coupon.validUntil && now > coupon.validUntil) throw new Error('COUPON_EXPIRED');
-    if (coupon.maxRedemptions && coupon.redeemedCount >= coupon.maxRedemptions) throw new Error('COUPON_LIMIT_REACHED');
+    if (coupon.validFrom && now < coupon.validFrom) throw AppError.badRequest('Coupon not yet valid', 'ERR_COUPON_NOT_YET_VALID');
+    if (coupon.validUntil && now > coupon.validUntil) throw AppError.badRequest('Coupon expired', 'ERR_COUPON_EXPIRED');
+    if (coupon.maxRedemptions && coupon.redeemedCount >= coupon.maxRedemptions) throw AppError.badRequest('Coupon usage limit reached', 'ERR_COUPON_LIMIT_REACHED');
     
     if (coupon.appliesToPlanIds && coupon.appliesToPlanIds.length > 0) {
       if (!coupon.appliesToPlanIds.map(String).includes(String(plan._id))) {
-        throw new Error('COUPON_NOT_APPLICABLE_TO_PLAN');
+        throw AppError.badRequest('Coupon not applicable to this plan', 'ERR_COUPON_NOT_APPLICABLE');
       }
     }
 
@@ -29,7 +30,7 @@ class CouponService {
     const price = plan.billingOptions?.[billingCycle]?.price ?? (billingCycle === 'monthly' ? plan.pricePerMonth : plan.lifetimePrice);
     
     if (price === undefined || price === null) {
-      throw new Error('INVALID_PLAN_PRICE');
+      throw AppError.badRequest('Invalid plan price', 'ERR_INVALID_PLAN_PRICE');
     }
 
     let discountAmount = 0;

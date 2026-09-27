@@ -59,20 +59,7 @@ class ShopController {
       });
 
     } catch (error) {
-      if (error.message === 'INVALID_ITEM_KEY') {
-        return next(new AppError('Invalid item key', 400, 'ERR_SHOP_INVALID_ITEM'));
-      }
-      if (error.message === 'ITEM_NOT_FOUND') {
-        return next(new AppError('Item not found', 404, 'ERR_SHOP_ITEM_NOT_FOUND'));
-      }
-      if (error.message.startsWith('MAX_PER_PURCHASE_EXCEEDED:')) {
-        const max = error.message.split(':')[1];
-        return next(new AppError(`Max ${max} per purchase`, 400, 'ERR_SHOP_MAX_PER_PURCHASE', { max }));
-      }
-      if (error.message === 'INSUFFICIENT_COINS') {
-        return next(new AppError('Insufficient coins', 400, 'ERR_SHOP_INSUFFICIENT_COINS'));
-      }
-
+      if (error instanceof AppError) return next(error);
       next(error);
     }
   }

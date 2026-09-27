@@ -47,27 +47,83 @@ const ModalContext = createContext<{
   prompt: (opts: ModalOptions) => Promise<string | null>;
 } | null>(null);
 
+import { useTranslations } from "next-intl";
+import { resolveErrorMessage, normalizeErrorCode } from "@/utils/formatApiError";
 import { HoldButton } from "@/components/ui/HoldButton";
 
 export function ModalProvider({ children }: { children: React.ReactNode }) {
+  const tCommon = useTranslations('Common');
+  const tBackendErrors = useTranslations('BackendErrors');
+  const tGlobalErrors = useTranslations('GlobalErrors');
+  const tErrorState = useTranslations('ErrorState');
+
   const [state, setState] = useState<ModalState>({
     open: false,
     kind: "info",
     title: "",
     body: "",
-    confirmText: "Confirm",
-    cancelText: "Cancel",
+    confirmText: "",
+    cancelText: "",
   });
+
+  const translate = useCallback((raw: unknown): string => {
+    return resolveErrorMessage(raw, {
+      tBackendErrors: (k) => tBackendErrors(k),
+      hasBackendError: (k) => tBackendErrors.has(k),
+      tGlobalErrors: (k) => tGlobalErrors(k),
+      hasGlobalError: (k) => tGlobalErrors.has(k),
+      tErrorState: (k, v) => tErrorState(k, v),
+      tCommon: (k) => tCommon(k),
+    });
+  }, [tBackendErrors, tGlobalErrors, tErrorState, tCommon]);
 
   const openModal = useCallback((kind: ModalKind, opts: ModalOptions) => {
     return new Promise<any>((resolve) => {
+      let resolvedTitle = opts.title;
+      if (resolvedTitle) {
+        const norm = normalizeErrorCode(resolvedTitle);
+        if (norm.startsWith('ERR_') || tBackendErrors.has(norm) || tGlobalErrors.has(norm)) {
+          resolvedTitle = translate(norm);
+        }
+      } else {
+        resolvedTitle = 
+          kind === "error" ? tCommon('errorTitle') :
+          kind === "success" ? tCommon('successTitle') :
+          kind === "confirm" ? tCommon('confirm') :
+          kind === "prompt" ? tCommon('enterValue') :
+          tCommon('notice');
+      }
+
+      let resolvedBody = opts.body || "";
+      if (resolvedBody) {
+        const norm = normalizeErrorCode(resolvedBody);
+        if (norm.startsWith('ERR_') || tBackendErrors.has(norm) || tGlobalErrors.has(norm)) {
+          resolvedBody = translate(norm);
+        }
+      }
+
+      // Check if this is an account ban modal
+      const possibleBanCode = normalizeErrorCode(opts.body || opts.title);
+      if (possibleBanCode === 'ERR_ACCOUNT_BANNED' && typeof window !== 'undefined') {
+        try {
+          sessionStorage.setItem('is_banned', 'true');
+        } catch {
+          // ignore
+        }
+        window.dispatchEvent(new CustomEvent('account:banned'));
+      }
+
+      const defaultConfirm = (kind === "confirm" || kind === "prompt") ? tCommon('confirm') : tCommon('ok');
+      const resolvedConfirmText = opts.confirmText || defaultConfirm;
+      const resolvedCancelText = opts.cancelText || tCommon('cancel');
+
       setState({
         open: true,
         kind,
-        title: opts.title || (kind === "error" ? "Error" : kind === "success" ? "Success" : kind === "confirm" ? "Confirm" : kind === "prompt" ? "Enter value" : "Notice"),
-        body: opts.body || "",
-        confirmText: opts.confirmText || ((kind === "confirm" || kind === "prompt") ? "Confirm" : "OK"),
-        cancelText: opts.cancelText || "Cancel",
+        title: resolvedTitle,
+        body: resolvedBody,
+        confirmText: resolvedConfirmText,
+        cancelText: resolvedCancelText,
         content: opts.content,
         inputValue: opts.defaultValue,
         prefix: opts.prefix,
@@ -81,7 +137,7 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
         error: undefined,
       });
     });
-  }, []);
+  }, [translate, tCommon, tBackendErrors, tGlobalErrors]);
 
   const api = useMemo(() => ({
     confirm: (opts: ModalOptions) => openModal("confirm", opts) as Promise<boolean>,
@@ -108,8 +164,10 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
         }
         setState(s => ({ ...s, loading: false, success: true }));
         setTimeout(() => close(state.kind === "prompt" ? state.inputValue : true), 1500);
-      } catch (err: any) {
-        setState(s => ({ ...s, loading: false, error: err.message || "Action failed" }));
+      } catch (err: unknown) {
+        const errString = err instanceof Error ? err.message : String(err);
+        const resolvedErr = translate(errString) || tCommon('actionFailed');
+        setState(s => ({ ...s, loading: false, error: resolvedErr }));
         setTimeout(() => setState(s => ({ ...s, error: undefined })), 3000);
       }
     } else {
@@ -204,9 +262,9 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
                         disabled={isConfirmDisabled}
                       >
                         {state.loading ? (
-                          <><Loader2 size={14} className="animate-spin" />Processing...</>
+                          <><Loader2 size={14} className="animate-spin" />{tCommon('processing')}</>
                         ) : state.success ? (
-                          <><Check size={14} />Done!</>
+                          <><Check size={14} />{tCommon('done')}</>
                         ) : state.error ? (
                           <><AlertTriangle size={14} className="shrink-0" /><span className="truncate max-w-[200px]">{state.error}</span></>
                         ) : (
@@ -229,9 +287,9 @@ export function ModalProvider({ children }: { children: React.ReactNode }) {
                         disabled={isConfirmDisabled}
                       >
                         {state.loading ? (
-                          <><Loader2 size={14} className="animate-spin" />Processing...</>
+                          <><Loader2 size={14} className="animate-spin" />{tCommon('processing')}</>
                         ) : state.success ? (
-                          <><Check size={14} />Done!</>
+                          <><Check size={14} />{tCommon('done')}</>
                         ) : state.error ? (
                           <><AlertTriangle size={14} className="shrink-0" /><span className="truncate max-w-[200px]">{state.error}</span></>
                         ) : (

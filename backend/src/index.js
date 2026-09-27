@@ -25,6 +25,7 @@ const paypalRoutes = require('./routes/paypal');
 const paypalWebhook = require('./routes/paypalWebhook');
 const { router: oauthRoutes } = require('./routes/auth/oauth');
 const earnRoutes = require('./routes/earn');
+const AppError = require('./utils/AppError');
 
 const app = express();
 // Respect Cloudflare/Proxy headers so req.ip and rate-limit source are correct
@@ -109,7 +110,7 @@ const path = require('path');
 app.use('/uploads', (req, res, next) => {
     // Prevent directory listing - only serve specific files
     if (req.path.endsWith('/') || req.path === '') {
-        return res.status(403).json({ error: 'Directory listing forbidden' });
+        return next(AppError.forbidden('Directory listing forbidden', 'ERR_FORBIDDEN'));
     }
     
     // Validate file extension to prevent serving unexpected file types
@@ -117,7 +118,7 @@ app.use('/uploads', (req, res, next) => {
     const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
     
     if (!allowedExtensions.includes(ext)) {
-        return res.status(403).json({ error: 'File type not allowed' });
+        return next(AppError.forbidden('File type not allowed', 'ERR_UPLOAD_INVALID_IMAGE'));
     }
     
     // Set CORS headers for static files

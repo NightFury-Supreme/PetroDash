@@ -120,6 +120,10 @@ router.post('/register', createRateLimiter(5, 60 * 60 * 1000), async (req, res, 
       durationMs: Date.now() - startTime
     });
 
+    if (error instanceof AppError) {
+      return next(error);
+    }
+
     if (error.message.includes('already in use') || error.message.includes('already exists')) {
       return next(AppError.conflict(error.message, 'ERR_USER_EXISTS'));
     }

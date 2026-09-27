@@ -222,32 +222,32 @@ class EarnService {
     try {
       await txSession.withTransaction(async () => {
         const sess = await EarnSession.findOne({ _id: sessionId, userId, method }).session(txSession);
-        if (!sess) throw new Error('NOT_FOUND');
+        if (!sess) throw AppError.notFound('Earn session was not found', 'ERR_EARN_SESSION_NOT_FOUND');
 
         if (method === 'linkvertise') {
           const settings = await getSettings();
           const cfg = this.getEarnConfig(settings);
           const linkvertiseToken = cfg.linkvertise?.antiBypassToken;
           if (linkvertiseToken) {
-            if (!sess?.meta?.lvVerifiedAt) throw new Error('LV_NOT_VERIFIED');
+            if (!sess?.meta?.lvVerifiedAt) throw AppError.badRequest('Linkvertise verification failed or incomplete', 'ERR_EARN_LV_NOT_VERIFIED');
           } else {
             const provided = secret || '';
-            if (!provided || provided !== String(sess.secret || '')) throw new Error('BAD_SECRET');
+            if (!provided || provided !== String(sess.secret || '')) throw AppError.badRequest('Invalid earn session secret', 'ERR_EARN_BAD_SECRET');
           }
         }
 
         if (sess.status === 'started') {
           const avail = sess.availableAt ? new Date(sess.availableAt) : null;
           const exp = sess.expiresAt ? new Date(sess.expiresAt) : null;
-          if (avail && now < avail) throw new Error('NOT_READY');
+          if (avail && now < avail) throw AppError.badRequest('Earn session is not ready yet', 'ERR_EARN_NOT_READY');
           if (exp && now >= exp) {
             await EarnSession.updateOne({ _id: sess._id, status: 'started' }, { $set: { status: 'expired' } }, { session: txSession });
-            throw new Error('EXPIRED');
+            throw AppError.badRequest('Earn session has expired', 'ERR_EARN_EXPIRED');
           }
           await EarnSession.updateOne({ _id: sess._id, status: 'started' }, { $set: { status: 'completed', completedAt: now } }, { session: txSession });
         }
 
-        if (sess.status === 'expired') throw new Error('EXPIRED');
+        if (sess.status === 'expired') throw AppError.badRequest('Earn session has expired', 'ERR_EARN_EXPIRED');
 
         const locked = await EarnSession.findOneAndUpdate(
           { _id: sess._id, userId, method, status: 'completed', creditedAt: null },
@@ -255,7 +255,7 @@ class EarnService {
           { new: true, session: txSession }
         );
 
-        if (!locked) throw new Error('ALREADY');
+        if (!locked) throw AppError.badRequest('This reward has already been claimed', 'ERR_EARN_ALREADY_CLAIMED');
 
         const reward = Number(locked.rewardCoins || 0);
         const user = await User.findOneAndUpdate(
@@ -263,7 +263,7 @@ class EarnService {
           { $inc: { coins: reward } },
           { new: true, session: txSession }
         );
-        if (!user) throw new Error('NOUSER');
+        if (!user) throw AppError.notFound('User not found', 'ERR_USER_NOT_FOUND');
 
         result = {
           rewardCoins: reward,

@@ -27,11 +27,7 @@ class GiftController {
       
       return res.status(201).json({ code: gift.code, coins, maxRedemptions, validUntil: gift.validUntil });
     } catch (error) {
-      if (error.message === 'TOO_MANY_ACTIVE_CODES') return next(new AppError('Too many active codes', 400, 'ERR_TOO_MANY_ACTIVE_CODES'));
-      if (error.message.startsWith('INSUFFICIENT_COINS:')) {
-        const [, total, c, m] = error.message.split(':');
-        return next(new AppError(`Insufficient coins. Creating a gift code for ${m} users with ${c} coins requires ${total} coins in total.`, 400, 'ERR_INSUFFICIENT_COINS', { total, coins: c, users: m }));
-      }
+      if (error instanceof AppError) return next(error);
       next(error);
     }
   }
@@ -64,26 +60,15 @@ class GiftController {
       await writeAudit(req, 'gift.redeem', 'gift', null, metadata);
       
       return res.json({ 
-        message: 'Gift redeemed successfully', 
+        ok: true,
+        code: 'GIFT_REDEEMED',
         description: result.description, 
         rewards: result.rewards, 
         appliedPlans: result.appliedPlans, 
         user: result.user 
       });
     } catch (error) {
-      const errorMap = {
-        INVALID: { msg: 'The gift code you entered is invalid or disabled.', status: 404, code: 'ERR_GIFT_INVALID' },
-        NOT_ACTIVE: { msg: 'This gift code is not active yet.', status: 400, code: 'ERR_GIFT_NOT_ACTIVE' },
-        EXPIRED: { msg: 'This gift code has expired.', status: 400, code: 'ERR_GIFT_EXPIRED' },
-        LIMIT: { msg: 'This gift code has reached its maximum redemption limit.', status: 400, code: 'ERR_GIFT_LIMIT_REACHED' },
-        DUP: { msg: 'You have already redeemed this gift code.', status: 400, code: 'ERR_GIFT_ALREADY_REDEEMED' },
-        NOUSER: { msg: 'Your user account could not be found.', status: 404, code: 'ERR_USER_NOT_FOUND' },
-      };
-      
-      const key = error.message;
-      if (errorMap[key]) {
-        return next(new AppError(errorMap[key].msg, errorMap[key].status, errorMap[key].code));
-      }
+      if (error instanceof AppError) return next(error);
       next(error);
     }
   }

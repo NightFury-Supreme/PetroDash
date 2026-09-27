@@ -74,6 +74,24 @@ router.post('/login', loginRateLimit, async (req, res, next) => {
       await logUserActivity(req, 'auth.login.failed', { reason: 'invalid_password' }, user._id.toString());
       return next(AppError.unauthorized('Invalid credentials', 'ERR_INVALID_CREDENTIALS'));
     }
+
+    const ban = user.ban || {};
+    const isBanned = Boolean(ban.isBanned) && (!ban.until || new Date(ban.until) > new Date());
+    if (isBanned) {
+      await writeAudit(req, 'auth.login.failed', 'auth', user._id.toString(), {
+        reason: 'account_banned',
+        emailOrUsername,
+        userId: user._id.toString(),
+        username: user.username,
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      return next(AppError.forbidden('Account banned', 'ERR_ACCOUNT_BANNED', {
+        reason: String(ban.reason || ''),
+        until: ban.until || null,
+        username: user.username || ''
+      }));
+    }
     
     if (user.tfaEnabled) {
       const tempToken = jwt.sign({ sub: user._id.toString(), type: '2fa' }, process.env.JWT_SECRET, { expiresIn: '5m' });
@@ -144,6 +162,23 @@ router.post('/login/2fa', loginRateLimit, async (req, res, next) => {
     const user = await User.findById(userId);
     if (!user || !user.tfaEnabled) {
       return next(AppError.unauthorized('Invalid user or 2FA not enabled', 'ERR_2FA_NOT_ENABLED'));
+    }
+
+    const ban = user.ban || {};
+    const isBanned = Boolean(ban.isBanned) && (!ban.until || new Date(ban.until) > new Date());
+    if (isBanned) {
+      await writeAudit(req, 'auth.login.failed', 'auth', userId, {
+        reason: 'account_banned',
+        userId: user._id.toString(),
+        username: user.username,
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      return next(AppError.forbidden('Account banned', 'ERR_ACCOUNT_BANNED', {
+        reason: String(ban.reason || ''),
+        until: ban.until || null,
+        username: user.username || ''
+      }));
     }
     
     let isValid = false;

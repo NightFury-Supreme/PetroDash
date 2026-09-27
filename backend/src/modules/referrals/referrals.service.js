@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const User = require('../../models/User');
 const { getSettings } = require('../../lib/settings');
 const { getCache, setCache, deleteCache } = require('../../lib/redis');
+const AppError = require('../../utils/AppError');
 
 function generateCode() {
   return (crypto.randomBytes(4).toString('hex') + Date.now().toString(36).slice(-4)).toUpperCase();
@@ -120,17 +121,17 @@ class ReferralsService {
   async setCustomCode(userId, desiredCode) {
     const desired = desiredCode.toUpperCase();
     const user = await User.findById(userId);
-    if (!user) throw new Error('NOT_FOUND');
+    if (!user) throw AppError.notFound('User not found', 'ERR_USER_NOT_FOUND');
 
     const s = await getSettings();
     const minInvites = Number(s?.referrals?.customCodeMinInvites ?? 10);
     const currentCount = Number(user.referralStats?.referredCount || 0);
     
-    if (currentCount < minInvites) throw new Error('NOT_ELIGIBLE');
+    if (currentCount < minInvites) throw AppError.forbidden('Not eligible to set custom code', 'ERR_NOT_ELIGIBLE');
 
     const exists = await User.findOne({ referralCode: desired }).lean();
     if (exists && String(exists._id) !== String(user._id)) {
-      throw new Error('CODE_IN_USE');
+      throw AppError.conflict('Code already in use', 'ERR_CODE_IN_USE');
     }
 
     const oldCode = user.referralCode;
@@ -140,7 +141,7 @@ class ReferralsService {
       await user.save();
       await deleteCache(`referrals:stats:${userId}`);
     } catch (saveError) {
-      if (saveError.code === 11000) throw new Error('CODE_IN_USE');
+      if (saveError.code === 11000) throw AppError.conflict('Code already in use', 'ERR_CODE_IN_USE');
       throw saveError;
     }
 

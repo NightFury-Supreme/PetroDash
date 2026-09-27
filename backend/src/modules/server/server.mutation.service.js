@@ -165,7 +165,7 @@ class ServerMutationService {
             }
 
             if (!allocationId) {
-              throw new Error('Could not find allocation ID for server');
+              throw AppError.badRequest('Could not find allocation ID for server', 'ERR_SERVER_ALLOCATION_NOT_FOUND');
             }
 
             await updateServerBuild(server.panelServerId, {

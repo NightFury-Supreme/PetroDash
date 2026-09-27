@@ -51,9 +51,7 @@ class ReferralsController {
 
       return res.json({ ok: true, code });
     } catch (error) {
-      if (error.message === 'NOT_FOUND') return next(new AppError('User not found', 404, 'ERR_USER_NOT_FOUND'));
-      if (error.message === 'NOT_ELIGIBLE') return next(new AppError('Not eligible to set custom code', 403, 'ERR_NOT_ELIGIBLE'));
-      if (error.message === 'CODE_IN_USE') return next(new AppError('Code already in use', 409, 'ERR_CODE_IN_USE'));
+      if (error instanceof AppError) return next(error);
       next(error);
     }
   }

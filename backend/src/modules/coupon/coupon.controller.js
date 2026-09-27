@@ -20,24 +20,7 @@ class CouponController {
       return res.json(result);
     } catch (error) {
       if (error instanceof AppError) return next(error);
-      
-      const msgMap = {
-        'PLAN_NOT_FOUND': { status: 404, message: 'Plan not found' },
-        'INVALID_COUPON': { status: 404, message: 'Invalid coupon' },
-        'COUPON_DISABLED': { status: 400, message: 'Coupon is disabled' },
-        'COUPON_NOT_YET_VALID': { status: 400, message: 'Coupon not yet valid' },
-        'COUPON_EXPIRED': { status: 400, message: 'Coupon expired' },
-        'COUPON_LIMIT_REACHED': { status: 400, message: 'Coupon usage limit reached' },
-        'COUPON_NOT_APPLICABLE_TO_PLAN': { status: 400, message: 'Coupon not applicable to this plan' },
-        'INVALID_PLAN_PRICE': { status: 400, message: 'Invalid plan price' }
-      };
-
-      const knownError = msgMap[error.message];
-      if (knownError) {
-        return next(new AppError(knownError.message, knownError.status, error.message));
-      }
-
-      next(AppError.internal('Failed to validate coupon', 'ERR_INTERNAL_SERVER'));
+      return next(AppError.internal('Failed to validate coupon', 'ERR_INTERNAL_SERVER'));
     }
   }
 }
