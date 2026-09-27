@@ -1,9 +1,15 @@
 "use client";
 
+import React from "react";
 import { RankBadge } from "@/components/ui/RankBadge";
 import { useTranslations } from "next-intl";
 
-export default function UsersTable({ users, onManageUser }: { users: any[], onManageUser: (id: string) => void }) {
+interface UsersTableProps {
+  users: any[];
+  onManageUser: (id: string) => void;
+}
+
+export function UsersTable({ users, onManageUser }: UsersTableProps) {
   const t = useTranslations('admin.users');
 
   if (!users || users.length === 0) {
@@ -60,11 +66,12 @@ export default function UsersTable({ users, onManageUser }: { users: any[], onMa
             </div>
 
             <div className="flex items-center">
-              <span className="text-sm font-medium text-white/70">{u.serversCount || 0}</span>
+              <span className="text-sm font-medium text-white/70">{u.serverCount ?? u.serversCount ?? 0}</span>
             </div>
 
             <div className="flex justify-end mt-2 xl:mt-0">
               <button
+                type="button"
                 onClick={() => onManageUser(u._id)}
                 className="inline-flex h-8 items-center justify-center rounded border border-white/[0.07] bg-white/[0.035] px-3 text-xs font-medium text-white/70 transition hover:bg-white/[0.07]"
               >
@@ -78,4 +85,4 @@ export default function UsersTable({ users, onManageUser }: { users: any[], onMa
   );
 }
 
-
+export default UsersTable;

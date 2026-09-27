@@ -102,9 +102,7 @@ const updateUser = async (req, id, data) => {
     } catch {
       try {
         await PendingUpdate.create({ pterodactylUserId: user.pterodactylUserId, payload: JSON.stringify(payload) });
-      } catch (queueErr) {
-        console.error('Failed to queue admin Pterodactyl update:', queueErr.message);
-      }
+      } catch (_) {}
     }
   }
 
@@ -229,7 +227,6 @@ const deleteUser = async (req, id) => {
       deletedServers++;
     } catch (error) {
       serverErrors.push({ serverId: server._id, serverName: server.name, error: error.message });
-      console.error(`Failed to delete server ${server._id}:`, error.message);
     }
   }
 
@@ -239,7 +236,6 @@ const deleteUser = async (req, id) => {
       await deletePanelUser(user.pterodactylUserId);
     } catch (error) {
       pterodactylError = error.message;
-      console.error(`Failed to delete Pterodactyl user ${user.pterodactylUserId}:`, error.message);
     }
   }
 
@@ -253,16 +249,18 @@ const deleteUser = async (req, id) => {
 
   await deleteCachePattern('admin:users*');
 
+  const hasWarnings = serverErrors.length > 0 || !!pterodactylError;
+
   return {
     ok: true,
+    code: hasWarnings ? 'ERR_CLEANUP_PARTIAL' : 'SUCCESS_USER_DELETED',
     serversDeleted: deletedServers,
     totalServers: servers.length,
     serverErrors,
     pterodactylError,
-    message:
-      serverErrors.length > 0 || pterodactylError
-        ? 'User deleted but some cleanup operations failed. Check server logs for details.'
-        : 'User and all associated data deleted successfully.',
+    message: hasWarnings
+      ? 'User deleted but some cleanup operations failed. Check server logs for details.'
+      : 'User and all associated data deleted successfully.',
   };
 };
 

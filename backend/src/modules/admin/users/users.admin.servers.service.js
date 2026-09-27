@@ -14,6 +14,7 @@ const {
 } = require('../../../services/pterodactyl');
 const { deleteCachePattern } = require('../../../lib/redis');
 const { writeAudit } = require('../../../middleware/audit');
+const { logUserActivity } = require('../../../middleware/userActivity');
 
 const deleteServer = async (req, id, serverId) => {
   const server = await Server.findOne({ _id: String(serverId), owner: String(id) });
@@ -25,6 +26,7 @@ const deleteServer = async (req, id, serverId) => {
   }
   await Server.deleteOne({ _id: server._id });
   await writeAudit(req, 'admin.user.server.delete', 'server', server._id.toString(), { owner: id });
+  await logUserActivity(null, 'admin.user.server.delete', { serverId: server._id.toString(), owner: id, updatedByAdmin: true }, id);
   await deleteCachePattern('admin:users*');
   return { ok: true };
 };
@@ -145,6 +147,7 @@ const updateServer = async (req, id, serverId, data) => {
 
   await server.save();
   await writeAudit(req, 'admin.user.server.update', 'server', server._id.toString(), { owner: id, changed: data });
+  await logUserActivity(null, 'admin.user.server.update', { serverId: server._id.toString(), changed: data, updatedByAdmin: true }, id);
   await deleteCachePattern('admin:users*');
   return { server };
 };

@@ -5,3 +5,4 @@ export { ReferralsTab } from './ReferralsTab';
 export { InvoicesTab } from './InvoicesTab';
 export { SecurityTab } from './SecurityTab';
 export { ServersTab } from './ServersTab';
+export { RoleSelectDropdown } from './RoleSelectDropdown';

@@ -1,30 +1,35 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
 import { InfoRow } from "@/components/admin/users/AdminInfoRow";
-import { User, ShieldCheck, Coins, Camera, Mail, Check, Loader2, ChevronDown } from "lucide-react";
+import { User, ShieldCheck, Coins, Camera, Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { adminUsersApi } from "@/utils/api/adminUsers";
+import { RoleSelectDropdown } from "./RoleSelectDropdown";
 
-export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefresh }: any) {
+interface OverviewTabProps {
+  userForm: any;
+  setUserForm: React.Dispatch<React.SetStateAction<any>>;
+  userId: string;
+  onUpdateUser: (payload: Record<string, any>) => Promise<any>;
+  onUpdateRole: (newRole: string) => Promise<any>;
+  onCheckUsername?: (username: string) => Promise<{ available: boolean }>;
+  onRefresh?: () => void;
+}
+
+export function OverviewTab({
+  userForm,
+  setUserForm,
+  userId: _userId,
+  onUpdateUser,
+  onUpdateRole,
+  onCheckUsername,
+  onRefresh: _onRefresh,
+}: OverviewTabProps) {
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState<any>("");
   const { showError } = useToast();
   const t = useTranslations('admin.users');
   const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
-  
-  const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
-  const roleDropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (roleDropdownRef.current && !roleDropdownRef.current.contains(e.target as Node)) {
-        setRoleDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
 
   const beginEdit = (field: string) => {
     setEditing(field);
@@ -39,13 +44,15 @@ export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefre
     }
   };
 
-  const cancelEdit = () => { setEditing(null); setDraft(""); };
+  const cancelEdit = () => {
+    setEditing(null);
+    setDraft("");
+  };
 
   const saveEdit = async () => {
     if (!editing) return false;
     try {
-      const token = localStorage.getItem('auth_token') || '';
-      let payload: any = {};
+      let payload: Record<string, any> = {};
       if (editing === 'name') {
         payload = { firstName: draft.first, lastName: draft.last };
       } else if (editing === 'coins') {
@@ -53,19 +60,15 @@ export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefre
       } else {
         payload = { [editing]: draft };
       }
-      
-      const { res, data } = await adminUsersApi.updateUser(userId, payload, token);
-      if (!res.ok) {
-        const firstError = data.details?.fieldErrors ? String(Object.values(data.details.fieldErrors).flat()[0]) : data.error || 'Failed to save';
-        throw new Error(firstError);
-      }
-      // update local state optimistically
+
+      await onUpdateUser(payload);
+
       if (editing === 'name') {
-        setUserForm({ ...userForm, firstName: draft.first, lastName: draft.last });
+        setUserForm((prev: any) => ({ ...prev, firstName: draft.first, lastName: draft.last }));
       } else if (editing === 'coins') {
-        setUserForm({ ...userForm, coins: Number(draft) });
+        setUserForm((prev: any) => ({ ...prev, coins: Number(draft) }));
       } else {
-        setUserForm({ ...userForm, [editing]: draft });
+        setUserForm((prev: any) => ({ ...prev, [editing]: draft }));
       }
       setEditing(null);
       return true;
@@ -75,27 +78,16 @@ export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefre
     }
   };
 
-  const [roleLoading, setRoleLoading] = useState(false);
-  const [roleSaved, setRoleSaved] = useState(false);
-
   const handleRoleChange = async (newRole: string) => {
-    setRoleLoading(true);
-    setRoleSaved(false);
     try {
-      const token = localStorage.getItem('auth_token') || '';
-      const { res } = await adminUsersApi.updateUser(userId, { role: newRole }, token);
-      if (!res.ok) throw new Error('Failed');
-      setUserForm({ ...userForm, role: newRole });
-      setRoleSaved(true);
-      setTimeout(() => setRoleSaved(false), 2000);
+      await onUpdateRole(newRole);
     } catch (e: any) {
       showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
-    } finally {
-      setRoleLoading(false);
     }
   };
 
-  const customInputCls = "h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all border-[#FF5722]/50 focus:ring-[#FF5722]/50";
+  const customInputCls =
+    "h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all border-[#FF5722]/50 focus:ring-[#FF5722]/50";
 
   return (
     <div className="space-y-8">
@@ -106,12 +98,29 @@ export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefre
         </div>
 
         <div className="divide-y divide-white/[0.06]">
-          <InfoRow 
-            icon={userForm.profilePicture ? <img src={userForm.profilePicture} alt="Avatar" className="h-full w-full object-cover rounded-lg" /> : <Camera size={14} />}
+          <InfoRow
+            icon={
+              userForm.profilePicture ? (
+                <img
+                  src={userForm.profilePicture}
+                  alt={tCommon('avatar')}
+                  className="h-full w-full object-cover rounded-lg"
+                />
+              ) : (
+                <Camera size={14} />
+              )
+            }
             label={t('avatarUrl')}
             description={t('avatarDesc')}
-            value={userForm.profilePicture ? <span className="truncate max-w-[220px] inline-block align-bottom">{userForm.profilePicture}</span> : t('notSet')}
+            value={
+              userForm.profilePicture ? (
+                <span className="truncate max-w-[220px] inline-block align-bottom">{userForm.profilePicture}</span>
+              ) : (
+                t('notSet')
+              )
+            }
             editing={editing === "profilePicture"}
+            draft={draft}
             field="avatar"
             onEdit={() => beginEdit("profilePicture")}
             onCancel={cancelEdit}
@@ -121,124 +130,139 @@ export function OverviewTab({ userForm, setUserForm, userId, onRefresh: _onRefre
                 autoFocus
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") cancelEdit(); }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") saveEdit();
+                  if (e.key === "Escape") cancelEdit();
+                }}
                 placeholder="https://example.com/avatar.png"
                 className={customInputCls}
               />
             }
           />
-          <InfoRow 
-            icon={<User size={14} />} 
-            label={t('username')} 
-            description={t('usernameDesc')} 
-            value={userForm.username || t('notSet')} 
-            editing={editing === "username"} 
-            field="username" 
-            onEdit={() => beginEdit("username")} 
+          <InfoRow
+            icon={<User size={14} />}
+            label={t('username')}
+            description={t('usernameDesc')}
+            value={userForm.username || t('notSet')}
+            editing={editing === "username"}
+            draft={draft}
+            field="username"
+            onEdit={() => beginEdit("username")}
             onCancel={cancelEdit}
             onSave={saveEdit}
+            onCheckUsername={onCheckUsername}
             customEdit={
-              <input autoFocus value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") cancelEdit(); }} className={customInputCls} />
+              <input
+                autoFocus
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") saveEdit();
+                  if (e.key === "Escape") cancelEdit();
+                }}
+                className={customInputCls}
+              />
             }
           />
-          <InfoRow 
-            icon={<User size={14} />} 
-            label={t('fullName')} 
-            description={t('fullNameDesc')} 
-            value={`${userForm.firstName || ''} ${userForm.lastName || ''}`.trim() || t('notSet')} 
-            editing={editing === "name"} 
+          <InfoRow
+            icon={<User size={14} />}
+            label={t('fullName')}
+            description={t('fullNameDesc')}
+            value={`${userForm.firstName || ''} ${userForm.lastName || ''}`.trim() || t('notSet')}
+            editing={editing === "name"}
+            draft={draft}
             field="name"
-            onEdit={() => beginEdit("name")} 
+            onEdit={() => beginEdit("name")}
             onCancel={cancelEdit}
             onSave={saveEdit}
             customEdit={
               <div className="flex w-full gap-2">
-                <input autoFocus value={draft?.first || ''} onChange={(e) => setDraft({ ...draft, first: e.target.value })} onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") cancelEdit(); }} placeholder={t('firstName')} className={customInputCls} />
-                <input value={draft?.last || ''} onChange={(e) => setDraft({ ...draft, last: e.target.value })} onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") cancelEdit(); }} placeholder={t('lastName')} className={customInputCls} />
+                <input
+                  autoFocus
+                  value={draft?.first || ''}
+                  onChange={(e) => setDraft({ ...draft, first: e.target.value })}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") saveEdit();
+                    if (e.key === "Escape") cancelEdit();
+                  }}
+                  placeholder={t('firstName')}
+                  className={customInputCls}
+                />
+                <input
+                  value={draft?.last || ''}
+                  onChange={(e) => setDraft({ ...draft, last: e.target.value })}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") saveEdit();
+                    if (e.key === "Escape") cancelEdit();
+                  }}
+                  placeholder={t('lastName')}
+                  className={customInputCls}
+                />
               </div>
             }
           />
-          <InfoRow 
-            icon={<Mail size={14} />} 
-            label={t('emailAddress')} 
-            description={t('emailDesc')} 
-            value={userForm.email || t('notSet')} 
-            editing={editing === "email"} 
-            field="email" 
-            onEdit={() => beginEdit("email")} 
+          <InfoRow
+            icon={<Mail size={14} />}
+            label={t('emailAddress')}
+            description={t('emailDesc')}
+            value={userForm.email || t('notSet')}
+            editing={editing === "email"}
+            draft={draft}
+            field="email"
+            onEdit={() => beginEdit("email")}
             onCancel={cancelEdit}
             onSave={saveEdit}
             customEdit={
-              <input autoFocus value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") cancelEdit(); }} className={customInputCls} />
+              <input
+                autoFocus
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") saveEdit();
+                  if (e.key === "Escape") cancelEdit();
+                }}
+                className={customInputCls}
+              />
             }
           />
-          <InfoRow 
-            icon={<ShieldCheck size={14} />} 
-            label={t('role')} 
-            description={t('roleDesc')} 
+          <InfoRow
+            icon={<ShieldCheck size={14} />}
+            label={t('role')}
+            description={t('roleDesc')}
             hideEditButton
             value={
-              <div className="flex items-center gap-3">
-                <div className="relative" ref={roleDropdownRef}>
-                  <button 
-                    onClick={() => !roleLoading && setRoleDropdownOpen(!roleDropdownOpen)}
-                    disabled={roleLoading}
-                    className={`h-8 w-32 flex items-center justify-between gap-[7px] px-3 border rounded-md text-sm transition-colors disabled:opacity-50 outline-none
-                      ${roleDropdownOpen ? 'bg-[#222] border-[#222] text-[#ddd]' : 'bg-[#101010] border-[#2A2A2A] text-[#D4D4D4] hover:border-[#FF5722]/50 hover:text-[#ddd]'}
-                    `}
-                  >
-                    <span className="capitalize">{userForm.role || 'user'}</span>
-                    <ChevronDown size={14} className="text-[#858585]" />
-                  </button>
-
-                  {roleDropdownOpen && (
-                    <div className="absolute z-50 top-[calc(100%+6px)] left-0 w-full border border-[#2A2A2A] rounded-md bg-[#151515] p-1.5 shadow-xl">
-                      <div className="flex flex-col gap-1">
-                        <button
-                          onClick={() => {
-                            if (userForm.role !== 'user') handleRoleChange('user');
-                            setRoleDropdownOpen(false);
-                          }}
-                          className={`flex items-center justify-between w-full px-2 py-1.5 rounded-md text-sm transition-colors
-                            ${userForm.role !== 'admin' ? 'text-[#ff5722] bg-[#FF5722]/10' : 'text-[#888] hover:bg-[#222] hover:text-[#ddd]'}
-                          `}
-                        >
-                          {t('roleUser')}
-                          {userForm.role !== 'admin' && <Check size={14} />}
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (userForm.role !== 'admin') handleRoleChange('admin');
-                            setRoleDropdownOpen(false);
-                          }}
-                          className={`flex items-center justify-between w-full px-2 py-1.5 rounded-md text-sm transition-colors
-                            ${userForm.role === 'admin' ? 'text-[#ff5722] bg-[#FF5722]/10' : 'text-[#888] hover:bg-[#222] hover:text-[#ddd]'}
-                          `}
-                        >
-                          {t('roleAdmin')}
-                          {userForm.role === 'admin' && <Check size={14} />}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                {roleLoading && <Loader2 size={14} className="animate-spin shrink-0 text-white/50" />}
-                {roleSaved && <span className="text-emerald-400 shrink-0 flex items-center gap-1 text-[11px]"><Check size={12} strokeWidth={3} /> {t('done')}</span>}
-              </div>
+              <RoleSelectDropdown
+                currentRole={userForm.role || 'user'}
+                onRoleChange={handleRoleChange}
+                roleUserLabel={t('roleUser')}
+                roleAdminLabel={t('roleAdmin')}
+                doneLabel={t('done')}
+              />
             }
           />
-          <InfoRow 
-            icon={<Coins size={14} />} 
-            label={t('coins')} 
-            description={t('coinsDesc')} 
-            value={userForm.coins || 0} 
-            editing={editing === "coins"} 
-            field="coins" 
-            onEdit={() => beginEdit("coins")} 
+          <InfoRow
+            icon={<Coins size={14} />}
+            label={t('coins')}
+            description={t('coinsDesc')}
+            value={userForm.coins || 0}
+            editing={editing === "coins"}
+            draft={draft}
+            field="coins"
+            onEdit={() => beginEdit("coins")}
             onCancel={cancelEdit}
             onSave={saveEdit}
             customEdit={
-              <input type="number" autoFocus value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") cancelEdit(); }} className={customInputCls} />
+              <input
+                type="number"
+                autoFocus
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") saveEdit();
+                  if (e.key === "Escape") cancelEdit();
+                }}
+                className={customInputCls}
+              />
             }
           />
         </div>

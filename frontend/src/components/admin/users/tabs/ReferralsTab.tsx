@@ -5,7 +5,21 @@ import { Pagination } from "@/components/Pagination";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 
-export function ReferralsTab({ referral, onSaveCode, referralPage, setReferralPage, REFERRAL_PAGE_SIZE }: any) {
+interface ReferralsTabProps {
+  referral: any;
+  onSaveCode: (code: string) => void;
+  referralPage: number;
+  setReferralPage: (page: number) => void;
+  REFERRAL_PAGE_SIZE: number;
+}
+
+export function ReferralsTab({
+  referral,
+  onSaveCode,
+  referralPage,
+  setReferralPage,
+  REFERRAL_PAGE_SIZE,
+}: ReferralsTabProps) {
   const [codeDraft, setCodeDraft] = useState(referral?.code || '');
   const [editingCode, setEditingCode] = useState(false);
   const referredUsers = referral?.referredUsers || [];
@@ -26,7 +40,6 @@ export function ReferralsTab({ referral, onSaveCode, referralPage, setReferralPa
 
   return (
     <div className="space-y-8">
-
       {/* ── STATS ─────────────────────────────────────────────── */}
       <section className="grid grid-cols-1 sm:grid-cols-3 border-y border-white/[0.07]">
         {[
@@ -34,10 +47,15 @@ export function ReferralsTab({ referral, onSaveCode, referralPage, setReferralPa
           { label: t('coinsEarned'), value: referral?.coinsEarned ?? 0, suffix: t('coinsSuffix') },
           { label: t('successful'), value: referral?.referredCount ?? 0, suffix: t('rewardsSuffix') },
         ].map((item, i) => (
-          <div key={i} className="flex items-center gap-4 border-b border-white/[0.07] px-5 py-5 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
+          <div
+            key={i}
+            className="flex items-center gap-4 border-b border-white/[0.07] px-5 py-5 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0"
+          >
             <div>
               <p className="text-[10px] font-medium uppercase tracking-[0.13em] text-white/25">{item.label}</p>
-              <p className="mt-1 text-xl font-semibold text-white">{item.value} <span className="text-sm font-normal text-white/30">{item.suffix}</span></p>
+              <p className="mt-1 text-xl font-semibold text-white">
+                {item.value} <span className="text-sm font-normal text-white/30">{item.suffix}</span>
+              </p>
             </div>
           </div>
         ))}
@@ -52,15 +70,24 @@ export function ReferralsTab({ referral, onSaveCode, referralPage, setReferralPa
             description={t('referralCodeDesc')}
             value={referral?.code || t('notSet')}
             editing={editingCode}
+            draft={codeDraft}
             field="code"
             onEdit={() => setEditingCode(true)}
-            onCancel={() => { setEditingCode(false); setCodeDraft(referral?.code || ''); }}
-            onSave={handleSave}
+            onCancel={() => {
+              setEditingCode(false);
+              setCodeDraft(referral?.code || '');
+            }}
+            onSave={async () => {
+              handleSave();
+              return true;
+            }}
             customEdit={
               <input
                 value={codeDraft}
-                onChange={e => setCodeDraft(e.target.value.toUpperCase().replace(/[^A-Z0-9-_]/g, ''))}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }}
+                onChange={(e) => setCodeDraft(e.target.value.toUpperCase().replace(/[^A-Z0-9-_]/g, ''))}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSave();
+                }}
                 maxLength={20}
                 minLength={3}
                 autoFocus
@@ -96,7 +123,10 @@ export function ReferralsTab({ referral, onSaveCode, referralPage, setReferralPa
             </div>
           ) : (
             referredUsers.map((u: any) => (
-              <div key={u._id} className="grid grid-cols-1 md:grid-cols-[minmax(200px,1fr)_180px_120px] items-center gap-4 px-5 py-4 hover:bg-white/[0.02] transition">
+              <div
+                key={u._id}
+                className="grid grid-cols-1 md:grid-cols-[minmax(200px,1fr)_180px_120px] items-center gap-4 px-5 py-4 hover:bg-white/[0.02] transition"
+              >
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/[0.05] border border-white/[0.05] text-white/50">
                     <User size={16} />
@@ -107,10 +137,21 @@ export function ReferralsTab({ referral, onSaveCode, referralPage, setReferralPa
                   </div>
                 </div>
                 <div className="flex items-center">
-                  <p className="text-xs text-white/35">{u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' }) : '—'}</p>
+                  <p className="text-xs text-white/35">
+                    {u.createdAt
+                      ? new Date(u.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })
+                      : '—'}
+                  </p>
                 </div>
                 <div className="flex justify-end">
-                  <Link href={`/admin/users/${u._id}`} className="inline-flex h-8 items-center justify-center rounded border border-white/[0.07] bg-white/[0.035] px-3 text-xs font-medium text-white/70 transition hover:bg-white/[0.07]">
+                  <Link
+                    href={`/admin/users/${u._id}`}
+                    className="inline-flex h-8 items-center justify-center rounded border border-white/[0.07] bg-white/[0.035] px-3 text-xs font-medium text-white/70 transition hover:bg-white/[0.07]"
+                  >
                     {t('manage')}
                   </Link>
                 </div>

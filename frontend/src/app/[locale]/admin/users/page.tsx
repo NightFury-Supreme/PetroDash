@@ -1,12 +1,13 @@
 "use client";
+
+import React from 'react';
 import { useRouter } from "@/i18n/routing";
 import { Users, RefreshCw } from 'lucide-react';
 import { ErrorState, DashboardButton, ErrorDescription } from '@/components/ui/ErrorState';
 import AdminUsersSkeleton from '@/components/skeletons/admin/user/AdminUsersSkeleton';
-import UsersHeader from '@/components/admin/users/UsersHeader';
-import UsersTable from '@/components/admin/users/UsersTable';
+import { UsersHeader, UsersTable } from '@/components/admin/users';
 import { Pagination } from '@/components/Pagination';
-import { useAdminUsers } from '@/hooks/admin/users/useAdminUsers';
+import { useAdminUsers } from '@/hooks/admin/users';
 import { useTranslations } from 'next-intl';
 
 export default function AdminUsersListPage() {
@@ -31,18 +32,19 @@ export default function AdminUsersListPage() {
       <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
         <ErrorState
           icon={<Users strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
-          kicker={t('loadErrorKicker', { fallback: 'Load Error' })}
-          title={t('failedToLoadUsers', { fallback: 'Failed to Load Users' })}
+          kicker={t('loadErrorKicker')}
+          title={t('failedToLoadUsers')}
           errorString={tErrorBackend.has(error) ? tErrorBackend(error) : error}
-          description={<ErrorDescription error={error} topic={t('usersTopic', { fallback: 'Users' })} />}
+          description={<ErrorDescription error={error} topic={t('usersTopic')} />}
           buttons={
             <>
               <button
+                type="button"
                 onClick={() => window.location.reload()}
                 className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
               >
                 <RefreshCw className="w-[14px] h-[14px]" />
-                {tCommon('retry', { fallback: 'Retry' })}
+                {tCommon('retry')}
               </button>
               <DashboardButton variant="secondary" />
             </>
@@ -69,12 +71,12 @@ export default function AdminUsersListPage() {
               setSearch(e.target.value); 
               setCurrentPage(1);
             }}
-            placeholder={t('searchPlaceholder', { fallback: 'Search by email, username, or ID...' })}
+            placeholder={t('searchPlaceholder')}
             className="w-full sm:max-w-md px-4 py-2.5 rounded-lg border border-white/[0.06] bg-white/[0.02] text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/[0.1] focus:bg-white/[0.03] transition-colors"
           />
           
           <div className="text-[11px] font-medium uppercase tracking-wider text-[#555]">
-            {t('totalUsers', { fallback: 'Total Users:' })} <span className="text-white/70">{pagination.total}</span>
+            {t('totalUsers')} <span className="text-white/70">{pagination.total}</span>
           </div>
         </div>
 
@@ -86,11 +88,9 @@ export default function AdminUsersListPage() {
           totalItems={pagination.total}
           pageSize={10}
           onPageChange={(p) => { setLoading(true); setCurrentPage(p); }}
-          itemName={tCommon('users', { fallback: 'users' })}
+          itemName={tCommon('users')}
         />
       </div>
     </div>
   );
 }
-
-

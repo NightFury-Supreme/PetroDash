@@ -3,7 +3,7 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 
-export default function UsersHeader() {
+export function UsersHeader() {
   const t = useTranslations('admin.users');
 
   return (
@@ -15,3 +15,5 @@ export default function UsersHeader() {
     </header>
   );
 }
+
+export default UsersHeader;
