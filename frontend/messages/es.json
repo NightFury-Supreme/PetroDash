@@ -674,12 +674,8 @@
     "noReasonProvided": "No se proporcionó ningún motivo específico",
     "contactSupport": "Si crees que esta restricción es un error, por favor contacta a nuestro equipo de soporte.",
     "btnLogout": "Cerrar sesión",
-    "btnCheckStatus": "Verificar estado",
-    "checkingStatus": "Verificando...",
     "greeting": "Hola {username},",
-    "defaultUser": "usuario",
-    "statusStillBanned": "Tu cuenta todavía está suspendida.",
-    "statusUnbanned": "¡Suspensión levantada! Redirigiendo al panel de control..."
+    "defaultUser": "usuario"
   },
   "BackendErrors": {
     "ERR_INVALID_CREDENTIALS": "Correo electrónico/nombre de usuario o contraseña no válidos.",

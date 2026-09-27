@@ -674,12 +674,8 @@
     "noReasonProvided": "Aucune raison spécifique fournie",
     "contactSupport": "Si vous pensez que cette restriction est une erreur, veuillez contacter notre équipe d'assistance.",
     "btnLogout": "Se déconnecter",
-    "btnCheckStatus": "Vérifier le statut",
-    "checkingStatus": "Vérification en cours...",
     "greeting": "Bonjour {username},",
-    "defaultUser": "utilisateur",
-    "statusStillBanned": "Votre compte est toujours suspendu.",
-    "statusUnbanned": "Suspension levée ! Redirection vers le tableau de bord..."
+    "defaultUser": "utilisateur"
   },
   "BackendErrors": {
     "ERR_INVALID_CREDENTIALS": "E-mail/nom d'utilisateur ou mot de passe invalide.",

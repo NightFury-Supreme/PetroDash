@@ -674,12 +674,8 @@
     "noReasonProvided": "No specific reason provided",
     "contactSupport": "If you believe this restriction is a mistake, please contact our support team.",
     "btnLogout": "Sign Out",
-    "btnCheckStatus": "Check Status",
-    "checkingStatus": "Checking...",
     "greeting": "Hey {username},",
-    "defaultUser": "there",
-    "statusStillBanned": "Your account is still suspended.",
-    "statusUnbanned": "Ban lifted! Redirecting to dashboard..."
+    "defaultUser": "there"
   },
   "BackendErrors": {
     "ERR_INVALID_CREDENTIALS": "Invalid email/username or password.",

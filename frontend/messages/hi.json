@@ -674,12 +674,8 @@
     "noReasonProvided": "कोई विशिष्ट कारण नहीं बताया गया",
     "contactSupport": "यदि आपको लगता है कि यह प्रतिबंध एक गलती है, तो कृपया हमारी सहायता टीम से संपर्क करें।",
     "btnLogout": "साइन आउट",
-    "btnCheckStatus": "स्थिति जांचें",
-    "checkingStatus": "जांच कर रहे हैं...",
     "greeting": "नमस्ते {username},",
-    "defaultUser": "उपयोगकर्ता",
-    "statusStillBanned": "आपका खाता अभी भी निलंबित है।",
-    "statusUnbanned": "प्रतिबंध हटा दिया गया! डैशबोर्ड पर पुनर्निर्देशित किया जा रहा है..."
+    "defaultUser": "उपयोगकर्ता"
   },
   "BackendErrors": {
     "ERR_INVALID_CREDENTIALS": "अमान्य ईमेल/उपयोगकर्ता नाम या पासवर्ड।",

@@ -17,7 +17,7 @@ import { BannedSkeleton } from './BannedSkeleton';
 
 export function BannedView() {
   const t = useTranslations('Banned');
-  const { reason, untilText, username, logout, checkNow, checking, loading } = useBannedStatus();
+  const { reason, untilText, username, logout, loading } = useBannedStatus();
 
   if (loading) {
     return <BannedSkeleton />;
@@ -54,7 +54,7 @@ export function BannedView() {
           </p>
         </div>
       }
-      buttons={<BannedActions onLogout={logout} onRefresh={checkNow} checking={checking} />}
+      buttons={<BannedActions onLogout={logout} />}
     />
   );
 }

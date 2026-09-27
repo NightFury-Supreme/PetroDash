@@ -5,6 +5,4 @@
 
 export interface BannedActionsProps {
   onLogout: () => void;
-  onRefresh: () => Promise<void>;
-  checking: boolean;
 }

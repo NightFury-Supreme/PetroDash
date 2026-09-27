@@ -674,12 +674,8 @@
     "noReasonProvided": "Kein bestimmter Grund angegeben",
     "contactSupport": "Wenn Sie der Meinung sind, dass diese Sperre ein Fehler ist, wenden Sie sich bitte an unser Support-Team.",
     "btnLogout": "Abmelden",
-    "btnCheckStatus": "Status prüfen",
-    "checkingStatus": "Wird geprüft...",
     "greeting": "Hallo {username},",
-    "defaultUser": "Benutzer",
-    "statusStillBanned": "Ihr Konto ist weiterhin gesperrt.",
-    "statusUnbanned": "Sperre aufgehoben! Weiterleitung zum Dashboard..."
+    "defaultUser": "Benutzer"
   },
   "BackendErrors": {
     "ERR_INVALID_CREDENTIALS": "Ungültige E-Mail/Benutzername oder Passwort.",

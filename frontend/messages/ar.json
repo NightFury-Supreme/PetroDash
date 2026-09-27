@@ -674,12 +674,8 @@
     "noReasonProvided": "لم يتم تقديم سبب محدد",
     "contactSupport": "إذا كنت تعتقد أن هذا القيد تم عن طريق الخطأ، فيرجى الاتصال بفريق الدعم لدينا.",
     "btnLogout": "تسجيل الخروج",
-    "btnCheckStatus": "التحقق من الحالة",
-    "checkingStatus": "جاري التحقق...",
     "greeting": "مرحباً {username}،",
-    "defaultUser": "المستخدم",
-    "statusStillBanned": "حسابك لا يزال معلقاً.",
-    "statusUnbanned": "تم رفع الحظر! جارٍ إعادة التوجيه إلى لوحة التحكم..."
+    "defaultUser": "المستخدم"
   },
   "BackendErrors": {
     "ERR_INVALID_CREDENTIALS": "البريد الإلكتروني/اسم المستخدم أو كلمة المرور غير صالحة.",
