@@ -1762,7 +1762,7 @@
       "deleteUserEntity": "usuario",
       "deleteWarning1": "Esto eliminará permanentemente la cuenta de usuario y todos los datos.",
       "deleteWarning2": "Todos los servidores, bases de datos y asignaciones asociadas se eliminarán de inmediato.",
-      "deleteWarning3": "Esta acción es irreversible y no se puede recuperar.",
+      "deleteWarning3": "Esta acción es irreversible y no se puede recuperar."
     },
     "servers": {
       "title": "Servidores",
