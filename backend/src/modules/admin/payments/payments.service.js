@@ -176,6 +176,8 @@ exports.refundPayment = async (id) => {
     p.status = 'REFUNDED';
     await p.save();
     await deleteCachePattern('admin:ledger');
+    await deleteCachePattern(`user:${p.userId}`);
+    await deleteCachePattern(`admin:users:${p.userId}`);
 
     return { p, changes };
 };

@@ -2058,6 +2058,7 @@
       "markAsPopular": "Marquer comme populaire",
       "markAsPopularHint": "Mettez ce plan en valeur avec un badge populaire pour attirer les utilisateurs.",
       "pricingAndAvailability": "Tarification et disponibilité",
+      "price": "Prix",
       "monthlyPrice": "Prix mensuel",
       "strikeThroughPrice": "Prix barré",
       "stockHint": "0 = illimité, -1 = indisponible",
@@ -2074,6 +2075,7 @@
       "backupLimit": "Limite de sauvegardes",
       "databaseLimit": "Limite de bases de données",
       "allocationLimit": "Limite d'allocations",
+      "coins": "Pièces",
       "title": "Plans tarifaires",
       "searchPlaceholder": "Rechercher des plans par nom ou catégorie...",
       "uncategorized": "Non catégorisé",
@@ -2152,9 +2154,21 @@
       "orderId": "ID de commande",
       "refundAmount": "Montant du remboursement",
       "beforeYouContinue": "Avant de continuer",
-      "customerReceivesMoneyBack": "Le client recevra un remboursement via son moyen de paiement d'origine.",
-      "actionIrreversible": "Cette action est définitive et ne peut pas être inversée.",
-      "typeRefundToConfirm": "Tapez <confirm>{refund}</confirm> pour confirmer"
+      "typeRefundToConfirm": "Tapez <confirm>{refund}</confirm> pour confirmer",
+      "success": {
+        "refunded": "Paiement remboursé avec succès.",
+        "voided": "Paiement annulé avec succès."
+      },
+      "modals": {
+        "voidTitle": "Annuler la transaction",
+        "voidBody": "Êtes-vous sûr de vouloir annuler cette session de paiement ?"
+      },
+      "actions": {
+        "void": "Annuler"
+      },
+      "errors": {
+        "loadTitle": "Impossible de charger les paiements"
+      }
     },
     "gifts": {
       "title": "Bons cadeaux",

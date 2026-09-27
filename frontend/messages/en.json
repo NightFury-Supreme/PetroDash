@@ -2069,6 +2069,7 @@
       "markAsPopular": "Mark as Popular",
       "markAsPopularHint": "Highlight this plan with a popular badge to attract users.",
       "pricingAndAvailability": "Pricing & Availability",
+      "price": "Price",
       "monthlyPrice": "Monthly Price",
       "strikeThroughPrice": "Strike-through Price",
       "stockHint": "0 = unlimited, -1 = unavailable",
@@ -2085,6 +2086,7 @@
       "backupLimit": "Backups Limit",
       "databaseLimit": "Databases Limit",
       "allocationLimit": "Allocations Limit",
+      "coins": "Coins",
       "title": "Pricing Plans",
       "searchPlaceholder": "Search plans by name or category...",
       "uncategorized": "Uncategorized",
@@ -2165,7 +2167,21 @@
       "beforeYouContinue": "Before you continue",
       "customerReceivesMoneyBack": "The customer will receive a refund via their original payment method.",
       "actionIrreversible": "This action is final and cannot be reversed.",
-      "typeRefundToConfirm": "Type <confirm>{refund}</confirm> to confirm"
+      "typeRefundToConfirm": "Type <confirm>{refund}</confirm> to confirm",
+      "success": {
+        "refunded": "Payment refunded successfully.",
+        "voided": "Checkout voided successfully."
+      },
+      "modals": {
+        "voidTitle": "Void Checkout",
+        "voidBody": "Are you sure you want to void this checkout session?"
+      },
+      "actions": {
+        "void": "Void"
+      },
+      "errors": {
+        "loadTitle": "Failed to Load Payments"
+      }
     },
     "gifts": {
       "title": "Gift Vouchers",

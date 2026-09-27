@@ -2058,6 +2058,7 @@
       "markAsPopular": "Als beliebt markieren",
       "markAsPopularHint": "Heben Sie diesen Plan mit einem Beliebt-Badge hervor, um Benutzer anzusprechen.",
       "pricingAndAvailability": "Preise & Verfügbarkeit",
+      "price": "Preis",
       "monthlyPrice": "Monatspreis",
       "strikeThroughPrice": "Durchgestrichener Preis",
       "stockHint": "0 = unbegrenzt, -1 = nicht verfügbar",
@@ -2074,6 +2075,7 @@
       "backupLimit": "Backup-Limit",
       "databaseLimit": "Datenbank-Limit",
       "allocationLimit": "Zuteilungs-Limit",
+      "coins": "Münzen",
       "title": "Preispläne",
       "searchPlaceholder": "Pläne nach Name oder Kategorie suchen...",
       "uncategorized": "Nicht kategorisiert",
@@ -2152,9 +2154,21 @@
       "orderId": "Bestell-ID",
       "refundAmount": "Rückerstattungsbetrag",
       "beforeYouContinue": "Bevor Sie fortfahren",
-      "customerReceivesMoneyBack": "Der Kunde erhält eine Rückerstattung über seine ursprüngliche Zahlungsmethode.",
-      "actionIrreversible": "Diese Aktion ist endgültig und kann nicht rückgängig gemacht werden.",
-      "typeRefundToConfirm": "Geben Sie zur Bestätigung <confirm>{refund}</confirm> ein"
+      "typeRefundToConfirm": "Geben Sie zur Bestätigung <confirm>{refund}</confirm> ein",
+      "success": {
+        "refunded": "Zahlung erfolgreich erstattet.",
+        "voided": "Kassiervorgang erfolgreich storniert."
+      },
+      "modals": {
+        "voidTitle": "Kassiervorgang stornieren",
+        "voidBody": "Möchten Sie diese Checkout-Sitzung wirklich stornieren?"
+      },
+      "actions": {
+        "void": "Stornieren"
+      },
+      "errors": {
+        "loadTitle": "Zahlungen konnten nicht geladen werden"
+      }
     },
     "gifts": {
       "title": "Geschenkgutscheine",

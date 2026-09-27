@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import { AdminStoreTab } from '@/hooks/admin/store/types';
 import AdminShopTab from './tabs/ShopTab';
 import AdminPlansTab from './tabs/PlansTab';
@@ -12,8 +13,10 @@ interface AdminStoreContentProps {
 }
 
 export const AdminStoreContent: React.FC<AdminStoreContentProps> = ({ activeTab }) => {
+  const t = useTranslations('admin.store');
+
   return (
-    <main className="flex-1 min-w-0 w-full" role="region" aria-label="Store administration panel">
+    <main className="flex-1 min-w-0 w-full" role="region" aria-label={t('title')}>
       {activeTab === 'shop' && <AdminShopTab />}
       {activeTab === 'plans' && <AdminPlansTab />}
       {activeTab === 'coupons' && <AdminCouponsTab />}

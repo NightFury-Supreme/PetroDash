@@ -2058,6 +2058,7 @@
       "markAsPopular": "Marcar como popular",
       "markAsPopularHint": "Destaque este plan con una insignia de popular para atraer usuarios.",
       "pricingAndAvailability": "Precios y disponibilidad",
+      "price": "Precio",
       "monthlyPrice": "Precio mensual",
       "strikeThroughPrice": "Precio tachado",
       "stockHint": "0 = ilimitado, -1 = no disponible",
@@ -2074,6 +2075,7 @@
       "backupLimit": "Límite de copias de seguridad",
       "databaseLimit": "Límite de bases de datos",
       "allocationLimit": "Límite de asignaciones",
+      "coins": "Monedas",
       "title": "Planes de precios",
       "searchPlaceholder": "Buscar planes por nombre o categoría...",
       "uncategorized": "Sin categorizar",
@@ -2152,9 +2154,21 @@
       "orderId": "ID de pedido",
       "refundAmount": "Monto del reembolso",
       "beforeYouContinue": "Antes de continuar",
-      "customerReceivesMoneyBack": "El cliente recibirá un reembolso a través de su método de pago original.",
-      "actionIrreversible": "Esta acción es definitiva y no se puede revertir.",
-      "typeRefundToConfirm": "Escriba <confirm>{refund}</confirm> para confirmar"
+      "typeRefundToConfirm": "Escriba <confirm>{refund}</confirm> para confirmar",
+      "success": {
+        "refunded": "Pago reembolsado con éxito.",
+        "voided": "Proceso de pago anulado con éxito."
+      },
+      "modals": {
+        "voidTitle": "Anular proceso de pago",
+        "voidBody": "¿Estás seguro de que deseas anular esta sesión de pago?"
+      },
+      "actions": {
+        "void": "Anular"
+      },
+      "errors": {
+        "loadTitle": "Error al cargar los pagos"
+      }
     },
     "gifts": {
       "title": "Vales de regalo",

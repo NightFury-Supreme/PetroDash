@@ -2058,6 +2058,7 @@
       "markAsPopular": "लोकप्रिय के रूप में चिह्नित करें",
       "markAsPopularHint": "उपयोगकर्ताओं को आकर्षित करने के लिए इस योजना को लोकप्रिय बैज के साथ हाइलाइट करें।",
       "pricingAndAvailability": "मूल्य निर्धारण और उपलब्धता",
+      "price": "कीमत",
       "monthlyPrice": "मासिक मूल्य",
       "strikeThroughPrice": "स्ट्राइक-थ्रू मूल्य",
       "stockHint": "0 = असीमित, -1 = अनुपलब्ध",
@@ -2074,6 +2075,7 @@
       "backupLimit": "बैकअप सीमा",
       "databaseLimit": "डेटाबेस सीमा",
       "allocationLimit": "आवंटन सीमा",
+      "coins": "सिक्के",
       "title": "मूल्य निर्धारण योजनाएं",
       "searchPlaceholder": "नाम या श्रेणी द्वारा योजनाएं खोजें...",
       "uncategorized": "अवर्गीकृत",
@@ -2152,9 +2154,21 @@
       "orderId": "ऑर्डर ID",
       "refundAmount": "रिफंड राशि",
       "beforeYouContinue": "जारी रखने से पहले",
-      "customerReceivesMoneyBack": "ग्राहक को उनकी मूल भुगतान विधि के माध्यम से रिफंड प्राप्त होगा।",
-      "actionIrreversible": "यह कार्रवाई अंतिम है और इसे वापस नहीं लिया जा सकता।",
-      "typeRefundToConfirm": "पुष्टि करने के लिए <confirm>{refund}</confirm> टाइप करें"
+      "typeRefundToConfirm": "पुष्टि करने के लिए <confirm>{refund}</confirm> टाइप करें",
+      "success": {
+        "refunded": "भुगतान सफलतापूर्वक वापस कर दिया गया।",
+        "voided": "चेकआउट सफलतापूर्वक रद्द कर दिया गया।"
+      },
+      "modals": {
+        "voidTitle": "चेकआउट रद्द करें",
+        "voidBody": "क्या आप वाकई इस चेकआउट सत्र को रद्द करना चाहते हैं?"
+      },
+      "actions": {
+        "void": "रद्द करें"
+      },
+      "errors": {
+        "loadTitle": "भुगतान लोड करने में विफल"
+      }
     },
     "gifts": {
       "title": "उपहार वाउचर",

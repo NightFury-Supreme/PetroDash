@@ -6,4 +6,5 @@ export * from './PlanCategorySelect';
 export * from './PlanDrawer';
 export * from './PlanEditForm';
 export * from './PlanForm';
+export * from './PlanFormFields';
 export * from './PlansList';

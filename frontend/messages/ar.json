@@ -2058,6 +2058,7 @@
       "markAsPopular": "تمييز كشائع",
       "markAsPopularHint": "قم بتمييز هذه الخطة بشارة شائع لجذب المستخدمين.",
       "pricingAndAvailability": "التسعير والتوفر",
+      "price": "السعر",
       "monthlyPrice": "السعر الشهري",
       "strikeThroughPrice": "السعر المشطوب",
       "stockHint": "0 = غير محدود، -1 = غير متوفر",
@@ -2074,6 +2075,7 @@
       "backupLimit": "حد النسخ الاحتياطية",
       "databaseLimit": "حد قواعد البيانات",
       "allocationLimit": "حد التخصيصات",
+      "coins": "العملات",
       "title": "خطط التسعير",
       "searchPlaceholder": "البحث عن الخطط بالاسم أو الفئة...",
       "uncategorized": "غير مصنف",
@@ -2152,9 +2154,21 @@
       "orderId": "معرف الطلب",
       "refundAmount": "مبلغ الاسترداد",
       "beforeYouContinue": "قبل المتابعة",
-      "customerReceivesMoneyBack": "سيتلقى العميل استردادًا عبر طريقة الدفع الأصلية.",
-      "actionIrreversible": "هذا الإجراء نهائي ولا يمكن التراجع عنه.",
-      "typeRefundToConfirm": "اكتب <confirm>{refund}</confirm> للتأكيد"
+      "typeRefundToConfirm": "اكتب <confirm>{refund}</confirm> للتأكيد",
+      "success": {
+        "refunded": "تم استرداد المبلغ بنجاح.",
+        "voided": "تم إلغاء عملية الدفع بنجاح."
+      },
+      "modals": {
+        "voidTitle": "إلغاء عملية الدفع",
+        "voidBody": "هل أنت متأكد أنك تريد إلغاء جلسة الدفع هذه؟"
+      },
+      "actions": {
+        "void": "إلغاء"
+      },
+      "errors": {
+        "loadTitle": "فشل تحميل المدفوعات"
+      }
     },
     "gifts": {
       "title": "قسائم الهدايا",

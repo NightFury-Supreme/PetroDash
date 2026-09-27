@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAdminLedger } from '@/hooks/admin/ledger';
 import { useTranslations } from 'next-intl';
+import { useToast } from '@/components/ui/ToastProvider';
 
 interface AdminLedgerTableProps {
   items: any[];
@@ -20,7 +21,21 @@ export function AdminLedgerTable({
   const t = useTranslations('Admin.ledger');
   const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
+  const { showError } = useToast();
+  const { downloadInvoice } = useAdminLedger();
   const [downloading, setDownloading] = useState<string | null>(null);
+
+  const handleDownloadInvoice = async (paymentId: string) => {
+    setDownloading(paymentId);
+    try {
+      await downloadInvoice(paymentId);
+    } catch (err: any) {
+      const errKey = err?.message || '';
+      showError(tErrorBackend.has(errKey as any) ? tErrorBackend(errKey as any) : t('failedToDownloadInvoice'));
+    } finally {
+      setDownloading(null);
+    }
+  };
   
   const getStatusBadge = (status: string) => {
     const normStatus = String(status || "").toUpperCase();
@@ -50,20 +65,6 @@ export function AdminLedgerTable({
     const canRefund = item.status === 'COMPLETED' && item.provider === 'paypal';
     const canVoid = item.status === 'CREATED' && item.provider === 'paypal';
     const canInvoice = item.status === 'COMPLETED';
-
-    const { downloadInvoice } = useAdminLedger();
-
-    const handleDownloadInvoice = async (paymentId: string) => {
-      setDownloading(paymentId);
-      try {
-        await downloadInvoice(paymentId);
-      } catch (err: any) {
-        const errKey = err?.message || '';
-        alert(tErrorBackend.has(errKey as any) ? tErrorBackend(errKey as any) : t('failedToDownloadInvoice'));
-      } finally {
-        setDownloading(null);
-      }
-    };
 
     if (!canRefund && !canVoid && !canInvoice) {
       return <span className="text-white/20 text-xs">-</span>;
