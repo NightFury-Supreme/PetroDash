@@ -35,7 +35,7 @@ router.get('/discord', async (req, res, next) => {
 // Discord OAuth Callback
 router.get('/discord/callback', async (req, res, next) => {
   await reconfigureStrategies();
-  passport.authenticate('discord', { failureRedirect: '/login?error=oauth_failed' })(req, res, next);
+  passport.authenticate('discord', { failureRedirect: `${process.env.FRONTEND_URL}/login?error=oauth_failed` })(req, res, next);
 }, async (req, res, next) => {
   try {
     if (!req.user) {
@@ -101,7 +101,7 @@ router.get('/google', async (req, res, next) => {
 // Google OAuth Callback
 router.get('/google/callback', async (req, res, next) => {
   await reconfigureStrategies();
-  passport.authenticate('google', { failureRedirect: '/login?error=oauth_failed' })(req, res, next);
+  passport.authenticate('google', { failureRedirect: `${process.env.FRONTEND_URL}/login?error=oauth_failed` })(req, res, next);
 }, async (req, res, next) => {
   try {
     if (!req.user) {

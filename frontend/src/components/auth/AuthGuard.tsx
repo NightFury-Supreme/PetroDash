@@ -45,7 +45,13 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     // Public pages never need token validation
     if (isPublic) {
       checkedPathRef.current = pathname;
-      
+      if (pathname === '/register') {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+        if (token && redirectingToRef.current !== '/dashboard') {
+          redirectingToRef.current = '/dashboard';
+          router.replace('/dashboard');
+        }
+      }
       return;
     }
 
@@ -61,7 +67,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
           const loginDest = `/login?redirect=${encodeURIComponent(pathname)}`;
           if (redirectingToRef.current !== loginDest) {
             redirectingToRef.current = loginDest;
-            router.replace({ pathname: '/login', query: { redirect: pathname } });
+            router.replace(loginDest);
           }
           return;
         }
@@ -100,7 +106,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
           const loginDest = `/login?redirect=${encodeURIComponent(pathname)}`;
           if (redirectingToRef.current !== loginDest) {
             redirectingToRef.current = loginDest;
-            router.replace({ pathname: '/login', query: { redirect: pathname } });
+            router.replace(loginDest);
           }
           return;
         }

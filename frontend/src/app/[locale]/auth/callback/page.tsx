@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, Suspense } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useToast } from "@/components/ui/ToastProvider";
 import { useRouter, useSearchParams } from "@/i18n/routing";
 
 function AuthCallbackContent() {
   const router = useRouter();
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const { showError } = useToast();
   const t = useTranslations('Auth');
@@ -18,10 +19,12 @@ function AuthCallbackContent() {
       const discordJoin = searchParams.get('discord_join');
       const redirectTo = (() => {
         const raw = searchParams.get('redirect');
-        if (!raw) return '/dashboard';
+        if (!raw || raw === '/') return '/dashboard';
         const decoded = decodeURIComponent(raw);
         // Safe same-origin relative path only
-        return decoded.startsWith('/') && !decoded.startsWith('//') ? decoded : '/dashboard';
+        return decoded.startsWith('/') && !decoded.startsWith('//') && !decoded.toLowerCase().startsWith('/login')
+          ? decoded
+          : '/dashboard';
       })();
 
       if (error) {
@@ -33,6 +36,7 @@ function AuthCallbackContent() {
       if (token) {
         try {
           localStorage.setItem('auth_token', token);
+          window.dispatchEvent(new Event('user:refresh'));
 
           if (discordJoin === 'success') {
             // Successfully joined Discord server
@@ -40,7 +44,10 @@ function AuthCallbackContent() {
             // Failed to join Discord server — non-blocking
           }
 
-          router.push(redirectTo as any);
+          const target = locale && locale !== 'en' && !redirectTo.startsWith(`/${locale}/`) && redirectTo !== `/${locale}`
+            ? `/${locale}${redirectTo.startsWith('/') ? redirectTo : `/${redirectTo}`}`
+            : redirectTo;
+          window.location.href = target;
         // eslint-disable-next-line unused-imports/no-unused-vars
         } catch (err) {
           showError(t('loginFailed'));
@@ -53,7 +60,7 @@ function AuthCallbackContent() {
     };
 
     handleCallback();
-  }, [searchParams]);
+  }, [searchParams, locale, router, showError, t]);
 
   const discordJoin = searchParams.get('discord_join');
 

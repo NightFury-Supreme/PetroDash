@@ -6,14 +6,13 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from '@/i18n/routing';
 import { fetchWithRetry } from '@/utils/fetchWithRetry';
 import { useToast } from '@/components/ui/ToastProvider';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import type { RegisterFormData } from './types';
 
 export function useRegister() {
-  const router = useRouter();
+  const locale = useLocale();
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof RegisterFormData, string>>>({});
   const { showError } = useToast();
@@ -55,7 +54,9 @@ export function useRegister() {
       }
 
       localStorage.setItem('auth_token', data.token);
-      router.push('/dashboard');
+      window.dispatchEvent(new Event('user:refresh'));
+      const target = locale && locale !== 'en' ? `/${locale}/dashboard` : '/dashboard';
+      window.location.href = target;
       return true;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : tErrors('registerFailed');
