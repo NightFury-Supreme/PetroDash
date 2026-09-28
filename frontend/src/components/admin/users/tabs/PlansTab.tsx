@@ -31,6 +31,7 @@ export function PlansTab({
   const { showSuccess, showError } = useToast();
   const t = useTranslations('admin.users');
   const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
 
   const [activeActions, setActiveActions] = useState<
     Record<string, { type: 'add' | 'remove' | 'removeAll'; status: 'loading' | 'done' }>
@@ -70,7 +71,7 @@ export function PlansTab({
       setNewPlanId('');
       onRefresh();
     } catch (e: any) {
-      showError(e.message || tCommon('error'));
+      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
     } finally {
       setLoading(false);
     }
@@ -87,7 +88,7 @@ export function PlansTab({
       setTimeout(() => setActionState(planId, 'removeAll', null), 2000);
     } catch (e: any) {
       setActionState(planId, 'removeAll', null);
-      showError(e.message || tCommon('error'));
+      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
     }
   };
 
@@ -100,7 +101,7 @@ export function PlansTab({
       setTimeout(() => setActionState(pid, 'add', null), 2000);
     } catch (e: any) {
       setActionState(pid, 'add', null);
-      showError(e.message || tCommon('error'));
+      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
     }
   };
 
@@ -113,7 +114,7 @@ export function PlansTab({
       setTimeout(() => setActionState(planId, 'remove', null), 2000);
     } catch (e: any) {
       setActionState(planId, 'remove', null);
-      showError(e.message || tCommon('error'));
+      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
     }
   };
 

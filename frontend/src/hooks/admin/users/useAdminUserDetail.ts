@@ -177,13 +177,8 @@ export function useAdminUserDetail(id: string) {
     setSaving(true);
     try {
       const token = getAuthToken();
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/users/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ referralCode: newCode })
-      });
-      const d = await r.json();
-      if (!r.ok) throw new Error(d.error || d.code || 'ERR_SAVE_REFERRAL_CODE_FAILED');
+      const { res: r, data: d } = await adminUsersApi.updateReferralCode(id, newCode, token);
+      if (!r.ok) throw new Error(d?.error || d?.code || 'ERR_SAVE_REFERRAL_CODE_FAILED');
       await loadUser(referralPage);
       return { success: true };
     } catch (e: any) {
@@ -196,11 +191,7 @@ export function useAdminUserDetail(id: string) {
   const deleteUser = async () => {
     try {
       const token = getAuthToken();
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/users/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const d = await r.json();
+      const { res: r, data: d } = await adminUsersApi.deleteUser(id, token);
       if (!r.ok) throw new Error(d?.error || d?.code || 'ERR_DELETE_USER_FAILED');
       return { success: true, message: d?.code || 'SUCCESS_USER_DELETED' };
     } catch (e: any) {

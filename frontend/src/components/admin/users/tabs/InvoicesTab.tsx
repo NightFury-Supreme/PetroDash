@@ -22,13 +22,14 @@ export function InvoicesTab({
   const { showError } = useToast();
   const t = useTranslations('admin.users');
   const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
   const locale = useLocale();
 
   const downloadInvoice = async (id: string) => {
     try {
       await downloadInvoicePdf(id, false);
     } catch (e: any) {
-      showError(e.message || tCommon('error'));
+      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
     }
   };
 

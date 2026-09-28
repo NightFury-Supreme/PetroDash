@@ -64,5 +64,13 @@ export const adminUsersApi = {
       headers: { Authorization: `Bearer ${token}` }
     });
     return { res: r, data: await r.json().catch(() => ({})) };
+  },
+  updateReferralCode: async (userId: string, referralCode: string, token: string) => {
+    const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/users/${userId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ referralCode })
+    });
+    return { res: r, data: await r.json().catch(() => ({})) };
   }
 };

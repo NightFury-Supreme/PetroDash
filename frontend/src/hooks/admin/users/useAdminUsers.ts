@@ -177,7 +177,7 @@ export function useAdminUsers(
         ? { isBanned: false }
         : {
             isBanned: true,
-            reason: options?.reason || 'Suspended by Administrator',
+            reason: options?.reason || '',
             durationMinutes: options?.durationMinutes,
           };
 
@@ -215,7 +215,7 @@ export function useAdminUsers(
                       ban: {
                         ...u.ban,
                         isBanned: !isCurrentlyBanned,
-                        reason: !isCurrentlyBanned ? (options?.reason || 'Suspended by Administrator') : '',
+                        reason: !isCurrentlyBanned ? (options?.reason || '') : '',
                         until:
                           !isCurrentlyBanned && options?.durationMinutes
                             ? new Date(Date.now() + options.durationMinutes * 60000).toISOString()
