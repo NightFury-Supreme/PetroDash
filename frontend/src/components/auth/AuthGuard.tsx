@@ -346,12 +346,30 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   }
 
   /**
-   * Not yet validated (no token or pending async check):
-   * Return null — a completely invisible state.
+   * Not yet validated (no token or pending async revalidation).
    *
-   * For unauthenticated visits this is permanent until the redirect fires.
-   * For authenticated visits with token present, the lazy initializer sets
-   * isValidated=true immediately so this branch is never reached on first paint.
+   * Shows a minimal full-screen loading spinner so the user sees progress
+   * rather than a completely blank page during the brief redirect window.
+   *
+   * For unauthenticated visits (no token) this is displayed for only the
+   * single frame before the effect fires and navigation begins.
+   * For stale-token revalidation (rare), it persists until /api/auth/me responds.
    */
-  return null;
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0F0F0F]"
+      aria-label="Loading"
+      role="status"
+    >
+      <div
+        className="h-10 w-10 rounded-full border-2 border-[#303030] border-t-white"
+        style={{ animation: "auth-spin 0.75s linear infinite" }}
+      />
+      <style>{`
+        @keyframes auth-spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
 }
