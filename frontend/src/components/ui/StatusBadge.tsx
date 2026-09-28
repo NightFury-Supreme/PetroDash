@@ -15,10 +15,13 @@ export type StatusBadgeVariant =
   | 'purple'  // purple: queued, processing
   | 'neutral'; // gray: closed, system, unassigned, unknown
 
+export type BadgeSize = 'sm' | 'md' | 'lg';
+
 export interface StatusBadgeProps {
   children?: React.ReactNode;
   variant?: StatusBadgeVariant;
   status?: string;
+  size?: BadgeSize;
   className?: string;
 }
 
@@ -29,6 +32,12 @@ const variantStyles: Record<StatusBadgeVariant, string> = {
   info: 'bg-[#4488FF]/10 text-[#4488FF]',
   purple: 'bg-[#A855F7]/10 text-[#A855F7]',
   neutral: 'bg-white/5 text-white/40',
+};
+
+const sizeStyles: Record<BadgeSize, string> = {
+  sm: 'px-1.5 py-0.5 text-[10px]',
+  md: 'px-2 py-1 text-xs',
+  lg: 'px-2.5 py-1 text-sm',
 };
 
 export function getStatusVariant(status?: string): StatusBadgeVariant {
@@ -46,10 +55,12 @@ export function StatusBadge({
   children,
   variant,
   status,
+  size = 'md',
   className = '',
 }: StatusBadgeProps) {
   const resolvedVariant = variant || (status ? getStatusVariant(status) : 'neutral');
-  const baseClasses = 'inline-flex items-center justify-center gap-1.5 rounded px-2 py-1 text-xs font-medium transition-colors';
+  const sizeClass = sizeStyles[size] || sizeStyles.md;
+  const baseClasses = `inline-flex items-center justify-center gap-1.5 rounded font-medium transition-colors ${sizeClass}`;
   const colorClasses = variantStyles[resolvedVariant] || variantStyles.neutral;
 
   return (

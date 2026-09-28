@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RankBadge Component
+   RankBadge / RoleBadge Component
    Compliance: ISO/IEC 25010, Reusable Shared UI Pattern (<300 lines)
    Derived from StatusBadge for unified styling across roles and statuses.
 ========================================================================== */
@@ -8,13 +8,13 @@
 
 import React from 'react';
 import { User, Shield, Cpu, Crown } from 'lucide-react';
-import { StatusBadge, type StatusBadgeVariant } from './StatusBadge';
+import { StatusBadge, type StatusBadgeVariant, type BadgeSize } from './StatusBadge';
 
 export type RankType = 'admin' | 'user' | 'system' | 'premium' | 'vip' | 'pro' | string;
 
 export interface RankBadgeProps {
   rank: RankType;
-  size?: 'sm' | 'md' | 'lg';
+  size?: BadgeSize;
   className?: string;
   showIcon?: boolean;
   children?: React.ReactNode;
@@ -22,6 +22,7 @@ export interface RankBadgeProps {
 
 export function RankBadge({
   rank,
+  size = 'md',
   className = '',
   showIcon = true,
   children,
@@ -53,12 +54,15 @@ export function RankBadge({
     IconComponent = Crown;
   }
 
+  const iconSize = size === 'sm' ? 10 : size === 'lg' ? 14 : 12;
+
   return (
-    <StatusBadge variant={variant} className={className}>
-      {showIcon && <IconComponent size={12} strokeWidth={1.5} className="shrink-0" />}
+    <StatusBadge variant={variant} size={size} className={className}>
+      {showIcon && <IconComponent size={iconSize} strokeWidth={1.5} className="shrink-0" />}
       <span>{children || label}</span>
     </StatusBadge>
   );
 }
 
+export { RankBadge as RoleBadge };
 export default RankBadge;

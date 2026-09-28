@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { ChevronDown, Check, Loader2 } from "lucide-react";
+import { RankBadge } from "@/components/ui";
 
 interface RoleSelectDropdownProps {
   currentRole: string;
@@ -12,8 +13,8 @@ interface RoleSelectDropdownProps {
 export function RoleSelectDropdown({
   currentRole,
   onRoleChange,
-  roleUserLabel,
-  roleAdminLabel,
+  roleUserLabel: _roleUserLabel,
+  roleAdminLabel: _roleAdminLabel,
   doneLabel,
 }: RoleSelectDropdownProps) {
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
@@ -55,7 +56,7 @@ export function RoleSelectDropdown({
           type="button"
           onClick={() => !roleLoading && setRoleDropdownOpen(!roleDropdownOpen)}
           disabled={roleLoading}
-          className={`h-8 w-32 flex items-center justify-between gap-[7px] px-3 border rounded-md text-sm transition-colors disabled:opacity-50 outline-none
+          className={`h-8 min-w-32 flex items-center justify-between gap-2 px-2.5 border rounded-md text-sm transition-colors disabled:opacity-50 outline-none
             ${
               roleDropdownOpen
                 ? 'bg-[#222] border-[#222] text-[#ddd]'
@@ -63,7 +64,7 @@ export function RoleSelectDropdown({
             }
           `}
         >
-          <span className="capitalize">{currentRole || 'user'}</span>
+          <RankBadge rank={currentRole || 'user'} size="sm" />
           <ChevronDown size={14} className="text-[#858585]" />
         </button>
 
@@ -76,13 +77,13 @@ export function RoleSelectDropdown({
                 className={`flex items-center justify-between w-full px-2 py-1.5 rounded-md text-sm transition-colors
                   ${
                     currentRole !== 'admin'
-                      ? 'text-[#ff5722] bg-[#FF5722]/10'
+                      ? 'bg-white/10 text-white'
                       : 'text-[#888] hover:bg-[#222] hover:text-[#ddd]'
                   }
                 `}
               >
-                {roleUserLabel}
-                {currentRole !== 'admin' && <Check size={14} />}
+                <RankBadge rank="user" size="sm" />
+                {currentRole !== 'admin' && <Check size={14} className="text-emerald-400" />}
               </button>
               <button
                 type="button"
@@ -90,13 +91,13 @@ export function RoleSelectDropdown({
                 className={`flex items-center justify-between w-full px-2 py-1.5 rounded-md text-sm transition-colors
                   ${
                     currentRole === 'admin'
-                      ? 'text-[#ff5722] bg-[#FF5722]/10'
+                      ? 'bg-white/10 text-white'
                       : 'text-[#888] hover:bg-[#222] hover:text-[#ddd]'
                   }
                 `}
               >
-                {roleAdminLabel}
-                {currentRole === 'admin' && <Check size={14} />}
+                <RankBadge rank="admin" size="sm" />
+                {currentRole === 'admin' && <Check size={14} className="text-[#FF5722]" />}
               </button>
             </div>
           </div>

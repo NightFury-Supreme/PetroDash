@@ -18,6 +18,7 @@ import {
   SecurityTab,
 } from "@/components/admin/users";
 import { DeleteDrawer } from "@/components/ui/DeleteDrawer";
+import { RankBadge, StatusBadge } from "@/components/ui";
 import { useAdminUserDetail } from "@/hooks/admin/users";
 import { useTranslations } from "next-intl";
 
@@ -133,7 +134,13 @@ export default function AdminUserPage() {
                 </div>
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-white">@{userForm.username || tCommon('username')}</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-semibold text-white">@{userForm.username || tCommon('username')}</h2>
+                  <RankBadge rank={userForm.role || 'user'} />
+                  {ban?.isBanned && (
+                    <StatusBadge variant="danger">{t('banned')}</StatusBadge>
+                  )}
+                </div>
                 <p className="text-sm text-[#888]">{userForm.email}</p>
               </div>
             </div>

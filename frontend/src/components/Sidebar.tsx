@@ -12,6 +12,7 @@ import { usePathname, useRouter } from "@/i18n/routing";
 import { useSidebarUser } from "@/hooks/useSidebarUser";
 import { NavButton } from "./NavButton";
 import { baseLinks, supportLinks, adminOtherLinks } from "./sidebarLinks";
+import { RankBadge } from "@/components/ui";
 
 
 export default function Sidebar() {
@@ -197,15 +198,7 @@ export default function Sidebar() {
                         <span>{tNav("coins", { count: user?.coins ?? 0 })}</span>
                       </div>
                       {user?.role && (
-                        <div
-                          className={`text-[9px] font-bold px-1.5 py-0.5 rounded-[4px] uppercase tracking-wider leading-none shrink-0 ${
-                            user.role === "admin"
-                              ? "bg-orange-950/50 text-orange-500 border border-orange-500/20"
-                              : "bg-white/5 text-zinc-400 border border-white/10"
-                          }`}
-                        >
-                          {user.role}
-                        </div>
+                        <RankBadge rank={user.role} size="sm" />
                       )}
                     </div>
                   </>
