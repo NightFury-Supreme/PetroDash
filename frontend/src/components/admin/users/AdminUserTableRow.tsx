@@ -115,8 +115,8 @@ export function AdminUserTableRow({
         <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
           {t('servers')}
         </p>
-        <div className="flex items-center gap-1.5 font-medium text-[#E0E0E0] text-sm">
-          <Server size={14} className="text-white" />
+        <div className="flex items-center gap-1.5 font-normal text-[#E0E0E0] text-sm">
+          <Server size={14} strokeWidth={1.5} className="text-white" />
           <span className="truncate">{user.serverCount ?? user.serversCount ?? 0}</span>
         </div>
       </div>
@@ -126,8 +126,8 @@ export function AdminUserTableRow({
         <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
           {t('coins')}
         </p>
-        <div className="flex items-center gap-1.5 font-medium text-[#E0E0E0] text-sm">
-          <Coins size={14} className="text-white" />
+        <div className="flex items-center gap-1.5 font-normal text-[#E0E0E0] text-sm">
+          <Coins size={14} strokeWidth={1.5} className="text-white" />
           <span className="truncate">{(user.coins ?? 0).toLocaleString()}</span>
         </div>
       </div>
