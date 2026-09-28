@@ -77,7 +77,7 @@ export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
 
                   {/* Included amount */}
                   <div className="flex items-center gap-1.5">
-                    <span className="text-lg font-semibold text-white/80">+{item.amountPerUnit}</span>
+                    <span className="text-lg font-normal text-white/80">+{item.amountPerUnit}</span>
                     {formatUnit(item.unit) && (
                       <span className="text-xs text-white/30 uppercase tracking-wide">{formatUnit(item.unit)}</span>
                     )}
@@ -85,8 +85,8 @@ export function ShopItemsView({ items, buying, onBuy }: ShopItemsViewProps) {
 
                   {/* Price */}
                   <div className="flex items-center gap-1.5">
-                    <Coins className="h-3.5 w-3.5 text-[#FF5722]" />
-                    <span className="text-lg font-semibold text-white/80">{item.pricePerUnit}</span>
+                    <Coins className="h-3.5 w-3.5 text-white" strokeWidth={1.5} />
+                    <span className="text-lg font-normal text-white/80">{item.pricePerUnit}</span>
                   </div>
 
                   {/* Action */}

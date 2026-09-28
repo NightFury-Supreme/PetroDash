@@ -39,8 +39,8 @@ export function AdminCouponItemRow({
     <div className="flex flex-col gap-4 px-5 py-4 transition hover:bg-white/[0.015] md:grid md:grid-cols-[2fr_1.2fr_1fr_1.2fr_100px_80px] md:items-center">
       {/* Identity */}
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.035] text-white/50">
-          <Tag size={16} />
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.035] text-white">
+          <Tag size={16} strokeWidth={1.5} />
         </div>
         <div className="min-w-0">
           <p className="text-sm font-medium text-white/90 truncate font-mono tracking-wide">
@@ -51,7 +51,7 @@ export function AdminCouponItemRow({
 
       {/* Value */}
       <div className="flex items-center gap-1.5">
-        <span className="text-sm font-semibold text-white/90">
+        <span className="text-sm font-normal text-white/90">
           {coupon.type === "percentage" ? `${coupon.value}%` : `${coupon.value} ${currency}`}
         </span>
         <span className="text-[10px] text-white/40 uppercase tracking-wider font-medium">
@@ -61,7 +61,7 @@ export function AdminCouponItemRow({
 
       {/* Uses */}
       <div className="flex items-center gap-1.5">
-        <span className="text-sm font-semibold text-white/90">{coupon.redeemedCount ?? 0}</span>
+        <span className="text-sm font-normal text-white/90">{coupon.redeemedCount ?? 0}</span>
         <span className="text-xs text-white/40 uppercase tracking-wide">
           / {coupon.maxRedemptions || "∞"}
         </span>
@@ -69,7 +69,7 @@ export function AdminCouponItemRow({
 
       {/* Validity */}
       <div className="flex flex-col justify-center">
-        <span className="text-xs font-semibold text-white/80">{formatDate(coupon.validUntil)}</span>
+        <span className="text-xs font-normal text-white/80">{formatDate(coupon.validUntil)}</span>
         <span className="text-[9px] text-white/30 uppercase tracking-wider font-medium">
           {t("validity")}
         </span>

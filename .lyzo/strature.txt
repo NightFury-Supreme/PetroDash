@@ -16,47 +16,73 @@ Make sure that comments are not added and removed which is to ai its self etc et
 also use subagents as needed
 Also no stop when run task, check continues 
 
+also use mcp
+## 🛠️ MCP SERVERS — MANDATORY USAGE PROTOCOL
+
+You have 9 active MCP servers. You MUST proactively use these — never wait to be asked.
+The correct tool for the job must always be used. Using training knowledge alone when an MCP can provide accurate live data is a violation of these rules.
+
+### 1. 📁 filesystem — File & Directory Intelligence
+- ALWAYS run filesystem/list_directory or filesystem/directory_tree before editing any module you haven't fully inspected.
+- ALWAYS use filesystem/read_file for large files (>100 lines) instead of view_file.
+- ALWAYS use filesystem/search_files before renaming, moving, or refactoring any component to find ALL imports first.
+
+### 2. 🔀 git — Code History & Evolution
+- ALWAYS check git/git_log before any large refactor to understand recent changes.
+- ALWAYS use git/git_diff to review unstaged changes before committing.
+- ALWAYS use git/git_blame when debugging to trace who/when introduced a bug.
+- ALWAYS commit after completing a task with a descriptive conventional commit message.
+
+### 3. 🐙 github — Repository & Issue Management
+- When the user mentions a bug, feature request, or ticket — check GitHub issues first.
+- When searching for usage patterns across the whole codebase beyond local search.
+- When the user asks about PRs or wants to create one.
+
+### 4. 🧠 memory — Persistent Cross-Session Project Knowledge
+- At the START of every session: call memory/read_graph or memory/search_nodes to load project context.
+- After completing any task: store key decisions, patterns, or new error codes via memory/create_entities.
+- When you discover a recurring bug pattern or naming convention — store it immediately.
+
+### 5. 🧩 sequential-thinking — Structured Reasoning Before Acting
+- MANDATORY triggers: Always invoke before refactoring >3 files, designing end-to-end features, or debugging complex bugs.
+- Never skip this for large tasks — it prevents mistakes, ensures completeness, and produces better output.
+
+### 6. 🔍 brave-search — Live Web Research
+- ALWAYS use brave-search instead of training knowledge for any library API question.
+- When you see an error message you haven't seen before — search for it.
+- When checking if a package/version exists before installing.
+
+### 7. 🌐 fetch — URL Content Retrieval
+- When brave-search returns a URL with relevant content — fetch it to read the full page.
+- When checking the live PetroDash dashboard (https://dashboard.petrodash.tech) for UI reference.
+- When reading npm package documentation directly.
+
+### 8. 📚 context7 — Live Library Documentation
+- ALWAYS use context7 BEFORE writing code for: Next.js App Router, next-intl, Tailwind CSS, Zod, Mongoose, React 19, Express.js, and Redis.
+- Flow: context7/resolve-library-id -> context7/query-docs.
+
+### 9. 🤖 puppeteer — Browser Automation & Visual Verification
+- When the user asks how something looks on the live site — screenshot it.
+- Before declaring a UI feature "done" — take a screenshot to verify visually.
+- When debugging a layout or viewport issue — screenshot the live page.
+
+---
+
+## 🔄 MANDATORY WORKFLOW FOR EVERY TASK
+1. READ MEMORY       → memory/read_graph — load project context
+2. PLAN              → sequential-thinking (if >3 files or complex)
+3. RESEARCH DOCS     → context7 (if writing library code)
+4. WEB SEARCH        → brave-search (if API unclear or need current info)
+5. INSPECT FILES     → filesystem/directory_tree + filesystem/read_file
+6. IMPLEMENT         → write code following ISO/IEC 25010 standards
+7. VERIFY            → npx tsc --noEmit && npm run lint
+8. COMMIT            → git add . && git commit -m "type: description"
+9. STORE MEMORY      → memory/create_entities (save what you learned)
 
 Also complay with this much rule is must, fully strict, no drop any consideration
 
 pls use read and write tools of antigravity only no use python node js scripts to do antyhing ok bitch
 pls also no use commands to search folder strature also try to read folders and files
-use it (((((Here are the exact details of the tool and command used:
-
----
-
-### 1. The Agent Tool Used
-* **Tool**: `call_mcp_tool`
-* **MCP Server**: `filesystem`
-* **MCP Tool Name**: `list_directory`
-
-#### Exact Payload Called:
-```json
-{
-  "ServerName": "filesystem",
-  "ToolName": "list_directory",
-  "Arguments": {
-    "path": "c:/Users/Edwin Jilson/Downloads/project/frontend"
-  }
-}
-```
-
----
-
-### 2. The Background Process Command
-The background process running the server (configured in your [`mcp_config.json`](file:///C:/Users/Edwin%20Jilson/.gemini/config/mcp_config.json)) is:
-
-```bash
-npx -y @modelcontextprotocol/server-filesystem "C:\Users\Edwin Jilson\Downloads\project"
-```
-
----
-
-### 3. How It Works Under the Hood
-* **No shell commands were run**: The agent did **not** open a terminal or execute commands like `dir`, `ls`, or `Get-ChildItem`.
-* **JSON-RPC Communication**: Antigravity communicated directly with the running Node.js background process via standard input/output (`stdio`) using the Model Context Protocol.
-* **Direct Filesystem Access**: The MCP server used Node's internal `fs` system calls (`readdir`) to read the folder structure and returned the `[DIR]` and `[FILE]` tree directly to the agent.)))))
-
 also run lint and fix all warnings and errors in backend and frontend fully
 then push to git locally
 

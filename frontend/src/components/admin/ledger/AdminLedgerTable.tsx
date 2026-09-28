@@ -77,7 +77,7 @@ export function AdminLedgerTable({
             onClick={() => handleDownloadInvoice(item._id)}
             disabled={downloading === item._id}
             title={t('downloadInvoice')}
-            className="w-7 h-7 rounded border flex items-center justify-center bg-white/[0.02] border-white/[0.04] text-white/40 hover:text-white hover:bg-white/[0.06] hover:border-white/[0.08] transition-colors disabled:opacity-50"
+            className="w-7 h-7 rounded-md flex items-center justify-center bg-transparent text-white/40 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
           >
             {downloading === item._id ? <i className="fas fa-spinner fa-spin text-[12px]"></i> : <i className="fas fa-download text-[12px]"></i>}
           </button>
@@ -87,7 +87,7 @@ export function AdminLedgerTable({
             onClick={() => onRefund(item._id)}
             disabled={refunding === item._id}
             title={t('refundPayment')}
-            className="w-7 h-7 rounded border flex items-center justify-center bg-white/[0.02] border-white/[0.04] text-yellow-500/80 hover:text-yellow-500 hover:bg-yellow-500/10 hover:border-yellow-500/20 transition-colors disabled:opacity-50"
+            className="w-7 h-7 rounded-md flex items-center justify-center bg-transparent text-yellow-500/80 hover:text-yellow-500 hover:bg-yellow-500/10 transition-colors disabled:opacity-50"
           >
             {refunding === item._id ? <i className="fas fa-spinner fa-spin text-[12px]"></i> : <i className="fas fa-undo text-[12px]"></i>}
           </button>
@@ -97,7 +97,7 @@ export function AdminLedgerTable({
             onClick={() => onVoid(item._id)}
             disabled={voiding === item._id}
             title={t('voidCheckout')}
-            className="w-7 h-7 rounded border flex items-center justify-center bg-white/[0.02] border-white/[0.04] text-red-500/80 hover:text-red-500 hover:bg-red-500/10 hover:border-red-500/20 transition-colors disabled:opacity-50"
+            className="w-7 h-7 rounded-md flex items-center justify-center bg-transparent text-red-500/80 hover:text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-50"
           >
             {voiding === item._id ? <i className="fas fa-spinner fa-spin text-[12px]"></i> : <i className="fas fa-ban text-[12px]"></i>}
           </button>
@@ -163,7 +163,7 @@ export function AdminLedgerTable({
                 })()}
               </div>
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-[#D4D4D4]">{item.userId?.username || tCommon('unknown')}</p>
+                <p className="truncate text-sm font-normal text-[#D4D4D4]">{item.userId?.username || tCommon('unknown')}</p>
                 <p className="mt-0.5 truncate text-[13px] text-[#888]">{item.userId?.email || item.userId || ''}</p>
               </div>
             </div>
@@ -180,7 +180,7 @@ export function AdminLedgerTable({
 
             {/* Item & Provider */}
             <div className="flex flex-col justify-center">
-              <span className="text-sm font-semibold text-white/80 truncate">
+              <span className="text-sm font-normal text-white/80 truncate">
                 {item.planId?.name || item.planId || tCommon('unknown')}
               </span>
               <span className="text-[10px] text-white/30 uppercase tracking-wide mt-0.5">
@@ -190,7 +190,7 @@ export function AdminLedgerTable({
 
             {/* Amount */}
             <div className="flex items-center gap-1.5">
-              <span className="text-sm font-semibold text-white/80">{Number(item.amount || 0).toFixed(2)} {item.currency || 'USD'}</span>
+              <span className="text-sm font-normal text-white/80">{Number(item.amount || 0).toFixed(2)} {item.currency || 'USD'}</span>
             </div>
 
             {/* Status */}

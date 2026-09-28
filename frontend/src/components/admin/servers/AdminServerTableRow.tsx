@@ -192,8 +192,8 @@ export function AdminServerTableRow({
         <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
           {t('cpu')}
         </p>
-        <div className="flex items-center gap-1.5 font-medium text-[#E0E0E0] text-sm">
-          <Cpu size={14} className="text-[#FF5722]" />
+        <div className="flex items-center gap-1.5 font-normal text-[#E0E0E0] text-sm">
+          <Cpu size={14} strokeWidth={1.5} className="text-white" />
           <span className="truncate">{server.limits?.cpuPercent ?? 0}%</span>
         </div>
       </div>
@@ -203,8 +203,8 @@ export function AdminServerTableRow({
         <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
           {t('ram')}
         </p>
-        <div className="flex items-center gap-1.5 font-medium text-[#E0E0E0] text-sm">
-          <CircuitBoard size={14} className="text-[#FF5722]" />
+        <div className="flex items-center gap-1.5 font-normal text-[#E0E0E0] text-sm">
+          <CircuitBoard size={14} strokeWidth={1.5} className="text-white" />
           <span className="truncate">{(server.limits?.memoryMb ?? 0).toLocaleString()} MB</span>
         </div>
       </div>
@@ -214,8 +214,8 @@ export function AdminServerTableRow({
         <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
           {t('disk')}
         </p>
-        <div className="flex items-center gap-1.5 font-medium text-[#E0E0E0] text-sm">
-          <HardDrive size={14} className="text-[#FF5722]" />
+        <div className="flex items-center gap-1.5 font-normal text-[#E0E0E0] text-sm">
+          <HardDrive size={14} strokeWidth={1.5} className="text-white" />
           <span className="truncate">{(server.limits?.diskMb ?? 0).toLocaleString()} MB</span>
         </div>
       </div>

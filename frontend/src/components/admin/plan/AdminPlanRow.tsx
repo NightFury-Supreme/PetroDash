@@ -119,10 +119,10 @@ export function AdminPlanRow({
 
         {/* Resource chips */}
         <div className="grid flex-1 grid-cols-2 gap-4 sm:grid-cols-4 xl:min-w-0">
-          <Resource icon={<Cpu className="h-3.5 w-3.5" />} label={t('cpu')} value={cpu} />
-          <Resource icon={<MemoryStick className="h-3.5 w-3.5" />} label={t('memory')} value={memory} />
-          <Resource icon={<HardDrive className="h-3.5 w-3.5" />} label={t('disk')} value={disk} />
-          <Resource icon={<Server className="h-3.5 w-3.5" />} label={t('servers')} value={servers} />
+          <Resource icon={<Cpu className="h-3.5 w-3.5 text-white" strokeWidth={1.5} />} label={t('cpu')} value={cpu} />
+          <Resource icon={<MemoryStick className="h-3.5 w-3.5 text-white" strokeWidth={1.5} />} label={t('memory')} value={memory} />
+          <Resource icon={<HardDrive className="h-3.5 w-3.5 text-white" strokeWidth={1.5} />} label={t('disk')} value={disk} />
+          <Resource icon={<Server className="h-3.5 w-3.5 text-white" strokeWidth={1.5} />} label={t('servers')} value={servers} />
         </div>
 
         {/* Price + Status + Edit */}
@@ -135,7 +135,7 @@ export function AdminPlanRow({
                   {plan.strikeThroughPrice} {currency}
                 </span>
               )}
-              <span className="text-lg font-semibold tracking-tight text-white/90">{price}</span>
+              <span className="text-lg font-normal tracking-tight text-white/90">{price}</span>
               <span className="ml-1 text-[10px] text-white/35">{currency}</span>
             </div>
             <p className="text-[10px] text-white/35">{billing}</p>
@@ -223,7 +223,7 @@ function Resource({
       </div>
       <div className="min-w-0">
         <p className="text-[9px] uppercase tracking-[0.13em] text-white/20">{label}</p>
-        <p className="mt-0.5 truncate text-xs font-medium text-white/70">{value}</p>
+        <p className="mt-0.5 truncate text-xs font-normal text-white/70">{value}</p>
       </div>
     </div>
   );

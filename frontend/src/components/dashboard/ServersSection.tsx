@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ServerInfo } from "./types";
 import { Cpu, CircuitBoard, HardDrive, ChevronsUpDown, ExternalLink, Edit2, Trash2, ShieldAlert } from 'lucide-react';
 import { DeleteDrawer } from "@/components/ui/DeleteDrawer";
+import { RowActionButton } from "@/components/ui/RowActionButton";
 import { useTranslations } from 'next-intl';
 
 interface ServersSectionProps {
@@ -126,22 +127,22 @@ export function ServersSection({ servers, onDelete, onEdit }: ServersSectionProp
                   <div>{statusBadge}</div>
 
                   <div className="text-zinc-300">
-                    <div className="flex items-center gap-1.5 font-medium text-xs">
-                      <Cpu size={12} className="text-zinc-500" />
+                    <div className="flex items-center gap-1.5 font-normal text-xs">
+                      <Cpu size={12} strokeWidth={1.5} className="text-white" />
                       {server.cpu}%
                     </div>
                   </div>
 
                   <div className="text-zinc-300">
-                    <div className="flex items-center gap-1.5 font-medium text-xs">
-                      <CircuitBoard size={12} className="text-zinc-500" />
+                    <div className="flex items-center gap-1.5 font-normal text-xs">
+                      <CircuitBoard size={12} strokeWidth={1.5} className="text-white" />
                       {server.memory} MB
                     </div>
                   </div>
 
                   <div className="text-zinc-300">
-                    <div className="flex items-center gap-1.5 font-medium text-xs">
-                      <HardDrive size={12} className="text-zinc-500" />
+                    <div className="flex items-center gap-1.5 font-normal text-xs">
+                      <HardDrive size={12} strokeWidth={1.5} className="text-white" />
                       {server.storage} MB
                     </div>
                   </div>
@@ -151,44 +152,70 @@ export function ServersSection({ servers, onDelete, onEdit }: ServersSectionProp
                       <>
                         {/* Open Server */}
                         {isDownOrUnreachable || server.status === 'creating' ? (
-                          <button disabled className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/30 cursor-not-allowed transition-colors" title={server.status === 'creating' ? t('serverIsCreating') : t('cannotOpenUnreachable')}>
+                          <RowActionButton
+                            variant="default"
+                            disabled
+                            title={server.status === 'creating' ? t('serverIsCreating') : t('cannotOpenUnreachable')}
+                          >
                             <ExternalLink size={14} />
-                          </button>
+                          </RowActionButton>
                         ) : (
-                          <a href={server.url} target="_blank" rel="noreferrer" className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors" title={t('openServer')}>
+                          <RowActionButton
+                            variant="default"
+                            href={server.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            title={t('openServer')}
+                          >
                             <ExternalLink size={14} />
-                          </a>
+                          </RowActionButton>
                         )}
                         
                         {/* Edit Server */}
                         {server.suspended || server.status?.toLowerCase() === 'suspended' ? (
-                          <button disabled className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/30 cursor-not-allowed transition-colors" title={t('cannotEditSuspended')}>
+                          <RowActionButton
+                            variant="danger"
+                            disabled
+                            title={t('cannotEditSuspended')}
+                          >
                             <ShieldAlert size={14} />
-                          </button>
+                          </RowActionButton>
                         ) : server.status?.toLowerCase() === 'creating' ? (
-                          <button disabled className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/30 cursor-not-allowed transition-colors" title={t('cannotEditCreating')}>
+                          <RowActionButton
+                            variant="default"
+                            disabled
+                            title={t('cannotEditCreating')}
+                          >
                             <Edit2 size={14} />
-                          </button>
+                          </RowActionButton>
                         ) : isDownOrUnreachable ? (
-                          <button disabled className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/30 cursor-not-allowed transition-colors" title={t('cannotEditUnreachable')}>
+                          <RowActionButton
+                            variant="default"
+                            disabled
+                            title={t('cannotEditUnreachable')}
+                          >
                             <Edit2 size={14} />
-                          </button>
+                          </RowActionButton>
                         ) : (
-                          <button onClick={() => onEdit?.(server._id)} className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors" title={t('editServer')}>
+                          <RowActionButton
+                            variant="default"
+                            onClick={() => onEdit?.(server._id)}
+                            title={t('editServer')}
+                          >
                             <Edit2 size={14} />
-                          </button>
+                          </RowActionButton>
                         )}
                       </>
                     )}
 
-                    <button
+                    <RowActionButton
+                      variant="danger"
                       onClick={() => setDeletingServer(server)}
                       disabled={server.suspended || server.status?.toLowerCase() === 'suspended' || server.status?.toLowerCase() === 'creating'}
-                      className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/40 hover:text-red-400 hover:bg-red-400/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       title={server.status?.toLowerCase() === 'creating' ? t('cannotDeleteCreating') : (server.suspended || server.status?.toLowerCase() === 'suspended' ? t('cannotDeleteSuspended') : t('deleteServer'))}
                     >
                       <Trash2 size={14} />
-                    </button>
+                    </RowActionButton>
                   </div>
                 </div>
               );

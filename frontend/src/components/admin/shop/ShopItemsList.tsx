@@ -1,6 +1,6 @@
 "use client";
 
-import { Settings } from 'lucide-react';
+import { Settings, Coins } from 'lucide-react';
 import { RowActionButton } from '@/components/ui/RowActionButton';
 import { ShopItem } from '@/hooks/admin/shop/useAdminShop';
 import { useTranslations } from 'next-intl';
@@ -78,7 +78,7 @@ export function ShopItemsList({
 
             {/* Included amount */}
             <div className="flex items-center gap-1.5">
-              <span className="text-sm font-semibold text-white/80">+{item.amountPerUnit}</span>
+              <span className="text-sm font-normal text-white/80">+{item.amountPerUnit}</span>
               {formatUnit(item.unit) && (
                 <span className="text-xs text-white/30 uppercase tracking-wide">{formatUnit(item.unit)}</span>
               )}
@@ -86,13 +86,13 @@ export function ShopItemsList({
 
             {/* Price */}
             <div className="flex items-center gap-1.5">
-              <i className="fas fa-coins text-[11px] text-[#FF5722]"></i>
-              <span className="text-sm font-semibold text-white/80">{item.pricePerUnit}</span>
+              <Coins size={14} strokeWidth={1.5} className="text-white" />
+              <span className="text-sm font-normal text-white/80">{item.pricePerUnit}</span>
             </div>
 
             {/* Max */}
             <div className="flex items-center gap-1.5">
-              <span className="text-sm font-semibold text-white/80">{item.maxPerPurchase}</span>
+              <span className="text-sm font-normal text-white/80">{item.maxPerPurchase}</span>
             </div>
 
             {/* Status */}

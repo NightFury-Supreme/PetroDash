@@ -135,8 +135,8 @@ export function EggList({ eggs, onEdit, onDelete }: EggListProps) {
                     <p className="mb-1 text-[9px] uppercase tracking-[0.13em] text-white/20 lg:hidden">
                       {t('servers')}
                     </p>
-                    <div className="flex items-center gap-1.5 font-medium text-[#E0E0E0] text-sm">
-                      <Server size={14} className="text-[#FF5722]" />
+                    <div className="flex items-center gap-1.5 font-normal text-[#E0E0E0] text-sm">
+                      <Server size={14} strokeWidth={1.5} className="text-white" />
                       <span className="truncate">{egg.serversCount || 0}</span>
                     </div>
                   </div>
