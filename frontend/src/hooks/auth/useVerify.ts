@@ -9,10 +9,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { fetchWithRetry } from '@/utils/fetchWithRetry';
 import { useToast } from '@/components/ui/ToastProvider';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 export function useVerify() {
   const router = useRouter();
+  const locale = useLocale();
   const { showError, showSuccess } = useToast();
   const tErrors = useTranslations('Auth.errors');
   const tVerify = useTranslations('Auth.verify');
@@ -44,7 +45,7 @@ export function useVerify() {
           return;
         }
         const base = process.env.NEXT_PUBLIC_API_BASE || '';
-        const res = await fetchWithRetry(`${base}/api/auth/profile`, {
+        const res = await fetchWithRetry(`${base}/api/auth/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) {
@@ -55,7 +56,11 @@ export function useVerify() {
         const data = await res.json();
         if (!mounted) return;
         if (data.emailVerified) {
-          router.replace('/dashboard');
+          try {
+            sessionStorage.removeItem('verify_email');
+          } catch {}
+          const target = locale && locale !== 'en' ? `/${locale}/dashboard` : '/dashboard';
+          window.location.href = target;
           return;
         }
         setEmail(data.email || '');
@@ -70,7 +75,7 @@ export function useVerify() {
     return () => {
       mounted = false;
     };
-  }, [router]);
+  }, [router, locale]);
 
   const verifyCode = async (code: string): Promise<boolean> => {
     if (code.length !== 8 || loading) return false;
@@ -85,8 +90,15 @@ export function useVerify() {
         body: JSON.stringify({ email, code }),
       });
       if (res.ok) {
+        try {
+          sessionStorage.removeItem('verify_email');
+        } catch {}
+        window.dispatchEvent(new Event('user:refresh'));
         showSuccess(tVerify('successVerified'));
-        setTimeout(() => router.replace('/dashboard'), 1500);
+        const target = locale && locale !== 'en' ? `/${locale}/dashboard` : '/dashboard';
+        setTimeout(() => {
+          window.location.href = target;
+        }, 1200);
         return true;
       }
       const data = await res.json().catch(() => ({}));

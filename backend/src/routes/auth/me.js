@@ -9,7 +9,7 @@ const AppError = require('../../utils/AppError');
 
 const router = express.Router();
 
-router.get('/me', requireAuth, async (req, res, next) => {
+router.get(['/me', '/profile'], requireAuth, async (req, res, next) => {
   try {
     const cacheKey = `user:${req.user.sub}:profile`;
     const cachedProfile = await getCache(cacheKey);

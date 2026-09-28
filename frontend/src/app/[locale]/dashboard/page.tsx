@@ -28,6 +28,10 @@ function DashboardContentWrapper() {
   useEffect(() => {
     const verified = searchParams.get('verified');
     if (verified === '1') {
+      try {
+        sessionStorage.removeItem('verify_email');
+      } catch {}
+      window.dispatchEvent(new Event('user:refresh'));
       const url = new URL(window.location.href);
       url.searchParams.delete('verified');
       window.history.replaceState({}, '', url.toString());
