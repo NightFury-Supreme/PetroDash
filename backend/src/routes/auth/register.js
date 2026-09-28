@@ -9,7 +9,8 @@ const { generateSecureCode, hashString } = require('../../utils/security');
 const { sendMailTemplate } = require('../../lib/mail');
 const { writeAudit } = require('../../middleware/audit');
 const { logUserActivity } = require('../../middleware/userActivity');
-const { createRateLimiter } = require('../../middleware/rateLimit');
+const { registrationRateLimit } = require('../../middleware/rateLimit');
+const { deleteCache, deleteCachePattern } = require('../../lib/redis');
 const AppError = require('../../utils/AppError');
 
 const router = express.Router();
@@ -24,7 +25,7 @@ const registerSchema = z.object({
   ref: z.string().trim().optional(),
 });
 
-router.post('/register', createRateLimiter(5, 60 * 60 * 1000), async (req, res, next) => {
+router.post('/register', registrationRateLimit, async (req, res, next) => {
   const startTime = Date.now();
   let user = null;
 
@@ -107,6 +108,8 @@ router.post('/register', createRateLimiter(5, 60 * 60 * 1000), async (req, res, 
       durationMs: Date.now() - startTime
     });
     await logUserActivity(req, 'auth.register.success', { registrationMethod: 'email', ...(ref ? { referralCodeUsed: ref } : {}) }, user._id.toString());
+    await deleteCache(`user:auth:${user._id}`);
+    await deleteCachePattern(`user:${user._id}:*`);
 
     return res.status(201).json({ token, user: userResponse });
   } catch (error) {

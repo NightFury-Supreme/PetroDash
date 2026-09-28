@@ -10,11 +10,7 @@ import { useToast } from '@/components/ui/ToastProvider';
 import { useLogin } from '@/hooks/auth';
 import { useTranslations } from 'next-intl';
 
-const schema = z.object({
-  emailOrUsername: z.string().min(1, 'Email or username is required'),
-  password: z.string().min(1, 'Password is required'),
-});
-type LoginForm = z.infer<typeof schema>;
+type LoginForm = { emailOrUsername: string; password: string };
 type FieldErrors = Partial<Record<keyof LoginForm, string>>;
 
 export default function LoginForm({ onSuccess, onRequires2FA }: { onSuccess: (token: string) => void; onRequires2FA: (tempToken: string) => void }) {
@@ -25,8 +21,14 @@ export default function LoginForm({ onSuccess, onRequires2FA }: { onSuccess: (to
   const { login, loading } = useLogin({ onSuccess, onRequires2FA });
   const t = useTranslations('Auth.login');
   const tCommon = useTranslations('Common');
+  const tErrors = useTranslations('Auth.errors');
   const [form, setForm] = useState<LoginForm>({ emailOrUsername: '', password: '' });
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+
+  const schema = z.object({
+    emailOrUsername: z.string().trim().min(1, tErrors('emailOrUsernameRequired')),
+    password: z.string().min(1, tErrors('passwordRequired')),
+  });
 
   const showEmailLogin = settings?.emailLogin ?? true;
   const showOAuth = (settings?.discord?.enabled || settings?.google?.enabled) ?? false;

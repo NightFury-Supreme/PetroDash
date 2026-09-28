@@ -73,7 +73,7 @@ export default function ChangeEmailForm({
               maxLength={6}
               value={tfaCode}
               onChange={(e) => setTfaCode(e.target.value.replace(/\D/g, ''))}
-              placeholder="123456"
+              placeholder="000000"
               className="w-full h-[42px] px-[13px] text-center font-mono tracking-[0.2em] bg-[#121212] border border-[#282828] rounded-[7px] text-[#d5d5d5] placeholder-[#666] focus:outline-none focus:border-[#454545] focus:bg-[#151515] transition-colors"
             />
           </div>

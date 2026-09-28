@@ -5,3 +5,5 @@ export * from './useRegister';
 export * from './useForgot';
 export * from './useVerify';
 export * from './useBannedStatus';
+export * from './useAuthGuard';
+export * from './useAuthSettings';

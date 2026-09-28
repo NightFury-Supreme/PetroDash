@@ -39,7 +39,7 @@ export default function ForgotCoordinator() {
       return;
     }
     if (!password || password.length < 12) {
-      showError(tErrors('passwordShort'));
+      showError(tErrors('passwordShort12'));
       return;
     }
     if (password !== confirm) {

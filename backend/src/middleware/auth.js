@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const UserSession = require('../models/UserSession');
 const { getCache, setCache } = require('../lib/redis');
 const AppError = require('../utils/AppError');
 
@@ -50,8 +51,6 @@ async function requireAuth(req, res, next) {
             let isSessionValid = await getCache(sessionCacheKey);
             
             if (isSessionValid === null) {
-                // Not in cache, query DB
-                const UserSession = require('../models/UserSession');
                 const sessionDoc = await UserSession.findById(payload.sessionId).lean();
                 
                 if (!sessionDoc) {

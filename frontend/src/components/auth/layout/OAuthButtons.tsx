@@ -3,6 +3,7 @@
 import { Suspense, useMemo } from 'react';
 import { useSearchParams } from '@/i18n/routing';
 import { useAuthSettings } from '@/hooks/useAuthSettings';
+import { useTranslations } from 'next-intl';
 
 interface OAuthProvider {
   name: string;
@@ -20,6 +21,7 @@ interface OAuthButtonsProps {
 
 // Inner component that uses useSearchParams — must be wrapped in Suspense by the caller
 function OAuthButtonsInner({ onError }: OAuthButtonsProps) {
+  const tCommon = useTranslations('Common');
   const { settings, loading, error } = useAuthSettings();
   const searchParams = useSearchParams();
 
@@ -94,7 +96,7 @@ function OAuthButtonsInner({ onError }: OAuthButtonsProps) {
           } as React.CSSProperties}
         >
           <i className={`${provider.icon} text-[15px] group-hover:scale-110 transition-transform`} style={{ color: 'var(--provider-color)' }} />
-          <span>Continue with {provider.name}</span>
+          <span>{tCommon('continueWith', { provider: provider.name })}</span>
         </button>
       ))}
     </div>

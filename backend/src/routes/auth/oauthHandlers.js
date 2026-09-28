@@ -21,6 +21,7 @@ async function handleOAuthSuccess(req, provider) {
       user.emailVerified = true;
       await user.save();
       await deleteCache(`user:${user._id}:profile`);
+      await deleteCache(`user:auth:${user._id}`);
     }
   } catch {}
 

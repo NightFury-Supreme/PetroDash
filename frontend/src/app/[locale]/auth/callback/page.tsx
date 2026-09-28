@@ -5,6 +5,8 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useToast } from "@/components/ui/ToastProvider";
 import { useRouter, useSearchParams } from "@/i18n/routing";
 
+import { sanitizeRedirect } from '@/utils/sanitizeRedirect';
+
 function AuthCallbackContent() {
   const router = useRouter();
   const locale = useLocale();
@@ -17,15 +19,8 @@ function AuthCallbackContent() {
       const token = searchParams.get('token');
       const error = searchParams.get('error');
       const discordJoin = searchParams.get('discord_join');
-      const redirectTo = (() => {
-        const raw = searchParams.get('redirect');
-        if (!raw || raw === '/') return '/dashboard';
-        const decoded = decodeURIComponent(raw);
-        // Safe same-origin relative path only
-        return decoded.startsWith('/') && !decoded.startsWith('//') && !decoded.toLowerCase().startsWith('/login')
-          ? decoded
-          : '/dashboard';
-      })();
+      const redirectTo = sanitizeRedirect(searchParams.get('redirect'));
+
 
       if (error) {
         showError(t('oauthFailed'));

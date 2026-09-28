@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useTransition } from 'react';
 import { useRouter, usePathname } from '@/i18n/routing';
 import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { localeLabels, type Locale } from '@/i18n/routing';
 import { Globe, ChevronDown, Check } from 'lucide-react';
 
@@ -15,6 +16,7 @@ export default function LanguageSwitcher({
   direction?: 'up' | 'down',
   variant?: 'outline' | 'ghost'
 } = {}) {
+  const tCommon = useTranslations('Common');
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -62,7 +64,7 @@ export default function LanguageSwitcher({
         onClick={() => setOpen(v => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-label="Select language"
+        aria-label={tCommon('selectLanguage')}
         disabled={isPending}
         className={[
           'flex items-center gap-1.5 transition-all duration-150 select-none focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF5722]',
@@ -89,7 +91,7 @@ export default function LanguageSwitcher({
       {open && (
         <div
           role="listbox"
-          aria-label="Language options"
+          aria-label={tCommon('languageOptions')}
           className={[
             'absolute',
             direction === 'up' ? 'bottom-full mb-2' : 'top-full mt-2',

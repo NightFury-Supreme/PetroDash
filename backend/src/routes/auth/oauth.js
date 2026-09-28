@@ -14,6 +14,20 @@ const { handleOAuthSuccess } = require('./oauthHandlers');
 
 const router = express.Router();
 
+function sanitizeOAuthRedirect(raw) {
+  if (!raw || typeof raw !== 'string') return '/dashboard';
+  try {
+    const decoded = decodeURIComponent(raw).trim();
+    if (!decoded.startsWith('/') || decoded.startsWith('//') || decoded.includes('\\')) return '/dashboard';
+    if (/[:@]/.test(decoded) || /^\/(https?:|\/\/|www\.)/i.test(decoded) || decoded.includes('://')) return '/dashboard';
+    const lower = decoded.toLowerCase();
+    if (lower.startsWith('/login') || lower.startsWith('/register') || lower.startsWith('/auth/')) return '/dashboard';
+    return decoded;
+  } catch {
+    return '/dashboard';
+  }
+}
+
 // Discord OAuth Initiation
 router.get('/discord', async (req, res, next) => {
   await writeAudit(req, 'auth.oauth.discord.initiated', 'auth', null, {
@@ -54,13 +68,14 @@ router.get('/discord/callback', async (req, res, next) => {
     const callbackUrl = new URL(`${process.env.FRONTEND_URL}/auth/callback`);
     callbackUrl.searchParams.set('token', token);
 
-    // Decode redirect from OAuth state and forward it
+    // Decode redirect from OAuth state and forward securely
     try {
       const rawState = req.query.state || (req.user && req.user._state);
       if (rawState) {
         const stateObj = JSON.parse(Buffer.from(String(rawState), 'base64').toString('utf8'));
-        if (stateObj?.redirect && typeof stateObj.redirect === 'string' && stateObj.redirect.startsWith('/') && !stateObj.redirect.startsWith('//')) {
-          callbackUrl.searchParams.set('redirect', stateObj.redirect);
+        const safeRedirect = sanitizeOAuthRedirect(stateObj?.redirect);
+        if (safeRedirect && safeRedirect !== '/dashboard') {
+          callbackUrl.searchParams.set('redirect', safeRedirect);
         }
       }
     } catch {
@@ -120,13 +135,14 @@ router.get('/google/callback', async (req, res, next) => {
     const callbackUrl = new URL(`${process.env.FRONTEND_URL}/auth/callback`);
     callbackUrl.searchParams.set('token', token);
 
-    // Decode redirect from OAuth state and forward it
+    // Decode redirect from OAuth state and forward securely
     try {
       const rawState = req.query.state || (req.user && req.user._state);
       if (rawState) {
         const stateObj = JSON.parse(Buffer.from(String(rawState), 'base64').toString('utf8'));
-        if (stateObj?.redirect && typeof stateObj.redirect === 'string' && stateObj.redirect.startsWith('/') && !stateObj.redirect.startsWith('//')) {
-          callbackUrl.searchParams.set('redirect', stateObj.redirect);
+        const safeRedirect = sanitizeOAuthRedirect(stateObj?.redirect);
+        if (safeRedirect && safeRedirect !== '/dashboard') {
+          callbackUrl.searchParams.set('redirect', safeRedirect);
         }
       }
     } catch {
@@ -168,6 +184,7 @@ router.get('/status', async (req, res, next) => {
 router.post('/reconfigure', async (req, res, next) => {
   try {
     await reconfigureStrategies();
+    await writeAudit(req, 'admin.oauth.reconfigured', 'settings', null, {});
     res.json({ success: true, message: 'OAuth strategies reconfigured' });
   } catch (_error) {
     next(AppError.internal('Failed to reconfigure OAuth strategies', 'ERR_OAUTH_RECONFIGURE'));
@@ -188,6 +205,9 @@ router.post('/create-pterodactyl-user', async (req, res, next) => {
 
     await UserCreationService.createPterodactylUser(user);
     await user.save();
+
+    await logUserActivity(req, 'user.pterodactyl.created', { pterodactylUserId: user.pterodactylUserId }, user._id.toString());
+    await writeAudit(req, 'user.pterodactyl.created', 'user', user._id.toString(), { pterodactylUserId: user.pterodactylUserId });
 
     res.json({
       success: true,
@@ -223,6 +243,8 @@ router.post('/discord/join', requireAuth, async (req, res, next) => {
     );
 
     if (joinResult.success) {
+      await logUserActivity(req, 'user.discord.joined', { guildId }, user._id.toString());
+      await writeAudit(req, 'user.discord.joined', 'user', user._id.toString(), { guildId });
       return res.json({ success: true, message: 'Successfully joined Discord server' });
     }
     throw AppError.badRequest(joinResult.error || 'Failed to join Discord server', 'ERR_DISCORD_JOIN_FAILED');

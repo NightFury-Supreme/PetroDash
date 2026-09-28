@@ -12,6 +12,7 @@ const { loginRateLimit } = require('../../middleware/rateLimit');
 const { logUserActivity } = require('../../middleware/userActivity');
 const SessionService = require('../../services/SessionService');
 const { serializeAuthUser, sendLoginAlert } = require('./loginHelpers');
+const { deleteCache, deleteCachePattern } = require('../../lib/redis');
 const AppError = require('../../utils/AppError');
 
 const router = express.Router();
@@ -117,6 +118,7 @@ router.post('/login', loginRateLimit, async (req, res, next) => {
     const mockReq = { ...req, user: { sub: user._id.toString(), sessionId: session._id.toString() } };
     await logUserActivity(mockReq, 'auth.login.success', { loginMethod: 'email', sessionId: session._id.toString() }, user._id.toString());
 
+    await deleteCache(`user:auth:${user._id}`);
     sendLoginAlert(user, req);
     
     return res.json({ 
@@ -221,6 +223,7 @@ router.post('/login/2fa', loginRateLimit, async (req, res, next) => {
     const mockReq = { ...req, user: { sub: user._id.toString(), sessionId: session._id.toString() } };
     await logUserActivity(mockReq, 'auth.login.success', { loginMethod: 'email_2fa', sessionId: session._id.toString() }, user._id.toString());
     
+    await deleteCache(`user:auth:${user._id}`);
     sendLoginAlert(user, req);
     
     return res.json({ 
@@ -248,6 +251,11 @@ router.post('/logout', async (req, res, next) => {
           await UserSession.findByIdAndDelete(decoded.sessionId);
           req.sessionId = decoded.sessionId;
         }
+
+        if (user?._id) {
+          await deleteCache(`user:auth:${user._id}`);
+          await deleteCachePattern(`user:${user._id}:*`);
+        }
       } catch {
         // Invalid token during logout ignored
       }
@@ -266,7 +274,7 @@ router.post('/logout', async (req, res, next) => {
       sessionId: req.sessionId || null
     });
     
-    return res.json({ message: 'Logged out successfully' });
+    return res.json({ ok: true, code: 'LOGGED_OUT_SUCCESS' });
   } catch (error) {
     await writeAudit(req, 'auth.logout.error', 'auth', null, {
       reason: 'server_error',

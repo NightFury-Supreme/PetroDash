@@ -22,6 +22,15 @@ function createRateLimiter(max, windowMs, options = {}) {
     store,
     passOnStoreError: true,
     message: { error: 'Too many requests, please try again later.' },
+    handler: (req, res, next) => {
+      let retryAfter = Math.ceil(windowMs / 1000);
+      if (req.rateLimit && req.rateLimit.resetTime) {
+        const resetMs = req.rateLimit.resetTime.getTime() - Date.now();
+        retryAfter = Math.max(1, Math.ceil(resetMs / 1000));
+      }
+      res.set('Retry-After', retryAfter.toString());
+      return next(AppError.tooManyRequests('Too many requests, please try again later.', 'ERR_RATE_LIMIT', { retryAfter }));
+    },
     ...options
   });
 }

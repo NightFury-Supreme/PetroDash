@@ -10,6 +10,7 @@ import { fetchWithRetry } from '@/utils/fetchWithRetry';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslations, useLocale } from 'next-intl';
 import { locales } from '@/i18n/routing';
+import { sanitizeRedirect } from '@/utils/sanitizeRedirect';
 import type { RegisterFormData } from './types';
 
 export function useRegister() {
@@ -58,25 +59,7 @@ export function useRegister() {
       window.dispatchEvent(new Event('user:refresh'));
 
       const search = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-      const rawRedirect = search?.get('redirect') || null;
-      let redirectTo = '/dashboard';
-      if (rawRedirect) {
-        try {
-          const decoded = decodeURIComponent(rawRedirect);
-          const lower = decoded.toLowerCase();
-          if (
-            lower !== '/' &&
-            !lower.startsWith('/login') &&
-            !lower.startsWith('/register') &&
-            !lower.startsWith('/auth/callback') &&
-            decoded.startsWith('/') &&
-            !decoded.startsWith('//') &&
-            !decoded.startsWith('/\\')
-          ) {
-            redirectTo = decoded;
-          }
-        } catch {}
-      }
+      const redirectTo = sanitizeRedirect(search?.get('redirect'));
       const hasLocalePrefix = (locales as readonly string[]).some(
         (l) => redirectTo === `/${l}` || redirectTo.startsWith(`/${l}/`)
       );
@@ -84,6 +67,7 @@ export function useRegister() {
         ? `/${locale}${redirectTo.startsWith('/') ? redirectTo : `/${redirectTo}`}`
         : redirectTo;
       window.location.href = target;
+
       return true;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : tErrors('registerFailed');

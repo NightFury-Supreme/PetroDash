@@ -9,7 +9,7 @@ const { getSettings } = require('../../lib/settings');
 const UserCreationService = require('../../services/userCreation');
 const { generateSecureCode, hashString } = require('../../utils/security');
 const { sendMailTemplate } = require('../../lib/mail');
-const { deleteCachePattern } = require('../../lib/redis');
+const { deleteCache, deleteCachePattern } = require('../../lib/redis');
 const { verificationRateLimit, resendRateLimit } = require('../../middleware/rateLimit');
 const { logUserActivity } = require('../../middleware/userActivity');
 const { writeAudit } = require('../../middleware/audit');
@@ -61,7 +61,8 @@ router.get('/verify', async (req, res, next) => {
     vt.usedAt = new Date();
     await vt.save();
 
-    await deleteCachePattern(`user:${user._id}:profile`);
+    await deleteCache(`user:auth:${user._id}`);
+    await deleteCachePattern(`user:${user._id}:*`);
     await UserCreationService.grantReferralRewards(user);
 
     const changes = { emailVerified: { old: false, new: true } };
@@ -192,7 +193,8 @@ async function handleVerifyCode(req, res, next) {
     updatedVt.usedAt = new Date();
     await updatedVt.save();
 
-    await deleteCachePattern(`user:${user._id}:profile`);
+    await deleteCache(`user:auth:${user._id}`);
+    await deleteCachePattern(`user:${user._id}:*`);
     await UserCreationService.grantReferralRewards(user);
 
     const changes = { emailVerified: { old: false, new: true } };

@@ -5,6 +5,7 @@ const Server = require('../../models/Server');
 
 const { getCache, setCache, deleteCache } = require('../../lib/redis');
 const { logUserActivity } = require('../../middleware/userActivity');
+const { writeAudit } = require('../../middleware/audit');
 const AppError = require('../../utils/AppError');
 
 const router = express.Router();
@@ -132,17 +133,18 @@ router.patch('/me/profile-picture', requireAuth, async (req, res, next) => {
       await logUserActivity(req, 'auth.account.update', { 
         profilePicture: `${oldPicture || 'none'} to ${user.profilePicture || 'none'}` 
       });
-      const { writeAudit } = require('../../middleware/audit');
       await writeAudit(req, 'auth.account.update', 'user_profile', user._id.toString(), { 
         profilePicture: `${oldPicture || 'none'} to ${user.profilePicture || 'none'}` 
       });
     }
     
-    // Invalidate profile cache
+    // Invalidate profile and auth cache
     await deleteCache(`user:${req.user.sub}:profile`);
+    await deleteCache(`user:auth:${req.user.sub}`);
     
     return res.json({ 
-      message: 'Profile picture updated successfully',
+      ok: true,
+      code: 'PROFILE_PICTURE_UPDATED',
       profilePicture: user.profilePicture
     });
   } catch (_e) {

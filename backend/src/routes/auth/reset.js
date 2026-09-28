@@ -9,6 +9,7 @@ const { hashString, validatePasswordStrength } = require('../../utils/security')
 const { verificationRateLimit } = require('../../middleware/rateLimit');
 const { logUserActivity } = require('../../middleware/userActivity');
 const { writeAudit } = require('../../middleware/audit');
+const { deleteCache, deleteCachePattern } = require('../../lib/redis');
 const AppError = require('../../utils/AppError');
 
 const router = express.Router();
@@ -80,11 +81,13 @@ router.post('/reset', verificationRateLimit, async (req, res, next) => {
     });
 
     await UserSession.deleteMany({ userId: user._id });
+    await deleteCache(`user:auth:${user._id}`);
+    await deleteCachePattern(`user:${user._id}:*`);
 
     const changes = { password: { old: '********', new: '********' } };
     await logUserActivity(req, 'auth.password.reset.success', { changes }, user._id.toString());
     await writeAudit(req, 'auth.password.reset.success', 'auth', user._id.toString(), { changes });
-    return res.json({ ok: true });
+    return res.json({ ok: true, code: 'PASSWORD_RESET_SUCCESS' });
   } catch (e) {
     next(e instanceof AppError ? e : AppError.internal('Failed to reset password'));
   }
