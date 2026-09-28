@@ -9,7 +9,6 @@ import React from 'react';
 import { Cpu, CircuitBoard, HardDrive, User } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
-import { StatusBadge } from '@/components/ui';
 import type { AdminServerTableRowProps } from './types';
 import { AdminServerRowActions } from './AdminServerRowActions';
 
@@ -23,41 +22,41 @@ export function AdminServerTableRow({
   const t = useTranslations('admin.servers');
 
   let statusBadge = (
-    <StatusBadge variant="success">
+    <span className="text-xs font-medium text-[#00FF88]">
       {t('active')}
-    </StatusBadge>
+    </span>
   );
 
   const statusLower = server.status?.toLowerCase();
   if (server.suspended || statusLower === 'suspended') {
     statusBadge = (
-      <StatusBadge variant="warning">
+      <span className="text-xs font-medium text-[#FF5722]">
         {t('suspended')}
-      </StatusBadge>
+      </span>
     );
   } else if (server.unreachable || statusLower === 'unreachable') {
     statusBadge = (
-      <StatusBadge variant="danger">
+      <span className="text-xs font-medium text-[#FF4444]">
         {t('unreachable')}
-      </StatusBadge>
+      </span>
     );
   } else if (statusLower === 'error') {
     statusBadge = (
-      <StatusBadge variant="danger" className="whitespace-nowrap">
+      <span className="text-xs font-medium text-[#FF4444] whitespace-nowrap">
         {t('failed')}
-      </StatusBadge>
+      </span>
     );
   } else if (statusLower === 'creating') {
     statusBadge = (
-      <StatusBadge variant="info">
+      <span className="text-xs font-medium text-[#4488FF]">
         {t('creating')}
-      </StatusBadge>
+      </span>
     );
   } else if (statusLower === 'queued') {
     statusBadge = (
-      <StatusBadge variant="purple" className="whitespace-nowrap">
+      <span className="text-xs font-medium text-[#A855F7] whitespace-nowrap">
         {t('queued')}
-      </StatusBadge>
+      </span>
     );
   }
 

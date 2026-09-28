@@ -9,7 +9,7 @@ import React from 'react';
 import { Server, Coins, User as UserIcon } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
-import { RankBadge, StatusBadge } from '@/components/ui';
+import { RankBadge } from '@/components/ui';
 import { AdminUserRowActions } from './AdminUserRowActions';
 
 interface AdminUserTableRowProps {
@@ -40,7 +40,7 @@ export function AdminUserTableRow({
     user.oauthProviders?.google?.picture;
 
   return (
-    <div className="group grid grid-cols-1 gap-4 px-5 py-5 transition hover:bg-white/[0.015] lg:grid-cols-[1.5fr_1.2fr_90px_90px_90px_100px_120px] lg:items-center">
+    <div className="group grid grid-cols-1 gap-4 px-5 py-5 transition hover:bg-white/[0.015] lg:grid-cols-[1.8fr_1.2fr_90px_90px_100px_120px] lg:items-center">
       {/* User (Avatar, Name, Email) */}
       <div className="min-w-0">
         <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
@@ -62,9 +62,12 @@ export function AdminUserTableRow({
             )}
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-medium text-[#D4D4D4] group-hover/link:text-[#FF5722] transition-colors truncate">
-              {user.username}
-            </p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-xs font-medium text-[#D4D4D4] group-hover/link:text-[#FF5722] transition-colors truncate">
+                {user.username}
+              </p>
+              <RankBadge rank={user.role || 'user'} size="sm" />
+            </div>
             <p className="text-[10px] text-[#666] truncate">
               {user.email}
             </p>
@@ -82,25 +85,15 @@ export function AdminUserTableRow({
         </span>
       </div>
 
-      {/* Role */}
-      <div className="min-w-0">
-        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
-          {t('role')}
-        </p>
-        <div className="flex items-center">
-          <RankBadge rank={user.role || 'user'} />
-        </div>
-      </div>
-
       {/* Status */}
       <div className="min-w-0">
         <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
           {t('status')}
         </p>
         <div>
-          <StatusBadge variant={isBanned ? 'danger' : 'success'}>
+          <span className={`text-xs font-medium ${isBanned ? 'text-[#FF4444]' : 'text-[#00FF88]'}`}>
             {isBanned ? t('banned') : t('active')}
-          </StatusBadge>
+          </span>
         </div>
       </div>
 

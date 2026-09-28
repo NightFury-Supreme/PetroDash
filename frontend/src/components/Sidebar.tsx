@@ -192,13 +192,13 @@ export default function Sidebar() {
                     <span className="truncate text-[13px] font-medium text-zinc-100 leading-tight">
                       {user?.name || (user?.firstName ? `${user.firstName} ${user.lastName || ""}`.trim() : "User")}
                     </span>
-                    <div className="flex items-center gap-1.5 mt-0.5 pr-2">
-                      <div className="flex items-center gap-1 text-[11px] font-medium leading-tight text-zinc-300">
-                        <Coins size={10} strokeWidth={2} />
-                        <span>{tNav("coins", { count: user?.coins ?? 0 })}</span>
+                    <div className="flex items-center gap-2 mt-0.5 whitespace-nowrap">
+                      <div className="flex items-center gap-1 text-[11px] font-normal leading-tight text-zinc-300 whitespace-nowrap shrink-0">
+                        <Coins size={11} strokeWidth={1.5} className="shrink-0 text-white" />
+                        <span className="whitespace-nowrap">{tNav("coins", { count: user?.coins ?? 0 })}</span>
                       </div>
                       {user?.role && (
-                        <RankBadge rank={user.role} size="sm" />
+                        <RankBadge rank={user.role} size="sm" className="shrink-0" />
                       )}
                     </div>
                   </>

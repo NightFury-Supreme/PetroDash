@@ -36,10 +36,9 @@ export function UsersTable({
     <div>
       <div className="w-full">
         {/* TABLE HEADER (Desktop) */}
-        <div className="hidden gap-4 lg:grid lg:grid-cols-[1.5fr_1.2fr_90px_90px_90px_100px_120px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30">
+        <div className="hidden gap-4 lg:grid lg:grid-cols-[1.8fr_1.2fr_90px_90px_100px_120px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30">
           <span>{t('user')}</span>
           <span>{t('userId')}</span>
-          <span>{t('role')}</span>
           <span>{t('status')}</span>
           <span>{t('servers')}</span>
           <span>{t('coins')}</span>
@@ -52,7 +51,7 @@ export function UsersTable({
             Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
-                className="flex flex-col gap-3 px-5 py-3.5 lg:grid lg:grid-cols-[1.5fr_1.2fr_90px_90px_90px_100px_120px] lg:items-center"
+                className="flex flex-col gap-3 px-5 py-3.5 lg:grid lg:grid-cols-[1.8fr_1.2fr_90px_90px_100px_120px] lg:items-center"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-white/[0.04] animate-pulse shrink-0" />
@@ -62,7 +61,6 @@ export function UsersTable({
                   </div>
                 </div>
                 <div className="h-2.5 w-24 bg-white/[0.04] rounded animate-pulse" />
-                <div className="h-5 w-14 bg-white/[0.04] rounded-full animate-pulse" />
                 <div className="h-5 w-16 bg-white/[0.04] rounded-full animate-pulse" />
                 <div className="h-3 w-8 bg-white/[0.04] rounded animate-pulse" />
                 <div className="h-3 w-12 bg-white/[0.04] rounded animate-pulse" />

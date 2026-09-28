@@ -8,4 +8,3 @@ export * from './SharedLogsTable';
 export * from './Toast';
 export * from './ToastProvider';
 export * from './RowActionButton';
-export * from './StatusBadge';

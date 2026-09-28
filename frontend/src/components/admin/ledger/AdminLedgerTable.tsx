@@ -40,22 +40,22 @@ export function AdminLedgerTable({
   const getStatusBadge = (status: string) => {
     const normStatus = String(status || "").toUpperCase();
     
-    let styles = "border-gray-500/20 bg-gray-500/[0.04] text-gray-400";
+    let color = "text-gray-400";
     
     if (normStatus === "COMPLETED" || normStatus === "PAID") {
-      styles = "border-emerald-500/20 bg-emerald-500/[0.04] text-emerald-500";
+      color = "text-emerald-500";
     } else if (normStatus === "FAILED") {
-      styles = "border-red-500/20 bg-red-500/[0.04] text-red-500";
+      color = "text-red-500";
     } else if (normStatus === "REFUNDED") {
-      styles = "border-yellow-500/20 bg-yellow-500/[0.04] text-yellow-500";
+      color = "text-yellow-500";
     } else if (normStatus === "VOIDED") {
-      styles = "border-gray-500/20 bg-gray-500/[0.04] text-gray-500";
+      color = "text-gray-500";
     } else if (normStatus === "CREATED" || normStatus === "PENDING") {
-      styles = "border-blue-500/20 bg-blue-500/[0.04] text-blue-500";
+      color = "text-blue-500";
     }
 
     return (
-      <span className={`inline-flex w-fit rounded border px-2 py-1 text-xs font-medium uppercase ${styles}`}>
+      <span className={`text-xs font-medium uppercase ${color}`}>
         {normStatus}
       </span>
     );

@@ -5,7 +5,6 @@ import { ServerInfo } from "./types";
 import { Cpu, CircuitBoard, HardDrive, ChevronsUpDown, ExternalLink, Edit2, Trash2, ShieldAlert } from 'lucide-react';
 import { DeleteDrawer } from "@/components/ui/DeleteDrawer";
 import { RowActionButton } from "@/components/ui/RowActionButton";
-import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useTranslations } from 'next-intl';
 
 interface ServersSectionProps {
@@ -56,34 +55,34 @@ export function ServersSection({ servers, onDelete, onEdit }: ServersSectionProp
           ) : (
             servers.map((server) => {
               let statusBadge = (
-                <StatusBadge variant="success">
+                <span className="text-xs font-medium text-[#00FF88]">
                   {tCommon('active')}
-                </StatusBadge>
+                </span>
               );
 
               if (server.suspended || server.status === 'suspended') {
                 statusBadge = (
-                  <StatusBadge variant="warning">
+                  <span className="text-xs font-medium text-[#FF5722]">
                     {t('statusSuspended')}
-                  </StatusBadge>
+                  </span>
                 );
               } else if (server.unreachable || server.status === 'unreachable' || server.status === 'error') {
                 statusBadge = (
-                  <StatusBadge variant="danger">
+                  <span className="text-xs font-medium text-[#FF4444]">
                     {t('statusUnreachable')}
-                  </StatusBadge>
+                  </span>
                 );
               } else if (server.status === 'creating') {
                 statusBadge = (
-                  <StatusBadge variant="info">
+                  <span className="text-xs font-medium text-[#4488FF]">
                     {t('statusCreating')}
-                  </StatusBadge>
+                  </span>
                 );
               } else if (server.status === 'queued') {
                 statusBadge = (
-                  <StatusBadge variant="purple" className="whitespace-nowrap">
+                  <span className="text-xs font-medium text-[#A855F7] whitespace-nowrap">
                     {server.queuePosition ? t('statusQueuedPos', { pos: server.queuePosition }) : t('statusQueued')}
-                  </StatusBadge>
+                  </span>
                 );
               }
 

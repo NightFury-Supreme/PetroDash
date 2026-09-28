@@ -1,16 +1,16 @@
 /* ==========================================================================
    RankBadge / RoleBadge Component
    Compliance: ISO/IEC 25010, Reusable Shared UI Pattern (<300 lines)
-   Derived from StatusBadge for unified styling across roles and statuses.
+   Self-contained component with icons and Title Case role styling.
 ========================================================================== */
 
 'use client';
 
 import React from 'react';
-import { User, Shield, Cpu, Crown } from 'lucide-react';
-import { StatusBadge, type StatusBadgeVariant, type BadgeSize } from './StatusBadge';
+import { User, Shield, Cpu } from 'lucide-react';
 
-export type RankType = 'admin' | 'user' | 'system' | 'premium' | 'vip' | 'pro' | string;
+export type RankType = 'admin' | 'user' | 'system' | string;
+export type BadgeSize = 'sm' | 'md' | 'lg';
 
 export interface RankBadgeProps {
   rank: RankType;
@@ -19,6 +19,12 @@ export interface RankBadgeProps {
   showIcon?: boolean;
   children?: React.ReactNode;
 }
+
+const sizeStyles: Record<BadgeSize, string> = {
+  sm: 'px-1.5 py-0.5 text-[10px]',
+  md: 'px-2 py-1 text-xs',
+  lg: 'px-2.5 py-1 text-sm',
+};
 
 export function RankBadge({
   rank,
@@ -31,36 +37,35 @@ export function RankBadge({
 
   const normalizedRank = String(rank || '').toLowerCase();
 
-  let variant: StatusBadgeVariant = 'neutral';
+  let colorClass = 'bg-white/5 text-white/40';
   let label = String(rank || '');
   label = label.charAt(0).toUpperCase() + label.slice(1).toLowerCase();
   let IconComponent: React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }> = User;
 
   if (normalizedRank === 'admin' || normalizedRank === 'administrator') {
-    variant = 'warning';
+    colorClass = 'bg-[#FF5722]/10 text-[#FF5722]';
     label = 'Admin';
     IconComponent = Shield;
   } else if (normalizedRank === 'user') {
-    variant = 'success';
+    colorClass = 'bg-[#00FF88]/10 text-[#00FF88]';
     label = 'User';
     IconComponent = User;
   } else if (normalizedRank === 'system') {
-    variant = 'neutral';
+    colorClass = 'bg-white/5 text-white/40';
     label = 'System';
     IconComponent = Cpu;
-  } else if (['premium', 'vip', 'pro', 'plus', 'donor'].some((keyword) => normalizedRank.includes(keyword))) {
-    variant = 'warning';
-    label = normalizedRank.toUpperCase() === 'VIP' ? 'VIP' : (label.charAt(0).toUpperCase() + label.slice(1).toLowerCase());
-    IconComponent = Crown;
   }
 
   const iconSize = size === 'sm' ? 10 : size === 'lg' ? 14 : 12;
+  const sizeClass = sizeStyles[size] || sizeStyles.md;
 
   return (
-    <StatusBadge variant={variant} size={size} className={className}>
+    <span
+      className={`inline-flex items-center justify-center gap-1.5 rounded font-medium whitespace-nowrap shrink-0 transition-colors ${sizeClass} ${colorClass} ${className}`.trim()}
+    >
       {showIcon && <IconComponent size={iconSize} strokeWidth={1.5} className="shrink-0" />}
       <span>{children || label}</span>
-    </StatusBadge>
+    </span>
   );
 }
 
