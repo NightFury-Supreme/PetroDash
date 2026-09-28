@@ -116,7 +116,7 @@ export function AdminUserTableRow({
           {t('servers')}
         </p>
         <div className="flex items-center gap-1.5 font-medium text-[#E0E0E0] text-sm">
-          <Server size={14} className="text-[#FF5722]" />
+          <Server size={14} className="text-white" />
           <span className="truncate">{user.serverCount ?? user.serversCount ?? 0}</span>
         </div>
       </div>
@@ -127,7 +127,7 @@ export function AdminUserTableRow({
           {t('coins')}
         </p>
         <div className="flex items-center gap-1.5 font-medium text-[#E0E0E0] text-sm">
-          <Coins size={14} className="text-[#FF5722]" />
+          <Coins size={14} className="text-white" />
           <span className="truncate">{(user.coins ?? 0).toLocaleString()}</span>
         </div>
       </div>

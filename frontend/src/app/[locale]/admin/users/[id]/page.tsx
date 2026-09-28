@@ -139,7 +139,7 @@ export default function AdminUserPage() {
             </div>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-3">
-                <Coins size={16} className="text-[#FF5722]" />
+                <Coins size={16} className="text-white" />
                 <div>
                   <span className="block text-[10px] uppercase tracking-widest text-[#666]">{tCommon('balance')}</span>
                   <span className="text-sm font-medium text-[#D4D4D4]">{userForm.coins || 0} {tCommon('coins')}</span>
