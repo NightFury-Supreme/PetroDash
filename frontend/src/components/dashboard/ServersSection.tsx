@@ -5,6 +5,7 @@ import { ServerInfo } from "./types";
 import { Cpu, CircuitBoard, HardDrive, ChevronsUpDown, ExternalLink, Edit2, Trash2, ShieldAlert } from 'lucide-react';
 import { DeleteDrawer } from "@/components/ui/DeleteDrawer";
 import { RowActionButton } from "@/components/ui/RowActionButton";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useTranslations } from 'next-intl';
 
 interface ServersSectionProps {
@@ -55,34 +56,34 @@ export function ServersSection({ servers, onDelete, onEdit }: ServersSectionProp
           ) : (
             servers.map((server) => {
               let statusBadge = (
-                <span className="inline-flex rounded border border-emerald-500/20 bg-emerald-500/[0.04] px-2 py-1 text-[10px] font-medium text-emerald-500">
+                <StatusBadge variant="success">
                   {tCommon('active')}
-                </span>
+                </StatusBadge>
               );
 
               if (server.suspended || server.status === 'suspended') {
                 statusBadge = (
-                  <span className="inline-flex rounded border border-orange-500/20 bg-orange-500/[0.04] px-2 py-1 text-[10px] font-medium text-orange-500">
+                  <StatusBadge variant="warning">
                     {t('statusSuspended')}
-                  </span>
+                  </StatusBadge>
                 );
               } else if (server.unreachable || server.status === 'unreachable' || server.status === 'error') {
                 statusBadge = (
-                  <span className="inline-flex rounded border border-red-500/20 bg-red-500/[0.04] px-2 py-1 text-[10px] font-medium text-red-500">
+                  <StatusBadge variant="danger">
                     {t('statusUnreachable')}
-                  </span>
+                  </StatusBadge>
                 );
               } else if (server.status === 'creating') {
                 statusBadge = (
-                  <span className="inline-flex rounded border border-blue-500/20 bg-blue-500/[0.04] px-2 py-1 text-[10px] font-medium text-blue-500">
+                  <StatusBadge variant="info">
                     {t('statusCreating')}
-                  </span>
+                  </StatusBadge>
                 );
               } else if (server.status === 'queued') {
                 statusBadge = (
-                  <span className="inline-flex whitespace-nowrap rounded border border-purple-500/20 bg-purple-500/[0.04] px-2 py-1 text-[10px] font-medium text-purple-400">
+                  <StatusBadge variant="purple" className="whitespace-nowrap">
                     {server.queuePosition ? t('statusQueuedPos', { pos: server.queuePosition }) : t('statusQueued')}
-                  </span>
+                  </StatusBadge>
                 );
               }
 

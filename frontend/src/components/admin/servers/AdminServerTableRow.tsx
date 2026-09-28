@@ -9,6 +9,7 @@ import React from 'react';
 import { Cpu, CircuitBoard, HardDrive, User } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
+import { StatusBadge } from '@/components/ui';
 import type { AdminServerTableRowProps } from './types';
 import { AdminServerRowActions } from './AdminServerRowActions';
 
@@ -22,41 +23,41 @@ export function AdminServerTableRow({
   const t = useTranslations('admin.servers');
 
   let statusBadge = (
-    <span className="px-2 py-1 rounded text-xs font-medium bg-[#00FF88]/10 text-[#00FF88]">
+    <StatusBadge variant="success">
       {t('active')}
-    </span>
+    </StatusBadge>
   );
 
   const statusLower = server.status?.toLowerCase();
   if (server.suspended || statusLower === 'suspended') {
     statusBadge = (
-      <span className="px-2 py-1 rounded text-xs font-medium bg-[#FF5722]/10 text-[#FF5722]">
+      <StatusBadge variant="warning">
         {t('suspended')}
-      </span>
+      </StatusBadge>
     );
   } else if (server.unreachable || statusLower === 'unreachable') {
     statusBadge = (
-      <span className="px-2 py-1 rounded text-xs font-medium bg-[#FF4444]/10 text-[#FF4444]">
+      <StatusBadge variant="danger">
         {t('unreachable')}
-      </span>
+      </StatusBadge>
     );
   } else if (statusLower === 'error') {
     statusBadge = (
-      <span className="px-2 py-1 whitespace-nowrap rounded text-xs font-medium bg-[#FF4444]/10 text-[#FF4444]">
+      <StatusBadge variant="danger" className="whitespace-nowrap">
         {t('failed')}
-      </span>
+      </StatusBadge>
     );
   } else if (statusLower === 'creating') {
     statusBadge = (
-      <span className="px-2 py-1 rounded text-xs font-medium bg-[#4488FF]/10 text-[#4488FF]">
+      <StatusBadge variant="info">
         {t('creating')}
-      </span>
+      </StatusBadge>
     );
   } else if (statusLower === 'queued') {
     statusBadge = (
-      <span className="px-2 py-1 whitespace-nowrap rounded text-xs font-medium bg-[#A855F7]/10 text-[#A855F7]">
+      <StatusBadge variant="purple" className="whitespace-nowrap">
         {t('queued')}
-      </span>
+      </StatusBadge>
     );
   }
 

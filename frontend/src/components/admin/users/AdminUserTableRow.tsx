@@ -9,7 +9,7 @@ import React from 'react';
 import { Server, Coins, User as UserIcon } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
-import { RankBadge } from '@/components/ui/RankBadge';
+import { RankBadge, StatusBadge } from '@/components/ui';
 import { AdminUserRowActions } from './AdminUserRowActions';
 
 interface AdminUserTableRowProps {
@@ -98,15 +98,9 @@ export function AdminUserTableRow({
           {t('status')}
         </p>
         <div>
-          {isBanned ? (
-            <span className="px-2 py-1 rounded text-xs font-medium bg-[#FF4444]/10 text-[#FF4444]">
-              {t('banned')}
-            </span>
-          ) : (
-            <span className="px-2 py-1 rounded text-xs font-medium bg-[#00FF88]/10 text-[#00FF88]">
-              {t('active')}
-            </span>
-          )}
+          <StatusBadge variant={isBanned ? 'danger' : 'success'}>
+            {isBanned ? t('banned') : t('active')}
+          </StatusBadge>
         </div>
       </div>
 
