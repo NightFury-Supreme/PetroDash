@@ -11,12 +11,12 @@ import { fetchWithRetry } from "@/utils/fetchWithRetry";
 const PUBLIC_PATHS = ["/login", "/register", "/auth/callback", "/forgot"];
 
 // ---------------------------------------------------------------------------
-// Helpers (module-level — safe to call inside useState lazy initializer)
+// Module-level helpers (no browser APIs — safe for SSR + lazy initializers)
 // ---------------------------------------------------------------------------
 
 /**
- * Determines whether a given (locale-stripped) pathname is publicly accessible
- * without authentication.
+ * Returns true if the locale-stripped pathname is a publicly accessible route
+ * that never requires authentication.
  */
 function isPublicPath(path: string): boolean {
   return (
@@ -27,8 +27,8 @@ function isPublicPath(path: string): boolean {
 }
 
 /**
- * Synchronously reads localStorage without throwing.
- * Returns null on SSR or any storage error.
+ * Reads the stored auth token without throwing.
+ * Returns null during SSR or on any storage error.
  */
 function getStoredToken(): string | null {
   try {
@@ -45,39 +45,36 @@ function getStoredToken(): string | null {
 /**
  * Client-side authentication gate.
  *
- * Behaviour:
- * - Public paths (/login, /register, /forgot, /verify, /banned):
- *     render immediately, no network call.
- * - Protected paths with a stored token:
- *     render children optimistically on the FIRST render (no flash for
- *     already-authenticated users), then verify via /api/auth/me async.
- *     If the token is stale/banned, the user is redirected after validation.
- * - Protected paths with NO stored token:
- *     render nothing (null) on the first render — avoids any skeleton/layout
- *     flash — and immediately redirect to /login?redirect=<currentPath>.
+ * Render contract (SSR-safe, zero hydration errors):
  *
- * This mirrors the pattern used by Discord, GitHub, etc.: unauthenticated
- * visits to protected pages go directly to the login page with no intermediate
- * loading state.
+ *   Server render  → isPublicPath(pathname)
+ *   Client first render → same (no localStorage access)
+ *   After hydration (useEffect) → optimistically true if token present
+ *
+ * User experience:
+ *   • Public paths   : render immediately, no network call.
+ *   • Protected + token exists : one effect cycle (~1 frame) of spinner,
+ *     then children. Async /api/auth/me validation runs in the background;
+ *     if stale/banned, the user is silently redirected.
+ *   • Protected + no token : spinner shown briefly, redirect fires in the
+ *     first effect run. Never renders the protected shell.
  */
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  // next-intl's usePathname already strips the locale prefix
+  // next-intl strips the locale prefix (e.g. /es/dashboard → /dashboard)
   const pathname = usePathname() || "/";
 
   const isPublic = isPublicPath(pathname);
 
   /**
-   * Lazy initializer — runs synchronously on first render (no effect needed).
+   * SSR-safe initializer — uses only `pathname`, identical on server & client.
+   * Never reads localStorage here to prevent server/client mismatch.
    *
-   * • Public path  → true  (render immediately, always)
-   * • Protected + token exists → true  (optimistic render; async re-validation follows)
-   * • Protected + no token     → false (render null; effect fires redirect instantly)
+   * Public paths start validated.
+   * Protected paths start unvalidated; the effect below fast-tracks to true
+   * if a token exists (avoiding a visible flash for authenticated users).
    */
-  const [isValidated, setIsValidated] = useState<boolean>(() => {
-    if (isPublic) return true;
-    return Boolean(getStoredToken());
-  });
+  const [isValidated, setIsValidated] = useState<boolean>(() => isPublic);
 
   const checkingRef = useRef(false);
   const redirectingToRef = useRef<string | null>(null);
@@ -99,15 +96,14 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   }, []);
 
   // ---------------------------------------------------------------------------
-  // Auth-change listener — resets validation state on login / logout
+  // Auth-change listener — resets on login / logout / token change
   // ---------------------------------------------------------------------------
 
   useEffect(() => {
     const handleAuthChange = () => {
       validatedUserRef.current = null;
       checkingRef.current = false;
-      // Re-evaluate synchronously: if there's a token we stay optimistic,
-      // otherwise drop to false so the redirect fires.
+      // Synchronize with current token state after auth change
       setIsValidated(isPublicPath(pathname) || Boolean(getStoredToken()));
     };
     window.addEventListener("user:refresh", handleAuthChange);
@@ -126,7 +122,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     // Public pages: nothing to validate.
     if (isPublic) {
       setIsValidated(true);
-      // Prevent authenticated users from lingering on /register.
+      // Prevent authenticated users from sitting on /register.
       if (pathname === "/register") {
         const token = getStoredToken();
         if (token && redirectingToRef.current !== "/dashboard") {
@@ -139,7 +135,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
     const token = getStoredToken();
 
-    // No token — fire redirect immediately.
+    // No token — redirect immediately, keep spinner visible.
     if (!token) {
       setIsValidated(false);
       const loginDest = buildLoginRedirect(pathname);
@@ -150,8 +146,16 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Fast path: same token already validated this session.
+    // ── Optimistic fast-path ──────────────────────────────────────────────
+    // Token is present → show children immediately without waiting for the
+    // network round-trip. This collapses the spinner to zero visible time
+    // for normal authenticated navigation.
+    //
+    // The async validation below runs in the background. If it finds the
+    // token is stale or the account banned, it will hide the children and
+    // redirect — but this is the uncommon path.
     if (validatedUserRef.current?.token === token) {
+      // Fast path: same token already validated this session.
       if (pathname.startsWith("/admin") && validatedUserRef.current.role !== "admin") {
         setIsValidated(false);
         if (redirectingToRef.current !== "/dashboard") {
@@ -163,6 +167,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       setIsValidated(true);
       return;
     }
+
+    // Optimistically allow through before async check completes.
+    setIsValidated(true);
 
     // Guard against concurrent validation calls.
     if (checkingRef.current) return;
@@ -211,11 +218,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        // — Server / network error: allow the authenticated user through —
-        if (!meRes.ok) {
-          setIsValidated(true);
-          return;
-        }
+        // — Server / network error: leave optimistic render as-is —
+        if (!meRes.ok) return;
 
         let userData: any = {};
         let brandingData: any = {};
@@ -260,8 +264,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         redirectingToRef.current = null;
         setIsValidated(true);
       } catch {
-        // Network failure — let the authenticated user through gracefully.
-        setIsValidated(true);
+        // Network failure — leave the optimistic render; user already sees the page.
       } finally {
         checkingRef.current = false;
       }
@@ -340,20 +343,17 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   // Render
   // ---------------------------------------------------------------------------
 
-  // Public pages and validated sessions render children.
   if (isPublic || isValidated) {
     return <>{children}</>;
   }
 
   /**
-   * Not yet validated (no token or pending async revalidation).
+   * Spinner is shown only when:
+   * 1. A protected page loads with no stored token (briefly, until redirect fires)
+   * 2. A stale token is being async-validated (uncommon, lasts until /api/auth/me responds)
    *
-   * Shows a minimal full-screen loading spinner so the user sees progress
-   * rather than a completely blank page during the brief redirect window.
-   *
-   * For unauthenticated visits (no token) this is displayed for only the
-   * single frame before the effect fires and navigation begins.
-   * For stale-token revalidation (rare), it persists until /api/auth/me responds.
+   * Normal authenticated navigation never hits this branch because
+   * setIsValidated(true) is called optimistically above before the API call.
    */
   return (
     <div
