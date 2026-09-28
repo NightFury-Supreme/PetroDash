@@ -6,7 +6,8 @@
 'use client';
 
 import React from 'react';
-import { ExternalLink, Edit2, Trash2, ShieldAlert, Loader2 } from 'lucide-react';
+import { ExternalLink, Settings, Trash, ShieldAlert, Loader2 } from 'lucide-react';
+import { RowActionButton } from '@/components/ui/RowActionButton';
 import { useTranslations } from 'next-intl';
 import type { AdminServer } from './types';
 
@@ -36,70 +37,47 @@ export function AdminServerRowActions({
       <div className="flex lg:justify-end gap-2">
         {statusLower !== 'queued' && statusLower !== 'error' && (
           <>
-            {isDownOrUnreachable ? (
-              <button
-                type="button"
-                disabled
-                className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#555] cursor-not-allowed transition-colors"
-                title={t('cannotOpenUnreachable')}
-              >
-                <ExternalLink size={14} />
-              </button>
-            ) : (
-              <a
-                href={serverUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#888] hover:text-[#D4D4D4] transition-colors"
-                title={t('openServer')}
-              >
-                <ExternalLink size={14} />
-              </a>
-            )}
+            <RowActionButton
+              variant="default"
+              href={serverUrl}
+              target="_blank"
+              rel="noreferrer"
+              disabled={isDownOrUnreachable}
+              title={isDownOrUnreachable ? t('cannotOpenUnreachable') : t('openServer')}
+            >
+              <ExternalLink size={15} />
+            </RowActionButton>
 
             {server.suspended || statusLower === 'suspended' ? (
-              <button
-                type="button"
+              <RowActionButton
+                variant="danger"
                 disabled
                 title={t('cannotEditSuspended')}
-                className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#555] cursor-not-allowed transition-colors"
               >
-                <ShieldAlert size={14} />
-              </button>
-            ) : statusLower === 'creating' ? (
-              <button
-                type="button"
-                disabled
-                title={t('cannotEditState')}
-                className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#444] cursor-not-allowed transition-colors"
-              >
-                <Edit2 size={14} />
-              </button>
-            ) : isDownOrUnreachable ? (
-              <button
-                type="button"
-                disabled
-                title={t('cannotEditUnreachable')}
-                className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#555] cursor-not-allowed transition-colors"
-              >
-                <Edit2 size={14} />
-              </button>
+                <ShieldAlert size={15} />
+              </RowActionButton>
             ) : (
-              <button
-                type="button"
+              <RowActionButton
+                variant="default"
                 onClick={() => onEdit(server._id)}
-                title={t('editServer')}
-                className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#888] hover:text-[#D4D4D4] transition-colors"
+                disabled={statusLower === 'creating' || isDownOrUnreachable}
+                title={
+                  statusLower === 'creating'
+                    ? t('cannotEditState')
+                    : isDownOrUnreachable
+                    ? t('cannotEditUnreachable')
+                    : t('editServer')
+                }
               >
-                <Edit2 size={14} />
-              </button>
+                <Settings size={15} />
+              </RowActionButton>
             )}
           </>
         )}
 
         {/* Delete */}
-        <button
-          type="button"
+        <RowActionButton
+          variant="danger"
           onClick={() => onDelete(server._id, server.name)}
           disabled={
             deleting === server._id ||
@@ -114,14 +92,13 @@ export function AdminServerRowActions({
               ? t('cannotDeleteSuspended')
               : t('deleteServer')
           }
-          className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#888] hover:text-[#FF4444] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {deleting === server._id ? (
-            <Loader2 size={14} className="animate-spin text-[#FF5722]" />
+            <Loader2 size={15} className="animate-spin text-red-500" />
           ) : (
-            <Trash2 size={14} />
+            <Trash size={15} />
           )}
-        </button>
+        </RowActionButton>
       </div>
     </div>
   );

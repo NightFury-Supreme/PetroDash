@@ -15,7 +15,9 @@ import { AdminUserRowActions } from './AdminUserRowActions';
 interface AdminUserTableRowProps {
   user: any;
   onDelete: (id: string, username: string) => void;
-  onToggleBan: (user: any) => void;
+  onToggleBan?: (user: any) => void;
+  onOpenBan?: (user: any) => void;
+  onOpenUnban?: (user: any) => void;
   banningUserId: string | null;
   deletingUserId: string | null;
 }
@@ -24,6 +26,8 @@ export function AdminUserTableRow({
   user,
   onDelete,
   onToggleBan,
+  onOpenBan,
+  onOpenUnban,
   banningUserId,
   deletingUserId,
 }: AdminUserTableRowProps) {
@@ -36,7 +40,7 @@ export function AdminUserTableRow({
     user.oauthProviders?.google?.picture;
 
   return (
-    <div className="group grid grid-cols-1 gap-4 px-5 py-5 transition hover:bg-white/[0.015] lg:grid-cols-[1.5fr_1.2fr_90px_90px_90px_100px_110px] lg:items-center">
+    <div className="group grid grid-cols-1 gap-4 px-5 py-5 transition hover:bg-white/[0.015] lg:grid-cols-[1.5fr_1.2fr_90px_90px_90px_100px_120px] lg:items-center">
       {/* User (Avatar, Name, Email) */}
       <div className="min-w-0">
         <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
@@ -133,6 +137,8 @@ export function AdminUserTableRow({
         user={user}
         onDelete={onDelete}
         onToggleBan={onToggleBan}
+        onOpenBan={onOpenBan}
+        onOpenUnban={onOpenUnban}
         banningUserId={banningUserId}
         deletingUserId={deletingUserId}
       />

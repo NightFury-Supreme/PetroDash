@@ -1,60 +1,61 @@
 import React, { useState } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
-import { useModal } from "@/components/Modal";
 import { ShieldAlert } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
+import { BanUserDrawer } from "../BanUserDrawer";
+import { UnbanUserDrawer } from "../UnbanUserDrawer";
 
 interface SecurityTabProps {
   ban: any;
   userId?: string;
+  username?: string;
+  userEmail?: string;
   onBanUser: (payload: { isBanned: boolean; reason?: string; durationMinutes?: number; until?: string | null }) => Promise<any>;
   onUnbanUser: () => Promise<any>;
   onRefresh?: () => void;
 }
 
-export function SecurityTab({ ban, userId: _userId, onBanUser, onUnbanUser, onRefresh }: SecurityTabProps) {
-  const modal = useModal();
+export function SecurityTab({
+  ban,
+  userId,
+  username = '',
+  userEmail = '',
+  onBanUser,
+  onUnbanUser,
+  onRefresh,
+}: SecurityTabProps) {
   const { showError } = useToast();
   const t = useTranslations('admin.users');
   const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
   const locale = useLocale();
 
-  const [showBanModal, setShowBanModal] = useState(false);
-  const [banForm, setBanForm] = useState({ reason: '', durationMinutes: undefined as number | undefined });
+  const [isBanDrawerOpen, setIsBanDrawerOpen] = useState(false);
+  const [isUnbanDrawerOpen, setIsUnbanDrawerOpen] = useState(false);
   const [banning, setBanning] = useState(false);
 
   const activeBan = Boolean(ban?.isBanned) && (!ban.until || new Date(ban.until) > new Date());
 
-  const applyBan = async () => {
-    setBanning(true);
-    try {
-      const payload: { isBanned: boolean; reason?: string; durationMinutes?: number; until?: string | null } = {
-        isBanned: true,
-        reason: banForm.reason,
-        durationMinutes: banForm.durationMinutes,
-      };
-      if (banForm.durationMinutes) {
-        payload.until = new Date(Date.now() + banForm.durationMinutes * 60000).toISOString();
-      }
-      await onBanUser(payload);
-      setShowBanModal(false);
-      onRefresh?.();
-    } catch (e: any) {
-      showError(e.message || tCommon('error'));
-    } finally {
-      setBanning(false);
+  const handleConfirmBan = async (data: { reason: string; durationMinutes?: number }) => {
+    const payload: { isBanned: boolean; reason?: string; durationMinutes?: number; until?: string | null } = {
+      isBanned: true,
+      reason: data.reason || t('defaultBanReason'),
+      durationMinutes: data.durationMinutes,
+    };
+    if (data.durationMinutes) {
+      payload.until = new Date(Date.now() + data.durationMinutes * 60000).toISOString();
     }
+    await onBanUser(payload);
+    onRefresh?.();
   };
 
-  const unban = async () => {
-    const confirmed = await modal.confirm({ title: t('unbanUserTitle'), body: t('unbanUserConfirm') });
-    if (!confirmed) return;
+  const handleConfirmUnban = async () => {
     setBanning(true);
     try {
       await onUnbanUser();
       onRefresh?.();
     } catch (e: any) {
-      showError(e.message || tCommon('error'));
+      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
     } finally {
       setBanning(false);
     }
@@ -62,56 +63,25 @@ export function SecurityTab({ ban, userId: _userId, onBanUser, onUnbanUser, onRe
 
   return (
     <div className="space-y-6">
-      {showBanModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-[#0F0F0F] border border-white/10 p-6 shadow-2xl">
-            <h3 className="mb-4 text-xl font-bold text-white">{t('banUserModalTitle')}</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-white/50">{t('banReasonLabel')}</label>
-                <input
-                  value={banForm.reason}
-                  onChange={(e) => setBanForm({ ...banForm, reason: e.target.value })}
-                  className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] p-2 text-sm text-white outline-none focus:border-[#FF5722]"
-                  placeholder={t('banReasonPlaceholder')}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-white/50">{t('banDurationLabel')}</label>
-                <input
-                  type="number"
-                  value={banForm.durationMinutes || ''}
-                  onChange={(e) =>
-                    setBanForm({
-                      ...banForm,
-                      durationMinutes: e.target.value ? Number(e.target.value) : undefined,
-                    })
-                  }
-                  className="w-full rounded-lg border border-white/[0.06] bg-white/[0.02] p-2 text-sm text-white outline-none focus:border-[#FF5722]"
-                  placeholder={t('banDurationPlaceholder')}
-                />
-              </div>
-            </div>
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setShowBanModal(false)}
-                className="rounded-lg px-4 py-2 text-sm text-white/50 hover:bg-white/5 transition"
-              >
-                {t('cancel')}
-              </button>
-              <button
-                type="button"
-                onClick={applyBan}
-                disabled={banning}
-                className="rounded-lg bg-[#FF5722] px-4 py-2 text-sm text-white hover:bg-[#F4511E] transition disabled:opacity-50"
-              >
-                {t('applyBan')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <BanUserDrawer
+        isOpen={isBanDrawerOpen}
+        onClose={() => setIsBanDrawerOpen(false)}
+        onConfirm={handleConfirmBan}
+        username={username || 'user'}
+        userId={userId}
+        userEmail={userEmail}
+      />
+
+      <UnbanUserDrawer
+        isOpen={isUnbanDrawerOpen}
+        onClose={() => setIsUnbanDrawerOpen(false)}
+        onConfirm={handleConfirmUnban}
+        username={username || 'user'}
+        userId={userId}
+        userEmail={userEmail}
+        banReason={ban?.reason}
+        banUntil={ban?.until}
+      />
 
       <section>
         <div className="mb-5 flex items-end justify-between">
@@ -146,7 +116,7 @@ export function SecurityTab({ ban, userId: _userId, onBanUser, onUnbanUser, onRe
               {activeBan ? (
                 <button
                   type="button"
-                  onClick={unban}
+                  onClick={() => setIsUnbanDrawerOpen(true)}
                   disabled={banning}
                   className="h-9 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 text-xs font-medium text-emerald-400 hover:bg-emerald-500/20 transition disabled:opacity-50"
                 >
@@ -155,9 +125,9 @@ export function SecurityTab({ ban, userId: _userId, onBanUser, onUnbanUser, onRe
               ) : (
                 <button
                   type="button"
-                  onClick={() => setShowBanModal(true)}
+                  onClick={() => setIsBanDrawerOpen(true)}
                   disabled={banning}
-                  className="h-9 rounded-lg border border-orange-500/30 bg-orange-500/10 px-4 text-xs font-medium text-orange-400 hover:bg-orange-500/20 transition disabled:opacity-50"
+                  className="h-9 rounded-lg border border-red-500/30 bg-red-500/10 px-4 text-xs font-medium text-red-400 hover:bg-red-500/20 transition disabled:opacity-50"
                 >
                   {t('banUser')}
                 </button>

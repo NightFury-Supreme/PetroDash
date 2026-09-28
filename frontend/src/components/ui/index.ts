@@ -7,3 +7,4 @@ export * from './Select';
 export * from './SharedLogsTable';
 export * from './Toast';
 export * from './ToastProvider';
+export * from './RowActionButton';

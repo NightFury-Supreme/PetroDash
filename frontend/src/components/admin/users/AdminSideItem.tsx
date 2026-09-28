@@ -28,7 +28,7 @@ export function AdminSideItem({ icon: Icon, label, active, danger, onClick }: { 
                 ? "bg-red-500/10 text-red-500" 
                 : "bg-white/10 text-white"
             : danger
-                ? "text-red-500/50 hover:bg-red-500/10 hover:text-red-400"
+                ? "text-red-400 hover:bg-red-500/10 hover:text-red-300"
                 : "text-zinc-500 hover:bg-white/5 hover:text-zinc-200"
         }
       `}

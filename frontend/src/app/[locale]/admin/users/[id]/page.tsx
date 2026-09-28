@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
 import { useParams, useRouter, Link } from "@/i18n/routing";
-import { useModal } from "@/components/Modal";
 import { 
   User, ShieldCheck, Database, Server, Trash2, ArrowLeft, Share2, Coins, Cpu, CreditCard
 } from "lucide-react";
@@ -18,13 +17,13 @@ import {
   InvoicesTab,
   SecurityTab,
 } from "@/components/admin/users";
+import { DeleteDrawer } from "@/components/ui/DeleteDrawer";
 import { useAdminUserDetail } from "@/hooks/admin/users";
 import { useTranslations } from "next-intl";
 
 export default function AdminUserPage() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
-  const modal = useModal();
   const { showSuccess, showError } = useToast();
   
   const t = useTranslations('admin.users');
@@ -32,6 +31,7 @@ export default function AdminUserPage() {
   const tErrorBackend = useTranslations('BackendErrors');
 
   const [section, setSection] = useState("overview");
+  const [isDeleteDrawerOpen, setIsDeleteDrawerOpen] = useState(false);
 
   const {
     loading,
@@ -69,15 +69,7 @@ export default function AdminUserPage() {
     deleteUser: deleteUserApi,
   } = useAdminUserDetail(id);
 
-  const handleDeleteUser = async () => {
-    const confirmed = await modal.confirm({ 
-      title: t('deleteUserTitle'), 
-      body: t('deleteUserConfirm', { username: data?.user?.username || '' }),
-      confirmText: t('deleteUserConfirmText'),
-      cancelText: tCommon('cancel')
-    });
-    if (!confirmed) return;
-    
+  const handleConfirmDelete = async () => {
     const result = await deleteUserApi();
     if (result.success) {
       showSuccess(t('userDeletedSuccessfully'));
@@ -178,7 +170,7 @@ export default function AdminUserPage() {
                 </div>
                 <nav className="space-y-1">
                   <SideItem icon={ShieldCheck} label={t('tabSecurity')} active={section === 'security'} onClick={() => setSection('security')} />
-                  <SideItem icon={Trash2} label={t('deleteAccount')} danger active={false} onClick={handleDeleteUser} />
+                  <SideItem icon={Trash2} label={t('deleteAccount')} danger active={false} onClick={() => setIsDeleteDrawerOpen(true)} />
                 </nav>
               </div>
             </div>
@@ -246,6 +238,8 @@ export default function AdminUserPage() {
               <SecurityTab 
                 ban={ban}
                 userId={id}
+                username={userForm.username || data?.user?.username || ''}
+                userEmail={userForm.email || data?.user?.email || ''}
                 onBanUser={banUser}
                 onUnbanUser={unbanUser}
                 onRefresh={() => loadUser(referralPage)}
@@ -254,6 +248,19 @@ export default function AdminUserPage() {
           </div>
         </div>
       </div>
+
+      <DeleteDrawer
+        isOpen={isDeleteDrawerOpen}
+        onClose={() => setIsDeleteDrawerOpen(false)}
+        onConfirm={handleConfirmDelete}
+        entityType={t('deleteUserEntity')}
+        entityName={userForm.username || data?.user?.username || ''}
+        warningPoints={[
+          t('deleteWarning1'),
+          t('deleteWarning2'),
+          t('deleteWarning3'),
+        ]}
+      />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import { Edit2 } from 'lucide-react';
+import { Settings } from 'lucide-react';
+import { RowActionButton } from '@/components/ui/RowActionButton';
 import { ShopItem } from '@/hooks/admin/shop/useAdminShop';
 import { useTranslations } from 'next-intl';
 import { getLocalizedItemName, getLocalizedItemDescription, getShopIcon } from '@/components/shop/shopUtils';
@@ -107,13 +108,13 @@ export function ShopItemsList({
 
             {/* Action */}
             <div className="flex justify-end mt-2 md:mt-0">
-              <button
+              <RowActionButton
+                variant="default"
                 onClick={() => onStartEditing(item)}
-                className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors"
                 title={tCommon('manage')}
               >
-                <Edit2 size={14} />
-              </button>
+                <Settings size={15} />
+              </RowActionButton>
             </div>
           </div>
         ); })}

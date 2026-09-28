@@ -51,7 +51,6 @@ export function DeleteDrawer({
       await onConfirm();
       onClose();
     } catch (err: any) {
-      console.error(err);
       const translatedMsg =
         err.message && tErrorBackend.has(err.message)
           ? tErrorBackend(err.message)

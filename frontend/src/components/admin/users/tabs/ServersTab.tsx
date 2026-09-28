@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { useModal } from '@/components/Modal';
 import { useToast } from "@/components/ui/ToastProvider";
 import AdminServersTable from "@/components/admin/servers/AdminServersTable";
 import { AdminEditServerDrawer } from "@/components/admin/servers/AdminEditServerDrawer";
+import { DeleteDrawer } from "@/components/ui/DeleteDrawer";
 import { useTranslations } from "next-intl";
 
 interface ServersTabProps {
@@ -14,10 +14,11 @@ interface ServersTabProps {
 
 export function ServersTab({ user, servers, onDeleteServer, onRefresh }: ServersTabProps) {
   const [editingServer, setEditingServer] = useState<string | null>(null);
+  const [deletingServer, setDeletingServer] = useState<{ id: string; name: string } | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
-  const { showError } = useToast();
-  const modal = useModal();
+  const { showError, showSuccess } = useToast();
   const t = useTranslations('admin.users');
+  const tServers = useTranslations('admin.servers');
   const tCommon = useTranslations('Common');
 
   const formattedServers = (servers || []).map((s: any) => ({
@@ -27,41 +28,18 @@ export function ServersTab({ user, servers, onDeleteServer, onRefresh }: Servers
     egg: s.eggId || {},
   }));
 
-  const handleDelete = async (id: string, name: string) => {
-    const inputValue = await modal.prompt({
-      title: t('deleteServerTitle'),
-      content: (
-        <div>
-          {t('deleteServerPrompt1')}{' '}
-          <span className="bg-[#222] border border-[#2A2A2A] px-[6px] py-[2px] rounded-[4px] font-mono text-[#D4D4D4] text-[12px]">
-            {name}
-          </span>
-          .{' '}
-          <br />
-          <br />
-          {t('deleteServerPrompt2')}
-          <br />
-          <br />
-          {t('deleteServerPrompt3')}{' '}
-          <strong className="text-white font-medium">{t('deleteKeyword')}</strong> {t('deleteServerPrompt4')}
-        </div>
-      ),
-      confirmText: t('deleteBtn'),
-      danger: true,
-      requiredInput: t('deleteKeyword'),
-    });
+  const handleDelete = (id: string, name: string) => {
+    setDeletingServer({ id, name });
+  };
 
-    if (!inputValue || inputValue.toLowerCase() !== t('deleteKeyword').toLowerCase()) {
-      if (inputValue !== null) {
-        showError(t('deleteKeywordError'));
-      }
-      return;
-    }
-
-    setDeleting(id);
+  const handleConfirmDelete = async () => {
+    if (!deletingServer) return;
+    setDeleting(deletingServer.id);
     try {
-      await onDeleteServer(id);
+      await onDeleteServer(deletingServer.id);
+      showSuccess(tServers('success.serverDeleted', { name: deletingServer.name }));
       onRefresh();
+      setDeletingServer(null);
     } catch (e: any) {
       showError(e.message || tCommon('error'));
     } finally {
@@ -102,6 +80,19 @@ export function ServersTab({ user, servers, onDeleteServer, onRefresh }: Servers
           }}
         />
       )}
+
+      <DeleteDrawer
+        isOpen={Boolean(deletingServer)}
+        onClose={() => setDeletingServer(null)}
+        onConfirm={handleConfirmDelete}
+        entityType={tServers('drawer.serverEntity')}
+        entityName={deletingServer?.name || ''}
+        warningPoints={[
+          tServers('drawer.deleteWarning1'),
+          tServers('drawer.deleteWarning2'),
+          tServers('drawer.deleteWarning3'),
+        ]}
+      />
     </div>
   );
 }

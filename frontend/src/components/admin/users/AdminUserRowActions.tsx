@@ -6,20 +6,25 @@
 'use client';
 
 import React from 'react';
-import { ExternalLink, ShieldAlert, ShieldCheck, Trash2, Loader2 } from 'lucide-react';
-import { Link } from '@/i18n/routing';
+import { Settings, ShieldAlert, ShieldCheck, Trash, Loader2 } from 'lucide-react';
+import { RowActionButton } from '@/components/ui/RowActionButton';
 import { useTranslations } from 'next-intl';
 
 interface AdminUserRowActionsProps {
   user: {
     _id: string;
     username: string;
+    email?: string;
     ban?: {
       isBanned?: boolean;
+      reason?: string;
+      until?: string | null;
     };
   };
   onDelete: (id: string, username: string) => void;
-  onToggleBan: (user: any) => void;
+  onToggleBan?: (user: any) => void;
+  onOpenBan?: (user: any) => void;
+  onOpenUnban?: (user: any) => void;
   banningUserId: string | null;
   deletingUserId: string | null;
 }
@@ -28,6 +33,8 @@ export function AdminUserRowActions({
   user,
   onDelete,
   onToggleBan,
+  onOpenBan,
+  onOpenUnban,
   banningUserId,
   deletingUserId,
 }: AdminUserRowActionsProps) {
@@ -37,51 +44,66 @@ export function AdminUserRowActions({
   const isBanning = banningUserId === user._id;
   const isDeleting = deletingUserId === user._id;
 
+  const handleBanClick = () => {
+    if (isBanned) {
+      if (onOpenUnban) {
+        onOpenUnban(user);
+      } else if (onToggleBan) {
+        onToggleBan(user);
+      }
+    } else {
+      if (onOpenBan) {
+        onOpenBan(user);
+      } else if (onToggleBan) {
+        onToggleBan(user);
+      }
+    }
+  };
+
   return (
     <div className="min-w-0 lg:text-right mt-2 lg:mt-0">
-      <div className="flex lg:justify-end gap-2">
+      <div className="flex lg:justify-end items-center gap-2">
         {/* Manage / Details */}
-        <Link
+        <RowActionButton
+          variant="default"
           href={`/admin/users/${user._id}`}
-          className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#888] hover:text-[#D4D4D4] transition-colors"
           title={t('viewUser')}
         >
-          <ExternalLink size={14} />
-        </Link>
+          <Settings size={15} />
+        </RowActionButton>
 
-        {/* Quick Ban / Unban Toggle */}
-        <button
-          type="button"
-          onClick={() => onToggleBan(user)}
+        {/* Ban / Unban Drawer Trigger */}
+        <RowActionButton
+          variant={isBanned ? 'success' : 'danger'}
+          onClick={handleBanClick}
           disabled={isBanning}
-          title={isBanned ? t('quickUnban') : t('quickBan')}
-          className={`bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-            isBanned ? 'text-[#888] hover:text-[#00FF88]' : 'text-[#888] hover:text-[#FF5722]'
-          }`}
+          title={isBanned ? t('unbanUser') : t('banUser')}
         >
           {isBanning ? (
-            <Loader2 size={14} className="animate-spin text-[#FF5722]" />
+            <Loader2
+              size={15}
+              className={`animate-spin ${isBanned ? 'text-emerald-400' : 'text-red-500'}`}
+            />
           ) : isBanned ? (
-            <ShieldCheck size={14} />
+            <ShieldCheck size={15} />
           ) : (
-            <ShieldAlert size={14} />
+            <ShieldAlert size={15} />
           )}
-        </button>
+        </RowActionButton>
 
         {/* Delete */}
-        <button
-          type="button"
+        <RowActionButton
+          variant="danger"
           onClick={() => onDelete(user._id, user.username)}
           disabled={isDeleting}
           title={t('deleteUser')}
-          className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#888] hover:text-[#FF4444] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isDeleting ? (
-            <Loader2 size={14} className="animate-spin text-[#FF5722]" />
+            <Loader2 size={15} className="animate-spin text-red-500" />
           ) : (
-            <Trash2 size={14} />
+            <Trash size={15} />
           )}
-        </button>
+        </RowActionButton>
       </div>
     </div>
   );

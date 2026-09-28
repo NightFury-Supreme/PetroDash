@@ -40,7 +40,7 @@ export const adminUsersApi = {
   },
   downloadInvoice: async (id: string, token: string) => {
     const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/payments/${id}/invoice`, { headers: { Authorization: `Bearer ${token}` } });
-    if (!r.ok) throw new Error("Failed");
+    if (!r.ok) throw new Error("ERR_INVOICE_FAILED");
     return r.blob();
   },
   banUser: async (userId: string, payload: any, token: string) => {

@@ -5,14 +5,15 @@ import {
   Check,
   Clock,
   Cpu,
-  Edit2,
   Flame,
   HardDrive,
   MemoryStick,
   Package,
   Server,
   Crown,
+  Settings,
 } from "lucide-react";
+import { RowActionButton } from "@/components/ui/RowActionButton";
 import { useTranslations } from "next-intl";
 
 export interface Plan {
@@ -154,13 +155,13 @@ export function AdminPlanRow({
                 {t('disabled')}
               </span>
             )}
-            <button
+            <RowActionButton
+              variant="default"
               onClick={onManage}
-              className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors"
               title={t('managePlan')}
             >
-              <Edit2 size={14} />
-            </button>
+              <Settings size={15} />
+            </RowActionButton>
           </div>
         </div>
       </div>

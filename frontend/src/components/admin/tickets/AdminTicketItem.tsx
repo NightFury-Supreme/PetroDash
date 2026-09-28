@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { CheckCircle2, Inbox, MoreHorizontal, ShieldOff, RotateCcw, XCircle } from 'lucide-react';
+import { RowActionButton } from "@/components/ui/RowActionButton";
 import { TicketStatusBadge } from "@/components/tickets/TicketStatusBadge";
 import { formatRelative, shortId } from "@/components/tickets/utils";
 import { useTranslations, useFormatter } from 'next-intl';
@@ -134,13 +135,15 @@ export function AdminTicketItem({ t: ticket, onAction }:{ t: Ticket; onAction: (
 
         {/* Actions menu */}
         <div className="relative flex justify-end">
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); setMenu(!menu); }}
-            className="flex h-7 w-7 items-center justify-center rounded-md border border-[#2A2A2A] bg-[#161616] text-[#666] transition-colors hover:border-[#3A3A3A] hover:text-[#ddd]"
+          <RowActionButton
+            variant="default"
+            onClick={(e) => {
+              e.stopPropagation();
+              setMenu(!menu);
+            }}
           >
-            <MoreHorizontal size={13} />
-          </button>
+            <MoreHorizontal size={15} />
+          </RowActionButton>
 
           {menu && (
             <AdminTicketContextMenu 

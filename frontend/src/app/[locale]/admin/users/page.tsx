@@ -1,11 +1,11 @@
 /* ==========================================================================
    Admin Users List Page
    Compliance: ISO/IEC 25010, Single Responsibility Principle (<300 lines)
-========================================================================== */
+========================================================================= */
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, RefreshCw } from 'lucide-react';
 import { ErrorState, DashboardButton, ErrorDescription } from '@/components/ui/ErrorState';
 import AdminUsersSkeleton from '@/components/skeletons/admin/user/AdminUsersSkeleton';
@@ -14,7 +14,8 @@ import {
   AdminUsersSidebar,
   AdminUsersSearchFilterBar,
   UsersTable,
-  UserTab,
+  BanUserDrawer,
+  UnbanUserDrawer,
 } from '@/components/admin/users';
 import { Pagination } from '@/components/Pagination';
 import { DeleteDrawer } from '@/components/ui/DeleteDrawer';
@@ -25,24 +26,35 @@ import { useTranslations } from 'next-intl';
 export default function AdminUsersListPage() {
   const t = useTranslations('admin.users');
   const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
   const { showSuccess, showError } = useToast();
 
-  const [activeTab, setActiveTab] = useState<UserTab>('all');
   const [userToDelete, setUserToDelete] = useState<{ id: string; username: string } | null>(null);
+  const [userToBan, setUserToBan] = useState<any | null>(null);
+  const [userToUnban, setUserToUnban] = useState<any | null>(null);
+
+  // Automatically remove ?tab= from browser URL if navigated with it or present in address bar
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.search.includes('tab=')) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('tab');
+      const cleanPath = url.pathname + (url.search ? url.search : '');
+      window.history.replaceState(null, '', cleanPath);
+    }
+  }, []);
 
   const {
+    activeTab,
+    setActiveTab,
     users,
     pagination,
     error,
     loading,
+    isInitialLoading,
     search,
     setSearch,
     setCurrentPage,
     pageSize,
-    roleFilter,
-    setRoleFilter,
-    statusFilter,
-    setStatusFilter,
     sortBy,
     setSortBy,
     banningUserId,
@@ -50,32 +62,35 @@ export default function AdminUsersListPage() {
     toggleBanUser,
     deleteUser,
     refreshUsers,
-  } = useAdminUsers();
+  } = useAdminUsers('all');
 
-  const handleSelectTab = (tab: UserTab) => {
-    setActiveTab(tab);
-    setCurrentPage(1);
-    if (tab === 'all') {
-      setStatusFilter('all');
-      setRoleFilter('all');
-    } else if (tab === 'active') {
-      setStatusFilter('active');
-      setRoleFilter('all');
-    } else if (tab === 'banned') {
-      setStatusFilter('banned');
-      setRoleFilter('all');
-    } else if (tab === 'admins') {
-      setRoleFilter('admin');
-      setStatusFilter('all');
+  const handleToggleBan = (user: any) => {
+    if (user.ban?.isBanned) {
+      setUserToUnban(user);
+    } else {
+      setUserToBan(user);
     }
   };
 
-  const handleToggleBan = async (user: any) => {
+  const handleConfirmBan = async (data: { reason: string; durationMinutes?: number }) => {
+    if (!userToBan) return;
     try {
-      await toggleBanUser(user);
+      await toggleBanUser(userToBan, data);
       showSuccess(t('banUpdatedSuccess'));
+      setUserToBan(null);
     } catch (e: any) {
-      showError(e.message || tCommon('error'));
+      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
+    }
+  };
+
+  const handleConfirmUnban = async () => {
+    if (!userToUnban) return;
+    try {
+      await toggleBanUser(userToUnban);
+      showSuccess(t('unbanSuccess'));
+      setUserToUnban(null);
+    } catch (e: any) {
+      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
     }
   };
 
@@ -86,11 +101,11 @@ export default function AdminUsersListPage() {
       showSuccess(t('userDeletedSuccessfully'));
       setUserToDelete(null);
     } catch (e: any) {
-      showError(e.message || tCommon('error'));
+      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
     }
   };
 
-  if (error) {
+  if (error && users.length === 0) {
     return (
       <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
         <ErrorState
@@ -117,19 +132,19 @@ export default function AdminUsersListPage() {
     );
   }
 
-  if (loading && users.length === 0) {
+  if (isInitialLoading) {
     return <AdminUsersSkeleton />;
   }
 
   return (
     <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen">
       <div className="space-y-6">
-        <UsersHeader total={pagination.total} />
+        <UsersHeader />
 
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           <AdminUsersSidebar
             activeTab={activeTab}
-            onSelectTab={handleSelectTab}
+            onSelectTab={setActiveTab}
           />
 
           <div className="flex-1 min-w-0 w-full">
@@ -137,16 +152,6 @@ export default function AdminUsersListPage() {
               searchQuery={search}
               setSearchQuery={(q) => {
                 setSearch(q);
-                setCurrentPage(1);
-              }}
-              roleFilter={roleFilter}
-              setRoleFilter={(r) => {
-                setRoleFilter(r);
-                setCurrentPage(1);
-              }}
-              statusFilter={statusFilter}
-              setStatusFilter={(s) => {
-                setStatusFilter(s);
                 setCurrentPage(1);
               }}
               sortBy={sortBy}
@@ -158,8 +163,11 @@ export default function AdminUsersListPage() {
 
             <UsersTable
               users={users}
+              loading={loading}
               onDelete={(id, username) => setUserToDelete({ id, username })}
               onToggleBan={handleToggleBan}
+              onOpenBan={(user) => setUserToBan(user)}
+              onOpenUnban={(user) => setUserToUnban(user)}
               banningUserId={banningUserId}
               deletingUserId={deletingUserId}
             />
@@ -188,6 +196,30 @@ export default function AdminUsersListPage() {
             t('deleteWarning2'),
             t('deleteWarning3'),
           ]}
+        />
+      )}
+
+      {userToBan && (
+        <BanUserDrawer
+          isOpen={Boolean(userToBan)}
+          onClose={() => setUserToBan(null)}
+          onConfirm={handleConfirmBan}
+          username={userToBan.username}
+          userId={userToBan._id}
+          userEmail={userToBan.email}
+        />
+      )}
+
+      {userToUnban && (
+        <UnbanUserDrawer
+          isOpen={Boolean(userToUnban)}
+          onClose={() => setUserToUnban(null)}
+          onConfirm={handleConfirmUnban}
+          username={userToUnban.username}
+          userId={userToUnban._id}
+          userEmail={userToUnban.email}
+          banReason={userToUnban.ban?.reason}
+          banUntil={userToUnban.ban?.until}
         />
       )}
     </div>

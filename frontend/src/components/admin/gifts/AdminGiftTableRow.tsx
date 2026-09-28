@@ -3,8 +3,9 @@
    Compliance: ISO/IEC 25010, Strong Typing, Accessibility
 ========================================================================== */
 
-import { Edit2, Trash2, Users, Coins, Cpu, MemoryStick, HardDrive, Server, User } from "lucide-react";
+import { Settings, Trash, Users, Coins, Cpu, MemoryStick, HardDrive, Server, User } from "lucide-react";
 import { Link } from "@/i18n/routing";
+import { RowActionButton } from "@/components/ui/RowActionButton";
 import { useTranslations } from "next-intl";
 import type { AdminGiftItem } from "./types";
 
@@ -121,27 +122,27 @@ export function AdminGiftTableRow({
       {/* Actions */}
       <div className="min-w-0 lg:text-right mt-2 lg:mt-0">
         <div className="flex lg:justify-end gap-2">
-          <button
+          <RowActionButton
+            variant="default"
             onClick={() => onRedemptions(gift._id)}
             title={t('viewRedemptions')}
-            className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#888] hover:text-[#FF5722] hover:bg-[#FF5722]/10 transition-colors"
           >
-            <Users size={14} />
-          </button>
-          <button
+            <Users size={15} />
+          </RowActionButton>
+          <RowActionButton
+            variant="default"
             onClick={() => onEdit(gift._id)}
             title={t('editGift')}
-            className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-[#888] hover:text-[#D4D4D4] hover:bg-[#2A2A2A] transition-colors"
           >
-            <Edit2 size={14} />
-          </button>
-          <button
+            <Settings size={15} />
+          </RowActionButton>
+          <RowActionButton
+            variant="danger"
             onClick={() => onDelete(gift._id)}
             title={t('deleteGift')}
-            className="bg-[#1A1A1A] border border-[#2A2A2A] rounded p-1.5 text-red-400/70 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 transition-colors"
           >
-            <Trash2 size={14} />
-          </button>
+            <Trash size={15} />
+          </RowActionButton>
         </div>
       </div>
     </div>

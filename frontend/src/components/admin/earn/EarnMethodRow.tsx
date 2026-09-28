@@ -6,7 +6,8 @@
 'use client';
 
 import React, { type ReactNode } from 'react';
-import { Edit2 } from 'lucide-react';
+import { Settings } from 'lucide-react';
+import { RowActionButton } from '@/components/ui/RowActionButton';
 import { useTranslations } from 'next-intl';
 
 export interface EarnMethodRowProps {
@@ -97,14 +98,13 @@ export function EarnMethodRow({
       {/* Actions */}
       <div className="min-w-0 lg:text-right mt-2 lg:mt-0">
         <div className="flex lg:justify-end gap-2">
-          <button
+          <RowActionButton
+            variant="default"
             onClick={onEdit}
             title={tCommon('configureMethod')}
-            aria-label={tCommon('configureMethod')}
-            className="p-1.5 text-[#888] hover:text-white hover:bg-white/[0.05] border border-white/[0.08] rounded-lg transition-colors"
           >
-            <Edit2 size={14} />
-          </button>
+            <Settings size={15} />
+          </RowActionButton>
         </div>
       </div>
     </div>

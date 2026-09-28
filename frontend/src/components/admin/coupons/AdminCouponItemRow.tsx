@@ -6,7 +6,8 @@
 "use client";
 
 import React from "react";
-import { Edit2, Tag, Trash2 } from "lucide-react";
+import { Settings, Tag, Trash } from "lucide-react";
+import { RowActionButton } from "@/components/ui/RowActionButton";
 import { useTranslations } from "next-intl";
 import type { AdminCouponItem } from "./types";
 
@@ -93,25 +94,29 @@ export function AdminCouponItemRow({
 
       {/* Actions */}
       <div className="flex items-center justify-end gap-1.5">
-        <button
+        <RowActionButton
+          variant="default"
           onClick={() => onManage(coupon)}
-          className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-2 text-white/50 hover:text-white hover:bg-white/[0.06] transition-colors"
           title={tCommon("manage")}
-          type="button"
         >
-          <Edit2 size={13} />
-        </button>
+          <Settings size={15} />
+        </RowActionButton>
 
         {onDeleteClick && (
-          <button
-            onClick={() => onDeleteClick(coupon)}
+          <RowActionButton
+            variant="danger"
+            onClick={(e) => {
+              if (isUsed) {
+                e.preventDefault();
+                return;
+              }
+              onDeleteClick(coupon);
+            }}
             disabled={isUsed}
-            className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-2 text-white/30 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             title={isUsed ? t("deleteWarning2") : tCommon("delete")}
-            type="button"
           >
-            <Trash2 size={13} />
-          </button>
+            <Trash size={15} />
+          </RowActionButton>
         )}
       </div>
     </div>

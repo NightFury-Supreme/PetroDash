@@ -20,6 +20,43 @@ Also no stop when run task, check continues
 Also complay with this much rule is must, fully strict, no drop any consideration
 
 pls use read and write tools of antigravity only no use python node js scripts to do antyhing ok bitch
+pls also no use commands to search folder strature also try to read folders and files
+use it (((((Here are the exact details of the tool and command used:
+
+---
+
+### 1. The Agent Tool Used
+* **Tool**: `call_mcp_tool`
+* **MCP Server**: `filesystem`
+* **MCP Tool Name**: `list_directory`
+
+#### Exact Payload Called:
+```json
+{
+  "ServerName": "filesystem",
+  "ToolName": "list_directory",
+  "Arguments": {
+    "path": "c:/Users/Edwin Jilson/Downloads/project/frontend"
+  }
+}
+```
+
+---
+
+### 2. The Background Process Command
+The background process running the server (configured in your [`mcp_config.json`](file:///C:/Users/Edwin%20Jilson/.gemini/config/mcp_config.json)) is:
+
+```bash
+npx -y @modelcontextprotocol/server-filesystem "C:\Users\Edwin Jilson\Downloads\project"
+```
+
+---
+
+### 3. How It Works Under the Hood
+* **No shell commands were run**: The agent did **not** open a terminal or execute commands like `dir`, `ls`, or `Get-ChildItem`.
+* **JSON-RPC Communication**: Antigravity communicated directly with the running Node.js background process via standard input/output (`stdio`) using the Model Context Protocol.
+* **Direct Filesystem Access**: The MCP server used Node's internal `fs` system calls (`readdir`) to read the folder structure and returned the `[DIR]` and `[FILE]` tree directly to the agent.)))))
+
 also run lint and fix all warnings and errors in backend and frontend fully
 then push to git locally
 
