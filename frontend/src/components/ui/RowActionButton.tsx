@@ -25,11 +25,11 @@ export interface RowActionButtonProps {
 
 const variantStyles: Record<RowActionVariant, string> = {
   default:
-    'bg-transparent border border-white/10 rounded-md p-1.5 text-[#888] hover:bg-white/5 hover:border-white/20 hover:text-[#ddd] transition-colors',
+    'bg-transparent rounded-md p-1.5 text-[#888] hover:bg-white/5 hover:text-[#ddd] transition-colors',
   danger:
-    'bg-transparent border border-red-500/30 rounded-md p-1.5 text-red-500 hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
+    'bg-transparent rounded-md p-1.5 text-red-500 hover:bg-red-500/10 hover:text-red-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
   success:
-    'bg-transparent border border-emerald-500/30 rounded-md p-1.5 text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-500/50 hover:text-emerald-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
+    'bg-transparent rounded-md p-1.5 text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
 };
 
 export function RowActionButton({
