@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { usePathname, useRouter } from "@/i18n/routing";
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
@@ -16,62 +16,93 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   // next-intl usePathname already strips the locale prefix (e.g. /es/login -> /login)
   const pathname = usePathname() || "/";
 
-  // Tracks whether we've already validated for this pathname
+  // Tracks validated state for current pathname to block protected UI until authorized
+  const [isValidated, setIsValidated] = useState(false);
   const checkedPathRef = useRef<string | null>(null);
-  // Prevents concurrent validation calls
   const checkingRef = useRef(false);
-  // Tracks current redirect target to avoid re-redirecting to the same path
   const redirectingToRef = useRef<string | null>(null);
-  
-  // Actually block rendering of protected pages until validated
-  // Removed unused isValidated state
-  const [, forceRender] = useState(0);
+  const validatedUserRef = useRef<{ role?: string; emailVerified?: boolean; token: string } | null>(null);
 
   const isPublic =
     PUBLIC_PATHS.some((p) => pathname.startsWith(p)) ||
     pathname.startsWith("/banned") ||
     pathname.startsWith("/verify");
 
-  useEffect(() => {
-    // If we switch to a new non-public path, we need to validate again
-    if (checkedPathRef.current !== pathname && !isPublic) {
-      // setIsValidated removed
+  const buildLoginRedirect = useCallback((targetPath: string) => {
+    const search = typeof window !== "undefined" ? window.location.search : "";
+    const fullTarget = targetPath + search;
+    if (fullTarget === "/" || fullTarget === "/dashboard") {
+      return "/login";
     }
+    return `/login?redirect=${encodeURIComponent(fullTarget)}`;
+  }, []);
 
-    // Already checked this exact pathname in this session — skip
-    if (checkedPathRef.current === pathname) return;
-    // Already mid-check — skip
-    if (checkingRef.current) return;
-    // Public pages never need token validation
+  useEffect(() => {
+    const handleAuthChange = () => {
+      checkedPathRef.current = null;
+      validatedUserRef.current = null;
+      checkingRef.current = false;
+      setIsValidated(false);
+    };
+
+    window.addEventListener("user:refresh", handleAuthChange);
+    window.addEventListener("storage", handleAuthChange);
+    return () => {
+      window.removeEventListener("user:refresh", handleAuthChange);
+      window.removeEventListener("storage", handleAuthChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    // Public pages never require token validation
     if (isPublic) {
       checkedPathRef.current = pathname;
-      if (pathname === '/register') {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-        if (token && redirectingToRef.current !== '/dashboard') {
-          redirectingToRef.current = '/dashboard';
-          router.replace('/dashboard');
+      setIsValidated(true);
+      if (pathname === "/register") {
+        const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+        if (token && redirectingToRef.current !== "/dashboard") {
+          redirectingToRef.current = "/dashboard";
+          router.replace("/dashboard");
         }
       }
       return;
     }
 
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+
+    if (!token) {
+      setIsValidated(false);
+      const loginDest = buildLoginRedirect(pathname);
+      if (redirectingToRef.current !== loginDest) {
+        redirectingToRef.current = loginDest;
+        router.replace(loginDest);
+      }
+      return;
+    }
+
+    // Fast path: if token is identical and user already validated in this session
+    if (validatedUserRef.current && validatedUserRef.current.token === token) {
+      if (pathname.startsWith("/admin") && validatedUserRef.current.role !== "admin") {
+        setIsValidated(false);
+        if (redirectingToRef.current !== "/dashboard") {
+          redirectingToRef.current = "/dashboard";
+          router.replace("/dashboard");
+        }
+        return;
+      }
+      checkedPathRef.current = pathname;
+      setIsValidated(true);
+      return;
+    }
+
+    // Already checked this exact pathname and authorized
+    if (checkedPathRef.current === pathname && isValidated) return;
+    if (checkingRef.current) return;
+
     checkingRef.current = true;
 
     (async () => {
       try {
-        const token = typeof window !== "undefined"
-          ? localStorage.getItem("auth_token")
-          : null;
-
-        if (!token) {
-          const loginDest = `/login?redirect=${encodeURIComponent(pathname)}`;
-          if (redirectingToRef.current !== loginDest) {
-            redirectingToRef.current = loginDest;
-            router.replace(loginDest);
-          }
-          return;
-        }
-
         const base = process.env.NEXT_PUBLIC_API_BASE || "";
         const [meRes, brandingRes] = await Promise.all([
           fetchWithRetry(`${base}/api/auth/me`, {
@@ -81,8 +112,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
           fetchWithRetry(`${base}/api/branding`, { cache: "no-store" }),
         ]);
 
-        // — Banned —
+        // — Banned (403) —
         if (meRes.status === 403) {
+          setIsValidated(false);
           let d: any = {};
           try { d = await meRes.json(); } catch {}
           try {
@@ -100,10 +132,12 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        // — Unauthorized (invalid token) —
+        // — Unauthorized / Expired Token (401) —
         if (meRes.status === 401) {
+          setIsValidated(false);
+          validatedUserRef.current = null;
           try { localStorage.removeItem("auth_token"); } catch {}
-          const loginDest = `/login?redirect=${encodeURIComponent(pathname)}`;
+          const loginDest = buildLoginRedirect(pathname);
           if (redirectingToRef.current !== loginDest) {
             redirectingToRef.current = loginDest;
             router.replace(loginDest);
@@ -111,21 +145,27 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        // — Other errors (network, 5xx) — don't kick user out —
+        // — Server or network error (non-auth): allow existing authenticated user through —
         if (!meRes.ok) {
           checkedPathRef.current = pathname;
-          
+          setIsValidated(true);
           return;
         }
 
-        // — Auth OK —
         let userData: any = {};
         let brandingData: any = {};
         try { userData = await meRes.json(); } catch {}
         try { brandingData = await brandingRes.json(); } catch {}
 
+        validatedUserRef.current = {
+          token,
+          role: userData?.role,
+          emailVerified: Boolean(userData?.emailVerified),
+        };
+
         // — Email verification required —
         if (brandingData?.emailVerification && !userData?.emailVerified) {
+          setIsValidated(false);
           try { sessionStorage.setItem("verify_email", userData?.email || ""); } catch {}
           if (redirectingToRef.current !== "/verify") {
             redirectingToRef.current = "/verify";
@@ -134,7 +174,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        // — All good — clear any stale ban/verify context —
+        // — Clear any stale ban/verify context —
         try {
           sessionStorage.removeItem("is_banned");
           sessionStorage.removeItem("ban_reason");
@@ -142,29 +182,28 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
           sessionStorage.removeItem("verify_email");
         } catch {}
 
-        // Restrict /admin to admin role
-        if (pathname.startsWith('/admin') && userData?.role !== 'admin') {
-          if (redirectingToRef.current !== '/') {
-            redirectingToRef.current = '/';
-            router.replace('/');
+        // — Restrict /admin to admin role —
+        if (pathname.startsWith("/admin") && userData?.role !== "admin") {
+          setIsValidated(false);
+          if (redirectingToRef.current !== "/dashboard") {
+            redirectingToRef.current = "/dashboard";
+            router.replace("/dashboard");
           }
           return;
         }
 
-        // Reset redirect tracker since we're validated now
         redirectingToRef.current = null;
         checkedPathRef.current = pathname;
-        
-        forceRender(n => n + 1); // allow children to paint
+        setIsValidated(true);
       } catch {
-        // Network error — don't redirect, just mark as checked to stop retrying
+        // Network failure — allow graceful client display rather than permanent blank
         checkedPathRef.current = pathname;
-        
+        setIsValidated(true);
       } finally {
         checkingRef.current = false;
       }
     })();
-  }, [pathname, router]);
+  }, [pathname, router, isPublic, isValidated, buildLoginRedirect]);
 
   // — Direct /banned access without ban context → redirect —
   useEffect(() => {
@@ -173,7 +212,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       const hasBan = Boolean(sessionStorage.getItem("is_banned") || sessionStorage.getItem("ban_reason"));
       if (!hasBan && redirectingToRef.current !== "/login") {
         const token = localStorage.getItem("auth_token");
-        const dest = token ? "/" : "/login";
+        const dest = token ? "/dashboard" : "/login";
         redirectingToRef.current = dest;
         router.replace(dest);
       }
@@ -189,7 +228,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       const hasVerify = Boolean(sessionStorage.getItem("verify_email"));
       if (!hasVerify && redirectingToRef.current !== "/login") {
         const token = localStorage.getItem("auth_token");
-        const dest = token ? "/" : "/login";
+        const dest = token ? "/dashboard" : "/login";
         redirectingToRef.current = dest;
         router.replace(dest);
       }
@@ -210,6 +249,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
           if (customEvent.detail.username) sessionStorage.setItem("ban_username", String(customEvent.detail.username));
         } catch {}
       }
+      setIsValidated(false);
       if (redirectingToRef.current !== "/banned") {
         redirectingToRef.current = "/banned";
         router.replace("/banned");
@@ -218,7 +258,14 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     window.addEventListener("account:banned", handleAccountBanned);
     return () => window.removeEventListener("account:banned", handleAccountBanned);
   }, [router]);
-  return <>{children}</>;
+
+  // Public pages render immediately. Protected pages render only once validated.
+  if (isPublic || isValidated) {
+    return <>{children}</>;
+  }
+
+  // Neutral shell placeholder while validating protected routes (avoids child hook execution & UI flash)
+  return <div className="min-h-screen bg-[#0F0F0F]" />;
 }
 
 

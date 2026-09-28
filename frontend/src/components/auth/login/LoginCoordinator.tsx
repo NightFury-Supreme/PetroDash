@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from '@/i18n/routing';
+import { useSearchParams, locales } from '@/i18n/routing';
 import { useLocale } from 'next-intl';
 import LoginForm from './LoginForm';
 import TwoFactorForm from './TwoFactorForm';
@@ -9,17 +9,27 @@ import TwoFactorForm from './TwoFactorForm';
 /**
  * Validates that a redirect target is a safe same-origin relative path.
  * Prevents open-redirect attacks: only accepts paths starting with /.
- * Never allows protocol-relative (//), absolute URLs, or javascript: URIs.
+ * Never allows protocol-relative (//), backslash (/\), absolute URLs, or auth routes.
  */
 function sanitizeRedirect(raw: string | null): string {
   if (!raw || raw === '/') return '/dashboard';
-  const decoded = decodeURIComponent(raw);
-  if (decoded === '/' || decoded.toLowerCase().startsWith('/login')) {
-    return '/dashboard';
-  }
-  // Must start with / and not be protocol-relative (//evil.com)
-  if (decoded.startsWith('/') && !decoded.startsWith('//')) {
-    return decoded;
+  try {
+    const decoded = decodeURIComponent(raw);
+    const lower = decoded.toLowerCase();
+    if (
+      lower === '/' ||
+      lower.startsWith('/login') ||
+      lower.startsWith('/register') ||
+      lower.startsWith('/auth/callback')
+    ) {
+      return '/dashboard';
+    }
+    // Must start with / and not be protocol-relative (//evil.com) or backslash (/\evil.com)
+    if (decoded.startsWith('/') && !decoded.startsWith('//') && !decoded.startsWith('/\\')) {
+      return decoded;
+    }
+  } catch {
+    // Malformed URI component fallback
   }
   return '/dashboard';
 }
@@ -33,7 +43,10 @@ function LoginCoordinatorInner() {
   const redirectTo = sanitizeRedirect(searchParams?.get('redirect'));
 
   const getTargetUrl = useCallback((dest: string) => {
-    if (locale && locale !== 'en' && !dest.startsWith(`/${locale}/`) && dest !== `/${locale}`) {
+    const hasLocalePrefix = (locales as readonly string[]).some(
+      (l) => dest === `/${l}` || dest.startsWith(`/${l}/`)
+    );
+    if (!hasLocalePrefix && locale && locale !== 'en') {
       return `/${locale}${dest.startsWith('/') ? dest : `/${dest}`}`;
     }
     return dest;

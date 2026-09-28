@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { z } from 'zod';
-import { Link } from '@/i18n/routing';
+import { Link, useSearchParams } from '@/i18n/routing';
 import AuthField from '@/components/auth/layout/AuthField';
 import AuthSubmit from '@/components/auth/layout/AuthSubmit';
 import { OAuthButtons } from '@/components/auth/layout/OAuthButtons';
@@ -18,6 +18,8 @@ type LoginForm = z.infer<typeof schema>;
 type FieldErrors = Partial<Record<keyof LoginForm, string>>;
 
 export default function LoginForm({ onSuccess, onRequires2FA }: { onSuccess: (token: string) => void; onRequires2FA: (tempToken: string) => void }) {
+  const searchParams = useSearchParams();
+  const redirect = searchParams?.get('redirect') || null;
   const { settings } = useAuthSettings();
   const { showError } = useToast();
   const { login, loading } = useLogin({ onSuccess, onRequires2FA });
@@ -85,7 +87,7 @@ export default function LoginForm({ onSuccess, onRequires2FA }: { onSuccess: (to
         )}
         {showEmailLogin && (
           <div className="text-[12px] text-[#888888] text-left mt-6">
-            {t('noAccount')} <Link href="/register" className="text-[#FF5722] hover:text-[#F4511E] transition-colors font-medium">{t('registerLink')}</Link>
+            {t('noAccount')} <Link href={redirect ? `/register?redirect=${encodeURIComponent(redirect)}` : '/register'} className="text-[#FF5722] hover:text-[#F4511E] transition-colors font-medium">{t('registerLink')}</Link>
           </div>
         )}
       </form>

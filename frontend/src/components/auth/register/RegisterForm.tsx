@@ -97,7 +97,7 @@ export default function RegisterForm() {
         )}
         {showEmailRegister && (
           <div className="text-[12px] text-[#888888] text-left mt-6">
-            {t('hasAccount')} <Link href="/login" className="text-[#FF5722] hover:text-[#F4511E] transition-colors font-medium">{t('loginLink')}</Link>
+            {t('hasAccount')} <Link href={search?.get('redirect') ? `/login?redirect=${encodeURIComponent(search.get('redirect')!)}` : '/login'} className="text-[#FF5722] hover:text-[#F4511E] transition-colors font-medium">{t('loginLink')}</Link>
           </div>
         )}
       </form>

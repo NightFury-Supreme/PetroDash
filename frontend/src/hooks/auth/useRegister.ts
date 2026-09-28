@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { fetchWithRetry } from '@/utils/fetchWithRetry';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslations, useLocale } from 'next-intl';
+import { locales } from '@/i18n/routing';
 import type { RegisterFormData } from './types';
 
 export function useRegister() {
@@ -55,7 +56,33 @@ export function useRegister() {
 
       localStorage.setItem('auth_token', data.token);
       window.dispatchEvent(new Event('user:refresh'));
-      const target = locale && locale !== 'en' ? `/${locale}/dashboard` : '/dashboard';
+
+      const search = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+      const rawRedirect = search?.get('redirect') || null;
+      let redirectTo = '/dashboard';
+      if (rawRedirect) {
+        try {
+          const decoded = decodeURIComponent(rawRedirect);
+          const lower = decoded.toLowerCase();
+          if (
+            lower !== '/' &&
+            !lower.startsWith('/login') &&
+            !lower.startsWith('/register') &&
+            !lower.startsWith('/auth/callback') &&
+            decoded.startsWith('/') &&
+            !decoded.startsWith('//') &&
+            !decoded.startsWith('/\\')
+          ) {
+            redirectTo = decoded;
+          }
+        } catch {}
+      }
+      const hasLocalePrefix = (locales as readonly string[]).some(
+        (l) => redirectTo === `/${l}` || redirectTo.startsWith(`/${l}/`)
+      );
+      const target = !hasLocalePrefix && locale && locale !== 'en'
+        ? `/${locale}${redirectTo.startsWith('/') ? redirectTo : `/${redirectTo}`}`
+        : redirectTo;
       window.location.href = target;
       return true;
     } catch (err: unknown) {

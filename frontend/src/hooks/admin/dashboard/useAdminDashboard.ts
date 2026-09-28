@@ -2,23 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { fetchWithRetry } from '@/utils/fetchWithRetry';
 
-function decodeJwt(token: string): { userId?: string; username?: string; role?: string } | null {
-  try {
-    const [, payload] = token.split('.');
-    const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
-    return JSON.parse(decodeURIComponent(Array.prototype.map.call(json, (c: string) => {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join('')));
-  } catch {
-    try {
-      const [, payload] = token.split('.');
-      return JSON.parse(atob(payload));
-    } catch {
-      return null;
-    }
-  }
-}
-
 export function useAdminDashboard(range: string) {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
@@ -28,13 +11,8 @@ export function useAdminDashboard(range: string) {
   const fetchStats = useCallback(async (force = false) => {
     const token = localStorage.getItem('auth_token');
     if (!token) {
-      router.replace('/login');
-      return;
-    }
-    
-    const decoded = decodeJwt(token);
-    if (decoded?.role !== 'admin') {
-      router.replace('/dashboard');
+      const redirect = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '/admin';
+      router.replace(`/login?redirect=${encodeURIComponent(redirect)}`);
       return;
     }
 
@@ -45,6 +23,19 @@ export function useAdminDashboard(range: string) {
       const r = await fetchWithRetry(url, { 
         headers: { Authorization: `Bearer ${token}` } 
       });
+
+      if (r.status === 401) {
+        localStorage.removeItem('auth_token');
+        const redirect = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '/admin';
+        router.replace(`/login?redirect=${encodeURIComponent(redirect)}`);
+        return;
+      }
+
+      if (r.status === 403) {
+        router.replace('/dashboard');
+        return;
+      }
+
       const d = await r.json();
       if (r.ok) {
         setStats(d);

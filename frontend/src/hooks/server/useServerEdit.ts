@@ -42,7 +42,8 @@ export function useServerEdit(serverId: string): UseServerEditReturn {
     try {
       const token = localStorage.getItem('auth_token');
       if (!token) {
-        router.replace('/login');
+        const redirect = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '/servers';
+        router.replace(`/login?redirect=${encodeURIComponent(redirect)}`);
         return;
       }
 

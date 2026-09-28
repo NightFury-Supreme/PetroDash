@@ -20,7 +20,8 @@ export function useAdminGift(currentPage: number, query: string, tab: string, so
     setError(null);
     const token = localStorage.getItem('auth_token');
     if (!token) {
-      router.replace('/login');
+      const redirect = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '/admin/gifts';
+      router.replace(`/login?redirect=${encodeURIComponent(redirect)}`);
       return;
     }
 
@@ -35,6 +36,18 @@ export function useAdminGift(currentPage: number, query: string, tab: string, so
       const res = await fetchWithRetry(url.toString(), {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      if (res.status === 401) {
+        localStorage.removeItem('auth_token');
+        const redirect = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '/admin/gifts';
+        router.replace(`/login?redirect=${encodeURIComponent(redirect)}`);
+        return;
+      }
+
+      if (res.status === 403) {
+        router.replace('/dashboard');
+        return;
+      }
 
       if (res.ok) {
         const d: GiftListResponse | AdminGiftItem[] = await res.json().catch(() => ({ gifts: [], total: 0, page: 1, limit: 10, totalPages: 1 }));

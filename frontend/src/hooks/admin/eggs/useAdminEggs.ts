@@ -21,7 +21,8 @@ export function useAdminEggs() {
   const fetchEggs = useCallback(async () => {
     const token = localStorage.getItem('auth_token');
     if (!token) {
-      router.replace('/login');
+      const redirect = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '/admin/eggs';
+      router.replace(`/login?redirect=${encodeURIComponent(redirect)}`);
       return;
     }
 
@@ -32,6 +33,19 @@ export function useAdminEggs() {
         headers: { Authorization: `Bearer ${token}` },
         timeoutMs: 20000,
       });
+
+      if (res.status === 401) {
+        localStorage.removeItem('auth_token');
+        const redirect = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '/admin/eggs';
+        router.replace(`/login?redirect=${encodeURIComponent(redirect)}`);
+        return;
+      }
+
+      if (res.status === 403) {
+        router.replace('/dashboard');
+        return;
+      }
+
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         const errCode = data?.error?.code || data?.error?.message || data?.error || 'ERR_EGGS_FETCH_FAILED';

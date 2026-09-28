@@ -16,7 +16,8 @@ export const useAdminLocations = () => {
   const fetchLocations = useCallback(() => {
     const token = localStorage.getItem('auth_token');
     if (!token) {
-      router.replace('/login');
+      const redirect = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '/admin/locations';
+      router.replace(`/login?redirect=${encodeURIComponent(redirect)}`);
       return;
     }
     setLoading(true);
@@ -24,6 +25,16 @@ export const useAdminLocations = () => {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(async (res) => {
+        if (res.status === 401) {
+          localStorage.removeItem('auth_token');
+          const redirect = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '/admin/locations';
+          router.replace(`/login?redirect=${encodeURIComponent(redirect)}`);
+          return;
+        }
+        if (res.status === 403) {
+          router.replace('/dashboard');
+          return;
+        }
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
           const errCode =

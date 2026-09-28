@@ -58,11 +58,11 @@ export default async function RootLayout({
           timeZone="UTC"
         >
           <Providers>
-            <LayoutWithAds>
-              <AuthGuard>
+            <AuthGuard>
+              <LayoutWithAds>
                 {children}
-              </AuthGuard>
-            </LayoutWithAds>
+              </LayoutWithAds>
+            </AuthGuard>
           </Providers>
         </NextIntlClientProvider>
       </body>

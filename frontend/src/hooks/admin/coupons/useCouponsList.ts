@@ -23,7 +23,8 @@ export function useCouponsList(initialPage = 1, limit = 10) {
     setError(null);
     const token = localStorage.getItem('auth_token');
     if (!token) {
-      router.replace('/login');
+      const redirect = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '/admin/coupons';
+      router.replace(`/login?redirect=${encodeURIComponent(redirect)}`);
       return;
     }
 
@@ -37,6 +38,18 @@ export function useCouponsList(initialPage = 1, limit = 10) {
         }),
         fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/branding`),
       ]);
+
+      if (couponsRes.status === 401 || plansRes.status === 401) {
+        localStorage.removeItem('auth_token');
+        const redirect = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '/admin/coupons';
+        router.replace(`/login?redirect=${encodeURIComponent(redirect)}`);
+        return;
+      }
+
+      if (couponsRes.status === 403 || plansRes.status === 403) {
+        router.replace('/dashboard');
+        return;
+      }
 
       if (couponsRes.ok) {
         const cData: CouponsListResponse = await couponsRes.json().catch(() => ({ coupons: [], total: 0, page: 1, limit, totalPages: 1 }));

@@ -51,7 +51,8 @@ export function useProfile() {
       if (!r.ok) {
         if (r.status === 401) {
           localStorage.removeItem('auth_token');
-          window.location.href = '/login';
+          const redirect = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '/profile';
+          window.location.href = `/login?redirect=${encodeURIComponent(redirect)}`;
           return;
         }
         throw new Error(d?.error || tError('failedToLoadProfile'));
@@ -86,7 +87,8 @@ export function useProfile() {
         setSessions(Array.isArray(data) ? data : (data.sessions || []));
       } else if (r.status === 401) {
         localStorage.removeItem('auth_token');
-        window.location.href = '/login';
+        const redirect = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '/profile';
+        window.location.href = `/login?redirect=${encodeURIComponent(redirect)}`;
       }
     } catch {}
   }, []);

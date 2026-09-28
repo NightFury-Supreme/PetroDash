@@ -56,7 +56,8 @@ export function useServerCreate() {
 
         const token = localStorage.getItem('auth_token');
         if (!token) {
-          router.push('/login');
+          const redirect = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '/create';
+          router.replace(`/login?redirect=${encodeURIComponent(redirect)}`);
           return;
         }
 

@@ -58,7 +58,8 @@ export function useDashboard() {
       if (!response.ok) {
         if (response.status === 401) {
           localStorage.removeItem('auth_token');
-          router.replace('/login');
+          const redirect = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '/dashboard';
+          router.replace(`/login?redirect=${encodeURIComponent(redirect)}`);
           return;
         }
         let errorData: { error?: string | { code?: string; message?: string } } = {};
@@ -93,7 +94,8 @@ export function useDashboard() {
       if (!response.ok) {
         if (response.status === 401) {
           localStorage.removeItem('auth_token');
-          router.replace('/login');
+          const redirect = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '/dashboard';
+          router.replace(`/login?redirect=${encodeURIComponent(redirect)}`);
           return;
         }
         let errorData: { error?: string | { code?: string; message?: string } } = {};
@@ -119,7 +121,8 @@ export function useDashboard() {
       if (!response.ok) {
         if (response.status === 401) {
           localStorage.removeItem('auth_token');
-          router.replace('/login');
+          const redirect = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '/dashboard';
+          router.replace(`/login?redirect=${encodeURIComponent(redirect)}`);
           return;
         }
         let errorData: { error?: string | { code?: string; message?: string } } = {};
