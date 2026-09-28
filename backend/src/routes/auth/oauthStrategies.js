@@ -9,6 +9,24 @@ const User = require('../../models/User');
 const { getSettings } = require('../../lib/settings');
 const UserCreationService = require('../../services/userCreation');
 
+async function resolveOAuthUsername(preferred) {
+  let base = String(preferred || 'user')
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, '')
+    .slice(0, 20);
+  if (base.length < 3) base = `user_${base}`;
+
+  let candidate = base;
+  let counter = 1;
+  while (await User.exists({ username: candidate })) {
+    const rand = Math.floor(100 + Math.random() * 900);
+    candidate = `${base.slice(0, 24)}_${rand}`;
+    counter++;
+    if (counter > 10) break;
+  }
+  return candidate;
+}
+
 const configurePassport = async () => {
   const settings = await getSettings();
   if (!settings) return;
@@ -59,7 +77,7 @@ const configurePassport = async () => {
           return done(null, user);
         }
 
-        const username = profile.username + (profile.discriminator !== '0' ? `#${profile.discriminator}` : '');
+        const username = await resolveOAuthUsername(profile.username);
         const [firstName, ...lastNameParts] = (profile.global_name || profile.username).split(' ');
         const lastName = lastNameParts.join(' ') || 'User';
 
@@ -135,7 +153,7 @@ const configurePassport = async () => {
 
         const [firstName, ...lastNameParts] = profile.displayName.split(' ');
         const lastName = lastNameParts.join(' ') || 'User';
-        const username = profile.emails[0].value.split('@')[0];
+        const username = await resolveOAuthUsername(profile.emails[0].value.split('@')[0]);
 
         user = await UserCreationService.createUser({
           email: profile.emails[0].value,
