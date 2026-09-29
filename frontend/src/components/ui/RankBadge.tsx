@@ -61,9 +61,9 @@ export function RankBadge({
 
   return (
     <span
-      className={`inline-flex items-center justify-center gap-1.5 rounded font-medium whitespace-nowrap shrink-0 transition-colors ${sizeClass} ${colorClass} ${className}`.trim()}
+      className={`inline-flex items-center justify-center gap-1.5 rounded font-normal whitespace-nowrap shrink-0 transition-colors ${sizeClass} ${colorClass} ${className}`.trim()}
     >
-      {showIcon && <IconComponent size={iconSize} strokeWidth={1.5} className="shrink-0" />}
+      {showIcon && <IconComponent size={iconSize} strokeWidth={1} className="shrink-0" />}
       <span>{children || label}</span>
     </span>
   );

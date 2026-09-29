@@ -54,37 +54,24 @@ export function ServersSection({ servers, onDelete, onEdit }: ServersSectionProp
             </div>
           ) : (
             servers.map((server) => {
-              let statusBadge = (
-                <span className="text-xs font-medium text-[#00FF88]">
-                  {tCommon('active')}
-                </span>
-              );
+              let currentStatus = 'active';
+              let label = tCommon('active');
 
               if (server.suspended || server.status === 'suspended') {
-                statusBadge = (
-                  <span className="text-xs font-medium text-[#FF5722]">
-                    {t('statusSuspended')}
-                  </span>
-                );
+                currentStatus = 'suspended';
+                label = t('statusSuspended');
               } else if (server.unreachable || server.status === 'unreachable' || server.status === 'error') {
-                statusBadge = (
-                  <span className="text-xs font-medium text-[#FF4444]">
-                    {t('statusUnreachable')}
-                  </span>
-                );
+                currentStatus = 'error';
+                label = t('statusUnreachable');
               } else if (server.status === 'creating') {
-                statusBadge = (
-                  <span className="text-xs font-medium text-[#4488FF]">
-                    {t('statusCreating')}
-                  </span>
-                );
+                currentStatus = 'pending';
+                label = t('statusCreating');
               } else if (server.status === 'queued') {
-                statusBadge = (
-                  <span className="text-xs font-medium text-[#A855F7] whitespace-nowrap">
-                    {server.queuePosition ? t('statusQueuedPos', { pos: server.queuePosition }) : t('statusQueued')}
-                  </span>
-                );
+                currentStatus = 'pending';
+                label = server.queuePosition ? t('statusQueuedPos', { pos: server.queuePosition }) : t('statusQueued');
               }
+
+              const statusBadge = <StatusIndicator status={currentStatus} label={label} />;
 
               const regionName = server.location || tCommon('unknown');
               const isDownOrUnreachable = server.unreachable || server.status?.toLowerCase() === 'unreachable' || server.status?.toLowerCase() === 'error';

@@ -38,26 +38,24 @@ export function AdminLedgerTable({
   };
   
   const getStatusBadge = (status: string) => {
-    const normStatus = String(status || "").toUpperCase();
+    const normStatus = String(status || "").toLowerCase();
     
-    let color = "text-gray-400";
+    let currentStatus = 'unknown';
     
-    if (normStatus === "COMPLETED" || normStatus === "PAID") {
-      color = "text-emerald-500";
-    } else if (normStatus === "FAILED") {
-      color = "text-red-500";
-    } else if (normStatus === "REFUNDED") {
-      color = "text-yellow-500";
-    } else if (normStatus === "VOIDED") {
-      color = "text-gray-500";
-    } else if (normStatus === "CREATED" || normStatus === "PENDING") {
-      color = "text-blue-500";
+    if (normStatus === "completed" || normStatus === "paid") {
+      currentStatus = 'success';
+    } else if (normStatus === "failed") {
+      currentStatus = 'error';
+    } else if (normStatus === "refunded") {
+      currentStatus = 'warning';
+    } else if (normStatus === "voided") {
+      currentStatus = 'neutral';
+    } else if (normStatus === "created" || normStatus === "pending") {
+      currentStatus = 'pending';
     }
 
     return (
-      <span className={`text-xs font-medium uppercase ${color}`}>
-        {normStatus}
-      </span>
+      <StatusIndicator status={currentStatus} label={normStatus.toUpperCase()} className="uppercase" />
     );
   };
 

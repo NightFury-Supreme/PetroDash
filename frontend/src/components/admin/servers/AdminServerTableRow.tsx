@@ -21,44 +21,29 @@ export function AdminServerTableRow({
 }: AdminServerTableRowProps) {
   const t = useTranslations('admin.servers');
 
-  let statusBadge = (
-    <span className="text-xs font-medium text-[#00FF88]">
-      {t('active')}
-    </span>
-  );
-
   const statusLower = server.status?.toLowerCase();
+  
+  let currentStatus = 'active';
+  let label = t('active');
+
   if (server.suspended || statusLower === 'suspended') {
-    statusBadge = (
-      <span className="text-xs font-medium text-[#FF5722]">
-        {t('suspended')}
-      </span>
-    );
+    currentStatus = 'suspended';
+    label = t('suspended');
   } else if (server.unreachable || statusLower === 'unreachable') {
-    statusBadge = (
-      <span className="text-xs font-medium text-[#FF4444]">
-        {t('unreachable')}
-      </span>
-    );
+    currentStatus = 'error';
+    label = t('unreachable');
   } else if (statusLower === 'error') {
-    statusBadge = (
-      <span className="text-xs font-medium text-[#FF4444] whitespace-nowrap">
-        {t('failed')}
-      </span>
-    );
+    currentStatus = 'error';
+    label = t('failed');
   } else if (statusLower === 'creating') {
-    statusBadge = (
-      <span className="text-xs font-medium text-[#4488FF]">
-        {t('creating')}
-      </span>
-    );
+    currentStatus = 'pending';
+    label = t('creating');
   } else if (statusLower === 'queued') {
-    statusBadge = (
-      <span className="text-xs font-medium text-[#A855F7] whitespace-nowrap">
-        {t('queued')}
-      </span>
-    );
+    currentStatus = 'pending';
+    label = t('queued');
   }
+
+  const statusBadge = <StatusIndicator status={currentStatus} label={label} />;
 
   const serverUrl = server.clientUrl || '#';
   const userAvatar =
