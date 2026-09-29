@@ -1746,6 +1746,7 @@
       "overviewDesc": "إدارة معلومات ملف تعريف المستخدم وتفاصيل الحساب.",
       "avatarUrl": "رابط الصورة الرمزية",
       "avatarDesc": "رابط الصورة الشخصية للمستخدم.",
+      "placeholderAvatarUrl": "https://example.com/avatar.png",
       "notSet": "غير محدد",
       "usernameDesc": "اسم مستخدم فريد لتعريف الحساب.",
       "fullName": "الاسم الكامل",

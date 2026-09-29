@@ -3,6 +3,7 @@
  * Complies with ISO/IEC 25010 (Maintainability, Single Responsibility)
  */
 
+const { Types } = require('mongoose');
 const User = require('../../../models/User');
 const UserPlan = require('../../../models/UserPlan');
 const Plan = require('../../../models/Plan');
@@ -12,6 +13,8 @@ const { writeAudit } = require('../../../middleware/audit');
 const { logUserActivity } = require('../../../middleware/userActivity');
 
 const addPlan = async (req, id, { planId, months }) => {
+  if (!Types.ObjectId.isValid(String(id))) throw new AppError('User not found', 404, 'ERR_USER_NOT_FOUND');
+  if (!Types.ObjectId.isValid(String(planId))) throw new AppError('Plan not found', 404, 'ERR_PLAN_NOT_FOUND');
   const user = await User.findById(String(id));
   if (!user) throw new AppError('User not found', 404, 'ERR_USER_NOT_FOUND');
   const plan = await Plan.findById(planId);
@@ -82,6 +85,8 @@ const addPlan = async (req, id, { planId, months }) => {
 };
 
 const cancelPlans = async (req, id, planId) => {
+  if (!Types.ObjectId.isValid(String(id))) throw new AppError('User not found', 404, 'ERR_USER_NOT_FOUND');
+  if (!Types.ObjectId.isValid(String(planId))) throw new AppError('Plan not found', 404, 'ERR_PLAN_NOT_FOUND');
   const subs = await UserPlan.find({ userId: String(id), planId: String(planId), status: 'active' });
   if (subs.length === 0) throw new AppError('Active plan not found', 404, 'ERR_PLAN_NOT_FOUND');
 
@@ -120,6 +125,8 @@ const cancelPlans = async (req, id, planId) => {
 };
 
 const cancelPlanInstance = async (req, id, instanceId) => {
+  if (!Types.ObjectId.isValid(String(id))) throw new AppError('User not found', 404, 'ERR_USER_NOT_FOUND');
+  if (!Types.ObjectId.isValid(String(instanceId))) throw new AppError('Active plan instance not found', 404, 'ERR_PLAN_INSTANCE_NOT_FOUND');
   const sub = await UserPlan.findOne({ _id: String(instanceId), userId: String(id), status: 'active' });
   if (!sub) throw new AppError('Active plan instance not found', 404, 'ERR_PLAN_INSTANCE_NOT_FOUND');
 

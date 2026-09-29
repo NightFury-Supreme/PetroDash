@@ -91,6 +91,17 @@ const listUsers = async ({ search, page = '1', limit = '10', pageSize, role, sta
 };
 
 const getUser = async (id, query = {}) => {
+  if (!Types.ObjectId.isValid(String(id))) {
+    throw new AppError('User not found', 404, 'ERR_USER_NOT_FOUND');
+  }
+
+  const referralPage = parseInt(query.referralPage, 10) || 1;
+  const referralPageSize = parseInt(query.referralPageSize, 10) || 5;
+
+  const cacheKey = `admin:users:detail:${id}:${referralPage}:${referralPageSize}`;
+  const cached = await getCache(cacheKey);
+  if (cached) return cached;
+
   const user = await User.findById(String(id), { passwordHash: 0 })
     .populate('referredBy', 'username email referralCode')
     .lean();
@@ -139,9 +150,6 @@ const getUser = async (id, query = {}) => {
     .populate('planId', 'name pricePerMonth pricePerYear icon features')
     .lean();
 
-  const referralPage = parseInt(query.referralPage, 10) || 1;
-  const referralPageSize = parseInt(query.referralPageSize, 10) || 5;
-
   const totalReferred = await User.countDocuments({ referredBy: user._id });
   const referredUsers = await User.find({ referredBy: user._id }, { passwordHash: 0 })
     .skip((referralPage - 1) * referralPageSize)
@@ -160,7 +168,7 @@ const getUser = async (id, query = {}) => {
     ? 'github'
     : 'unknown';
 
-  return {
+  const result = {
     user: {
       ...user,
       loginMethod,
@@ -180,6 +188,9 @@ const getUser = async (id, query = {}) => {
       totalPages: Math.ceil(totalReferred / referralPageSize),
     },
   };
+
+  await setCache(cacheKey, result, 30);
+  return result;
 };
 
 module.exports = {

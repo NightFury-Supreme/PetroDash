@@ -1,4 +1,4 @@
-make sure https://dashboard.petrodash.tech/admin/users (only this page and its rrelated think) is fully componised, stratured, organised, module foldered and file
+make sure https://dashboard.petrodash.tech/admin/users/id (only this page and its rrelated think) is fully componised, stratured, organised, module foldered and file
 
 
 

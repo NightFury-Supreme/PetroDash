@@ -2,13 +2,12 @@
 
 import React, { useState } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
-import { useParams, useRouter, Link } from "@/i18n/routing";
-import { 
-  User, ShieldCheck, Database, Server, Trash2, ArrowLeft, Share2, Coins, Cpu, CreditCard
-} from "lucide-react";
+import { useParams, useRouter } from "@/i18n/routing";
 import AdminUserDetailSkeleton from "@/components/skeletons/admin/user/AdminUserDetailSkeleton";
 import { 
-  AdminSideItem as SideItem,
+  UserDetailHeader,
+  UserDetailProfileBanner,
+  UserDetailNav,
   OverviewTab,
   ResourcesTab,
   ServersTab,
@@ -18,7 +17,6 @@ import {
   SecurityTab,
 } from "@/components/admin/users";
 import { DeleteDrawer } from "@/components/ui/DeleteDrawer";
-import { RankBadge } from "@/components/ui";
 import { useAdminUserDetail } from "@/hooks/admin/users";
 import { useTranslations } from "next-intl";
 
@@ -28,7 +26,6 @@ export default function AdminUserPage() {
   const { showSuccess, showError } = useToast();
   
   const t = useTranslations('admin.users');
-  const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
 
   const [section, setSection] = useState("overview");
@@ -105,85 +102,19 @@ export default function AdminUserPage() {
   return (
     <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen">
       <div className="flex flex-col h-full space-y-6">
-        <header>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="flex items-center gap-4">
-              <Link href="/admin/users" className="h-10 w-10 flex items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.02] text-white/50 hover:bg-white/[0.04] hover:text-white transition-all">
-                <ArrowLeft size={18} />
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-[#FF5722] tracking-tight">{t('userManagement')}</h1>
-                <p className="text-[#888888] mt-1 text-sm">{t('userManagementDesc')}</p>
-              </div>
-            </div>
-          </div>
-        </header>
+        <UserDetailHeader />
 
-        <section className="border-b border-white/[0.06] pb-8">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <div className="h-16 w-16 overflow-hidden rounded-full border border-[#2A2A2A] bg-[#222]">
-                  {userForm.profilePicture ? (
-                    <img src={userForm.profilePicture} alt={tCommon('avatar')} className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-[#888]">
-                      <User size={24} />
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-semibold text-white">{userForm.username || tCommon('username')}</h2>
-                  <RankBadge rank={userForm.role || 'user'} />
-                  {ban?.isBanned && (
-                    <span className="text-xs font-medium text-[#FF4444]">
-                      {t('banned')}
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-[#888]">{userForm.email}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-3">
-                <Coins size={16} strokeWidth={1.5} className="text-white" />
-                <div>
-                  <span className="block text-[10px] uppercase tracking-widest text-[#666]">{tCommon('balance')}</span>
-                  <span className="text-sm font-normal text-[#D4D4D4]">{userForm.coins || 0} {tCommon('coins')}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        <UserDetailProfileBanner
+          user={userForm}
+          isBanned={ban?.isBanned}
+        />
 
         <div className="flex flex-col lg:flex-row gap-8 items-start">
-          <aside className="w-full lg:w-48 shrink-0 pt-1 flex flex-col min-h-[calc(100vh-12rem)]">
-            <div className="sticky top-6 flex-1 flex flex-col">
-              <div>
-                <div className="mb-4">
-                  <p className="text-[11px] font-medium uppercase tracking-widest text-[#555]">{t('userManagement')}</p>
-                </div>
-                <nav className="space-y-1">
-                  <SideItem icon={User} label={t('tabOverview')} active={section === 'overview'} onClick={() => setSection('overview')} />
-                  <SideItem icon={Cpu} label={t('tabResources')} active={section === 'resources'} onClick={() => setSection('resources')} />
-                  <SideItem icon={Server} label={t('tabServers')} active={section === 'servers'} onClick={() => setSection('servers')} />
-                  <SideItem icon={CreditCard} label={t('tabPlans')} active={section === 'plans'} onClick={() => setSection('plans')} />
-                  <SideItem icon={Share2} label={t('tabReferrals')} active={section === 'referrals'} onClick={() => setSection('referrals')} />
-                  <SideItem icon={Database} label={t('tabInvoices')} active={section === 'invoices'} onClick={() => setSection('invoices')} />
-                </nav>
-                
-                <div className="mt-8 border-t border-[#333] pt-6 mb-4">
-                  <p className="text-[11px] font-medium uppercase tracking-widest text-[#555]">{t('restrictions')}</p>
-                </div>
-                <nav className="space-y-1">
-                  <SideItem icon={ShieldCheck} label={t('tabSecurity')} active={section === 'security'} onClick={() => setSection('security')} />
-                  <SideItem icon={Trash2} label={t('deleteAccount')} danger active={false} onClick={() => setIsDeleteDrawerOpen(true)} />
-                </nav>
-              </div>
-            </div>
-          </aside>
+          <UserDetailNav
+            section={section}
+            onSelectSection={setSection}
+            onOpenDeleteDrawer={() => setIsDeleteDrawerOpen(true)}
+          />
 
           <div className="flex-1 min-w-0 w-full">
             {section === 'overview' && (

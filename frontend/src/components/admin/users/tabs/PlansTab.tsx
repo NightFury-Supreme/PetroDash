@@ -3,6 +3,7 @@ import { useToast } from "@/components/ui/ToastProvider";
 import { useModal } from "@/components/Modal";
 import { ChevronDown, Check, Plus, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface PlansTabProps {
   plans: any[];
@@ -32,6 +33,7 @@ export function PlansTab({
   const t = useTranslations('admin.users');
   const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
+  const { formatPrice } = useCurrency();
 
   const [activeActions, setActiveActions] = useState<
     Record<string, { type: 'add' | 'remove' | 'removeAll'; status: 'loading' | 'done' }>
@@ -183,7 +185,7 @@ export function PlansTab({
                         `}
                       >
                         <span className="truncate">
-                          {p.name} - ${p.pricePerMonth}{t('perMonth')}
+                          {p.name} - {formatPrice(p.pricePerMonth)}{t('perMonth')}
                         </span>
                         {newPlanId === p._id && <Check size={12} />}
                       </button>

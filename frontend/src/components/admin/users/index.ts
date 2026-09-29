@@ -10,3 +10,4 @@ export * from './UsersTable';
 export * from './BanUserDrawer';
 export * from './UnbanUserDrawer';
 export * from './tabs';
+export * from './detail';

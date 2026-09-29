@@ -1746,6 +1746,7 @@
       "overviewDesc": "उपयोगकर्ता प्रोफ़ाइल जानकारी और खाता विवरण प्रबंधित करें।",
       "avatarUrl": "अवतार URL",
       "avatarDesc": "उपयोगकर्ता प्रोफ़ाइल चित्र का URL।",
+      "placeholderAvatarUrl": "https://example.com/avatar.png",
       "notSet": "सेट नहीं है",
       "usernameDesc": "खाता पहचान के लिए अद्वितीय उपयोगकर्ता नाम।",
       "fullName": "पूरा नाम",

@@ -1746,6 +1746,7 @@
       "overviewDesc": "Administrar información del perfil y detalles de la cuenta del usuario.",
       "avatarUrl": "URL del avatar",
       "avatarDesc": "URL de la foto de perfil del usuario.",
+      "placeholderAvatarUrl": "https://example.com/avatar.png",
       "notSet": "No establecido",
       "usernameDesc": "Nombre de usuario único para la identificación de la cuenta.",
       "fullName": "Nombre completo",

@@ -131,7 +131,7 @@ export function BanUserDrawer({
         </div>
 
         {/* Warning Box */}
-        <div className="border-l-2 border-red-500 pl-4 py-1">
+        <div className="border-l-2 border-red-500 pl-4 py-1 mb-6">
           <div className="flex items-center gap-2 text-red-500 mb-3">
             <AlertTriangle size={14} />
             <span className="text-xs font-bold uppercase tracking-wider">

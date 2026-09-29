@@ -30,10 +30,10 @@ const updateUserSchema = z.object({
   role: z.enum(['user', 'admin']).optional(),
   coins: z.coerce.number().int().min(0).optional(),
   resources: resourcesSchema.optional(),
-  email: z.string().email().optional(),
-  username: z.string().min(3).max(32).optional(),
-  firstName: z.string().min(1).max(64).optional(),
-  lastName: z.string().min(1).max(64).optional(),
+  email: z.string().email('ERR_INVALID_EMAIL').optional(),
+  username: z.string().min(3, 'ERR_USERNAME_MIN').max(32, 'ERR_USERNAME_MAX').regex(/^[a-zA-Z0-9_.-]+$/, 'ERR_USERNAME_FORMAT').optional(),
+  firstName: z.string().max(64, 'ERR_FIRSTNAME_MAX').optional(),
+  lastName: z.string().max(64, 'ERR_LASTNAME_MAX').optional(),
   referralCode: z
     .string()
     .trim()

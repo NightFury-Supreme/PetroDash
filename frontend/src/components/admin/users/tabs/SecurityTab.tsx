@@ -4,6 +4,7 @@ import { ShieldAlert } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { BanUserDrawer } from "../BanUserDrawer";
 import { UnbanUserDrawer } from "../UnbanUserDrawer";
+import { StatusIndicator } from "@/components/ui/StatusIndicator";
 
 interface SecurityTabProps {
   ban: any;
@@ -101,9 +102,15 @@ export function SecurityTab({
               <ShieldAlert size={20} />
             </div>
             <div className="flex-1">
-              <h4 className="text-sm font-semibold text-white">
-                {activeBan ? t('accountSuspended') : t('accountActive')}
-              </h4>
+              <div className="flex items-center gap-2.5">
+                <h4 className="text-sm font-semibold text-white">
+                  {activeBan ? t('accountSuspended') : t('accountActive')}
+                </h4>
+                <StatusIndicator
+                  status={activeBan ? "error" : "success"}
+                  label={activeBan ? t('banned') : t('active')}
+                />
+              </div>
               <p className="mt-1 text-xs text-white/50">
                 {activeBan
                   ? `${t('bannedFor')} ${ban.reason || t('noReasonProvided')}. ${

@@ -3,6 +3,7 @@
  * Complies with ISO/IEC 25010 (Maintainability, Single Responsibility)
  */
 
+const { Types } = require('mongoose');
 const Server = require('../../../models/Server');
 const User = require('../../../models/User');
 const AppError = require('../../../utils/AppError');
@@ -17,6 +18,9 @@ const { writeAudit } = require('../../../middleware/audit');
 const { logUserActivity } = require('../../../middleware/userActivity');
 
 const deleteServer = async (req, id, serverId) => {
+  if (!Types.ObjectId.isValid(String(id)) || !Types.ObjectId.isValid(String(serverId))) {
+    throw new AppError('Server not found', 404, 'ERR_SERVER_NOT_FOUND');
+  }
   const server = await Server.findOne({ _id: String(serverId), owner: String(id) });
   if (!server) throw new AppError('Server not found', 404, 'ERR_SERVER_NOT_FOUND');
   try {
@@ -32,6 +36,9 @@ const deleteServer = async (req, id, serverId) => {
 };
 
 const getServer = async (id, serverId) => {
+  if (!Types.ObjectId.isValid(String(id)) || !Types.ObjectId.isValid(String(serverId))) {
+    throw new AppError('Server not found', 404, 'ERR_SERVER_NOT_FOUND');
+  }
   const base = (process.env.PTERO_BASE_URL || '').replace(/\/$/, '');
   const server = await Server.findOne({ _id: String(serverId), owner: String(id) })
     .populate('eggId', 'name icon')
@@ -64,6 +71,9 @@ const getServer = async (id, serverId) => {
 };
 
 const updateServer = async (req, id, serverId, data) => {
+  if (!Types.ObjectId.isValid(String(id)) || !Types.ObjectId.isValid(String(serverId))) {
+    throw new AppError('Server not found', 404, 'ERR_SERVER_NOT_FOUND');
+  }
   const server = await Server.findOne({ _id: String(serverId), owner: String(id) });
   if (!server) throw new AppError('Server not found', 404, 'ERR_SERVER_NOT_FOUND');
   const user = await User.findById(String(id));

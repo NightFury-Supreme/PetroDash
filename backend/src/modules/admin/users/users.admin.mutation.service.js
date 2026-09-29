@@ -3,6 +3,7 @@
  * Complies with ISO/IEC 25010 (Maintainability, Single Responsibility)
  */
 
+const { Types } = require('mongoose');
 const User = require('../../../models/User');
 const Server = require('../../../models/Server');
 const PendingUpdate = require('../../../models/PendingUpdate');
@@ -21,6 +22,7 @@ const { writeAudit } = require('../../../middleware/audit');
 const { logUserActivity } = require('../../../middleware/userActivity');
 
 const updateUser = async (req, id, data) => {
+  if (!Types.ObjectId.isValid(String(id))) throw new AppError('User not found', 404, 'ERR_USER_NOT_FOUND');
   const isSelf = String(id) === String(req.user?.sub || req.user?.userId);
 
   if (isSelf) {
@@ -169,6 +171,7 @@ const updateUser = async (req, id, data) => {
 };
 
 const banUser = async (req, id, { isBanned, reason, durationMinutes }) => {
+  if (!Types.ObjectId.isValid(String(id))) throw new AppError('User not found', 404, 'ERR_USER_NOT_FOUND');
   const user = await User.findById(String(id));
   if (!user) throw new AppError('User not found', 404, 'ERR_USER_NOT_FOUND');
 
@@ -220,6 +223,7 @@ const banUser = async (req, id, { isBanned, reason, durationMinutes }) => {
 };
 
 const deleteUser = async (req, id) => {
+  if (!Types.ObjectId.isValid(String(id))) throw new AppError('User not found', 404, 'ERR_USER_NOT_FOUND');
   if (String(id) === String(req.user?.sub || req.user?.userId)) {
     throw new AppError('Cannot delete your own admin account', 403, 'ERR_ADMIN_SELF_DELETE');
   }

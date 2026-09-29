@@ -139,7 +139,7 @@ export function UnbanUserDrawer({
         )}
 
         {/* Unban Effects Box */}
-        <div className="border-l-2 border-emerald-500 pl-4 py-1">
+        <div className="border-l-2 border-emerald-500 pl-4 py-1 mb-6">
           <div className="flex items-center gap-2 text-emerald-400 mb-3">
             <CheckCircle2 size={14} />
             <span className="text-xs font-bold uppercase tracking-wider">

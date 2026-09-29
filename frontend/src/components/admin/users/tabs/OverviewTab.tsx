@@ -134,7 +134,7 @@ export function OverviewTab({
                   if (e.key === "Enter") saveEdit();
                   if (e.key === "Escape") cancelEdit();
                 }}
-                placeholder="https://example.com/avatar.png"
+                placeholder={t('placeholderAvatarUrl')}
                 className={customInputCls}
               />
             }
