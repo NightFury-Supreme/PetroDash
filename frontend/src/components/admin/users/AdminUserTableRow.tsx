@@ -14,7 +14,7 @@ import { AdminUserRowActions } from './AdminUserRowActions';
 
 interface AdminUserTableRowProps {
   user: any;
-  onDelete: (id: string, username: string) => void;
+  onDelete: (id: string, username: string, email?: string) => void;
   onToggleBan?: (user: any) => void;
   onOpenBan?: (user: any) => void;
   onOpenUnban?: (user: any) => void;

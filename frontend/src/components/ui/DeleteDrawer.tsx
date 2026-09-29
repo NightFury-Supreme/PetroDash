@@ -106,11 +106,9 @@ export function DeleteDrawer({
           <div className="flex-1 min-w-0">
             <h2 className="text-[16px] font-semibold text-zinc-200 truncate leading-snug">{entityName}</h2>
             {entitySubText && (
-              <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                <span className="text-[11px] font-medium text-[#888]">
-                  {entitySubText}
-                </span>
-              </div>
+              <p className="mt-0.5 text-[11px] font-medium text-[#888] truncate">
+                {entitySubText}
+              </p>
             )}
           </div>
         </div>

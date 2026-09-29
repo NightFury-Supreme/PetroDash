@@ -29,7 +29,7 @@ export default function AdminUsersListPage() {
   const tErrorBackend = useTranslations('BackendErrors');
   const { showSuccess, showError } = useToast();
 
-  const [userToDelete, setUserToDelete] = useState<{ id: string; username: string } | null>(null);
+  const [userToDelete, setUserToDelete] = useState<{ id: string; username: string; email?: string } | null>(null);
   const [userToBan, setUserToBan] = useState<any | null>(null);
   const [userToUnban, setUserToUnban] = useState<any | null>(null);
 
@@ -164,7 +164,7 @@ export default function AdminUsersListPage() {
             <UsersTable
               users={users}
               loading={loading}
-              onDelete={(id, username) => setUserToDelete({ id, username })}
+              onDelete={(id, username, email) => setUserToDelete({ id, username, email })}
               onToggleBan={handleToggleBan}
               onOpenBan={(user) => setUserToBan(user)}
               onOpenUnban={(user) => setUserToUnban(user)}
@@ -191,6 +191,7 @@ export default function AdminUsersListPage() {
           onConfirm={handleConfirmDelete}
           entityType={t('deleteUserEntity')}
           entityName={userToDelete.username}
+          entitySubText={[userToDelete.email, userToDelete.id ? `ID: ${userToDelete.id}` : ''].filter(Boolean).join(' • ')}
           warningPoints={[
             t('deleteWarning1'),
             t('deleteWarning2'),

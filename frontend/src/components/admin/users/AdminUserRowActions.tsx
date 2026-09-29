@@ -21,7 +21,7 @@ interface AdminUserRowActionsProps {
       until?: string | null;
     };
   };
-  onDelete: (id: string, username: string) => void;
+  onDelete: (id: string, username: string, email?: string) => void;
   onToggleBan?: (user: any) => void;
   onOpenBan?: (user: any) => void;
   onOpenUnban?: (user: any) => void;
@@ -94,7 +94,7 @@ export function AdminUserRowActions({
         {/* Delete */}
         <RowActionButton
           variant="danger"
-          onClick={() => onDelete(user._id, user.username)}
+          onClick={() => onDelete(user._id, user.username, user.email)}
           disabled={isDeleting}
           title={t('deleteUser')}
         >

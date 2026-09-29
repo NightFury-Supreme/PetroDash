@@ -264,6 +264,7 @@ export default function AdminUserPage() {
         onConfirm={handleConfirmDelete}
         entityType={t('deleteUserEntity')}
         entityName={userForm.username || data?.user?.username || ''}
+        entitySubText={[userForm.email || data?.user?.email, id ? `ID: ${id}` : ''].filter(Boolean).join(' • ')}
         warningPoints={[
           t('deleteWarning1'),
           t('deleteWarning2'),
