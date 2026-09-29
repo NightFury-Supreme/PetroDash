@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAdminLedger } from '@/hooks/admin/ledger';
 import { useTranslations } from 'next-intl';
 import { useToast } from '@/components/ui/ToastProvider';
+import { StatusIndicator } from '@/components/ui/StatusIndicator';
 
 interface AdminLedgerTableProps {
   items: any[];

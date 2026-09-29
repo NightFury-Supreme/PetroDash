@@ -17,6 +17,7 @@ export function Disable2FADrawer({ isOpen,
   disable2FA: (password: string, code: string) => Promise<void>;
 }) {
   const t = useTranslations('Profile');
+  const tCommon = useTranslations('Common');
   const [tfaPassword, setTfaPassword] = useState('');
   const [tfaVerifyCode, setTfaVerifyCode] = useState('');
   const [useBackupCode, setUseBackupCode] = useState(false);
@@ -65,11 +66,17 @@ export function Disable2FADrawer({ isOpen,
   return (
     <Drawer isOpen={isOpen} onClose={handleClose} title={t('disable2faTitle')} subtitle={t('disable2faSubtitle')} icon={<AlertTriangle className="text-red-500" size={20} />}>
       <div className="grid gap-6 mt-2">
-        <div className="flex items-start gap-3 rounded-lg bg-red-500/10 p-4 border border-red-500/20 text-red-400">
-          <AlertTriangle size={20} className="shrink-0 mt-0.5" />
-          <p className="text-[13px] leading-relaxed">
-            {t('disable2faWarning')}
-          </p>
+        <div className="border-l-2 border-red-500 pl-4 py-1">
+          <div className="flex items-center gap-2 text-red-500 mb-3">
+            <AlertTriangle size={14} />
+            <span className="text-xs font-bold uppercase tracking-wider">{tCommon('warning')}</span>
+          </div>
+          <ul className="space-y-2">
+            <li className="flex items-start gap-2.5 text-xs text-zinc-400">
+              <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-red-500" />
+              <span>{t('disable2faWarning')}</span>
+            </li>
+          </ul>
         </div>
         <div>
           <label className="block text-[11px] uppercase tracking-wider text-[#888] mb-2 font-medium">{t('password')}</label>

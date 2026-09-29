@@ -51,20 +51,25 @@ const [password, setPassword] = useState('');
   return (
     <Drawer isOpen={isOpen} onClose={handleClose} title={t('deleteAccount')} subtitle={t('deleteAccountDesc')} icon={<AlertTriangle className="text-red-500" size={20} />}>
       <div className="grid gap-6 mt-2">
-        <div className="space-y-4 text-[13px] text-[#A0A0A0] leading-relaxed">
-          <p>
-            {t('deleteWarning1')}
-          </p>
-          <p>
-            {t('deleteWarning2')}
-          </p>
-          <p>
-            {t('deleteWarning3')}
-          </p>
-        </div>
-
-        <div className="rounded-lg bg-[#3A1414] p-3 text-[#E5484D] text-[13px]">
-          {t('deleteIrreversible')}
+        <div className="border-l-2 border-red-500 pl-4 py-1">
+          <div className="flex items-center gap-2 text-red-500 mb-3">
+            <AlertTriangle size={14} />
+            <span className="text-xs font-bold uppercase tracking-wider">{t('deleteIrreversible')}</span>
+          </div>
+          <ul className="space-y-2">
+            <li className="flex items-start gap-2.5 text-xs text-zinc-400">
+              <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-red-500" />
+              <span>{t('deleteWarning1')}</span>
+            </li>
+            <li className="flex items-start gap-2.5 text-xs text-zinc-400">
+              <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-red-500" />
+              <span>{t('deleteWarning2')}</span>
+            </li>
+            <li className="flex items-start gap-2.5 text-xs text-zinc-400">
+              <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-red-500" />
+              <span>{t('deleteWarning3')}</span>
+            </li>
+          </ul>
         </div>
 
         {loginMethod === 'email' && (

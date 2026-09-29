@@ -11,6 +11,7 @@ import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import type { AdminServerTableRowProps } from './types';
 import { AdminServerRowActions } from './AdminServerRowActions';
+import { StatusIndicator } from '@/components/ui/StatusIndicator';
 
 export function AdminServerTableRow({
   server,

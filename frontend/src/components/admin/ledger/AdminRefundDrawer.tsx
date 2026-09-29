@@ -80,18 +80,18 @@ export function AdminRefundDrawer({
         </div>
       </div>
 
-      <div className="border-l-2 border-yellow-500 pl-5 py-1 mb-10">
-        <div className="flex items-center gap-2 text-yellow-500 mb-4">
+      <div className="border-l-2 border-yellow-500 pl-4 py-1 mb-6">
+        <div className="flex items-center gap-2 text-yellow-500 mb-3">
           <AlertTriangle size={14} />
           <span className="text-xs font-bold uppercase tracking-wider">{t('beforeYouContinue')}</span>
         </div>
-        <ul className="space-y-3">
-          <li className="flex items-start gap-3 text-sm text-zinc-400">
-            <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-yellow-500"></span>
+        <ul className="space-y-2">
+          <li className="flex items-start gap-2.5 text-xs text-zinc-400">
+            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-yellow-500" />
             <span>{t('customerReceivesMoneyBack')}</span>
           </li>
-          <li className="flex items-start gap-3 text-sm text-zinc-400">
-            <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-yellow-500"></span>
+          <li className="flex items-start gap-2.5 text-xs text-zinc-400">
+            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-yellow-500" />
             <span>{t('actionIrreversible')}</span>
           </li>
         </ul>

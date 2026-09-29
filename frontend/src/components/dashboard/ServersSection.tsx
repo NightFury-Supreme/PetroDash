@@ -5,6 +5,7 @@ import { ServerInfo } from "./types";
 import { Cpu, CircuitBoard, HardDrive, ChevronsUpDown, ExternalLink, Edit2, Trash2, ShieldAlert } from 'lucide-react';
 import { DeleteDrawer } from "@/components/ui/DeleteDrawer";
 import { RowActionButton } from "@/components/ui/RowActionButton";
+import { StatusIndicator } from "@/components/ui/StatusIndicator";
 import { useTranslations } from 'next-intl';
 
 interface ServersSectionProps {
