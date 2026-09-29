@@ -142,8 +142,8 @@ export function InfoRow({
 
   return (
     <div className="px-5 py-4 transition hover:bg-white/[0.02]">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(250px,1fr)_1fr_150px] md:items-start">
-        <div className="flex items-center gap-3 md:mt-1">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(250px,1fr)_1fr_auto] md:items-start">
+        <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#222] border border-[#2A2A2A] text-[#D4D4D4]">
             {React.isValidElement(icon) && typeof icon.type !== 'string'
               ? React.cloneElement(icon as React.ReactElement<any>, { size: 16 })
@@ -198,7 +198,7 @@ export function InfoRow({
               )}
             </>
           ) : (
-            <div className="flex min-w-0 items-center gap-2 md:mt-2">
+            <div className="flex h-9 min-w-0 items-center gap-2">
               {React.isValidElement(value) ? value : <span className="truncate text-sm text-[#D4D4D4]">{value}</span>}
               {status &&
                 (typeof status === 'string' ? (
@@ -211,7 +211,7 @@ export function InfoRow({
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2 md:mt-1">
+        <div className="flex items-center gap-2">
           {action}
           {editing ? (
             <>

@@ -56,7 +56,7 @@ export function RoleSelectDropdown({
           type="button"
           onClick={() => !roleLoading && setRoleDropdownOpen(!roleDropdownOpen)}
           disabled={roleLoading}
-          className={`h-8 min-w-32 flex items-center justify-between gap-2 px-2.5 border rounded-md text-sm transition-colors disabled:opacity-50 outline-none
+          className={`h-9 min-w-32 flex items-center justify-between gap-2 px-2.5 border rounded-md text-sm transition-colors disabled:opacity-50 outline-none
             ${
               roleDropdownOpen
                 ? 'bg-[#222] border-[#222] text-[#ddd]'

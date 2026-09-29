@@ -88,7 +88,7 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
 
   return (
     <div className="px-5 py-4 transition hover:bg-white/[0.02]">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(250px,1fr)_1fr_150px] md:items-start">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(250px,1fr)_1fr_auto] md:items-start">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center text-[#D4D4D4]">
             {React.isValidElement(icon) && typeof icon.type !== 'string' ? React.cloneElement(icon as React.ReactElement<any>, { size: 16 }) : icon}
