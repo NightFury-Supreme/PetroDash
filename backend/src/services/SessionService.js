@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const parser = require('ua-parser-js');
 const UserSession = require('../models/UserSession');
+const { resolveClientIp } = require('../utils/clientInfo');
 
 class SessionService {
   /**
@@ -10,7 +11,9 @@ class SessionService {
    * @returns {Promise<string>} Signed JWT containing the sessionId
    */
   static async createSessionAndJwt(user, req) {
-    const userAgent = req.get('User-Agent') || '';
+    const userAgent = (typeof req?.get === 'function' ? req.get('User-Agent') : null)
+      || req?.headers?.['user-agent']
+      || '';
     const ua = parser(userAgent);
     
     // Format device/browser nicely
@@ -33,7 +36,7 @@ class SessionService {
       device: deviceName,
       deviceType: ['mobile', 'tablet'].includes(deviceType) ? deviceType : 'desktop',
       browser: browserName,
-      ip: req.ip || 'Unknown IP'
+      ip: resolveClientIp(req) || 'Unknown IP'
     });
 
     const token = jwt.sign(

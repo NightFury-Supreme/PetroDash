@@ -186,6 +186,14 @@ async function getLogs(parsedQuery) {
       copy.meta.targetName = ticketMap[String(copy.resourceId)];
     }
 
+    let clientIp = copy.ip;
+    if (clientIp === '::1' || clientIp === '::ffff:127.0.0.1') {
+      clientIp = '127.0.0.1';
+    } else if (typeof clientIp === 'string' && clientIp.startsWith('::ffff:')) {
+      clientIp = clientIp.substring(7);
+    }
+    copy.ip = clientIp;
+
     return copy;
   });
 
