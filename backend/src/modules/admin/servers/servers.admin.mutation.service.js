@@ -10,7 +10,7 @@ const { updateServerBuild, getServer, updateServerDetails, forceDeleteServer } =
 const { logUserActivity } = require('../../../middleware/userActivity');
 const AppError = require('../../../utils/AppError');
 
-const clearQueue = async (query = {}) => {
+const clearQueue = async (query = {}, req = null) => {
   const { locationId, eggId } = query;
   const q = { status: { $in: ['queued', 'error'] } };
 
@@ -34,8 +34,11 @@ const clearQueue = async (query = {}) => {
     await deleteCache(`user:${ownerId}:profile`);
     await deleteCachePattern(`api:servers:${ownerId}:*`);
     await deleteCachePattern(`server:usage:${ownerId}`);
-    await logUserActivity(null, 'admin.server.queue.clear', {
+    await logUserActivity(req, 'admin.server.queue.clear', {
       clearedByAdmin: true,
+      adminId: req?.user?.sub || req?.user?.userId,
+      adminUsername: req?.user?.username || 'admin',
+      adminRole: req?.user?.role || 'admin',
     }, ownerId);
   }
   await deleteCachePattern('api:admin:servers:*');
@@ -49,7 +52,7 @@ const clearQueue = async (query = {}) => {
   };
 };
 
-const updateServer = async (id, data) => {
+const updateServer = async (id, data, req = null) => {
   const { limits, name } = data;
 
   const server = await Server.findById(String(id));
@@ -129,10 +132,13 @@ const updateServer = async (id, data) => {
   server.limits = limits;
   await server.save();
 
-  await logUserActivity(null, 'admin.server.update', {
+  await logUserActivity(req, 'admin.server.update', {
     serverId: server._id.toString(),
     serverName: server.name,
     updatedByAdmin: true,
+    adminId: req?.user?.sub || req?.user?.userId,
+    adminUsername: req?.user?.username || 'admin',
+    adminRole: req?.user?.role || 'admin',
     changes: Object.keys(changes).length > 0 ? changes : undefined,
   }, server.owner.toString());
 
@@ -144,7 +150,7 @@ const updateServer = async (id, data) => {
   return { server, changes };
 };
 
-const deleteServer = async (id, isForce = true) => {
+const deleteServer = async (id, isForce = true, req = null) => {
   const server = await Server.findById(String(id));
   if (!server) {
     throw new AppError('Server not found', 404, 'ERR_SERVER_NOT_FOUND');
@@ -174,11 +180,14 @@ const deleteServer = async (id, isForce = true) => {
   await Server.findByIdAndDelete(String(id));
 
   if (server.owner) {
-    await logUserActivity(null, 'admin.server.delete', {
+    await logUserActivity(req, 'admin.server.delete', {
       serverId: server._id.toString(),
       serverName: server.name,
       panelServerId: server.panelServerId,
       deletedByAdmin: true,
+      adminId: req?.user?.sub || req?.user?.userId,
+      adminUsername: req?.user?.username || 'admin',
+      adminRole: req?.user?.role || 'admin',
     }, server.owner.toString());
   }
 

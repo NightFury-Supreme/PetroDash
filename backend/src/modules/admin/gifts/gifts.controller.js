@@ -64,10 +64,13 @@ class GiftsController {
       });
 
       if (gift.source === 'user' && gift.createdBy) {
-        await logUserActivity(null, 'admin.gift.update', {
+        await logUserActivity(req, 'admin.gift.update', {
           giftId: gift._id.toString(),
           code: gift.code,
           updatedByAdmin: true,
+          adminId: req?.user?.sub || req?.user?.userId,
+          adminUsername: req?.user?.username || 'admin',
+          adminRole: req?.user?.role || 'admin',
           changes: Object.keys(changes).length > 0 ? changes : undefined,
         }, gift.createdBy.toString());
       }

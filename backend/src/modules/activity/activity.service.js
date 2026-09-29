@@ -20,16 +20,27 @@ class ActivityService {
     ]);
 
     return {
-      data: logs.map(log => ({
-        _id: log._id.toString(),
-        action: log.action,
-        ip: log.ip,
-        userAgent: log.userAgent,
-        createdAt: log.createdAt,
-        metadata: log.metadata,
-        success: !log.action.includes('failed') && !log.action.includes('error')
-      })),
-      pagination: { total, page, limit, pages: Math.ceil(total / limit) }
+      data: logs.map((log) => {
+        const isPerformedByAdmin = Boolean(
+          (typeof log.action === 'string' && log.action.startsWith('admin.')) ||
+          log.metadata?.performedByAdmin ||
+          log.metadata?.updatedByAdmin ||
+          log.metadata?.adminId ||
+          log.metadata?.adminUsername
+        );
+
+        return {
+          _id: log._id.toString(),
+          action: log.action,
+          // Hide admin browser and IP on the user-facing profile page
+          ip: isPerformedByAdmin ? null : log.ip,
+          userAgent: isPerformedByAdmin ? null : log.userAgent,
+          createdAt: log.createdAt,
+          metadata: log.metadata,
+          success: !log.action.includes('failed') && !log.action.includes('error'),
+        };
+      }),
+      pagination: { total, page, limit, pages: Math.ceil(total / limit) },
     };
   }
 }

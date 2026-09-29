@@ -49,6 +49,15 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
           const meta       = log.meta ?? log.metadata ?? {};
           const isExpanded = expandedId === log._id;
           const ip         = log.ip ?? meta.ip;
+          const isByAdmin  = Boolean(
+            meta.adminUsername ||
+            meta.adminId ||
+            meta.performedByAdmin ||
+            meta.updatedByAdmin ||
+            meta.clearedByAdmin ||
+            meta.deletedByAdmin ||
+            (typeof log.action === 'string' && log.action.startsWith('admin.'))
+          );
 
           return (
             <React.Fragment key={log._id}>
@@ -67,9 +76,14 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
                 {/* Device / IP */}
                 <div className="min-w-0">
                   <p className="mb-1 text-[9px] uppercase tracking-wider text-white/30 md:hidden">{t('device')}</p>
-                  <div className="text-[11px] text-white/65 font-mono truncate">{ip ?? '-'}</div>
+                  <div className="text-[11px] text-white/65 font-mono truncate">
+                    {ip ? ip : (isByAdmin && variant === 'user' ? tCommon('protected') : '-')}
+                  </div>
                   <div className="mt-0.5 text-[10px] text-white/40">
-                    {parseUserAgent(log.userAgent ?? meta.userAgent, tCommon('unknown'))}
+                    {parseUserAgent(
+                      log.userAgent ?? meta.userAgent,
+                      isByAdmin && variant === 'user' ? tCommon('staffAction') : tCommon('unknown')
+                    )}
                   </div>
                 </div>
 

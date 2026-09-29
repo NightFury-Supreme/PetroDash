@@ -22,6 +22,11 @@ export interface LogMeta {
   code?:       string;
   targetName?: string;
   targetRole?: string;
+  adminId?:    string;
+  adminUsername?: string;
+  adminRole?:  string;
+  performedByAdmin?: boolean;
+  updatedByAdmin?: boolean;
   [key: string]: unknown;
 }
 

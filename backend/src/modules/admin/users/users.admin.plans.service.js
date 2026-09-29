@@ -75,8 +75,25 @@ const addPlan = async (req, id, { planId, months }) => {
     await User.findByIdAndUpdate(user._id, { $inc: incQuery });
   }
 
-  await writeAudit(req, 'admin.user.plan.add', 'user_plan', sub._id.toString(), { plan: plan.name, months });
-  await logUserActivity(null, 'admin.user.plan.add', { plan: plan.name, months, updatedByAdmin: true }, user._id.toString());
+  const adminId = req?.user?.sub || req?.user?.userId || req?.user?._id;
+  const adminUsername = req?.user?.username || 'admin';
+  const adminRole = req?.user?.role || 'admin';
+
+  await writeAudit(req, 'admin.user.plan.add', 'user_plan', sub._id.toString(), {
+    plan: plan.name,
+    months,
+    adminId,
+    adminUsername,
+    adminRole,
+  });
+  await logUserActivity(req, 'admin.user.plan.add', {
+    plan: plan.name,
+    months,
+    updatedByAdmin: true,
+    adminId,
+    adminUsername,
+    adminRole,
+  }, user._id.toString());
   await deleteCachePattern('admin:users*');
   await deleteCachePattern(`user:${user._id}:plans*`);
 
@@ -116,8 +133,26 @@ const cancelPlans = async (req, id, planId) => {
     }
   }
 
-  await writeAudit(req, 'admin.user.plan.cancel', 'user_plan', planId, { userId: id, planId, instancesCancelled: subs.length });
-  await logUserActivity(null, 'admin.user.plan.cancel', { planId, instancesCancelled: subs.length, updatedByAdmin: true }, id);
+  const adminId = req?.user?.sub || req?.user?.userId || req?.user?._id;
+  const adminUsername = req?.user?.username || 'admin';
+  const adminRole = req?.user?.role || 'admin';
+
+  await writeAudit(req, 'admin.user.plan.cancel', 'user_plan', planId, {
+    userId: id,
+    planId,
+    instancesCancelled: subs.length,
+    adminId,
+    adminUsername,
+    adminRole,
+  });
+  await logUserActivity(req, 'admin.user.plan.cancel', {
+    planId,
+    instancesCancelled: subs.length,
+    updatedByAdmin: true,
+    adminId,
+    adminUsername,
+    adminRole,
+  }, id);
   await deleteCachePattern('admin:users*');
   await deleteCachePattern(`user:${id}:plans*`);
 
@@ -154,8 +189,25 @@ const cancelPlanInstance = async (req, id, instanceId) => {
     }
   }
 
-  await writeAudit(req, 'admin.user.plan.instance.cancel', 'user_plan', sub._id.toString(), { userId: id, planId: sub.planId });
-  await logUserActivity(null, 'admin.user.plan.instance.cancel', { planId: sub.planId, instanceId: sub._id.toString(), updatedByAdmin: true }, id);
+  const adminId = req?.user?.sub || req?.user?.userId || req?.user?._id;
+  const adminUsername = req?.user?.username || 'admin';
+  const adminRole = req?.user?.role || 'admin';
+
+  await writeAudit(req, 'admin.user.plan.instance.cancel', 'user_plan', sub._id.toString(), {
+    userId: id,
+    planId: sub.planId,
+    adminId,
+    adminUsername,
+    adminRole,
+  });
+  await logUserActivity(req, 'admin.user.plan.instance.cancel', {
+    planId: sub.planId,
+    instanceId: sub._id.toString(),
+    updatedByAdmin: true,
+    adminId,
+    adminUsername,
+    adminRole,
+  }, id);
   await deleteCachePattern('admin:users*');
   await deleteCachePattern(`user:${id}:plans*`);
 

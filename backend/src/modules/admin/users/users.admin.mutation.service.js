@@ -154,10 +154,25 @@ const updateUser = async (req, id, data) => {
     }
   }
 
-  await writeAudit(req, 'admin.user.update', 'user', user._id.toString(), { changes });
+  const adminId = req?.user?.sub || req?.user?.userId || req?.user?._id;
+  const adminUsername = req?.user?.username || 'admin';
+  const adminRole = req?.user?.role || 'admin';
+
+  await writeAudit(req, 'admin.user.update', 'user', user._id.toString(), {
+    changes,
+    adminId,
+    adminUsername,
+    adminRole,
+  });
 
   if (Object.keys(changes).length > 0) {
-    await logUserActivity(null, 'admin.user.update', { changes, updatedByAdmin: true }, user._id.toString());
+    await logUserActivity(req, 'admin.user.update', {
+      changes,
+      updatedByAdmin: true,
+      adminId,
+      adminUsername,
+      adminRole,
+    }, user._id.toString());
   }
 
   const targetUserId = user._id.toString();
@@ -207,11 +222,26 @@ const banUser = async (req, id, { isBanned, reason, durationMinutes }) => {
     } catch (_) {}
   }
   await user.save();
+
+  const adminId = req?.user?.sub || req?.user?.userId || req?.user?._id;
+  const adminUsername = req?.user?.username || 'admin';
+  const adminRole = req?.user?.role || 'admin';
+
   await writeAudit(req, isBanned ? 'admin.user.ban' : 'admin.user.unban', 'user', user._id.toString(), {
     reason: user.ban.reason,
     until: user.ban.until,
+    adminId,
+    adminUsername,
+    adminRole,
   });
-  await logUserActivity(null, isBanned ? 'admin.user.ban' : 'admin.user.unban', { reason: user.ban.reason, until: user.ban.until }, user._id.toString());
+  await logUserActivity(req, isBanned ? 'admin.user.ban' : 'admin.user.unban', {
+    reason: user.ban.reason,
+    until: user.ban.until,
+    performedByAdmin: true,
+    adminId,
+    adminUsername,
+    adminRole,
+  }, user._id.toString());
   const targetUserId = user._id.toString();
   await deleteCache(`user:auth:${targetUserId}`);
   await deleteCache(`user:${targetUserId}:profile`);
@@ -255,16 +285,26 @@ const deleteUser = async (req, id) => {
 
   await User.deleteOne({ _id: user._id });
 
+  const adminId = req?.user?.sub || req?.user?.userId || req?.user?._id;
+  const adminUsername = req?.user?.username || 'admin';
+  const adminRole = req?.user?.role || 'admin';
+
   await writeAudit(req, 'admin.user.delete', 'user', user._id.toString(), {
     serversDeleted: deletedServers,
     serverErrors: serverErrors.length,
     pterodactylError: !!pterodactylError,
+    adminId,
+    adminUsername,
+    adminRole,
   });
-  await logUserActivity(null, 'admin.user.delete', {
+  await logUserActivity(req, 'admin.user.delete', {
     serversDeleted: deletedServers,
     serverErrors: serverErrors.length,
     pterodactylError: !!pterodactylError,
     updatedByAdmin: true,
+    adminId,
+    adminUsername,
+    adminRole,
   }, user._id.toString());
 
   const targetUserId = user._id.toString();

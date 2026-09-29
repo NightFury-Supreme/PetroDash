@@ -47,7 +47,7 @@ const clearQueue = async (req, res, next) => {
     if (!parsedQuery.success) {
       throw new AppError('Invalid query parameters', 400, 'ERR_INVALID_QUERY_PARAMS');
     }
-    const result = await serversAdminService.clearQueue(parsedQuery.data);
+    const result = await serversAdminService.clearQueue(parsedQuery.data, req);
     await writeAudit(req, 'admin.server.queue.clear', 'server', null, { deletedCount: result.deletedCount });
     res.json({ success: result.success, count: result.count, message: result.message });
   } catch (error) {
@@ -85,7 +85,7 @@ const updateServer = async (req, res, next) => {
       throw new AppError('Limits are required', 400, 'ERR_LIMITS_REQUIRED');
     }
 
-    const { server, changes } = await serversAdminService.updateServer(parsedParams.data.id, { limits, name });
+    const { server, changes } = await serversAdminService.updateServer(parsedParams.data.id, { limits, name }, req);
 
     await writeAudit(req, 'admin.server.update', 'server', server._id.toString(), {
       serverId: server._id.toString(),
@@ -109,7 +109,7 @@ const deleteServer = async (req, res, next) => {
     const parsedQuery = deleteServerQuerySchema.safeParse(req.query);
     const isForce = parsedQuery.success ? (parsedQuery.data.force ?? true) : true;
 
-    const server = await serversAdminService.deleteServer(parsedParams.data.id, isForce);
+    const server = await serversAdminService.deleteServer(parsedParams.data.id, isForce, req);
 
     await writeAudit(req, 'admin.server.delete', 'server', server._id.toString(), {
       serverId: server._id.toString(),

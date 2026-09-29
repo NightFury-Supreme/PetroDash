@@ -224,16 +224,36 @@ const getUserActivity = async (id, { page = 1, limit = 10 } = {}) => {
     UserActivityLog.countDocuments(filter),
   ]);
 
+  const missingAdminIds = new Set();
+  logs.forEach((log) => {
+    if (log.metadata?.adminId && !log.metadata?.adminUsername && /^[0-9a-fA-F]{24}$/.test(String(log.metadata.adminId))) {
+      missingAdminIds.add(String(log.metadata.adminId));
+    }
+  });
+
+  let adminUserMap = {};
+  if (missingAdminIds.size > 0) {
+    const adminUsers = await User.find({ _id: { $in: [...missingAdminIds] } }, 'username role').lean();
+    adminUserMap = Object.fromEntries(adminUsers.map((u) => [u._id.toString(), u]));
+  }
+
   const result = {
-    data: logs.map((log) => ({
-      _id: log._id.toString(),
-      action: log.action,
-      ip: log.ip,
-      userAgent: log.userAgent,
-      createdAt: log.createdAt,
-      metadata: log.metadata,
-      success: !log.action.includes('failed') && !log.action.includes('error'),
-    })),
+    data: logs.map((log) => {
+      const meta = { ...(log.metadata || {}) };
+      if (meta.adminId && !meta.adminUsername && adminUserMap[String(meta.adminId)]) {
+        meta.adminUsername = adminUserMap[String(meta.adminId)].username;
+        meta.adminRole = adminUserMap[String(meta.adminId)].role;
+      }
+      return {
+        _id: log._id.toString(),
+        action: log.action,
+        ip: log.ip,
+        userAgent: log.userAgent,
+        createdAt: log.createdAt,
+        metadata: meta,
+        success: !log.action.includes('failed') && !log.action.includes('error'),
+      };
+    }),
     pagination: {
       total,
       page: p,

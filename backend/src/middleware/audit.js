@@ -150,6 +150,9 @@ async function writeAudit(reqOrActorId, action, resourceTypeOrDetails, resourceI
       action,
       resourceType,
       resourceId,
+      targetUserId: (resourceType === 'user' && resourceId && /^[0-9a-fA-F]{24}$/.test(String(resourceId)))
+        ? resourceId
+        : (meta?.targetUserId || null),
       meta: sanitizeMeta(meta),
       success: isSuccess,
       ip,

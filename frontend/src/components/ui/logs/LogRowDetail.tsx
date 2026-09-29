@@ -118,11 +118,42 @@ export function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Var
 
   const ctx = ctxKey ? `${translatedCtxLabel}: ${meta[ctxKey]}` : null;
 
+  const adminName = (meta.adminUsername as string) || (log.action.startsWith('admin.') ? log.actorUsername : null);
+  const adminId   = (meta.adminId as string) || (log.action.startsWith('admin.') ? log.actorId : null);
+  const adminRole = (meta.adminRole as string) || (log.action.startsWith('admin.') ? log.actorRole : 'admin') || 'admin';
+  const isByAdmin = Boolean(
+    adminName || 
+    meta.performedByAdmin || 
+    meta.updatedByAdmin || 
+    meta.clearedByAdmin || 
+    meta.deletedByAdmin || 
+    log.action.startsWith('admin.')
+  );
+
   return (
     <div className="min-w-0">
       <div className="text-sm font-semibold text-white truncate">
         {actionLabel}
       </div>
+      {isByAdmin && (
+        <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+          <span className="text-[10px] text-white/40">{tCommon('by')}</span>
+          {adminId ? (
+            <Link
+              href={`/admin/users/${adminId}`}
+              className="text-[10px] text-[#ff5722] hover:underline font-medium truncate"
+              onClick={e => e.stopPropagation()}
+            >
+              {adminName || tCommon('admin')}
+            </Link>
+          ) : (
+            <span className="text-[10px] text-[#ff5722] font-medium truncate">
+              {adminName || tCommon('admin')}
+            </span>
+          )}
+          <RankBadge rank={adminRole} size="sm" />
+        </div>
+      )}
       {ctx && <div className="mt-0.5 text-[10px] text-white/45 truncate">{ctx as string}</div>}
     </div>
   );
@@ -140,8 +171,20 @@ export function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: 
   );
   const hasRawMeta = Object.keys(rawMeta).length > 0;
 
+  const adminName = (meta.adminUsername as string) || (log.action.startsWith('admin.') ? log.actorUsername : null);
+  const adminRole = (meta.adminRole as string) || (log.action.startsWith('admin.') ? log.actorRole : 'admin') || 'admin';
+  const isByAdmin = Boolean(
+    adminName || 
+    meta.performedByAdmin || 
+    meta.updatedByAdmin || 
+    meta.clearedByAdmin || 
+    meta.deletedByAdmin || 
+    log.action.startsWith('admin.')
+  );
+
   const ip         = log.ip ?? meta.ip;
   const statusCode = log.statusCode ?? meta.statusCode;
+  const ipDisplay  = ip ? ip : (isByAdmin && variant === 'user' ? tCommon('protected') : '-');
 
   return (
     <div className="px-5 pt-3 pb-7 border-b border-white/[0.05] overflow-hidden">
@@ -150,8 +193,14 @@ export function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: 
         <div>
           <SectionHeading>{t('requestInformation')}</SectionHeading>
           <InfoRow label={t('requestId')} value={log._id} mono muted />
+          {isByAdmin && (
+            <InfoRow
+              label={tCommon('performedBy')}
+              value={adminName ? `${adminName} (${adminRole})` : tCommon('admin')}
+            />
+          )}
           <InfoRow label={t('sessionId')} value={log.sessionId ?? meta.sessionId} mono muted />
-          <InfoRow label={t('ipAddress')} value={ip ?? '-'} mono />
+          <InfoRow label={t('ipAddress')} value={ipDisplay} mono />
           {log.category    && <InfoRow label={t('category')} value={getCategoryLabel(log.category)} />}
           {log.method      && <InfoRow label={t('method')} value={log.method} />}
           {log.path        && <InfoRow label={t('path')} value={log.path} mono muted />}

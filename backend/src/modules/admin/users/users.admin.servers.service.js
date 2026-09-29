@@ -29,8 +29,27 @@ const deleteServer = async (req, id, serverId) => {
     throw new AppError('Panel delete failed', 400, 'ERR_PANEL_DELETE_FAILED', { details: e?.response?.data || e.message });
   }
   await Server.deleteOne({ _id: server._id });
-  await writeAudit(req, 'admin.user.server.delete', 'server', server._id.toString(), { owner: id });
-  await logUserActivity(null, 'admin.user.server.delete', { serverId: server._id.toString(), owner: id, updatedByAdmin: true }, id);
+
+  const adminId = req?.user?.sub || req?.user?.userId || req?.user?._id;
+  const adminUsername = req?.user?.username || 'admin';
+  const adminRole = req?.user?.role || 'admin';
+
+  await writeAudit(req, 'admin.user.server.delete', 'server', server._id.toString(), {
+    owner: id,
+    serverName: server.name,
+    adminId,
+    adminUsername,
+    adminRole,
+  });
+  await logUserActivity(req, 'admin.user.server.delete', {
+    serverId: server._id.toString(),
+    serverName: server.name,
+    owner: id,
+    updatedByAdmin: true,
+    adminId,
+    adminUsername,
+    adminRole,
+  }, id);
   await deleteCachePattern('admin:users*');
   return { ok: true };
 };
@@ -156,8 +175,28 @@ const updateServer = async (req, id, serverId, data) => {
   }
 
   await server.save();
-  await writeAudit(req, 'admin.user.server.update', 'server', server._id.toString(), { owner: id, changed: data });
-  await logUserActivity(null, 'admin.user.server.update', { serverId: server._id.toString(), changed: data, updatedByAdmin: true }, id);
+
+  const adminId = req?.user?.sub || req?.user?.userId || req?.user?._id;
+  const adminUsername = req?.user?.username || 'admin';
+  const adminRole = req?.user?.role || 'admin';
+
+  await writeAudit(req, 'admin.user.server.update', 'server', server._id.toString(), {
+    owner: id,
+    serverName: server.name,
+    changed: data,
+    adminId,
+    adminUsername,
+    adminRole,
+  });
+  await logUserActivity(req, 'admin.user.server.update', {
+    serverId: server._id.toString(),
+    serverName: server.name,
+    changed: data,
+    updatedByAdmin: true,
+    adminId,
+    adminUsername,
+    adminRole,
+  }, id);
   await deleteCachePattern('admin:users*');
   return { server };
 };

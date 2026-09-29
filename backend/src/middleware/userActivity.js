@@ -15,13 +15,35 @@ async function logUserActivity(req, action, metadata = {}, explicitUserId = null
     }
 
     const xForwarded = req?.headers?.['x-forwarded-for'];
-    const ip = (Array.isArray(xForwarded) ? xForwarded[0] : xForwarded?.split(',')[0]) || req?.socket?.remoteAddress || 'unknown';
+    const ip = (Array.isArray(xForwarded) ? xForwarded[0] : xForwarded?.split(',')[0])?.trim()
+      || req?.ip
+      || req?.socket?.remoteAddress
+      || 'unknown';
     const userAgent = req?.headers?.['user-agent'] || 'unknown';
 
     // Inject session ID if available
     const sessionId = req?.user?.sessionId;
-    if (sessionId) {
+    if (sessionId && !metadata.sessionId) {
       metadata.sessionId = sessionId;
+    }
+
+    // Auto-detect administrator actions and inject admin identity
+    const callerId = req?.user?.sub || req?.user?.userId || req?.user?.id || req?.user?._id;
+    const isCallerAdmin = req?.user?.role === 'admin';
+    const isAdminAction = typeof action === 'string' && action.startsWith('admin.');
+    const isTargetingOther = Boolean(explicitUserId && callerId && String(explicitUserId) !== String(callerId));
+
+    if (isCallerAdmin || isAdminAction || isTargetingOther) {
+      if (!metadata.adminId && callerId) {
+        metadata.adminId = String(callerId);
+      }
+      if (!metadata.adminUsername && req?.user?.username) {
+        metadata.adminUsername = req.user.username;
+      }
+      if (!metadata.adminRole && (req?.user?.role || isCallerAdmin)) {
+        metadata.adminRole = req.user?.role || 'admin';
+      }
+      metadata.performedByAdmin = true;
     }
 
     // Sanitize metadata to avoid leaking secrets
