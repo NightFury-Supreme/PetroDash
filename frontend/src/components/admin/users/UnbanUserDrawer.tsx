@@ -110,20 +110,15 @@ export function UnbanUserDrawer({
       <div className="space-y-6">
         {/* Target User Info */}
         <div className="border-b border-white/[0.07] pb-5">
-          <div className="flex flex-row items-center gap-4">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <ShieldCheck size={22} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h2 className="text-[16px] font-semibold text-zinc-200 truncate leading-snug">
-                @{username}
-              </h2>
-              {entitySubText && (
-                <p className="mt-0.5 text-[11px] font-medium text-[#888] truncate">
-                  {entitySubText}
-                </p>
-              )}
-            </div>
+          <div className="min-w-0">
+            <h2 className="text-[16px] font-semibold text-zinc-200 truncate leading-snug">
+              {username}
+            </h2>
+            {entitySubText && (
+              <p className="mt-0.5 text-[11px] font-medium text-[#888] truncate">
+                {entitySubText}
+              </p>
+            )}
           </div>
         </div>
 

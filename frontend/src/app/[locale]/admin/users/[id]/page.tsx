@@ -135,7 +135,7 @@ export default function AdminUserPage() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-semibold text-white">@{userForm.username || tCommon('username')}</h2>
+                  <h2 className="text-lg font-semibold text-white">{userForm.username || tCommon('username')}</h2>
                   <RankBadge rank={userForm.role || 'user'} />
                   {ban?.isBanned && (
                     <span className="text-xs font-medium text-[#FF4444]">
