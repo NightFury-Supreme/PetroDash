@@ -114,7 +114,7 @@ export function OverviewTab({
             description={t('avatarDesc')}
             value={
               userForm.profilePicture ? (
-                <span className="truncate max-w-[220px] inline-block align-bottom">{userForm.profilePicture}</span>
+                <span className="truncate max-w-[220px] inline-block align-bottom text-sm text-[#D4D4D4]">{userForm.profilePicture}</span>
               ) : (
                 t('notSet')
               )

@@ -52,7 +52,7 @@ export function Overview({
             icon={form.profilePicture ? <img src={form.profilePicture} alt="Avatar" className="h-full w-full object-cover rounded-lg" /> : <Camera size={14} />}
             label={t('avatarUrl')}
             description={t('avatarUrlDesc')}
-            value={form.profilePicture ? <span className="truncate max-w-[220px] inline-block align-bottom">{form.profilePicture}</span> : t('notSet')}
+            value={form.profilePicture ? <span className="truncate max-w-[220px] inline-block align-bottom text-sm text-[#D4D4D4]">{form.profilePicture}</span> : t('notSet')}
             editing={editingAvatar}
             draft={avatarDraft}
             forceUnchanged={avatarDraft.trim() === (form.profilePicture || '')}
