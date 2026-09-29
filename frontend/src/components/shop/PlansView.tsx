@@ -3,6 +3,7 @@
 import React from "react";
 import { useTranslations } from "next-intl";
 import { Check, Crown, Package } from "lucide-react";
+import { StatusIndicator } from "@/components/ui/StatusIndicator";
 import type { ShopPlan } from "@/hooks/shop";
 import { PlanRow } from "./PlanRow";
 
@@ -173,9 +174,7 @@ export function PlansView({
                     </div>
 
                     <div className="sm:ml-4 flex items-center">
-                      <span className="rounded border border-[#FF5722]/30 bg-[#FF5722]/10 px-2 py-0.5 text-[10px] font-bold tracking-wide text-[#FF5722]">
-                        {g.label}
-                      </span>
+                      <StatusIndicator status="warning" label={g.label} />
                     </div>
                   </div>
                 );

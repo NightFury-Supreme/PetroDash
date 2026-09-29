@@ -8,6 +8,7 @@
 import React, { type ReactNode } from 'react';
 import { Settings } from 'lucide-react';
 import { RowActionButton } from '@/components/ui/RowActionButton';
+import { StatusIndicator } from '@/components/ui/StatusIndicator';
 import { useTranslations } from 'next-intl';
 
 export interface EarnMethodRowProps {
@@ -84,15 +85,10 @@ export function EarnMethodRow({
         <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
           {t('table.status')}
         </p>
-        {enabled ? (
-          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">
-            {tCommon('enabled')}
-          </span>
-        ) : (
-          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">
-            {tCommon('disabled')}
-          </span>
-        )}
+        <StatusIndicator
+          status={enabled ? 'active' : 'inactive'}
+          label={enabled ? tCommon('enabled') : tCommon('disabled')}
+        />
       </div>
 
       {/* Actions */}

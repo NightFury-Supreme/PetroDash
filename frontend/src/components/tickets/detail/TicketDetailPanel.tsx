@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { useTranslations } from 'next-intl';
-import { CheckCircle2, Clipboard, Info } from 'lucide-react';
+import { Clipboard, Info } from 'lucide-react';
+import { StatusIndicator } from '@/components/ui/StatusIndicator';
 import { Priority, PRIORITY_DOT, TicketStatus } from '../types';
 import { formatRelative } from '../utils';
 
@@ -52,9 +53,8 @@ export function TicketDetailPanel({
             <span className="flex items-center gap-1.5 text-sm font-medium text-white/50 mb-2">
               {t('status')} <Info size={14} className="text-white/30" />
             </span>
-            <div className="flex items-center gap-2 text-sm font-medium text-emerald-400">
-              <CheckCircle2 size={16} />
-              <span className="capitalize">{t(status as any)}</span>
+            <div className="flex items-center gap-2">
+              <StatusIndicator status={status} label={t(status as any)} size="md" />
             </div>
           </div>
 

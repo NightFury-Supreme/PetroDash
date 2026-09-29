@@ -4,6 +4,7 @@ import { Download, Loader2 } from "lucide-react";
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { Pagination } from '@/components/Pagination';
+import { StatusIndicator } from '@/components/ui/StatusIndicator';
 import { useInvoices, PaymentItem } from '@/hooks/profile';
 
 export function InvoicesTab({ currency = "USD" }: { currency?: string }) {
@@ -174,24 +175,20 @@ function PaymentRow({
 
 function PaymentStatus({ status, t }: { status: string; t?: any }) {
   const normStatus = String(status || "").toUpperCase();
+  const label = t ? t(`status${normStatus.charAt(0) + normStatus.slice(1).toLowerCase()}`) : normStatus;
   
-  let styles = "border-gray-500/20 bg-gray-500/[0.04] text-gray-400";
-  
+  let statusKey = 'neutral';
   if (normStatus === "COMPLETED" || normStatus === "PAID") {
-    styles = "border-emerald-500/20 bg-emerald-500/[0.04] text-emerald-500";
+    statusKey = 'completed';
   } else if (normStatus === "FAILED") {
-    styles = "border-red-500/20 bg-red-500/[0.04] text-red-500";
+    statusKey = 'failed';
   } else if (normStatus === "REFUNDED") {
-    styles = "border-yellow-500/20 bg-yellow-500/[0.04] text-yellow-500";
+    statusKey = 'refunded';
   } else if (normStatus === "VOIDED") {
-    styles = "border-gray-500/20 bg-gray-500/[0.04] text-gray-500";
+    statusKey = 'voided';
   } else if (normStatus === "CREATED" || normStatus === "PENDING") {
-    styles = "border-blue-500/20 bg-blue-500/[0.04] text-blue-500";
+    statusKey = 'pending';
   }
 
-  return (
-    <span className={`inline-flex w-fit rounded border px-2 py-1 text-xs font-medium uppercase ${styles}`}>
-      {t ? t(`status${normStatus.charAt(0) + normStatus.slice(1).toLowerCase()}`) : normStatus}
-    </span>
-  );
+  return <StatusIndicator status={statusKey} label={label} />;
 }

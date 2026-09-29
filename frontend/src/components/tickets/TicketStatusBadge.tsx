@@ -1,6 +1,7 @@
 import React from 'react';
 import { TicketStatus, STATUS_CONFIG } from './types';
 import { useTranslations } from 'next-intl';
+import { StatusIndicator } from '@/components/ui/StatusIndicator';
 
 export function TicketStatusBadge({ status }: { status: TicketStatus }) {
   const t = useTranslations('Tickets');
@@ -13,12 +14,5 @@ export function TicketStatusBadge({ status }: { status: TicketStatus }) {
     return (t as any)(status) || cfg.label;
   };
 
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded border px-2 py-0.5 text-[10px] font-semibold ${cfg.badge}`}
-    >
-      <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
-      {getStatusLabel()}
-    </span>
-  );
+  return <StatusIndicator status={status} label={getStatusLabel()} />;
 }

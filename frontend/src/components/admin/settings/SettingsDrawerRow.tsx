@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Loader2, Trash2 } from 'lucide-react';
 import { Drawer } from '@/components/ui/Drawer';
+import { StatusIndicator } from '@/components/ui/StatusIndicator';
 import { useTranslations } from 'next-intl';
 
 export function SettingsDrawerRow({
@@ -42,11 +43,10 @@ export function SettingsDrawerRow({
          <div className="flex flex-col w-full justify-center">
             <div className="text-sm text-[#D4D4D4] flex items-center md:justify-end h-9">
               {enabled !== undefined && (
-                enabled ? (
-                   <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">{tCommon('enabled')}</span>
-                ) : (
-                   <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">{tCommon('disabled')}</span>
-                )
+                <StatusIndicator
+                  status={enabled ? 'enabled' : 'disabled'}
+                  label={enabled ? tCommon('enabled') : tCommon('disabled')}
+                />
               )}
             </div>
          </div>

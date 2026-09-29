@@ -1,6 +1,7 @@
 "use client";
 
 import { Copy } from "lucide-react";
+import { StatusIndicator } from "@/components/ui/StatusIndicator";
 
 type TabStatus = "Active" | "Inactive";
 
@@ -41,10 +42,6 @@ export function GiftCodeRow({
 }: GiftCodeRowProps) {
   const active = status === "Active";
 
-  const statusBadgeCls = active
-    ? "border border-emerald-500/20 bg-emerald-500/[0.04] text-emerald-500"
-    : "border border-white/5 bg-white/5 text-white/40";
-
   return (
     <div className="transition hover:bg-white/[0.015]">
       {/* DESKTOP */}
@@ -59,9 +56,7 @@ export function GiftCodeRow({
         <span className="text-xs text-white/35">{expires}</span>
         <span className="text-xs text-white/35">{uses}</span>
 
-        <span className={`inline-flex w-fit rounded px-2 py-1 text-xs font-medium ${statusBadgeCls}`}>
-          {statusLabel}
-        </span>
+        <StatusIndicator status={active ? "active" : "inactive"} label={statusLabel} />
 
         <div className="flex justify-end">
           <button
@@ -85,9 +80,7 @@ export function GiftCodeRow({
               <p className="mt-0.5 text-xs text-white/35">{description}</p>
             )}
           </div>
-          <span className={`inline-flex w-fit shrink-0 rounded border px-2 py-1 text-xs font-medium ${statusBadgeCls}`}>
-            {statusLabel}
-          </span>
+          <StatusIndicator status={active ? "active" : "inactive"} label={statusLabel} />
         </div>
 
         <div className="mt-3 grid grid-cols-3 gap-3">

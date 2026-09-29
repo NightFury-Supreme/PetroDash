@@ -6,6 +6,7 @@
 import { Settings, Trash, Users, Coins, Cpu, MemoryStick, HardDrive, Server, User } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { RowActionButton } from "@/components/ui/RowActionButton";
+import { StatusIndicator } from "@/components/ui/StatusIndicator";
 import { useTranslations } from "next-intl";
 import type { AdminGiftItem } from "./types";
 
@@ -110,13 +111,10 @@ export function AdminGiftTableRow({
       {/* Status */}
       <div className="min-w-0">
         <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">{tCommon('status')}</p>
-        {isExpired ? (
-          <span className="inline-flex items-center px-2 py-1 rounded bg-[#222] text-[#888] text-[10px] font-medium tracking-wide uppercase border border-[#333]">{t('statusExpired')}</span>
-        ) : gift.enabled ? (
-          <span className="inline-flex items-center px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-medium tracking-wide uppercase border border-emerald-500/20">{t('statusEnabled')}</span>
-        ) : (
-          <span className="inline-flex items-center px-2 py-1 rounded bg-red-500/10 text-red-400 text-[10px] font-medium tracking-wide uppercase border border-red-500/20">{t('statusDisabled')}</span>
-        )}
+        <StatusIndicator
+          status={isExpired ? 'expired' : gift.enabled ? 'enabled' : 'disabled'}
+          label={isExpired ? t('statusExpired') : gift.enabled ? t('statusEnabled') : t('statusDisabled')}
+        />
       </div>
 
       {/* Actions */}

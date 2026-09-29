@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from '@/i18n/routing';
 import { RankBadge } from '@/components/ui/RankBadge';
+import { StatusIndicator } from '@/components/ui/StatusIndicator';
 import { getCategoryLabel, getActionLabel } from '@/config/field-labels';
 import { useTranslations } from 'next-intl';
 import type { LogEntry, LogMeta, Variant } from './logTypes';
@@ -15,35 +16,39 @@ import {
 
 export function StatusBadge({ log }: { log: LogEntry }) {
   const tCommon = useTranslations('Common');
-  type BadgeSpec = { dot: string; text: string; border: string; bg: string; pulse?: boolean };
-
-  const badge = (spec: BadgeSpec, label: string) => (
-    <span
-      className={`inline-flex items-center gap-1.5 px-2 py-[3px] rounded border
-        ${spec.border} ${spec.bg} ${spec.text}
-        text-[9px] font-semibold tracking-wider uppercase`}
-    >
-      <span className={`w-1 h-1 rounded-full ${spec.dot}${spec.pulse ? ' animate-pulse' : ''}`} />
-      {label}
-    </span>
-  );
 
   if (log.success !== undefined) {
-    return log.success
-      ? badge({ dot: 'bg-emerald-500', text: 'text-emerald-400', border: 'border-emerald-500/20', bg: 'bg-emerald-500/[0.06]' }, tCommon('success'))
-      : badge({ dot: 'bg-red-500',     text: 'text-red-400',     border: 'border-red-500/20',     bg: 'bg-red-500/[0.06]'     }, tCommon('failed'));
+    return (
+      <StatusIndicator
+        status={log.success ? 'success' : 'failed'}
+        label={log.success ? tCommon('success') : tCommon('failed')}
+      />
+    );
   }
 
+  let statusKey = 'info';
+  let label = tCommon('info');
   switch (log.severity) {
-    case 'CRITICAL': return badge({ dot: 'bg-red-500',    text: 'text-red-400',    border: 'border-red-500/20',    bg: 'bg-red-500/[0.06]',    pulse: true }, tCommon('critical'));
-    case 'ERROR':    return badge({ dot: 'bg-orange-500', text: 'text-orange-400', border: 'border-orange-500/20', bg: 'bg-orange-500/[0.06]' }, tCommon('error'));
-    case 'WARNING':  return badge({ dot: 'bg-yellow-500', text: 'text-yellow-400', border: 'border-yellow-500/20', bg: 'bg-yellow-500/[0.06]' }, tCommon('warning'));
-    case 'error':    return badge({ dot: 'bg-red-500',    text: 'text-red-400',    border: 'border-red-500/20',    bg: 'bg-red-500/[0.06]' }, tCommon('error'));
-    case 'warning':  return badge({ dot: 'bg-amber-500',  text: 'text-amber-400',  border: 'border-amber-500/20',  bg: 'bg-amber-500/[0.06]' }, tCommon('warning'));
+    case 'CRITICAL':
+    case 'error':
+    case 'ERROR':
+      statusKey = 'error';
+      label = log.severity === 'CRITICAL' ? tCommon('critical') : tCommon('error');
+      break;
+    case 'WARNING':
+    case 'warning':
+      statusKey = 'warning';
+      label = tCommon('warning');
+      break;
     case 'INFO':
     case 'info':
-    default:         return badge({ dot: 'bg-sky-500',    text: 'text-sky-400',    border: 'border-sky-500/20',    bg: 'bg-sky-500/[0.06]' }, tCommon('info'));
+    default:
+      statusKey = 'info';
+      label = tCommon('info');
+      break;
   }
+
+  return <StatusIndicator status={statusKey} label={label} />;
 }
 
 export function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Variant; meta: LogMeta }) {

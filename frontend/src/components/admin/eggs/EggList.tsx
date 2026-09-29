@@ -8,6 +8,7 @@
 import React from 'react';
 import { Egg, Server, Crown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { StatusIndicator } from '@/components/ui/StatusIndicator';
 import type { AdminEgg } from './types';
 import { EggRowActions } from './EggRowActions';
 
@@ -96,9 +97,7 @@ export function EggList({ eggs, onEdit, onDelete }: EggListProps) {
                             </div>
                           )}
                           {egg.recommended && (
-                            <span className="inline-block rounded bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-500">
-                              {t('recommended')}
-                            </span>
+                            <StatusIndicator status="recommended" label={t('recommended')} size="sm" />
                           )}
                         </div>
                         {egg.description && (

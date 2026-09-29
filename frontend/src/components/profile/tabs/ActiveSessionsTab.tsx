@@ -2,6 +2,7 @@ import { Smartphone, Globe, LogOut, Clock3, Laptop } from "lucide-react";
 
 import React from 'react';
 import { useTranslations } from 'next-intl';
+import { StatusIndicator } from '@/components/ui/StatusIndicator';
 import { Session } from '@/hooks/useProfile';
 
 
@@ -84,7 +85,13 @@ function SessionRow({ session, onRevoke, t, tCommon }: { session: Session; onRev
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-sm font-semibold text-[#D4D4D4]">{session.device}</p>
-              {session.current && <span className="rounded border border-emerald-500/20 bg-emerald-500/10 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-emerald-400">{t ? t('thisDevice') : 'This device'}</span>}
+              {session.current && (
+                <StatusIndicator
+                  status="active"
+                  label={t ? t('thisDevice') : 'This device'}
+                  size="sm"
+                />
+              )}
             </div>
           </div>
         </div>
