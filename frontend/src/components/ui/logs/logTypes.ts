@@ -20,8 +20,14 @@ export interface LogMeta {
   subject?:    string;
   itemName?:   string;
   code?:       string;
+  reason?:     string;
   targetName?: string;
   targetRole?: string;
+  targetUsername?: string;
+  targetEmail?: string;
+  banUntil?:   string | null;
+  durationMinutes?: number | null;
+  permanent?:  boolean;
   adminId?:    string;
   adminUsername?: string;
   adminRole?:  string;

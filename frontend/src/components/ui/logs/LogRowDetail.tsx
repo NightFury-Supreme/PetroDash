@@ -3,7 +3,7 @@ import { Link } from '@/i18n/routing';
 import { RankBadge } from '@/components/ui/RankBadge';
 import { StatusIndicator } from '@/components/ui/StatusIndicator';
 import { getCategoryLabel, getActionLabel } from '@/config/field-labels';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useFormatter } from 'next-intl';
 import type { LogEntry, LogMeta, Variant } from './logTypes';
 import { META_SYSTEM_KEYS, CONTEXT_META_KEYS, CONTEXT_LABELS, parseUserAgent } from './logHelpers';
 import {
@@ -152,6 +152,7 @@ export function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Var
 export function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: Variant; meta: LogMeta }) {
   const t = useTranslations('UI');
   const tCommon = useTranslations('Common');
+  const format = useFormatter();
   const hasChanges = meta.changes != null && Object.keys(meta.changes).length > 0;
   const hasChangedLegacy = meta.changed != null && Object.keys(meta.changed).length > 0;
   const hasCreated = meta.created != null && Object.keys(meta.created).length > 0;
@@ -181,6 +182,25 @@ export function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: 
   const sessionIdValue = (log.sessionId ?? meta.sessionId ?? (variant === 'admin' ? meta.adminSessionId : null)) as string | null | undefined;
   const uaDisplay      = (!isByAdmin || variant === 'admin') && (log.userAgent || meta.userAgent)
     ? parseUserAgent((log.userAgent ?? meta.userAgent) as string, tCommon('unknown'))
+    : null;
+
+  const isBanAction   = log.action === 'admin.user.ban';
+  const isUnbanAction = log.action === 'admin.user.unban';
+
+  const banDuration = (() => {
+    if (!isBanAction) return null;
+    if (meta.permanent) return tCommon('permanent');
+    if (meta.durationMinutes != null) {
+      const mins = Number(meta.durationMinutes);
+      if (mins < 60) return `${mins} ${tCommon('minutes')}`;
+      if (mins < 1440) return `${Math.round(mins / 60)} ${tCommon('hours')}`;
+      return `${Math.round(mins / 1440)} ${tCommon('days')}`;
+    }
+    return null;
+  })();
+
+  const banUntilFormatted = isBanAction && meta.banUntil
+    ? format.dateTime(new Date(meta.banUntil as string), { dateStyle: 'medium', timeStyle: 'short' })
     : null;
 
   return (
@@ -224,6 +244,23 @@ export function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: 
                 {statusCode}
               </span>
             </div>
+          )}
+
+          {(isBanAction || isUnbanAction) && (meta.targetUsername || meta.targetEmail) && (
+            <>
+              <SectionHeading className="mt-4">{tCommon('targetUser')}</SectionHeading>
+              {meta.targetUsername && <InfoRow label={tCommon('username')} value={meta.targetUsername as string} />}
+              {meta.targetEmail    && <InfoRow label={tCommon('email')}    value={meta.targetEmail as string} muted />}
+            </>
+          )}
+
+          {isBanAction && (
+            <>
+              <SectionHeading className="mt-4">{tCommon('banDetails')}</SectionHeading>
+              {meta.reason  && <InfoRow label={tCommon('reason')}   value={meta.reason as string} />}
+              {banDuration  && <InfoRow label={tCommon('duration')} value={banDuration} />}
+              {banUntilFormatted && <InfoRow label={tCommon('expiresAt')} value={banUntilFormatted} />}
+            </>
           )}
         </div>
 

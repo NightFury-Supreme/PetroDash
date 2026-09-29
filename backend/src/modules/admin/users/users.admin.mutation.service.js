@@ -160,6 +160,9 @@ const updateUser = async (req, id, data) => {
 
   await writeAudit(req, 'admin.user.update', 'user', user._id.toString(), {
     changes,
+    targetUserId: user._id.toString(),
+    targetUsername: user.username,
+    targetEmail: user.email,
     adminId,
     adminUsername,
     adminRole,
@@ -211,6 +214,7 @@ const banUser = async (req, id, { isBanned, reason, durationMinutes }) => {
     } catch (_) {}
   } else {
     user.ban.isBanned = false;
+    user.ban.reason = '';
     user.ban.until = null;
     user.ban.by = req.user?.sub || req.user?.userId || null;
     try {
@@ -227,21 +231,46 @@ const banUser = async (req, id, { isBanned, reason, durationMinutes }) => {
   const adminUsername = req?.user?.username || 'admin';
   const adminRole = req?.user?.role || 'admin';
 
-  await writeAudit(req, isBanned ? 'admin.user.ban' : 'admin.user.unban', 'user', user._id.toString(), {
-    reason: user.ban.reason,
-    until: user.ban.until,
-    adminId,
-    adminUsername,
-    adminRole,
-  });
-  await logUserActivity(req, isBanned ? 'admin.user.ban' : 'admin.user.unban', {
-    reason: user.ban.reason,
-    until: user.ban.until,
-    performedByAdmin: true,
-    adminId,
-    adminUsername,
-    adminRole,
-  }, user._id.toString());
+  if (isBanned) {
+    await writeAudit(req, 'admin.user.ban', 'user', user._id.toString(), {
+      targetUserId: user._id.toString(),
+      targetUsername: user.username,
+      targetEmail: user.email,
+      reason: user.ban.reason || null,
+      banUntil: user.ban.until ? user.ban.until.toISOString() : null,
+      durationMinutes: durationMinutes != null ? Number(durationMinutes) : null,
+      permanent: durationMinutes == null,
+      adminId,
+      adminUsername,
+      adminRole,
+    });
+    await logUserActivity(req, 'admin.user.ban', {
+      reason: user.ban.reason || null,
+      banUntil: user.ban.until ? user.ban.until.toISOString() : null,
+      durationMinutes: durationMinutes != null ? Number(durationMinutes) : null,
+      permanent: durationMinutes == null,
+      performedByAdmin: true,
+      adminId,
+      adminUsername,
+      adminRole,
+    }, user._id.toString());
+  } else {
+    await writeAudit(req, 'admin.user.unban', 'user', user._id.toString(), {
+      targetUserId: user._id.toString(),
+      targetUsername: user.username,
+      targetEmail: user.email,
+      adminId,
+      adminUsername,
+      adminRole,
+    });
+    await logUserActivity(req, 'admin.user.unban', {
+      performedByAdmin: true,
+      adminId,
+      adminUsername,
+      adminRole,
+    }, user._id.toString());
+  }
+
   const targetUserId = user._id.toString();
   await deleteCache(`user:auth:${targetUserId}`);
   await deleteCache(`user:${targetUserId}:profile`);
@@ -290,6 +319,9 @@ const deleteUser = async (req, id) => {
   const adminRole = req?.user?.role || 'admin';
 
   await writeAudit(req, 'admin.user.delete', 'user', user._id.toString(), {
+    targetUserId: user._id.toString(),
+    targetUsername: user.username,
+    targetEmail: user.email,
     serversDeleted: deletedServers,
     serverErrors: serverErrors.length,
     pterodactylError: !!pterodactylError,
