@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.get('/', requireAdmin, controller.listUsers);
 router.get('/:id', requireAdmin, controller.getUser);
+router.get('/:id/activity', requireAdmin, controller.getUserActivity);
 router.patch('/:id', requireAdmin, controller.updateUser);
 router.post('/:id/ban', requireAdmin, controller.banUser);
 router.delete('/:id', requireAdmin, controller.deleteUser);

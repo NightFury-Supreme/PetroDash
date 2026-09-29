@@ -11,6 +11,7 @@ const {
   banUserSchema,
   serverUpdateSchema,
   addPlanSchema,
+  userActivityQuerySchema,
 } = require('./users.admin.schema');
 
 const listUsers = async (req, res, next) => {
@@ -132,9 +133,23 @@ const cancelPlanInstance = async (req, res, next) => {
   }
 };
 
+const getUserActivity = async (req, res, next) => {
+  try {
+    const parsed = userActivityQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      throw new AppError('Invalid query parameters', 400, 'ERR_QUERY_INVALID', parsed.error.flatten());
+    }
+    const result = await service.getUserActivity(req.params.id, parsed.data);
+    return res.json({ success: true, ...result });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   listUsers,
   getUser,
+  getUserActivity,
   updateUser,
   banUser,
   deleteUser,

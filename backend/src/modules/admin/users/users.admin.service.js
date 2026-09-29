@@ -7,6 +7,7 @@ const { Types } = require('mongoose');
 const User = require('../../../models/User');
 const Server = require('../../../models/Server');
 const UserPlan = require('../../../models/UserPlan');
+const UserActivityLog = require('../../../models/UserActivityLog');
 const AppError = require('../../../utils/AppError');
 const { getServer: getPanelServer } = require('../../../services/pterodactyl');
 const { getCache, setCache } = require('../../../lib/redis');
@@ -193,9 +194,62 @@ const getUser = async (id, query = {}) => {
   return result;
 };
 
+const getUserActivity = async (id, { page = 1, limit = 10 } = {}) => {
+  if (!Types.ObjectId.isValid(String(id))) {
+    throw new AppError('User not found', 404, 'ERR_USER_NOT_FOUND');
+  }
+
+  const p = Math.max(1, parseInt(page, 10) || 1);
+  const l = Math.min(Math.max(1, parseInt(limit, 10) || 10), 100);
+
+  const cacheKey = `admin:users:activity:${id}:${p}:${l}`;
+  const cached = await getCache(cacheKey);
+  if (cached) return cached;
+
+  const userExists = await User.exists({ _id: String(id) });
+  if (!userExists) {
+    throw new AppError('User not found', 404, 'ERR_USER_NOT_FOUND');
+  }
+
+  const skip = (p - 1) * l;
+  const filter = { userId: String(id) };
+
+  const [logs, total] = await Promise.all([
+    UserActivityLog.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(l)
+      .select('_id action ip userAgent createdAt metadata')
+      .lean(),
+    UserActivityLog.countDocuments(filter),
+  ]);
+
+  const result = {
+    data: logs.map((log) => ({
+      _id: log._id.toString(),
+      action: log.action,
+      ip: log.ip,
+      userAgent: log.userAgent,
+      createdAt: log.createdAt,
+      metadata: log.metadata,
+      success: !log.action.includes('failed') && !log.action.includes('error'),
+    })),
+    pagination: {
+      total,
+      page: p,
+      limit: l,
+      pages: Math.ceil(total / l) || 1,
+    },
+  };
+
+  await setCache(cacheKey, result, 15);
+  return result;
+};
+
 module.exports = {
   listUsers,
   getUser,
+  getUserActivity,
   updateUser: mutationService.updateUser,
   banUser: mutationService.banUser,
   deleteUser: mutationService.deleteUser,

@@ -72,5 +72,12 @@ export const adminUsersApi = {
       body: JSON.stringify({ referralCode })
     });
     return { res: r, data: await r.json().catch(() => ({})) };
+  },
+  getUserActivity: async (userId: string, page: number, limit: number, token: string) => {
+    const r = await fetchWithRetry(
+      `${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/users/${userId}/activity?page=${page}&limit=${limit}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return { res: r, data: await r.json().catch(() => ({})) };
   }
 };

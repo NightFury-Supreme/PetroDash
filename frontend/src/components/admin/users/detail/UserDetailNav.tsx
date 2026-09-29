@@ -8,6 +8,7 @@ import {
   CreditCard, 
   Share2, 
   Database, 
+  Activity,
   ShieldCheck, 
   Trash2 
 } from "lucide-react";
@@ -21,6 +22,7 @@ export type UserDetailSection =
   | 'plans' 
   | 'referrals' 
   | 'invoices' 
+  | 'activity'
   | 'security';
 
 export interface UserDetailNavProps {
@@ -81,6 +83,12 @@ export function UserDetailNav({
               label={t('tabInvoices')}
               active={section === 'invoices'}
               onClick={() => onSelectSection('invoices')}
+            />
+            <AdminSideItem
+              icon={Activity}
+              label={t('tabActivity')}
+              active={section === 'activity'}
+              onClick={() => onSelectSection('activity')}
             />
           </nav>
 

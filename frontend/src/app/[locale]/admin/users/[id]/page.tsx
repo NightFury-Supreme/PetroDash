@@ -14,6 +14,7 @@ import {
   PlansTab,
   ReferralsTab,
   InvoicesTab,
+  ActivityTab,
   SecurityTab,
 } from "@/components/admin/users";
 import { DeleteDrawer } from "@/components/ui/DeleteDrawer";
@@ -173,6 +174,9 @@ export default function AdminUserPage() {
                 invoiceTotal={invoiceTotal}
                 setInvoicePage={(p: number) => { setInvoicePage(p); loadInvoices(p); }}
               />
+            )}
+            {section === 'activity' && (
+              <ActivityTab userId={id} />
             )}
             {section === 'security' && (
               <SecurityTab 
