@@ -72,7 +72,11 @@ router.post('/login', loginRateLimit, async (req, res, next) => {
         ip: req.ip,
         userAgent: req.get('User-Agent')
       });
-      await logUserActivity(req, 'auth.login.failed', { reason: 'invalid_password' }, user._id.toString());
+      await logUserActivity(req, 'auth.login.failed', {
+        reason: 'invalid_password',
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      }, user._id.toString());
       return next(AppError.unauthorized('Invalid credentials', 'ERR_INVALID_CREDENTIALS'));
     }
 
@@ -87,6 +91,11 @@ router.post('/login', loginRateLimit, async (req, res, next) => {
         ip: req.ip,
         userAgent: req.get('User-Agent')
       });
+      await logUserActivity(req, 'auth.login.failed', {
+        reason: 'account_banned',
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      }, user._id.toString());
       return next(AppError.forbidden('Account banned', 'ERR_ACCOUNT_BANNED', {
         reason: String(ban.reason || ''),
         until: ban.until || null,
@@ -100,15 +109,11 @@ router.post('/login', loginRateLimit, async (req, res, next) => {
     }
 
     const { token, session } = await SessionService.createSessionAndJwt(user, req);
-    req.user = {
-      sub: user._id.toString(),
-      id: user._id.toString(),
-      _id: user._id,
-      role: user.role,
-      username: user.username,
-      email: user.email,
-      sessionId: session._id.toString()
-    };
+    req.user = user;
+    if (req.user) {
+      req.user.sub = user._id.toString();
+      req.user.sessionId = session._id.toString();
+    }
     
     await writeAudit(req, 'auth.login.success', 'auth', user._id.toString(), {
       loginMethod: 'email',
@@ -123,7 +128,12 @@ router.post('/login', loginRateLimit, async (req, res, next) => {
       sessionId: session._id.toString()
     });
 
-    await logUserActivity(req, 'auth.login.success', { loginMethod: 'email', sessionId: session._id.toString() }, user._id.toString());
+    await logUserActivity(req, 'auth.login.success', {
+      loginMethod: 'email',
+      sessionId: session._id.toString(),
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    }, user._id.toString());
 
     await deleteCache(`user:auth:${user._id}`);
     sendLoginAlert(user, req);
@@ -214,15 +224,11 @@ router.post('/login/2fa', loginRateLimit, async (req, res, next) => {
     }
     
     const { token, session } = await SessionService.createSessionAndJwt(user, req);
-    req.user = {
-      sub: user._id.toString(),
-      id: user._id.toString(),
-      _id: user._id,
-      role: user.role,
-      username: user.username,
-      email: user.email,
-      sessionId: session._id.toString()
-    };
+    req.user = user;
+    if (req.user) {
+      req.user.sub = user._id.toString();
+      req.user.sessionId = session._id.toString();
+    }
     
     await writeAudit(req, 'auth.login.success', 'auth', user._id.toString(), {
       loginMethod: 'email_2fa',
@@ -235,7 +241,12 @@ router.post('/login/2fa', loginRateLimit, async (req, res, next) => {
       sessionId: session._id.toString()
     });
 
-    await logUserActivity(req, 'auth.login.success', { loginMethod: 'email_2fa', sessionId: session._id.toString() }, user._id.toString());
+    await logUserActivity(req, 'auth.login.success', {
+      loginMethod: 'email_2fa',
+      sessionId: session._id.toString(),
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    }, user._id.toString());
     
     await deleteCache(`user:auth:${user._id}`);
     sendLoginAlert(user, req);
@@ -275,6 +286,13 @@ router.post('/logout', async (req, res, next) => {
       }
       
       req.user = user;
+    }
+
+    if (user?._id) {
+      await logUserActivity(req, 'auth.logout', {
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      }, user._id.toString());
     }
     
     await writeAudit(req, 'auth.logout', 'auth', user?._id?.toString() || null, {

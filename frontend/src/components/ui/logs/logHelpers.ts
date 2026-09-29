@@ -18,65 +18,31 @@ export const CONTEXT_LABELS: Record<string, string> = {
   code:       'Code',
 };
 
-export function parseUserAgent(ua?: string | null, unknownLabel: string = 'Unknown'): string {
+export function parseUserAgent(ua?: string, unknownLabel: string = 'Unknown'): string {
   if (!ua || typeof ua !== 'string') return unknownLabel;
-
   const trimmed = ua.trim();
-  if (!trimmed || trimmed.toLowerCase() === 'unknown' || trimmed.toLowerCase() === 'system') {
-    return unknownLabel;
-  }
+  if (!trimmed || trimmed.toLowerCase() === 'unknown' || trimmed === '-') return unknownLabel;
 
-  let browser: string | null = null;
-  if (/Edg([ea])?\/|Edge\//i.test(trimmed)) {
-    browser = 'Edge';
-  } else if (/OPR\/|Opera/i.test(trimmed)) {
-    browser = 'Opera';
-  } else if (/Vivaldi\//i.test(trimmed)) {
-    browser = 'Vivaldi';
-  } else if (/Brave\//i.test(trimmed)) {
-    browser = 'Brave';
-  } else if (/Chrome\/|CriOS\//i.test(trimmed)) {
-    browser = 'Chrome';
-  } else if (/Firefox\/|FxiOS\//i.test(trimmed)) {
-    browser = 'Firefox';
-  } else if (/Safari\//i.test(trimmed) && !/Chrome\//i.test(trimmed)) {
-    browser = 'Safari';
-  }
+  const browsers: [string, string][] = [
+    ['Edg', 'Edge'], ['Edge', 'Edge'], ['Firefox', 'Firefox'],
+    ['Chrome', 'Chrome'], ['Safari', 'Safari'], ['Opera', 'Opera'],
+    ['OPR', 'Opera'], ['Brave', 'Brave'], ['Vivaldi', 'Vivaldi'],
+  ];
+  const oses: [string, string][] = [
+    ['Windows', 'Windows'], ['Android', 'Android'],
+    ['iPhone', 'iOS'], ['iPad', 'iOS'], ['iOS', 'iOS'],
+    ['Macintosh', 'macOS'], ['Mac OS', 'macOS'],
+    ['Linux', 'Linux'], ['CrOS', 'ChromeOS'],
+  ];
 
-  let os: string | null = null;
-  if (/Windows|Win32|Win64|WOW64/i.test(trimmed)) {
-    os = 'Windows';
-  } else if (/iPhone|iPad|iPod/i.test(trimmed)) {
-    os = 'iOS';
-  } else if (/Android/i.test(trimmed)) {
-    os = 'Android';
-  } else if (/Macintosh|Mac OS X|Mac_PowerPC/i.test(trimmed)) {
-    os = 'macOS';
-  } else if (/CrOS/i.test(trimmed)) {
-    os = 'ChromeOS';
-  } else if (/Linux|X11/i.test(trimmed)) {
-    os = 'Linux';
-  }
+  const browser = browsers.find(([token]) => trimmed.includes(token))?.[1];
+  const os      = oses.find(([token]) => trimmed.includes(token))?.[1];
 
-  if (os && browser) {
-    return `${os} • ${browser}`;
-  }
-  if (os) {
-    return os;
-  }
-  if (browser) {
-    return browser;
-  }
+  if (!os && !browser) return unknownLabel;
+  if (!os) return browser!;
+  if (!browser) return os;
 
-  return unknownLabel;
-}
-
-export function formatIpAddress(ip?: string | null, fallback: string = '-'): string {
-  if (!ip || typeof ip !== 'string') return fallback;
-  const trimmed = ip.trim();
-  if (trimmed === '::1' || trimmed === '::ffff:127.0.0.1') return '127.0.0.1';
-  if (trimmed.startsWith('::ffff:')) return trimmed.substring(7);
-  return trimmed || fallback;
+  return `${os} • ${browser}`;
 }
 
 export function isMongoId(str: string): boolean {

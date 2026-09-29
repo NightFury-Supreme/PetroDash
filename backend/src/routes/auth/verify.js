@@ -66,7 +66,12 @@ router.get('/verify', async (req, res, next) => {
     await UserCreationService.grantReferralRewards(user);
 
     const changes = { emailVerified: { old: false, new: true } };
-    await logUserActivity(req, 'auth.email.verified', { method: 'link', changes }, user._id.toString());
+    await logUserActivity(req, 'auth.email.verified', {
+      method: 'link',
+      changes,
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    }, user._id.toString());
     await writeAudit(req, 'auth.email.verified', 'auth', user._id.toString(), { method: 'link', changes });
 
     const redirect = (process.env.FRONTEND_URL || 'http://localhost:3000') + '/dashboard?verified=1';
@@ -125,7 +130,10 @@ router.post('/verify/resend', resendRateLimit, async (req, res, next) => {
       // Non-blocking — prevents email enumeration
     }
 
-    await logUserActivity(req, 'auth.email.verify.resent', {}, user._id.toString());
+    await logUserActivity(req, 'auth.email.verify.resent', {
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    }, user._id.toString());
     await writeAudit(req, 'auth.email.verify.resent', 'auth', user._id.toString(), { email });
 
     return res.json({ ok: true });
@@ -198,7 +206,12 @@ async function handleVerifyCode(req, res, next) {
     await UserCreationService.grantReferralRewards(user);
 
     const changes = { emailVerified: { old: false, new: true } };
-    await logUserActivity(req, 'auth.email.verified', { method: 'code', changes }, user._id.toString());
+    await logUserActivity(req, 'auth.email.verified', {
+      method: 'code',
+      changes,
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    }, user._id.toString());
     await writeAudit(req, 'auth.email.verified', 'auth', user._id.toString(), { method: 'code', changes });
     return res.json({ ok: true });
   } catch (e) {

@@ -85,7 +85,11 @@ router.post('/reset', verificationRateLimit, async (req, res, next) => {
     await deleteCachePattern(`user:${user._id}:*`);
 
     const changes = { password: { old: '********', new: '********' } };
-    await logUserActivity(req, 'auth.password.reset.success', { changes }, user._id.toString());
+    await logUserActivity(req, 'auth.password.reset.success', {
+      changes,
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    }, user._id.toString());
     await writeAudit(req, 'auth.password.reset.success', 'auth', user._id.toString(), { changes });
     return res.json({ ok: true, code: 'PASSWORD_RESET_SUCCESS' });
   } catch (e) {

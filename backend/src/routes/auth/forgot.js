@@ -55,7 +55,10 @@ router.post('/forgot', passwordResetRateLimit, async (req, res, next) => {
       // Non-blocking mail dispatch
     }
 
-    await logUserActivity(req, 'auth.password.reset.requested', {}, user._id.toString());
+    await logUserActivity(req, 'auth.password.reset.requested', {
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    }, user._id.toString());
     await writeAudit(req, 'auth.password.reset.requested', 'auth', user._id.toString(), {});
 
     return res.json({ ok: true });

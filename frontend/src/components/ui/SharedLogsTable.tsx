@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ClipboardList } from 'lucide-react';
 import { useTranslations, useFormatter } from 'next-intl';
 import type { LogEntry, SharedLogsTableProps } from './logs/logTypes';
-import { parseUserAgent, formatIpAddress } from './logs/logHelpers';
+import { parseUserAgent } from './logs/logHelpers';
 import { ActionCell, StatusBadge, ExpandedPanel } from './logs/LogRowDetail';
 
 export type { LogEntry, SharedLogsTableProps };
@@ -48,6 +48,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
         {!loading && logs.map(log => {
           const meta       = log.meta ?? log.metadata ?? {};
           const isExpanded = expandedId === log._id;
+          const ip         = log.ip ?? meta.ip;
           const isByAdmin  = Boolean(
             meta.adminUsername ||
             meta.adminId ||
@@ -57,8 +58,6 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
             meta.deletedByAdmin ||
             (typeof log.action === 'string' && log.action.startsWith('admin.'))
           );
-          const rawIp = log.ip ?? meta.ip;
-          const ipDisplay = formatIpAddress(rawIp, isByAdmin && variant === 'user' ? tCommon('protected') : '-');
 
           return (
             <React.Fragment key={log._id}>
@@ -78,7 +77,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
                 <div className="min-w-0">
                   <p className="mb-1 text-[9px] uppercase tracking-wider text-white/30 md:hidden">{t('device')}</p>
                   <div className="text-[11px] text-white/65 font-mono truncate">
-                    {ipDisplay}
+                    {ip ? (ip === '::1' ? '127.0.0.1' : (typeof ip === 'string' && ip.startsWith('::ffff:') ? ip.replace('::ffff:', '') : ip)) : (isByAdmin && variant === 'user' ? tCommon('protected') : '-')}
                   </div>
                   <div className="mt-0.5 text-[10px] text-white/40">
                     {parseUserAgent(

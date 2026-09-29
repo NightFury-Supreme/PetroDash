@@ -82,11 +82,11 @@ async function processCapturedPayment(payment, captureData, sanitizedOrderId) {
   
   const mockReq = {
     ip: paymentMeta.ip || 'unknown',
-    userAgent: paymentMeta.userAgent || 'unknown',
     headers: {
       'user-agent': paymentMeta.userAgent || 'unknown',
+      'x-forwarded-for': paymentMeta.ip || undefined
     },
-    get: (header) => (header && header.toLowerCase() === 'user-agent' ? (paymentMeta.userAgent || 'unknown') : null)
+    get: (header) => header.toLowerCase() === 'user-agent' ? (paymentMeta.userAgent || 'unknown') : null
   };
 
   const amountStr = `${claimedPayment.amount} ${claimedPayment.currency || 'USD'}`;

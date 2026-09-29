@@ -107,7 +107,12 @@ router.post('/register', registrationRateLimit, async (req, res, next) => {
       userAgent: req.get('User-Agent'),
       durationMs: Date.now() - startTime
     });
-    await logUserActivity(req, 'auth.register.success', { registrationMethod: 'email', ...(ref ? { referralCodeUsed: ref } : {}) }, user._id.toString());
+    await logUserActivity(req, 'auth.register.success', {
+      registrationMethod: 'email',
+      ...(ref ? { referralCodeUsed: ref } : {}),
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    }, user._id.toString());
     await deleteCache(`user:auth:${user._id}`);
     await deleteCachePattern(`user:${user._id}:*`);
 

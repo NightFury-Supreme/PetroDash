@@ -244,17 +244,19 @@ const getUserActivity = async (id, { page = 1, limit = 10 } = {}) => {
         meta.adminUsername = adminUserMap[String(meta.adminId)].username;
         meta.adminRole = adminUserMap[String(meta.adminId)].role;
       }
-      let clientIp = log.ip;
-      if (clientIp === '::1' || clientIp === '::ffff:127.0.0.1') {
-        clientIp = '127.0.0.1';
-      } else if (typeof clientIp === 'string' && clientIp.startsWith('::ffff:')) {
-        clientIp = clientIp.substring(7);
+      let resolvedIp = (log.ip && log.ip !== 'unknown' && log.ip !== '::1') ? log.ip : (meta.ip || log.ip);
+      if (typeof resolvedIp === 'string') {
+        resolvedIp = resolvedIp.trim();
+        if (resolvedIp.startsWith('::ffff:')) resolvedIp = resolvedIp.replace('::ffff:', '');
+        if (resolvedIp === '::1') resolvedIp = '127.0.0.1';
       }
+      const resolvedUa = (log.userAgent && log.userAgent !== 'unknown') ? log.userAgent : (meta.userAgent || log.userAgent);
+
       return {
         _id: log._id.toString(),
         action: log.action,
-        ip: clientIp,
-        userAgent: log.userAgent,
+        ip: resolvedIp,
+        userAgent: resolvedUa,
         createdAt: log.createdAt,
         metadata: meta,
         success: !log.action.includes('failed') && !log.action.includes('error'),
