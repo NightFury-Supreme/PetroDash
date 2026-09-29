@@ -115,15 +115,15 @@ export function DeleteDrawer({
       </div>
 
       {warningPoints && warningPoints.length > 0 && (
-        <div className="border-l-2 border-red-500 pl-5 py-1 mb-10">
-          <div className="flex items-center gap-2 text-red-500 mb-4">
+        <div className="border-l-2 border-red-500 pl-4 py-1 mb-6">
+          <div className="flex items-center gap-2 text-red-500 mb-3">
             <AlertTriangle size={14} />
             <span className="text-xs font-bold uppercase tracking-wider">{t('beforeContinue')}</span>
           </div>
-          <ul className="space-y-3">
+          <ul className="space-y-2">
             {warningPoints.map((point, i) => (
-              <li key={i} className="flex items-start gap-3 text-sm text-zinc-400">
-                <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-red-500"></span>
+              <li key={i} className="flex items-start gap-2.5 text-xs text-zinc-400">
+                <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-red-500" />
                 <span>{point}</span>
               </li>
             ))}
