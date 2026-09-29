@@ -40,8 +40,12 @@ function resolveInvoiceDomain(settings, frontendHost) {
     }
   }
 
-  const defaultDomain = rootDomain || (brand.toLowerCase().replace(/\s/g, '') + '.com');
-  const siteUrl = host || defaultDomain;
+  let defaultDomain = rootDomain;
+  if (!defaultDomain) {
+    const cleanBrand = (brand || 'PetroDash').toLowerCase().replace(/[^a-z0-9]/g, '');
+    defaultDomain = `${cleanBrand || 'petrodash'}.tech`;
+  }
+  const siteUrl = host || defaultDomain || 'dashboard.petrodash.tech';
   const address = settings?.payments?.paypal?.businessAddress || siteUrl;
   const supportEmail = settings?.contactEmail && !settings.contactEmail.includes('pterodash.com') ? settings.contactEmail : `support@${defaultDomain}`;
 

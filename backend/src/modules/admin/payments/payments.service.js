@@ -94,13 +94,15 @@ exports.updatePayment = async (id, data) => {
 };
 
 exports.getInvoice = async (id, frontendHost, protocol) => {
-    const p = await Payment.findOne({ _id: id, status: 'completed' }).lean() 
-            || await Payment.findOne({ _id: id, status: 'COMPLETED' }).lean();
-    if (!p) throw new AppError('Invoice not found or not completed', 404, 'ERR_NOT_FOUND');
+    const p = await Payment.findOne({ _id: id, status: { $in: ['COMPLETED', 'completed', 'PAID', 'paid'] } }).lean() 
+            || await Payment.findById(id).lean();
+    if (!p) throw new AppError('Invoice not found', 404, 'ERR_NOT_FOUND');
     
-    const plan = await Plan.findById(p.planId).lean();
-    const user = await User.findById(p.userId).lean();
-    if (!user) throw new AppError('User not found', 404, 'ERR_NOT_FOUND');
+    const plan = p.planId ? await Plan.findById(p.planId).lean() : null;
+    let user = p.userId ? await User.findById(p.userId).lean() : null;
+    if (!user) {
+      user = { username: 'Customer', email: '' };
+    }
 
     const settings = await getSettings();
     const pdfBuffer = await generateInvoicePdfBuffer(p, plan, user, settings, frontendHost, protocol);

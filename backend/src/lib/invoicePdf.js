@@ -19,7 +19,7 @@ async function generateInvoicePdfBuffer(payment, plan, user, settings, frontendH
         doc.rect(0, 0, doc.page.width, doc.page.height).fill(colors.bg);
       });
 
-      const { brand, address, supportEmail, host } = resolveInvoiceDomain(settings, frontendHost);
+      const { brand, siteUrl, address, supportEmail, host } = resolveInvoiceDomain(settings, frontendHost);
 
       // Fill background for first page
       doc.rect(0, 0, doc.page.width, doc.page.height).fill(colors.bg);
@@ -226,8 +226,12 @@ async function generateInvoicePdfBuffer(payment, plan, user, settings, frontendH
       doc.fillColor('#D4D4D8').fontSize(10).font('Helvetica-Bold').text('Thank you for choosing ' + brand + '.', margin, y, { lineBreak: false });
       doc.fillColor(colors.mediumGray).fontSize(8).font('Helvetica').text('This invoice was generated electronically and is\nvalid without a signature.', margin, y + 16, { lineBreak: false });
 
-      doc.fillColor(colors.mediumGray).fontSize(8).text(siteUrl, margin + w - 150, y, { align: 'right', width: 150, lineBreak: false });
-      doc.fillColor(colors.mediumGray).text(supportEmail, margin + w - 150, y + 14, { align: 'right', width: 150, lineBreak: false }); 
+      if (siteUrl) {
+        doc.fillColor(colors.mediumGray).fontSize(8).text(String(siteUrl), margin + w - 150, y, { align: 'right', width: 150, lineBreak: false });
+      }
+      if (supportEmail) {
+        doc.fillColor(colors.mediumGray).fontSize(8).text(String(supportEmail), margin + w - 150, y + 14, { align: 'right', width: 150, lineBreak: false });
+      }
 
       y += 50;
 

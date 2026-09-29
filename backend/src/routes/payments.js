@@ -66,11 +66,17 @@ router.get('/', requireAuth, async (req, res, next) => {
 
 router.get('/:id/invoice', requireAuth, createRateLimiter(5, 60 * 1000), async (req, res, next) => {
   try {
-    const p = await Payment.findOne({ _id: String(req.params.id), userId: req.user.sub, status: 'COMPLETED' }).lean();
+    const p = await Payment.findOne({
+      _id: String(req.params.id),
+      userId: req.user.sub,
+      status: { $in: ['COMPLETED', 'completed', 'PAID', 'paid'] }
+    }).lean() || await Payment.findOne({ _id: String(req.params.id), userId: req.user.sub }).lean();
     if (!p) throw AppError.notFound('Invoice not found', 'ERR_INVOICE_NOT_FOUND');
-    const plan = await Plan.findById(p.planId).lean();
-    const user = await User.findById(p.userId).lean();
-    if (!user) throw AppError.notFound('User not found', 'ERR_USER_NOT_FOUND');
+    const plan = p.planId ? await Plan.findById(p.planId).lean() : null;
+    let user = await User.findById(p.userId).lean();
+    if (!user) {
+      user = { username: req.user.username || 'Customer', email: req.user.email || '' };
+    }
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="invoice-${p._id}.pdf"`);
