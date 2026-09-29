@@ -142,7 +142,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
                 <div className="flex md:justify-end">
                   <button
                     aria-label={isExpanded ? tCommon('collapse') : tCommon('expand')}
-                    className="w-6 h-6 inline-flex items-center justify-center rounded border border-white/[0.12] text-white/40 hover:text-white/70 hover:border-white/[0.2] transition-colors focus:outline-none"
+                    className="w-6 h-6 inline-flex items-center justify-center rounded text-white/40 hover:text-white/70 transition-colors focus:outline-none"
                     onClick={e => { e.stopPropagation(); toggle(log._id); }}
                   >
                     <i className={`fas fa-chevron-${isExpanded ? 'up' : 'down'} text-[8px]`} />
