@@ -5,7 +5,7 @@ import { StatusIndicator } from '@/components/ui/StatusIndicator';
 import { getCategoryLabel, getActionLabel } from '@/config/field-labels';
 import { useTranslations } from 'next-intl';
 import type { LogEntry, LogMeta, Variant } from './logTypes';
-import { META_SYSTEM_KEYS, CONTEXT_META_KEYS, CONTEXT_LABELS } from './logHelpers';
+import { META_SYSTEM_KEYS, CONTEXT_META_KEYS, CONTEXT_LABELS, formatIpAddress } from './logHelpers';
 import {
   SectionHeading,
   InfoRow,
@@ -182,9 +182,9 @@ export function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: 
     log.action.startsWith('admin.')
   );
 
-  const ip         = log.ip ?? meta.ip;
+  const rawIp      = log.ip ?? meta.ip;
   const statusCode = log.statusCode ?? meta.statusCode;
-  const ipDisplay  = ip ? ip : (isByAdmin && variant === 'user' ? tCommon('protected') : '-');
+  const ipDisplay  = formatIpAddress(rawIp, isByAdmin && variant === 'user' ? tCommon('protected') : '-');
 
   const canShowSession = (!isByAdmin || variant === 'admin') && Boolean(log.sessionId || meta.sessionId || (variant === 'admin' && meta.adminSessionId));
   const sessionIdValue = (log.sessionId ?? meta.sessionId ?? (variant === 'admin' ? meta.adminSessionId : null)) as string | null | undefined;

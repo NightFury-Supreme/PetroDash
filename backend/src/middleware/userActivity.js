@@ -1,4 +1,5 @@
 const UserActivityLog = require('../models/UserActivityLog');
+const { resolveClientIp, resolveUserAgent } = require('../utils/clientInfo');
 
 /**
  * Logs a user activity.
@@ -14,12 +15,8 @@ async function logUserActivity(req, action, metadata = {}, explicitUserId = null
       return; // Cannot log without a user ID
     }
 
-    const xForwarded = req?.headers?.['x-forwarded-for'];
-    const ip = (Array.isArray(xForwarded) ? xForwarded[0] : xForwarded?.split(',')[0])?.trim()
-      || req?.ip
-      || req?.socket?.remoteAddress
-      || 'unknown';
-    const userAgent = req?.headers?.['user-agent'] || 'unknown';
+    const ip = resolveClientIp(req, metadata);
+    const userAgent = resolveUserAgent(req, metadata);
 
     // Auto-detect administrator actions and inject admin identity
     const callerId = req?.user?.sub || req?.user?.userId || req?.user?.id || req?.user?._id;

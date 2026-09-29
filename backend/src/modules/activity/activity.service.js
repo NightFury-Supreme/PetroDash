@@ -42,11 +42,18 @@ class ActivityService {
           delete meta.sessionId;
         }
 
+        let clientIp = isPerformedByAdmin ? null : log.ip;
+        if (clientIp === '::1' || clientIp === '::ffff:127.0.0.1') {
+          clientIp = '127.0.0.1';
+        } else if (typeof clientIp === 'string' && clientIp.startsWith('::ffff:')) {
+          clientIp = clientIp.substring(7);
+        }
+
         return {
           _id: log._id.toString(),
           action: log.action,
           // Hide admin browser and IP on the user-facing profile page
-          ip: isPerformedByAdmin ? null : log.ip,
+          ip: clientIp,
           userAgent: isPerformedByAdmin ? null : log.userAgent,
           createdAt: log.createdAt,
           metadata: meta,

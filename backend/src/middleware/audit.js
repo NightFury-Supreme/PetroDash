@@ -1,4 +1,5 @@
 const AuditLog = require('../models/AuditLog');
+const { resolveClientIp, resolveUserAgent } = require('../utils/clientInfo');
 
 const logQueue = [];
 let isFlushing = false;
@@ -49,9 +50,8 @@ async function writeAudit(reqOrActorId, action, resourceTypeOrDetails, resourceI
       resourceType = resourceTypeOrDetails;
       resourceId = resourceIdOrDetails;
       meta = detailsOrUndefined || {};
-      const xForwarded = req.headers['x-forwarded-for'];
-      ip = (Array.isArray(xForwarded) ? xForwarded[0] : xForwarded?.split(',')[0]) || req.socket?.remoteAddress || req.ip;
-      userAgent = req.headers['user-agent'];
+      ip = resolveClientIp(req, meta);
+      userAgent = resolveUserAgent(req, meta);
       requestId = req.requestId;
       req._auditLogged = true; // Mark as logged to prevent auditAuto fallback
     } else {

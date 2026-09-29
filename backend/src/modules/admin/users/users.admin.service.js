@@ -244,10 +244,16 @@ const getUserActivity = async (id, { page = 1, limit = 10 } = {}) => {
         meta.adminUsername = adminUserMap[String(meta.adminId)].username;
         meta.adminRole = adminUserMap[String(meta.adminId)].role;
       }
+      let clientIp = log.ip;
+      if (clientIp === '::1' || clientIp === '::ffff:127.0.0.1') {
+        clientIp = '127.0.0.1';
+      } else if (typeof clientIp === 'string' && clientIp.startsWith('::ffff:')) {
+        clientIp = clientIp.substring(7);
+      }
       return {
         _id: log._id.toString(),
         action: log.action,
-        ip: log.ip,
+        ip: clientIp,
         userAgent: log.userAgent,
         createdAt: log.createdAt,
         metadata: meta,

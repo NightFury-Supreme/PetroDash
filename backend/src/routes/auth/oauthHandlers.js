@@ -14,7 +14,10 @@ async function handleOAuthSuccess(req, provider) {
   const startTime = Date.now();
   const user = req.user;
 
-  const { token } = await SessionService.createSessionAndJwt(user, req);
+  const { token, session } = await SessionService.createSessionAndJwt(user, req);
+  if (session?._id) {
+    req.user.sessionId = session._id.toString();
+  }
 
   try {
     if (!user.emailVerified) {
@@ -57,7 +60,12 @@ async function handleOAuthSuccess(req, provider) {
     discordJoinResult: joinResult ? (joinResult.success ? 'success' : 'failed') : undefined,
   });
 
-  await logUserActivity(req, 'auth.login.success', { loginMethod: provider }, user._id.toString());
+  await logUserActivity(
+    req,
+    'auth.login.success',
+    { loginMethod: provider, ...(session?._id ? { sessionId: session._id.toString() } : {}) },
+    user._id.toString()
+  );
 
   try {
     if (user?.email) {

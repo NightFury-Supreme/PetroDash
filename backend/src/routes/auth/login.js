@@ -100,7 +100,15 @@ router.post('/login', loginRateLimit, async (req, res, next) => {
     }
 
     const { token, session } = await SessionService.createSessionAndJwt(user, req);
-    req.user = user;
+    req.user = {
+      sub: user._id.toString(),
+      id: user._id.toString(),
+      _id: user._id,
+      role: user.role,
+      username: user.username,
+      email: user.email,
+      sessionId: session._id.toString()
+    };
     
     await writeAudit(req, 'auth.login.success', 'auth', user._id.toString(), {
       loginMethod: 'email',
@@ -115,8 +123,7 @@ router.post('/login', loginRateLimit, async (req, res, next) => {
       sessionId: session._id.toString()
     });
 
-    const mockReq = { ...req, user: { sub: user._id.toString(), sessionId: session._id.toString() } };
-    await logUserActivity(mockReq, 'auth.login.success', { loginMethod: 'email', sessionId: session._id.toString() }, user._id.toString());
+    await logUserActivity(req, 'auth.login.success', { loginMethod: 'email', sessionId: session._id.toString() }, user._id.toString());
 
     await deleteCache(`user:auth:${user._id}`);
     sendLoginAlert(user, req);
@@ -207,7 +214,15 @@ router.post('/login/2fa', loginRateLimit, async (req, res, next) => {
     }
     
     const { token, session } = await SessionService.createSessionAndJwt(user, req);
-    req.user = user;
+    req.user = {
+      sub: user._id.toString(),
+      id: user._id.toString(),
+      _id: user._id,
+      role: user.role,
+      username: user.username,
+      email: user.email,
+      sessionId: session._id.toString()
+    };
     
     await writeAudit(req, 'auth.login.success', 'auth', user._id.toString(), {
       loginMethod: 'email_2fa',
@@ -220,8 +235,7 @@ router.post('/login/2fa', loginRateLimit, async (req, res, next) => {
       sessionId: session._id.toString()
     });
 
-    const mockReq = { ...req, user: { sub: user._id.toString(), sessionId: session._id.toString() } };
-    await logUserActivity(mockReq, 'auth.login.success', { loginMethod: 'email_2fa', sessionId: session._id.toString() }, user._id.toString());
+    await logUserActivity(req, 'auth.login.success', { loginMethod: 'email_2fa', sessionId: session._id.toString() }, user._id.toString());
     
     await deleteCache(`user:auth:${user._id}`);
     sendLoginAlert(user, req);
