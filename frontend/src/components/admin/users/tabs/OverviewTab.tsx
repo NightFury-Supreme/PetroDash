@@ -206,6 +206,11 @@ export function OverviewTab({
             label={t('emailAddress')}
             description={t('emailDesc')}
             value={userForm.email || t('notSet')}
+            status={
+              userForm.emailVerified ? (
+                <ShieldCheck size={16} className="text-emerald-400 shrink-0" />
+              ) : undefined
+            }
             editing={editing === "email"}
             draft={draft}
             field="email"

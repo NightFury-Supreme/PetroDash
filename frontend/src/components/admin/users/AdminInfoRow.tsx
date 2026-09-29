@@ -198,7 +198,7 @@ export function InfoRow({
               )}
             </>
           ) : (
-            <div className="flex h-9 min-w-0 items-center gap-2">
+            <div className="flex h-9 min-w-0 items-center md:justify-end gap-2">
               {React.isValidElement(value) ? value : <span className="truncate text-sm text-[#D4D4D4]">{value}</span>}
               {status &&
                 (typeof status === 'string' ? (
@@ -211,7 +211,7 @@ export function InfoRow({
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-end gap-2">
           {action}
           {editing ? (
             <>
