@@ -49,6 +49,7 @@ export default function AdminUserPage() {
     setInvoicePage,
     invoiceTotalPages,
     invoiceTotal,
+    invoicesLoading,
     referralPage,
     setReferralPage,
     REFERRAL_PAGE_SIZE,
@@ -173,6 +174,7 @@ export default function AdminUserPage() {
                 invoiceTotalPages={invoiceTotalPages}
                 invoiceTotal={invoiceTotal}
                 setInvoicePage={(p: number) => { setInvoicePage(p); loadInvoices(p); }}
+                loading={invoicesLoading}
               />
             )}
             {section === 'activity' && (

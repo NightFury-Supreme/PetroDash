@@ -18,6 +18,7 @@ export function useAdminUserDetail(id: string) {
   const [invoicePage, setInvoicePage] = useState(1);
   const [invoiceTotalPages, setInvoiceTotalPages] = useState(1);
   const [invoiceTotal, setInvoiceTotal] = useState(0);
+  const [invoicesLoading, setInvoicesLoading] = useState(false);
 
   const [referralPage, setReferralPage] = useState(1);
   const REFERRAL_PAGE_SIZE = 5;
@@ -69,10 +70,11 @@ export function useAdminUserDetail(id: string) {
     const token = getAuthToken();
     if (!token) return;
     try {
+      setInvoicesLoading(true);
       const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/payments/ledger`);
       url.searchParams.set('userId', id);
       url.searchParams.set('page', page.toString());
-      url.searchParams.set('limit', '5');
+      url.searchParams.set('limit', '10');
       const r = await fetchWithRetry(url.toString(), { headers: { Authorization: `Bearer ${token}` } });
       const d = await r.json();
       if (r.ok) {
@@ -80,7 +82,9 @@ export function useAdminUserDetail(id: string) {
         setInvoiceTotalPages(d.totalPages || 1);
         setInvoiceTotal(d.total || 0);
       }
-    } catch {}
+    } catch {} finally {
+      setInvoicesLoading(false);
+    }
   }, [id]);
 
   useEffect(() => {
@@ -216,6 +220,7 @@ export function useAdminUserDetail(id: string) {
     setInvoicePage,
     invoiceTotalPages,
     invoiceTotal,
+    invoicesLoading,
     referralPage,
     setReferralPage,
     REFERRAL_PAGE_SIZE,
