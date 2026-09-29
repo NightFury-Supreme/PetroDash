@@ -21,17 +21,21 @@ async function logUserActivity(req, action, metadata = {}, explicitUserId = null
       || 'unknown';
     const userAgent = req?.headers?.['user-agent'] || 'unknown';
 
-    // Inject session ID if available
-    const sessionId = req?.user?.sessionId;
-    if (sessionId && !metadata.sessionId) {
-      metadata.sessionId = sessionId;
-    }
-
     // Auto-detect administrator actions and inject admin identity
     const callerId = req?.user?.sub || req?.user?.userId || req?.user?.id || req?.user?._id;
     const isCallerAdmin = req?.user?.role === 'admin';
     const isAdminAction = typeof action === 'string' && action.startsWith('admin.');
     const isTargetingOther = Boolean(explicitUserId && callerId && String(explicitUserId) !== String(callerId));
+
+    // Inject session ID only for user's own actions; never assign admin sessionId to user log
+    const sessionId = req?.user?.sessionId;
+    if (sessionId) {
+      if (isCallerAdmin || isAdminAction || isTargetingOther) {
+        metadata.adminSessionId = sessionId;
+      } else if (!metadata.sessionId) {
+        metadata.sessionId = sessionId;
+      }
+    }
 
     if (isCallerAdmin || isAdminAction || isTargetingOther) {
       if (!metadata.adminId && callerId) {

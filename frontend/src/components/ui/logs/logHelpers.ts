@@ -1,7 +1,7 @@
 import type { LogMeta, DiffValue } from "./logTypes";
 
 export const META_SYSTEM_KEYS = new Set([
-  'changes', 'changed', 'created', 'sessionId', 'ip', 'userAgent',
+  'changes', 'changed', 'created', 'sessionId', 'adminSessionId', 'ip', 'userAgent', 'adminIp', 'adminUserAgent',
   'method', 'path', 'status', 'statusCode', 'durationMs', 'targetName', 'targetRole',
   'adminId', 'adminUsername', 'adminRole', 'performedByAdmin', 'updatedByAdmin', 'clearedByAdmin', 'deletedByAdmin'
 ]);

@@ -186,6 +186,9 @@ export function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: 
   const statusCode = log.statusCode ?? meta.statusCode;
   const ipDisplay  = ip ? ip : (isByAdmin && variant === 'user' ? tCommon('protected') : '-');
 
+  const canShowSession = (!isByAdmin || variant === 'admin') && Boolean(log.sessionId || meta.sessionId || (variant === 'admin' && meta.adminSessionId));
+  const sessionIdValue = (log.sessionId ?? meta.sessionId ?? (variant === 'admin' ? meta.adminSessionId : null)) as string | null | undefined;
+
   return (
     <div className="px-5 pt-3 pb-7 border-b border-white/[0.05] overflow-hidden">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-14 gap-y-6 w-full min-w-0">
@@ -199,7 +202,14 @@ export function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: 
               value={adminName ? `${adminName} (${adminRole})` : tCommon('admin')}
             />
           )}
-          <InfoRow label={t('sessionId')} value={log.sessionId ?? meta.sessionId} mono muted />
+          {canShowSession && (
+            <InfoRow
+              label={t('sessionId')}
+              value={sessionIdValue}
+              mono
+              muted
+            />
+          )}
           <InfoRow label={t('ipAddress')} value={ipDisplay} mono />
           {log.category    && <InfoRow label={t('category')} value={getCategoryLabel(log.category)} />}
           {log.method      && <InfoRow label={t('method')} value={log.method} />}

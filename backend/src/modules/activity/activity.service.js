@@ -22,12 +22,25 @@ class ActivityService {
     return {
       data: logs.map((log) => {
         const isPerformedByAdmin = Boolean(
-          (typeof log.action === 'string' && log.action.startsWith('admin.')) ||
+          (typeof log.action === 'string' && (log.action.startsWith('admin.') || log.action.includes('.admin.'))) ||
           log.metadata?.performedByAdmin ||
           log.metadata?.updatedByAdmin ||
+          log.metadata?.clearedByAdmin ||
+          log.metadata?.deletedByAdmin ||
           log.metadata?.adminId ||
-          log.metadata?.adminUsername
+          log.metadata?.adminUsername ||
+          log.metadata?.adminRole ||
+          log.metadata?.adminSessionId
         );
+
+        const meta = { ...(log.metadata || {}) };
+        delete meta.adminSessionId;
+        delete meta.adminIp;
+        delete meta.adminUserAgent;
+
+        if (isPerformedByAdmin) {
+          delete meta.sessionId;
+        }
 
         return {
           _id: log._id.toString(),
@@ -36,7 +49,7 @@ class ActivityService {
           ip: isPerformedByAdmin ? null : log.ip,
           userAgent: isPerformedByAdmin ? null : log.userAgent,
           createdAt: log.createdAt,
-          metadata: log.metadata,
+          metadata: meta,
           success: !log.action.includes('failed') && !log.action.includes('error'),
         };
       }),
