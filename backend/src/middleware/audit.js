@@ -41,7 +41,7 @@ async function writeAudit(reqOrActorId, action, resourceTypeOrDetails, resourceI
   try {
     let actorId, actorRole, actorUsername, resourceType, resourceId, meta, ip, userAgent, requestId, sessionId;
     
-    if (reqOrActorId && typeof reqOrActorId === 'object' && reqOrActorId.headers) {
+    if (reqOrActorId && typeof reqOrActorId === 'object' && (reqOrActorId.headers || reqOrActorId.ip || reqOrActorId.socket || reqOrActorId.user)) {
       const req = reqOrActorId;
       actorId = req.user?.sub || req.user?.id || req.user?._id;
       actorRole = req.user?.role || 'user';
@@ -143,6 +143,16 @@ async function writeAudit(reqOrActorId, action, resourceTypeOrDetails, resourceI
     if (!requestId) requestId = meta?.requestId;
     if (!sessionId) sessionId = meta?.sessionId;
 
+    let resolvedTargetUserId = (resourceType === 'user' && resourceId && /^[0-9a-fA-F]{24}$/.test(String(resourceId)))
+      ? String(resourceId)
+      : (meta?.targetUserId ? String(meta.targetUserId) : null);
+    if (!resolvedTargetUserId && actorRole === 'user' && actorId) {
+      resolvedTargetUserId = String(actorId);
+    }
+    if (resolvedTargetUserId && !/^[0-9a-fA-F]{24}$/.test(resolvedTargetUserId)) {
+      resolvedTargetUserId = null;
+    }
+
     const logEntry = {
       actorId,
       actorRole,
@@ -150,9 +160,7 @@ async function writeAudit(reqOrActorId, action, resourceTypeOrDetails, resourceI
       action,
       resourceType,
       resourceId,
-      targetUserId: (resourceType === 'user' && resourceId && /^[0-9a-fA-F]{24}$/.test(String(resourceId)))
-        ? resourceId
-        : (meta?.targetUserId || null),
+      targetUserId: resolvedTargetUserId,
       meta: sanitizeMeta(meta),
       success: isSuccess,
       ip,

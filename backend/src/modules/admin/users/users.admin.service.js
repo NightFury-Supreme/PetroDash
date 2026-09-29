@@ -7,7 +7,7 @@ const { Types } = require('mongoose');
 const User = require('../../../models/User');
 const Server = require('../../../models/Server');
 const UserPlan = require('../../../models/UserPlan');
-const UserActivityLog = require('../../../models/UserActivityLog');
+const AuditLog = require('../../../models/AuditLog');
 const AppError = require('../../../utils/AppError');
 const { getServer: getPanelServer } = require('../../../services/pterodactyl');
 const { getCache, setCache } = require('../../../lib/redis');
@@ -212,22 +212,31 @@ const getUserActivity = async (id, { page = 1, limit = 10 } = {}) => {
   }
 
   const skip = (p - 1) * l;
-  const filter = { userId: String(id) };
+  const userObjectId = Types.ObjectId.isValid(String(id)) ? new Types.ObjectId(String(id)) : null;
+  const filter = {
+    $or: [
+      { actorId: userObjectId },
+      { targetUserId: userObjectId },
+      { resourceType: 'user', resourceId: String(id) },
+      { 'meta.targetUserId': String(id) },
+    ],
+  };
 
   const [logs, total] = await Promise.all([
-    UserActivityLog.find(filter)
+    AuditLog.find(filter)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(l)
-      .select('_id action ip userAgent createdAt metadata')
       .lean(),
-    UserActivityLog.countDocuments(filter),
+    AuditLog.countDocuments(filter),
   ]);
 
   const missingAdminIds = new Set();
   logs.forEach((log) => {
-    if (log.metadata?.adminId && !log.metadata?.adminUsername && /^[0-9a-fA-F]{24}$/.test(String(log.metadata.adminId))) {
-      missingAdminIds.add(String(log.metadata.adminId));
+    const meta = log.meta || log.metadata || {};
+    const adminIdCandidate = log.actorId || meta.adminId;
+    if (adminIdCandidate && /^[0-9a-fA-F]{24}$/.test(String(adminIdCandidate))) {
+      missingAdminIds.add(String(adminIdCandidate));
     }
   });
 
@@ -239,11 +248,13 @@ const getUserActivity = async (id, { page = 1, limit = 10 } = {}) => {
 
   const result = {
     data: logs.map((log) => {
-      const meta = { ...(log.metadata || {}) };
-      if (meta.adminId && !meta.adminUsername && adminUserMap[String(meta.adminId)]) {
-        meta.adminUsername = adminUserMap[String(meta.adminId)].username;
-        meta.adminRole = adminUserMap[String(meta.adminId)].role;
+      const meta = { ...(log.meta || log.metadata || {}) };
+      const actorIdStr = log.actorId ? log.actorId.toString() : (meta.adminId ? String(meta.adminId) : null);
+      if (actorIdStr && adminUserMap[actorIdStr]) {
+        meta.adminUsername = meta.adminUsername || adminUserMap[actorIdStr].username;
+        meta.adminRole = meta.adminRole || adminUserMap[actorIdStr].role;
       }
+
       let resolvedIp = (log.ip && log.ip !== 'unknown' && log.ip !== '::1') ? log.ip : (meta.ip || log.ip);
       if (typeof resolvedIp === 'string') {
         resolvedIp = resolvedIp.trim();
@@ -255,11 +266,24 @@ const getUserActivity = async (id, { page = 1, limit = 10 } = {}) => {
       return {
         _id: log._id.toString(),
         action: log.action,
+        category: log.category,
+        severity: log.severity,
+        actorId: actorIdStr,
+        actorRole: log.actorRole || meta.adminRole,
+        actorUsername: log.actorUsername || meta.adminUsername,
+        resourceType: log.resourceType,
+        resourceId: log.resourceId,
+        targetUserId: log.targetUserId ? log.targetUserId.toString() : null,
+        method: log.method,
+        path: log.path,
+        statusCode: log.statusCode,
+        sessionId: log.sessionId,
         ip: resolvedIp,
         userAgent: resolvedUa,
         createdAt: log.createdAt,
         metadata: meta,
-        success: !log.action.includes('failed') && !log.action.includes('error'),
+        meta: meta,
+        success: log.success !== undefined ? log.success : (!log.action.includes('failed') && !log.action.includes('error')),
       };
     }),
     pagination: {

@@ -1,5 +1,4 @@
-const UserActivityLog = require('../models/UserActivityLog');
-const { resolveClientIp, resolveUserAgent } = require('../utils/clientInfo');
+const { writeAudit } = require('./audit');
 
 /**
  * Logs a user activity.
@@ -15,8 +14,6 @@ async function logUserActivity(req, action, metadata = {}, explicitUserId = null
       return; // Cannot log without a user ID
     }
 
-    const ip = resolveClientIp(req, metadata);
-    const userAgent = resolveUserAgent(req, metadata);
 
     // Auto-detect administrator actions and inject admin identity
     const callerId = req?.user?.sub || req?.user?.userId || req?.user?.id || req?.user?._id;
@@ -47,51 +44,15 @@ async function logUserActivity(req, action, metadata = {}, explicitUserId = null
       metadata.performedByAdmin = true;
     }
 
-    // Sanitize metadata to avoid leaking secrets
-    const safeMetadata = sanitizeMeta(metadata);
+    const resourceType = action.split('.')[0] || 'user';
+    const resourceId = metadata?.resourceId || String(userId);
+    metadata.targetUserId = String(userId);
 
-    await UserActivityLog.create({
-      userId,
-      action,
-      ip,
-      userAgent,
-      metadata: safeMetadata
-    });
+    await writeAudit(req, action, resourceType, resourceId, metadata);
 
-    // Also mirror this user activity directly into the global Admin AuditLog 
-    // so admins can see all user actions seamlessly! (Skip if already logged manually)
-    if (req && req.res) {
-      // Attach to the end of the request to perfectly deduplicate with manual writeAudits
-      req.res.on('finish', () => {
-        if (req._auditLogged) return;
-        try {
-          const { writeAudit } = require('./audit');
-          const resourceType = action.split('.')[0] || 'user';
-          // Mark to prevent auditAuto from logging a duplicate
-          req._auditLogged = true;
-          writeAudit(req, action, resourceType, metadata?.resourceId || userId, safeMetadata).catch(() => {});
-         
-    } catch (_) {
-          // silently ignore log write errors
-        }
-      });
-    }
   } catch (error) {
     // Fail silently in production to avoid crashing the request
     console.error('Error logging user activity:', error);
-  }
-}
-
-function sanitizeMeta(meta) {
-  try {
-    if (!meta || typeof meta !== 'object') return meta;
-    const sensitiveKeys = ['password', 'secret', 'token', 'authorization', 'clientsecret'];
-    return JSON.parse(JSON.stringify(meta, (k, v) => {
-      if (sensitiveKeys.includes(k.toLowerCase())) return '[redacted]';
-      return v;
-    }));
-  } catch {
-    return {};
   }
 }
 

@@ -1,39 +1,52 @@
 /*
   Activity Service
-  Retrieves paginated user activity logs.
+  Retrieves paginated user activity logs from the unified AuditLog system.
 */
 
-const UserActivityLog = require('../../models/UserActivityLog');
+const mongoose = require('mongoose');
+const AuditLog = require('../../models/AuditLog');
 
 class ActivityService {
   async getUserActivityLogs(userId, page, limit) {
     const skip = (page - 1) * limit;
-    const filter = { userId };
+    const userObjectId = mongoose.Types.ObjectId.isValid(String(userId))
+      ? new mongoose.Types.ObjectId(String(userId))
+      : null;
+
+    const filter = {
+      $or: [
+        { actorId: userObjectId },
+        { targetUserId: userObjectId },
+        { resourceType: 'user', resourceId: String(userId) },
+        { 'meta.targetUserId': String(userId) },
+      ],
+    };
 
     const [logs, total] = await Promise.all([
-      UserActivityLog.find(filter)
+      AuditLog.find(filter)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .select('_id action ip userAgent createdAt metadata'),
-      UserActivityLog.countDocuments(filter)
+        .lean(),
+      AuditLog.countDocuments(filter)
     ]);
 
     return {
       data: logs.map((log) => {
         const isPerformedByAdmin = Boolean(
-          (typeof log.action === 'string' && (log.action.startsWith('admin.') || log.action.includes('.admin.'))) ||
-          log.metadata?.performedByAdmin ||
-          log.metadata?.updatedByAdmin ||
-          log.metadata?.clearedByAdmin ||
-          log.metadata?.deletedByAdmin ||
-          log.metadata?.adminId ||
-          log.metadata?.adminUsername ||
-          log.metadata?.adminRole ||
-          log.metadata?.adminSessionId
+          log.actorRole === 'admin' ||
+          (log.actorId && String(log.actorId) !== String(userId) && typeof log.action === 'string' && (log.action.startsWith('admin.') || log.action.includes('.admin.'))) ||
+          log.meta?.performedByAdmin ||
+          log.meta?.updatedByAdmin ||
+          log.meta?.clearedByAdmin ||
+          log.meta?.deletedByAdmin ||
+          log.meta?.adminId ||
+          log.meta?.adminUsername ||
+          log.meta?.adminRole ||
+          log.meta?.adminSessionId
         );
 
-        const meta = { ...(log.metadata || {}) };
+        const meta = { ...(log.meta || log.metadata || {}) };
         delete meta.adminSessionId;
         delete meta.adminIp;
         delete meta.adminUserAgent;
@@ -54,12 +67,18 @@ class ActivityService {
         return {
           _id: log._id.toString(),
           action: log.action,
-          // Hide admin browser and IP on the user-facing profile page
+          category: log.category,
+          severity: log.severity,
+          method: log.method,
+          path: log.path,
+          statusCode: log.statusCode,
+          sessionId: isPerformedByAdmin ? null : (log.sessionId || meta.sessionId),
           ip: resolvedIp,
           userAgent: resolvedUa,
           createdAt: log.createdAt,
           metadata: meta,
-          success: !log.action.includes('failed') && !log.action.includes('error'),
+          meta: meta,
+          success: log.success !== undefined ? log.success : (!log.action.includes('failed') && !log.action.includes('error')),
         };
       }),
       pagination: { total, page, limit, pages: Math.ceil(total / limit) },

@@ -29,7 +29,8 @@ const AuditLogSchema = new mongoose.Schema(
 AuditLogSchema.index({ createdAt: -1 });
 AuditLogSchema.index({ action: 1, createdAt: -1 });
 AuditLogSchema.index({ actorId: 1, createdAt: -1 });
-AuditLogSchema.index({ resourceType: 1, createdAt: -1 });
+AuditLogSchema.index({ targetUserId: 1, createdAt: -1 });
+AuditLogSchema.index({ resourceType: 1, resourceId: 1, createdAt: -1 });
 AuditLogSchema.index({ severity: 1, createdAt: -1 });
 AuditLogSchema.index({ requestId: 1 });
 
