@@ -219,6 +219,9 @@ const getUserActivity = async (id, { page = 1, limit = 10 } = {}) => {
       { targetUserId: userObjectId },
       { resourceType: 'user', resourceId: String(id) },
       { 'meta.targetUserId': String(id) },
+      { 'meta.userId': String(id) },
+      { 'meta.owner': String(id) },
+      { 'meta.ownerId': String(id) },
     ],
   };
 

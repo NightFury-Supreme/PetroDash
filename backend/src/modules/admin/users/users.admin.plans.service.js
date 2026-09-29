@@ -80,7 +80,9 @@ const addPlan = async (req, id, { planId, months }) => {
   const adminRole = req?.user?.role || 'admin';
 
   await writeAudit(req, 'admin.user.plan.add', 'user_plan', sub._id.toString(), {
+    targetUserId: user._id.toString(),
     plan: plan.name,
+    planName: plan.name,
     months,
     adminId,
     adminUsername,
@@ -138,6 +140,7 @@ const cancelPlans = async (req, id, planId) => {
   const adminRole = req?.user?.role || 'admin';
 
   await writeAudit(req, 'admin.user.plan.cancel', 'user_plan', planId, {
+    targetUserId: String(id),
     userId: id,
     planId,
     instancesCancelled: subs.length,
@@ -194,6 +197,7 @@ const cancelPlanInstance = async (req, id, instanceId) => {
   const adminRole = req?.user?.role || 'admin';
 
   await writeAudit(req, 'admin.user.plan.instance.cancel', 'user_plan', sub._id.toString(), {
+    targetUserId: String(id),
     userId: id,
     planId: sub.planId,
     adminId,

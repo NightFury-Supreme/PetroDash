@@ -3,19 +3,24 @@ import type { LogMeta, DiffValue } from "./logTypes";
 export const META_SYSTEM_KEYS = new Set([
   'changes', 'changed', 'created', 'sessionId', 'adminSessionId', 'ip', 'userAgent', 'adminIp', 'adminUserAgent',
   'method', 'path', 'status', 'statusCode', 'durationMs', 'targetName', 'targetRole',
-  'adminId', 'adminUsername', 'adminRole', 'performedByAdmin', 'updatedByAdmin', 'clearedByAdmin', 'deletedByAdmin'
+  'adminId', 'adminUsername', 'adminRole', 'performedByAdmin', 'updatedByAdmin', 'clearedByAdmin', 'deletedByAdmin',
+  'targetUserId', 'userId', 'body', 'responsePreview', 'requestId', 'success'
 ]);
 
 export const CONTEXT_META_KEYS: Array<keyof LogMeta> = [
-  'serverName', 'planName', 'subject', 'itemName', 'code',
+  'serverName', 'name', 'planName', 'plan', 'subject', 'ticketTitle', 'itemName', 'code', 'reason',
 ];
 
 export const CONTEXT_LABELS: Record<string, string> = {
   serverName: 'Server',
-  planName:   'Plan',
-  subject:    'Ticket',
-  itemName:   'Item',
-  code:       'Code',
+  name: 'Server',
+  planName: 'Plan',
+  plan: 'Plan',
+  subject: 'Ticket',
+  ticketTitle: 'Ticket',
+  itemName: 'Item',
+  code: 'Code',
+  reason: 'Reason',
 };
 
 export function parseUserAgent(ua?: string, unknownLabel: string = 'Unknown'): string {

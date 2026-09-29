@@ -43,6 +43,11 @@ async function writeAudit(reqOrActorId, action, resourceTypeOrDetails, resourceI
     
     if (reqOrActorId && typeof reqOrActorId === 'object' && (reqOrActorId.headers || reqOrActorId.ip || reqOrActorId.socket || reqOrActorId.user)) {
       const req = reqOrActorId;
+      if (!req._auditedActions) req._auditedActions = new Set();
+      if (req._auditedActions.has(action)) {
+        return; // Prevent duplicate log within the same request lifecycle
+      }
+      req._auditedActions.add(action);
       actorId = req.user?.sub || req.user?.id || req.user?._id;
       actorRole = req.user?.role || 'user';
       actorUsername = req.user?.username || 'unknown';
@@ -143,15 +148,13 @@ async function writeAudit(reqOrActorId, action, resourceTypeOrDetails, resourceI
     if (!requestId) requestId = meta?.requestId;
     if (!sessionId) sessionId = meta?.sessionId;
 
-    let resolvedTargetUserId = (resourceType === 'user' && resourceId && /^[0-9a-fA-F]{24}$/.test(String(resourceId)))
+    let targetCandidate = (resourceId && /^[0-9a-fA-F]{24}$/.test(String(resourceId)) && (resourceType === 'user' || resourceType === 'auth' || resourceType === 'user_profile'))
       ? String(resourceId)
-      : (meta?.targetUserId ? String(meta.targetUserId) : null);
-    if (!resolvedTargetUserId && actorRole === 'user' && actorId) {
-      resolvedTargetUserId = String(actorId);
+      : (meta?.targetUserId || meta?.userId || meta?.owner || meta?.ownerId ? String(meta.targetUserId || meta.userId || meta.owner || meta.ownerId) : null);
+    if (!targetCandidate && actorRole === 'user' && actorId) {
+      targetCandidate = String(actorId);
     }
-    if (resolvedTargetUserId && !/^[0-9a-fA-F]{24}$/.test(resolvedTargetUserId)) {
-      resolvedTargetUserId = null;
-    }
+    let resolvedTargetUserId = (targetCandidate && /^[0-9a-fA-F]{24}$/.test(targetCandidate)) ? targetCandidate : null;
 
     const logEntry = {
       actorId,

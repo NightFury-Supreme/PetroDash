@@ -44,7 +44,11 @@ async function logUserActivity(req, action, metadata = {}, explicitUserId = null
       metadata.performedByAdmin = true;
     }
 
-    const resourceType = action.split('.')[0] || 'user';
+    let resourceType = action.split('.')[0] || 'user';
+    if (action.startsWith('admin.user.')) resourceType = 'user';
+    else if (action.startsWith('admin.server.')) resourceType = 'server';
+    else if (action.startsWith('admin.ticket.')) resourceType = 'ticket';
+    else if (action.startsWith('admin.plan.')) resourceType = 'plan';
     const resourceId = metadata?.resourceId || String(userId);
     metadata.targetUserId = String(userId);
 

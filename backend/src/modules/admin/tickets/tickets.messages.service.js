@@ -125,20 +125,23 @@ const addMessage = async (id, data, req) => {
 
   await writeAudit(req, 'admin.ticket.reply', 'ticket', t._id.toString(), {
     isInternal,
+    subject: t.title,
+    targetUserId: isInternal ? null : t.user.toString(),
     messagePreview: body.substring(0, 50),
   });
 
-  await logUserActivity(
-    null,
-    'admin.ticket.reply',
-    {
-      ticketId: t._id.toString(),
-      title: t.title,
-      isInternal,
-      messagePreview: body.substring(0, 50),
-    },
-    t.user.toString()
-  );
+  if (!isInternal) {
+    await logUserActivity(
+      req,
+      'admin.ticket.reply',
+      {
+        ticketId: t._id.toString(),
+        subject: t.title,
+        messagePreview: body.substring(0, 50),
+      },
+      t.user.toString()
+    );
+  }
 
   return { ok: true, message: savedMsg, status: t.status };
 };

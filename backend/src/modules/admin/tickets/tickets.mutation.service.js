@@ -99,13 +99,18 @@ const updateTicket = async (id, data, req) => {
       changes.deletedByUser = { old: originalTicket.deletedByUser, new: deletedByUser };
     }
 
-    await writeAudit(req, 'admin.ticket.update', 'ticket', t._id.toString(), { changes });
+    await writeAudit(req, 'admin.ticket.update', 'ticket', t._id.toString(), {
+      changes,
+      subject: t.title,
+      targetUserId: t.user.toString(),
+    });
 
     await logUserActivity(
-      null,
+      req,
       'admin.ticket.update',
       {
         ticketId: t._id.toString(),
+        subject: t.title,
         title: t.title,
         updatedByAdmin: true,
         changes: Object.keys(changes).length > 0 ? changes : undefined,
@@ -130,13 +135,18 @@ const deleteTicket = async (id, req) => {
   if (result.user) await deleteCachePattern(`tickets:mine:${result.user}:*`);
   await deleteCachePattern(`tickets:admin:detail:${id}`);
 
-  await writeAudit(req, 'admin.ticket.delete', 'ticket', result._id.toString(), { title: result.title });
+  await writeAudit(req, 'admin.ticket.delete', 'ticket', result._id.toString(), {
+    title: result.title,
+    subject: result.title,
+    targetUserId: result.user ? result.user.toString() : null,
+  });
 
   await logUserActivity(
-    null,
+    req,
     'admin.ticket.delete',
     {
       ticketId: result._id.toString(),
+      subject: result.title,
       title: result.title,
     },
     result.user ? result.user.toString() : null

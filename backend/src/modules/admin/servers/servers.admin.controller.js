@@ -90,6 +90,7 @@ const updateServer = async (req, res, next) => {
     await writeAudit(req, 'admin.server.update', 'server', server._id.toString(), {
       serverId: server._id.toString(),
       serverName: server.name,
+      ownerId: server.owner?.toString(),
       changes: Object.keys(changes).length > 0 ? changes : undefined,
     });
 

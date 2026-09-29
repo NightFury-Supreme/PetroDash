@@ -91,6 +91,19 @@ async function getLogs(parsedQuery) {
     filterConditions.push({ severity: severity.toUpperCase() });
   }
 
+  if (!action && !q) {
+    const EXCLUDED_NOISE_ACTIONS = [
+      'earn.session.start',
+      'earn.claim',
+      'auth.oauth.discord.initiated',
+      'auth.oauth.google.initiated',
+      'auth.password.reset.requested',
+      'auth.email.verify.resent',
+      'auth.2fa.setup_initiated',
+    ];
+    filterConditions.push({ action: { $nin: EXCLUDED_NOISE_ACTIONS } });
+  }
+
   const query = filterConditions.length > 0 ? { $and: filterConditions } : {};
 
   const limit = pageSize;

@@ -35,6 +35,7 @@ const deleteServer = async (req, id, serverId) => {
   const adminRole = req?.user?.role || 'admin';
 
   await writeAudit(req, 'admin.user.server.delete', 'server', server._id.toString(), {
+    targetUserId: String(id),
     owner: id,
     serverName: server.name,
     adminId,
@@ -181,6 +182,7 @@ const updateServer = async (req, id, serverId, data) => {
   const adminRole = req?.user?.role || 'admin';
 
   await writeAudit(req, 'admin.user.server.update', 'server', server._id.toString(), {
+    targetUserId: String(id),
     owner: id,
     serverName: server.name,
     changed: data,

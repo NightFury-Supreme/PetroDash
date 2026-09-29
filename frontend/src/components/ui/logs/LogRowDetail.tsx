@@ -110,16 +110,16 @@ export function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Var
   const ctxKey = CONTEXT_META_KEYS.find(k => meta[k]);
   
   let translatedCtxLabel = ctxKey ? CONTEXT_LABELS[ctxKey] : null;
-  if (ctxKey === 'serverName') translatedCtxLabel = tCommon('server');
-  if (ctxKey === 'planName') translatedCtxLabel = tCommon('plan');
-  if (ctxKey === 'subject') translatedCtxLabel = tCommon('ticket');
+  if (ctxKey === 'serverName' || ctxKey === 'name') translatedCtxLabel = tCommon('server');
+  if (ctxKey === 'planName' || ctxKey === 'plan') translatedCtxLabel = tCommon('plan');
+  if (ctxKey === 'subject' || ctxKey === 'ticketTitle') translatedCtxLabel = tCommon('ticket');
   if (ctxKey === 'itemName') translatedCtxLabel = tCommon('item');
   if (ctxKey === 'code') translatedCtxLabel = tCommon('code');
+  if (ctxKey === 'reason') translatedCtxLabel = tCommon('reason');
 
   const ctx = ctxKey ? `${translatedCtxLabel}: ${meta[ctxKey]}` : null;
 
   const adminName = (meta.adminUsername as string) || (log.action.startsWith('admin.') ? log.actorUsername : null);
-  const adminId   = (meta.adminId as string) || (log.action.startsWith('admin.') ? log.actorId : null);
   const adminRole = (meta.adminRole as string) || (log.action.startsWith('admin.') ? log.actorRole : 'admin') || 'admin';
   const isByAdmin = Boolean(
     adminName || 
@@ -138,19 +138,9 @@ export function ActionCell({ log, variant, meta }: { log: LogEntry; variant: Var
       {isByAdmin && (
         <div className="mt-1 flex items-center gap-1.5 flex-wrap">
           <span className="text-[10px] text-white/40">{tCommon('by')}</span>
-          {adminId ? (
-            <Link
-              href={`/admin/users/${adminId}`}
-              className="text-[10px] text-[#ff5722] hover:underline font-medium truncate"
-              onClick={e => e.stopPropagation()}
-            >
-              {adminName || tCommon('admin')}
-            </Link>
-          ) : (
-            <span className="text-[10px] text-[#ff5722] font-medium truncate">
-              {adminName || tCommon('admin')}
-            </span>
-          )}
+          <span className="text-[10px] text-[#ff5722] font-medium truncate">
+            {adminName || tCommon('admin')}
+          </span>
           <RankBadge rank={adminRole} size="sm" />
         </div>
       )}
@@ -217,8 +207,8 @@ export function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: 
           <InfoRow label={t('ipAddress')} value={ipDisplay} mono />
           {uaDisplay && <InfoRow label={tCommon('device')} value={uaDisplay} />}
           {log.category    && <InfoRow label={t('category')} value={getCategoryLabel(log.category)} />}
-          {log.method      && <InfoRow label={t('method')} value={log.method} />}
-          {log.path        && <InfoRow label={t('path')} value={log.path} mono muted />}
+          {variant === 'admin' && log.method && <InfoRow label={t('method')} value={log.method} />}
+          {variant === 'admin' && log.path && <InfoRow label={t('path')} value={log.path} mono muted />}
           {variant === 'admin' && log.resourceType && (
             <InfoRow
               label={log.resourceType === 'user' ? t('targetUser') : log.resourceType === 'server' ? t('targetServer') : log.resourceType === 'ticket' ? t('targetTicket') : t('resource')}
@@ -227,7 +217,7 @@ export function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: 
               muted
             />
           )}
-          {statusCode != null && (
+          {variant === 'admin' && statusCode != null && (
             <div className="flex justify-between items-start gap-4 py-[7px] border-b border-white/[0.04] last:border-0">
               <span className="text-[9px] uppercase tracking-[0.1em] text-white/45 shrink-0 pt-px">{t('statusCode')}</span>
               <span className={`font-mono text-[11px] ${statusCode >= 400 ? 'text-red-400' : 'text-emerald-400'}`}>
@@ -256,7 +246,7 @@ export function ExpandedPanel({ log, variant, meta }: { log: LogEntry; variant: 
               <CreatedViewer data={meta.created as Record<string, unknown>} tCommon={tCommon} />
             </div>
           )}
-          {variant === 'admin' && hasRawMeta && (
+          {hasRawMeta && (
             <div>
               <SectionHeading>{t('additionalInfo')}</SectionHeading>
               <MetaViewer data={rawMeta} tCommon={tCommon} />

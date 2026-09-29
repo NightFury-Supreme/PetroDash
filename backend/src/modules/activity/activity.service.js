@@ -19,7 +19,18 @@ class ActivityService {
         { targetUserId: userObjectId },
         { resourceType: 'user', resourceId: String(userId) },
         { 'meta.targetUserId': String(userId) },
+        { 'meta.userId': String(userId) },
+        { 'meta.owner': String(userId) },
+        { 'meta.ownerId': String(userId) },
       ],
+      action: {
+        $nin: [
+          'auth.oauth.discord.initiated',
+          'auth.oauth.google.initiated',
+          'auth.password.reset.requested',
+          'auth.2fa.setup_initiated',
+        ],
+      },
     };
 
     const [logs, total] = await Promise.all([
