@@ -63,7 +63,7 @@ export function ReferralsTab({
       </section>
 
       {/* ── CUSTOM CODE ───────────────────────────────────────── */}
-      <section className="border-t border-white/[0.07] pt-6">
+      <section>
         <div className="divide-y divide-white/[0.06]">
           <InfoRow
             icon={<Key size={14} />}
