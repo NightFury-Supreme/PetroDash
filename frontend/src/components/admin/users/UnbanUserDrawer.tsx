@@ -120,7 +120,7 @@ export function UnbanUserDrawer({
           )}
         </div>
 
-        {/* Current Suspension Details: Reason and Time in One Line */}
+        {/* Current Ban Details: Reason and Time in One Line */}
         <div className="grid grid-cols-2 gap-4 pb-4 border-b border-white/[0.07]">
           <div>
             <span className="block text-[10px] font-medium uppercase tracking-widest text-[#888]">
