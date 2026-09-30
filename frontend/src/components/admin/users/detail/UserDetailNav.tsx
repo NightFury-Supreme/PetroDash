@@ -9,7 +9,7 @@ import {
   Share2, 
   Database, 
   Activity,
-  ShieldAlert,
+  Gavel,
   ShieldCheck, 
   Trash2 
 } from "lucide-react";
@@ -103,7 +103,7 @@ export function UserDetailNav({
           </div>
           <nav className="space-y-1">
             <AdminSideItem
-              icon={isBanned ? ShieldCheck : ShieldAlert}
+              icon={isBanned ? ShieldCheck : Gavel}
               label={isBanned ? t('unbanUser') : t('banUser')}
               danger={!isBanned}
               success={isBanned}

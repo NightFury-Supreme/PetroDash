@@ -9,7 +9,7 @@
 
 import React from 'react';
 import { useTranslations } from 'next-intl';
-import { Ban } from 'lucide-react';
+import { Gavel } from 'lucide-react';
 import { useBannedStatus } from '@/hooks/auth';
 import { ErrorState, ErrorHeader } from '@/components/error';
 import { BannedActions } from './BannedActions';
@@ -29,7 +29,7 @@ export function BannedView() {
     <ErrorState
       fullScreen={true}
       header={<ErrorHeader />}
-      icon={<Ban strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
+      icon={<Gavel strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
       title={t('title')}
       description={
         <div className="space-y-2.5" suppressHydrationWarning>

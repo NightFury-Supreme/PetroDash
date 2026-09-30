@@ -181,13 +181,12 @@ export function useAdminUserDetail(id: string) {
   const banUser = async (payload: { isBanned: boolean; reason?: string; durationMinutes?: number; until?: string | null }) => {
     const token = getAuthToken();
     const r = await adminUsersApi.banUser(id, payload, token);
+    const d = await r.json().catch(() => ({}));
     if (!r.ok) {
-      const d = await r.json().catch(() => ({}));
       throw new Error(d.error || d.code || 'ERR_BAN_USER_FAILED');
     }
-    const resData = await r.json().catch(() => ({}));
-    if (resData?.ban) {
-      setBan(resData.ban);
+    if (d?.ban) {
+      setBan(d.ban);
     } else {
       setBan({ isBanned: true, reason: payload.reason || '', until: payload.until || null });
     }

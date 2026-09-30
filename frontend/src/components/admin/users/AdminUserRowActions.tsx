@@ -6,7 +6,7 @@
 'use client';
 
 import React from 'react';
-import { Settings, ShieldAlert, ShieldCheck, Trash, Loader2 } from 'lucide-react';
+import { Settings, Gavel, ShieldCheck, Trash, Loader2 } from 'lucide-react';
 import { RowActionButton } from '@/components/ui/RowActionButton';
 import { useTranslations } from 'next-intl';
 
@@ -87,7 +87,7 @@ export function AdminUserRowActions({
           ) : isBanned ? (
             <ShieldCheck size={15} />
           ) : (
-            <ShieldAlert size={15} />
+            <Gavel size={15} />
           )}
         </RowActionButton>
 

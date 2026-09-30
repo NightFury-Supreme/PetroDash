@@ -28,6 +28,7 @@ export default function AdminUserPage() {
   const { showSuccess, showError } = useToast();
   
   const t = useTranslations('admin.users');
+  const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
 
   const [section, setSection] = useState("overview");
@@ -103,23 +104,33 @@ export default function AdminUserPage() {
   };
 
   const handleConfirmBan = async (banData: { reason: string; durationMinutes?: number }) => {
-    const payload: { isBanned: boolean; reason?: string; durationMinutes?: number; until?: string | null } = {
-      isBanned: true,
-      reason: banData.reason || t('defaultBanReason'),
-      durationMinutes: banData.durationMinutes,
-    };
-    if (banData.durationMinutes) {
-      payload.until = new Date(Date.now() + banData.durationMinutes * 60000).toISOString();
+    try {
+      const payload: { isBanned: boolean; reason?: string; durationMinutes?: number; until?: string | null } = {
+        isBanned: true,
+        reason: banData.reason || t('defaultBanReason'),
+        durationMinutes: banData.durationMinutes,
+      };
+      if (banData.durationMinutes) {
+        payload.until = new Date(Date.now() + banData.durationMinutes * 60000).toISOString();
+      }
+      await banUser(payload);
+      showSuccess(t('banUpdatedSuccess'));
+      await loadUser(referralPage, false);
+      setIsBanDrawerOpen(false);
+    } catch (e: any) {
+      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
     }
-    await banUser(payload);
-    await loadUser(referralPage, false);
-    setIsBanDrawerOpen(false);
   };
 
   const handleConfirmUnban = async () => {
-    await unbanUser();
-    await loadUser(referralPage, false);
-    setIsUnbanDrawerOpen(false);
+    try {
+      await unbanUser();
+      showSuccess(t('unbanSuccess'));
+      await loadUser(referralPage, false);
+      setIsUnbanDrawerOpen(false);
+    } catch (e: any) {
+      showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
+    }
   };
 
   if (loading) {

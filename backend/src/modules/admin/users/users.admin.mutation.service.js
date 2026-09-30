@@ -195,6 +195,12 @@ const banUser = async (req, id, { isBanned, reason, durationMinutes }) => {
   if (!user) throw new AppError('User not found', 404, 'ERR_USER_NOT_FOUND');
 
   if (!user.ban) user.ban = {};
+  if (isBanned) {
+    const requesterId = req.user?.sub || req.user?.userId || req.user?._id;
+    if (requesterId && requesterId.toString() === user._id.toString()) {
+      throw AppError.badRequest('ERR_ADMIN_SELF_BAN');
+    }
+  }
   user.ban.isBanned = Boolean(isBanned);
   user.ban.reason = reason || '';
   if (isBanned) {

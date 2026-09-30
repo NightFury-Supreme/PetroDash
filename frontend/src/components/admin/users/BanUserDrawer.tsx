@@ -6,7 +6,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { AlertTriangle, Loader2, ShieldAlert } from 'lucide-react';
+import { AlertTriangle, Loader2, Gavel } from 'lucide-react';
 import { Drawer } from '@/components/ui/Drawer';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslations } from 'next-intl';
@@ -108,7 +108,7 @@ export function BanUserDrawer({
             {isBanning ? (
               <Loader2 size={16} className="animate-spin" />
             ) : (
-              <ShieldAlert size={16} />
+              <Gavel size={16} />
             )}
             {isBanning ? t('banningBtn') : t('banSubmitBtn')}
           </button>

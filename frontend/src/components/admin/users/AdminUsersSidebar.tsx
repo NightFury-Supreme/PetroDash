@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { useTranslations } from 'next-intl';
-import { Users, UserCheck, Ban, Shield } from 'lucide-react';
+import { Users, UserCheck, Gavel, Shield } from 'lucide-react';
 import { UserTab } from '@/hooks/admin/users';
 
 export type { UserTab };
@@ -81,7 +81,7 @@ export function AdminUsersSidebar({
         <NavItem
           active={activeTab === 'banned'}
           onClick={() => onSelectTab('banned')}
-          icon={Ban}
+          icon={Gavel}
         >
           {t('tabBannedUsers')}
         </NavItem>
