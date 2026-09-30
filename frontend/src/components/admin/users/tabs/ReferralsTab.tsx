@@ -35,7 +35,8 @@ export function ReferralsTab({
   const handleSave = async () => {
     const normalized = codeDraft.trim().toUpperCase().replace(/[^A-Z0-9-_]/g, '');
     if (!normalized) return false;
-    await onSaveCode(normalized);
+    const success = await onSaveCode(normalized); if (success === false) return false;
+    
     setCodeDraft(normalized);
     setEditingCode(false);
     return true;

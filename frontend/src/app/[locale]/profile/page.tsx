@@ -85,13 +85,13 @@ export default function ProfilePage() {
   const beginEdit = (field: "username" | "name" | "email") => {
     if (field === "email") {
       setShowChangeEmailDrawer(true);
-      return;
+      return false;
     }
 
     if (field === "name") {
       setEditing(field);
       setDraft({ first: form.firstName || "", last: form.lastName || "" });
-      return;
+      return false;
     }
 
     setEditing(field);
@@ -139,7 +139,7 @@ export default function ProfilePage() {
   };
 
   const handleVerifyEmailClick = async () => {
-    if (resendRateLimit > 0) return;
+    if (resendRateLimit > 0) return false;
     try {
       await resendVerification();
       setShowEmailVerificationModal(true);
