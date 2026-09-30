@@ -26,7 +26,7 @@ export function OverviewTab({
 }: OverviewTabProps) {
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState<any>("");
-  const { showError } = useToast();
+  const { showSuccess, showError } = useToast();
   const t = useTranslations('admin.users');
   const tCommon = useTranslations('Common');
   const tErrorBackend = useTranslations('BackendErrors');
@@ -81,8 +81,10 @@ export function OverviewTab({
   const handleRoleChange = async (newRole: string) => {
     try {
       await onUpdateRole(newRole);
+      showSuccess(t('roleUpdated'));
     } catch (e: any) {
       showError(tErrorBackend.has(e.message) ? tErrorBackend(e.message) : (e.message || tCommon('error')));
+      throw e;
     }
   };
 

@@ -1669,6 +1669,7 @@
       "deleteUserConfirm": "Are you sure you want to permanently delete user \"{username}\" and all their servers? This action cannot be undone.",
       "deleteUserConfirmText": "Delete User",
       "userDeletedSuccessfully": "User deleted successfully.",
+      "roleUpdated": "User role updated successfully.",
       "referralCodeUpdated": "Referral code updated.",
       "userNotFound": "User not found.",
       "userManagement": "User Management",

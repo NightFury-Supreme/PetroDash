@@ -1658,6 +1658,7 @@
       "deleteUserConfirm": "Êtes-vous sûr de vouloir supprimer définitivement l'utilisateur \"{username}\" et tous ses serveurs ? Cette action ne peut pas être annulée.",
       "deleteUserConfirmText": "Supprimer l'utilisateur",
       "userDeletedSuccessfully": "Utilisateur supprimé avec succès.",
+      "roleUpdated": "Rôle de l'utilisateur mis à jour avec succès.",
       "referralCodeUpdated": "Code de parrainage mis à jour.",
       "userNotFound": "Utilisateur introuvable.",
       "userManagement": "Gestion des utilisateurs",

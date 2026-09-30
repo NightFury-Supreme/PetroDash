@@ -88,7 +88,7 @@ export function SelectDropdown<T extends string = string>({
       >
         <span className="truncate flex items-center gap-2">{displayContent}</span>
         {isLoading ? (
-          <Loader2 size={14} className="animate-spin opacity-50 shrink-0" />
+          <Loader2 size={14} className="animate-spin text-white/80 shrink-0" />
         ) : (
           <ChevronDown size={14} className={`opacity-50 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
         )}

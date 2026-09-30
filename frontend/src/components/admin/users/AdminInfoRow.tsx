@@ -252,7 +252,7 @@ export function InfoRow({
               </button>
             </>
           ) : (
-            !hideEditButton && (
+            !hideEditButton ? (
               <button
                 type="button"
                 onClick={onEdit}
@@ -260,6 +260,13 @@ export function InfoRow({
               >
                 <Pencil size={14} /> {t('edit')}
               </button>
+            ) : (
+              <div
+                className="invisible pointer-events-none flex h-9 items-center gap-1.5 px-3 text-xs font-medium"
+                aria-hidden="true"
+              >
+                <Pencil size={14} /> {t('edit')}
+              </div>
             )
           )}
         </div>

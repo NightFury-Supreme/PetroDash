@@ -1658,6 +1658,7 @@
       "deleteUserConfirm": "Sind Sie sicher, dass Sie den Benutzer \"{username}\" und alle seine Server dauerhaft löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
       "deleteUserConfirmText": "Benutzer löschen",
       "userDeletedSuccessfully": "Benutzer erfolgreich gelöscht.",
+      "roleUpdated": "Benutzerrolle erfolgreich aktualisiert.",
       "referralCodeUpdated": "Empfehlungscode aktualisiert.",
       "userNotFound": "Benutzer nicht gefunden.",
       "userManagement": "Benutzerverwaltung",
