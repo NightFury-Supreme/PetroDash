@@ -185,7 +185,12 @@ const updateUser = async (req, id, data) => {
   await deleteCachePattern(`user:${targetUserId}:*`);
   await deleteCachePattern('admin:users*');
 
-  return { user };
+  const safeUser = user.toObject();
+  delete safeUser.passwordHash;
+  delete safeUser.tfaSecret;
+  delete safeUser.tfaBackupCodes;
+
+  return { user: safeUser };
 };
 
 const banUser = async (req, id, { isBanned, reason, durationMinutes }) => {

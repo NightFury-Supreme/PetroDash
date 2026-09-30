@@ -63,7 +63,7 @@ const listUsers = async ({ search, page = '1', limit = '10', pageSize, role, sta
   else if (sortBy === 'coins_asc') sort = { coins: 1 };
 
   const total = await User.countDocuments(filter);
-  const users = await User.find(filter, { passwordHash: 0 })
+  const users = await User.find(filter, { passwordHash: 0, tfaSecret: 0, tfaBackupCodes: 0 })
     .sort(sort)
     .skip((pageNum - 1) * limitNum)
     .limit(limitNum)
@@ -103,7 +103,7 @@ const getUser = async (id, query = {}) => {
   const cached = await getCache(cacheKey);
   if (cached) return cached;
 
-  const user = await User.findById(String(id), { passwordHash: 0 })
+  const user = await User.findById(String(id), { passwordHash: 0, tfaSecret: 0, tfaBackupCodes: 0 })
     .populate('referredBy', 'username email referralCode')
     .lean();
   if (!user) {
@@ -152,7 +152,7 @@ const getUser = async (id, query = {}) => {
     .lean();
 
   const totalReferred = await User.countDocuments({ referredBy: user._id });
-  const referredUsers = await User.find({ referredBy: user._id }, { passwordHash: 0 })
+  const referredUsers = await User.find({ referredBy: user._id }, { passwordHash: 0, tfaSecret: 0, tfaBackupCodes: 0 })
     .skip((referralPage - 1) * referralPageSize)
     .limit(referralPageSize)
     .lean();

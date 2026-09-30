@@ -93,7 +93,7 @@ export function SharedLogsTable({ logs, loading, variant }: SharedLogsTableProps
                 role="button"
                 tabIndex={0}
                 aria-expanded={isExpanded}
-                className="group grid grid-cols-1 md:grid-cols-[2fr_1.5fr_110px_140px_88px_44px] gap-4 px-5 py-5 items-center transition hover:bg-white/[0.02] cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20"
+                className="group grid grid-cols-1 md:grid-cols-[2fr_1.5fr_110px_140px_88px_44px] gap-4 px-5 py-5 items-center transition hover:bg-white/[0.02] cursor-pointer focus:outline-none"
                 onClick={() => toggle(log._id)}
                 onKeyDown={e => e.key === 'Enter' && toggle(log._id)}
               >
