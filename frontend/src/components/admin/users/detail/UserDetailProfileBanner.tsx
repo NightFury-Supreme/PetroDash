@@ -6,7 +6,7 @@
 "use client";
 
 import React from "react";
-import { User, Coins, Ban, Check } from "lucide-react";
+import { User, Coins, Gavel, Check } from "lucide-react";
 import { RankBadge } from "@/components/ui";
 import { useTranslations } from "next-intl";
 
@@ -49,7 +49,7 @@ export function UserDetailProfileBanner({ user, isBanned }: UserDetailProfileBan
                 title={t('banned')}
                 className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-[#161616] bg-red-500 shadow-md"
               >
-                <Ban size={11} strokeWidth={3} className="text-white" />
+                <Gavel size={11} strokeWidth={2.5} className="text-white" />
               </span>
             )}
             {!isBanned && user.emailVerified && (
