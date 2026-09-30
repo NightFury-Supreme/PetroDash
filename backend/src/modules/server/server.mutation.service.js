@@ -193,7 +193,9 @@ class ServerMutationService {
       await deleteCachePattern(`server:usage:${userId}`);
       await deleteCachePattern('api:admin:servers:*');
 
-      return { server, changes, user };
+      const updatedServer = await Server.findById(server._id).lean();
+
+      return { server: updatedServer, changes, user };
     } finally {
       await User.updateOne({ _id: userId }, { $set: { serverLock: null } });
     }

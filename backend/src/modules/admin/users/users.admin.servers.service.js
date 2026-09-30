@@ -200,7 +200,9 @@ const updateServer = async (req, id, serverId, data) => {
     adminRole,
   }, id);
   await deleteCachePattern('admin:users*');
-  return { server };
+
+  const updatedServer = await Server.findById(server._id).lean();
+  return { server: updatedServer };
 };
 
 module.exports = {

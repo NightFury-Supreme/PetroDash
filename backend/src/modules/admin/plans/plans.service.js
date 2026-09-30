@@ -114,7 +114,7 @@ const createPlan = async (data, req) => {
   await deleteCachePattern('admin:plans*');
   await deleteCachePattern('api:plans*');
 
-  return plan;
+  return await Plan.findById(plan._id).lean();
 };
 
 const updatePlan = async (id, data, req) => {
@@ -179,7 +179,7 @@ const updatePlan = async (id, data, req) => {
   await deleteCachePattern('admin:plans*');
   await deleteCachePattern('api:plans*');
 
-  return plan;
+  return await Plan.findById(plan._id).lean();
 };
 
 const patchPlan = async (id, data, req) => {
@@ -215,7 +215,7 @@ const patchPlan = async (id, data, req) => {
   await deleteCachePattern('admin:plans*');
   await deleteCachePattern('api:plans*');
 
-  return plan;
+  return await Plan.findById(plan._id).lean();
 };
 
 const deletePlan = async (id, req) => {
