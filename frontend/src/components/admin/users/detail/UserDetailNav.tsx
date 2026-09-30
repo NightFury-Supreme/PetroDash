@@ -9,6 +9,7 @@ import {
   Share2, 
   Database, 
   Activity,
+  ShieldAlert,
   ShieldCheck, 
   Trash2 
 } from "lucide-react";
@@ -22,19 +23,22 @@ export type UserDetailSection =
   | 'plans' 
   | 'referrals' 
   | 'invoices' 
-  | 'activity'
-  | 'security';
+  | 'activity';
 
 export interface UserDetailNavProps {
   section: string;
   onSelectSection: (section: string) => void;
   onOpenDeleteDrawer: () => void;
+  onOpenBanDrawer: () => void;
+  isBanned?: boolean;
 }
 
 export function UserDetailNav({
   section,
   onSelectSection,
   onOpenDeleteDrawer,
+  onOpenBanDrawer,
+  isBanned = false,
 }: UserDetailNavProps) {
   const t = useTranslations('admin.users');
 
@@ -99,10 +103,11 @@ export function UserDetailNav({
           </div>
           <nav className="space-y-1">
             <AdminSideItem
-              icon={ShieldCheck}
-              label={t('tabSecurity')}
-              active={section === 'security'}
-              onClick={() => onSelectSection('security')}
+              icon={isBanned ? ShieldCheck : ShieldAlert}
+              label={isBanned ? t('unbanUser') : t('banUser')}
+              danger={!isBanned}
+              active={false}
+              onClick={onOpenBanDrawer}
             />
             <AdminSideItem
               icon={Trash2}

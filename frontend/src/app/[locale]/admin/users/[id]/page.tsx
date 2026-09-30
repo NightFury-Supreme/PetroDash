@@ -15,7 +15,8 @@ import {
   ReferralsTab,
   InvoicesTab,
   ActivityTab,
-  SecurityTab,
+  BanUserDrawer,
+  UnbanUserDrawer,
 } from "@/components/admin/users";
 import { DeleteDrawer } from "@/components/ui/DeleteDrawer";
 import { useAdminUserDetail } from "@/hooks/admin/users";
@@ -31,6 +32,8 @@ export default function AdminUserPage() {
 
   const [section, setSection] = useState("overview");
   const [isDeleteDrawerOpen, setIsDeleteDrawerOpen] = useState(false);
+  const [isBanDrawerOpen, setIsBanDrawerOpen] = useState(false);
+  const [isUnbanDrawerOpen, setIsUnbanDrawerOpen] = useState(false);
 
   const {
     loading,
@@ -75,6 +78,8 @@ export default function AdminUserPage() {
     deleteUser: deleteUserApi,
   } = useAdminUserDetail(id);
 
+  const activeBan = Boolean(ban?.isBanned) && (!ban.until || new Date(ban.until) > new Date());
+
   const handleConfirmDelete = async () => {
     const result = await deleteUserApi();
     if (result.success) {
@@ -97,6 +102,26 @@ export default function AdminUserPage() {
     }
   };
 
+  const handleConfirmBan = async (banData: { reason: string; durationMinutes?: number }) => {
+    const payload: { isBanned: boolean; reason?: string; durationMinutes?: number; until?: string | null } = {
+      isBanned: true,
+      reason: banData.reason || t('defaultBanReason'),
+      durationMinutes: banData.durationMinutes,
+    };
+    if (banData.durationMinutes) {
+      payload.until = new Date(Date.now() + banData.durationMinutes * 60000).toISOString();
+    }
+    await banUser(payload);
+    await loadUser(referralPage, false);
+    setIsBanDrawerOpen(false);
+  };
+
+  const handleConfirmUnban = async () => {
+    await unbanUser();
+    await loadUser(referralPage, false);
+    setIsUnbanDrawerOpen(false);
+  };
+
   if (loading) {
     return (
       <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen">
@@ -116,7 +141,7 @@ export default function AdminUserPage() {
 
         <UserDetailProfileBanner
           user={userForm}
-          isBanned={ban?.isBanned}
+          isBanned={activeBan}
         />
 
         <div className="flex flex-col lg:flex-row gap-8 items-start">
@@ -124,6 +149,8 @@ export default function AdminUserPage() {
             section={section}
             onSelectSection={setSection}
             onOpenDeleteDrawer={() => setIsDeleteDrawerOpen(true)}
+            onOpenBanDrawer={() => (activeBan ? setIsUnbanDrawerOpen(true) : setIsBanDrawerOpen(true))}
+            isBanned={activeBan}
           />
 
           <div className="flex-1 min-w-0 w-full">
@@ -197,20 +224,29 @@ export default function AdminUserPage() {
                 onRefresh={() => loadActivity(activityPage)}
               />
             </div>
-            <div className={section === 'security' ? 'block' : 'hidden'}>
-              <SecurityTab 
-                ban={ban}
-                userId={id}
-                username={userForm.username || data?.user?.username || ''}
-                userEmail={userForm.email || data?.user?.email || ''}
-                onBanUser={banUser}
-                onUnbanUser={unbanUser}
-                onRefresh={() => loadUser(referralPage, false)}
-              />
-            </div>
           </div>
         </div>
       </div>
+
+      <BanUserDrawer
+        isOpen={isBanDrawerOpen}
+        onClose={() => setIsBanDrawerOpen(false)}
+        onConfirm={handleConfirmBan}
+        username={userForm.username || data?.user?.username || ''}
+        userId={id}
+        userEmail={userForm.email || data?.user?.email || ''}
+      />
+
+      <UnbanUserDrawer
+        isOpen={isUnbanDrawerOpen}
+        onClose={() => setIsUnbanDrawerOpen(false)}
+        onConfirm={handleConfirmUnban}
+        username={userForm.username || data?.user?.username || ''}
+        userId={id}
+        userEmail={userForm.email || data?.user?.email || ''}
+        banReason={ban?.reason}
+        banUntil={ban?.until}
+      />
 
       <DeleteDrawer
         isOpen={isDeleteDrawerOpen}
