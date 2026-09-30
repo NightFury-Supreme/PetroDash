@@ -57,14 +57,17 @@ class ActivityService {
           log.meta?.adminSessionId
         );
 
-        const meta = { ...(log.meta || log.metadata || {}) };
-        delete meta.adminSessionId;
-        delete meta.adminIp;
-        delete meta.adminUserAgent;
+        const {
+          adminSessionId: _adminSessionId,
+          adminIp: _adminIp,
+          adminUserAgent: _adminUserAgent,
+          ...restMeta
+        } = log.meta || log.metadata || {};
 
         if (isPerformedByAdmin) {
-          delete meta.sessionId;
+          delete restMeta.sessionId;
         }
+        const meta = restMeta;
 
         let resolvedIp = isPerformedByAdmin ? null : (log.ip && log.ip !== 'unknown' && log.ip !== '::1' ? log.ip : (meta.ip || log.ip));
         if (typeof resolvedIp === 'string') {

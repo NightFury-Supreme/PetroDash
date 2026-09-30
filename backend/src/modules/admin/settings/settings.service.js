@@ -192,18 +192,7 @@ async function updateSettings(parsedData) {
     }
   }
 
-  const response = settings.toObject();
-  const updatedEmailSettings = await Email.getOrCreate();
-  response.payments = response.payments || {};
-  response.payments.smtp = updatedEmailSettings.smtp || {};
-
-  delete response.__v;
-  
-  if (response.auth?.discord?.clientSecret) response.auth.discord.clientSecret = '***';
-  if (response.auth?.discord?.botToken) response.auth.discord.botToken = '***';
-  if (response.auth?.google?.clientSecret) response.auth.google.clientSecret = '***';
-  if (response.payments?.paypal?.clientSecret) response.payments.paypal.clientSecret = '***';
-  if (response.payments?.smtp?.pass) response.payments.smtp.pass = '***';
+  const response = await getSettings();
   
   const changes = {};
   const sensitiveKeys = ['clientSecret', 'botToken', 'pass', 'webhookId', 'apiKey'];

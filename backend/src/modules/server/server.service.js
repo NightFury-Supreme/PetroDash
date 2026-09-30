@@ -33,11 +33,9 @@ class ServerService {
       }}
     ]);
 
-    const usage = result[0] || {
+    const { _id, ...usage } = result[0] || {
       diskMb: 0, memoryMb: 0, cpuPercent: 0, backups: 0, databases: 0, allocations: 0, servers: 0
     };
-
-    delete usage._id;
 
     await setCache(cacheKey, usage, 60);
     return usage;
@@ -200,19 +198,18 @@ class ServerService {
       }
     }
 
+    const { eggId, locationId, ...serverData } = server;
+
     const responsePayload = {
-      ...server,
+      ...serverData,
       unreachable,
       suspended,
       error: errorMessage,
-      eggName: server.eggId?.name,
-      eggIcon: server.eggId?.icon,
-      location: server.locationId?.name,
-      locationFlag: server.locationId?.flag
+      eggName: eggId?.name,
+      eggIcon: eggId?.icon,
+      location: locationId?.name,
+      locationFlag: locationId?.flag
     };
-
-    delete responsePayload.eggId;
-    delete responsePayload.locationId;
 
     return responsePayload;
   }
