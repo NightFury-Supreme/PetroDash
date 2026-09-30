@@ -7,6 +7,22 @@
 
 import React, { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { usePathname } from '@/i18n/routing';
+
+const SHELL_PAGES = [
+  '/dashboard',
+  '/panel',
+  '/shop',
+  '/gift',
+  '/create',
+  '/admin',
+  '/server',
+  '/referrals',
+  '/tickets',
+  '/profile',
+  '/earn'
+];
+
 import { ErrorState } from './ErrorState';
 import { ErrorHeader } from './ErrorHeader';
 import { GoBackButton } from './ErrorButtons';
@@ -14,6 +30,8 @@ import type { ErrorBoundaryViewProps } from './Error.types';
 
 export function ErrorBoundaryView({ error, reset }: ErrorBoundaryViewProps) {
   const t = useTranslations('ErrorState');
+  const pathname = usePathname();
+  const usesShell = pathname ? SHELL_PAGES.some(page => pathname.startsWith(page)) : false;
 
   useEffect(() => {
     // Log unexpected runtime errors for observability and monitoring
@@ -28,8 +46,9 @@ export function ErrorBoundaryView({ error, reset }: ErrorBoundaryViewProps) {
 
   return (
     <ErrorState
-      fullScreen={true}
-      header={<ErrorHeader />}
+      fullScreen={!usesShell}
+      header={usesShell ? <React.Fragment /> : <ErrorHeader />}
+      showFooter={!usesShell}
       icon={
         <svg
           viewBox="0 0 24 24"

@@ -73,11 +73,11 @@ export function useAdminUserDetail(id: string) {
     try {
       const token = getAuthToken();
       if (!token) return;
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans?limit=1000`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const d = await r.json();
-      if (r.ok) setAllPlans(d || []);
+      if (r.ok) setAllPlans(d.plans || d || []);
     } catch {}
   }, []);
 
