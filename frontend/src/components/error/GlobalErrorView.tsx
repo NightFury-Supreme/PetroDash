@@ -13,45 +13,39 @@ const DICTIONARY: Record<
   string,
   { title: string; defaultMsg: string; reload: string }
 > = {
-  en: {
-    title: 'Application Error',
-    defaultMsg:
-      'We encountered a critical unexpected issue while loading this page. Please reload the application.',
-    reload: 'Reload Application',
+  "en": {
+    "title": "Application Error",
+    "defaultMsg": "We encountered a critical unexpected issue while loading this page. Please reload the application.",
+    "reload": "Reload Application"
   },
-  hi: {
-    title: 'एप्लिकेशन त्रुटि',
-    defaultMsg:
-      'इस पृष्ठ को लोड करते समय हमें एक अप्रत्याशित समस्या का सामना करना पड़ा। कृपया एप्लिकेशन पुनः लोड करें।',
-    reload: 'एप्लिकेशन पुनः लोड करें',
+  "hi": {
+    "title": "एप्लिकेशन त्रुटि",
+    "defaultMsg": "इस पृष्ठ को लोड करते समय हमें एक अप्रत्याशित समस्या का सामना करना पड़ा। कृपया पुनः प्रयास करें या डैशबोर्ड पर वापस जाएं।",
+    "reload": "पुनः प्रयास करें"
   },
-  es: {
-    title: 'Error de Aplicación',
-    defaultMsg:
-      'Encontramos un problema inesperado crítico al cargar esta página. Por favor recarga la aplicación.',
-    reload: 'Recargar Aplicación',
+  "es": {
+    "title": "Error de aplicación",
+    "defaultMsg": "Encontramos un problema inesperado crítico al cargar esta página. Por favor recarga la aplicación.",
+    "reload": "Recargar aplicación"
   },
-  fr: {
-    title: "Erreur d'Application",
-    defaultMsg:
-      'Nous avons rencontré un problème critique inattendu lors du chargement de cette page. Veuillez recharger l’application.',
-    reload: "Recharger l'Application",
+  "fr": {
+    "title": "Erreur d'application",
+    "defaultMsg": "Nous avons rencontré un problème critique inattendu lors du chargement de cette page. Veuillez recharger l'application.",
+    "reload": "Recharger l'application"
   },
-  de: {
-    title: 'Anwendungsfehler',
-    defaultMsg:
-      'Beim Laden dieser Seite ist ein kritisches unerwartetes Problem aufgetreten. Bitte laden Sie die Anwendung neu.',
-    reload: 'Anwendung neu laden',
+  "de": {
+    "title": "Anwendungsfehler",
+    "defaultMsg": "Beim Laden dieser Seite ist ein kritisches unerwartetes Problem aufgetreten. Bitte laden Sie die Anwendung neu.",
+    "reload": "Anwendung neu laden"
   },
-  ar: {
-    title: 'خطأ في التطبيق',
-    defaultMsg:
-      'واجهنا مشكلة غير متوقعة أثناء تحميل هذه الصفحة. يرجى إعادة تحميل التطبيق.',
-    reload: 'إعادة تحميل التطبيق',
-  },
+  "ar": {
+    "title": "خطأ في التطبيق",
+    "defaultMsg": "واجهنا مشكلة غير متوقعة أثناء تحميل هذه الصفحة. يرجى المحاولة مرة أخرى أو العودة إلى لوحة التحكم.",
+    "reload": "حاول مرة أخرى"
+  }
 };
 
-export function GlobalErrorView({ error }: GlobalErrorViewProps) {
+export function GlobalErrorView({ error, reset }: GlobalErrorViewProps) {
   useEffect(() => {
     console.error('Unhandled root layout error:', error);
   }, [error]);
@@ -118,7 +112,10 @@ export function GlobalErrorView({ error }: GlobalErrorViewProps) {
             <div className="mt-[29px] flex justify-center gap-3">
               <button
                 type="button"
-                onClick={() => window.location.reload()}
+                onClick={() => {
+                  if (reset) reset();
+                  else window.location.reload();
+                }}
                 className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
               >
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="w-[14px] h-[14px]">
@@ -146,7 +143,7 @@ export function GlobalErrorView({ error }: GlobalErrorViewProps) {
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="hover:text-white transition-colors">All Systems Operational</span>
               </div>
-              <span className="text-[#333]">•</span>
+              <span className="text-[#333]"> </span>
               <span>
                 Powered by{' '}
                 <a

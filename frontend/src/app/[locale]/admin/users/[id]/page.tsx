@@ -50,6 +50,12 @@ export default function AdminUserPage() {
     invoiceTotalPages,
     invoiceTotal,
     invoicesLoading,
+    activityLogs,
+    activityLoading,
+    activityPage,
+    activityTotalPages,
+    activityTotalLogs,
+    loadActivity,
     referralPage,
     setReferralPage,
     REFERRAL_PAGE_SIZE,
@@ -83,7 +89,7 @@ export default function AdminUserPage() {
     const result = await saveReferralCode(newCode);
     if (result.success) {
       showSuccess(t('referralCodeUpdated'));
-      await loadUser(referralPage);
+      await loadUser(referralPage, false);
       return true;
     } else {
       showError(tErrorBackend.has(result.error) ? tErrorBackend(result.error) : result.error);
@@ -121,7 +127,7 @@ export default function AdminUserPage() {
           />
 
           <div className="flex-1 min-w-0 w-full">
-            {section === 'overview' && (
+            <div className={section === 'overview' ? 'block' : 'hidden'}>
               <OverviewTab 
                 userForm={userForm}
                 setUserForm={setUserForm}
@@ -129,27 +135,27 @@ export default function AdminUserPage() {
                 onUpdateUser={updateUser}
                 onUpdateRole={updateRole}
                 onCheckUsername={checkUsername}
-                onRefresh={() => loadUser(referralPage)}
+                onRefresh={() => loadUser(referralPage, false)}
               />
-            )}
-            {section === 'resources' && (
+            </div>
+            <div className={section === 'resources' ? 'block' : 'hidden'}>
               <ResourcesTab 
                 resources={resources}
                 setResources={setResources}
                 onUpdateResources={updateResources}
                 userId={id}
-                onRefresh={() => loadUser(referralPage)}
+                onRefresh={() => loadUser(referralPage, false)}
               />
-            )}
-            {section === 'servers' && (
+            </div>
+            <div className={section === 'servers' ? 'block' : 'hidden'}>
               <ServersTab
                 user={userForm}
                 servers={data?.servers || []}
                 onDeleteServer={deleteServer}
-                onRefresh={() => loadUser(referralPage)}
+                onRefresh={() => loadUser(referralPage, false)}
               />
-            )}
-            {section === 'plans' && (
+            </div>
+            <div className={section === 'plans' ? 'block' : 'hidden'}>
               <PlansTab 
                 plans={plans}
                 allPlans={allPlans}
@@ -157,19 +163,19 @@ export default function AdminUserPage() {
                 onAddPlan={addPlan}
                 onRemovePlan={removePlan}
                 onRemovePlanInstance={removePlanInstance}
-                onRefresh={() => loadUser(referralPage)}
+                onRefresh={() => loadUser(referralPage, false)}
               />
-            )}
-            {section === 'referrals' && (
+            </div>
+            <div className={section === 'referrals' ? 'block' : 'hidden'}>
               <ReferralsTab 
                 referral={referral}
                 onSaveCode={handleSaveReferralCode}
                 referralPage={referralPage}
-                setReferralPage={(p: number) => { setReferralPage(p); loadUser(p); }}
+                setReferralPage={(p: number) => { setReferralPage(p); loadUser(p, false); }}
                 REFERRAL_PAGE_SIZE={REFERRAL_PAGE_SIZE}
               />
-            )}
-            {section === 'invoices' && (
+            </div>
+            <div className={section === 'invoices' ? 'block' : 'hidden'}>
               <InvoicesTab 
                 invoices={invoices}
                 invoicePage={invoicePage}
@@ -178,11 +184,20 @@ export default function AdminUserPage() {
                 setInvoicePage={(p: number) => { setInvoicePage(p); loadInvoices(p); }}
                 loading={invoicesLoading}
               />
-            )}
-            {section === 'activity' && (
-              <ActivityTab userId={id} />
-            )}
-            {section === 'security' && (
+            </div>
+            <div className={section === 'activity' ? 'block' : 'hidden'}>
+              <ActivityTab
+                userId={id}
+                logs={activityLogs}
+                loading={activityLoading}
+                page={activityPage}
+                totalPages={activityTotalPages}
+                totalLogs={activityTotalLogs}
+                onPageChange={(p: number) => loadActivity(p)}
+                onRefresh={() => loadActivity(activityPage)}
+              />
+            </div>
+            <div className={section === 'security' ? 'block' : 'hidden'}>
               <SecurityTab 
                 ban={ban}
                 userId={id}
@@ -190,9 +205,9 @@ export default function AdminUserPage() {
                 userEmail={userForm.email || data?.user?.email || ''}
                 onBanUser={banUser}
                 onUnbanUser={unbanUser}
-                onRefresh={() => loadUser(referralPage)}
+                onRefresh={() => loadUser(referralPage, false)}
               />
-            )}
+            </div>
           </div>
         </div>
       </div>

@@ -10,14 +10,32 @@ import { useTranslations } from 'next-intl';
 import { ErrorState } from './ErrorState';
 import { ErrorHeader } from './ErrorHeader';
 import { DashboardButton, GoBackButton } from './ErrorButtons';
+import { usePathname } from '@/i18n/routing';
+
+const SHELL_PAGES = [
+  '/dashboard',
+  '/panel',
+  '/shop',
+  '/gift',
+  '/create',
+  '/admin',
+  '/server',
+  '/referrals',
+  '/tickets',
+  '/profile',
+  '/earn'
+];
 
 export function NotFoundView() {
   const t = useTranslations('ErrorState');
+  const pathname = usePathname();
+  const usesShell = pathname ? SHELL_PAGES.some(page => pathname.startsWith(page)) : false;
 
   return (
     <ErrorState
-      fullScreen={true}
-      header={<ErrorHeader />}
+      fullScreen={!usesShell}
+      header={usesShell ? <React.Fragment /> : <ErrorHeader />}
+      showFooter={!usesShell}
       icon={
         <svg
           viewBox="0 0 24 24"

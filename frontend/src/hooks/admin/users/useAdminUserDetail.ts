@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchWithRetry } from '@/utils/fetchWithRetry';
 import { adminUsersApi } from '@/utils/api/adminUsers';
 
@@ -20,19 +20,29 @@ export function useAdminUserDetail(id: string) {
   const [invoiceTotal, setInvoiceTotal] = useState(0);
   const [invoicesLoading, setInvoicesLoading] = useState(false);
 
+  const [activityLogs, setActivityLogs] = useState<any[]>([]);
+  const [activityLoading, setActivityLoading] = useState(false);
+  const [activityPage, setActivityPage] = useState(1);
+  const [activityTotalPages, setActivityTotalPages] = useState(1);
+  const [activityTotalLogs, setActivityTotalLogs] = useState(0);
+
   const [referralPage, setReferralPage] = useState(1);
   const REFERRAL_PAGE_SIZE = 5;
+
+  const initialLoadedRef = useRef(false);
 
   const getAuthToken = (): string => {
     if (typeof window === 'undefined') return '';
     return localStorage.getItem('auth_token') || '';
   };
 
-  const loadUser = useCallback(async (refPage = 1) => {
+  const loadUser = useCallback(async (refPage = 1, forceInitial = false) => {
     const token = getAuthToken();
     if (!token) return;
     try {
-      setLoading(true);
+      if (!initialLoadedRef.current || forceInitial) {
+        setLoading(true);
+      }
       const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/users/${id}`);
       url.searchParams.set('referralPage', refPage.toString());
       url.searchParams.set('referralPageSize', REFERRAL_PAGE_SIZE.toString());
@@ -42,7 +52,7 @@ export function useAdminUserDetail(id: string) {
         throw new Error(d.error || d.code || 'ERR_LOAD_USER_FAILED');
       }
       setData(d);
-      setUserForm({ ...d.user });
+      setUserForm(d.user || {});
       setResources(d.user?.resources || {});
       setPlans(d.plans || []);
       const refData = d.referral || {
@@ -62,8 +72,9 @@ export function useAdminUserDetail(id: string) {
       }
       setReferral(refData);
       setBan(d.user?.ban || d.ban || { isBanned: false, reason: '', until: null });
+      initialLoadedRef.current = true;
     } catch {
-      // Load error caught
+      // Handled silently
     } finally {
       setLoading(false);
     }
@@ -96,18 +107,41 @@ export function useAdminUserDetail(id: string) {
         setInvoices(d.payments || []);
         setInvoiceTotalPages(d.totalPages || 1);
         setInvoiceTotal(d.total || 0);
+        setInvoicePage(page);
       }
     } catch {} finally {
       setInvoicesLoading(false);
     }
   }, [id]);
 
+  const loadActivity = useCallback(async (page: number = 1) => {
+    const token = getAuthToken();
+    if (!token || !id) return;
+    try {
+      setActivityLoading(true);
+      const { res, data: resData } = await adminUsersApi.getUserActivity(id, page, 10, token);
+      if (res.ok && resData?.success) {
+        setActivityLogs(resData.data || []);
+        setActivityTotalLogs(resData.pagination?.total || 0);
+        setActivityTotalPages(resData.pagination?.pages || 1);
+        setActivityPage(page);
+      }
+    } catch {
+      // Handled gracefully
+    } finally {
+      setActivityLoading(false);
+    }
+  }, [id]);
+
   useEffect(() => {
     if (!id) return;
-    loadUser(1);
-    loadPlans();
-    loadInvoices(1);
-  }, [id, loadUser, loadPlans, loadInvoices]);
+    Promise.all([
+      loadUser(1, true),
+      loadPlans(),
+      loadInvoices(1),
+      loadActivity(1),
+    ]);
+  }, [id, loadUser, loadPlans, loadInvoices, loadActivity]);
 
   const updateUser = async (payload: Record<string, any>) => {
     const token = getAuthToken();
@@ -135,6 +169,7 @@ export function useAdminUserDetail(id: string) {
     const { res, data: resData } = await adminUsersApi.updateUser(id, { resources: newResources }, token);
     if (!res.ok) throw new Error(resData?.error || resData?.code || 'ERR_UPDATE_RESOURCES_FAILED');
     setResources(newResources);
+    await loadUser(referralPage, false);
     return resData;
   };
 
@@ -150,7 +185,10 @@ export function useAdminUserDetail(id: string) {
       const d = await r.json().catch(() => ({}));
       throw new Error(d.error || d.code || 'ERR_BAN_USER_FAILED');
     }
-    await loadUser(referralPage);
+    await Promise.all([
+      loadUser(referralPage, false),
+      loadActivity(activityPage),
+    ]);
   };
 
   const unbanUser = async () => {
@@ -160,14 +198,17 @@ export function useAdminUserDetail(id: string) {
       const d = await r.json().catch(() => ({}));
       throw new Error(d.error || d.code || 'ERR_UNBAN_USER_FAILED');
     }
-    await loadUser(referralPage);
+    await Promise.all([
+      loadUser(referralPage, false),
+      loadActivity(activityPage),
+    ]);
   };
 
   const addPlan = async (planId: string, months = 1) => {
     const token = getAuthToken();
     const { res, data: resData } = await adminUsersApi.addPlan(id, { planId, months }, token);
     if (!res.ok) throw new Error(resData?.error || resData?.code || 'ERR_ADD_PLAN_FAILED');
-    await loadUser(referralPage);
+    await loadUser(referralPage, false);
     return resData;
   };
 
@@ -175,21 +216,21 @@ export function useAdminUserDetail(id: string) {
     const token = getAuthToken();
     const r = await adminUsersApi.removePlan(id, planId, token);
     if (!r.ok) throw new Error('ERR_REMOVE_PLAN_FAILED');
-    await loadUser(referralPage);
+    await loadUser(referralPage, false);
   };
 
   const removePlanInstance = async (instanceId: string) => {
     const token = getAuthToken();
     const r = await adminUsersApi.removePlanInstance(id, instanceId, token);
     if (!r.ok) throw new Error('ERR_REMOVE_PLAN_INSTANCE_FAILED');
-    await loadUser(referralPage);
+    await loadUser(referralPage, false);
   };
 
   const deleteServer = async (serverId: string) => {
     const token = getAuthToken();
     const { res, data: resData } = await adminUsersApi.deleteServer(serverId, token);
     if (!res.ok) throw new Error(resData?.error || resData?.code || 'ERR_DELETE_SERVER_FAILED');
-    await loadUser(referralPage);
+    await loadUser(referralPage, false);
   };
 
   const saveReferralCode = async (newCode: string) => {
@@ -201,7 +242,7 @@ export function useAdminUserDetail(id: string) {
       const updatedCode = d?.user?.referralCode || newCode;
       setReferral((prev: any) => ({ ...(prev || {}), code: updatedCode }));
       setUserForm((prev: any) => ({ ...(prev || {}), referralCode: updatedCode }));
-      await loadUser(referralPage);
+      await loadUser(referralPage, false);
       return { success: true };
     } catch (e: any) {
       return { success: false, error: e.message || 'ERR_SAVE_REFERRAL_CODE_FAILED' };
@@ -239,6 +280,13 @@ export function useAdminUserDetail(id: string) {
     invoiceTotalPages,
     invoiceTotal,
     invoicesLoading,
+    activityLogs,
+    activityLoading,
+    activityPage,
+    setActivityPage,
+    activityTotalPages,
+    activityTotalLogs,
+    loadActivity,
     referralPage,
     setReferralPage,
     REFERRAL_PAGE_SIZE,
@@ -255,6 +303,6 @@ export function useAdminUserDetail(id: string) {
     removePlanInstance,
     deleteServer,
     saveReferralCode,
-    deleteUser
+    deleteUser,
   };
 }
