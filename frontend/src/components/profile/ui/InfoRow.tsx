@@ -100,15 +100,21 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
         </div>
         <div>
           {editing ? (
-            <>
-              {customEdit ? customEdit : (
-                <input
+              <div
+                className="w-full"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !isLoading) { e.preventDefault(); handleSave(); }
+                  if (e.key === 'Escape' && !isLoading) { e.preventDefault(); onCancel?.(); }
+                }}
+              >
+                {customEdit ? customEdit : (
+                  <input
                   autoFocus
                   value={draft}
                   onChange={(e) => { onDraft(e.target.value); setTouched(true); }}
                   onBlur={() => setTouched(true)}
                   disabled={isLoading}
-                  onKeyDown={(e) => { if (e.key === 'Enter' && !isLoading) handleSave(); if (e.key === 'Escape' && !isLoading) onCancel(); }}
+                  
                   className={`h-9 w-full rounded-lg border bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 transition-all disabled:opacity-50 ${
                     touched && validation && !validation.valid
                       ? 'border-red-400/30 focus:ring-red-400/20'
@@ -123,9 +129,9 @@ export function InfoRow({ icon, label, description, value, editing, draft, field
                     : validation.valid ? <Check size={11} /> : <AlertCircle size={11} />
                   }
                   <span>{validation.message}</span>
-                </div>
-              )}
-            </>
+                  </div>
+                )}
+              </div>
           ) : (
             <div className="flex min-w-0 items-center md:justify-end gap-2 h-9 text-sm text-[#D4D4D4]">
               <span className="truncate text-sm text-[#D4D4D4]">{value}</span>

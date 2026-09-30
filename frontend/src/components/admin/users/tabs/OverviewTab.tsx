@@ -130,10 +130,7 @@ export function OverviewTab({
                 autoFocus
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") saveEdit();
-                  if (e.key === "Escape") cancelEdit();
-                }}
+                
                 placeholder={t('placeholderAvatarUrl')}
                 className={customInputCls}
               />
@@ -156,10 +153,7 @@ export function OverviewTab({
                 autoFocus
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") saveEdit();
-                  if (e.key === "Escape") cancelEdit();
-                }}
+                
                 className={customInputCls}
               />
             }
@@ -181,20 +175,14 @@ export function OverviewTab({
                   autoFocus
                   value={draft?.first || ''}
                   onChange={(e) => setDraft({ ...draft, first: e.target.value })}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") saveEdit();
-                    if (e.key === "Escape") cancelEdit();
-                  }}
+                  
                   placeholder={t('firstName')}
                   className={customInputCls}
                 />
                 <input
                   value={draft?.last || ''}
                   onChange={(e) => setDraft({ ...draft, last: e.target.value })}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") saveEdit();
-                    if (e.key === "Escape") cancelEdit();
-                  }}
+                  
                   placeholder={t('lastName')}
                   className={customInputCls}
                 />
@@ -222,10 +210,7 @@ export function OverviewTab({
                 autoFocus
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") saveEdit();
-                  if (e.key === "Escape") cancelEdit();
-                }}
+                
                 className={customInputCls}
               />
             }
@@ -262,10 +247,7 @@ export function OverviewTab({
                 autoFocus
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") saveEdit();
-                  if (e.key === "Escape") cancelEdit();
-                }}
+                
                 className={customInputCls}
               />
             }

@@ -86,9 +86,7 @@ export function ReferralsTab({
               <input
                 value={codeDraft}
                 onChange={(e) => setCodeDraft(e.target.value.toUpperCase().replace(/[^A-Z0-9-_]/g, ''))}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleSave();
-                }}
+                
                 maxLength={20}
                 minLength={3}
                 autoFocus

@@ -88,8 +88,8 @@ export function Overview({
             draft={draft}
             customEdit={
               <div className="flex w-full gap-2">
-                <input autoFocus value={draft?.first || ''} onChange={(e) => onDraft({ ...draft, first: e.target.value })} onKeyDown={(e) => { if (e.key === "Enter") onSave(); if (e.key === "Escape") onCancel(); }} placeholder={t('firstName')} className="h-9 w-full rounded-lg border border-[#FF5722]/50 bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 focus:ring-[#FF5722]/50 transition-all" />
-                <input value={draft?.last || ''} onChange={(e) => onDraft({ ...draft, last: e.target.value })} onKeyDown={(e) => { if (e.key === "Enter") onSave(); if (e.key === "Escape") onCancel(); }} placeholder={t('lastName')} className="h-9 w-full rounded-lg border border-[#FF5722]/50 bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 focus:ring-[#FF5722]/50 transition-all" />
+                <input autoFocus value={draft?.first || ''} onChange={(e) => onDraft({ ...draft, first: e.target.value })}  placeholder={t('firstName')} className="h-9 w-full rounded-lg border border-[#FF5722]/50 bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 focus:ring-[#FF5722]/50 transition-all" />
+                <input value={draft?.last || ''} onChange={(e) => onDraft({ ...draft, last: e.target.value })}  placeholder={t('lastName')} className="h-9 w-full rounded-lg border border-[#FF5722]/50 bg-[#101010] px-3 text-sm text-[#D4D4D4] outline-none focus:ring-1 focus:ring-[#FF5722]/50 transition-all" />
               </div>
             }
             onEdit={() => onEdit("name")} 

@@ -78,10 +78,7 @@ export function ResourcesTab({
                 autoFocus
                 value={draft ?? ''}
                 onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") saveEdit();
-                  if (e.key === "Escape") cancelEdit();
-                }}
+                
                 className={customInputCls}
               />
             }
@@ -103,10 +100,7 @@ export function ResourcesTab({
                 autoFocus
                 value={draft ?? ''}
                 onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") saveEdit();
-                  if (e.key === "Escape") cancelEdit();
-                }}
+                
                 className={customInputCls}
               />
             }
@@ -128,10 +122,7 @@ export function ResourcesTab({
                 autoFocus
                 value={draft ?? ''}
                 onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") saveEdit();
-                  if (e.key === "Escape") cancelEdit();
-                }}
+                
                 className={customInputCls}
               />
             }
@@ -153,10 +144,7 @@ export function ResourcesTab({
                 autoFocus
                 value={draft ?? ''}
                 onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") saveEdit();
-                  if (e.key === "Escape") cancelEdit();
-                }}
+                
                 className={customInputCls}
               />
             }
@@ -178,10 +166,7 @@ export function ResourcesTab({
                 autoFocus
                 value={draft ?? ''}
                 onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") saveEdit();
-                  if (e.key === "Escape") cancelEdit();
-                }}
+                
                 className={customInputCls}
               />
             }
@@ -203,10 +188,7 @@ export function ResourcesTab({
                 autoFocus
                 value={draft ?? ''}
                 onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") saveEdit();
-                  if (e.key === "Escape") cancelEdit();
-                }}
+                
                 className={customInputCls}
               />
             }
@@ -228,10 +210,7 @@ export function ResourcesTab({
                 autoFocus
                 value={draft ?? ''}
                 onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") saveEdit();
-                  if (e.key === "Escape") cancelEdit();
-                }}
+                
                 className={customInputCls}
               />
             }

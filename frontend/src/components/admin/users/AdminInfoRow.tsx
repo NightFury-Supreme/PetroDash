@@ -156,11 +156,17 @@ export function InfoRow({
         </div>
         <div>
           {editing ? (
-            <>
-              {customEdit ? (
-                customEdit
-              ) : (
-                <input
+              <div
+                className="w-full"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !isLoading) { e.preventDefault(); handleSave(); }
+                  if (e.key === 'Escape' && !isLoading) { e.preventDefault(); onCancel?.(); }
+                }}
+              >
+                {customEdit ? (
+                  customEdit
+                ) : (
+                  <input
                   autoFocus
                   value={draft}
                   onChange={(e) => {
@@ -194,9 +200,9 @@ export function InfoRow({
                     <AlertCircle size={11} />
                   )}
                   <span>{validation.message}</span>
-                </div>
-              )}
-            </>
+                  </div>
+                )}
+              </div>
           ) : (
             <div className="flex h-9 min-w-0 items-center md:justify-end gap-2 text-sm text-[#D4D4D4]">
               {React.isValidElement(value) ? value : <span className="truncate text-sm text-[#D4D4D4]">{value}</span>}
