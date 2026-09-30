@@ -45,7 +45,22 @@ export function useAdminUserDetail(id: string) {
       setUserForm({ ...d.user });
       setResources(d.user?.resources || {});
       setPlans(d.plans || []);
-      setReferral(d.referral || {});
+      const refData = d.referral || {
+        code: d.user?.referralCode || '',
+        coinsEarned: d.user?.referralStats?.coinsEarned || 0,
+        referredCount: d.referrals?.total || d.user?.referralStats?.referredCount || 0,
+        referredUsers: d.referrals?.items || [],
+        meta: {
+          total: d.referrals?.total || 0,
+          page: d.referrals?.page || 1,
+          pageSize: d.referrals?.pageSize || REFERRAL_PAGE_SIZE,
+          totalPages: d.referrals?.totalPages || 1,
+        },
+      };
+      if (!refData.code && d.user?.referralCode) {
+        refData.code = d.user.referralCode;
+      }
+      setReferral(refData);
       setBan(d.user?.ban || d.ban || { isBanned: false, reason: '', until: null });
     } catch {
       // Load error caught
@@ -183,6 +198,9 @@ export function useAdminUserDetail(id: string) {
       const token = getAuthToken();
       const { res: r, data: d } = await adminUsersApi.updateReferralCode(id, newCode, token);
       if (!r.ok) throw new Error(d?.error || d?.code || 'ERR_SAVE_REFERRAL_CODE_FAILED');
+      const updatedCode = d?.user?.referralCode || newCode;
+      setReferral((prev: any) => ({ ...(prev || {}), code: updatedCode }));
+      setUserForm((prev: any) => ({ ...(prev || {}), referralCode: updatedCode }));
       await loadUser(referralPage);
       return { success: true };
     } catch (e: any) {

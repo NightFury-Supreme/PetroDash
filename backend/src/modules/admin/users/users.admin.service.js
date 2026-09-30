@@ -181,6 +181,18 @@ const getUser = async (id, query = {}) => {
     servers,
     usage,
     plans,
+    referral: {
+      code: user.referralCode || null,
+      coinsEarned: referralStats.coinsEarned || 0,
+      referredCount: totalReferred,
+      referredUsers,
+      meta: {
+        total: totalReferred,
+        page: referralPage,
+        pageSize: referralPageSize,
+        totalPages: Math.ceil(totalReferred / referralPageSize),
+      },
+    },
     referrals: {
       items: referredUsers,
       total: totalReferred,

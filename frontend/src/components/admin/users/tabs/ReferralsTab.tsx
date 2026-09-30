@@ -7,7 +7,7 @@ import { useTranslations, useLocale } from "next-intl";
 
 interface ReferralsTabProps {
   referral: any;
-  onSaveCode: (code: string) => void;
+  onSaveCode: (code: string) => Promise<any> | any;
   referralPage: number;
   setReferralPage: (page: number) => void;
   REFERRAL_PAGE_SIZE: number;
@@ -32,11 +32,13 @@ export function ReferralsTab({
     setCodeDraft(referral?.code || '');
   }, [referral?.code]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const normalized = codeDraft.trim().toUpperCase().replace(/[^A-Z0-9-_]/g, '');
-    if (!normalized) return;
-    onSaveCode(normalized);
+    if (!normalized) return false;
+    await onSaveCode(normalized);
+    setCodeDraft(normalized);
     setEditingCode(false);
+    return true;
   };
 
   return (
@@ -78,10 +80,7 @@ export function ReferralsTab({
               setEditingCode(false);
               setCodeDraft(referral?.code || '');
             }}
-            onSave={async () => {
-              handleSave();
-              return true;
-            }}
+            onSave={handleSave}
             customEdit={
               <input
                 value={codeDraft}

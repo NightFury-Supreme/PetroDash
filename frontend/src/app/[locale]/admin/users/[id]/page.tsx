@@ -83,9 +83,11 @@ export default function AdminUserPage() {
     const result = await saveReferralCode(newCode);
     if (result.success) {
       showSuccess(t('referralCodeUpdated'));
-      loadUser(referralPage);
+      await loadUser(referralPage);
+      return true;
     } else {
       showError(tErrorBackend.has(result.error) ? tErrorBackend(result.error) : result.error);
+      return false;
     }
   };
 
