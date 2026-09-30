@@ -4,7 +4,7 @@ import { Download, Loader2 } from "lucide-react";
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import { Pagination } from '@/components/Pagination';
-import { StatusIndicator } from '@/components/ui/StatusIndicator';
+import { PaymentStatus } from '@/components/ui/PaymentStatus';
 import { useInvoices, PaymentItem } from '@/hooks/profile';
 
 export function InvoicesTab({ currency = "USD" }: { currency?: string }) {
@@ -152,7 +152,7 @@ function PaymentRow({
       </div>
       <div className="min-w-0">
         <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{t('status')}</p>
-        <PaymentStatus status={payment.status} t={t} />
+        <PaymentStatus status={payment.status} />
       </div>
       <div className="min-w-0 md:text-right">
         {isPaid ? (
@@ -171,24 +171,4 @@ function PaymentRow({
       </div>
     </div>
   );
-}
-
-function PaymentStatus({ status, t }: { status: string; t?: any }) {
-  const normStatus = String(status || "").toUpperCase();
-  const label = t ? t(`status${normStatus.charAt(0) + normStatus.slice(1).toLowerCase()}`) : normStatus;
-  
-  let statusKey = 'neutral';
-  if (normStatus === "COMPLETED" || normStatus === "PAID") {
-    statusKey = 'completed';
-  } else if (normStatus === "FAILED") {
-    statusKey = 'failed';
-  } else if (normStatus === "REFUNDED") {
-    statusKey = 'refunded';
-  } else if (normStatus === "VOIDED") {
-    statusKey = 'voided';
-  } else if (normStatus === "CREATED" || normStatus === "PENDING") {
-    statusKey = 'pending';
-  }
-
-  return <StatusIndicator status={statusKey} label={label} />;
 }

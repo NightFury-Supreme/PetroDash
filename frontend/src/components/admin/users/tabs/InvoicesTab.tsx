@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useToast } from "@/components/ui/ToastProvider";
 import { Download, Loader2 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
-import { StatusIndicator } from "@/components/ui/StatusIndicator";
+import { PaymentStatus } from "@/components/ui/PaymentStatus";
 import { Pagination } from "@/components/Pagination";
 
 interface InvoicesTabProps {
@@ -131,7 +131,7 @@ export function InvoicesTab({
                   </div>
                   <div className="min-w-0">
                     <p className="mb-1 text-[9px] uppercase tracking-wider text-white/15 md:hidden">{t('status')}</p>
-                    <PaymentStatus status={inv.status} t={t} />
+                    <PaymentStatus status={inv.status} />
                   </div>
                   <div className="min-w-0 md:text-right">
                     {isPaid ? (
@@ -171,25 +171,5 @@ export function InvoicesTab({
       </section>
     </div>
   );
-}
-
-function PaymentStatus({ status, t }: { status: string; t?: any }) {
-  const normStatus = String(status || "").toUpperCase();
-  const label = t ? t(`status${normStatus.charAt(0) + normStatus.slice(1).toLowerCase()}`) : normStatus;
-  
-  let statusKey = 'neutral';
-  if (normStatus === "COMPLETED" || normStatus === "PAID") {
-    statusKey = 'completed';
-  } else if (normStatus === "FAILED") {
-    statusKey = 'failed';
-  } else if (normStatus === "REFUNDED") {
-    statusKey = 'refunded';
-  } else if (normStatus === "VOIDED") {
-    statusKey = 'voided';
-  } else if (normStatus === "CREATED" || normStatus === "PENDING") {
-    statusKey = 'pending';
-  }
-
-  return <StatusIndicator status={statusKey} label={label} />;
 }
 

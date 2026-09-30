@@ -32,8 +32,10 @@ async function generateInvoicePdfBuffer(payment, plan, user, settings, frontendH
       // HEADER
       await renderInvoiceLogo(doc, settings, host, protocol, margin, y, colors);
 
-      doc.fillColor(colors.textPrimary).fontSize(20).font('Helvetica-Bold').text(brand, margin + 55, y + 4);
-      doc.fillColor(colors.textMuted).fontSize(10).font('Helvetica').text('Billing & Invoicing', margin + 55, y + 26);
+      if (brand) {
+        doc.fillColor(colors.textPrimary).fontSize(20).font('Helvetica-Bold').text(brand, margin + 55, y + 4);
+      }
+      doc.fillColor(colors.textMuted).fontSize(10).font('Helvetica').text('Billing & Invoicing', margin + 55, y + (brand ? 26 : 14));
 
       const prefix = settings?.payments?.paypal?.invoicePrefix || 'INV-';
       const invoiceId = `${prefix}${String(payment._id).slice(-8).toUpperCase()}`;
@@ -53,8 +55,12 @@ async function generateInvoicePdfBuffer(payment, plan, user, settings, frontendH
       const col2 = margin + w / 2;
 
       doc.fillColor(colors.textMuted).fontSize(8).font('Helvetica-Bold').text('BILLED FROM', margin, y, { characterSpacing: 1.5 });
-      doc.fillColor(colors.textPrimary).fontSize(11).text(brand, margin, y + 15);
-      doc.fillColor(colors.mediumGray).fontSize(9).font('Helvetica').text(address, margin, y + 30, { lineGap: 4 });
+      if (brand) {
+        doc.fillColor(colors.textPrimary).fontSize(11).text(brand, margin, y + 15);
+      }
+      if (address) {
+        doc.fillColor(colors.mediumGray).fontSize(9).font('Helvetica').text(address, margin, y + (brand ? 30 : 15), { lineGap: 4 });
+      }
 
       doc.fillColor(colors.textMuted).fontSize(8).font('Helvetica-Bold').text('ORDER DETAILS', col2, y, { characterSpacing: 1.5 });
 
@@ -224,8 +230,11 @@ async function generateInvoicePdfBuffer(payment, plan, user, settings, frontendH
       doc.moveTo(margin, y).lineTo(margin + w, y).stroke(colors.border);
       y += 20;
 
-      const brandDisplay = brand || settings?.siteName || 'PetroDash';
-      doc.fillColor('#D4D4D8').fontSize(10).font('Helvetica-Bold').text('Thank you for choosing ' + brandDisplay + '.', margin, y, { lineBreak: false });
+      const brandDisplay = brand || settings?.siteName || '';
+      const thankYouText = brandDisplay
+        ? `Thank you for choosing ${brandDisplay}.`
+        : 'Thank you for your business.';
+      doc.fillColor('#D4D4D8').fontSize(10).font('Helvetica-Bold').text(thankYouText, margin, y, { lineBreak: false });
       doc.fillColor(colors.mediumGray).fontSize(8).font('Helvetica').text('This invoice was generated electronically and is\nvalid without a signature.', margin, y + 16, { lineBreak: false });
 
       if (siteUrl) {
@@ -238,7 +247,8 @@ async function generateInvoicePdfBuffer(payment, plan, user, settings, frontendH
       y += 50;
 
       doc.fillColor('#27272A').fontSize(7).text(`Invoice #${invoiceId}`, margin, y, { lineBreak: false });
-      doc.fillColor('#27272A').text(`${brandDisplay} Billing`, margin + w - 100, y, { align: 'right', width: 100, lineBreak: false });
+      const footerBrand = brandDisplay ? `${brandDisplay} Billing` : 'Billing';
+      doc.fillColor('#27272A').text(footerBrand, margin + w - 100, y, { align: 'right', width: 100, lineBreak: false });
 
       doc.end();
     } catch (error) {

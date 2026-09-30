@@ -7,7 +7,7 @@ const querySchema = z.object({
 });
 
 const getInvoiceSchema = z.object({
-  id: z.string()
+  id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid payment ID format'),
 });
 
 module.exports = {

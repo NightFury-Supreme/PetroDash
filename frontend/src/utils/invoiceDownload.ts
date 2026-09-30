@@ -2,7 +2,7 @@ import { fetchWithRetry } from './fetchWithRetry';
 
 export async function downloadInvoicePdf(invoiceId: string, isAdmin: boolean = false): Promise<void> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
-  if (!token) throw new Error('Not authenticated');
+  if (!token) throw new Error('ERR_UNAUTHORIZED');
 
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE || '';
   const endpoint = isAdmin
@@ -15,7 +15,7 @@ export async function downloadInvoicePdf(invoiceId: string, isAdmin: boolean = f
 
   if (!r.ok) {
     const d = await r.json().catch(() => ({}));
-    throw new Error((d as { error?: string })?.error || 'Failed to download invoice');
+    throw new Error((d as { error?: string })?.error || 'ERR_INVOICE_FAILED');
   }
 
   const blob = await r.blob();

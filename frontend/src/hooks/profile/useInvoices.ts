@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { fetchWithRetry } from '@/utils/fetchWithRetry';
 import { downloadInvoicePdf } from '@/utils/invoiceDownload';
 import { useToast } from '@/components/ui/ToastProvider';
+import { useTranslations } from 'next-intl';
 
 export interface PaymentItem {
   id: string;
@@ -30,6 +31,9 @@ export function useInvoices(pageSize: number = 10) {
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const { showError } = useToast();
 
+  const tErrorBackend = useTranslations('BackendErrors');
+  const tCommon = useTranslations('Common');
+
   useEffect(() => {
     let active = true;
     const fetchPayments = async () => {
@@ -47,8 +51,8 @@ export function useInvoices(pageSize: number = 10) {
           setTotalPayments(data.meta?.total || 0);
           setTotalPages(Math.ceil((data.meta?.total || 0) / (data.meta?.pageSize || pageSize)) || 1);
         }
-      } catch (err) {
-        console.error('Failed to fetch payments:', err);
+      } catch {
+        // Fallback handled via loading state
       } finally {
         if (active) setLoading(false);
       }
@@ -64,8 +68,8 @@ export function useInvoices(pageSize: number = 10) {
       setDownloadingId(id);
       await downloadInvoicePdf(id, false);
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Failed';
-      showError(msg);
+      const msg = e instanceof Error ? e.message : '';
+      showError(tErrorBackend.has(msg) ? tErrorBackend(msg) : (msg || tCommon('error')));
     } finally {
       setDownloadingId(null);
     }

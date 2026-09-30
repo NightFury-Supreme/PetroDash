@@ -74,7 +74,7 @@ exports.getLedger = async ({ status, provider, userId, search, sort, page = '1',
 exports.updatePayment = async (id, data) => {
     const { status, amount, currency } = data;
     const p = await Payment.findById(id);
-    if (!p) throw AppError.notFound('ERR_PAYMENT_NOT_FOUND');
+    if (!p) throw AppError.notFound('Payment not found', 'ERR_PAYMENT_NOT_FOUND');
     
     const originalPayment = p.toObject();
 
@@ -84,6 +84,9 @@ exports.updatePayment = async (id, data) => {
     
     await p.save();
     await deleteCachePattern('admin:ledger');
+    if (p.userId) {
+        await deleteCachePattern(`payments:mine:${p.userId}`);
+    }
 
     const changes = {};
     if (status !== undefined && originalPayment.status !== status) changes.status = { old: originalPayment.status, new: status };
@@ -96,7 +99,7 @@ exports.updatePayment = async (id, data) => {
 exports.getInvoice = async (id, frontendHost, protocol) => {
     const p = await Payment.findOne({ _id: id, status: { $in: ['COMPLETED', 'completed', 'PAID', 'paid'] } }).lean() 
             || await Payment.findById(id).lean();
-    if (!p) throw AppError.notFound('ERR_INVOICE_NOT_FOUND');
+    if (!p) throw AppError.notFound('Invoice not found', 'ERR_INVOICE_NOT_FOUND');
     
     const plan = p.planId ? await Plan.findById(p.planId).lean() : null;
     const user = p.userId ? await User.findById(p.userId).lean() : null;
@@ -109,12 +112,12 @@ exports.getInvoice = async (id, frontendHost, protocol) => {
 
 exports.refundPayment = async (id) => {
     const p = await Payment.findById(id);
-    if (!p) throw AppError.notFound('ERR_PAYMENT_NOT_FOUND');
-    if (p.provider !== 'paypal') throw AppError.badRequest('ERR_PAYMENT_PROVIDER_UNSUPPORTED');
+    if (!p) throw AppError.notFound('Payment not found', 'ERR_PAYMENT_NOT_FOUND');
+    if (p.provider !== 'paypal') throw AppError.badRequest('Only PayPal supported', 'ERR_PAYMENT_PROVIDER_UNSUPPORTED');
     
     const { token, baseUrl } = await getAccessToken();
     const captureId = p.providerCaptureId;
-    if (!captureId) throw AppError.badRequest('ERR_PAYMENT_CAPTURE_MISSING');
+    if (!captureId) throw AppError.badRequest('No capture id to refund', 'ERR_PAYMENT_CAPTURE_MISSING');
     
     await axios.post(`${baseUrl}/v2/payments/captures/${captureId}/refund`, {}, { headers: { Authorization: `Bearer ${token}` } });
     
@@ -175,20 +178,24 @@ exports.refundPayment = async (id) => {
     await deleteCachePattern('admin:ledger');
     await deleteCachePattern(`user:${p.userId}`);
     await deleteCachePattern(`admin:users:${p.userId}`);
+    await deleteCachePattern(`payments:mine:${p.userId}`);
 
     return { p, changes };
 };
 
 exports.voidPayment = async (id) => {
     const p = await Payment.findById(id);
-    if (!p) throw AppError.notFound('ERR_PAYMENT_NOT_FOUND');
-    if (p.provider !== 'paypal') throw AppError.badRequest('ERR_PAYMENT_PROVIDER_UNSUPPORTED');
-    if (p.status === 'COMPLETED') throw AppError.badRequest('ERR_PAYMENT_VOID_COMPLETED');
+    if (!p) throw AppError.notFound('Payment not found', 'ERR_PAYMENT_NOT_FOUND');
+    if (p.provider !== 'paypal') throw AppError.badRequest('Only PayPal supported', 'ERR_PAYMENT_PROVIDER_UNSUPPORTED');
+    if (p.status === 'COMPLETED') throw AppError.badRequest('Use refund for completed payments', 'ERR_PAYMENT_VOID_COMPLETED');
     
     const changes = { status: { old: p.status, new: 'VOIDED' } };
     p.status = 'VOIDED';
     await p.save();
     await deleteCachePattern('admin:ledger');
+    if (p.userId) {
+        await deleteCachePattern(`payments:mine:${p.userId}`);
+    }
 
     return { p, changes };
 };

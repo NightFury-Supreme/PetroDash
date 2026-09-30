@@ -4,22 +4,28 @@ const AppError = require('../../utils/AppError');
 
 async function getPayments(req, res, next) {
   try {
-    const query = querySchema.parse(req.query);
-    const data = await paymentsService.getUserPayments(req.user.sub, query);
+    const parsed = querySchema.safeParse(req.query);
+    if (!parsed.success) {
+      throw AppError.badRequest('Invalid query parameters', 'ERR_INVALID_QUERY_PARAMS', parsed.error.flatten());
+    }
+    const data = await paymentsService.getUserPayments(req.user.sub, parsed.data);
     res.json(data);
   } catch (e) {
-    next(e instanceof AppError ? e : AppError.badRequest(e.message));
+    next(e);
   }
 }
 
 async function getInvoice(req, res, next) {
   try {
-    const params = getInvoiceSchema.parse(req.params);
+    const parsed = getInvoiceSchema.safeParse(req.params);
+    if (!parsed.success) {
+      throw AppError.badRequest('Invalid payment ID format', 'ERR_INVALID_ID', parsed.error.flatten());
+    }
     const frontendHost = process.env.FRONTEND_URL || req.get('host');
     const protocol = req.protocol || 'https';
     
     const { pdfBuffer, paymentId } = await paymentsService.getInvoicePdf(
-      params.id,
+      parsed.data.id,
       req.user.sub,
       req.user,
       frontendHost,
@@ -30,7 +36,7 @@ async function getInvoice(req, res, next) {
     res.setHeader('Content-Disposition', `attachment; filename="invoice-${paymentId}.pdf"`);
     res.send(pdfBuffer);
   } catch (error) {
-    next(error instanceof AppError ? error : AppError.badRequest(error.message));
+    next(error);
   }
 }
 

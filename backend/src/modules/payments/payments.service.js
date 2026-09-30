@@ -65,7 +65,7 @@ async function getInvoicePdf(paymentId, userId, userContext, frontendHost, proto
     status: { $in: ['COMPLETED', 'completed', 'PAID', 'paid'] }
   }).lean() || await Payment.findOne({ _id: String(paymentId), userId: userId }).lean();
   
-  if (!p) throw AppError.notFound('ERR_INVOICE_NOT_FOUND');
+  if (!p) throw AppError.notFound('Invoice not found', 'ERR_INVOICE_NOT_FOUND');
   
   const plan = p.planId ? await Plan.findById(p.planId).lean() : null;
   let user = await User.findById(p.userId).lean();
