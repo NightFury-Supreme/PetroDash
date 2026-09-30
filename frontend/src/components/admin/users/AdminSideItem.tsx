@@ -1,6 +1,22 @@
 import React from 'react';
 
-export function AdminSideItem({ icon: Icon, label, active, danger, onClick }: { icon: any; label: string; active?: boolean; danger?: boolean; onClick: () => void; }) {
+export interface AdminSideItemProps {
+  icon: any;
+  label: string;
+  active?: boolean;
+  danger?: boolean;
+  success?: boolean;
+  onClick: () => void;
+}
+
+export function AdminSideItem({
+  icon: Icon,
+  label,
+  active,
+  danger,
+  success,
+  onClick,
+}: AdminSideItemProps) {
   return (
     <button
       type="button"
@@ -24,12 +40,16 @@ export function AdminSideItem({ icon: Icon, label, active, danger, onClick }: { 
 
         ${
           active
-            ? danger 
-                ? "bg-red-500/10 text-red-500" 
-                : "bg-white/10 text-white"
+            ? danger
+              ? "bg-red-500/10 text-red-500"
+              : success
+              ? "bg-emerald-500/10 text-emerald-400"
+              : "bg-white/10 text-white"
             : danger
-                ? "text-red-400 hover:bg-red-500/10 hover:text-red-300"
-                : "text-zinc-500 hover:bg-white/5 hover:text-zinc-200"
+            ? "text-red-400 hover:bg-red-500/10 hover:text-red-300"
+            : success
+            ? "text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300"
+            : "text-zinc-500 hover:bg-white/5 hover:text-zinc-200"
         }
       `}
     >

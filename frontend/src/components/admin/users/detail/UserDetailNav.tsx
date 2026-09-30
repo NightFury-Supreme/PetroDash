@@ -106,6 +106,7 @@ export function UserDetailNav({
               icon={isBanned ? ShieldCheck : ShieldAlert}
               label={isBanned ? t('unbanUser') : t('banUser')}
               danger={!isBanned}
+              success={isBanned}
               active={false}
               onClick={onOpenBanDrawer}
             />

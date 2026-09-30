@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ChevronDown, Loader2, Image as ImageIcon } from 'lucide-react';
+import React, { useState } from 'react';
+import { Loader2, Image as ImageIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 export const PayPalIcon = ({ size }: { size?: number }) => <i className="fab fa-paypal" style={{ fontSize: size, width: size, textAlign: 'center' }}></i>;
@@ -40,76 +40,7 @@ export function SideItem({ icon: Icon, label, active, onClick }: { icon: any; la
   );
 }
 
-export function SettingsDropdown({
-  value,
-  options,
-  onChange,
-  disabled
-}: {
-  value: string;
-  options: { label: string; value: string }[];
-  onChange: (val: string) => void | Promise<void>;
-  disabled?: boolean;
-}) {
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  const handleSelect = async (optValue: string) => {
-    setOpen(false);
-    setLoading(true);
-    try {
-      await onChange(optValue);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const activeLabel = options.find((o) => o.value === value)?.label || value;
-
-  return (
-    <div className="relative w-full max-w-md" ref={ref}>
-      <button
-        onClick={() => !disabled && !loading && setOpen(!open)}
-        disabled={disabled || loading}
-        className="flex h-9 w-full items-center justify-between gap-2 rounded-lg bg-[#1A1A1A] px-3 text-sm text-[#999] transition-colors hover:bg-[#222] hover:text-[#ddd] disabled:opacity-50"
-      >
-        <span className="truncate">{activeLabel}</span>
-        {loading ? (
-          <Loader2 size={14} className="animate-spin opacity-50 shrink-0" />
-        ) : (
-          <ChevronDown size={14} className="opacity-50 shrink-0" />
-        )}
-      </button>
-
-      {open && (
-        <div className="absolute left-0 right-0 top-10 z-50 rounded-lg border border-[#222] bg-[#151515] p-1 shadow-xl max-h-[200px] overflow-y-auto">
-          {options.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => handleSelect(opt.value)}
-              className={`flex h-8 w-full items-center rounded px-2 text-left text-sm transition-colors ${
-                opt.value === value
-                  ? "bg-white/10 text-white"
-                  : "text-white/70 hover:bg-white/10 hover:text-white"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+export { SettingsDropdown, type SelectDropdownOption, type SelectDropdownProps } from '@/components/ui';
 
 export function SettingsRow({ 
   icon,

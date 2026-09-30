@@ -4,6 +4,7 @@ export * from './ErrorState';
 export * from './HoldButton';
 export * from './RankBadge';
 export * from './Select';
+export * from './SelectDropdown';
 export * from './SharedLogsTable';
 export * from './Toast';
 export * from './ToastProvider';
