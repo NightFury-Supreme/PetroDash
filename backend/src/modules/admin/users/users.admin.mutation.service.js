@@ -185,11 +185,7 @@ const updateUser = async (req, id, data) => {
   await deleteCachePattern(`user:${targetUserId}:*`);
   await deleteCachePattern('admin:users*');
 
-  const safeUser = user.toObject();
-  delete safeUser.passwordHash;
-  delete safeUser.tfaSecret;
-  delete safeUser.tfaBackupCodes;
-
+  const safeUser = await User.findById(user._id, { passwordHash: 0, tfaSecret: 0, tfaBackupCodes: 0 }).lean();
   return { user: safeUser };
 };
 
