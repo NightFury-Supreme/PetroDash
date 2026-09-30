@@ -185,6 +185,12 @@ export function useAdminUserDetail(id: string) {
       const d = await r.json().catch(() => ({}));
       throw new Error(d.error || d.code || 'ERR_BAN_USER_FAILED');
     }
+    const resData = await r.json().catch(() => ({}));
+    if (resData?.ban) {
+      setBan(resData.ban);
+    } else {
+      setBan({ isBanned: true, reason: payload.reason || '', until: payload.until || null });
+    }
     await Promise.all([
       loadUser(referralPage, false),
       loadActivity(activityPage),
@@ -198,6 +204,7 @@ export function useAdminUserDetail(id: string) {
       const d = await r.json().catch(() => ({}));
       throw new Error(d.error || d.code || 'ERR_UNBAN_USER_FAILED');
     }
+    setBan({ isBanned: false, reason: '', until: null });
     await Promise.all([
       loadUser(referralPage, false),
       loadActivity(activityPage),

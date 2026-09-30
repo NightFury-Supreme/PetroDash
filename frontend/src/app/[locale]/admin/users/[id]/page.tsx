@@ -78,7 +78,7 @@ export default function AdminUserPage() {
     deleteUser: deleteUserApi,
   } = useAdminUserDetail(id);
 
-  const activeBan = Boolean(ban?.isBanned) && (!ban.until || new Date(ban.until) > new Date());
+  const isUserBanned = Boolean(ban?.isBanned);
 
   const handleConfirmDelete = async () => {
     const result = await deleteUserApi();
@@ -141,7 +141,7 @@ export default function AdminUserPage() {
 
         <UserDetailProfileBanner
           user={userForm}
-          isBanned={activeBan}
+          isBanned={isUserBanned}
         />
 
         <div className="flex flex-col lg:flex-row gap-8 items-start">
@@ -149,8 +149,8 @@ export default function AdminUserPage() {
             section={section}
             onSelectSection={setSection}
             onOpenDeleteDrawer={() => setIsDeleteDrawerOpen(true)}
-            onOpenBanDrawer={() => (activeBan ? setIsUnbanDrawerOpen(true) : setIsBanDrawerOpen(true))}
-            isBanned={activeBan}
+            onOpenBanDrawer={() => (isUserBanned ? setIsUnbanDrawerOpen(true) : setIsBanDrawerOpen(true))}
+            isBanned={isUserBanned}
           />
 
           <div className="flex-1 min-w-0 w-full">
