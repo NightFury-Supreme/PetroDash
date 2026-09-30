@@ -20,7 +20,7 @@ const ledgerQuerySchema = z.object({
 });
 
 const updatePaymentSchema = z.object({
-  status: z.string().optional(),
+  status: z.enum(['PENDING', 'COMPLETED', 'FAILED', 'REFUNDED', 'VOIDED']).optional(),
   amount: z.coerce.number().min(0).optional(),
   currency: z.string().min(3).max(3).optional(),
 });

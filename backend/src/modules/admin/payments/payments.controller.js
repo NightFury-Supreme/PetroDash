@@ -17,7 +17,7 @@ const getLedger = async (req, res, next) => {
   try {
     const parsed = ledgerQuerySchema.safeParse(req.query);
     if (!parsed.success) {
-      throw new AppError('Invalid query parameters', 400, 'ERR_LEDGER_QUERY_INVALID', parsed.error.flatten());
+      throw AppError.badRequest('ERR_LEDGER_QUERY_INVALID', parsed.error.flatten());
     }
     const result = await paymentsService.getLedger(parsed.data);
     return res.json(result);
@@ -30,11 +30,11 @@ const updatePayment = async (req, res, next) => {
   try {
     const paramParsed = paymentIdParamSchema.safeParse(req.params);
     if (!paramParsed.success) {
-      throw new AppError('Invalid payment ID format', 400, 'ERR_INVALID_ID', paramParsed.error.flatten());
+      throw AppError.badRequest('ERR_INVALID_ID', paramParsed.error.flatten());
     }
     const parsed = updatePaymentSchema.safeParse(req.body);
     if (!parsed.success) {
-      throw new AppError('Invalid payment payload', 400, 'ERR_PAYMENT_VALIDATION_FAILED', parsed.error.flatten());
+      throw AppError.badRequest('ERR_PAYMENT_VALIDATION_FAILED', parsed.error.flatten());
     }
     const { p, changes } = await paymentsService.updatePayment(paramParsed.data.id, parsed.data);
     await writeAudit(req, 'admin.payment.update', 'payment', p._id.toString(), { changes });
@@ -52,7 +52,7 @@ const getInvoice = async (req, res, next) => {
   try {
     const paramParsed = paymentIdParamSchema.safeParse(req.params);
     if (!paramParsed.success) {
-      throw new AppError('Invalid payment ID format', 400, 'ERR_INVALID_ID', paramParsed.error.flatten());
+      throw AppError.badRequest('ERR_INVALID_ID', paramParsed.error.flatten());
     }
     const frontendHost = process.env.FRONTEND_URL || req.get('host');
     const protocol = req.protocol || 'https';
@@ -71,7 +71,7 @@ const refundPayment = async (req, res, next) => {
   try {
     const paramParsed = paymentIdParamSchema.safeParse(req.params);
     if (!paramParsed.success) {
-      throw new AppError('Invalid payment ID format', 400, 'ERR_INVALID_ID', paramParsed.error.flatten());
+      throw AppError.badRequest('ERR_INVALID_ID', paramParsed.error.flatten());
     }
     const { p, changes } = await paymentsService.refundPayment(paramParsed.data.id);
 
@@ -97,7 +97,7 @@ const voidPayment = async (req, res, next) => {
   try {
     const paramParsed = paymentIdParamSchema.safeParse(req.params);
     if (!paramParsed.success) {
-      throw new AppError('Invalid payment ID format', 400, 'ERR_INVALID_ID', paramParsed.error.flatten());
+      throw AppError.badRequest('ERR_INVALID_ID', paramParsed.error.flatten());
     }
     const { p, changes } = await paymentsService.voidPayment(paramParsed.data.id);
 

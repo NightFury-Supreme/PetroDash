@@ -19,7 +19,8 @@ async function generateInvoicePdfBuffer(payment, plan, user, settings, frontendH
         doc.rect(0, 0, doc.page.width, doc.page.height).fill(colors.bg);
       });
 
-      const { brand, siteUrl, address, supportEmail, host } = resolveInvoiceDomain(settings, frontendHost);
+      const { brand: rawBrand, siteUrl, address, supportEmail, host } = resolveInvoiceDomain(settings, frontendHost);
+      const brand = rawBrand || settings?.siteName || '';
 
       // Fill background for first page
       doc.rect(0, 0, doc.page.width, doc.page.height).fill(colors.bg);
@@ -223,7 +224,8 @@ async function generateInvoicePdfBuffer(payment, plan, user, settings, frontendH
       doc.moveTo(margin, y).lineTo(margin + w, y).stroke(colors.border);
       y += 20;
 
-      doc.fillColor('#D4D4D8').fontSize(10).font('Helvetica-Bold').text('Thank you for choosing ' + brand + '.', margin, y, { lineBreak: false });
+      const brandDisplay = brand || settings?.siteName || 'PetroDash';
+      doc.fillColor('#D4D4D8').fontSize(10).font('Helvetica-Bold').text('Thank you for choosing ' + brandDisplay + '.', margin, y, { lineBreak: false });
       doc.fillColor(colors.mediumGray).fontSize(8).font('Helvetica').text('This invoice was generated electronically and is\nvalid without a signature.', margin, y + 16, { lineBreak: false });
 
       if (siteUrl) {
@@ -236,7 +238,7 @@ async function generateInvoicePdfBuffer(payment, plan, user, settings, frontendH
       y += 50;
 
       doc.fillColor('#27272A').fontSize(7).text(`Invoice #${invoiceId}`, margin, y, { lineBreak: false });
-      doc.fillColor('#27272A').text(`${brand} Billing`, margin + w - 100, y, { align: 'right', width: 100, lineBreak: false });
+      doc.fillColor('#27272A').text(`${brandDisplay} Billing`, margin + w - 100, y, { align: 'right', width: 100, lineBreak: false });
 
       doc.end();
     } catch (error) {

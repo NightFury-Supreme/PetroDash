@@ -74,7 +74,7 @@ exports.getLedger = async ({ status, provider, userId, search, sort, page = '1',
 exports.updatePayment = async (id, data) => {
     const { status, amount, currency } = data;
     const p = await Payment.findById(id);
-    if (!p) throw new AppError('Payment not found', 404, 'ERR_NOT_FOUND');
+    if (!p) throw AppError.notFound('ERR_PAYMENT_NOT_FOUND');
     
     const originalPayment = p.toObject();
 
@@ -96,28 +96,25 @@ exports.updatePayment = async (id, data) => {
 exports.getInvoice = async (id, frontendHost, protocol) => {
     const p = await Payment.findOne({ _id: id, status: { $in: ['COMPLETED', 'completed', 'PAID', 'paid'] } }).lean() 
             || await Payment.findById(id).lean();
-    if (!p) throw new AppError('Invoice not found', 404, 'ERR_NOT_FOUND');
+    if (!p) throw AppError.notFound('ERR_INVOICE_NOT_FOUND');
     
     const plan = p.planId ? await Plan.findById(p.planId).lean() : null;
-    let user = p.userId ? await User.findById(p.userId).lean() : null;
-    if (!user) {
-      user = { username: 'Customer', email: '' };
-    }
+    const user = p.userId ? await User.findById(p.userId).lean() : null;
 
     const settings = await getSettings();
-    const pdfBuffer = await generateInvoicePdfBuffer(p, plan, user, settings, frontendHost, protocol);
+    const pdfBuffer = await generateInvoicePdfBuffer(p, plan, user || {}, settings, frontendHost, protocol);
     
     return { pdfBuffer, p };
 };
 
 exports.refundPayment = async (id) => {
     const p = await Payment.findById(id);
-    if (!p) throw new AppError('Not found', 404, 'ERR_NOT_FOUND');
-    if (p.provider !== 'paypal') throw new AppError('Only PayPal supported', 400, 'ERR_BAD_REQUEST');
+    if (!p) throw AppError.notFound('ERR_PAYMENT_NOT_FOUND');
+    if (p.provider !== 'paypal') throw AppError.badRequest('ERR_PAYMENT_PROVIDER_UNSUPPORTED');
     
     const { token, baseUrl } = await getAccessToken();
     const captureId = p.providerCaptureId;
-    if (!captureId) throw new AppError('No capture id to refund', 400, 'ERR_BAD_REQUEST');
+    if (!captureId) throw AppError.badRequest('ERR_PAYMENT_CAPTURE_MISSING');
     
     await axios.post(`${baseUrl}/v2/payments/captures/${captureId}/refund`, {}, { headers: { Authorization: `Bearer ${token}` } });
     
@@ -147,7 +144,7 @@ exports.refundPayment = async (id) => {
                     serverSlots: -(Number(pc.serverLimit || 0)),
                 };
                 
-                let updatePayload = { $inc: {} };
+                const updatePayload = { $set: {} };
                 Object.keys(decQuery).forEach(k => { 
                     if (decQuery[k] !== 0) {
                         const uR = user.resources || {};
@@ -156,13 +153,11 @@ exports.refundPayment = async (id) => {
                         const dbKey = k === 'coins' ? 'coins' : `resources.${k}`;
                         
                         changes[dbKey] = { old: oldVal, new: newVal };
-                        
-                        if (!updatePayload.$set) updatePayload.$set = {};
                         updatePayload.$set[dbKey] = newVal;
                     }
                 });
                 
-                if (updatePayload.$set) {
+                if (Object.keys(updatePayload.$set).length > 0) {
                     await User.findByIdAndUpdate(p.userId, updatePayload);
                 }
             }
@@ -186,9 +181,9 @@ exports.refundPayment = async (id) => {
 
 exports.voidPayment = async (id) => {
     const p = await Payment.findById(id);
-    if (!p) throw new AppError('Not found', 404, 'ERR_NOT_FOUND');
-    if (p.provider !== 'paypal') throw new AppError('Only PayPal supported', 400, 'ERR_BAD_REQUEST');
-    if (p.status === 'COMPLETED') throw new AppError('Use refund for completed payments', 400, 'ERR_BAD_REQUEST');
+    if (!p) throw AppError.notFound('ERR_PAYMENT_NOT_FOUND');
+    if (p.provider !== 'paypal') throw AppError.badRequest('ERR_PAYMENT_PROVIDER_UNSUPPORTED');
+    if (p.status === 'COMPLETED') throw AppError.badRequest('ERR_PAYMENT_VOID_COMPLETED');
     
     const changes = { status: { old: p.status, new: 'VOIDED' } };
     p.status = 'VOIDED';
@@ -197,3 +192,4 @@ exports.voidPayment = async (id) => {
 
     return { p, changes };
 };
+

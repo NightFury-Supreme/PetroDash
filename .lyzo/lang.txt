@@ -1,2009 +1,824 @@
-# Module Refactor, Full i18n, Error Standardization, Audit, Redis, Security & Verification
-
-## Objective
-
-Perform a complete production-grade refactor, modularization, localization, security hardening, performance optimization, and verification of:
-
-`https://dashboard.auto-manager.tk/tickets/<id>`
-
-This is **not** a visual-only or page-only task.
-
-The entire `/tickets/<id>` domain and every dependency, child route, shared component, backend endpoint, drawer, modal, toast, error path, translation resource, audit path, Redis path, and database path that belongs to or affects this domain must be inspected and corrected where necessary.
-
-The final implementation must be production-grade, modular, maintainable, secure, localized, performant, tested, and consistent with the existing application architecture.
-
----
-
-# 1. NON-NEGOTIABLE ENGINEERING REQUIREMENTS
-
-All implementation must be:
-
-* Production-grade
-* Industrial-quality
-* Modular
-* Maintainable
-* Readable
-* Testable
-* Secure
-* Performant
-* Accessible
-* Internationalized
-* Consistent with the existing architecture
-* Root-cause based
-* Backward-compatible where appropriate
-* Free from hacks
-* Free from fragile workarounds
-* Free from duplicated implementations
-* Free from obsolete code
-* Free from dead code
-* Free from unused imports
-* Free from unused dependencies
-* Free from unnecessary files
-* Free from temporary/debug code
-* Free from placeholder implementations
-* Free from silent error swallowing
-* Free from hidden failure paths
-* Free from unnecessary abstractions
-* Free from unnecessary database queries
-* Free from unnecessary Redis operations
-* Free from inconsistent API contracts
-* Free from inconsistent translation identifiers
-
-Do not make superficial changes merely to satisfy lint, tests, or line-count goals.
-
-When a problem is found, identify and fix its **root cause**.
-
-Do not hide defects using:
-
-* Suppressed exceptions
-* Empty `catch` blocks
-* `eslint-disable`
-* `ts-ignore`
-* `@ts-ignore`
-* `any` used to bypass type safety
-* Unsafe casts
-* Arbitrary retries
-* Hardcoded special cases
-* Route-specific hacks
-* Duplicated translation messages
-* Duplicated error mappings
-* Bypassed validation
-* Disabled security controls
-* Fake success paths
-* Fake/mock production behavior
-* Unnecessary memoization
-* Unnecessary caching
-* Unnecessary Redis usage
-* Unnecessary database queries
-* Temporary compatibility hacks
-* Placeholder text
-* Temporary comments
-* TODO-based unfinished implementations
-
----
-
-# 2. MANDATORY SCOPE
-
-Do not treat `/tickets` as an isolated page.
-
-Recursively inspect and handle all applicable:
-
-### Frontend
-
-* `/tickets`
-* Child routes
-* Nested routes
-* Dynamic routes
-* Route groups
-* Layouts
-* Nested layouts
-* Loading states
-* Error states
-* Empty states
-* Skeleton states
-* Suspense boundaries
-* Forms
-* Validation
-* Confirmation flows
-* Modals
-* Drawers
-* Dialogs
-* Popovers
-* Dropdowns
-* Tooltips
-* Menus
-* Toasts
-* Notifications
-* Pagination
-* Filters
-* Search
-* Sorting
-* Bulk actions
-* Details views
-* Create/update/delete flows
-* Permission states
-* Unauthorized states
-* Forbidden states
-* Not-found states
-* Network failure states
-* Retry states
-* Shared components used by `/tickets`
-* Shared hooks used by `/tickets`
-* Shared API services used by `/tickets`
-* Shared translation resources used by `/tickets`
-
-### Backend
-
-Trace every backend dependency used by `/tickets`:
-
-* API routes
-* Routers
-* Controllers
-* Validation schemas
-* Services
-* Repositories
-* Database models
-* Database queries
-* Transactions
-* Redis/cache operations
-* Rate limiting
-* Authentication
-* Authorization
-* Audit logging
-* Notifications
-* External integrations
-* Error middleware
-* API response serialization
-* Shared infrastructure used by ticket functionality
-
-Do not modify unrelated systems merely for cosmetic consistency. Modify shared systems only when they are part of the actual dependency path or required to correctly standardize the affected architecture.
-
----
-
-# 3. FIRST: INSPECT THE ENTIRE PROJECT
-
-Before modifying anything, inspect the existing project thoroughly.
-
-You must understand the actual architecture before implementing changes.
-
-Inspect:
-
-1. Complete repository structure.
-2. Frontend architecture.
-3. Backend architecture.
-4. Routing architecture.
-5. Module boundaries.
-6. Authentication.
-7. Authorization.
-8. API client architecture.
-9. Error handling architecture.
-10. i18n architecture.
-11. Every supported locale.
-12. Translation file structure.
-13. Toast/notification infrastructure.
-14. Drawer/dialog infrastructure.
-15. Audit infrastructure.
-16. Redis/cache infrastructure.
-17. Database architecture.
-18. Database query patterns.
-19. Validation/sanitization architecture.
-20. Logging/observability.
-21. Testing architecture.
-22. Lint configuration.
-23. Type-check configuration.
-24. Build configuration.
-25. Security tooling.
-26. Existing documentation.
-27. Existing implementation plans.
-28. Existing task tracking.
-29. Existing tests.
-30. Existing translation conventions.
-31. Existing error-code conventions.
-
-Trace the complete dependency flow:
-
-```text
-Page
-→ Component
-→ Hook
-→ API Service
-→ HTTP Layer
-→ Backend Route
-→ Controller
-→ Schema/Validation
-→ Service
-→ Repository/Data Access
-→ Database
-```
-
-and where applicable:
-
-```text
-Service
-→ Redis
-Service
-→ Audit Engine
-Service
-→ External Provider
-```
-
-Do not begin refactoring until this flow is understood.
-
-Create or update the implementation plan before implementation.
-
----
-
-# 4. REQUIRED DEVELOPMENT WORKFLOW
-
-Follow this workflow strictly.
-
-## Phase A — Discovery
-
-Inspect the repository and identify:
-
-* Architecture violations
-* Duplicate implementations
-* Poor module boundaries
-* Hardcoded user-facing text
-* Hardcoded English
-* Missing translations
-* Incorrect translations
-* Empty translations
-* English fallback text
-* Duplicate translation keys
-* Duplicate semantic messages
-* Inconsistent language/message identifiers
-* Hardcoded API errors
-* Inconsistent error payloads
-* Audit gaps
-* Duplicate audit events
-* Broken audit links
-* Redis misuse
-* Missing cache invalidation
-* Missing database indexes
-* N+1 queries
-* Excessive queries
-* Validation gaps
-* Sanitization gaps
-* Authentication issues
-* Authorization issues
-* Accessibility issues
-* Loading/error/empty-state issues
-* Reliability issues
-* Performance bottlenecks
-* Dead code
-* Obsolete code
-* Unused files
-* Unused dependencies
-* Unnecessary comments
-* AI-style comments
-
-## Phase B — Planning
-
-Create/update an implementation plan covering:
-
-* Module architecture
-* File organization
-* Component boundaries
-* Hook boundaries
-* Service boundaries
-* Backend boundaries
-* API contracts
-* Translation strategy
-* Locale migration
-* Error standardization
-* Audit strategy
-* Redis strategy
-* Database optimization
-* Security remediation
-* Accessibility improvements
-* Test coverage
-* Regression strategy
-* Documentation updates
-
-The plan must reflect the real repository architecture.
-
-Do not invent architecture purely to satisfy this prompt.
-
-## Phase C — Implementation
-
-Implement the plan completely.
-
-Do not stop after fixing the first visible problem.
-
-## Phase D — Verification
-
-Run all applicable:
-
-* Frontend lint
-* Backend lint
-* Type checks
-* Unit tests
-* Integration tests
-* API tests
-* Component tests
-* Regression tests
-* Build
-* Static analysis
-* Security checks
-* Accessibility checks
-* Performance checks where applicable
-
-Fix all errors and relevant warnings.
-
-## Phase E — Re-verification
-
-After fixes:
-
-* Re-run frontend lint.
-* Re-run backend lint.
-* Re-run type checking.
-* Re-run tests.
-* Re-run build.
-* Re-run affected regression tests.
-* Re-check localization.
-* Re-check audit behavior.
-* Re-check Redis behavior.
-* Re-check database behavior.
-* Re-check authorization.
-* Re-check error propagation.
-* Re-check accessibility.
-
-Do not claim completion without actual verification.
-
----
-
-# 5. FULL MODULARIZATION REQUIREMENT
-
-The `/tickets` domain must be fully componentized, structured, organized, and modularized.
-
-Avoid giant route files and mixed-responsibility modules.
-
-Use architecture appropriate to the existing project.
-
-A suitable conceptual structure may resemble:
-
-```text
-tickets/
-├── index.ts
-├── components/
-├── hooks/
-├── services/
-├── schemas/
-├── types/
-├── constants/
-├── utils/
-├── tests/
-└── translations/
-```
-
-Do not blindly duplicate this exact structure if the existing application follows another sound architectural pattern.
-
-The important requirements are:
-
-* Clear ownership
-* Strong module boundaries
-* Controlled public API
-* Minimal coupling
-* High cohesion
-* Explicit dependencies
-* No accidental deep imports
-* No circular dependencies
-
----
-
-# 6. MODULE ENCAPSULATION
-
-Every meaningful module/domain should expose a controlled public interface.
-
-Preferred:
-
-```ts
-import { TicketList, useTickets } from "@/tickets";
-```
-
-Avoid unnecessary deep imports:
-
-```ts
-import { useTickets } from "@/tickets/hooks/useTickets";
-```
-
-Internal implementation details should remain internal where practical.
-
-The module's public API should contain only what consumers actually need.
-
-Remove unnecessary exports.
-
----
-
-# 7. FILE AND FOLDER STRUCTURE
-
-## Directories
-
-Use:
-
-```text
-kebab-case
-```
-
-Examples:
-
-```text
-ticket-management
-audit-events
-error-handling
-user-profile
-```
-
-Next.js-required dynamic route names may remain:
-
-```text
-[id]
-[slug]
-[locale]
-```
-
-## React components
-
-Use:
-
-```text
-PascalCase.tsx
-```
-
-Examples:
-
-```text
-TicketList.tsx
-TicketDetailsDrawer.tsx
-TicketFilters.tsx
-TicketStatusBadge.tsx
-```
-
-## Hooks
-
-Use:
-
-```text
-useFeatureName.ts
-```
-
-One custom hook per file.
-
-## Backend files
-
-Use:
-
-```text
-camelCase.layer.js
-```
-
-Examples:
-
-```text
-ticket.controller.js
-ticket.service.js
-ticket.schema.js
-ticket.repository.js
-```
-
-## Constants
-
-Use:
-
-```text
-UPPER_SNAKE_CASE
-```
-
-## Types
-
-Use PascalCase:
-
-```text
-Ticket
-TicketStatus
-ApiErrorResponse
-AuditEvent
-```
-
-Avoid unnecessary `I` prefixes.
-
----
-
-# 8. CO-LOCATION
-
-Keep related code together.
-
-Example:
-
-```text
-tickets/
-├── index.ts
-├── components/
-│   ├── TicketList.tsx
-│   ├── TicketFilters.tsx
-│   └── TicketDetailsDrawer.tsx
-├── hooks/
-│   └── useTickets.ts
-├── services/
-│   └── ticket.service.ts
-├── schemas/
-│   └── ticket.schema.ts
-├── types/
-│   └── ticket.types.ts
-└── tests/
-```
-
-Do not scatter tightly related logic across unrelated global folders without a clear architectural reason.
-
-Shared code should be placed in shared modules only when it is genuinely shared.
-
----
-
-# 9. SINGLE RESPONSIBILITY
-
-Each file must have one primary responsibility.
-
-Requirements:
-
-* One primary React component per file.
-* One custom hook per file.
-* One service responsibility per file.
-* One schema responsibility per file.
-* One clear utility responsibility per file.
-
-Files exceeding approximately 300 lines must be reviewed for decomposition.
-
-Do not split files merely to meet a line-count target. Split based on responsibility, cohesion, and maintainability.
-
----
-
-# 10. FRONTEND ARCHITECTURE
-
-UI components must not directly perform API requests.
-
-Do not place:
-
-```ts
-fetch(...)
-axios(...)
-```
-
-inside presentational components.
-
-Use:
-
-```text
-Page
-→ Feature Component
-→ Feature Hook
-→ Feature Service/API Layer
-→ Backend
-```
-
-Components should be responsible for:
-
-* Rendering
-* Interaction
-* Presentation
-* Accessibility
-
-Hooks should coordinate:
-
-* Feature state
-* Requests
-* Mutations
-* UI state
-* Request lifecycle
-
-API services should handle:
-
-* HTTP communication
-* Request serialization
-* Response parsing
-* Standardized API error handling
-
----
-
-# 11. BACKEND ARCHITECTURE
-
-Use clear separation:
-
-```text
-Route
-→ Controller
-→ Validation
-→ Service
-→ Repository/Data Access
-→ Database
-```
-
-## Routes
-
-Routes must only wire the endpoint.
-
-Do not place:
-
-* Database queries
-* Business logic
-* Complex validation
-* Audit implementation
-* Redis implementation
-
-inside route declarations.
-
-## Controllers
-
-Controllers should:
-
-* Extract request input.
-* Invoke validation.
-* Call services.
-* Serialize responses.
-* Pass unexpected errors into centralized handling.
-
-Controllers must not contain substantial business logic.
-
-## Services
-
-Services own:
-
-* Business logic
-* Domain behavior
-* Database/repository coordination
-* Transactions
-* Redis/cache interactions
-* External integrations
-* Domain-level error creation
-* Consistency requirements
-
----
-
-# 12. VALIDATION AND SANITIZATION
-
-Validate every external input.
-
-Review:
-
-* Path parameters
-* Query parameters
-* Request bodies
-* Headers where applicable
-* Pagination
-* Sorting
-* Filtering
-* Search input
-* IDs
-* Status values
-* User-generated content
-* Structured payloads
-
-Frontend validation is not a security boundary.
-
-Backend validation is mandatory.
-
-Sanitize and normalize input where required by application semantics.
-
-Do not duplicate validation rules unnecessarily.
-
-Validation schemas should live according to the project's established architecture and remain close to the domain logic that uses them.
-
----
-
-# 13. GLOBAL API ERROR STANDARDIZATION
-
-Remove hardcoded and inconsistent API error JSON responses.
-
-All relevant endpoint failures must use the application's standard `AppError` architecture.
-
-Establish one predictable response contract.
-
-Conceptually:
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "TICKET_NOT_FOUND",
-    "messageKey": "errors.tickets.notFound",
-    "details": {}
+no use harded coded values 
+ const defaultDomain = rootDomain || (brand.toLowerCase().replace(/\s/g, '') + '.com');
+  const siteUrl = host || defaultDomain;
+  let defaultDomain = rootDomain;
+  if (!defaultDomain) {
+    const cleanBrand = (brand || 'PetroDash').toLowerCase().replace(/[^a-z0-9]/g, '');
+    defaultDomain = `${cleanBrand || 'petrodash'}.tech`;
   }
+  const siteUrl = host || defaultDomain || 'dashboard.petrodash.tech';
+  const address = settings?.payments?.paypal?.businessAddress || siteUrl;
+  const supportEmail = settings?.contactEmail && !settings.contactEmail.includes('pterodash.com') ? settings.contactEmail : `support@${defaultDomain}`;
+
+make sure (only this page and its rrelated think) is fully componised, stratured, organised, module foldered and file
+
+
+
+Full-Stack Audit, Refactor & Architecture Standardization Complete
+make sure all codes are written profasnaly, industrial standared, not using amature code or desine or style, fully profsnal and strandard, well optimized, no errors or issues or bugs or gliths or vanrability or safty issues or vaalidation issues or sanitisation or any issues occor, all profasnally handled, check full backend and frontend fully
+scan full this page its subsidary page, it and its subsidary page drawer and toastr for hardedcoded values and untranslated text and transalate all of it and remove all hardcoded ones and transalate to all languagfes
+also make sure that if a think is not transalated transalate it fully in this modulisation also, include toast, drawer, page and everything which comes in this domain and its related areas
+also update backend for Removeing hardcoded JSON API errors to use Wrapped all endpoint failures in standard AppError payloads, emitting predictable error codes globally handled by our new middleware and update frontend with it to show errors in all language 
+also make sure to delete all unwated files and folders after all of this, delete all unimported Dead / Unused files, modules, componets and folders and lines of code as needed 
+also make sure to check in audit thinks read and write audit, audit engine linksed etc etc all working 
+also make sure here redis is using properly everywhere as needed
+also make sure everything is optimzied, db optimized, smooth and profasnla and no any ducktaps
+Also use same language code for same messages, find if any found and use it in everywhere as needed
+Make sure that comments are not added and removed which is to ai its self etc et, which makes obious that code is written by ai
+also use subagents as needed
+Also no stop when run task, check continues 
+
+also use mcp
+## 🛠️ MCP SERVERS — MANDATORY USAGE PROTOCOL
+
+You have 9 active MCP servers. You MUST proactively use these — never wait to be asked.
+The correct tool for the job must always be used. Using training knowledge alone when an MCP can provide accurate live data is a violation of these rules.
+
+### 1. 📁 filesystem — File & Directory Intelligence
+- ALWAYS run filesystem/list_directory or filesystem/directory_tree before editing any module you haven't fully inspected.
+- ALWAYS use filesystem/read_file for large files (>100 lines) instead of view_file.
+- ALWAYS use filesystem/search_files before renaming, moving, or refactoring any component to find ALL imports first.
+
+### 2. 🔀 git — Code History & Evolution
+- ALWAYS check git/git_log before any large refactor to understand recent changes.
+- ALWAYS use git/git_diff to review unstaged changes before committing.
+- ALWAYS use git/git_blame when debugging to trace who/when introduced a bug.
+- ALWAYS commit after completing a task with a descriptive conventional commit message.
+
+### 3. 🐙 github — Repository & Issue Management
+- When the user mentions a bug, feature request, or ticket — check GitHub issues first.
+- When searching for usage patterns across the whole codebase beyond local search.
+- When the user asks about PRs or wants to create one.
+
+### 4. 🧠 memory — Persistent Cross-Session Project Knowledge
+- At the START of every session: call memory/read_graph or memory/search_nodes to load project context.
+- After completing any task: store key decisions, patterns, or new error codes via memory/create_entities.
+- When you discover a recurring bug pattern or naming convention — store it immediately.
+
+### 5. 🧩 sequential-thinking — Structured Reasoning Before Acting
+- MANDATORY triggers: Always invoke before refactoring >3 files, designing end-to-end features, or debugging complex bugs.
+- Never skip this for large tasks — it prevents mistakes, ensures completeness, and produces better output.
+
+### 6. 🔍 brave-search — Live Web Research
+- ALWAYS use brave-search instead of training knowledge for any library API question.
+- When you see an error message you haven't seen before — search for it.
+- When checking if a package/version exists before installing.
+
+### 7. 🌐 fetch — URL Content Retrieval
+- When brave-search returns a URL with relevant content — fetch it to read the full page.
+- When checking the live PetroDash dashboard (https://dashboard.petrodash.tech) for UI reference.
+- When reading npm package documentation directly.
+
+### 8. 📚 context7 — Live Library Documentation
+- ALWAYS use context7 BEFORE writing code for: Next.js App Router, next-intl, Tailwind CSS, Zod, Mongoose, React 19, Express.js, and Redis.
+- Flow: context7/resolve-library-id -> context7/query-docs.
+
+### 9. 🤖 puppeteer — Browser Automation & Visual Verification
+- When the user asks how something looks on the live site — screenshot it.
+- Before declaring a UI feature "done" — take a screenshot to verify visually.
+- When debugging a layout or viewport issue — screenshot the live page.
+
+---
+
+## 🔄 MANDATORY WORKFLOW FOR EVERY TASK
+1. READ MEMORY       → memory/read_graph — load project context
+2. PLAN              → sequential-thinking (if >3 files or complex)
+3. RESEARCH DOCS     → context7 (if writing library code)
+4. WEB SEARCH        → brave-search (if API unclear or need current info)
+5. INSPECT FILES     → filesystem/directory_tree + filesystem/read_file
+6. IMPLEMENT         → write code following ISO/IEC 25010 standards
+7. VERIFY            → npx tsc --noEmit && npm run lint
+8. COMMIT            → git add . && git commit -m "type: description"
+9. STORE MEMORY      → memory/create_entities (save what you learned)
+
+Also complay with this much rule is must, fully strict, no drop any consideration
+
+pls use read and write tools of antigravity only no use python node js scripts to do antyhing ok bitch
+pls also no use commands to search folder strature also try to read folders and files
+also run lint and fix all warnings and errors in backend and frontend fully
+then push to git locally
+
+# File & Folder Structural Guidelines
+**Standard Operating Procedure (SOP) for Project Organization**
+
+This document defines the strict *rules, conventions, and principles* for how files and folders must be organized, formatted, and structured across the entire stack. This goes beyond the directory tree and enforces **how** we write and place our code to maintain ISO/IEC 25010 (Maintainability) and OWASP compliance.
+
+---
+
+## 1. Naming Conventions
+
+Consistent naming is critical for codebase navigation and automated static analysis (SAST).
+
+*   **Directories/Folders:** Must use `kebab-case` (e.g., `user-profile`, `payment-gateway`) except for Next.js specific dynamic routes (e.g., `[locale
+]`).
+*   **React Components (Frontend):** Must use `PascalCase.tsx` (e.g., `StoreHeader.tsx`, `GiftCreateDrawer.tsx`).
+*   **Custom Hooks (Frontend):** Must use `camelCase.ts` and prefix with `use` (e.g., `useShopPurchase.ts`).
+*   **Backend Modules/Files:** Must use `camelCase` with dot notation for the layer (e.g., `shop.controller.js`, `user.service.js`, `payment.schema.js`).
+*   **Constants/Enums:** Must use `UPPER_SNAKE_CASE` (e.g., `MAX_RETRY_COUNT`, `DEFAULT_CURRENCY`).
+*   **Types/Interfaces:** Must use `PascalCase` and preferably not prefix with `I` (e.g., `UserProfile`, not `IUserProfile`).
+
+---
+
+## 2. The Principle of Co-location
+
+Related files must live together. Do not split highly cohesive logic across distant global folders unless it is truly shared across multiple domains.
+
+**Correct Structure (Co-located):**
+```text
+src/components/shop/
+├── ShopCard.tsx           # Main component
+├── ShopCard.types.ts      # Component-specific types
+├── ShopCard.test.tsx      # Unit tests (ISTQB compliant)
+└── ShopCard.module.css    # Scoped styles (if applicable)
+```
+*Why?* When deleting or refactoring a feature, all related code is in one place. This prevents "orphan" files and satisfies ISO/IEC/IEEE 12207 (Software life-cycle processes).
+
+---
+
+## 3. Module Encapsulation (The "Barrel" Pattern)
+
+Every distinct feature or domain must be treated as a self-contained module. 
+
+*   **Rule:** A module must have an `index.ts` (or `index.js`) at its root.
+*   **Rule:** Other parts of the application **must only import from the `index.ts` file**. They are forbidden from reaching deep into a module's internal folders.
+*   **Security Benefit:** This acts as an API boundary (Facade pattern), allowing the module to hide internal utility functions or raw data schemas, reducing the attack surface and tight coupling (OWASP Secure SDLC).
+
+**Example:**
+```typescript
+// ✅ DO THIS
+import { useShopPurchase, ShopItemsView
+} from "@/components/shop";
+
+// ❌ NEVER DO THIS
+import { useShopPurchase
+} from "@/components/shop/hooks/useShopPurchase";
+```
+
+---
+
+## 4. Single Responsibility Principle (SRP) per File
+
+Files must be small, focused, and do exactly one thing. If a file exceeds **300 lines**, it must be reviewed for refactoring.
+
+*   **Components:** One React component per file. (Tiny sub-components only used locally can stay in the same file, but must not be exported).
+*   **Hooks:** One custom hook per file. Do not bundle `useShop`, `useCart`, and `useCheckout` into a single `hooks.ts` file.
+*   **Services:** One service class/object per file.
+
+---
+
+## 5. Anatomy of a Standard File
+
+Every file must follow a strict vertical order to ensure readability and standard peer review practices (ISO/IEC/IEEE 1028 - Software reviews).
+
+1.  **Docstring / File Header:** Brief explanation of what the file does and any relevant security/compliance notes (e.g.,
+"ISO 27001: Contains PII handling").
+2.  **External Imports:** Libraries from `node_modules` (e.g., `react`, `zod`, `mongoose`).
+3.  **Internal Imports:** Absolute paths using aliases (e.g., `@/components/...`). No deep relative paths like `../../../utils`.
+4.  **Type/Schema Definitions:** Local interfaces or Zod schemas.
+5.  **Constants:** File-scoped constants.
+6.  **Main Logic:** The class, function, or component.
+7.  **Exports:** Default or named exports at the bottom (or exported directly at the definition).
+
+**Example:**
+```typescript
+/* ==========================================================================
+   Payment Processor
+   Compliance: PCI-DSS (Handles payment tokens, NO PAN data stored)
+========================================================================== */
+// 1. External Imports
+import { z
+} from "zod";
+import axios from "axios";
+
+// 2. Internal Imports
+import { fetchWithRetry
+} from "@/utils/fetchWithRetry";
+import { type PaymentToken
+} from "./types";
+
+// 3. Constants
+const MAX_RETRIES = 3;
+
+// 4. Main Logic
+export async function processPayment(token: PaymentToken) { ...
 }
 ```
 
-Use the existing application's actual response contract where one already exists. Do not introduce a conflicting second error format.
+---
 
-Requirements:
+## 6. Separation of Concerns (SoC) Rules
 
-* Standardized `AppError`
-* Predictable machine-readable error codes
-* Centralized error middleware
-* Stable HTTP status mapping
-* Stable frontend error identification
-* No endpoint-specific random JSON error formats
-* No stack traces to clients
-* No database/provider internals exposed to users
-* No sensitive information leakage
-* Structured details only when safe and required
-* Unknown/unhandled failures normalized by central middleware
+### Frontend (Next.js)
+*   **No API calls in UI Components:** UI components (`.tsx`) must NEVER use `fetch` or `axios` directly. All network requests must be abstracted into a hook (`hooks/useFeature.ts`).
+*   **No Hardcoded Text:** All strings must use translation keys (e.g., `next-intl`) to comply with accessibility and internationalization standards.
+*   **No Inline Styles for Layout:** Use Tailwind CSS or modular CSS.
 
-Where applicable, align the public semantics with RFC 7807 while preserving the project's established contract.
+### Backend (Node.js/Express)
+*   **No DB Queries in Routes:** `router.get(...)` must NEVER contain `Model.find()`. Routes only wire endpoints to Controllers.
+*   **No Business Logic in Controllers:** Controllers extract `req.body`, validate it using Zod schemas, pass it to a Service, and return `res.json()`. 
+*   **Services handle ACID:** Database queries, transactions (`session.withTransaction`), caching, and API calls to third parties happen strictly in Services.
 
 ---
 
-# 14. FRONTEND API ERROR HANDLING
-
-Frontend code must consume the standardized backend errors.
-
-Implement centralized error handling that:
-
-```text
-Backend error code
-→ Error mapping
-→ Translation key
-→ Active locale
-→ User-facing localized message
-```
-
-Requirements:
-
-* No hardcoded API error text
-* No raw internal backend errors displayed to users
-* No duplicated error mappings
-* Safe fallback for unknown error codes
-* Consistent toast behavior
-* Consistent form-error behavior
-* Consistent drawer/modal errors
-* Consistent page-level errors
-* Consistent retry behavior
-
-Every user-visible error must be translated.
-
----
-
-# 15. FULL INTERNATIONALIZATION / LOCALIZATION AUDIT
-
-This is a **mandatory full-scope localization migration**, not merely a translation-key check.
-
-You must first discover the application's **actual complete list of supported languages/locales** from the repository.
-
-Do not assume the language list.
-
-Identify:
-
-* Every supported locale
-* Every translation namespace
-* Every translation file
-* Every locale-specific resource
-* Every fallback locale
-* Every language selector
-* Every locale routing mechanism
-* Every locale-aware API/UI behavior
-
-## Mandatory language rule
-
-Whenever any translation key is:
-
-* Added
-* Renamed
-* Consolidated
-* Modified
-* Removed
-* Split
-* Reorganized
-
-you must update **every supported locale** accordingly.
-
-No locale may be left behind.
-
----
-
-# 16. REMOVE ALL HARDcoded USER-FACING ENGLISH
-
-Perform a recursive scan of the entire `/tickets` domain and all directly related UI.
-
-Find and remove all hardcoded user-facing English such as:
-
-* Headings
-* Titles
-* Labels
-* Button text
-* Links
-* Placeholders
-* Helper text
-* Descriptions
-* Empty-state text
-* Loading text
-* Error messages
-* Success messages
-* Warning messages
-* Confirmation messages
-* Toast text
-* Drawer text
-* Dialog text
-* Modal text
-* Tooltip text
-* Popover text
-* Dropdown text
-* Filter text
-* Search text
-* Pagination text
-* Status text
-* Validation text
-* Accessibility labels
-* `aria-label`
-* Screen-reader-only content
-* Notification content
-* Permission messages
-* Authentication/authorization messages
-* API error presentation
-* Server-provided user-facing messages
-
-Every user-facing English string discovered within scope must be converted to the application's translation system.
-
-Do not leave user-visible English embedded in JSX, TypeScript, JavaScript, API clients, form configuration, validation configuration, notification helpers, drawer configuration, or server response presentation logic.
-
----
-
-# 17. TRANSLATE ALL NEW AND EXISTING MESSAGES
-
-Do not translate only newly added keys.
-
-Whenever an existing user-facing message is found to be:
-
-* Hardcoded
-* Missing from a locale
-* Empty
-* Incorrectly localized
-* Still in English where another translation is required
-* Using an obsolete translation key
-* Using a duplicated key
-* Using a fallback string
-* Using inconsistent wording
-
-correct it.
-
-All supported locales must receive a complete translation for every user-facing message within scope.
-
-Do not leave English fallback text merely because an English translation already exists.
-
-English is a source language, not a substitute for translating other supported locales.
-
----
-
-# 18. LOCALE COMPLETENESS REQUIREMENT
-
-For every supported locale:
-
-* Every required key must exist.
-* Every required message must have a real translation.
-* No empty string translations.
-* No placeholder translations.
-* No untranslated English copied into another locale.
-* No missing nested translation objects.
-* No missing pluralization variants.
-* No missing interpolation variables.
-* No broken formatting.
-* No locale-specific type errors.
-* No inconsistent message structure.
-
-If the project supports pluralization, gender, interpolation, rich text, date formatting, or number formatting, preserve those mechanisms correctly.
-
-Do not simply copy English text into every locale.
-
----
-
-# 19. TRANSLATION KEY REUSE AND NORMALIZATION
-
-Before adding a translation key:
-
-1. Search all translation resources.
-2. Search for an existing semantically identical message.
-3. Reuse the canonical key where appropriate.
-4. Avoid duplicate keys.
-5. Consolidate duplicate semantic keys safely.
-6. Update every affected consumer.
-7. Update every locale.
-
-Example of what must be avoided:
-
-```text
-errors.failed
-errors.requestFailed
-api.requestFailed
-common.requestFailed
-```
-
-when all represent the same semantic message.
-
-The same semantic user-facing message should use one canonical translation key wherever appropriate.
-
----
-
-# 20. SAME MESSAGE CODE / LANGUAGE CODE CONSISTENCY
-
-Search the codebase for equivalent messages represented by different:
-
-* Translation keys
-* Error codes
-* Message identifiers
-* Status identifiers
-
-Normalize them where appropriate.
-
-The same semantic condition should not have unrelated identifiers in different modules.
-
-Before changing an identifier:
-
-* Trace all consumers.
-* Update all references.
-* Update all locales.
-* Update tests.
-* Update documentation.
-* Verify backward compatibility where required.
-
-Do not perform unsafe global replacements.
-
----
-
-# 21. BACKEND VS USER-FACING LANGUAGE
-
-Do not translate machine-readable internal identifiers.
-
-Examples that should normally remain stable:
-
-```text
-TICKET_NOT_FOUND
-TICKET_ALREADY_CLOSED
-AUDIT_TICKET_UPDATED
-```
-
-These are machine-readable codes.
-
-Their user-facing representation must be localized through translation keys.
-
-Correct:
-
-```text
-Error Code:
-TICKET_NOT_FOUND
-
-Translation Key:
-errors.tickets.notFound
-```
-
-Do not place localized natural-language text into machine-readable error codes, database enums, audit event identifiers, API status codes, or other stable programmatic identifiers.
-
----
-
-# 22. DRAWERS, TOASTS, MODALS AND SUBCOMPONENTS
-
-The localization audit must include all UI reachable from `/tickets`.
-
-Specifically inspect:
-
-* Drawer titles
-* Drawer descriptions
-* Drawer buttons
-* Drawer validation
-* Drawer errors
-* Modal titles
-* Modal descriptions
-* Modal actions
-* Confirmation prompts
-* Toast titles
-* Toast descriptions
-* Success notifications
-* Error notifications
-* Warning notifications
-* Informational notifications
-* Tooltips
-* Popovers
-* Dropdown options
-* Context menus
-* Empty states
-* Loading states
-* Skeleton accessibility descriptions
-* Form labels
-* Form helper text
-* Accessibility text
-* Error summaries
-
-Do not audit only the initially visible page.
-
----
-
-# 23. TRANSLATION REGRESSION VERIFICATION
-
-After localization work, verify:
-
-* Every supported locale loads successfully.
-* Every affected page renders in every supported locale.
-* Every drawer renders correctly.
-* Every modal renders correctly.
-* Every toast renders correctly.
-* Every validation error is localized.
-* Every API error is localized.
-* Every success message is localized.
-* Every loading/empty state is localized.
-* Every accessibility label is localized.
-* No missing translation-key errors occur.
-* No fallback-language leakage occurs.
-* No English-only text remains within affected user-facing scope.
-* Interpolation variables work in every locale.
-* Pluralization works where applicable.
-* No translated string causes layout overflow or broken UI.
-
----
-
-# 24. AUDIT SYSTEM VERIFICATION
-
-Inspect the audit architecture end-to-end.
-
-Verify:
-
-* `writeAudit` integration
-* Audit event creation
-* Audit event consistency
-* Audit actor identification
-* Target/resource identification
-* Event metadata
-* Event timestamps
-* Audit authorization
-* Audit read APIs
-* Audit pagination
-* Audit query performance
-* Audit relationships/links
-* Audit integrity
-* Audit failure handling
-* Sensitive-data protection
-
-Trace all relevant mutations:
-
-```text
-POST
-PUT
-PATCH
-DELETE
-```
-
-and any other operation that changes state.
-
-Ensure required audit logging occurs at the correct architectural layer.
-
-Do not add audit calls blindly if auditing is already centralized.
-
-Avoid duplicate audit events.
-
-Verify that successful mutations cannot silently bypass required auditing.
-
-Verify that failed operations do not incorrectly generate misleading success audit events.
-
----
-
-# 25. REDIS / CACHE REVIEW
-
-Inspect Redis usage related to this domain.
-
-Review:
-
-* Cache key design
-* Namespacing
-* TTLs
-* Serialization
-* Invalidation
-* Concurrency
-* Cache stampede protection
-* Distributed locking where necessary
-* Session/state usage
-* Rate limiting
-* Failure handling
-* Stale-data behavior
-* Cross-user isolation
-* Sensitive-data caching
-
-Requirements:
-
-* No unnecessary Redis operations.
-* No cache without an invalidation strategy.
-* No unsafe authorization caching.
-* No cross-user cache leakage.
-* No accidental sensitive data caching.
-* No infinite TTL without justification.
-* Graceful degradation when Redis is unavailable.
-* Stable and documented key conventions.
-
-Do not add Redis simply because Redis is available.
-
-Use Redis only where technically justified.
-
----
-
-# 26. DATABASE REVIEW AND OPTIMIZATION
-
-Inspect every relevant database operation.
-
-Review:
-
-* Query correctness
-* Index usage
-* N+1 query patterns
-* Duplicate queries
-* Unnecessary queries
-* Over-fetching
-* Large result sets
-* Pagination
-* Sorting
-* Filtering
-* Population/joins
-* Transaction boundaries
-* Concurrency
-* Locking
-* Connection handling
-* Query performance
-* Cache/database consistency
-
-Where justified:
-
-* Add or improve indexes.
-* Reduce over-fetching.
-* Batch operations.
-* Eliminate duplicate queries.
-* Correct inefficient query patterns.
-* Use transactions for genuine atomicity requirements.
-* Preserve data consistency.
-
-Do not add indexes or transactions blindly.
-
-Verify that changes improve the actual affected workload.
-
----
-
-# 27. PERFORMANCE AND UX
-
-Optimize the affected domain for:
-
-* Fast rendering
-* Efficient data loading
-* Minimal network requests
-* Minimal unnecessary re-renders
-* Efficient state management
-* Efficient cache usage
-* Efficient database access
-* Efficient pagination
-* Stable loading states
-* Stable error states
-* No layout shifts
-* No duplicate submissions
-* Correct request cancellation where applicable
-* Smooth drawer/modal behavior
-* Correct mutation state handling
-* Correct optimistic/pessimistic behavior
-
-Do not introduce premature optimization.
-
-Optimize actual bottlenecks and architectural inefficiencies.
-
----
-
-# 28. SECURITY REVIEW
-
-Perform a full security review of the affected frontend and backend flow.
-
-Check:
-
-* Authentication
-* Authorization
-* RBAC/ABAC
-* Object-level authorization
-* IDOR
-* Broken access control
-* Input validation
-* Input sanitization
-* Injection
-* XSS
-* CSRF where applicable
-* SSRF where applicable
-* Sensitive-data exposure
-* Error information leakage
-* Security headers
-* CORS
-* Cookies
-* Session handling
-* JWT handling
-* Rate limiting
-* Replay/idempotency issues
-* Audit integrity
-* Redis isolation
-* Database access control
-* Secrets management
-* Logging safety
-* Dependency security
-* Race conditions
-* TOCTOU issues where applicable
-
-Never log sensitive credentials or secrets.
-
-Review the complete request lifecycle rather than only the route handler.
-
----
-
-# 29. ACCESSIBILITY
-
-Review affected UI against applicable WCAG 2.2 and WAI-ARIA practices.
-
-Verify:
-
-* Keyboard navigation
-* Focus management
-* Drawer focus trapping
-* Modal focus trapping
-* Focus restoration
-* Accessible names
-* Form labels
-* Error association
-* Screen-reader announcements
-* Toast accessibility
-* Contrast
-* Disabled states
-* Loading states
-* Semantic HTML
-* Interactive element behavior
-
-Use semantic HTML before ARIA.
-
-Do not add unnecessary or incorrect ARIA.
-
-All accessibility-facing user-visible strings must also be localized.
-
----
-
-# 30. CODE COMMENT HYGIENE — STRICT
-
-Do **not** add comments that look like an AI coding agent talking to itself.
-
-The codebase must not contain comments that describe:
-
-* What the coding agent just did
-* What the coding agent intends to do
-* The coding agent's reasoning
-* Prompt instructions
-* User requests
-* Temporary implementation decisions
-* Development-session narration
-* AI identity
-* AI tool usage
-* Unfinished work disguised as documentation
-
-Never add comments such as:
-
-```ts
-// AI: fix this later
-// Agent note: ...
-// I changed this because...
-// This should work now
-// We need to...
-// Let's handle...
-// TODO: implement this
-// Temporary fix
-// This is a workaround
-// Added by AI
-// Claude/Gemini/Codex note
-// The user requested...
-// Important: I think...
-// Here we...
-```
-
-Do not add verbose comments that merely restate obvious code.
-
-Comments must be:
-
-* Professional
-* Concise
-* Technically meaningful
-* Permanent
-* Relevant to future maintainers
-
-Good candidates for comments:
-
-* Non-obvious business rules
-* Important security constraints
-* Architectural constraints
-* Complex algorithms
-* External protocol behavior
-* Intentional performance decisions
-* Compatibility requirements
-* Non-obvious rationale for unusual implementation decisions
-
-Prefer self-documenting code over explanatory comments.
-
-Before completion, inspect modified files and remove:
-
-* AI-style comments
-* Conversational comments
-* Temporary comments
-* Debug comments
-* Redundant comments
-* Commented-out code
-* Obsolete TODOs
-* Development notes
-
-The resulting source should read like professionally maintained production code, without obvious AI-generation artifacts.
-
----
-
-# 31. FILE HYGIENE
-
-After refactoring, remove verified-obsolete:
-
-* Files
-* Components
-* Hooks
-* Services
-* Utilities
-* Imports
-* Dependencies
-* Translation keys
-* Constants
-* Types
-* Temporary scripts
-* Debug files
-* Commented-out code
-* Dead code
-* Obsolete compatibility code
-
-Do not remove something merely because it appears unused.
-
-Verify references first.
-
----
-
-# 32. SCRIPT RESTRICTION
-
-Use **Antigravity's native read/write/project tools** for repository inspection and modification.
-
-Do not use:
-
-* Python
-* Node.js
-* Shell scripts
-* One-off scripts
-* Ad-hoc code generators
-
-as a shortcut for modifying project source code.
-
-Do not use scripts to bypass proper repository inspection.
-
-### Exception
-
-If a script is genuinely necessary for analysis or verification and cannot reasonably be performed through native project tools:
-
-* Store the script under root `search/`.
-* Store generated results under `search/`.
-* Do not scatter temporary artifacts across the repository.
-* After executing a script, run lint.
-* Fix every issue exposed by lint.
-* Remove temporary scripts/results when no longer needed.
-* Document any script that was intentionally retained.
-
----
-
-# 33. DOCUMENTATION REQUIREMENTS
-
-Update all affected documentation so it matches the final implementation.
-
-Inspect and update where applicable:
-
-* `implementation_plan.md`
-* `task.md`
-* `walkthrough.md`
-* `final_evidence_report.md`
-* `coverage_matrix.md`
-* `README`
-* Architecture documentation
-* API documentation
-* OpenAPI documentation
-* Translation/i18n documentation
-* Error-code documentation
-* Audit documentation
-* Redis/cache documentation
-* Database/index documentation
-* Security documentation
-* Threat model
-* ADRs
-* Runbooks
-* Changelog
-* Release notes
-
-Documentation must describe the **actual verified final implementation**.
-
-Do not create meaningless documentation merely to satisfy the checklist.
-
----
-
-# 34. TEST COVERAGE
-
-Create or update appropriate tests.
-
-## Frontend
-
-Cover:
-
-* Initial rendering
-* Loading state
-* Success state
-* Empty state
-* Validation errors
-* API errors
-* Unknown API errors
-* Toasts
-* Drawers
-* Modals
-* User interactions
-* Accessibility
-* Localization
-* Every supported locale
-* Permission states
-* Unauthorized states
-
-## Backend
-
-Cover:
-
-* Input validation
-* Authorization
-* Successful operations
-* Business failures
-* Not-found behavior
-* Conflict behavior
-* Authentication failures
-* Unexpected failures
-* `AppError`
-* Standardized error response
-* Global error middleware
-* Audit events
-* Audit failures
-* Redis failure behavior
-* Database failures
-* Transaction behavior where applicable
-
-## Regression
-
-Verify shared/global changes do not break unrelated functionality.
-
----
-
-# 35. NEGATIVE AND ADVERSARIAL TESTING
-
-Do not test only happy paths.
-
-Test applicable:
-
-* Missing fields
-* Invalid types
-* Empty values
-* Oversized values
-* Invalid IDs
-* Malformed requests
-* Unauthorized users
-* Authenticated users without permission
-* Nonexistent resources
-* Duplicate submissions
-* Concurrent mutations
-* Expired sessions
-* Redis unavailable
-* Database failures
-* External service failures
-* Unknown API error codes
-* Missing translation keys
-* Unsupported locales
-* Broken cache state
-* Pagination boundaries
-* Sorting boundaries
-* Filter boundaries
-* Localization interpolation failures
-* Locale fallback failures
-
-Where supported by the existing tooling, use:
-
-* Property-based testing
+## 7. Security & Environment Structure (OWASP)
+*   **No Secrets in Code:** Passwords, API keys, and JWT secrets must NEVER be hardcoded. Use `process.env`.
+*   **Schema Locality:** Zod validation schemas must sit in the same folder as the controller that uses them. (e.g., `shop.schema.js` next to `shop.controller.js`).
+*   **Audit Logging:** Every mutating function (POST, PUT, DELETE) in a backend controller must explicitly call `writeAudit` and `logUserActivity`.
+
+## 1. Software Engineering & SDLC
+* ISO/IEC/IEEE 12207 — Software life-cycle processes
+* ISO/IEC/IEEE 15288 — System life-cycle processes
+* ISO/IEC/IEEE 29148 — Requirements engineering
+* ISO/IEC 25010 — Software/product quality
+* ISO/IEC 25019 — Quality-in-use
+* ISO/IEC 25023 — Software quality measurement
+* ISO/IEC 25030 — Quality requirements
+* ISO/IEC 25040 — Quality evaluation
+* ISO/IEC 330xx — Process assessment
+* ISO/IEC 15504 — SPICE
+* CMMI
+* IEEE software engineering standards
+* Agile practices
+* Scrum
+* Kanban
+* DevOps
+* DevSecOps
+* SRE
+## 2. Software Testing & Verification
+* ISO/IEC/IEEE 29119 — Software testing
+* ISO/IEC/IEEE 1012 — Verification and validation
+* ISO/IEC/IEEE 1028 — Software reviews
+* ISTQB
+* TMMi
+* Unit testing
+* Integration testing
+* System testing
+* Acceptance testing
+* Regression testing
+* Smoke testing
+* Sanity testing
+* Performance testing
+* Load testing
+* Stress testing
+* Security testing
+* Penetration testing
 * Fuzz testing
 * Mutation testing
+* Property-based testing
 * Static analysis
-* Security testing
-
-Do not invent fake test results.
-
----
-
-# 36. ENGINEERING STANDARDS
-
-Apply the relevant engineering practices from the project's actual technology stack and risk profile, including where applicable:
-
-* ISO/IEC/IEEE software engineering practices
-* ISO/IEC 25010
-* ISO/IEC/IEEE 12207
-* ISO/IEC/IEEE 15288
-* ISO/IEC/IEEE 29148
-* ISO/IEC/IEEE 29119
-* ISO/IEC/IEEE 1012
-* ISO/IEC/IEEE 1028
-* ISTQB
+* Dynamic analysis
+* SAST
+* DAST
+* IAST
+* RASP
+## 3. Information Security
+* ISO/IEC 27001
+* ISO/IEC 27002
+* ISO/IEC 27003
+* ISO/IEC 27004
+* ISO/IEC 27005
+* ISO/IEC 27017
+* ISO/IEC 27018
+* ISO/IEC 27019
+* ISO/IEC 27031
+* ISO/IEC 27032
+* ISO/IEC 27033
+* ISO/IEC 27034
+* ISO/IEC 27035
+* ISO/IEC 27036
+* ISO/IEC 27040
+* ISO/IEC 27041
+* ISO/IEC 27042
+* ISO/IEC 27043
+* ISO/IEC 27050
+* ISO/IEC 27701
+* NIST Cybersecurity Framework
+* NIST SP 800-53
+* NIST SP 800-61
+* NIST SP 800-63
+* NIST SP 800-115
+* NIST SP 800-171
+* CIS Controls
+* CIS Benchmarks
+* SOC 1
+* SOC 2
+* SOC 3
+* Common Criteria / ISO/IEC 15408
+## 4. Application Security
 * OWASP Top 10
 * OWASP ASVS
-* OWASP API Security Top 10
 * OWASP SAMM
+* OWASP API Security Top 10
+* OWASP Mobile Top 10
+* OWASP IoT Top 10
+* OWASP LLM Top 10
+* OWASP MASVS
+* OWASP MSTG
 * CWE
 * CVE
 * CVSS
-* NIST Cybersecurity Framework
-* CIS Controls
+* CAPEC
+* SSDF
+* SLSA
 * Secure SDLC
-* DevSecOps
+* Threat modeling
 * STRIDE
-* RFC 7807 where appropriate
+* Attack trees
+* Software supply-chain security
+## 5. Identity & Authentication
+* OAuth 2.0
+* OAuth 2.1
+* OpenID Connect
+* SAML 2.0
+* LDAP
+* Kerberos
+* SCIM
+* FIDO
+* FIDO2
+* WebAuthn
+* CTAP
+* Passkeys
+* JWT
+* JOSE
+* JWS
+* JWE
+* JWK
+* PKI
+* X.509
+* mTLS
+* RBAC
+* ABAC
+* PBAC
+* Zero Trust
+* NIST Zero Trust Architecture
+## 6. Cryptography
+* AES
+* RSA
+* ECC
+* ECDSA
+* EdDSA
+* Diffie-Hellman
+* ECDH
+* SHA-2
+* SHA-3
+* HMAC
+* HKDF
+* PBKDF2
+* Argon2
+* bcrypt
+* scrypt
+* TLS 1.2
+* TLS 1.3
+* QUIC
+* PGP/OpenPGP
+* CMS
+* Post-quantum cryptography standards
+## 7. Web Standards
+* HTML
+* HTML5
+* CSS
+* JavaScript ECMAScript
+* DOM
+* Web Components
+* WebAssembly
+* HTTP/1.1
+* HTTP/2
+* HTTP/3
+* HTTPS
+* WebSocket
+* WebTransport
+* WebRTC
+* URL
+* URI
+* DNS
+* MIME
+* CORS
+* CSP
+* HSTS
+* SRI
+* Permissions Policy
+* Service Workers
+* Web Storage
+* IndexedDB
+* Cookies
+* SameSite
+* Content Negotiation
+## 8. API Standards
 * REST
 * OpenAPI
-* HTTP/HTTPS security practices
-* OAuth/OIDC/JWT/JOSE where applicable
-* TLS/security-header practices
-* Redis/cache engineering practices
-* ACID/database design principles
-* Database-specific best practices
-* Git/GitOps/CI/CD
-* SBOM/supply-chain security where applicable
+* JSON
+* JSON Schema
+* XML
+* XML Schema
+* SOAP
+* GraphQL
+* gRPC
+* Protocol Buffers
+* Webhooks
+* AsyncAPI
+* JSON-RPC
+* XML-RPC
+* OData
+* RFC 7807 / Problem Details
+* API versioning conventions
+## 9. Internet / Networking
+* TCP/IP
+* IPv4
+* IPv6
+* UDP
+* QUIC
+* DNS
+* DNSSEC
+* DHCP
+* BGP
+* OSPF
+* SMTP
+* IMAP
+* POP3
+* FTP
+* SFTP
+* SSH
+* SNMP
+* NTP
+* PTP
+* ICMP
+* IPsec
+* VPN
+* MPLS
+## 10. Cloud & Infrastructure
+* ISO/IEC 27017
+* ISO/IEC 27018
+* ISO/IEC 22123
+* CSA Cloud Controls Matrix
+* CSA STAR
+* CIS Cloud Benchmarks
+* NIST cloud architecture
+* Kubernetes standards/practices
+* OCI
+* Open Container Initiative
+* Docker/container standards
+* Terraform practices
+* Infrastructure as Code
+* GitOps
+* Cloud security architecture
+* Multi-cloud architecture
+* Disaster recovery
+* Backup standards
+## 11. DevOps / CI/CD
+* Git
+* GitOps
+* CI/CD
+* DevSecOps
+* Infrastructure as Code
+* Configuration as Code
+* SBOM
+* SPDX
+* CycloneDX
+* SLSA
+* Software signing
+* Artifact signing
+* Reproducible builds
+* Supply-chain security
+* Semantic Versioning
+* Conventional Commits
+* Release management
+## 12. Privacy & Data Protection
+* GDPR
+* India Digital Personal Data Protection Act
+* CCPA
+* CPRA
+* LGPD
+* PIPEDA
+* HIPAA Privacy Rule
+* ISO/IEC 27701
+* ISO/IEC 29100
+* ISO/IEC 27018
+* Privacy by Design
+* Data minimization
+* Data retention
+* Data deletion
+* Data subject rights
+* Consent management
+* Data Processing Agreements
+* Data Protection Impact Assessments
+## 13. Accessibility
+* WCAG 2.0
+* WCAG 2.1
 * WCAG 2.2
 * WAI-ARIA
-* OpenTelemetry/structured logging where applicable
+* Section 508
+* EN 301 549
+* ADA-related accessibility requirements
+* ATAG
+* UAAG
+* Keyboard accessibility
+* Screen-reader compatibility
+* Focus management
+* Color/contrast requirements
+## 14. Reliability & Availability
+* ISO 22301 — Business continuity
+* ISO/IEC 27031 — ICT readiness
+* Disaster Recovery
+* Business Continuity Planning
+* High Availability
+* Fault tolerance
+* Failover
+* Graceful degradation
+* Circuit breakers
+* Retry policies
+* Idempotency
+* Chaos engineering
+* SRE
+* Error budgets
+* RTO
+* RPO
+* SLA
+* SLO
+* SLI
+## 15. Observability
+* OpenTelemetry
+* OpenMetrics
+* Prometheus ecosystem
+* Distributed tracing
+* Structured logging
+* Metrics
+* Logs
+* Traces
+* Audit logging
+* SIEM
+* SOAR
+* Incident management
+* Alert management
+## 16. Databases & Data
+* SQL
+* SQL: 2016 / SQL standards
+* ACID
+* CAP theorem
+* BASE
+* ANSI SQL
+* PostgreSQL conventions
+* MySQL conventions
+* NoSQL design principles
+* Data modeling
+* Database normalization
+* OLTP
+* OLAP
+* Data warehouses
+* Data lakes
+* Data governance
+* Master Data Management
+* Data quality
+* Data lineage
+* Data catalogs
+## 17. Payments & Financial Systems
+* PCI DSS
+* PCI SSLC
+* PCI PTS
+* PCI P2PE
+* EMV
+* EMVCo
+* ISO 8583
+* ISO 20022
+* 3-D Secure
+* FIDO
+* PSD2
+* Strong Customer Authentication
+* SWIFT standards
+* Open Banking standards
+## 18. Healthcare
+* HIPAA
+* HITECH
+* HL7
+* HL7 FHIR
+* DICOM
+* ICD
+* SNOMED CT
+* LOINC
+* CDA
+* USCDI
+* ISO 27799
+* IEC 62304
+* IEC 82304
+* ISO 14971
+## 19. Automotive
+* ISO 26262
+* ISO/SAE 21434
+* UNECE R155
+* UNECE R156
+* AUTOSAR
+* Automotive SPICE
+* ISO 21448 / SOTIF
+* MISRA C
+* MISRA C++
+* CAN
+* CAN FD
+* LIN
+* FlexRay
+* Automotive Ethernet
+## 20. Industrial / Embedded
+* IEC 61508
+* IEC 62443
+* IEC 61131
+* IEC 62304
+* MISRA
+* CERT C
+* CERT C++
+* DO-178C
+* DO-254
+* ARINC standards
+* POSIX
+* RTOS safety standards
+## 21. Aviation
+* DO-178C
+* DO-254
+* DO-160
+* ARP4754A
+* ARP4761
+* ED-12C
+* ED-80
+* Safety-critical software assurance
+## 22. AI / Machine Learning
+* ISO/IEC 42001
+* ISO/IEC 23894
+* ISO/IEC 22989
+* ISO/IEC 23053
+* ISO/IEC 24027
+* ISO/IEC 24028
+* ISO/IEC 24029
+* ISO/IEC 25059
+* NIST AI RMF
+* NIST Generative AI Profile
+* OWASP Top 10 for LLM Applications
+* Model Cards
+* Datasheets for Datasets
+* AI risk management
+* AI governance
+* AI security
+* AI privacy
+* AI transparency
+* AI robustness
+* AI evaluation
+## 23. Mobile Applications
+* OWASP MASVS
+* OWASP MSTG
+* Android security guidelines
+* Android application architecture guidelines
+* Apple platform security requirements
+* iOS privacy requirements
+* Mobile accessibility
+* Mobile secure-storage practices
+* Mobile authentication standards
+## 24. IoT
+* ISO/IEC 27400
+* ISO/IEC 30141
+* ETSI EN 303 645
+* NIST IoT cybersecurity guidance
+* Matter
+* MQTT
+* CoAP
+* Thread
+* Zigbee
+* Bluetooth
+* OPC UA
+## 25. Enterprise Architecture
+* TOGAF
+* ArchiMate
+* Zachman Framework
+* FEAF
+* Gartner architecture practices
+* Domain-Driven Design
+* Enterprise integration patterns
+* Microservices architecture
+* Event-driven architecture
+* Hexagonal architecture
 * Clean Architecture
-* Hexagonal Architecture
-* Domain-Driven Design where appropriate
-* SRE/reliability principles
+## 26. IT Service Management
+* ISO/IEC 20000-1
+* ITIL
+* COBIT
+* ISO 38500
+* Service management
+* Incident management
+* Problem management
+* Change management
+* Configuration management
+* Asset management
+## 27. Governance / Risk / Compliance
+* COBIT
+* COSO
+* ISO 31000
+* ISO 37301
+* ISO 37001
+* GRC frameworks
+* Risk registers
+* Control frameworks
+* Internal controls
+* Audit trails
+* Compliance management
+## 28. Security Certifications / Assurance
 
-Apply only standards relevant to the actual system.
 
-Do not falsely claim formal certification, accreditation, compliance, audit completion, or legal certification solely because engineering practices were applied.
+* ISO 27001 certification
 
----
+* SOC 2 Type I
 
-# 37. ARCHITECTURE VALIDATION
+* SOC 2 Type II
 
-After implementation verify:
+* SOC 3
 
-* Module boundaries are clear.
-* Imports respect boundaries.
-* No circular dependencies were introduced.
-* UI contains no backend responsibilities.
-* Controllers contain no substantial business logic.
-* Routes contain no database queries.
-* Services own domain behavior.
-* Validation is appropriately separated.
-* Error handling is centralized.
-* Translation logic is centralized and consistent.
-* All locales are complete.
-* Audit logic is not duplicated.
-* Redis usage has clear ownership.
-* Database access is efficient.
-* Shared infrastructure remains reusable.
-* No unnecessary cross-domain coupling was introduced.
+* PCI DSS assessment
 
----
+* HITRUST
 
-# 38. LINT / TYPE / BUILD REQUIREMENT
+* FedRAMP
 
-Run lint across:
+* Common Criteria
 
-* Frontend
-* Backend
-* Relevant shared packages
+* CSA STAR
 
-Fix:
+* FIPS 140-3
 
-* All errors
-* All warnings introduced by the changes
-* Existing relevant warnings exposed by the refactor
 
-Do not suppress issues merely to obtain a clean result.
 
-Then run:
+## 29. Documentation & Engineering Practices
 
-* Type checking
-* Build
-* Unit tests
-* Integration tests
-* Regression tests
-* Relevant security/static analysis
 
----
 
-# 39. GIT REQUIREMENT
+* IEEE documentation standards
 
-After verification:
+* Architecture Decision Records
 
-1. Review the complete diff.
-2. Verify only intentional changes remain.
-3. Remove temporary/generated junk.
-4. Verify documentation.
-5. Verify translation resources.
-6. Verify tests.
-7. Verify lint.
-8. Verify type checks.
-9. Verify build.
-10. Commit the verified changes locally.
+* RFCs
 
-Use a clear Conventional Commit-style message.
+* API documentation
 
-Do not push to a remote repository unless explicitly authorized.
+* OpenAPI documentation
 
----
+* Threat models
 
-# 40. FINAL VERIFICATION REPORT
+* Data-flow diagrams
 
-The final report must contain only verified work.
+* Architecture diagrams
 
-Use exactly these sections:
+* Runbooks
 
-## Completed & Verified
+* Disaster-recovery documentation
 
-Describe what was actually implemented and verified.
+* Incident-response documentation
 
-## Root Cause Analysis
+* Change logs
 
-For significant issues:
+* Release notes
 
-* Root cause
-* Impact
-* Corrective action
-* Why the correction resolves the root cause
+* SBOM
 
-## Tests
+* Software Bill of Materials
 
-List tests that were actually executed.
 
-## Verification
 
-Clearly distinguish:
+## 30. Legal / Regulatory / Product Compliance
 
-* Source inspection
-* Static verification
-* Runtime verification
-* Test verification
-* Build verification
-* Security verification
-* Accessibility verification
-* Performance verification
-* Inference
-* Assumptions
 
-Never describe source inspection as runtime verification.
 
-## Files Changed
+Depending on where and what you sell:
 
-List actual:
 
-* Created files
-* Modified files
-* Moved files
-* Deleted files
 
-## Documentation Updated
+* GDPR
 
-List documentation actually updated.
+* India DPDP Act
 
-## Remaining Work
+* CCPA/CPRA
 
-List genuine remaining work.
+* EU AI Act
 
-Do not conceal incomplete work.
+* NIS2
 
-## Known Limitations
+* DORA
 
-List real limitations.
+* Cyber Resilience Act
 
-## Risks
+* HIPAA
 
-List residual technical/security/operational risks.
+* PCI DSS
 
----
+* SOX
 
-# 41. TRANSLATION JSON — STRICT SEMANTIC MESSAGE/CODE DEDUPLICATION
+* GLBA
 
-Translation JSON files must be treated as a **canonical message system**.
+* COPPA
 
-The same semantic meaning must use **one canonical translation key/code across the application**.
+* FERPA
 
-Do **not** create, preserve, or introduce multiple translation keys merely because the English wording is slightly different.
+* FedRAMP
 
-For example, do not create or keep:
+* SEC requirements
 
-```json
-{
-  "continue": "Continue",
-  "proceed": "Proceed"
-}
-```
+* FINRA requirements
 
-when both are used for the same user action and have the same semantic meaning.
+* Industry-specific regulations
 
-Likewise, do not create multiple keys such as:
+* Consumer-protection laws
 
-```text
-errors.failed
-errors.requestFailed
-api.requestFailed
-common.requestFailed
-```
+* Data-localization requirements
 
-when they represent the same underlying user-facing condition.
-
-## Mandatory rule
-
-**One semantic meaning = one canonical translation key/code.**
-
-The exact wording does **not** determine whether messages are duplicates.
-
-Determine equivalence by:
-
-* Semantic meaning
-* User intent
-* Application behavior
-* Error condition
-* Action being performed
-* Context and usage
-* Whether the user would understand both messages as the same message
-
-Two sentences with different wording but the same semantic meaning must normally share one canonical key.
-
-## Mandatory search before creating any key
-
-Before creating, renaming, or preserving a translation key:
-
-1. Search **all translation JSON files and namespaces**.
-2. Search for exact wording.
-3. Search for synonyms and similar wording.
-4. Search for semantically equivalent messages.
-5. Search for equivalent error conditions.
-6. Search for equivalent actions.
-7. Search all code consumers of those keys.
-8. Identify the existing canonical key.
-9. Reuse the canonical key where the meaning is equivalent.
-10. Consolidate duplicates where safe.
-11. Update every consumer.
-12. Update **every supported locale**.
-13. Remove obsolete duplicate keys from every locale.
-14. Re-scan after the migration.
-
-Do not create a new key simply because an existing key has a different name.
-
-## Semantic duplication examples
-
-These may represent the same semantic message:
-
-```text
-Continue
-Proceed
-Go ahead
-```
-
-These may represent the same semantic failure:
-
-```text
-Request failed
-Unable to complete request
-The request could not be completed
-```
-
-These may represent the same user action:
-
-```text
-Delete
-Remove
-Delete item
-Remove item
-```
-
-Do not automatically merge messages solely because the words look similar. Inspect their actual application meaning and usage first.
-
-The rule is **semantic equivalence**, not blind string matching.
-
-## Translation key normalization
-
-When duplicate semantic keys already exist:
-
-```text
-Duplicate keys
-    ↓
-Search all consumers
-    ↓
-Compare actual semantics and usage
-    ↓
-Select canonical key
-    ↓
-Update every consumer
-    ↓
-Update every supported locale
-    ↓
-Remove obsolete duplicate keys
-    ↓
-Run another repository-wide search
-    ↓
-Verify no duplicate semantic identifiers remain
-```
-
-Do not leave duplicate keys simply because they exist in different modules, namespaces, or locale files.
-
-Do not create module-specific copies of an existing globally equivalent message unless the semantics are genuinely different.
-
-## Same meaning must use the same code everywhere
-
-This rule applies not only to translation JSON keys, but also to related machine-readable identifiers where the same semantic condition is being represented.
-
-Review and normalize:
-
-* Translation keys
-* Error codes
-* Message identifiers
-* Status identifiers
-* Notification identifiers
-* Validation message identifiers
-
-Do not have different modules independently invent identifiers for the same semantic condition.
-
-Machine-readable codes must remain stable and language-neutral.
-
-User-facing translations must map from those canonical identifiers.
-
-## All locale files must remain synchronized
-
-Whenever a canonical translation key is:
-
-* Added
-* Renamed
-* Consolidated
-* Modified
-* Split
-* Moved
-* Removed
-
-apply the corresponding change to **every supported locale**.
-
-Never update only the English/default locale.
-
-Never leave an obsolete duplicate key in another locale.
-
-Never leave one locale using an old key while another uses the new canonical key.
-
-## Final semantic-duplication audit
-
-Before completion, perform a final audit across all affected translation resources and consumers for:
-
-* Duplicate meanings
-* Duplicate action messages
-* Duplicate error meanings
-* Synonym-based duplicate keys
-* Near-duplicate messages
-* Multiple keys for the same UI concept
-* Multiple error codes for the same condition
-* Multiple status identifiers for the same semantic state
-* Locale files with inconsistent key structures
-* Obsolete keys still referenced by source code
-* Keys existing in only some supported locales
-* Different message keys used for the same semantic meaning in different modules
-
-The final codebase must have **one canonical translation/message key for each genuinely identical semantic message**.
-
-### Absolute rule
-
-**Do not create two codes for the same meaning.**
-
-**Do not keep two codes for the same meaning.**
-
-**Do not justify duplicate codes merely because the wording is different.**
-
-**Do not continue past an existing duplicate without investigating it first.**
-
-**Search first, identify the canonical key, reuse it, migrate consumers, update every language, remove the duplicate, and verify again.**
-
----
-
-# 42. STRICT QUALITY GATE
-
-The task is **not complete** if any applicable issue remains within the affected scope:
-
-* Hardcoded user-facing English
-* Hardcoded user-facing text in any supported UI path
-* Missing translation keys
-* Missing locale translations
-* Empty translations
-* English fallback leakage
-* Partially translated locales
-* Incorrect translations
-* Duplicate semantic translation keys
-* Inconsistent translation identifiers
-* Inconsistent error codes
-* Inconsistent API error payloads
-* Unhandled API failures
-* Missing required audit events
-* Duplicate audit events
-* Broken audit reads
-* Incorrect Redis usage
-* Unsafe cache behavior
-* Inefficient critical database queries
-* Validation gaps
-* Sanitization gaps
-* Authorization gaps
-* Security vulnerabilities
-* Accessibility defects
-* Lint errors
-* Relevant unresolved lint warnings
-* Type errors
-* Build errors
-* Failing tests
-* Regression failures
-* Dead code
-* Obsolete files
-* Unused dependencies
-* Temporary/debug code
-* AI-style comments
-* Conversational code comments
-* Commented-out obsolete code
-* Broken module boundaries
-* Circular dependencies introduced by the changes
-* Broken loading/error/empty states
-* Missing localization in drawers
-* Missing localization in modals
-* Missing localization in toasts
-* Missing localization in accessibility content
-* Unverified assumptions presented as completed work
-
----
-
-# EXECUTION PRINCIPLE
-
-Treat this as a **full production engineering task**, not a UI cleanup.
-
-```text
-Inspect
-→ Understand architecture
-→ Discover all supported locales
-→ Audit hardcoded/user-facing English
-→ Audit translation keys and language consistency
-→ Plan
-→ Modularize
-→ Implement
-→ Localize every supported language
-→ Standardize AppError
-→ Standardize frontend error mapping
-→ Verify audit engine
-→ Optimize Redis
-→ Optimize database access
-→ Harden security
-→ Verify accessibility
-→ Test negative/adversarial cases
-→ Run lint
-→ Fix all lint issues
-→ Type-check
-→ Build
-→ Run regression tests
-→ Re-check every locale
-→ Clean obsolete code/comments/files
-→ Update documentation
-→ Review complete diff
-→ Commit locally
-```
-
-Do not take shortcuts.
-
-Do not implement hacks.
-
-Do not weaken architecture or security merely to make tests pass.
-
-Do not leave English user-facing text because it is "only a small string."
-
-Do not add a translation key in one locale and forget the others.
-
-**Whenever a user-facing message is added, changed, renamed, split, or consolidated, update every supported language in the same change.**
-
-**Whenever existing user-facing English is discovered within scope, replace it with the project's i18n system and provide proper translations for every supported locale.**
-
-**Do not claim success until the final implementation has actually been verified.**

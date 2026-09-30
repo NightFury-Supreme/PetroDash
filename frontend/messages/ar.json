@@ -887,6 +887,11 @@
     "ERR_FAILED_TO_LOAD_PLANS": "فشل تحميل خطط الأسعار.",
     "ERR_LEDGER_QUERY_INVALID": "معلمات استعلام دفتر الأستاذ غير صالحة.",
     "ERR_PAYMENT_VALIDATION_FAILED": "فشل التحقق من صحة تحديث الدفعة.",
+    "ERR_PAYMENT_NOT_FOUND": "الدفعة غير موجودة.",
+    "ERR_INVOICE_NOT_FOUND": "الفاتورة غير موجودة.",
+    "ERR_PAYMENT_PROVIDER_UNSUPPORTED": "يمكن استرداد مدفوعات PayPal فقط.",
+    "ERR_PAYMENT_CAPTURE_MISSING": "لم يتم العثور على معرف التقاط لهذه الدفعة.",
+    "ERR_PAYMENT_VOID_COMPLETED": "يجب استرداد المدفوعات المكتملة وليس إلغاؤها.",
     "ERR_USER_QUERY_INVALID": "معلمات استعلام المستخدم غير صالحة.",
     "ERR_USER_VALIDATION_FAILED": "بيانات أو تفاصيل المستخدم غير صالحة.",
     "ERR_USER_BAN_INVALID": "خيارات الحظر المقدمة غير صالحة.",
@@ -919,7 +924,12 @@
     "ERR_REFERRAL_CODE_MIN": "يجب أن يتكون رمز الإحالة من 3 أحرف على الأقل.",
     "ERR_REFERRAL_CODE_FORMAT": "يمكن أن يحتوي رمز الإحالة على أحرف وأرقام وشرطات سفلية وشرطات فقط.",
     "ERR_INVALID_URL": "يجب أن يكون رابطاً صالحاً.",
-    "ERR_FETCH_FAILED": "فشل جلب البيانات."
+    "ERR_FETCH_FAILED": "فشل جلب البيانات.",
+    "ERR_PAYMENT_PROVIDER_UNSUPPORTED": "Selected payment provider is not supported.",
+    "ERR_PAYMENT_CAPTURE_MISSING": "Missing payment capture ID for refund.",
+    "ERR_PAYMENT_VOID_COMPLETED": "Cannot void a completed payment. Use refund instead.",
+    "ERR_INVOICE_NOT_FOUND": "Invoice not found.",
+    "ERR_PAYMENT_NOT_FOUND": "Payment not found."
   },
   "Tickets": {
     "errors": {
@@ -1067,7 +1077,9 @@
     "referralCode": "رمز الإحالة",
     "failed": "فشل",
     "critical": "حرج",
-    "error": "خطأ",
+    "error": {
+      "kicker": "خطأ"
+    },
     "warning": "تحذير",
     "info": "معلومات",
     "system": "System",
@@ -1143,9 +1155,6 @@
       "loadError": "خطأ في التحميل",
       "loadErrorKicker": "خطأ في التحميل",
       "error": "خطأ"
-    },
-    "error": {
-      "kicker": "خطأ"
     },
     "actions": {
       "retry": "إعادة المحاولة",
@@ -1720,10 +1729,10 @@
       "unbanUserTitle": "إلغاء حظر المستخدم",
       "unbanUserConfirm": "هل أنت متأكد أنك تريد إلغاء حظر هذا المستخدم؟",
       "banUserModalTitle": "حظر المستخدم",
-      "banReasonLabel": "السبب",
-      "banReasonPlaceholder": "سبب التعليق...",
-      "banDurationLabel": "المدة (بالدقائق)",
-      "banDurationPlaceholder": "اتركه فارغًا للحظر الدائم",
+      "banReasonLabel": "سبب الحظر / الرسالة",
+      "banReasonPlaceholder": "اشرح سبب هذا الحظر...",
+      "banDurationLabel": "مدة الحظر (بالدقائق)",
+      "banDurationPlaceholder": "اتركه فارغاً للحظر الدائم",
       "applyBan": "تطبيق الحظر",
       "securityRestrictions": "الأمان والقيود",
       "securityRestrictionsDesc": "إدارة حالة حظر المستخدم وسياسات الأمان.",
@@ -1843,10 +1852,6 @@
       "banWarning1": "سيتم تسجيل خروج المستخدم فوراً ولن يتمكن من تسجيل الدخول.",
       "banWarning2": "سيتم تعليق جميع الخوادم النشطة المملوكة لهذا المستخدم في Pterodactyl.",
       "banWarning3": "اترك المدة فارغة لفرض حظر دائم.",
-      "banReasonLabel": "سبب الحظر / الرسالة",
-      "banReasonPlaceholder": "اشرح سبب هذا الحظر...",
-      "banDurationLabel": "مدة الحظر (بالدقائق)",
-      "banDurationPlaceholder": "اتركه فارغاً للحظر الدائم",
       "banDurationHelper": "حدد المدة بالدقائق (مثال: 60 = ساعة واحدة، 1440 = يوم واحد). اتركه فارغاً للحظر الدائم.",
       "banConfirmPrompt": "للتأكيد، اكتب {name} في المربع أدناه",
       "banSubmitBtn": "حظر المستخدم",

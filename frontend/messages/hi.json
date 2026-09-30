@@ -887,6 +887,11 @@
     "ERR_FAILED_TO_LOAD_PLANS": "मूल्य निर्धारण योजनाएं लोड करने में विफल।",
     "ERR_LEDGER_QUERY_INVALID": "अमान्य लेज़र क्वेरी पैरामीटर।",
     "ERR_PAYMENT_VALIDATION_FAILED": "भुगतान अद्यतन सत्यापन विफल रहा।",
+    "ERR_PAYMENT_NOT_FOUND": "भुगतान नहीं मिला।",
+    "ERR_INVOICE_NOT_FOUND": "इनवॉइस नहीं मिला।",
+    "ERR_PAYMENT_PROVIDER_UNSUPPORTED": "केवल PayPal भुगतान वापस किए जा सकते हैं।",
+    "ERR_PAYMENT_CAPTURE_MISSING": "इस भुगतान के लिए कोई कैप्चर आईडी नहीं मिली।",
+    "ERR_PAYMENT_VOID_COMPLETED": "पूर्ण भुगतानों को रद्द नहीं किया जा सकता, वापस किया जाना चाहिए।",
     "ERR_USER_QUERY_INVALID": "अमान्य उपयोगकर्ता क्वेरी पैरामीटर।",
     "ERR_USER_VALIDATION_FAILED": "अमान्य उपयोगकर्ता पेलोड या विवरण।",
     "ERR_USER_BAN_INVALID": "अमान्य प्रतिबंध विकल्प प्रदान किए गए।",
@@ -919,7 +924,12 @@
     "ERR_REFERRAL_CODE_MIN": "रेफरल कोड कम से कम 3 वर्णों का होना चाहिए।",
     "ERR_REFERRAL_CODE_FORMAT": "रेफरल कोड में केवल अक्षर, संख्याएं, हाइफ़न और अंडरस्कोर हो सकते हैं।",
     "ERR_INVALID_URL": "वैध URL होना चाहिए।",
-    "ERR_FETCH_FAILED": "डेटा लाने में विफल।"
+    "ERR_FETCH_FAILED": "डेटा लाने में विफल।",
+    "ERR_PAYMENT_PROVIDER_UNSUPPORTED": "Selected payment provider is not supported.",
+    "ERR_PAYMENT_CAPTURE_MISSING": "Missing payment capture ID for refund.",
+    "ERR_PAYMENT_VOID_COMPLETED": "Cannot void a completed payment. Use refund instead.",
+    "ERR_INVOICE_NOT_FOUND": "Invoice not found.",
+    "ERR_PAYMENT_NOT_FOUND": "Payment not found."
   },
   "Tickets": {
     "errors": {
@@ -1067,7 +1077,9 @@
     "referralCode": "रेफरल कोड",
     "failed": "विफल",
     "critical": "गंभीर",
-    "error": "त्रुटि",
+    "error": {
+      "kicker": "त्रुटि"
+    },
     "warning": "चेतावनी",
     "info": "सूचना",
     "system": "प्रणाली",
@@ -1143,9 +1155,6 @@
       "loadError": "लोड त्रुटि",
       "loadErrorKicker": "लोड त्रुटि",
       "error": "त्रुटि"
-    },
-    "error": {
-      "kicker": "त्रुटि"
     },
     "actions": {
       "retry": "पुनः प्रयास करें",
@@ -1720,10 +1729,10 @@
       "unbanUserTitle": "उपयोगकर्ता का प्रतिबंध हटाएं",
       "unbanUserConfirm": "क्या आप वाकई इस उपयोगकर्ता का प्रतिबंध हटाना चाहते हैं?",
       "banUserModalTitle": "उपयोगकर्ता को प्रतिबंधित करें",
-      "banReasonLabel": "कारण",
-      "banReasonPlaceholder": "निलंबन का कारण...",
-      "banDurationLabel": "अवधि (मिनट)",
-      "banDurationPlaceholder": "स्थायी के लिए खाली छोड़ें",
+      "banReasonLabel": "प्रतिबंध का कारण / संदेश",
+      "banReasonPlaceholder": "इस प्रतिबंध का कारण बताएं...",
+      "banDurationLabel": "प्रतिबंध की अवधि (मिनटों में)",
+      "banDurationPlaceholder": "स्थायी प्रतिबंध के लिए खाली छोड़ें",
       "applyBan": "प्रतिबंध लागू करें",
       "securityRestrictions": "सुरक्षा और प्रतिबंध",
       "securityRestrictionsDesc": "उपयोगकर्ता प्रतिबंध स्थिति और सुरक्षा नीतियां प्रबंधित करें।",
@@ -1843,10 +1852,6 @@
       "banWarning1": "उपयोगकर्ता तुरंत लॉग आउट हो जाएगा और लॉग इन नहीं कर सकेगा।",
       "banWarning2": "इस उपयोगकर्ता के सभी सक्रिय सर्वर Pterodactyl में निलंबित कर दिए जाएंगे।",
       "banWarning3": "स्थायी प्रतिबंध लागू करने के लिए अवधि खाली छोड़ दें।",
-      "banReasonLabel": "प्रतिबंध का कारण / संदेश",
-      "banReasonPlaceholder": "इस प्रतिबंध का कारण बताएं...",
-      "banDurationLabel": "प्रतिबंध की अवधि (मिनटों में)",
-      "banDurationPlaceholder": "स्थायी प्रतिबंध के लिए खाली छोड़ें",
       "banDurationHelper": "मिनटों में अवधि निर्दिष्ट करें (उदा. 60 = 1 घंटा, 1440 = 1 दिन)। स्थायी के लिए खाली छोड़ें।",
       "banConfirmPrompt": "पुष्टि करने के लिए नीचे दिए गए बॉक्स में {name} टाइप करें",
       "banSubmitBtn": "उपयोगकर्ता प्रतिबंधित करें",

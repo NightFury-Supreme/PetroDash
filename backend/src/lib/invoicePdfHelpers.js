@@ -23,31 +23,26 @@ const colors = {
 };
 
 function resolveInvoiceDomain(settings, frontendHost) {
-  const brand = settings?.payments?.paypal?.businessName || settings?.siteName || 'PteroDash';
+  const brand = settings?.payments?.paypal?.businessName || settings?.siteName || '';
   
+  const envUrl = process.env.FRONTEND_URL || process.env.APP_URL || process.env.BACKEND_URL;
+  let envHost = '';
+  if (envUrl) {
+    try {
+      envHost = new URL(envUrl).host;
+    } catch {
+      envHost = envUrl.replace(/^https?:\/\//, '').split('/')[0];
+    }
+  }
+
   let host = frontendHost;
   if (host && host.startsWith('http')) {
     try { host = new URL(host).host; } catch {}
   }
   
-  let rootDomain = host;
-  if (host && host.includes('.')) {
-    const parts = host.split('.');
-    if (parts.length > 2 && !parts[parts.length - 2].match(/^(co|com|org|net)$/i)) {
-      rootDomain = parts.slice(-2).join('.');
-    } else if (parts.length > 3) {
-      rootDomain = parts.slice(-3).join('.');
-    }
-  }
-
-  let defaultDomain = rootDomain;
-  if (!defaultDomain) {
-    const cleanBrand = (brand || 'PetroDash').toLowerCase().replace(/[^a-z0-9]/g, '');
-    defaultDomain = `${cleanBrand || 'petrodash'}.tech`;
-  }
-  const siteUrl = host || defaultDomain || 'dashboard.petrodash.tech';
-  const address = settings?.payments?.paypal?.businessAddress || siteUrl;
-  const supportEmail = settings?.contactEmail && !settings.contactEmail.includes('pterodash.com') ? settings.contactEmail : `support@${defaultDomain}`;
+  const siteUrl = envHost || host || '';
+  const address = settings?.payments?.paypal?.businessAddress || siteUrl || '';
+  const supportEmail = settings?.contactEmail || settings?.supportEmail || '';
 
   return { brand, siteUrl, address, supportEmail, host };
 }

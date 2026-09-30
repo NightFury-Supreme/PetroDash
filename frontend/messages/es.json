@@ -887,6 +887,11 @@
     "ERR_FAILED_TO_LOAD_PLANS": "Error al cargar los planes de precios.",
     "ERR_LEDGER_QUERY_INVALID": "Parámetros de consulta del libro de pagos no válidos.",
     "ERR_PAYMENT_VALIDATION_FAILED": "Error de validación de la actualización del pago.",
+    "ERR_PAYMENT_NOT_FOUND": "Pago no encontrado.",
+    "ERR_INVOICE_NOT_FOUND": "Factura no encontrada.",
+    "ERR_PAYMENT_PROVIDER_UNSUPPORTED": "Solo los pagos de PayPal pueden ser reembolsados.",
+    "ERR_PAYMENT_CAPTURE_MISSING": "No se encontró ningún ID de captura para este pago.",
+    "ERR_PAYMENT_VOID_COMPLETED": "Los pagos completados deben ser reembolsados, no anulados.",
     "ERR_USER_QUERY_INVALID": "Parámetros de consulta de usuario no válidos.",
     "ERR_USER_VALIDATION_FAILED": "Datos o detalles del usuario no válidos.",
     "ERR_USER_BAN_INVALID": "Opciones de suspensión no válidas.",
@@ -919,7 +924,12 @@
     "ERR_REFERRAL_CODE_MIN": "El código de referido debe tener al menos 3 caracteres.",
     "ERR_REFERRAL_CODE_FORMAT": "El código de referido solo puede contener letras, números, guiones y guiones bajos.",
     "ERR_INVALID_URL": "Debe ser una URL válida.",
-    "ERR_FETCH_FAILED": "Error al obtener datos."
+    "ERR_FETCH_FAILED": "Error al obtener datos.",
+    "ERR_PAYMENT_PROVIDER_UNSUPPORTED": "Selected payment provider is not supported.",
+    "ERR_PAYMENT_CAPTURE_MISSING": "Missing payment capture ID for refund.",
+    "ERR_PAYMENT_VOID_COMPLETED": "Cannot void a completed payment. Use refund instead.",
+    "ERR_INVOICE_NOT_FOUND": "Invoice not found.",
+    "ERR_PAYMENT_NOT_FOUND": "Payment not found."
   },
   "Tickets": {
     "errors": {
@@ -1067,7 +1077,9 @@
     "referralCode": "Código de referido",
     "failed": "FALLIDO",
     "critical": "CRÍTICO",
-    "error": "ERROR",
+    "error": {
+      "kicker": "Error"
+    },
     "warning": "ADVERTENCIA",
     "info": "INFO",
     "system": "System",
@@ -1143,9 +1155,6 @@
       "loadError": "Error de carga",
       "loadErrorKicker": "Error de carga",
       "error": "Error"
-    },
-    "error": {
-      "kicker": "Error"
     },
     "actions": {
       "retry": "Reintentar",
@@ -1720,10 +1729,10 @@
       "unbanUserTitle": "Levantar suspensión del usuario",
       "unbanUserConfirm": "¿Está seguro de que desea levantar la suspensión de este usuario?",
       "banUserModalTitle": "Suspender usuario",
-      "banReasonLabel": "Motivo",
-      "banReasonPlaceholder": "Motivo de la suspensión...",
-      "banDurationLabel": "Duración (minutos)",
-      "banDurationPlaceholder": "Dejar en blanco para permanente",
+      "banReasonLabel": "Motivo / Mensaje de suspensión",
+      "banReasonPlaceholder": "Explica el motivo de esta suspensión...",
+      "banDurationLabel": "Duración de la suspensión (en minutos)",
+      "banDurationPlaceholder": "Dejar vacío para suspensión permanente",
       "applyBan": "Aplicar suspensión",
       "securityRestrictions": "Seguridad y restricciones",
       "securityRestrictionsDesc": "Administre el estado de suspensión y las políticas de seguridad del usuario.",
@@ -1843,10 +1852,6 @@
       "banWarning1": "El usuario cerrará sesión de inmediato y no podrá iniciar sesión.",
       "banWarning2": "Todos los servidores activos de este usuario serán suspendidos en Pterodactyl.",
       "banWarning3": "Deja la duración vacía para aplicar una suspensión permanente.",
-      "banReasonLabel": "Motivo / Mensaje de suspensión",
-      "banReasonPlaceholder": "Explica el motivo de esta suspensión...",
-      "banDurationLabel": "Duración de la suspensión (en minutos)",
-      "banDurationPlaceholder": "Dejar vacío para suspensión permanente",
       "banDurationHelper": "Especifica la duración en minutos (ej. 60 = 1 hora, 1440 = 1 día). Deja vacío para permanente.",
       "banConfirmPrompt": "Para confirmar, escribe {name} en el cuadro a continuación",
       "banSubmitBtn": "Suspender usuario",
