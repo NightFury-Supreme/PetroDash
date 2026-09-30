@@ -6,7 +6,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { CheckCircle2, Loader2, ShieldCheck, Clock } from 'lucide-react';
+import { CheckCircle2, Loader2, ShieldCheck } from 'lucide-react';
 import { Drawer } from '@/components/ui/Drawer';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useTranslations, useLocale } from 'next-intl';
@@ -109,34 +109,37 @@ export function UnbanUserDrawer({
     >
       <div className="space-y-6">
         {/* Target User Info */}
-        <div className="border-b border-white/[0.07] pb-5">
-          <div className="min-w-0">
-            <h2 className="text-[16px] font-semibold text-zinc-200 truncate leading-snug">
-              {username}
-            </h2>
-            {entitySubText && (
-              <p className="mt-0.5 text-[11px] font-medium text-[#888] truncate">
-                {entitySubText}
-              </p>
-            )}
-          </div>
+        <div className="min-w-0">
+          <h2 className="text-[16px] font-semibold text-zinc-200 truncate leading-snug">
+            {username}
+          </h2>
+          {entitySubText && (
+            <p className="mt-0.5 text-[11px] font-medium text-[#888] truncate">
+              {entitySubText}
+            </p>
+          )}
         </div>
 
-        {/* Current Suspension Details if provided */}
-        {(banReason || banUntil) && (
-          <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-3.5 text-xs text-red-300">
-            <div className="flex items-center gap-2 font-medium mb-1 text-red-400">
-              <Clock size={13} />
-              <span>{t('accountSuspended')}</span>
-            </div>
-            {banReason && <p className="text-zinc-400">{t('banReasonLabel')}: {banReason}</p>}
-            {banUntil && (
-              <p className="text-zinc-500 text-[11px] mt-0.5">
-                {t('expires')}: {new Date(banUntil).toLocaleString(locale)}
-              </p>
-            )}
+        {/* Current Suspension Details: Reason and Time in One Line */}
+        <div className="grid grid-cols-2 gap-4 pb-4 border-b border-white/[0.07]">
+          <div>
+            <span className="block text-[10px] font-medium uppercase tracking-widest text-[#888]">
+              {t('banReasonLabel')}
+            </span>
+            <p className="mt-1 text-xs text-zinc-300 leading-relaxed break-words">
+              {banReason || t('noReasonProvided')}
+            </p>
           </div>
-        )}
+
+          <div>
+            <span className="block text-[10px] font-medium uppercase tracking-widest text-[#888]">
+              {t('expires')}
+            </span>
+            <span className="mt-1 block text-xs font-medium text-zinc-300">
+              {banUntil ? new Date(banUntil).toLocaleString(locale) : t('permanent')}
+            </span>
+          </div>
+        </div>
 
         {/* Unban Effects Box */}
         <div className="border-l-2 border-emerald-500 pl-4 py-1 mb-6">
