@@ -6,9 +6,8 @@
 "use client";
 
 import React from "react";
-import { User, Coins } from "lucide-react";
+import { User, Coins, Ban, Check } from "lucide-react";
 import { RankBadge } from "@/components/ui";
-import { StatusIndicator } from "@/components/ui/StatusIndicator";
 import { useTranslations } from "next-intl";
 
 export interface UserDetailProfileBannerProps {
@@ -18,6 +17,7 @@ export interface UserDetailProfileBannerProps {
     role?: string;
     profilePicture?: string;
     coins?: number;
+    emailVerified?: boolean;
   };
   isBanned?: boolean;
 }
@@ -44,6 +44,22 @@ export function UserDetailProfileBanner({ user, isBanned }: UserDetailProfileBan
                 </div>
               )}
             </div>
+            {isBanned && (
+              <span
+                title={t('banned')}
+                className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-[#161616] bg-red-500 shadow-md"
+              >
+                <Ban size={11} strokeWidth={3} className="text-white" />
+              </span>
+            )}
+            {!isBanned && user.emailVerified && (
+              <span
+                title={tCommon('verified')}
+                className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-[#161616] bg-emerald-500 shadow-md"
+              >
+                <Check size={11} strokeWidth={3} className="text-white" />
+              </span>
+            )}
           </div>
 
           <div>
@@ -52,9 +68,6 @@ export function UserDetailProfileBanner({ user, isBanned }: UserDetailProfileBan
                 {user.username || tCommon('username')}
               </h2>
               <RankBadge rank={user.role || 'user'} />
-              {isBanned && (
-                <StatusIndicator status="error" label={t('banned')} />
-              )}
             </div>
             <p className="text-sm text-[#888]">{user.email}</p>
           </div>

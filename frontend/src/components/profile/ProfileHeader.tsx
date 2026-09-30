@@ -43,11 +43,6 @@ export function ProfileHeader({ form }: ProfileHeaderProps) {
               <h2 className="text-base font-semibold text-[#D4D4D4]">
                 {`${form.firstName || ''} ${form.lastName || ''}`.trim() || form.username || tCommon('user')}
               </h2>
-              {form.emailVerification && form.emailVerified && (
-                <span className="rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-emerald-400">
-                  {t('verified')}
-                </span>
-              )}
             </div>
             <p className="mt-1 text-sm text-[#888]">
               @{form.username || tCommon('user')}

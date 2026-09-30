@@ -154,7 +154,7 @@ export function InfoRow({
             <p className="mt-0.5 text-[13px] text-[#888]">{description}</p>
           </div>
         </div>
-        <div>
+        <div className={!editing && hideEditButton && !action ? "md:col-span-2" : ""}>
           {editing ? (
               <div
                 className="w-full"
@@ -217,52 +217,54 @@ export function InfoRow({
             </div>
           )}
         </div>
-        <div className="flex items-center justify-end gap-2">
-          {action}
-          {editing ? (
-            <>
-              <button
-                type="button"
-                onClick={onCancel}
-                disabled={isLoading || isSaved}
-                className="flex h-9 items-center gap-1.5 rounded-lg border border-[#2A2A2A] bg-[#1A1A1A] px-3 text-xs font-medium text-[#D4D4D4] hover:bg-[#222] transition disabled:opacity-50"
-              >
-                {t('cancel')}
-              </button>
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={isLoading || isSaved || !canSave}
-                className={`flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-medium transition disabled:cursor-not-allowed ${
-                  isSaved
-                    ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
-                    : isLoading || !canSave
-                    ? 'bg-[#333] text-[#888]'
-                    : 'bg-[#FF5722] hover:bg-[#F4511E] text-white'
-                }`}
-              >
-                {isLoading && !isSaved ? (
-                  <span className="h-3.5 w-3.5 rounded-full border-2 border-white/20 border-t-white animate-spin" />
-                ) : isSaved ? (
-                  <Check size={14} />
-                ) : (
-                  <Save size={14} />
-                )}
-                {isSaved ? t('saved') : t('save')}
-              </button>
-            </>
-          ) : (
-            !hideEditButton && (
-              <button
-                type="button"
-                onClick={onEdit}
-                className="flex h-9 items-center gap-1.5 rounded-lg border border-[#222] bg-[#1A1A1A] px-3 text-xs font-medium text-[#D4D4D4] hover:bg-[#222] transition"
-              >
-                <Pencil size={14} /> {t('edit')}
-              </button>
-            )
-          )}
-        </div>
+        {(!hideEditButton || action || editing) && (
+          <div className="flex items-center justify-end gap-2">
+            {action}
+            {editing ? (
+              <>
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  disabled={isLoading || isSaved}
+                  className="flex h-9 items-center gap-1.5 rounded-lg border border-[#2A2A2A] bg-[#1A1A1A] px-3 text-xs font-medium text-[#D4D4D4] hover:bg-[#222] transition disabled:opacity-50"
+                >
+                  {t('cancel')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={isLoading || isSaved || !canSave}
+                  className={`flex h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-medium transition disabled:cursor-not-allowed ${
+                    isSaved
+                      ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                      : isLoading || !canSave
+                      ? 'bg-[#333] text-[#888]'
+                      : 'bg-[#FF5722] hover:bg-[#F4511E] text-white'
+                  }`}
+                >
+                  {isLoading && !isSaved ? (
+                    <span className="h-3.5 w-3.5 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+                  ) : isSaved ? (
+                    <Check size={14} />
+                  ) : (
+                    <Save size={14} />
+                  )}
+                  {isSaved ? t('saved') : t('save')}
+                </button>
+              </>
+            ) : (
+              !hideEditButton && (
+                <button
+                  type="button"
+                  onClick={onEdit}
+                  className="flex h-9 items-center gap-1.5 rounded-lg border border-[#222] bg-[#1A1A1A] px-3 text-xs font-medium text-[#D4D4D4] hover:bg-[#222] transition"
+                >
+                  <Pencil size={14} /> {t('edit')}
+                </button>
+              )
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
