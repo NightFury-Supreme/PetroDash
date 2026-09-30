@@ -34,6 +34,7 @@ export function SelectDropdown<T extends string = string>({
 }: SelectDropdownProps<T>) {
   const [open, setOpen] = useState(false);
   const [internalLoading, setInternalLoading] = useState(false);
+  const [optimisticValue, setOptimisticValue] = useState<T | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   const isLoading = externalLoading || internalLoading;
@@ -62,21 +63,27 @@ export function SelectDropdown<T extends string = string>({
     setOpen(false);
     if (optValue === value) return;
 
+    setOptimisticValue(optValue);
     try {
       const result = onChange(optValue);
       if (result && typeof (result as Promise<void>).then === 'function') {
         setInternalLoading(true);
         await result;
       }
+    } catch (err) {
+      setOptimisticValue(null);
+      throw err;
     } finally {
       setInternalLoading(false);
+      setOptimisticValue(null);
     }
   };
 
-  const selectedOption = options.find((o) => o.value === value);
+  const activeValue = optimisticValue ?? value;
+  const selectedOption = options.find((o) => o.value === activeValue);
   const displayContent = renderSelected
     ? renderSelected(selectedOption)
-    : selectedOption?.label ?? placeholder ?? value;
+    : selectedOption?.label ?? placeholder ?? activeValue;
 
   return (
     <div className={`relative ${className}`} ref={ref}>
@@ -84,7 +91,7 @@ export function SelectDropdown<T extends string = string>({
         type="button"
         onClick={() => !disabled && !isLoading && setOpen(!open)}
         disabled={disabled || isLoading}
-        className={`flex h-9 w-full items-center justify-between gap-2 rounded-lg bg-[#1A1A1A] px-3 text-sm text-[#999] transition-colors hover:bg-[#222] hover:text-[#ddd] disabled:opacity-50 ${buttonClassName}`}
+        className={`flex h-9 w-full items-center justify-between gap-2 rounded-lg border border-[#222] bg-[#1A1A1A] px-3 text-sm text-[#999] transition-colors hover:border-[#333] hover:bg-[#222] hover:text-[#ddd] focus:outline-none focus:border-[#333] disabled:opacity-50 ${buttonClassName}`}
       >
         <span className="truncate flex items-center gap-2">{displayContent}</span>
         {isLoading ? (
@@ -99,7 +106,7 @@ export function SelectDropdown<T extends string = string>({
           className={`absolute left-0 right-0 top-10 z-50 rounded-lg border border-[#222] bg-[#151515] p-1 shadow-xl max-h-[200px] overflow-y-auto ${menuClassName}`}
         >
           {options.map((opt) => {
-            const isSelected = opt.value === value;
+            const isSelected = opt.value === activeValue;
             return (
               <button
                 type="button"
