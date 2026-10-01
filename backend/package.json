@@ -38,7 +38,7 @@
     "pdfkit": "^0.17.2",
     "qrcode": "^1.5.4",
     "rate-limit-redis": "^6.0.1",
-    "sharp": "^0.35.3",
+    "sharp": "^0.35.4",
     "speakeasy": "^2.0.0",
     "svg-to-pdfkit": "^0.1.8",
     "ua-parser-js": "^2.0.10",
