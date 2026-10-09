@@ -15,6 +15,7 @@ router.get('/', requireAuth, async (req, res) => {
     if (cached) return res.json(cached);
 
     const servers = await Server.find({ owner: req.user.sub }).lean();
+    let deletedCount = 0;
 
     // Opportunistic sync with panel
     const synced = await Promise.all(
@@ -36,14 +37,24 @@ router.get('/', requireAuth, async (req, res) => {
           const hasChange = hasServerLimitsChanged(s.limits, updatedLimits);
           if (hasChange) await Server.updateOne({ _id: s._id }, { $set: { limits: updatedLimits } });
           return { ...s, limits: updatedLimits };
-        // eslint-disable-next-line unused-imports/no-unused-vars
-        } catch (_) {
-          return s; // ignore panel errors
+        } catch (error) {
+          const panelStatus = error?.response?.status;
+          const panelDetail = error?.response?.data?.errors?.[0]?.detail || '';
+          const notFound = panelStatus === 404 || panelDetail.includes('assigned pterodactyl server was not found');
+          
+          if (notFound) {
+            deletedCount++;
+            await Server.deleteOne({ _id: s._id });
+            return null; // Skip this server in usage calculation
+          }
+          
+          return s; // ignore other panel errors
         }
       })
     );
 
-    const usage = synced.reduce(
+    const validServers = synced.filter(Boolean);
+    const usage = validServers.reduce(
       (acc, s) => {
         const l = s.limits || {};
         acc.diskMb += Number(l.diskMb) || 0;
@@ -57,6 +68,13 @@ router.get('/', requireAuth, async (req, res) => {
       { diskMb: 0, memoryMb: 0, cpuPercent: 0, backups: 0, databases: 0, allocations: 0 }
     );
     
+    if (deletedCount > 0) {
+      const { deleteCachePattern, deleteCache } = require('../../lib/redis');
+      await deleteCachePattern(`api:servers:${req.user.sub}:*`);
+      await deleteCachePattern('api:admin:servers:*');
+      await deleteCache('eggs:counts');
+    }
+
     // Add servers count and ensure all fields are numbers
     const response = {
       diskMb: Number(usage.diskMb || 0),
@@ -65,7 +83,7 @@ router.get('/', requireAuth, async (req, res) => {
       backups: Number(usage.backups || 0),
       databases: Number(usage.databases || 0),
       allocations: Number(usage.allocations || 0),
-      servers: Number(servers.length || 0)
+      servers: validServers.length
     };
     
     await setCache(cacheKey, response, 60);

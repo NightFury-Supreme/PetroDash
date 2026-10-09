@@ -1,17 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useToast } from "@/components/ui/ToastProvider";
 import SmtpForm from '@/components/admin/email/SmtpForm';
-import TemplatesEditor from '@/components/admin/email/TemplatesEditor';
-import { useModal } from '@/components/Modal';
 import AdminEmailSkeleton from '@/components/skeletons/admin/email/AdminEmailSkeleton';
 
 type Smtp = { host?: string; port?: number; secure?: boolean; user?: string; pass?: string; fromEmail?: string };
-type Template = { subject?: string; html?: string; text?: string };
 
 interface Settings {
   payments?: { smtp?: Smtp };
-  emailTemplates?: Record<string, Template>;
+  auth?: { emailVerification?: boolean };
 }
 
 export default function EmailSettings() {
@@ -19,29 +17,20 @@ export default function EmailSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'smtp' | 'templates'>('smtp');
-  const [selectedTemplateKey, setSelectedTemplateKey] = useState<string>('accountCreateWithVerification');
+  const [activeTab, setActiveTab] = useState<'smtp'>('smtp');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const token = useMemo(() => (typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null), []);
-  const [branding, setBranding] = useState<{ name?: string; logoUrl?: string; brandColor?: string; footerText?: string }>({});
-  const modal = useModal();
+    const { showSuccess, showError } = useToast();
 
   const load = useCallback(async () => {
     if (!token) return;
     setLoading(true);
     setError(null);
     try {
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/email`, { headers: { Authorization: `Bearer ${token}` } });
+      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/email`, { headers: { Authorization: `Bearer ${token}` } });
       let d: any = {}; try { d = await r.json(); } catch {}
       if (!r.ok) throw new Error(d?.error || 'Failed to load settings');
       setSettings(d as Settings);
-      try {
-        const brandingResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/branding`);
-        let brandingData: any = {}; try { brandingData = await brandingResponse.json(); } catch {}
-        if (brandingResponse.ok) {
-          setBranding({ name: brandingData?.siteName || '', logoUrl: brandingData?.siteIcon || '', brandColor: '#0ea5e9', footerText: '' });
-        }
-      } catch {}
     } catch (e: any) {
       setError(e?.message || 'Failed to load settings');
     } finally {
@@ -98,33 +87,26 @@ export default function EmailSettings() {
   const save = async () => {
     if (!token || !settings) return;
     if (!validate()) { setError('Please correct highlighted fields.'); return; }
-    const confirmed = await modal.confirm({ title: 'Save Email Settings', body: 'Are you sure you want to save the email settings? This will update the SMTP configuration and email templates.' });
-    if (!confirmed) return;
+
     setSaving(true);
     setError(null);
     try {
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/email`, {
+      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/email`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ payments: { smtp: settings.payments?.smtp }, emailTemplates: settings.emailTemplates })
+        body: JSON.stringify({ payments: { smtp: settings.payments?.smtp }, auth: settings.auth })
       });
       let d: any = {}; try { d = await r.json(); } catch {}
       if (!r.ok) throw new Error(d?.error || 'Failed to save settings');
       setSettings(d as Settings);
-      await modal.success({ title: 'Settings Saved', body: 'Email settings have been saved successfully.' });
+      showSuccess('Email settings have been saved successfully.');
     } catch (e: any) {
       setError(e?.message || 'Failed to save settings');
-      await modal.error({ title: 'Save Failed', body: e?.message || 'Failed to save email settings.' });
+      showError(e?.message || 'Failed to save email settings.');
     } finally {
       setSaving(false);
     }
   };
-
-  const selectedTemplate = useMemo(() => {
-    const map = settings?.emailTemplates || {};
-    const key = selectedTemplateKey in map ? selectedTemplateKey : Object.keys(map)[0];
-    return { key, tpl: key ? map[key] : undefined } as { key: string | undefined; tpl: Template | undefined };
-  }, [settings, selectedTemplateKey]);
 
   if (loading) {
     return <AdminEmailSkeleton />;
@@ -144,7 +126,7 @@ export default function EmailSettings() {
 
       <div className="flex items-center justify-between">
          <div className="flex items-center gap-2 border-b border-[#2a2a2a] px-4">
-           {(['smtp','templates'] as const).map(tab => (
+           {(['smtp'] as const).map(tab => (
              <button key={tab} onClick={() => setActiveTab(tab)} className={`px-4 py-3 text-sm ${activeTab===tab?'text-white border-b-2 border-white':'text-[#bbb]'}`}>{tab.toUpperCase()}</button>
            ))}
          </div>
@@ -159,6 +141,8 @@ export default function EmailSettings() {
         <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-300">{error}</div>
       )}
 
+
+
       {activeTab==='smtp' && (
         <div className="bg-[#181818] border border-[#303030] rounded-xl">
           <div className="flex items-center gap-3 p-6 border-b border-[#303030]">
@@ -170,33 +154,32 @@ export default function EmailSettings() {
               <p className="text-[#AAAAAA] text-sm">Configure your email server settings</p>
             </div>
           </div>
-          <SmtpForm smtp={settings?.payments?.smtp || {}} onChange={updateField} fieldErrors={fieldErrors} />
+          
+          <div className="p-6 border-b border-[#303030]">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-white font-medium">Enable Email System</h4>
+                <p className="text-sm text-[#AAAAAA] mt-1">If enabled, users will be required to verify their email address upon registration and email changes.</p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={settings?.auth?.emailVerification || false}
+                onClick={() => updateField('auth.emailVerification', !(settings?.auth?.emailVerification || false))}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${settings?.auth?.emailVerification ? 'bg-white' : 'bg-[#333]'}`}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full shadow ring-0 transition duration-200 ease-in-out ${settings?.auth?.emailVerification ? 'bg-[#0f0f13] translate-x-2.5' : 'bg-white -translate-x-2.5'}`}
+                />
+              </button>
+            </div>
+          </div>
+
+          <SmtpForm smtp={settings?.payments?.smtp || {}} auth={settings?.auth || {}} onChange={updateField} fieldErrors={fieldErrors} />
         </div>
       )}
 
-      {activeTab==='templates' && (
-        <div className="bg-[#181818] border border-[#303030] rounded-xl">
-          <div className="flex items-center gap-3 p-6 border-b border-[#303030]">
-            <div className="w-10 h-10 bg-[#202020] rounded-xl flex items-center justify-center">
-              <i className="fas fa-envelope text-white text-lg"></i>
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-white">Email Templates</h3>
-              <p className="text-[#AAAAAA] text-sm">Customize email templates for different events</p>
-            </div>
-          </div>
-          <div className="p-6">
-            <TemplatesEditor
-              templates={settings?.emailTemplates || {}}
-              brand={branding}
-              token={token}
-              selectedKey={selectedTemplate.key}
-              onSelect={(k) => setSelectedTemplateKey(k)}
-              onChange={updateField}
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

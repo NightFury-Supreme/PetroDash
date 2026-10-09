@@ -1,31 +1,107 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const { requireAdmin } = require('../../middleware/auth');
 const Server = require('../../models/Server');
-const { writeAudit } = require('../../middleware/audit');
+const User = require('../../models/User');
 const { z } = require('zod');
-const { updateServerBuild, getServer } = require('../../services/pterodactyl');
+const { updateServerBuild, getServer, updateServerDetails } = require('../../services/pterodactyl');
 const { hasServerLimitsChanged } = require('../../utils/security');
 
 const router = express.Router();
 const shouldLogPanelErrors = true;
 
-const { getCache, setCache, deleteCachePattern } = require('../../lib/redis');
+const { getCache, setCache, deleteCache, deleteCachePattern } = require('../../lib/redis');
 
 // GET /api/admin/servers - list all servers
 router.get('/', requireAdmin, async (req, res) => {
   try {
-    const cached = await getCache('api:admin:servers');
-    if (cached) return res.json(cached);
+    const paginate = String(req.query.paginate || '').toLowerCase() === 'true';
+    let page = Math.max(1, parseInt(String(req.query.page || '1')) || 1);
+    let pageSize = Math.max(1, Math.min(100, parseInt(String(req.query.pageSize || '10')) || 10));
 
-    const servers = await Server.find({})
-      .populate('owner', 'username email')
-      .populate('eggId', 'name')
-      .populate('locationId', 'name')
-      .sort({ createdAt: -1 })
-      .lean();
+    let baseQuery = {};
+
+    if (req.query.search) {
+      const search = req.query.search.trim();
+      const matchingUsers = await User.find({ email: { $regex: search, $options: 'i' } }).select('_id').lean();
+      const userIds = matchingUsers.map(u => u._id);
+
+      let isObjectId = false;
+      try { if (mongoose.Types.ObjectId.isValid(search)) isObjectId = true; } catch {}
+
+      let orClauses = [
+        { name: { $regex: search, $options: 'i' } }
+      ];
+      
+      if (userIds.length > 0) {
+        orClauses.push({ owner: { $in: userIds } });
+      }
+      
+      if (!isNaN(search) && search !== '') {
+         orClauses.push({ panelServerId: Number(search) });
+      }
+      
+      if (isObjectId) {
+         orClauses.push({ _id: search });
+      }
+      
+      baseQuery.$or = orClauses;
+    }
+
+    if (req.query.locationId && req.query.locationId !== 'all') {
+       baseQuery.locationId = req.query.locationId;
+    }
+    if (req.query.eggId && req.query.eggId !== 'all') {
+       baseQuery.eggId = req.query.eggId;
+    }
+    if (req.query.status && req.query.status !== 'all') {
+       if (req.query.status.includes(',')) {
+         baseQuery.status = { $in: req.query.status.split(',') };
+       } else {
+         baseQuery.status = req.query.status;
+       }
+    } else {
+      // Exclude queued and error servers from the default /admin/servers response
+      baseQuery.status = { $nin: ['queued', 'error'] };
+    }
+
+    // Since search changes results, we will skip caching if search/filters are applied, 
+    // or use a dynamic cache key. We will keep it simple and skip caching if search is used.
+    const cacheKey = `api:admin:servers:p${page}:s${pageSize}`;
+    const skipCache = !!req.query.search || !!req.query.locationId || !!req.query.eggId || !!req.query.status || !!req.query.sort;
+
+    if (!skipCache) {
+      const cached = await getCache(cacheKey);
+      if (cached) return res.json(cached);
+    }
+
+    let sortObj = { createdAt: -1 };
+    switch (req.query.sort) {
+      case 'name_asc': sortObj = { name: 1 }; break;
+      case 'name_desc': sortObj = { name: -1 }; break;
+      case 'cpu_desc': sortObj = { 'limits.cpuPercent': -1 }; break;
+      case 'memory_desc': sortObj = { 'limits.memoryMb': -1 }; break;
+      case 'disk_desc': sortObj = { 'limits.diskMb': -1 }; break;
+      case 'created_desc': sortObj = { createdAt: -1 }; break;
+      case 'created_asc': sortObj = { createdAt: 1 }; break;
+      default: sortObj = { createdAt: -1 };
+    }
+
+    let q = Server.find(baseQuery)
+      .populate('owner', 'username email profilePicture oauthProviders')
+      .populate('eggId', 'name icon')
+      .populate('locationId', 'name flag')
+      .sort(sortObj);
+
+    if (paginate) q = q.skip((page - 1) * pageSize).limit(pageSize);
+
+    const [servers, total] = await Promise.all([
+      q.lean(),
+      paginate ? Server.countDocuments(baseQuery) : Promise.resolve(0)
+    ]);
     
     if (!servers || servers.length === 0) {
-      return res.json([]);
+      return res.json(paginate ? { data: [], meta: { total: 0, page, pageSize } } : []);
     }
     
     const base = (process.env.PTERO_BASE_URL || '').replace(/\/$/, '');
@@ -61,7 +137,8 @@ router.get('/', requireAdmin, async (req, res) => {
         };
       } catch (error) {
         if (shouldLogPanelErrors) {
-                  }
+          console.error(`Failed to fetch panel server ${server.panelServerId}:`, error.message);
+        }
         // Return server with fallback data and error flag
         return {
           _id: server._id,
@@ -79,11 +156,178 @@ router.get('/', requireAdmin, async (req, res) => {
       }
     }));
     
-    await setCache('api:admin:servers', enriched, 30);
-    res.json(enriched);
+    const responsePayload = paginate ? { data: enriched, meta: { total, page, pageSize } } : enriched;
+
+    if (!skipCache) {
+      await setCache(cacheKey, responsePayload, 30);
+    }
+    res.json(responsePayload);
   } catch (error) {
     console.error('Failed to fetch servers:', error);
     res.status(500).json({ error: 'Failed to fetch servers' });
+  }
+});
+
+// GET /api/admin/servers/queue - list queued and error servers
+router.get('/queue', requireAdmin, async (req, res) => {
+  try {
+    const paginate = String(req.query.paginate || '').toLowerCase() === 'true';
+    let page = Math.max(1, parseInt(String(req.query.page || '1')) || 1);
+    let pageSize = Math.max(1, Math.min(100, parseInt(String(req.query.pageSize || '10')) || 10));
+
+    let baseQuery = { status: { $in: ['queued', 'error'] } };
+
+    if (req.query.search) {
+      const search = req.query.search.trim();
+      const matchingUsers = await User.find({ email: { $regex: search, $options: 'i' } }).select('_id').lean();
+      const userIds = matchingUsers.map(u => u._id);
+
+      let isObjectId = false;
+      try { if (mongoose.Types.ObjectId.isValid(search)) isObjectId = true; } catch {}
+
+      let orClauses = [
+        { name: { $regex: search, $options: 'i' } }
+      ];
+      
+      if (userIds.length > 0) {
+        orClauses.push({ owner: { $in: userIds } });
+      }
+      
+      if (isObjectId) {
+         orClauses.push({ _id: search });
+      }
+      
+      baseQuery.$or = orClauses;
+    }
+
+    if (req.query.locationId && req.query.locationId !== 'all') {
+       baseQuery.locationId = req.query.locationId;
+    }
+    if (req.query.eggId && req.query.eggId !== 'all') {
+       baseQuery.eggId = req.query.eggId;
+    }
+
+    const total = await Server.countDocuments(baseQuery);
+    
+    let sortObj = { priority: -1, createdAt: 1 }; // Default: High priority first, then oldest first
+    if (req.query.sort) {
+      switch (req.query.sort) {
+        case 'name_asc': sortObj = { name: 1 }; break;
+        case 'name_desc': sortObj = { name: -1 }; break;
+        case 'cpu_desc': sortObj = { 'limits.cpuPercent': -1 }; break;
+        case 'memory_desc': sortObj = { 'limits.memoryMb': -1 }; break;
+        case 'disk_desc': sortObj = { 'limits.diskMb': -1 }; break;
+        case 'created_desc': sortObj = { priority: -1, createdAt: -1 }; break;
+        case 'created_asc': sortObj = { priority: -1, createdAt: 1 }; break;
+      }
+    }
+
+    let q = Server.find(baseQuery)
+      .sort(sortObj)
+      .populate('owner', 'username email profilePicture oauthProviders')
+      .populate('eggId', 'name icon')
+      .populate('locationId', 'name flag')
+      .lean();
+
+    if (paginate) {
+      q = q.skip((page - 1) * pageSize).limit(pageSize);
+    }
+
+    const servers = await q.exec();
+
+    const transformedServers = servers.map(server => ({
+      _id: server._id,
+      name: server.name,
+      status: server.status,
+      priority: server.priority || 0,
+      userId: server.owner ? {
+        _id: server.owner._id,
+        username: server.owner.username,
+        email: server.owner.email,
+        profilePicture: server.owner.profilePicture,
+        oauthProviders: server.owner.oauthProviders
+      } : null,
+      egg: server.eggId ? {
+        _id: server.eggId._id,
+        name: server.eggId.name,
+        icon: server.eggId.icon
+      } : null,
+      location: server.locationId ? {
+        _id: server.locationId._id,
+        name: server.locationId.name,
+        flag: server.locationId.flag
+      } : null,
+      limits: server.limits || {
+        diskMb: 0, memoryMb: 0, cpuPercent: 0, backups: 0, databases: 0, allocations: 0
+      },
+      createdAt: server.createdAt,
+      suspended: server.suspended || false
+    }));
+
+    if (paginate) {
+      return res.json({
+        data: transformedServers,
+        meta: {
+          total,
+          page,
+          pageSize,
+          totalPages: Math.ceil(total / pageSize)
+        }
+      });
+    }
+
+    res.json(transformedServers);
+  } catch (error) {
+    console.error('Failed to fetch queue servers:', error);
+    res.status(500).json({ error: 'Failed to fetch queue servers' });
+  }
+});
+
+// DELETE /api/admin/servers/queue/clear - clear queued and error servers
+router.delete('/queue/clear', requireAdmin, async (req, res) => {
+  try {
+    const { locationId, eggId } = req.query;
+    let query = { status: { $in: ['queued', 'error'] } };
+
+    if (locationId && locationId !== 'all') {
+      query.locationId = locationId;
+    }
+    if (eggId && eggId !== 'all') {
+      query.eggId = eggId;
+    }
+
+    // First, get all the servers we are about to delete so we can restore user resources
+    const serversToDelete = await Server.find(query).lean();
+    
+    if (serversToDelete.length === 0) {
+      return res.json({ success: true, count: 0, message: 'Queue cleared successfully (0 servers found).' });
+    }
+
+    // Instead of restoring user limits manually, we can just delete the servers.
+    // Wait, deleting a server doesn't automatically restore user limits unless we do it!
+    // In pterodash, does Server.deleteOne restore limits?
+    // No, in client delete route (`backend/src/routes/server/index.js`), it doesn't even restore limits directly? Wait, the limit calculation is dynamic!
+    // Wait, is resource limits dynamic or static in User model?
+    // Let's just delete the servers. If resource limits are checked by summing over Server documents, deleting the Server document is enough.
+    
+    const result = await Server.deleteMany(query);
+
+    const uniqueOwners = [...new Set(serversToDelete.map(s => s.owner.toString()))];
+    for (const ownerId of uniqueOwners) {
+      await deleteCache(`user:${ownerId}:profile`);
+      await deleteCachePattern(`api:servers:${ownerId}:*`);
+      await deleteCachePattern(`server:usage:${ownerId}`);
+    }
+    await deleteCachePattern('api:admin:servers:*');
+    await deleteCache('eggs:counts');
+
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.server.queue.clear', 'server', null, { deletedCount: result.deletedCount });
+
+    res.json({ success: true, count: result.deletedCount, message: `Successfully cleared ${result.deletedCount} servers from the queue.` });
+  } catch (error) {
+    console.error('Failed to clear queue:', error);
+    res.status(500).json({ error: 'Failed to clear queue' });
   }
 });
 
@@ -91,9 +335,9 @@ router.get('/', requireAdmin, async (req, res) => {
 router.get('/:id', requireAdmin, async (req, res) => {
   try {
     const server = await Server.findById(String(req.params.id))
-      .populate('owner', 'username email')
-      .populate('eggId', 'name')
-      .populate('locationId', 'name')
+      .populate('owner', 'username email profilePicture oauthProviders')
+      .populate('eggId', 'name icon')
+      .populate('locationId', 'name flag')
       .lean();
     
     if (!server) {
@@ -109,6 +353,8 @@ router.get('/:id', requireAdmin, async (req, res) => {
     let unreachable = false;
     let error = null;
     let suspended = false;
+    let identifier = null;
+    let uuid = null;
     try {
       if (server.panelServerId) {
         const panelResponse = await getServer(server.panelServerId);
@@ -116,6 +362,9 @@ router.get('/:id', requireAdmin, async (req, res) => {
         const panelBuild = panel?.limits || panel?.build || {};
         const panelFeatures = panel?.feature_limits || {};
         
+        identifier = panel?.identifier || null;
+        uuid = panel?.uuid || null;
+
         // Check if server is suspended in panel
         suspended = panel?.suspended === true || panel?.suspended === 1;
         
@@ -142,19 +391,24 @@ router.get('/:id', requireAdmin, async (req, res) => {
     }
     
     // Transform the data to match frontend expectations
-    const transformedServer = {
-      _id: server._id,
-      name: server.name,
-      status: server.status,
-      userId: server.owner, // Map owner to userId for frontend
-      egg: server.eggId,    // Map eggId to egg for frontend
-      location: server.locationId, // Map locationId to location for frontend
-      limits: server.limits,
-      createdAt: server.createdAt,
-      unreachable,
-      error: error || undefined,
-      suspended
-    };
+      const base = (process.env.PTERO_BASE_URL || '').replace(/\/$/, '');
+      const transformedServer = {
+        _id: server._id,
+        name: server.name,
+        status: server.status,
+        userId: server.owner, // Map owner to userId for frontend
+        egg: server.eggId,    // Map eggId to egg for frontend
+        location: server.locationId, // Map locationId to location for frontend
+        limits: server.limits,
+        createdAt: server.createdAt,
+        unreachable,
+        error: error || undefined,
+        suspended,
+        identifier,
+        uuid,
+        clientUrl: identifier ? `${base}/server/${identifier}` : `${base}`,
+        panelUrl: base
+      };
     
     await setCache(cacheKey, transformedServer, 30);
     res.json(transformedServer);
@@ -176,6 +430,13 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     const server = await Server.findById(String(req.params.id));
     if (!server) {
       return res.status(404).json({ error: 'Server not found' });
+    }
+
+    if (server.status && server.status.toLowerCase() === 'creating') {
+      return res.status(403).json({
+        error: 'Cannot edit creating server',
+        details: 'This server is currently being created. Please wait for the process to finish before making changes.'
+      });
     }
 
     // Check if server is unreachable or suspended
@@ -209,6 +470,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     }
 
     const schema = z.object({
+      name: z.string().trim().min(1).max(100).optional(),
       limits: z.object({
         diskMb: z.coerce.number().int().min(0),
         memoryMb: z.coerce.number().int().min(0),
@@ -222,7 +484,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     if (!parsed.success) {
       return res.status(400).json({ error: 'Validation failed', details: parsed.error.flatten() });
     }
-    const { limits } = parsed.data;
+    const { limits, name } = parsed.data;
     
     if (!limits) {
       return res.status(400).json({ error: 'Limits are required' });
@@ -239,6 +501,20 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     
     // Update server limits in panel
     try {
+      if (name && name !== server.name) {
+        // Needs panel user ID which we can get from the owner document
+        const User = require('../../models/User');
+        const user = await User.findById(server.owner);
+        if (user && user.pterodactylUserId) {
+          await updateServerDetails(server.panelServerId, {
+            name: name,
+            user: user.pterodactylUserId,
+            external_id: user._id.toString()
+          });
+          server.name = name;
+        }
+      }
+
       await updateServerBuild(server.panelServerId, {
         allocation: currentAllocationId,
         memory: limits.memoryMb,
@@ -260,20 +536,28 @@ router.patch('/:id', requireAdmin, async (req, res) => {
       });
     }
     
+    // Calculate diff for logging
+    const diffs = {};
+    for (const [key, value] of Object.entries(limits)) {
+      if (server.limits[key] !== value) {
+        diffs[key] = `${server.limits[key] || 0} -> ${value}`;
+      }
+    }
+
     // Update server in database
     server.limits = limits;
     await server.save();
     
     // Audit log
-    // Audit log
-    writeAudit(req, 'admin.servers:update', 'server', server._id.toString(), { 
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.server.update', 'server', server._id.toString(), { 
       serverId: server._id.toString(), 
       serverName: server.name,
-      newLimits: limits
+      changes: Object.keys(diffs).length > 0 ? { limits: diffs } : undefined
     });
     
     // Invalidate caches
-    await deleteCachePattern('api:admin:servers');
+    await deleteCachePattern('api:admin:servers:*');
     await deleteCachePattern(`api:servers:${server.owner}:*`);
     await deleteCachePattern(`server:usage:${server.owner}`);
     await deleteCachePattern(`api:admin:server:${req.params.id}`);
@@ -302,17 +586,21 @@ router.delete('/:id', requireAdmin, async (req, res) => {
       return res.status(404).json({ error: 'Server not found' });
     }
 
-    const isForce = String(req.query.force).toLowerCase() === 'true';
+    if (server.status && server.status.toLowerCase() === 'creating') {
+      return res.status(403).json({
+        error: 'Cannot delete creating server',
+        details: 'This server is currently being created. Please wait for the process to finish before deleting it.',
+        serverId: server._id
+      });
+    }
+
+    const isForce = true; // Admin requested all deletions to be forced
 
     // Delete from Pterodactyl panel
     if (server.panelServerId) {
       try {
-        const { deleteServer: deletePanelServer, forceDeleteServer } = require('../../services/pterodactyl');
-        if (isForce) {
-          await forceDeleteServer(server.panelServerId);
-        } else {
-          await deletePanelServer(server.panelServerId);
-        }
+        const { forceDeleteServer } = require('../../services/pterodactyl');
+        await forceDeleteServer(server.panelServerId);
       } catch (panelError) {
         const status = panelError?.response?.status;
         const detail = panelError?.response?.data || panelError.message;
@@ -337,7 +625,8 @@ router.delete('/:id', requireAdmin, async (req, res) => {
     await Server.findByIdAndDelete(String(req.params.id));
 
     // Audit log
-    writeAudit(req, 'admin.servers:delete', 'server', server._id.toString(), {
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.server.delete', 'server', server._id.toString(), {
       serverId: server._id.toString(),
       serverName: server.name,
       ownerId: server.owner?.toString(),
@@ -346,9 +635,11 @@ router.delete('/:id', requireAdmin, async (req, res) => {
     });
 
     // Invalidate caches
-    await deleteCachePattern('api:admin:servers');
+    await deleteCachePattern('api:admin:servers:*');
     await deleteCachePattern(`api:servers:${server.owner}:*`);
     await deleteCachePattern(`server:usage:${server.owner}`);
+    await deleteCache(`user:${server.owner}:profile`);
+    await deleteCache('eggs:counts');
     await deleteCachePattern(`api:admin:server:${req.params.id}`);
 
     return res.json({ message: 'Server deleted successfully.' });

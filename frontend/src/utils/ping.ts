@@ -6,7 +6,7 @@ export interface PingResult {
 
 export const measurePing = async (latencyUrl: string): Promise<PingResult> => {
   if (!latencyUrl || latencyUrl.trim() === '') {
-    return { success: false, error: 'No latency URL provided' };
+    return { success: false, error: 'No node IP provided' };
   }
 
   try {
