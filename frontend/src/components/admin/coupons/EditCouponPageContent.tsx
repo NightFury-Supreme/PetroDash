@@ -19,8 +19,8 @@ export default function EditCouponPageContent() {
     const token = localStorage.getItem('auth_token');
     if (!token) { router.replace('/login'); return; }
     Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/coupons/${params.id}`, { headers: { Authorization: `Bearer ${token}` } }),
-      fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans`, { headers: { Authorization: `Bearer ${token}` } })
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons/${params.id}`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans`, { headers: { Authorization: `Bearer ${token}` } })
     ])
       .then(async ([cR, pR]) => {
         if (pR.ok) setPlans(await pR.json());
@@ -47,7 +47,7 @@ export default function EditCouponPageContent() {
     if (!form) return;
     setSaving(true);
     const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/coupons/${params.id}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/coupons/${params.id}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({
         ...form,

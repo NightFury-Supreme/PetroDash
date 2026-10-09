@@ -12,6 +12,11 @@ const paymentSchema = new mongoose.Schema({
   meta: { type: mongoose.Schema.Types.Mixed, default: {} },
 }, { timestamps: true });
 
+// Compound index: userId + status (for mentions query: userId+status=COMPLETED)
+paymentSchema.index({ userId: 1, status: 1 });
+// Compound index: userId + createdAt (for profile list: userId sorted by createdAt)
+paymentSchema.index({ userId: 1, createdAt: -1 });
+
 module.exports = mongoose.model('Payment', paymentSchema);
 
 

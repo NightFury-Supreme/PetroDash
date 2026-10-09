@@ -55,12 +55,22 @@ function createSecureRateLimiter(max, windowMs, options = {}) {
       return `${ip}:${userAgent}`;
     },
     handler: (req, res) => {
-      const retryAfter = Math.ceil(windowMs / 1000);
+      let retryAfter = Math.ceil(windowMs / 1000);
+      if (req.rateLimit && req.rateLimit.resetTime) {
+        const resetMs = req.rateLimit.resetTime.getTime() - Date.now();
+        retryAfter = Math.max(1, Math.ceil(resetMs / 1000));
+      }
+      let timeString = `${retryAfter} seconds`;
+      if (retryAfter >= 60) {
+        const m = Math.floor(retryAfter / 60);
+        const s = retryAfter % 60;
+        timeString = s > 0 ? `${m} minute(s) and ${s} second(s)` : `${m} minute(s)`;
+      }
       res.set('Retry-After', retryAfter.toString());
       res.status(429).json({
         error: 'Too many requests, please try again later.',
         retryAfter,
-        message: `Rate limit exceeded. Try again in ${retryAfter} seconds.`
+        message: `Rate limit exceeded. Try again in ${timeString}.`
       });
     },
     ...options

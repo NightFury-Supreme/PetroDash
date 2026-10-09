@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useToast } from "@/components/ui/ToastProvider";
 import { useModal } from '@/components/Modal';
 import { UpdateSystem } from '../updates';
 
@@ -86,6 +87,7 @@ export function AdminSettingsContent({
   const [iconFile, setIconFile] = useState<File | null>(null);
   const [iconPreview, setIconPreview] = useState<string | null>(null);
   const modal = useModal();
+  const { showSuccess, showError } = useToast();
 
   useEffect(() => {
     setFormData(settings);
@@ -116,15 +118,9 @@ export function AdminSettingsContent({
     try {
       const next = await onSave(cleanPatch(patch));
       setFormData(next);
-      await modal.success({
-        title: "Saved",
-        body: successBody
-      });
+      showSuccess(successBody);
     } catch (error) {
-      await modal.error({
-        title: "Save Failed",
-        body: error instanceof Error ? error.message : "Failed to save settings. Please try again."
-      });
+      showError(error instanceof Error ? error.message : "Failed to save settings. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -133,15 +129,9 @@ export function AdminSettingsContent({
   const handleReload = async () => {
     try {
       onReload();
-      await modal.success({
-        title: "Settings Reloaded",
-        body: "Settings have been reloaded from the server."
-      });
+      showSuccess("Settings have been reloaded from the server.");
     } catch (error) {
-      await modal.error({
-        title: "Reload Failed",
-        body: error instanceof Error ? error.message : "Failed to reload settings. Please try again."
-      });
+      showError(error instanceof Error ? error.message : "Failed to reload settings. Please try again.");
     }
   };
 
@@ -192,7 +182,7 @@ export function AdminSettingsContent({
   return (
     <div className="space-y-6">
       {/* Brand Settings */}
-      <div className="bg-[#181818] border border-[#303030] rounded-xl p-6">
+      <div className="border-t border-white/[0.06] pt-10 mt-10 first:border-0 first:pt-0 first:mt-0">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 bg-[#202020] rounded-xl flex items-center justify-center">
             <i className="fas fa-palette text-white text-lg"></i>
@@ -294,7 +284,7 @@ export function AdminSettingsContent({
                   const fd = new FormData();
                   fd.append('icon', iconFile);
                   
-                  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/upload/icon`, {
+                  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/upload/icon`, {
                     method: 'POST',
                     headers: { Authorization: `Bearer ${token}` },
                     body: fd
@@ -322,10 +312,7 @@ export function AdminSettingsContent({
                 await saveSection({ siteName: formData.siteName, siteIcon: finalSiteIcon }, "Brand settings updated.");
               } catch (err) {
                 console.error('Upload error:', err);
-                await modal.error({
-                  title: "Upload Failed",
-                  body: err instanceof Error ? err.message : "Failed to upload new site icon. Please try again."
-                });
+                showError(err instanceof Error ? err.message : "Failed to upload new site icon. Please try again.");
                 setSaving(false);
               }
             }}
@@ -348,7 +335,7 @@ export function AdminSettingsContent({
       </div>
 
       {/* Localization Settings */}
-      <div className="bg-[#181818] border border-[#303030] rounded-xl p-6">
+      <div className="border-t border-white/[0.06] pt-10 mt-10 first:border-0 first:pt-0 first:mt-0">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 bg-[#202020] rounded-xl flex items-center justify-center">
             <i className="fas fa-globe text-white text-lg"></i>
@@ -421,7 +408,7 @@ export function AdminSettingsContent({
       </div>
 
       {/* Referral Settings */}
-      <div className="bg-[#181818] border border-[#303030] rounded-xl p-6">
+      <div className="border-t border-white/[0.06] pt-10 mt-10 first:border-0 first:pt-0 first:mt-0">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 bg-[#202020] rounded-xl flex items-center justify-center">
             <i className="fas fa-user-plus text-white text-lg"></i>
@@ -493,7 +480,7 @@ export function AdminSettingsContent({
       </div>
 
       {/* Authentication Settings */}
-      <div className="bg-[#181818] border border-[#303030] rounded-xl p-6">
+      <div className="border-t border-white/[0.06] pt-10 mt-10 first:border-0 first:pt-0 first:mt-0">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 bg-[#202020] rounded-xl flex items-center justify-center">
             <i className="fas fa-sign-in-alt text-white text-lg"></i>
@@ -525,26 +512,7 @@ export function AdminSettingsContent({
           <p className="text-[#AAAAAA] text-sm">Allow users to register and login with email and password</p>
         </div>
 
-        {/* Email Verification Toggle */}
-        <div className="space-y-4 mb-6">
-          <div className="flex items-center gap-3">
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={formData.auth?.emailVerification ?? true}
-                onChange={(e) => updateFormData('auth.emailVerification', e.target.checked)}
-                disabled={loading}
-              />
-              <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
-            </label>
-            <div className="flex items-center gap-2">
-              <i className="fas fa-user-check text-white text-lg"></i>
-              <span className="text-white font-medium">Enable Email Verification</span>
-            </div>
-          </div>
-          <p className="text-[#AAAAAA] text-sm">Require users to verify their email before accessing the dashboard</p>
-        </div>
+
 
         {/* Discord OAuth */}
         <div className="space-y-4 mb-6">
@@ -753,7 +721,7 @@ export function AdminSettingsContent({
       </div>
 
       {/* Default Resources */}
-      <div className="bg-[#181818] border border-[#303030] rounded-xl p-6">
+      <div className="border-t border-white/[0.06] pt-10 mt-10 first:border-0 first:pt-0 first:mt-0">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 bg-[#202020] rounded-xl flex items-center justify-center">
             <i className="fas fa-server text-white text-lg"></i>
@@ -813,7 +781,7 @@ export function AdminSettingsContent({
       </div>
 
       {/* AdSense Settings */}
-      <div className="bg-[#181818] border border-[#303030] rounded-xl p-6">
+      <div className="border-t border-white/[0.06] pt-10 mt-10 first:border-0 first:pt-0 first:mt-0">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 bg-[#202020] rounded-xl flex items-center justify-center">
             <i className="fab fa-google text-white text-lg"></i>
@@ -958,7 +926,7 @@ export function AdminSettingsContent({
       </div>
 
       {/* PayPal Settings */}
-      <div className="bg-[#181818] border border-[#303030] rounded-xl p-6">
+      <div className="border-t border-white/[0.06] pt-10 mt-10 first:border-0 first:pt-0 first:mt-0">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 bg-[#202020] rounded-xl flex items-center justify-center">
             <i className="fab fa-paypal text-white text-lg"></i>

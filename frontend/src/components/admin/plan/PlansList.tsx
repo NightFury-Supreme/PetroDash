@@ -67,7 +67,7 @@ export function PlansList({
     return (
       <div className="text-center py-16">
         <div className="w-24 h-24 mx-auto mb-6 bg-[#202020] rounded-full flex items-center justify-center shadow-lg">
-          <i className="fas fa-crown text-white text-3xl"></i>
+          <i className="fas fa-crown text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)] text-3xl"></i>
         </div>
         <h3 className="text-2xl font-bold mb-3 text-white">No plans yet</h3>
         <p className="text-[#AAAAAA] text-lg mb-8">Create your first hosting plan to get started</p>

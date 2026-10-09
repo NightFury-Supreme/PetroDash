@@ -5,10 +5,12 @@ import { useParams, useRouter } from 'next/navigation';
 import EditLocationHeader from '@/components/admin/locations/EditLocationHeader';
 import LocationForm from '@/components/admin/locations/LocationForm';
 import AdminLocationEditSkeleton from '@/components/skeletons/admin/locations/AdminLocationEditSkeleton';
+import { useModal } from '@/components/Modal';
 
 export default function EditLocationPageContent() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const modal = useModal();
   const [form, setForm] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -16,7 +18,7 @@ export default function EditLocationPageContent() {
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
     if (!token) { router.replace('/login'); return; }
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/locations/${params.id}`, { headers: { Authorization: `Bearer ${token}` }})
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${params.id}`, { headers: { Authorization: `Bearer ${token}` }})
       .then(async (r) => {
         let d: any = {}; try { d = await r.json(); } catch {}
         if (!r.ok) throw new Error(d?.error || 'Failed');
@@ -41,7 +43,7 @@ export default function EditLocationPageContent() {
     e.preventDefault();
     setError(null);
     const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/locations/${params.id}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${params.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({
@@ -64,9 +66,15 @@ export default function EditLocationPageContent() {
   };
 
   const del = async () => {
-    if (!confirm('Delete this location?')) return;
+        const confirmed = await modal.confirm({
+      title: 'Delete Location',
+      body: 'Are you sure you want to delete this location? This action cannot be undone.',
+      confirmText: 'Delete Location',
+      danger: true
+    });
+    if (!confirmed) return;
     const token = localStorage.getItem('auth_token');
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/locations/${params.id}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations/${params.id}`, {
       method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
     });
     if (res.ok) router.push('/admin/locations');
@@ -82,5 +90,6 @@ export default function EditLocationPageContent() {
     </div>
   );
 }
+
 
 
