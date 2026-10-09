@@ -6,7 +6,7 @@ export function useCurrency() {
   const [currency, setCurrency] = useState('USD');
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/branding`)
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/branding`)
       .then((res) => res.json())
       .then((data) => {
         if (data.currency) setCurrency(data.currency);

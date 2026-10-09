@@ -91,7 +91,7 @@ router.post('/', requireAdmin, async (req, res) => {
     await coupon.save();
 
     // Audit log
-    writeAudit(req, 'admin.coupons.create', 'coupon', coupon._id.toString(), { code: coupon.code });
+    await writeAudit(req, 'admin.coupon.create', 'coupon', coupon._id.toString(), { code: coupon.code });
 
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:coupons');
@@ -158,7 +158,7 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     await coupon.save();
 
     // Audit log
-    writeAudit(req, 'admin.coupons.update', 'coupon', coupon._id.toString(), { code: coupon.code });
+    await writeAudit(req, 'admin.coupon.update', 'coupon', coupon._id.toString(), { code: coupon.code });
 
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:coupons');
@@ -186,7 +186,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
     await Coupon.findByIdAndDelete(String(req.params.id));
 
     // Audit log
-    writeAudit(req, 'admin.coupons.delete', 'coupon', req.params.id, { code: coupon.code });
+    await writeAudit(req, 'admin.coupon.delete', 'coupon', req.params.id, { code: coupon.code });
 
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:coupons');

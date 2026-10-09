@@ -10,36 +10,24 @@ async function getTransport() {
     throw new Error('SMTP not configured. Please configure SMTP settings in admin panel.');
   }
   
+  const port = Number(smtp.port || 587);
+  let secure = !!smtp.secure;
+  if (port === 587) secure = false; // Port 587 uses STARTTLS
+  if (port === 465) secure = true;  // Port 465 uses Implicit TLS
+
   return nodemailer.createTransport({
     host: smtp.host,
-    port: Number(smtp.port || 587),
-    secure: !!smtp.secure,
+    port,
+    secure,
     auth: { user: smtp.user, pass: smtp.pass },
   });
 }
 
-function wrapHtmlWithBrand({ htmlBody, brand }) {
-  const footerText = brand?.footerText || '';
-  const logoUrl = brand?.logoUrl || brand?.siteIcon || '';
-  const siteName = brand?.name || brand?.siteName || '';
-  return `
-  <div style="font-family:Segoe UI,Arial,sans-serif;background:#0b0f1a;padding:32px;">
-    <div style="max-width:680px;margin:0 auto;background:#0f1524;border:1px solid rgba(255,255,255,0.06);border-radius:14px;overflow:hidden;">
-      <div style="padding:28px 28px 0 28px;text-align:center;">
-        ${logoUrl ? `<img src="${logoUrl}" alt="${siteName || 'Logo'}" style="height:40px;object-fit:contain;display:inline-block;"/>` : ''}
-        ${!logoUrl && siteName ? `<div style="color:#e5e7eb;font-weight:600;font-size:16px;">${siteName}</div>` : ''}
-      </div>
-      <div style="padding:24px 28px 28px 28px;color:#e5e7eb;line-height:1.7;">
-        ${htmlBody}
-      </div>
-      ${footerText ? `<div style="padding:16px 20px;color:#9ca3af;font-size:12px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">${footerText}</div>` : ''}
-    </div>
-  </div>`;
-}
 
-function renderTemplateFromEmail(emailSettings, templateKey, data) {
-  const templates = emailSettings.templates || {};
-  const tpl = typeof templates.get === 'function' ? templates.get(templateKey) : (templates[templateKey] || {});
+
+function renderTemplateFromEmail(templateKey, data) {
+  const templates = require('../config/emailTemplates');
+  const tpl = templates[templateKey] || {};
   const subjectTpl = tpl.subject || '';
   const htmlTpl = tpl.html || '';
   const textTpl = tpl.text || '';
@@ -50,32 +38,37 @@ function renderTemplateFromEmail(emailSettings, templateKey, data) {
   return { subject, htmlBody, text };
 }
 
-async function sendMail({ to, subject, text, html, attachments }) {
+async function sendMail({ to, subject, text, html, attachments, fromName }) {
   const emailSettings = await Email.getOrCreate();
-  const from = emailSettings.smtp?.fromEmail || 'no-reply@example.com';
+  const fromEmail = emailSettings.smtp?.fromEmail || 'no-reply@example.com';
   
-  // Fetch branding from branding API
-  let brand = { name: '', logoUrl: '', brandColor: '#0ea5e9', footerText: '' };
-  try {
-    const { getSettings } = require('./settings');
-    const settings = await getSettings();
-    brand = {
-      name: settings?.siteName || '',
-      logoUrl: settings?.siteIcon || '',
-      brandColor: '#0ea5e9',
-      footerText: ''
-    };
-  } catch (e) {
-    console.error('Failed to fetch branding:', e);
+  if (!fromName) {
+    try {
+      const { getSettings } = require('./settings');
+      const settings = await getSettings();
+      fromName = settings?.siteName || 'PteroDash';
+    } catch {
+      fromName = 'PteroDash';
+    }
   }
+
+  const from = {
+    name: fromName,
+    address: fromEmail
+  };
   
   const transport = await getTransport();
-  const finalHtml = html ? wrapHtmlWithBrand({ htmlBody: html, brand }) : undefined;
-  return transport.sendMail({ from, to, subject, text, html: finalHtml, attachments });
+  try {
+    const result = await transport.sendMail({ from, to, subject, text, html, attachments });
+    return result;
+  } catch (error) {
+    console.error(`Failed to send email to ${to}:`, error);
+    throw error;
+  }
 }
 
 async function sendMailTemplate({ to, templateKey, data, attachments }) {
-  const emailSettings = await Email.getOrCreate();
+  await Email.getOrCreate();
   
   // Fetch branding from Settings model
   let siteName = '', siteIcon = '';
@@ -90,9 +83,28 @@ async function sendMailTemplate({ to, templateKey, data, attachments }) {
   
   const brandColor = '#0ea5e9';
   const footerText = '';
-  const enriched = { siteName, siteIcon, logoUrl: siteIcon, brandColor, footerText, ...(data || {}) };
-  const { subject, htmlBody, text } = renderTemplateFromEmail(emailSettings, templateKey, enriched);
-  return sendMail({ to, subject, text, html: htmlBody, attachments });
+  
+  let logoUrl = siteIcon || '/logo.svg';
+  if (logoUrl && !logoUrl.startsWith('http')) {
+    const baseUrl = (logoUrl === '/logo.svg' ? process.env.FRONTEND_URL : (process.env.API_URL || process.env.BACKEND_URL || process.env.FRONTEND_URL)) || '';
+    logoUrl = `${baseUrl}${logoUrl.startsWith('/') ? '' : '/'}${logoUrl}`;
+  }
+  const logoHtml = `
+    <table cellpadding="0" cellspacing="0" border="0" style="margin: 0; padding: 0;">
+      <tr>
+        <td valign="middle">
+          <img src="${logoUrl}" alt="${siteName}" style="height: 48px; max-width: 100%; object-fit: contain; display: block;" />
+        </td>
+        <td valign="middle" style="padding-left: 16px;">
+          <span style="color: #eeeeee; font-size: 26px; font-weight: 700; letter-spacing: -0.5px;">${siteName}</span>
+        </td>
+      </tr>
+    </table>
+  `;
+
+  const enriched = { siteName, siteIcon, logoUrl, logoHtml, brandColor, footerText, ...(data || {}) };
+  const { subject, htmlBody, text } = renderTemplateFromEmail(templateKey, enriched);
+  return sendMail({ to, subject, text, html: htmlBody, attachments, fromName: siteName });
 }
 
 module.exports = { sendMail, sendMailTemplate };

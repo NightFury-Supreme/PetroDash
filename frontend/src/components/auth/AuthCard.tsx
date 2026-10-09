@@ -9,7 +9,7 @@ export interface AuthCardProps {
 }
 
 export default function AuthCard({ title, subtitle, children, siteName = 'PteroDash', siteIcon = '' }: AuthCardProps) {
-  const iconSrc = siteIcon ? `${process.env.NEXT_PUBLIC_API_BASE}${siteIcon}` : '/logo.svg';
+  const iconSrc = siteIcon ? `${process.env.NEXT_PUBLIC_API_BASE || ''}${siteIcon}` : '/logo.svg';
   return (
     <section className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--background)', color: 'var(--foreground)' }}>
       <div className="w-full max-w-md rounded-2xl p-8" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>

@@ -3,6 +3,7 @@ export interface ServerInfo {
   name: string;
   status: string;
   location: string;
+  locationFlag?: string;
   cpu: number;
   memory: number;
   storage: number;
@@ -15,6 +16,7 @@ export interface ServerInfo {
   unreachable?: boolean;
   error?: string;
   suspended?: boolean;
+  queuePosition?: number;
 }
 
 export interface ResourceLimits {

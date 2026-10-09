@@ -1,369 +1,379 @@
 "use client";
-import Shell from '@/components/Shell';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useModal } from '@/components/Modal';
-import ShopSkeleton from '@/components/skeletons/shop/ShopSkeleton';
-import { useShop } from '@/hooks/useShop';
-import { ItemCard } from '@/components/shop/ItemCard';
-import { PlanCard } from '@/components/shop/PlanCard';
-import { PlanPurchaseButton } from '@/components/shop/PlanPurchaseButton';
-import { CouponModal } from '@/components/shop/CouponModal';
-import { SidebarAd, MobileAd } from '@/components/ads/AdSense';
 
-export default function ShopPage() {
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { ShoppingCart, CreditCard, ShoppingBag, RefreshCw } from "lucide-react";
+import { ErrorState, DashboardButton, ErrorDescription } from "@/components/ui/ErrorState";
+import ShopSkeleton from "@/components/skeletons/shop/ShopSkeleton";
+import { useToast } from "@/components/ui/ToastProvider";
+import { useShop } from "@/hooks/useShop";
+import { StoreHeader } from "@/components/shop/StoreHeader";
+import { ShopItemsView } from "@/components/shop/ShopItemsView";
+import { PlansView } from "@/components/shop/PlansView";
+import { PurchaseDrawer } from "@/components/shop/PurchaseDrawer";
+import { CouponDrawer } from "@/components/shop/CouponDrawer";
+import { MAX_QUANTITY } from "@/components/shop/shopUtils";
+
+export default function StorePage() {
   const router = useRouter();
-  const modal = useModal();
-  const [showCouponModal, setShowCouponModal] = useState(false);
+
+  // Drawer state
+  const [purchaseItem, setPurchaseItem] = useState<any | null>(null);
+  const [drawerQty, setDrawerQty] = useState(1);
+
+  // Plan / coupon modal state
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [showCouponModal, setShowCouponModal] = useState(false);
   const [purchaseLoading, setPurchaseLoading] = useState(false);
+  const [isPopupProcessing, setIsPopupProcessing] = useState(false);
+  const { showError, showSuccess } = useToast();
   
+
   const {
     activeTab, setActiveTab,
-    items, plans, error, setError,
+    items, plans, error,
     buying, setBuying,
-    quantities, setQuantities,
-
-    clampQuantity, iconFor, currency,
-    bootstrapDone, setCoins, activePlans, payments
+    coins, setCoins,
+    activePlans,
+    bootstrapDone, currency,
   } = useShop();
+  // Handle page load errors
+  useEffect(() => {
+    if (error) {
+      showError(error);
+    }
+  }, [error, showError]);
 
-  const downloadInvoice = async (id: string) => {
-    try {
-      const token = localStorage.getItem('auth_token');
-      if (!token) throw new Error('Not authenticated');
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/payments/${id}/invoice`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (!r.ok) {
-        const d = await r.json().catch(() => ({}));
-        throw new Error(d?.error || 'Failed to download invoice');
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // In production you might want to verify event.origin
+      if (event.data?.type === "PAYPAL_SUCCESS") {
+        setIsPopupProcessing(false);
+        showSuccess("Payment processed successfully!");
+        setShowCouponModal(false);
+        setSelectedPlan(null);
+        window.location.reload();
       }
-      const blob = await r.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `invoice-${id}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [showSuccess]);
+
+  /* -- Item purchase (via drawer) --------------- */
+  const buyItem = async (): Promise<boolean> => {
+    if (!purchaseItem) return false;
+    const key = purchaseItem.key;
+    const quantity = drawerQty;
+
+    setBuying(key);
+    
+    try {
+      const token = localStorage.getItem("auth_token");
+      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/shop/purchase`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ itemKey: key, quantity }),
+      });
+      let d: any = {};
+      try { d = await r.json(); } catch {}
+      if (!r.ok) throw new Error(d?.error || "Purchase failed");
+
+      setCoins(d.coins);
+      try { window.dispatchEvent(new CustomEvent("coins:update", { detail: { coins: Number(d.coins ?? 0) } })); } catch {}
+
+      // Refresh coins from server in background
+      try {
+        const token2 = localStorage.getItem("auth_token");
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${token2}` },
+        })
+          .then((ur) => ur.ok && ur.json())
+          .then((ud) => {
+            if (ud && ud.coins !== undefined) {
+              setCoins(ud.coins);
+              try { window.dispatchEvent(new CustomEvent("coins:update", { detail: { coins: Number(ud.coins ?? 0) } })); } catch {}
+            }
+          })
+          .catch(() => {});
+      } catch {
+        // Ignored error
+      }
+
+      showSuccess(`Successfully purchased ${quantity}x ${purchaseItem.name}`);
+      return true;
     } catch (e: any) {
-      setError(String(e?.message || 'Failed to download invoice'));
-      await modal.error({ title: 'Download Error', body: String(e?.message || 'Failed to download invoice') });
+      const msg = String(e?.message || "Purchase failed");
+      showError(msg);
+      return false;
+    } finally {
+      setBuying(null);
     }
   };
 
-  // data loading handled by useShop
-
+  /* -- Plan purchase (via PayPal) --------------- */
   const handlePlanPurchase = async (couponCode: string) => {
     if (!selectedPlan) return;
-    
     setPurchaseLoading(true);
+    
     try {
-      const token = localStorage.getItem('auth_token');
-      if (!token) throw new Error('Not authenticated');
+      const token = localStorage.getItem("auth_token");
+      if (!token) throw new Error("Not authenticated");
 
       if (selectedPlan.redirectionLink) {
         router.push(selectedPlan.redirectionLink);
+        setPurchaseLoading(false);
+        setShowCouponModal(false);
+        setSelectedPlan(null);
         return;
       }
 
-      const billingCycle = selectedPlan.lifetime ? 'lifetime' : 'monthly';
-
-      const paypalResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/paypal/create-order`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ planId: selectedPlan._id, billingCycle, couponCode: couponCode.trim() || undefined })
+      const billingCycle = selectedPlan.lifetime ? "lifetime" : "monthly";
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/paypal/create-order`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          planId: selectedPlan._id,
+          billingCycle,
+          couponCode: couponCode.trim() || undefined,
+        }),
       });
-      let paypalData: any = {}; try { paypalData = await paypalResponse.json(); } catch {}
-      if (!paypalResponse.ok) throw new Error(paypalData?.error || 'Failed to create PayPal order');
+      let data: any = {};
+      try { data = await res.json(); } catch {}
+      if (!res.ok) throw new Error(data?.error || "Failed to create PayPal order");
 
-      if (paypalData.bypassPaypal) {
-        router.push('/plan/success?orderId=' + encodeURIComponent(paypalData.id));
+      if (data.bypassPaypal) {
+        router.push("/plan/success?orderId=" + encodeURIComponent(data.id));
+        setPurchaseLoading(false);
+        setShowCouponModal(false);
+        setSelectedPlan(null);
         return;
       }
+      if (data.links?.length > 0) {
+        const link = data.links.find((l: any) => l.rel === "approve");
+        if (link) {
+          const width = 500;
+          const height = 750;
+          const left = window.screen.width / 2 - width / 2;
+          const top = window.screen.height / 2 - height / 2;
+          const popup = window.open(link.href, "paypal_popup", `width=${width},height=${height},top=${top},left=${left},toolbar=no,menubar=no,scrollbars=yes,resizable=yes`);
+          
+          if (popup) {
+            setIsPopupProcessing(true);
+            setPurchaseLoading(false);
+            
+            // Poll to see if the user closed the popup manually
+            const checkClosed = setInterval(() => {
+              if (popup.closed) {
+                clearInterval(checkClosed);
+                setIsPopupProcessing((prev) => {
+                  if (prev) { // If still processing when closed, it was cancelled
+                    showError("Payment was cancelled.");
+                    // Notify backend to mark order as VOIDED
+                    fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/paypal/cancel-order`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                      body: JSON.stringify({ orderId: data.id })
+                    }).catch(() => {});
+                    return false;
+                  }
+                  return prev;
+                });
+              }
+            }, 1000);
 
-      if (paypalData.links && paypalData.links.length > 0) {
-        const approveLink = paypalData.links.find((link: any) => link.rel === 'approve');
-        if (approveLink) {
-          router.push(approveLink.href);
-          return;
+            // Do not close the modal here, wait for the popup message
+            return;
+          } else {
+            // Fallback if popup blocked
+            router.push(link.href);
+            setPurchaseLoading(false);
+            setShowCouponModal(false);
+            setSelectedPlan(null);
+            return;
+          }
         }
       }
-      throw new Error('PayPal redirect link not found');
+      throw new Error("PayPal redirect link not found");
     } catch (e: any) {
-      await modal.error({ title: 'Purchase Error', body: e.message });
-    } finally {
+      showError(e.message || "Failed to process payment.");
       setPurchaseLoading(false);
-      setShowCouponModal(false);
-      setSelectedPlan(null);
     }
   };
 
-  const buy = async (key: string, quantity: number) => {
-    const ok = await modal.confirm({ title: 'Confirm purchase', body: `Buy ${quantity} × ${items.find(i=>i.key===key)?.name || 'item'}?`, confirmText: 'Buy' });
-    if (!ok) return;
-    setBuying(key); setError(null);
-    try {
-      const token = localStorage.getItem('auth_token');
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/shop/purchase`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ itemKey: key, quantity }) });
-      let d: any = {}; try { d = await r.json(); } catch {}
-      if (!r.ok) {
-        const message = d?.error || 'Purchase failed';
-        throw new Error(message);
-      }
-      // Update coins and refresh user data
-      setCoins(d.coins);
-      try {
-        window.dispatchEvent(new CustomEvent('coins:update', { detail: { coins: Number(d.coins ?? 0) } }));
-      } catch {}
-      await modal.success({ title: 'Purchased', body: 'Purchased successfully.' });
-      
-      // Refresh user data to show updated resources
-      try {
-        const token = localStorage.getItem('auth_token');
-        const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/me`, { 
-          headers: { Authorization: `Bearer ${token}` } 
-        });
-        if (userResponse.ok) {
-          let userData: any = {}; try { userData = await userResponse.json(); } catch {}
-          setCoins(userData.coins);
-          try {
-            window.dispatchEvent(new CustomEvent('coins:update', { detail: { coins: Number(userData.coins ?? 0) } }));
-          } catch {}
-          // You might want to update other user data here if needed
-        }
-      // eslint-disable-next-line unused-imports/no-unused-vars
-      } catch (e: any) {
-              }
-    } catch (e: any) {
-      const msg: string = String(e?.message || 'Purchase failed');
-      setError(msg);
-      const title = /insufficient|coin/i.test(msg) ? 'Insufficient coins' : 'Error';
-      await modal.error({ title, body: msg });
-    } finally { setBuying(null); }
+
+
+  /* -- Drawer helpers --------------------------- */
+  const maxQty = purchaseItem ? Number(purchaseItem.maxPerPurchase || MAX_QUANTITY) : MAX_QUANTITY;
+
+  const openDrawer = (item: any) => {
+    setPurchaseItem(item);
+    setDrawerQty(1);
   };
 
-  // iconFor and clampQuantity come from useShop
-
-  if (!bootstrapDone) {
+  if (!bootstrapDone) return <ShopSkeleton />;
+  if (error) {
     return (
-      <Shell>
-        <ShopSkeleton />
-      </Shell>
+      <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
+        <ErrorState
+          icon={<ShoppingBag strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
+          kicker="Load Error"
+          title="Failed to Load Shop"
+          errorString={error}
+          description={<ErrorDescription error={error} topic="Shop" />}
+          buttons={
+            <>
+              <button
+                onClick={() => window.location.reload()}
+                className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
+              >
+                <RefreshCw className="w-[14px] h-[14px]" />
+                Retry
+              </button>
+              <DashboardButton variant="secondary" />
+            </>
+          }
+        />
+      </div>
     );
   }
 
   return (
-    <Shell>
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 icon-gradient rounded-xl flex items-center justify-center shadow-glow">
-              <i className="fas fa-store text-white"></i>
+    <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen">
+      <div className="flex flex-col h-full space-y-6">
+
+        <StoreHeader
+          activeTab={activeTab}
+          coins={coins}
+          onTabChange={setActiveTab}
+        />
+
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+          {/* Vertical Sidebar */}
+          <aside className="w-full lg:w-48 shrink-0 pt-1">
+            <div className="mb-4">
+              <p className="text-[11px] font-medium uppercase tracking-widest text-[#555]">
+                Store
+              </p>
             </div>
-            <div>
-              <h1 className="text-2xl font-extrabold">Shop</h1>
-              <p className="text-muted">Buy additional resources with your coins</p>
+
+            <nav className="space-y-1">
+              <StoreNavItem
+                active={activeTab === "items"}
+                onClick={() => setActiveTab("items")}
+                icon={ShoppingCart}
+              >
+                Shop Items
+              </StoreNavItem>
+
+              <StoreNavItem
+                active={activeTab === "plans"}
+                onClick={() => setActiveTab("plans")}
+                icon={CreditCard}
+              >
+                Plans
+              </StoreNavItem>
+            </nav>
+
+            {/* SMALL HELP */}
+            <div className="mt-8 border-t border-[#333] pt-6">
+              <p className="text-xs text-[#666]">
+                Purchase additional resources or upgrade your
+                account with a premium plan.
+              </p>
             </div>
+          </aside>
+
+          {/* Main Content */}
+          <div className="flex-1 min-w-0 w-full">
+            {activeTab === "items" && (
+              <ShopItemsView
+                items={items}
+                buying={buying}
+                onBuy={openDrawer}
+              />
+            )}
+
+            {activeTab === "plans" && (
+              <PlansView
+                plans={plans}
+                activePlans={activePlans}
+
+                currency={currency}
+                onPurchasePlan={(plan) => { setSelectedPlan(plan); setShowCouponModal(true); }}
+              />
+            )}
           </div>
-        </div>
-
-        {error && <div className="text-red-500 text-sm">{error}</div>}
-
-        {/* Tabs */}
-        <div className="flex space-x-1" style={{ background: 'rgba(255,255,255,0.02)', padding: '4px', borderRadius: '8px' }}>
-          <button
-            onClick={() => setActiveTab('items')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeTab === 'items' ? 'bg-white text-black' : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            Shop Items
-          </button>
-          <button
-            onClick={() => setActiveTab('plans')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeTab === 'plans' ? 'bg-white text-black' : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            Plans
-          </button>
-        </div>
-
-        {activeTab === 'items' && (
-          <div className="flex flex-col xl:flex-row gap-6">
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {items.map((it) => (
-                <ItemCard
-                  key={it._id || it.key}
-                  item={it}
-                  quantity={quantities[it.key] || 1}
-                  onChangeQuantity={(next) => setQuantities((q) => ({ ...q, [it.key]: next }))}
-                  onBuy={() => buy(it.key, quantities[it.key] || 1)}
-                  isBuying={buying === it.key}
-                  iconFor={iconFor}
-                  clampQuantity={clampQuantity}
-                />
-              ))}
-            </div>
-            <div className="xl:w-80 xl:flex-shrink-0">
-              <div className="sticky top-6">
-                <SidebarAd />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Mobile Ad for smaller screens */}
-        <div className="xl:hidden">
-          <MobileAd />
-        </div>
-
-        {activeTab === 'plans' && (
-          <div className="flex flex-col xl:flex-row gap-6">
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {plans.map((plan) => (
-                <PlanCard key={plan._id} plan={plan} currency={currency}>
-                  <PlanPurchaseButton 
-                    plan={plan} 
-                    onPurchase={() => {
-                      setSelectedPlan(plan);
-                      setShowCouponModal(true);
-                    }}
-                    onSuccess={async () => {
-                      const token = localStorage.getItem('auth_token');
-                      if (token) {
-                        try {
-                          const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
-                          let d: any = {}; try { d = await r.json(); } catch {}
-                          if (r.ok) {
-                            setCoins(Number(d?.coins ?? 0));
-                            try {
-                              window.dispatchEvent(new CustomEvent('coins:update', { detail: { coins: Number(d?.coins ?? 0) } }));
-                            } catch {}
-                          }
-                        } catch {}
-                      }
-                    }} 
-                  />
-                </PlanCard>
-              ))}
-            </div>
-            <div className="xl:w-80 xl:flex-shrink-0">
-              <div className="sticky top-6">
-                <SidebarAd />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Invoices / Active Plans */}
-        <div className="mt-8">
-          <h2 className="text-lg font-bold mb-3">Your Active Plans</h2>
-          {activePlans.length === 0 ? (
-            <div className="text-sm text-muted">No active plans.</div>
-          ) : (
-            (() => {
-              const groups: Record<string, { name: string; label: string; count: number }> = {};
-              for (const ap of activePlans) {
-                const name: string = ap?.planId?.name || ap?.planId || 'Plan';
-                const label: string = ap?.isLifetime ? 'Lifetime' : 'Lifetime';
-                const key = `${name}__${label}`;
-                if (!groups[key]) groups[key] = { name, label, count: 0 };
-                groups[key].count += 1;
-              }
-              const grouped = Object.values(groups);
-              return (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
-                  {grouped.map((g) => (
-                    <div key={`${g.name}-${g.label}`} className="rounded-lg p-4 flex items-center justify-between" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-                      <div>
-                        <div className="font-semibold">{g.name}</div>
-                        <div className="text-xs text-muted">{g.label} ({g.count})</div>
-                      </div>
-                      <div className="px-2 py-1 text-[11px] rounded-full" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)' }}>
-                        Active
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              );
-            })()
-          )}
-
-          <h2 className="text-lg font-bold mb-3">Recent Payments</h2>
-          {payments.length === 0 ? (
-            <div className="text-sm text-muted">No payments yet.</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-[#AAAAAA] border-b" style={{ borderColor: 'var(--border)' }}>
-                    <th className="py-3 font-medium">Payment ID</th>
-                    <th className="py-3 font-medium">Date</th>
-                    <th className="py-3 font-medium">Plan</th>
-                    <th className="py-3 font-medium">Amount</th>
-                    <th className="py-3 font-medium">Status</th>
-                    <th className="py-3 font-medium">Invoice</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {payments.map((p: any) => {
-                    const status = String(p.status || '').toLowerCase();
-                    const statusClass = status === 'completed' || status === 'paid'
-                      ? 'bg-green-900/40 text-green-300 border-green-800'
-                      : (status === 'pending' || status === 'created')
-                      ? 'bg-yellow-900/40 text-yellow-300 border-yellow-800'
-                      : 'bg-red-900/40 text-red-300 border-red-800';
-                    return (
-                      <tr key={p.id} className="border-b hover:bg-[#151515] transition-colors" style={{ borderColor: 'var(--border)' }}>
-                        <td className="py-3 align-middle text-xs text-[#888] font-mono">{p.id}</td>
-                        <td className="py-3 align-middle">{new Date(p.createdAt).toLocaleString()}</td>
-                        <td className="py-3 align-middle">{p.plan?.name || p.planId}</td>
-                        <td className="py-3 align-middle">
-                          <span className="font-semibold">{p.amount?.toFixed ? p.amount.toFixed(2) : p.amount}</span> <span className="text-[#AAAAAA]">{p.currency || currency}</span>
-                        </td>
-                        <td className="py-3 align-middle">
-                          <span className={`px-2 py-1 text-[11px] rounded-full border ${statusClass}`}>
-                            {status === 'created' ? 'Processing' : p.status}
-                          </span>
-                        </td>
-                        <td className="py-3 align-middle">
-                          {(status === 'completed' || status === 'paid') ? (
-                            <button className="text-accent underline hover:opacity-80" onClick={() => downloadInvoice(p.id)}>Download</button>
-                          ) : (
-                            <span className="text-[#555]">N/A</span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Coupon Modal */}
-      <CouponModal
-        isOpen={showCouponModal}
-        onClose={() => {
-          setShowCouponModal(false);
-          setSelectedPlan(null);
-        }}
-        onConfirm={handlePlanPurchase}
-        planName={selectedPlan?.name || ''}
-        planPrice={selectedPlan?.pricePerMonth || 0}
-        isLifetime={selectedPlan?.lifetime || false}
-        redirectionLink={selectedPlan?.redirectionLink}
-        loading={purchaseLoading}
+      <PurchaseDrawer
+        item={purchaseItem}
+        quantity={drawerQty}
+        total={purchaseItem ? Number(purchaseItem.pricePerUnit || 0) * drawerQty : 0}
+        buying={buying === purchaseItem?.key}
+        onClose={() => { setPurchaseItem(null);  }}
+        onDecrease={() => setDrawerQty((q) => Math.max(1, q - 1))}
+        onIncrease={() => setDrawerQty((q) => Math.min(maxQty, q + 1))}
+        onQuantityChange={(v) => setDrawerQty(Math.max(1, Math.min(maxQty, Math.floor(v))))}
+        onConfirm={buyItem}
+        
       />
-    </Shell>
+
+      <CouponDrawer
+        isOpen={showCouponModal}
+        onClose={() => { setShowCouponModal(false); setSelectedPlan(null);  }}
+        onConfirm={handlePlanPurchase}
+        plan={selectedPlan}
+        loading={purchaseLoading}
+        isPopupProcessing={isPopupProcessing}
+        
+      />
+    </div>
   );
 }
 
-// PlanPurchaseButton moved to components/shop/PlanPurchaseButton
+function StoreNavItem({
+  active,
+  onClick,
+  icon: Icon,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon?: React.ElementType;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`
+        group
+        relative
+        flex
+        w-full
+        items-center
+        gap-3
+        rounded-lg
+        px-2.5
+        py-2
+        text-left
+        text-sm
+        transition-colors
+        focus-visible:outline-none
+        focus-visible:ring-1
+        focus-visible:ring-white/30
 
+        ${
+          active
+            ? "bg-white/10 text-white"
+            : "text-zinc-500 hover:bg-white/5 hover:text-zinc-200"
+        }
+      `}
+    >
+      {Icon && <Icon size={17} strokeWidth={1.75} className="shrink-0" />}
+      <span className="truncate">{children}</span>
+    </button>
+  );
+}

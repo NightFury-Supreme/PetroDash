@@ -7,8 +7,8 @@ const router = express.Router();
 
 const schema = z.object({
     name: z.string().min(1),
-    flag: z.string().optional().or(z.literal('')), // Changed from flagUrl to flag
-    latencyUrl: z.string().optional().or(z.literal('')),
+    flag: z.string().min(1, 'Location flag is required'), // Changed from flagUrl to flag
+    latencyUrl: z.string().min(1, 'Node IP is required'),
     serverLimit: z.coerce.number().int().nonnegative().default(0),
     platform: z
         .object({
@@ -28,8 +28,31 @@ router.get('/', requireAdmin, async (req, res) => {
     if (cached) return res.json(cached);
 
     const items = await Location.find().sort({ createdAt: -1 }).lean();
-    await setCache('admin:locations', items, 30);
-    res.json(items);
+
+    const Plan = require('../../models/Plan');
+    const allPlans = await Plan.find({}, '_id name').lean();
+    const planMap = new Map();
+    allPlans.forEach(p => {
+        planMap.set(p._id.toString(), p.name);
+        planMap.set(p.name, p.name);
+    });
+
+    const Server = require('../../models/Server');
+
+    const mappedItems = await Promise.all(items.map(async loc => {
+        const allowedPlanNames = (loc.allowedPlans || [])
+            .map(ap => planMap.get(String(ap)))
+            .filter(Boolean);
+        const count = await Server.countDocuments({ locationId: loc._id });
+        return {
+            ...loc,
+            serversCount: count,
+            allowedPlanNames: [...new Set(allowedPlanNames)]
+        };
+    }));
+
+    await setCache('admin:locations', mappedItems, 30);
+    res.json(mappedItems);
 });
 
 router.post('/', requireAdmin, async (req, res) => {
@@ -40,13 +63,18 @@ router.post('/', requireAdmin, async (req, res) => {
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:locations');
 
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.location.create', 'location', created._id.toString(), { name: created.name });
+
     res.status(201).json(created);
 });
 
 router.get('/:id', requireAdmin, async (req, res) => {
+    const Server = require('../../models/Server');
     const loc = await Location.findById(String(req.params.id)).lean();
     if (!loc) return res.status(404).json({ error: 'Not found' });
-    res.json(loc);
+    const serversCount = await Server.countDocuments({ locationId: req.params.id });
+    res.json({ ...loc, serversCount });
 });
 
 router.put('/:id', requireAdmin, async (req, res) => {
@@ -58,15 +86,26 @@ router.put('/:id', requireAdmin, async (req, res) => {
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:locations');
 
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.location.update', 'location', updated._id.toString(), { name: updated.name });
+
     res.json(updated);
 });
 
 router.delete('/:id', requireAdmin, async (req, res) => {
+    const Server = require('../../models/Server');
+    const serversCount = await Server.countDocuments({ locationId: req.params.id });
+    if (serversCount > 0) {
+        return res.status(400).json({ error: 'Cannot delete location with existing servers' });
+    }
     const deleted = await Location.findByIdAndDelete(String(req.params.id)).lean();
     if (!deleted) return res.status(404).json({ error: 'Not found' });
 
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:locations');
+
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.location.delete', 'location', deleted._id.toString(), { name: deleted.name });
 
     res.json({ success: true });
 });

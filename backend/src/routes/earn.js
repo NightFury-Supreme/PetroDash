@@ -9,6 +9,7 @@ const { getSettings } = require('../lib/settings');
 const EarnSession = require('../models/EarnSession');
 const User = require('../models/User');
 const { writeAudit } = require('../middleware/audit');
+const { logUserActivity } = require('../middleware/userActivity');
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ const earnRateLimiter = createRateLimiter(120, 15 * 60 * 1000, {
 });
 router.use(earnRateLimiter);
 
-const METHOD_KEYS = ['ads', 'linkvertise'];
+const METHOD_KEYS = ['ads', 'linkvertise', 'offerwall', 'surveywall'];
 
 let admobKeyCache = { fetchedAt: 0, keys: new Map() };
 
@@ -226,7 +227,6 @@ function isAyetConfigured(s) {
 
 function getEarnConfig(s) {
   const earn = s?.earn || {};
-  const enabled = Boolean(earn.enabled);
 
   const normalizeMethod = (m, defaults) => {
     const obj = m || {};
@@ -241,13 +241,16 @@ function getEarnConfig(s) {
       ayetPlacementId: clampInt(obj.ayetPlacementId, 0, 1000000000, defaults.ayetPlacementId),
       ayetAdslotName: typeof obj.ayetAdslotName === 'string' ? obj.ayetAdslotName : defaults.ayetAdslotName,
       ayetApiKey: typeof obj.ayetApiKey === 'string' ? obj.ayetApiKey : defaults.ayetApiKey,
+      adslotId: typeof obj.adslotId === 'string' ? obj.adslotId : defaults.adslotId,
+      apiKey: typeof obj.apiKey === 'string' ? obj.apiKey : defaults.apiKey,
     };
   };
 
   return {
-    enabled,
     ads: normalizeMethod(earn.ads, { coins: 10, cooldownSeconds: 3600, waitSeconds: 30, maxClaimsPerDay: 24, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '' }),
     linkvertise: normalizeMethod(earn.linkvertise, { coins: 20, cooldownSeconds: 3600, waitSeconds: 10, maxClaimsPerDay: 24, url: '', antiBypassToken: '' }),
+    offerwall: normalizeMethod(earn.offerwall, { coins: 0, cooldownSeconds: 0, waitSeconds: 0, maxClaimsPerDay: 0, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '', adslotId: '', apiKey: '' }),
+    surveywall: normalizeMethod(earn.surveywall, { coins: 0, cooldownSeconds: 0, waitSeconds: 0, maxClaimsPerDay: 0, url: '', antiBypassToken: '', ayetPlacementId: 0, ayetAdslotName: '', ayetApiKey: '', adslotId: '', apiKey: '' }),
   };
 }
 
@@ -297,18 +300,24 @@ function verifyAyetClientSignature(details, apiKey) {
 
 function buildLinkvertiseUrl(template, targetUrl) {
   if (!template) return '';
-
-  const targetB64 = Buffer.from(targetUrl, 'utf8').toString('base64');
-  if (template.includes('{target}')) return template.replace('{target}', encodeURIComponent(targetUrl));
-  if (template.includes('{targetB64}')) return template.replace('{targetB64}', encodeURIComponent(targetB64));
-
-  if (template.includes('dynamic?r=')) {
-    const parts = template.split('r=');
-    const prefix = parts[0] + 'r=';
-    return prefix + encodeURIComponent(targetB64);
+  
+  let url = template
+    .replace(/\?o=sharing/g, '')
+    .replace(/&o=sharing/g, '')
+    .replace(/\/+$/, '');
+    
+  // If they accidentally pasted the full dynamic path, strip it back to the base post URL
+  if (url.includes('/dynamic')) {
+    url = url.split('/dynamic')[0];
   }
-
-  return template;
+  
+  const targetB64 = Buffer.from(targetUrl, 'utf8').toString('base64');
+  const encodedTargetB64 = encodeURIComponent(targetB64);
+  
+  // Linkvertise servers will automatically append ?o=sharing to links.
+  // Because our link already has ?r=..., appending ?o=sharing breaks the URL.
+  // By pre-appending &o=sharing, we prevent Linkvertise from appending the broken one.
+  return url + '/dynamic?r=' + encodedTargetB64 + '&o=sharing';
 }
 
 async function getLatestSession(userId, method) {
@@ -337,18 +346,22 @@ router.get('/', requireAuth, async (req, res) => {
     if (publicCfg?.linkvertise) delete publicCfg.linkvertise.antiBypassToken;
 
     if (publicCfg?.ads) delete publicCfg.ads.ayetApiKey;
+    if (publicCfg?.offerwall) delete publicCfg.offerwall.apiKey;
+    if (publicCfg?.surveywall) delete publicCfg.surveywall.apiKey;
 
     if (publicCfg?.ads && !isAyetConfigured(settings)) {
       publicCfg.ads.enabled = false;
     }
 
     const dayStart = startOfUtcDay(new Date());
-    const [adsToday, linkvertiseToday] = await Promise.all([
+    const [adsToday, linkvertiseToday, offerwallToday, surveywallToday] = await Promise.all([
       EarnSession.countDocuments({ userId, method: 'ads', creditedAt: { $gte: dayStart } }),
       EarnSession.countDocuments({ userId, method: 'linkvertise', creditedAt: { $gte: dayStart } }),
+      EarnSession.countDocuments({ userId, method: 'offerwall', creditedAt: { $gte: dayStart } }),
+      EarnSession.countDocuments({ userId, method: 'surveywall', creditedAt: { $gte: dayStart } }),
     ]);
 
-    const todayByMethod = { ads: adsToday, linkvertise: linkvertiseToday };
+    const todayByMethod = { ads: adsToday, linkvertise: linkvertiseToday, offerwall: offerwallToday, surveywall: surveywallToday };
 
     const sessions = await EarnSession.find({ userId, method: { $in: METHOD_KEYS } })
       .sort({ createdAt: -1 })
@@ -376,12 +389,12 @@ router.get('/', requireAuth, async (req, res) => {
 
       if (method === 'ads' && !isAyetConfigured(settings)) {
         state = 'disabled';
-      } else if (!cfg.enabled || !methodCfg.enabled) {
+      } else if (!methodCfg.enabled) {
         state = 'disabled';
-      } else if (Number(methodCfg.maxClaimsPerDay || 0) <= 0) {
+      } else if (methodCfg.maxClaimsPerDay <= 0 && !((method === 'offerwall' || method === 'surveywall') && methodCfg.maxClaimsPerDay === 0)) {
         state = 'limit_reached';
         remainingToday = 0;
-      } else if (todayClaims >= Number(methodCfg.maxClaimsPerDay || 0)) {
+      } else if (todayClaims >= methodCfg.maxClaimsPerDay && !((method === 'offerwall' || method === 'surveywall') && methodCfg.maxClaimsPerDay === 0)) {
         state = 'limit_reached';
         remainingToday = 0;
       } else if (session && session.status === 'started') {
@@ -494,6 +507,8 @@ router.get('/ads/ayet/callback', async (req, res) => {
       return res.status(200).send('ok');
     }
 
+    const { writeAudit } = require('../middleware/audit');
+    await writeAudit(updated.userId, 'earn.ad.verified', 'earn', sessionId, { provider: 'ayet', txId });
     return res.status(200).send('ok');
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {
@@ -561,6 +576,8 @@ router.post('/ads/ayet/rewarded', requireAuth, async (req, res) => {
       return res.status(409).json({ error: 'Already verified' });
     }
 
+    const { writeAudit } = require('../middleware/audit');
+    await writeAudit(userId, 'earn.ad.verified', 'earn', sessionId, { provider: 'ayet', txId: conversionId });
     return res.json({ ok: true });
   } catch (e) {
     if (e && e.code === 11000) {
@@ -615,6 +632,8 @@ router.get('/ads/admob/ssv', async (req, res) => {
       return res.status(409).send('conflict');
     }
 
+    const { writeAudit } = require('../middleware/audit');
+    await writeAudit(updated.userId, 'earn.ad.verified', 'earn', sessionId, { provider: 'admob', txId });
     return res.status(200).send('ok');
   } catch (e) {
     if (e && e.code === 11000) {
@@ -643,7 +662,7 @@ router.post('/:method/start', requireAuth, async (req, res) => {
       return res.status(403).json({ error: 'ayeT Rewarded Video is not configured' });
     }
 
-    if (!cfg.enabled || !methodCfg.enabled) {
+    if (!methodCfg.enabled) {
       return res.status(403).json({ error: 'Earn method is disabled' });
     }
 
@@ -740,12 +759,8 @@ router.post('/:method/start', requireAuth, async (req, res) => {
       response.linkvertise = hasAntiBypass ? { url, target } : { url, target, sessionSecret: secret };
     }
 
-    await writeAudit(req, 'earn.session.start', 'earn', String(session._id), {
-      method,
-      rewardCoins: Number(session.rewardCoins || 0),
-      availableAt: session.availableAt,
-      expiresAt: session.expiresAt,
-    });
+    await logUserActivity(req, 'earn.session.start', { sessionId: session._id, method, rewardCoins: Number(session.rewardCoins || 0) });
+    await writeAudit(req, 'earn.session.start', 'earn', session._id.toString(), { method, rewardCoins: Number(session.rewardCoins || 0) });
 
     const { deleteCachePattern } = require('../lib/redis');
     await deleteCachePattern(`earn:status:${userId}`);
@@ -781,7 +796,7 @@ router.post('/:method/claim', requireAuth, async (req, res) => {
     const cfg = getEarnConfig(settings);
     const methodCfg = cfg[method];
 
-    if (!cfg.enabled || !methodCfg.enabled) {
+    if (!methodCfg.enabled) {
       return res.status(403).json({ error: 'Earn method is disabled' });
     }
 
@@ -876,6 +891,7 @@ router.post('/:method/claim', requireAuth, async (req, res) => {
         coinsAfter: Number(userAfter.coins || 0),
         sessionId: String(locked._id),
       });
+      await logUserActivity(req, 'earn.claim', { method, rewardCoins: reward });
 
       const { deleteCachePattern } = require('../lib/redis');
       await deleteCachePattern(`earn:status:${userId}`);
@@ -944,6 +960,7 @@ router.post('/:method/claim', requireAuth, async (req, res) => {
       coinsAfter: result.coinsAfter,
       sessionId: result.sessionId,
     });
+    await logUserActivity(req, 'earn.claim', { method, rewardCoins: result.rewardCoins });
 
     const { deleteCachePattern } = require('../lib/redis');
     await deleteCachePattern(`earn:status:${userId}`);
@@ -959,6 +976,123 @@ router.post('/:method/claim', requireAuth, async (req, res) => {
     if (String(e?.message || '') === 'EXPIRED') return res.status(400).json({ error: 'Session expired' });
     if (String(e?.message || '') === 'NOUSER') return res.status(404).json({ error: 'User not found' });
     return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.get('/ayet/callback', async (req, res) => {
+  try {
+    const { getSettings } = require('../lib/settings');
+    const settings = await getSettings();
+    const earnCfg = settings?.earn || {};
+    
+    // Determine which API key to use based on is_survey parameter
+    const isSurvey = req.query.is_survey === '1';
+    const method = isSurvey ? 'surveywall' : 'offerwall';
+    const methodCfg = earnCfg[method] || {};
+    const apiKey = String(methodCfg.apiKey || '').trim();
+    
+    if (!apiKey) {
+      console.warn(`[ayeT-Studios Callback] ${method} is not configured with an API Key.`);
+      return res.status(200).send('OK'); 
+    }
+
+    const { createHmac } = require('crypto');
+    const params = { ...req.query };
+    
+    const sortedKeys = Object.keys(params).sort((a, b) => a.localeCompare(b));
+    const sortedQueryString = sortedKeys.map(k => `${k}=${encodeURIComponent(params[k])}`).join('&');
+
+    const computedHash = createHmac('sha256', apiKey).update(sortedQueryString).digest('hex');
+    const securityHash = req.headers['x-ayetstudios-security-hash'];
+    
+    if (securityHash !== computedHash) {
+      console.warn(`[ayeT-Studios Callback] Invalid HMAC signature.`);
+      return res.status(403).send('Invalid signature');
+    }
+
+    const { external_identifier, currency_amount, transaction_id, is_chargeback, payout_usd } = params;
+    
+    if (!external_identifier || !transaction_id) {
+      return res.status(400).send('Missing identifiers');
+    }
+
+    const amount = Number(currency_amount || 0);
+    if (isNaN(amount) || amount === 0) {
+      return res.status(200).send('OK');
+    }
+
+    const userId = external_identifier;
+
+    const session = await mongoose.startSession();
+    
+    let result = false;
+    await session.withTransaction(async () => {
+      const existingSession = await EarnSession.findOne({ providerTxId: transaction_id, method }).session(session);
+      if (existingSession) {
+        result = true;
+        return; 
+      }
+
+      const user = await User.findById(userId).session(session);
+      if (!user) {
+        console.warn(`[ayeT-Studios Callback] User not found: ${userId}`);
+        return;
+      }
+
+      let adjustment = 0;
+      if (String(is_chargeback) === '1') {
+        adjustment = -Math.abs(amount);
+      } else {
+        adjustment = Math.abs(amount);
+      }
+
+      const coinsBefore = Number(user.coins || 0);
+      user.coins = coinsBefore + adjustment;
+      await user.save({ session });
+
+      const [createdSession] = await EarnSession.create([{
+        userId,
+        method,
+        status: 'completed',
+        rewardCoins: adjustment,
+        provider: 'ayet',
+        providerTxId: transaction_id,
+        startedAt: new Date(),
+        availableAt: new Date(),
+        expiresAt: new Date(),
+        completedAt: new Date(),
+        creditedAt: new Date(),
+        meta: { payout_usd, ...params }
+      }], { session });
+
+      result = {
+        sessionId: String(createdSession._id),
+        adjustment,
+        coinsBefore,
+        coinsAfter: Number(user.coins || 0)
+      };
+    });
+    session.endSession();
+
+    if (result && typeof result === 'object') {
+      req.user = { sub: userId, role: 'user', username: 'callback' };
+      await writeAudit(req, 'earn.callback.claim', 'earn', String(result.sessionId), {
+        method,
+        rewardCoins: result.adjustment,
+        coinsBefore: result.coinsBefore,
+        coinsAfter: result.coinsAfter,
+        txId: transaction_id,
+      });
+
+      const { deleteCachePattern } = require('../lib/redis');
+      await deleteCachePattern(`earn:status:${userId}`);
+      await deleteCachePattern(`user:${userId}:profile`);
+    }
+
+    return res.status(200).send('OK');
+  } catch (e) {
+    console.error('[ayeT-Studios Callback] Error:', e);
+    return res.status(500).send('Internal error');
   }
 });
 

@@ -5,7 +5,7 @@ const { createRateLimiter } = require('../middleware/rateLimit');
 const User = require('../models/User');
  
 const { getPanelUser, updatePanelUser } = require('../services/pterodactyl');
- 
+const { logUserActivity } = require('../middleware/userActivity');
 
 const router = express.Router();
 // GET /api/panel - Get panel info for logged-in user
@@ -18,10 +18,14 @@ router.get('/', requireAuth, createRateLimiter(100, 60 * 1000), async (req, res)
     }
 
     if (!user.pterodactylUserId) {
-      return res.status(400).json({ 
-        error: 'Panel access not available',
-        details: 'Your account is not linked to the control panel. Please contact support.'
-      });
+      const UserCreationService = require('../services/userCreation');
+      await UserCreationService.createPterodactylUser(user);
+      if (!user.pterodactylUserId) {
+        return res.status(503).json({ 
+          error: 'Account Provisioning Pending',
+          details: 'Your panel account is currently pending creation because the control panel is temporarily unavailable. We are automatically retrying in the background. Please check back in a few minutes.'
+        });
+      }
     }
 
     // Construct panel URLs
@@ -57,7 +61,7 @@ router.get('/', requireAuth, createRateLimiter(100, 60 * 1000), async (req, res)
     await setCache(cacheKey, result, 60);
     return res.json(result);
   } catch (error) {
-    console.error('Panel info fetch error:', error);
+    console.error('Panel info fetch error:', error.message || error);
     
     // Handle specific Pterodactyl API errors
     if (error.response?.status === 404) {
@@ -92,10 +96,14 @@ router.post('/reset-password', requireAuth, createRateLimiter(3, 5 * 60 * 1000),
     }
 
     if (!user.pterodactylUserId) {
-      return res.status(400).json({ 
-        error: 'Panel access not available',
-        details: 'Your account is not linked to the control panel.'
-      });
+      const UserCreationService = require('../services/userCreation');
+      await UserCreationService.createPterodactylUser(user);
+      if (!user.pterodactylUserId) {
+        return res.status(503).json({ 
+          error: 'Account Provisioning Pending',
+          details: 'Your panel account is currently pending creation because the control panel is temporarily unavailable. We are automatically retrying in the background. Please check back in a few minutes.'
+        });
+      }
     }
 
     // Fetch existing panel user to preserve required fields
@@ -128,12 +136,14 @@ router.post('/reset-password', requireAuth, createRateLimiter(3, 5 * 60 * 1000),
       password: newPassword,
     });
 
+    await logUserActivity(req, 'panel.password.reset', { sessionId: req.user?.sessionId });
+
     return res.json({ 
       password: newPassword,
       message: 'Password reset successfully'
     });
   } catch (error) {
-    console.error('Panel password reset error:', error);
+    console.error('Panel password reset error:', error.message || error);
     
     // Handle specific Pterodactyl API errors
     if (error.response?.status === 404) {
