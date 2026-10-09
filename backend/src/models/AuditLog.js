@@ -6,6 +6,10 @@ const AuditLogSchema = new mongoose.Schema(
     actorRole: { type: String, enum: ['user', 'admin'], default: 'user' },
     actorUsername: { type: String },
     action: { type: String, required: true }, // e.g., server.create, admin.user.update
+    severity: { type: String, enum: ['INFO', 'WARNING', 'ERROR', 'CRITICAL'], default: 'INFO' },
+    category: { type: String, enum: ['admin_activity', 'user_activity', 'billing_event', 'data_access', 'system_event', 'policy_denied'], default: 'system_event' },
+    requestId: { type: String },
+    sessionId: { type: String },
     resourceType: { type: String, required: true }, // server, user, shop, auth, admin
     resourceId: { type: String },
     targetUserId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

@@ -11,7 +11,6 @@ export function useShop() {
   const [buying, setBuying] = useState<string | null>(null);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [coins, setCoins] = useState<number | null>(null);
-  const [payments, setPayments] = useState<any[]>([]);
   const [activePlans, setActivePlans] = useState<any[]>([]);
   const [itemsLoading, setItemsLoading] = useState(true);
   const [plansLoading, setPlansLoading] = useState(true);
@@ -24,7 +23,7 @@ export function useShop() {
 
     // Items
     try {
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/shop`, { headers: { Authorization: `Bearer ${token}` } });
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/shop`, { headers: { Authorization: `Bearer ${token}` } });
       let d: any = {}; try { d = await r.json(); } catch {}
       if (!r.ok) throw new Error(d?.error || 'Failed');
       setItems(d || []);
@@ -36,7 +35,7 @@ export function useShop() {
 
     // Plans
     try {
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/plans`, { headers: { Authorization: `Bearer ${token}` } });
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/plans`, { headers: { Authorization: `Bearer ${token}` } });
       let d: any = {}; try { d = await r.json(); } catch {}
       if (!r.ok) throw new Error(d?.error || 'Failed');
       setPlans(d || []);
@@ -45,7 +44,7 @@ export function useShop() {
 
     // Coins
     try {
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
       let d: any = {}; try { d = await r.json(); } catch {}
       if (r.ok) {
         const nextCoins = Number(d?.coins ?? 0);
@@ -56,23 +55,18 @@ export function useShop() {
       }
     } catch {}
 
-    // Payments
-    try {
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/payments`, { headers: { Authorization: `Bearer ${token}` } });
-      let d: any = {}; try { d = await r.json(); } catch {}
-      if (r.ok) setPayments(d || []);
-    } catch {}
+    // Payments will be handled by the PaymentsSection with pagination
 
     // Active user plans
     try {
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/user/plans`, { headers: { Authorization: `Bearer ${token}` } });
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/user/plans`, { headers: { Authorization: `Bearer ${token}` } });
       let d: any = {}; try { d = await r.json(); } catch {}
       if (r.ok) setActivePlans(d || []);
     } catch {}
 
     // Branding (for currency)
     try {
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/branding`);
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/branding`);
       let d: any = {}; try { d = await r.json(); } catch {}
       if (r.ok && d?.currency) setCurrency(d.currency);
     } catch {}
@@ -94,7 +88,7 @@ export function useShop() {
     items, plans, error, setError,
     buying, setBuying,
     quantities, setQuantities,
-    coins, setCoins, payments, activePlans,
+    coins, setCoins, activePlans,
     itemsLoading, plansLoading, bootstrapDone,
     currency,
     // helpers

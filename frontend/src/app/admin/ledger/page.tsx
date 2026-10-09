@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Shell from "@/components/Shell";
+import { useToast } from "@/components/ui/ToastProvider";
+import { BookOpen, RefreshCw } from "lucide-react";
+import { ErrorState, DashboardButton, ErrorDescription } from "@/components/ui/ErrorState";
 import { AdminLedgerSkeleton } from "@/components/skeletons/admin/ledger";
 import { AdminLedgerHeader, AdminLedgerContent } from "@/components/admin/ledger";
+import { Pagination } from "@/components/Pagination";
 import { useModal } from "@/components/Modal";
 
 // Use a flexible item shape to match API without strict coupling
@@ -21,6 +24,7 @@ export default function AdminLedgerPage() {
   const [voiding, setVoiding] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const modal = useModal();
+  const { showSuccess, showError } = useToast();
 
   const load = async (pageToLoad = currentPage) => {
     setError(null);
@@ -39,7 +43,7 @@ export default function AdminLedgerPage() {
       params.set('page', pageToLoad.toString());
       params.set('limit', '10');
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/payments/ledger?${params.toString()}`, { 
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/payments/ledger?${params.toString()}`, { 
         headers: { Authorization: `Bearer ${token}` } 
       });
       
@@ -89,7 +93,7 @@ export default function AdminLedgerPage() {
         return;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/payments/${id}/refund`, { 
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/payments/${id}/refund`, { 
         method: 'POST', 
         headers: { Authorization: `Bearer ${token}` } 
       });
@@ -99,17 +103,11 @@ export default function AdminLedgerPage() {
         throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`);
       }
       
-      await modal.success({
-        title: "Refund Successful",
-        body: "The payment has been successfully refunded."
-      });
+      showSuccess("The payment has been successfully refunded.");
       
       await load(); // Reload the data
     } catch (e: unknown) {
-      await modal.error({
-        title: "Refund Failed",
-        body: e instanceof Error ? e.message : 'Failed to refund payment'
-      });
+      showError(e instanceof Error ? e.message : 'Failed to refund payment');
     } finally {
       setRefunding(null);
     }
@@ -133,7 +131,7 @@ export default function AdminLedgerPage() {
         return;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/payments/${id}/void`, { 
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/payments/${id}/void`, { 
         method: 'POST', 
         headers: { Authorization: `Bearer ${token}` } 
       });
@@ -143,17 +141,11 @@ export default function AdminLedgerPage() {
         throw new Error(errorData?.error || `HTTP ${response.status}: ${response.statusText}`);
       }
       
-      await modal.success({
-        title: "Void Successful",
-        body: "The payment has been successfully voided."
-      });
+      showSuccess("The payment has been successfully voided.");
       
       await load(); // Reload the data
     } catch (e: unknown) {
-      await modal.error({
-        title: "Void Failed",
-        body: e instanceof Error ? e.message : 'Failed to void payment'
-      });
+      showError(e instanceof Error ? e.message : 'Failed to void payment');
     } finally {
       setVoiding(null);
     }
@@ -161,16 +153,42 @@ export default function AdminLedgerPage() {
 
   if (loading && items.length === 0) {
     return (
-      <Shell>
+      
         <div className="p-6">
           <AdminLedgerSkeleton />
         </div>
-      </Shell>
+      
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
+        <ErrorState
+          icon={<BookOpen strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
+          kicker="Load Error"
+          title="Failed to Load Ledger"
+          errorString={error}
+          description={<ErrorDescription error={error} topic="Ledger" />}
+          buttons={
+            <>
+              <button
+                onClick={() => window.location.reload()}
+                className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
+              >
+                <RefreshCw className="w-[14px] h-[14px]" />
+                Retry
+              </button>
+              <DashboardButton variant="secondary" />
+            </>
+          }
+        />
+      </div>
     );
   }
 
   return (
-    <Shell>
+    
       <div className="p-6 space-y-6">
         {/* Header */}
         <AdminLedgerHeader />
@@ -197,29 +215,16 @@ export default function AdminLedgerPage() {
         />
 
         {/* Pagination Controls */}
-        {pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between pt-4">
-            <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={pagination.page <= 1}
-              className="px-4 py-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-sm font-medium hover:bg-[var(--hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              Previous
-            </button>
-            <div className="text-sm text-[#AAAAAA]">
-              Page {pagination.page} of {pagination.totalPages} (Total: {pagination.total})
-            </div>
-            <button
-              onClick={() => setCurrentPage(p => Math.min(pagination.totalPages, p + 1))}
-              disabled={pagination.page >= pagination.totalPages}
-              className="px-4 py-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-sm font-medium hover:bg-[var(--hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              Next
-            </button>
-          </div>
-        )}
+        <Pagination
+          currentPage={pagination.page}
+          totalPages={pagination.totalPages}
+          totalItems={pagination.total}
+          pageSize={10}
+          onPageChange={setCurrentPage}
+          itemName="payments"
+        />
       </div>
-    </Shell>
+    
   );
 }
 

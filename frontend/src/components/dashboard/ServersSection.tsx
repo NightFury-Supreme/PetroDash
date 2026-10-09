@@ -1,96 +1,221 @@
 "use client";
 
-import ServerCard from "../ServerCard/ServerCard";
-import UnreachableServerCard from "../ServerCard/UnreachableServerCard";
-import SuspendedServerCard from "../ServerCard/SuspendedServerCard";
+import { useState } from "react";
 import { ServerInfo } from "./types";
+import { Cpu, CircuitBoard, HardDrive, ChevronsUpDown, ExternalLink, Edit2, Trash2, ShieldAlert } from 'lucide-react';
+import { DeleteDrawer } from "@/components/ui/DeleteDrawer";
 
 interface ServersSectionProps {
   servers: ServerInfo[];
-  onDelete: (serverId: string, serverName: string) => Promise<void>;
-  deleting: string | null;
+  onDelete: (serverId: string, serverName: string) => void;
+  onEdit?: (serverId: string) => void;
+  deleting?: string | null;
 }
 
-export function ServersSection({ servers, onDelete, deleting }: ServersSectionProps) {
+export function ServersSection({ servers, onDelete, onEdit }: ServersSectionProps) {
+  const [deletingServer, setDeletingServer] = useState<ServerInfo | null>(null);
+
+  const handleConfirmDelete = async () => {
+    if (!deletingServer) return;
+    await onDelete(deletingServer._id, deletingServer.name);
+  };
+
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-white">Your Servers</h2>
-        <p className="text-[#AAAAAA] text-sm sm:text-base">Manage and monitor your hosting infrastructure</p>
+    <section>
+      <div className="mb-5 flex items-end justify-between pt-7 px-5">
+        <div>
+          <h2 className="text-base font-semibold text-white">Servers</h2>
+          <p className="mt-1 text-xs text-[#888888]">
+            Your deployed instances.
+          </p>
+        </div>
       </div>
 
-      {servers.length === 0 ? (
-        <div className="text-center py-16 bg-[#202020] border border-[#303030] rounded-2xl">
-          <div className="w-24 h-24 mx-auto mb-6 bg-[#181818] rounded-full flex items-center justify-center">
-            <i className="fas fa-server text-[#AAAAAA] text-3xl"></i>
-          </div>
-          <h3 className="text-xl font-semibold text-white mb-2">No servers yet</h3>
-          <p className="text-[#AAAAAA] mb-6">Create your first server to get started with hosting</p>
-          <div className="text-sm text-[#AAAAAA]">
-            <i className="fas fa-info-circle mr-2"></i>
-            Use the "Create a server" button in the sidebar
-          </div>
+      <div className="w-full">
+        <div className="hidden gap-4 grid-cols-[1.5fr_1fr_1fr_100px_80px_80px_80px_100px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 xl:grid">
+          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">Server Name <ChevronsUpDown size={12} className="opacity-70" /></span>
+          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">Node <ChevronsUpDown size={12} className="opacity-70" /></span>
+          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">Egg <ChevronsUpDown size={12} className="opacity-70" /></span>
+          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">Status <ChevronsUpDown size={12} className="opacity-70" /></span>
+          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">CPU <ChevronsUpDown size={12} className="opacity-70" /></span>
+          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">Memory <ChevronsUpDown size={12} className="opacity-70" /></span>
+          <span className="flex items-center gap-1 hover:text-white/40 cursor-pointer transition-colors">Disk <ChevronsUpDown size={12} className="opacity-70" /></span>
+          <span className="text-right">Action</span>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-          {servers.map((server) => {
-            // Check if server is suspended
-            if (server.suspended || server.status === 'suspended') {
-              return (
-                <SuspendedServerCard
-                  key={server._id}
-                  server={server}
-                />
+
+        <div className="divide-y divide-white/[0.06]">
+          {servers.length === 0 ? (
+            <div className="text-center py-12 text-[#888] text-sm">
+              No servers found. Create your first server to get started.
+            </div>
+          ) : (
+            servers.map((server) => {
+              let statusBadge = (
+                <span className="inline-flex rounded border border-emerald-500/20 bg-emerald-500/[0.04] px-2 py-1 text-[10px] font-medium text-emerald-500">
+                  Active
+                </span>
               );
-            }
 
-            // Check if server is unreachable
-            if (server.unreachable || server.status === 'unreachable') {
+              if (server.suspended || server.status === 'suspended') {
+                statusBadge = (
+                  <span className="inline-flex rounded border border-orange-500/20 bg-orange-500/[0.04] px-2 py-1 text-[10px] font-medium text-orange-500">
+                    Suspended
+                  </span>
+                );
+              } else if (server.unreachable || server.status === 'unreachable' || server.status === 'error') {
+                statusBadge = (
+                  <span className="inline-flex rounded border border-red-500/20 bg-red-500/[0.04] px-2 py-1 text-[10px] font-medium text-red-500">
+                    Unreachable
+                  </span>
+                );
+              } else if (server.status === 'creating') {
+                statusBadge = (
+                  <span className="inline-flex rounded border border-blue-500/20 bg-blue-500/[0.04] px-2 py-1 text-[10px] font-medium text-blue-500">
+                    Creating
+                  </span>
+                );
+              } else if (server.status === 'queued') {
+                statusBadge = (
+                  <span className="inline-flex whitespace-nowrap rounded border border-purple-500/20 bg-purple-500/[0.04] px-2 py-1 text-[10px] font-medium text-purple-400">
+                    {server.queuePosition ? `Queued (Position: ${server.queuePosition})` : 'Queued'}
+                  </span>
+                );
+              }
+
+              const regionName = server.location || 'Unknown';
+              const isDownOrUnreachable = server.unreachable || server.status?.toLowerCase() === 'unreachable' || server.status?.toLowerCase() === 'error';
+
               return (
-                <UnreachableServerCard
-                  key={server._id}
-                  serverId={server._id}
-                  serverName={server.name}
-                  className="h-full"
-                />
+                <div key={server._id} className="group flex flex-col gap-4 px-5 py-5 transition hover:bg-white/[0.015] xl:grid xl:grid-cols-[1.5fr_1fr_1fr_100px_80px_80px_80px_100px] xl:items-center text-sm">
+                  <div className="min-w-0">
+                    <div className="font-mono text-zinc-200 truncate font-medium">{server.name}</div>
+                    <div className="font-mono text-[10px] text-zinc-500 truncate mt-0.5" title="Dashboard ID">{server._id}</div>
+                  </div>
+
+                  <div className="text-zinc-400 flex items-center gap-2 truncate">
+                    {server.locationFlag && (
+                      <img
+                        src={server.locationFlag.startsWith('http')
+                          ? server.locationFlag
+                          : `${process.env.NEXT_PUBLIC_API_BASE || ''}${server.locationFlag.startsWith('/') ? '' : '/'}${server.locationFlag}`}
+                        alt="Node flag"
+                        className="w-4 h-3 object-cover rounded-sm opacity-80"
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    )}
+                    {regionName}
+                  </div>
+
+                  <div className="text-zinc-400 flex items-center gap-2 truncate">
+                    {server.eggIcon && (
+                      <img
+                        src={server.eggIcon.startsWith('http')
+                          ? server.eggIcon
+                          : `${process.env.NEXT_PUBLIC_API_BASE || ''}${server.eggIcon.startsWith('/') ? '' : '/'}${server.eggIcon}`}
+                        alt="Egg icon"
+                        className="w-4 h-4 object-contain opacity-80"
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    )}
+                    {server.eggName || 'Unknown'}
+                  </div>
+
+                  <div>{statusBadge}</div>
+
+                  <div className="text-zinc-300">
+                    <div className="flex items-center gap-1.5 font-medium text-xs">
+                      <Cpu size={12} className="text-zinc-500" />
+                      {server.cpu}%
+                    </div>
+                  </div>
+
+                  <div className="text-zinc-300">
+                    <div className="flex items-center gap-1.5 font-medium text-xs">
+                      <CircuitBoard size={12} className="text-zinc-500" />
+                      {server.memory} MB
+                    </div>
+                  </div>
+
+                  <div className="text-zinc-300">
+                    <div className="flex items-center gap-1.5 font-medium text-xs">
+                      <HardDrive size={12} className="text-zinc-500" />
+                      {server.storage} MB
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-2 mt-2 xl:mt-0">
+                    {server.status !== 'queued' && server.status !== 'error' && (
+                      <>
+                        {/* Open Server */}
+                        {isDownOrUnreachable || server.status === 'creating' ? (
+                          <button disabled className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/30 cursor-not-allowed transition-colors" title={server.status === 'creating' ? "Server is creating" : "Cannot open unreachable server"}>
+                            <ExternalLink size={14} />
+                          </button>
+                        ) : (
+                          <a href={server.url} target="_blank" rel="noreferrer" className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors" title="Open server">
+                            <ExternalLink size={14} />
+                          </a>
+                        )}
+                        
+                        {/* Edit Server */}
+                        {server.suspended || server.status?.toLowerCase() === 'suspended' ? (
+                          <button disabled className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/30 cursor-not-allowed transition-colors" title="Cannot edit suspended server">
+                            <ShieldAlert size={14} />
+                          </button>
+                        ) : server.status?.toLowerCase() === 'creating' ? (
+                          <button disabled className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/30 cursor-not-allowed transition-colors" title="Cannot edit server while creating">
+                            <Edit2 size={14} />
+                          </button>
+                        ) : isDownOrUnreachable ? (
+                          <button disabled className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/30 cursor-not-allowed transition-colors" title="Cannot edit unreachable server">
+                            <Edit2 size={14} />
+                          </button>
+                        ) : (
+                          <button onClick={() => onEdit?.(server._id)} className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors" title="Edit">
+                            <Edit2 size={14} />
+                          </button>
+                        )}
+                      </>
+                    )}
+
+                    <button
+                      onClick={() => setDeletingServer(server)}
+                      disabled={server.suspended || server.status?.toLowerCase() === 'suspended' || server.status?.toLowerCase() === 'creating'}
+                      className="bg-white/[0.02] border border-white/[0.04] rounded p-1.5 text-white/40 hover:text-red-400 hover:bg-red-400/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      title={server.status?.toLowerCase() === 'creating' ? "Cannot delete server while creating" : (server.suspended || server.status?.toLowerCase() === 'suspended' ? "Cannot delete suspended server" : "Delete")}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
               );
-            }
-
-            // Transform server data to match ServerCard format
-            const transformedServer = {
-              _id: server._id,
-              name: server.name,
-              status: server.status,
-              userId: { _id: '', username: 'You', email: '' },
-              egg: { _id: '', name: server.eggName || 'Unknown' },
-              location: { _id: '', name: server.location },
-              limits: {
-                diskMb: server.storage || 0,
-                memoryMb: server.memory || 0,
-                cpuPercent: server.cpu || 0,
-                backups: server.backups || 0,
-                databases: server.databases || 0,
-                allocations: server.allocations || 1
-              },
-              clientUrl: server.url,
-              createdAt: new Date().toISOString()
-            };
-
-            return (
-              <ServerCard
-                key={server._id}
-                server={transformedServer}
-                showOwner={false}
-                showActions={true}
-                onDelete={onDelete}
-                deleting={deleting}
-                editLink={`/server/edit/${server._id}`}
-                className="h-full"
-              />
-            );
-          })}
+            })
+          )}
         </div>
-      )}
-    </div>
+      </div>
+
+      {/* Delete Drawer */}
+      <DeleteDrawer
+        isOpen={!!deletingServer}
+        onClose={() => setDeletingServer(null)}
+        onConfirm={handleConfirmDelete}
+        entityType="Server"
+        entityName={deletingServer?.name || ''}
+        entitySubText={deletingServer ? `Node: ${deletingServer.location || 'Unknown'}` : ''}
+        warningPoints={
+          deletingServer?.status === 'queued' || deletingServer?.status === 'error'
+            ? [
+                "This will remove the server from the queue permanently.",
+                "You will need to recreate the server manually.",
+                "This action cannot be undone."
+              ]
+            : [
+                "The server will be permanently deleted from the panel.",
+                "All associated data and configurations will be lost.",
+                "This action cannot be undone."
+              ]
+        }
+      />
+    </section>
   );
 }

@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const ServerSchema = new mongoose.Schema(
     {
         owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-        panelServerId: { type: Number, required: true, index: true },
+        panelServerId: { type: Number, index: true },
         name: { type: String, required: true },
         eggId: { type: mongoose.Schema.Types.ObjectId, ref: 'Egg', required: true },
         locationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Location', required: true },
@@ -15,7 +15,8 @@ const ServerSchema = new mongoose.Schema(
             databases: Number,
             allocations: Number,
         },
-        status: { type: String, enum: ['creating', 'active', 'error', 'deleting'], default: 'creating' },
+        priority: { type: Number, default: 0 },
+        status: { type: String, enum: ['queued', 'creating', 'active', 'error', 'deleting'], default: 'creating' },
     },
     { timestamps: true }
 );

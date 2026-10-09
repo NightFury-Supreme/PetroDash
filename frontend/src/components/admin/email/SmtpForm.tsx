@@ -1,8 +1,10 @@
 "use client";
 
 type Smtp = { host?: string; port?: number; secure?: boolean; user?: string; pass?: string; fromEmail?: string };
+type Auth = { emailVerification?: boolean };
 
-export default function SmtpForm({ smtp, onChange, fieldErrors }:{ smtp: Smtp; onChange: (path: string, value: any)=>void; fieldErrors: Record<string, string>; }) {
+export default function SmtpForm({ smtp, auth, onChange, fieldErrors }:{ smtp: Smtp; auth: Auth; onChange: (path: string, value: any)=>void; fieldErrors: Record<string, string>; }) {
+  const isEmailEnabled = !!(smtp?.host && smtp?.fromEmail);
   return (
     <div className="p-6 space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -71,6 +73,33 @@ export default function SmtpForm({ smtp, onChange, fieldErrors }:{ smtp: Smtp; o
             <span className="text-white font-medium">Use TLS/SSL</span>
           </div>
         </div>
+      </div>
+
+      <hr className="border-[#303030]" />
+
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <label className={`relative inline-flex items-center ${isEmailEnabled ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}`}>
+            <input 
+              type="checkbox" 
+              className="sr-only peer" 
+              checked={!!auth?.emailVerification} 
+              onChange={e => onChange('auth.emailVerification', e.target.checked)} 
+              disabled={!isEmailEnabled}
+            />
+            <div className="w-11 h-6 bg-[#303030] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[#0b0b0f] after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white"></div>
+          </label>
+          <div className="flex flex-col">
+            <span className="text-white font-medium flex items-center gap-2">
+              <i className="fas fa-user-check text-white"></i>
+              Enable Email Verification
+            </span>
+          </div>
+        </div>
+        <p className="text-[#AAAAAA] text-sm">
+          Require users to verify their email before accessing the dashboard. 
+          {!isEmailEnabled && <span className="text-red-400 ml-1">(Requires SMTP Host and From Email to be configured first)</span>}
+        </p>
       </div>
     </div>
   );

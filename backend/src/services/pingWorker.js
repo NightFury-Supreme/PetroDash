@@ -21,11 +21,11 @@ async function pingUrl(latencyUrl) {
         url = isLocal ? `http://${url}` : `https://${url}`;
     }
 
-    const doFetch = async (targetUrl) => {
+    const doFetch = async (targetUrl, method = 'HEAD') => {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), PING_TIMEOUT_MS);
         const start = Date.now();
-        await fetch(targetUrl, { method: 'HEAD', signal: controller.signal });
+        await fetch(targetUrl, { method, signal: controller.signal });
         clearTimeout(timeoutId);
         return Date.now() - start;
     };
@@ -33,25 +33,71 @@ async function pingUrl(latencyUrl) {
     try {
         return await doFetch(url);
     } catch {
-        // If https:// fails, retry with http://
-        if (url.startsWith('https://')) {
-            try {
-                return await doFetch(url.replace('https://', 'http://'));
-            } catch {
-                return -1;
+        // Fallback 1: Try GET if HEAD failed (some servers block HEAD)
+        try {
+            return await doFetch(url, 'GET');
+        } catch {
+            // Fallback 2: Try HTTP instead of HTTPS
+            if (url.startsWith('https://')) {
+                try {
+                    return await doFetch(url.replace('https://', 'http://'), 'GET');
+                } catch {
+                    return -1;
+                }
+            } else if (!url.startsWith('http://')) {
+                // If it was just 'localhost' and somehow got mangled, force http
+                try {
+                    return await doFetch(`http://${url.replace(/^https?:\/\//, '')}`, 'GET');
+                } catch {
+                    return -1;
+                }
             }
+            return -1;
         }
-        return -1;
     }
 }
 
 let workerInterval = null;
 
 /**
- * Run a single ping sweep across all locations.
+ * Helper to record uptime log in DB.
+ */
+async function recordUptime(nodeId, isUp) {
+    try {
+        const UptimeLog = require('../models/UptimeLog');
+        const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        
+        await UptimeLog.updateOne(
+            { nodeId, date },
+            { 
+                $inc: { 
+                    totalChecks: 1,
+                    upChecks: isUp ? 1 : 0,
+                    downChecks: isUp ? 0 : 1
+                }
+            },
+            { upsert: true }
+        );
+    } catch (err) {
+        console.error(`[PingWorker] Failed to record uptime for ${nodeId}:`, err.message);
+    }
+}
+
+/**
+ * Run a single ping sweep across all locations and the panel.
  */
 async function runPingSweep() {
     try {
+        // Record Panel Uptime by pinging PTERO_BASE_URL
+        let panelUp = false;
+        if (process.env.PTERO_BASE_URL) {
+            const panelPing = await pingUrl(process.env.PTERO_BASE_URL);
+            panelUp = panelPing !== -1 && panelPing !== null;
+            await setCache('ping:panel', { ping: panelPing, updatedAt: new Date().toISOString() }, PING_TTL_SECONDS);
+            // console.log(`[PingWorker] "Panel" → ${!panelUp ? 'DOWN' : `${panelPing}ms`}`);
+        }
+        await recordUptime('panel', panelUp);
+
         // Lazy-load to avoid circular deps at startup
         const Location = require('../models/Location');
         const locations = await Location.find({}, { _id: 1, name: 1, latencyUrl: 1 }).lean();
@@ -59,9 +105,13 @@ async function runPingSweep() {
         await Promise.all(
             locations.map(async (location) => {
                 const ping = await pingUrl(location.latencyUrl);
+                const isUp = ping !== -1 && ping !== null;
                 const cacheKey = `ping:${location._id}`;
                 await setCache(cacheKey, { ping, updatedAt: new Date().toISOString() }, PING_TTL_SECONDS);
-                console.log(`[PingWorker] "${location.name}" → ${ping === -1 ? 'DOWN' : ping === null ? 'N/A' : `${ping}ms`}`);
+                
+                await recordUptime(location._id.toString(), isUp);
+                
+                // console.log(`[PingWorker] "${location.name}" -> ${!isUp ? 'DOWN' : `${ping}ms`}`);
             })
         );
     } catch (err) {
