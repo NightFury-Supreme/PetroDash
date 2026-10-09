@@ -10,7 +10,6 @@ const SettingsSchema = new mongoose.Schema(
       customCodeMinInvites: { type: Number, default: 10 },
     },
     earn: {
-      enabled: { type: Boolean, default: false },
       ads: {
         enabled: { type: Boolean, default: false },
         coins: { type: Number, default: 10 },
@@ -29,6 +28,16 @@ const SettingsSchema = new mongoose.Schema(
         maxClaimsPerDay: { type: Number, default: 24 },
         url: { type: String, default: '' },
         antiBypassToken: { type: String, default: '' },
+      },
+      offerwall: {
+        enabled: { type: Boolean, default: false },
+        adslotId: { type: String, default: '' },
+        apiKey: { type: String, default: '' },
+      },
+      surveywall: {
+        enabled: { type: Boolean, default: false },
+        adslotId: { type: String, default: '' },
+        apiKey: { type: String, default: '' },
       },
     },
     auth: {

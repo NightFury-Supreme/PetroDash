@@ -37,7 +37,7 @@ export default function UpdateSystem() {
     setError(null);
     
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/updates/check`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/updates/check`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

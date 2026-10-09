@@ -19,10 +19,10 @@ export async function generateMetadata(): Promise<Metadata> {
   let title = "PteroDash";
   let icons: Metadata["icons"] | undefined = undefined;
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/branding`, { cache: 'no-store' });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/branding`, { cache: 'no-store' });
     let s: any = {}; try { s = await res.json(); } catch {}
     if (s?.siteName) title = s.siteName;
-    if (s?.siteIcon) icons = { icon: `${process.env.NEXT_PUBLIC_API_BASE}${s.siteIcon}` } as any;
+    if (s?.siteIcon) icons = { icon: `${process.env.NEXT_PUBLIC_API_BASE || ''}${s.siteIcon}` } as any;
   } catch {}
   
   // Use default logo if no custom icon is set

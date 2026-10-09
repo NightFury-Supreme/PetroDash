@@ -1,327 +1,277 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import Sidebar from "@/components/Sidebar";
-import AdminTicketsHeader from "@/components/admin/tickets/AdminTicketsHeader";
-import AdminTicketsFilters from "@/components/admin/tickets/AdminTicketsFilters";
-import AdminTicketItem from "@/components/admin/tickets/AdminTicketItem";
-import AdminTicketsSkeleton from "@/components/skeletons/admin/tickets/AdminTicketsSkeleton";
-import { useSidebarPadding } from "@/hooks/useSidebarPadding";
+import React, { useEffect, useState, useCallback, useRef } from "react";
+import { useToast } from "@/components/ui/ToastProvider";
+import TicketsHeader from "@/components/tickets/TicketsHeader";
+import { TicketNavSidebar } from "@/components/tickets/TicketNavSidebar";
+import TicketItem from "@/components/tickets/TicketItem";
+import TicketsSkeleton from "@/components/skeletons/tickets/TicketsSkeleton";
+import TicketSettings from "@/components/admin/tickets/TicketSettings";
+import { TicketPagination } from "@/components/tickets/TicketPagination";
+import { TicketCategoryFilter } from "@/components/tickets/TicketCategoryFilter";
+import { TicketSort } from "@/components/tickets/TicketSort";
+import { API_BASE, getToken } from "@/components/tickets/utils";
+import { Search, X, MessageSquare, RefreshCw } from "lucide-react";
+import { ErrorState, DashboardButton, ErrorDescription } from "@/components/ui/ErrorState";
 
-type Ticket = {
-  _id: string;
-  title: string;
-  status: string;
-  priority: string;
-  category?: string;
-  updatedAt: string;
-  user?: { username?: string; email?: string };
-};
+const PAGE_SIZE = 25;
 
 export default function AdminTicketsPage() {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const { showError } = useToast();
+  // Remote data
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [allTickets, setAllTickets] = useState<any[]>([]); // For category counts
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [q, setQ] = useState("");
-  const [status, setStatus] = useState<string>("");
-  // priority filter removed
-  const [activeTab, setActiveTab] = useState<'all'|'open'|'pending'|'resolved'|'closed'|'deleted'>('all');
-  const [selected, setSelected] = useState<Ticket | null>(null);
-  const [newStatus, setNewStatus] = useState<string>("");
-  const [newPriority, setNewPriority] = useState<string>("");
-  const [internalNote, setInternalNote] = useState<string>("");
-  const [page, setPage] = useState<number>(1);
-  const pageSize = 10;
-
-  const [showSettings, setShowSettings] = useState<boolean>(false);
   const [categories, setCategories] = useState<string[]>([]);
-  const [catFilter, setCatFilter] = useState<string>("");
-  const contentPadding = useSidebarPadding();
 
-  const load = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const token = localStorage.getItem('auth_token');
-      const params = new URLSearchParams();
-      if (status) params.set('status', status);
-      params.set('deleted', 'all');
-      params.set('limit', '1000');
-      
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets?${params.toString()}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      let d: any = {}; try { d = await r.json(); } catch {}
-      if (!r.ok) throw new Error(d?.error || 'Failed to load');
-      setTickets(d?.tickets || []);
-    } catch (e:any) { setError(e.message || 'Failed to load'); }
-    finally { setLoading(false); }
-  };
+  // Search + filter + sort + pagination
+  const [q, setQ] = useState("");
+  const [debouncedQ, setDebouncedQ] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
+  const [catFilter, setCatFilter] = useState(""); // "" means all categories
+  const [sortBy, setSortBy] = useState("updated_desc");
+  const [page, setPage] = useState(1);
 
-  useEffect(() => { load(); }, []);
+  const [showSettings, setShowSettings] = useState(false);
 
-  // Load categories for filter chips and counts
+  // Counts for the left nav (fetched separately without status filter)
+  const [counts, setCounts] = useState({ all: 0, open: 0, pending: 0, resolved: 0, closed: 0, deleted: 0 });
+  const [countsLoading, setCountsLoading] = useState(true);
+
+  // Debounce search
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedQ(q);
+      setPage(1);
+    }, 400);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [q]);
+
+  // Reset page when filters/sort change
+  useEffect(() => { setPage(1); }, [catFilter, sortBy, activeTab]);
+
+  // Load categories
   useEffect(() => {
     (async () => {
       try {
-        const token = localStorage.getItem('auth_token');
-        const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/settings/categories`, { headers: { Authorization: `Bearer ${token}` } });
+        const r = await fetch(`${API_BASE}/api/admin/tickets/settings/categories`, {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        });
         let d: any = {}; try { d = await r.json(); } catch {}
         if (r.ok && Array.isArray(d?.categories)) setCategories(d.categories);
       } catch {}
     })();
   }, []);
 
-  const filteredTickets = tickets.filter(t => {
-    if (q) {
-      const qLower = q.toLowerCase();
-      return (t.title||'').toLowerCase().includes(qLower) || 
-             (t.category||'').toLowerCase().includes(qLower) || 
-             (t._id||'').toLowerCase().includes(qLower) ||
-             (t.user?.username||'').toLowerCase().includes(qLower) ||
-             (t.user?.email||'').toLowerCase().includes(qLower) ||
-             ((t.user as any)?._id||'').toLowerCase().includes(qLower);
-    }
-    if (catFilter && t.category!==catFilter) return false;
-    if (activeTab==='deleted') return (t as any).deletedByUser;
-    if ((t as any).deletedByUser) return false;
-    if (activeTab==='all') return t.status !== 'closed';
-    return t.status===activeTab;
-  });
-
-  return (
-    <div className="flex">
-      <Sidebar />
-      <main className="flex-1" style={{ paddingLeft: contentPadding }}>
-    <div className="p-6">
-      <div className="mb-2 flex items-center justify-between">
-        <AdminTicketsHeader />
-        <div className="flex items-center gap-3">
-          <button onClick={load} className="px-4 py-2 bg-white hover:bg-gray-100 text-black rounded-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">Refresh</button>
-          <button onClick={()=>setShowSettings(true)} className="w-10 h-10 rounded-lg border border-[#303030] text-white hover:bg-[#202020] flex items-center justify-center"><i className="fas fa-cog"/></button>
-        </div>
-      </div>
-
-      <AdminTicketsFilters q={q} status={status} categories={categories} catFilter={catFilter} onQ={setQ} onStatus={(v)=>{ setStatus(v); setPage(1); }} onCat={(v)=>{ setCatFilter(v); setPage(1); }} onRefresh={load} />
-
-      {/* Tabs */}
-      <div className="mb-3">
-        <div className="flex w-full overflow-x-auto gap-2">
-          {(['all','open','pending','resolved','closed','deleted'] as const).map(tab => (
-            <button key={tab} onClick={()=> setActiveTab(tab)} className={`px-4 py-2 rounded-lg border transition-all text-sm ${activeTab===tab? 'bg-[var(--surface)] text-[var(--foreground)] border-[var(--border)] shadow-sm font-medium':'bg-transparent text-[var(--muted)] border-[var(--border)] hover:bg-[var(--hover)] hover:text-[var(--foreground)]'}`}>
-              {tab.charAt(0).toUpperCase()+tab.slice(1)}
-              {tab!=='deleted' && (
-                <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-black/20 border border-[var(--border)] text-[var(--muted)]">
-                  {tickets.filter(t=> (catFilter && t.category!==catFilter) ? false : ((t as any).deletedByUser ? false : (tab==='all' ? true : t.status===tab))).length}
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Category chips with counts */}
-      {categories.length>0 && (
-        <div className="mb-3 flex flex-wrap gap-2">
-          <button onClick={()=>setCatFilter("")} className={`px-3 py-1 rounded-full border text-xs transition-all ${catFilter===""?'bg-[var(--surface)] text-[var(--foreground)] border-[var(--border)] shadow-sm font-medium':'bg-transparent text-[var(--muted)] border-[var(--border)] hover:bg-[var(--hover)] hover:text-[var(--foreground)]'}`}>All</button>
-          {categories.map(c => (
-            <button key={c} onClick={()=>setCatFilter(c)} className={`px-3 py-1 rounded-full border text-xs transition-all ${catFilter===c?'bg-[var(--surface)] text-[var(--foreground)] border-[var(--border)] shadow-sm font-medium':'bg-transparent text-[var(--muted)] border-[var(--border)] hover:bg-[var(--hover)] hover:text-[var(--foreground)]'}`}>
-              <i className="fas fa-folder mr-1"/>{c}
-              <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-black/20 border border-[var(--border)] text-[var(--muted)]">
-                {tickets.filter(t => !(t as any).deletedByUser && t.category===c).length}
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      <div className="border-0 p-0">
-        {loading ? (
-          <AdminTicketsSkeleton />
-        ) : error ? (
-          <div className="text-red-400">{error}</div>
-        ) : filteredTickets.length === 0 ? (
-          <div className="text-[#AAAAAA]">No tickets found.</div>
-        ) : (
-          <div className="space-y-3">
-            {filteredTickets
-              .slice((page-1)*pageSize, page*pageSize)
-              .map(t => (
-              <AdminTicketItem key={t._id} t={t as any} onAction={async (action, id)=>{
-                try{
-                  const token=localStorage.getItem('auth_token');
-                  if (action==='close' || action==='resolve' || action==='reopen') {
-                    const mappedStatus = action === 'reopen' ? 'open' : (action === 'close' ? 'closed' : 'resolved');
-                    await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/${id}`, { method:'PATCH', headers:{ 'Content-Type':'application/json','Authorization':`Bearer ${token}` }, body: JSON.stringify({ status: mappedStatus }) });
-                  } else if (action==='delete') {
-                    await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/${id}`, { method:'PATCH', headers:{ 'Content-Type':'application/json','Authorization':`Bearer ${token}` }, body: JSON.stringify({ deletedByUser: true }) });
-                  } else if (action==='restore') {
-                    await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/${id}`, { method:'PATCH', headers:{ 'Content-Type':'application/json','Authorization':`Bearer ${token}` }, body: JSON.stringify({ deletedByUser: false }) });
-                  }
-                  load();
-                } catch {}
-              }} />
-            ))}
-            {/* Pagination */}
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <button disabled={page===1} onClick={()=>setPage(p=>Math.max(1,p-1))} className="px-3 py-1 text-sm bg-[#303030] hover:bg-[#404040] disabled:opacity-50 text-white rounded-lg">Prev</button>
-              <span className="text-xs text-[#AAAAAA]">Page {page} / {Math.max(1, Math.ceil(filteredTickets.length / pageSize))}</span>
-              <button disabled={page*pageSize >= filteredTickets.length} onClick={()=>setPage(p=>p+1)} className="px-3 py-1 text-sm bg-[#303030] hover:bg-[#404040] disabled:opacity-50 text-white rounded-lg">Next</button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {showSettings && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60" onClick={()=>setShowSettings(false)}></div>
-          <div className="relative w-full max-w-2xl bg-[#181818] border border-[#303030] rounded-xl p-5 shadow-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-semibold">Ticket Settings</h3>
-              <button onClick={()=>setShowSettings(false)} className="text-[#AAAAAA] hover:text-white"><i className="fas fa-times" /></button>
-            </div>
-            <AdminTicketCategories />
-          </div>
-        </div>
-      )}
-
-      {selected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60" onClick={()=>setSelected(null)}></div>
-          <div className="relative w-full max-w-2xl bg-[#181818] border border-[#303030] rounded-xl p-5 shadow-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-semibold">Manage Ticket</h3>
-              <button onClick={()=>setSelected(null)} className="text-[#AAAAAA] hover:text-white"><i className="fas fa-times" /></button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-              <div>
-                <label className="block text-sm text-[#AAAAAA] mb-1">Status</label>
-                <select value={newStatus} onChange={e=>setNewStatus(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-[#202020] border border-[#303030] text-white">
-                  <option value="open">Open</option>
-                  <option value="pending">Pending</option>
-                  <option value="resolved">Resolved</option>
-                  <option value="closed">Closed</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm text-[#AAAAAA] mb-1">Priority</label>
-                <select value={newPriority} onChange={e=>setNewPriority(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-[#202020] border border-[#303030] text-white">
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-              </div>
-            </div>
-            <label className="block text-sm text-[#AAAAAA] mb-1">Internal note (private)</label>
-            <textarea value={internalNote} onChange={e=>setInternalNote(e.target.value)} rows={4} className="w-full mb-4 px-3 py-2 rounded-lg bg-[#202020] border border-[#303030] text-white" placeholder="Add a private note for admins"></textarea>
-            <div className="flex justify-end gap-3">
-              <button onClick={()=>setSelected(null)} className="px-4 py-2 bg-[#303030] hover:bg-[#404040] text-white rounded-lg">Cancel</button>
-              <button onClick={async ()=>{
-                try {
-                  const token = localStorage.getItem('auth_token');
-                  await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/${selected._id}/messages`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ body: internalNote, internal: true })
-                  });
-                  await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/${selected._id}`, {
-                    method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ status: newStatus, priority: newPriority })
-                  });
-                  setInternalNote("");
-                  setSelected(null);
-                  load();
-                // eslint-disable-next-line unused-imports/no-unused-vars
-                } catch (e) {}
-              }} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">Save</button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-      </main>
-    </div>
-  );
-}
-
-function AdminTicketCategories() {
-  const [categories, setCategories] = useState<string[]>([]);
-  const [input, setInput] = useState<string>("");
-  const [saving, setSaving] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
-  const [usage, setUsage] = useState<Record<string, number>>({});
-
-  const load = async () => {
+  // Main ticket fetch (paginated)
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const token = localStorage.getItem('auth_token');
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/settings/categories`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      let d: any = {}; try { d = await r.json(); } catch {}
-      if (r.ok && Array.isArray(d?.categories)) setCategories(d.categories);
-      const u = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/settings/categories/usage`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      let ud: any = {}; try { ud = await u.json(); } catch {}
-      if (u.ok && ud?.usage) setUsage(ud.usage);
-    } catch {}
-  };
-  useEffect(() => { load(); }, []);
+      const params = new URLSearchParams();
+      params.set('page', String(page));
+      params.set('limit', String(PAGE_SIZE));
+      params.set('sort', sortBy);
 
-  const save = async () => {
-    setSaving(true);
-    setError("");
-    try {
-      const token = localStorage.getItem('auth_token');
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/tickets/settings/categories`, {
-        method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ categories })
-      });
-      let d: any = {}; try { d = await r.json(); } catch {}
-      if (r.ok) {
-        await load();
+      // Deleted tab
+      if (activeTab === 'deleted') {
+        params.set('deleted', 'true');
       } else {
-        setError(d?.error || 'Failed to save');
-        if (Array.isArray(d?.inUse) && d.inUse.length) {
-          setError(`${d.error}: ${d.inUse.join(', ')}`);
+        params.set('deleted', 'false');
+        // Status from left nav tab
+        if (activeTab !== 'all') {
+          params.set('status', activeTab);
         }
       }
-    } catch {}
-    finally { setSaving(false); }
-  };
+
+      if (catFilter !== '') params.set('category', catFilter);
+      if (debouncedQ.trim()) params.set('q', debouncedQ.trim());
+
+      const r = await fetch(`${API_BASE}/api/admin/tickets?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      let d: any = {}; try { d = await r.json(); } catch {}
+      if (!r.ok) throw new Error(d?.error || 'Failed to load');
+      setTickets(d?.tickets || []);
+      setTotal(d?.total || 0);
+    } catch (e: any) {
+      setError(e.message || 'Failed to load');
+    } finally {
+      setLoading(false);
+    }
+  }, [page, sortBy, activeTab, catFilter, debouncedQ]);
+
+  useEffect(() => { load(); }, [load]);
+
+  // Load all tickets for accurate counts
+  const loadCounts = useCallback(async () => {
+    setCountsLoading(true);
+    try {
+      const r = await fetch(`${API_BASE}/api/admin/tickets?deleted=all&limit=2000`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      let d: any = {}; try { d = await r.json(); } catch {}
+      if (r.ok && d?.tickets) {
+        const all = d.tickets;
+        setAllTickets(all);
+        setCounts({
+          all: all.filter((t: any) => !t.deletedByUser && t.status !== 'closed').length,
+          open: all.filter((t: any) => !t.deletedByUser && t.status === 'open').length,
+          pending: all.filter((t: any) => !t.deletedByUser && t.status === 'pending').length,
+          resolved: all.filter((t: any) => !t.deletedByUser && t.status === 'resolved').length,
+          closed: all.filter((t: any) => !t.deletedByUser && t.status === 'closed').length,
+          deleted: all.filter((t: any) => t.deletedByUser).length,
+        });
+      }
+    } catch {} finally {
+      setCountsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadCounts(); }, [loadCounts]);
+
+  useEffect(() => {
+    if (error) showError(error);
+  }, [error]);
+
+  if (error) {
+    return (
+      <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
+        <ErrorState
+          icon={<MessageSquare strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
+          kicker="Load Error"
+          title="Failed to Load Tickets"
+          errorString={error}
+          description={<ErrorDescription error={error} topic="Tickets" />}
+          buttons={
+            <>
+              <button
+                onClick={() => window.location.reload()}
+                className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
+              >
+                <RefreshCw className="w-[14px] h-[14px]" />
+                Retry
+              </button>
+              <DashboardButton variant="secondary" />
+            </>
+          }
+        />
+      </div>
+    );
+  }
 
   return (
-    <div className="mt-2">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-[#202020] rounded-lg flex items-center justify-center"><i className="fas fa-folder text-white"/></div>
-          <div>
-            <h3 className="text-white font-semibold">Ticket Categories</h3>
-            <p className="text-[#AAAAAA] text-sm">Manage categories shown to users</p>
+    <div className="p-4 sm:p-6 bg-[#0F0F0F] min-h-screen text-white font-sans">
+      <div className="flex flex-col h-full space-y-6">
+        <header>
+          <TicketsHeader />
+        </header>
+
+        {/* Two-column layout */}
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+
+          {/* Left Nav */}
+          <TicketNavSidebar
+            activeStatus={activeTab}
+            onStatusChange={v => { setActiveTab(v); setPage(1); }}
+            counts={counts}
+            loading={countsLoading}
+            onOpenSettings={() => setShowSettings(true)}
+          />
+
+          {/* Content Area */}
+          <div className="flex-1 min-w-0 w-full">
+
+            {/* Search + Sort bar */}
+            <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-[10px]">
+              <div className="relative flex-1 h-[42px] flex items-center gap-[10px] px-[13px] border border-[#282828] rounded-[7px] bg-[#121212] text-[#5e5e5e] focus-within:border-[#454545] focus-within:bg-[#151515] transition-colors">
+                <Search size={14} className="shrink-0 text-[#555]" />
+                <input
+                  value={q}
+                  onChange={e => setQ(e.target.value)}
+                  placeholder="Search by title, category, user email..."
+                  className="w-full min-w-0 border-0 outline-none bg-transparent text-[#d5d5d5] text-[11px] placeholder:text-[#505050]"
+                />
+                {q && (
+                  <button type="button" onClick={() => setQ('')} className="shrink-0 w-[23px] h-[23px] flex items-center justify-center rounded-[5px] text-[#666] hover:bg-[#222] hover:text-[#ddd] transition-colors">
+                    <X size={13} />
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <TicketSort sortBy={sortBy} setSortBy={setSortBy} />
+              </div>
+            </div>
+
+            {/* Category Filter Horizontal Tabs */}
+            <TicketCategoryFilter
+              categories={categories}
+              activeTab={activeTab}
+              catFilter={catFilter}
+              tickets={allTickets}
+              loading={countsLoading}
+              onSelect={(cat) => setCatFilter(cat)}
+            />
+
+            {/* Table */}
+            <div className="border-0 p-0">
+              {loading && tickets.length === 0 ? (
+                <TicketsSkeleton isAdmin={true} />
+              ) : tickets.length === 0 && !loading ? (
+                <div className="py-8 text-center text-xs text-white/25">No tickets found matching your filters.</div>
+              ) : (
+                <div>
+                  {/* Column headers */}
+                  <div className="hidden grid-cols-[1fr_130px_100px_90px_80px_60px_36px] gap-4 border-b border-white/[0.06] pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30 md:grid">
+                    <span>Ticket</span>
+                    <span>User</span>
+                    <span>Category</span>
+                    <span>Updated</span>
+                    <span>Status</span>
+                    <span>Priority</span>
+                    <span />
+                  </div>
+
+                  <div className="divide-y divide-[#222]">
+                    {tickets.map(t => (
+                      <TicketItem key={t._id} t={t as any} onAction={async (action, id) => {
+                        let r;
+                        if (action === 'close' || action === 'resolve' || action === 'reopen') {
+                          const mappedStatus = action === 'reopen' ? 'open' : action === 'close' ? 'closed' : 'resolved';
+                          r = await fetch(`${API_BASE}/api/admin/tickets/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` }, body: JSON.stringify({ status: mappedStatus }) });
+                        } else if (action === 'delete') {
+                          r = await fetch(`${API_BASE}/api/admin/tickets/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` }, body: JSON.stringify({ deletedByUser: true }) });
+                        } else if (action === 'restore') {
+                          r = await fetch(`${API_BASE}/api/admin/tickets/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` }, body: JSON.stringify({ deletedByUser: false }) });
+                        }
+                        if (r && !r.ok) {
+                          const d = await r.json().catch(() => ({}));
+                          throw new Error(d.error || 'Failed to update ticket');
+                        }
+                        load(); loadCounts();
+                      }} />
+                    ))}
+                  </div>
+
+                  <TicketPagination
+                    page={page}
+                    pageSize={PAGE_SIZE}
+                    totalItems={total}
+                    onPageChange={setPage}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
-        <button onClick={save} disabled={saving} className="px-4 py-2 bg-white hover:bg-gray-100 disabled:opacity-60 text-black rounded-lg font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">{saving?'Saving...':'Save'}</button>
-      </div>
-      {error && <div className="mb-4 text-sm text-red-400">{error}</div>}
-      <div className="flex flex-wrap gap-2 mb-4">
-        {categories.map((c, idx) => (
-          <span key={idx} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#202020] border border-[#303030] text-white text-sm">
-            {c}
-            {usage[c] ? (
-              <span title={"In use: " + usage[c]} className="text-[10px] px-2 py-0.5 rounded-full bg-[#181818] border border-[#303030] text-[#AAAAAA]">{usage[c]}</span>
-            ) : (
-              <button onClick={()=>setCategories(categories.filter((_,i)=>i!==idx))} className="text-[#AAAAAA] hover:text-white transition-colors">
-                <i className="fas fa-times"/>
-              </button>
-            )}
-          </span>
-        ))}
-      </div>
-      <div className="flex gap-2">
-        <input value={input} onChange={e=>setInput(e.target.value)} placeholder="New category" className="flex-1 px-4 py-2 rounded-lg bg-[#202020] border border-[#303030] text-white outline-none focus:border-[#505050] transition-colors" />
-        <button onClick={()=>{ const v = input.trim(); if (v && !categories.includes(v)) { setCategories([...categories, v]); setInput(''); } }} className="px-5 py-2 bg-[#303030] hover:bg-[#404040] text-white rounded-lg font-medium transition-colors">Add</button>
+
+        {showSettings && <TicketSettings onClose={() => setShowSettings(false)} />}
       </div>
     </div>
   );
 }
-
-
