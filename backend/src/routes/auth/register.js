@@ -1,6 +1,7 @@
 const express = require('express');
 const { z } = require('zod');
 const UserCreationService = require('../../services/userCreation');
+const SessionService = require('../../services/SessionService');
 const { getSettings } = require('../../lib/settings');
 const { writeAudit } = require('../../middleware/audit');
 const { createRateLimiter } = require('../../middleware/rateLimit');
@@ -63,36 +64,41 @@ router.post('/register', createRateLimiter(5, 60 * 60 * 1000), async (req, res) 
       ref
     });
 
-    const token = UserCreationService.generateJwt(user);
+    const { token } = await SessionService.createSessionAndJwt(user, req);
     const userResponse = UserCreationService.formatUserResponse(user);
 
     // After creation, send verification email if email login
     const emailVerificationEnabled = s?.auth?.emailVerification ?? false;
     if (emailVerificationEnabled) {
       try {
-        const crypto = require('crypto');
+        const { generateSecureCode, hashString } = require('../../utils/security');
         const VerificationToken = require('../../models/VerificationToken');
         const { sendMailTemplate } = require('../../lib/mail');
-        const raw = crypto.randomBytes(32).toString('hex');
-        const tokenHash = crypto.createHash('sha256').update(raw).digest('hex');
-        const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
+        
+        const verificationCode = generateSecureCode(8);
+        const tokenHash = hashString(verificationCode);
+        const expiresAt = new Date(Date.now() + 1000 * 60 * 15); // 15 minutes
+        
         await VerificationToken.deleteMany({ userId: user._id, purpose: 'email_verification', usedAt: null });
-        await VerificationToken.create({ userId: user._id, tokenHash, purpose: 'email_verification', expiresAt });
-        const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify?token=${encodeURIComponent(raw)}`;
+        await VerificationToken.create({ 
+          userId: user._id, 
+          tokenHash, 
+          purpose: 'email_verification', 
+          expiresAt,
+          attempts: 0,
+          maxAttempts: 5 
+        });
+        
         await sendMailTemplate({
           to: user.email,
           templateKey: 'accountCreateWithVerification',
-          data: { username: user.username, verificationLink: verifyUrl, siteName: s?.siteName || 'PteroDash' },
+          data: { username: user.username, verificationCode, siteName: s?.siteName || 'PteroDash' },
         });
       } catch (e) {
         console.error('Failed to send verification email during registration:', e);
       }
     } else {
       try {
-        if (!user.emailVerified) {
-          user.emailVerified = true;
-          await user.save();
-        }
         await UserCreationService.grantReferralRewards(user);
       // eslint-disable-next-line unused-imports/no-unused-vars
       } catch (_) {}
@@ -112,6 +118,9 @@ router.post('/register', createRateLimiter(5, 60 * 60 * 1000), async (req, res) 
       userAgent: req.get('User-Agent'),
       durationMs: Date.now() - startTime
     });
+    
+    const { logUserActivity } = require('../../middleware/userActivity');
+    await logUserActivity(req, 'auth.register.success', { registrationMethod: 'email', ...(ref ? { referralCodeUsed: ref } : {}) }, user._id.toString());
 
     return res.status(201).json({ token, user: userResponse });
   } catch (error) {

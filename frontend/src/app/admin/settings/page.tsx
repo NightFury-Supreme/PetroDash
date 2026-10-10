@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState, useCallback } from 'react';
-import Shell from '@/components/Shell';
+import { useToast } from "@/components/ui/ToastProvider";
+import { Settings, RefreshCw } from 'lucide-react';
+import { ErrorState, DashboardButton, ErrorDescription } from '@/components/ui/ErrorState';
 import { AdminSettingsHeader, AdminSettingsContent } from '@/components/admin/settings';
 import { AdminSettingsSkeleton } from '@/components/skeletons/admin/settings';
-import { useModal } from '@/components/Modal';
 
 interface Settings {
   siteName: string;
@@ -76,7 +77,7 @@ export default function AdminSettingsPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const modal = useModal();
+    const { showSuccess, showError } = useToast();
 
   const loadSettings = useCallback(async () => {
     setError(null);
@@ -88,7 +89,7 @@ export default function AdminSettingsPage() {
         throw new Error('Authentication token not found');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/settings`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/settings`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -102,14 +103,11 @@ export default function AdminSettingsPage() {
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : 'Failed to load settings';
       setError(errorMessage);
-      await modal.error({
-        title: "Failed to Load Settings",
-        body: errorMessage || 'An error occurred while loading the settings.'
-      });
+      showError(errorMessage || 'An error occurred while loading the settings.');
     } finally {
       setLoading(false);
     }
-  }, [modal]);
+  }, []);
 
   const saveSettings = useCallback(async (newSettings: Partial<Settings>) => {
     try {
@@ -118,7 +116,7 @@ export default function AdminSettingsPage() {
         throw new Error('Authentication token not found');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/settings`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/settings`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -147,61 +145,42 @@ export default function AdminSettingsPage() {
 
   if (loading && !settings) {
     return (
-      <Shell>
+      
         <div className="p-6">
           <AdminSettingsSkeleton />
         </div>
-      </Shell>
+      
     );
   }
 
-  if (error && !settings) {
+  if (error || !settings) {
     return (
-      <Shell>
-        <div className="p-6">
-          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center">
-                <i className="fas fa-exclamation-triangle text-red-400 text-sm"></i>
-              </div>
-              <div>
-                <h4 className="text-red-400 font-medium">Failed to Load Settings</h4>
-                <p className="text-red-300 text-sm">{error}</p>
-              </div>
-            </div>
-            <div className="mt-4">
+      <div className="flex flex-col bg-[#0F0F0F] min-h-screen">
+        <ErrorState
+          icon={<Settings strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />}
+          kicker="Load Error"
+          title="Failed to Load Settings"
+          errorString={error}
+          description={<ErrorDescription error={error || 'Unable to load system settings.'} topic="Settings" />}
+          buttons={
+            <>
               <button
-                onClick={loadSettings}
-                className="px-4 py-2 bg-red-500/20 text-red-400 font-medium rounded-lg border border-red-500/30 hover:bg-red-500/30 transition-colors"
+                onClick={() => window.location.reload()}
+                className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
               >
-                <i className="fas fa-refresh mr-2"></i>
-                Try Again
+                <RefreshCw className="w-[14px] h-[14px]" />
+                Retry
               </button>
-            </div>
-          </div>
-        </div>
-      </Shell>
-    );
-  }
-
-  if (!settings) {
-    return (
-      <Shell>
-        <div className="p-6">
-          <div className="bg-[#181818] border border-[#303030] rounded-xl p-8 text-center">
-            <div className="w-16 h-16 bg-[#202020] rounded-full flex items-center justify-center mx-auto mb-4">
-              <i className="fas fa-exclamation-triangle text-[#AAAAAA] text-xl"></i>
-            </div>
-            <h3 className="text-white font-medium mb-2">No Settings Found</h3>
-            <p className="text-[#AAAAAA] text-sm">Unable to load system settings.</p>
-          </div>
-        </div>
-      </Shell>
+              <DashboardButton variant="secondary" />
+            </>
+          }
+        />
+      </div>
     );
   }
 
   return (
-    <Shell>
+    
       <div className="p-6 space-y-6">
         <AdminSettingsHeader />
         <AdminSettingsContent
@@ -211,7 +190,7 @@ export default function AdminSettingsPage() {
           onReload={loadSettings}
         />
       </div>
-    </Shell>
+    
   );
 }
 

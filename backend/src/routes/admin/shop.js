@@ -73,21 +73,14 @@ router.patch('/:id', requireAdmin, async (req, res) => {
       { new: true, runValidators: true }
     );
 
-    // Temporarily disable audit logging to fix the immediate issue
-    //   itemId: req.params.id,
-    //   itemKey: existingItem.key,
-    //   changes: parsed.data,
-    //   previousValues: {
-    //     amountPerUnit: existingItem.amountPerUnit,
-    //     pricePerUnit: existingItem.pricePerUnit,
-    //     description: existingItem.description,
-    //     enabled: existingItem.enabled,
-    //     maxPerPurchase: existingItem.maxPerPurchase,
-    //   }
-    // });
-
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:shop');
+
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.shop.update', 'shop_item', existingItem._id.toString(), {
+      itemKey: existingItem.key,
+      changes: parsed.data
+    });
 
     return res.json(updatedItem);
   } catch (error) {

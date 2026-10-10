@@ -119,10 +119,10 @@ export function usePlanForm(): UsePlanFormReturn {
       }
 
       const [eggsRes, locationsRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/eggs`, { 
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs`, { 
           headers: { Authorization: `Bearer ${token}` } 
         }),
-        fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/locations`, { 
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations`, { 
           headers: { Authorization: `Bearer ${token}` } 
         })
       ]);
@@ -305,7 +305,7 @@ export function usePlanForm(): UsePlanFormReturn {
         sortOrder: formData.sortOrder,
       };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

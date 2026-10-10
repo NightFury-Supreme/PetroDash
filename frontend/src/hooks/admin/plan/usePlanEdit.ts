@@ -76,7 +76,7 @@ export function usePlanEdit(): UsePlanEditReturn {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans/${planId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans/${planId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -243,7 +243,7 @@ export function usePlanEdit(): UsePlanEditReturn {
                sortOrder: plan.sortOrder,
              };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans/${plan._id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans/${plan._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

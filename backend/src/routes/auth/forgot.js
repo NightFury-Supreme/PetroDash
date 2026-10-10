@@ -51,6 +51,11 @@ router.post('/forgot', passwordResetRateLimit, async (req, res) => {
       console.error('Failed to send password reset email:', e);
     }
 
+    const { logUserActivity } = require('../../middleware/userActivity');
+    const { writeAudit } = require('../../middleware/audit');
+    await logUserActivity(req, 'auth.password.reset.requested', {}, user._id.toString());
+    await writeAudit(req, 'auth.password.reset.requested', 'auth', user._id.toString(), {});
+    
     return res.json({ ok: true });
   // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (e) {

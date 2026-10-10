@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, Suspense } from 'react';
+import { useToast } from "@/components/ui/ToastProvider";
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useModal } from '@/components/Modal';
 
 function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const modal = useModal();
+    const { showSuccess, showError } = useToast();
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -17,10 +17,7 @@ function AuthCallbackContent() {
 
 
       if (error) {
-        await modal.error({
-          title: 'Login Failed',
-          body: 'OAuth authentication failed. Please try again.'
-        });
+        showError('OAuth authentication failed. Please try again.');
         router.push('/login');
         return;
       }
@@ -41,23 +38,17 @@ function AuthCallbackContent() {
           router.push('/dashboard');
         // eslint-disable-next-line unused-imports/no-unused-vars
         } catch (error) {
-          await modal.error({
-            title: 'Login Failed',
-            body: 'Failed to complete login. Please try again.'
-          });
+          showError('Failed to complete login. Please try again.');
           router.push('/login');
         }
       } else {
-        await modal.error({
-          title: 'Login Failed',
-          body: 'No authentication token received. Please try again.'
-        });
+        showError('No authentication token received. Please try again.');
         router.push('/login');
       }
     };
 
     handleCallback();
-  }, [searchParams, router, modal]);
+  }, [searchParams, router]);
 
   const discordJoin = searchParams.get('discord_join');
   
