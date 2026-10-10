@@ -8,6 +8,7 @@ const { hasServerLimitsChanged } = require('../../utils/security');
 const router = express.Router();
 const { validateObjectId } = require('../../middleware/validateObjectId');
 const { deleteCache, deleteCachePattern } = require('../../lib/redis');
+const { logUserActivity } = require('../../middleware/userActivity');
 
 // Import route handlers
 const listRouter = require('./list');
@@ -22,7 +23,10 @@ router.use('/usage', usageRouter);     // GET /api/servers/usage
 // Handle ID-specific routes directly in this file to avoid conflicts
 router.get('/:id', requireAuth, validateObjectId('id'), async (req, res) => {
   try {
-    const server = await Server.findOne({ _id: String(req.params.id), owner: req.user.sub }).lean();
+    const server = await Server.findOne({ _id: String(req.params.id), owner: req.user.sub })
+      .populate('eggId', 'name icon')
+      .populate('locationId', 'name flag')
+      .lean();
     if (!server) return res.status(404).json({ error: 'Server not found' });
 
     let unreachable = false;
@@ -39,7 +43,18 @@ router.get('/:id', requireAuth, validateObjectId('id'), async (req, res) => {
 
         suspended = suspended || panel?.suspended === true || panel?.suspended === 1;
         if (panel?.status && !suspended) {
-          server.status = panel.status;
+          const isInstalling = panel.status === 'installing' || (panel.container && panel.container.installed === false);
+          if (isInstalling) {
+            server.status = 'creating';
+          } else {
+            server.status = panel.status;
+          }
+        } else if (panel && !suspended) {
+          // If panel.status is null but it's installing
+          const isInstalling = panel.container && panel.container.installed === false;
+          if (isInstalling) {
+            server.status = 'creating';
+          }
         }
 
         const updatedLimits = {
@@ -68,6 +83,10 @@ router.get('/:id', requireAuth, validateObjectId('id'), async (req, res) => {
 
     const responsePayload = {
       ...server,
+      eggName: server.eggId?.name || undefined,
+      eggIcon: server.eggId?.icon || undefined,
+      location: server.locationId?.name || 'Unknown',
+      locationFlag: server.locationId?.flag || undefined,
       status: server.status,
       unreachable,
       suspended,
@@ -84,6 +103,14 @@ router.get('/:id', requireAuth, validateObjectId('id'), async (req, res) => {
 
 // PATCH /api/servers/:id - update server
 const { createRateLimiter } = require('../../middleware/rateLimit');
+const User = require('../../models/User');
+const { updateServerDetails } = require('../../services/pterodactyl');
+const { writeAudit } = require('../../middleware/audit');
+const { forceDeleteServer, getServer } = require('../../services/pterodactyl');
+const PendingDeletion = require('../../models/PendingDeletion');
+const { sendMailTemplate } = require('../../lib/mail');
+const Egg = require('../../models/Egg');
+const Location = require('../../models/Location');
 // Validation schema for update payload
 const updateSchema = z.object({
   name: z.string().trim().min(1).max(100).optional(),
@@ -100,7 +127,7 @@ const updateSchema = z.object({
 router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 60 * 1000), async (req, res) => {
   let lockAcquired = false;
   const userId = req.user.sub;
-  const User = require('../../models/User');
+  
   
   try {
     const serverId = req.params.id;
@@ -141,6 +168,14 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
       });
     }
 
+    // Block editing while server is in 'creating' state
+    if (server.status && server.status.toLowerCase() === 'creating') {
+      return res.status(403).json({
+        error: 'Cannot edit creating server',
+        details: 'This server is currently being created. Please wait for the process to finish before making changes.'
+      });
+    }
+
     // Check suspended state against local and panel data
     let panelServerResponse = null;
     let panelSuspended = false;
@@ -154,7 +189,7 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
           panelAttributes?.suspended === 1 ||
           panelAttributes?.status === 'suspended'
         );
-      // eslint-disable-next-line unused-imports/no-unused-vars
+       
       } catch (_) {
         // Ignore panel lookup failures here; unreachable handling occurs later when attempting updates.
       }
@@ -198,7 +233,7 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
         // Update server name on Pterodactyl panel if panelServerId exists
         if (server.panelServerId) {
           try {
-            const { updateServerDetails } = require('../../services/pterodactyl');
+            
             
             await updateServerDetails(server.panelServerId, { 
               name: newName, 
@@ -215,7 +250,7 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
         }
         
         server.name = newName;
-        changes.name = newName;
+        changes.name = { old: server.name, new: newName };
       }
     }
 
@@ -290,9 +325,19 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
         });
       }
 
+      // Calculate diff for logging
+      const diffs = {};
+      for (const [key, value] of Object.entries(newLimits)) {
+        if (server.limits[key] !== value) {
+          diffs[key] = { old: server.limits[key] || 0, new: value };
+        }
+      }
+
       // Update server limits
       server.limits = newLimits;
-      changes.limits = newLimits;
+      if (Object.keys(diffs).length > 0) {
+        changes.limits = diffs;
+      }
       
       // Update server on Pterodactyl panel if panelServerId exists
       if (server.panelServerId) {
@@ -348,19 +393,25 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
     await server.save();
 
     // Log audit trail
-    const { writeAudit } = require('../../middleware/audit');
+    
     writeAudit(req, 'server.update', 'server', server._id.toString(), { 
-      changed: changes,
+      changes,
       serverId: server._id,
       serverName: server.name,
       userId: user._id
+    });
+    
+    await logUserActivity(req, 'server.update', { 
+      serverName: server.name, 
+      dbId: server._id.toString(), 
+      changes 
     });
 
     // Invalidate user profile cache and server lists
     await deleteCache(`user:${userId}:profile`);
     await deleteCachePattern(`api:servers:${userId}:*`);
     await deleteCachePattern(`server:usage:${userId}`);
-    await deleteCache('api:admin:servers');
+    await deleteCachePattern('api:admin:servers:*');
 
      
 //     const responseTime = Date.now() - startTime;
@@ -388,20 +439,29 @@ router.patch('/:id', requireAuth, validateObjectId('id'), createRateLimiter(20, 
 router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10, 60 * 1000), async (req, res) => {
   let lockAcquired = false;
   const userId = req.user.sub;
-  const User = require('../../models/User');
+  
 
   try {
     // 1. Verify the server exists and belongs to this user
     const server = await Server.findOne({ _id: String(req.params.id), owner: userId });
     if (!server) return res.status(404).json({ error: 'Server not found' });
     
-    const isForce = String(req.query.force).toLowerCase() === 'true';
+    const isForce = true; // User requested all deletions to be forced
 
     // 2. If NOT a force-delete, block deletion of suspended servers
-    if (!isForce && server.status && server.status.toLowerCase() === 'suspended') {
+    const locallySuspended = server.suspended === true || (server.status && server.status.toLowerCase() === 'suspended');
+    if (!isForce && locallySuspended) {
       return res.status(403).json({ 
         error: 'Cannot delete suspended server', 
         details: 'Server is suspended. Contact staff for assistance, or use force removal.',
+        serverId: server._id
+      });
+    }
+
+    if (server.status && server.status.toLowerCase() === 'creating') {
+      return res.status(403).json({
+        error: 'Cannot delete creating server',
+        details: 'This server is currently being created. Please wait for the process to finish before deleting it.',
         serverId: server._id
       });
     }
@@ -425,15 +485,19 @@ router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10,
     }
     lockAcquired = true;
 
+    let serverIdentifier = null;
+
     // 4. Delete from Pterodactyl panel
     if (server.panelServerId) {
       try {
-        const { deleteServer: deletePanelServer, forceDeleteServer } = require('../../services/pterodactyl');
-        if (isForce) {
-          await forceDeleteServer(server.panelServerId);
-        } else {
-          await deletePanelServer(server.panelServerId);
+        
+        try {
+          const panelServerData = await getServer(server.panelServerId);
+          serverIdentifier = panelServerData?.attributes?.identifier;
+        } catch (e) {
+          console.error(`[Delete Server] Failed to fetch identifier for ${server.panelServerId}`, e.message);
         }
+        await forceDeleteServer(server.panelServerId);
       } catch (panelError) {
         const status = panelError?.response?.status;
         const detail = panelError?.response?.data || panelError.message;
@@ -442,11 +506,9 @@ router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10,
         if (status === 404) {
           console.warn(`Panel server ${server.panelServerId} already gone — cleaning up locally.`);
         } else {
-          // For any other panel error, return 502 and do NOT delete locally
-          return res.status(400).json({
-            error: 'Panel deletion failed. The server record has NOT been removed.',
-            details: detail,
-          });
+          console.warn(`Panel deletion failed for ${server.panelServerId}. Queueing for background deletion. Error:`, detail);
+          
+          await PendingDeletion.create({ resourceType: 'server', panelId: server.panelServerId });
         }
       }
     }
@@ -455,30 +517,68 @@ router.delete('/:id', requireAuth, validateObjectId('id'), createRateLimiter(10,
     await Server.deleteOne({ _id: server._id });
 
     // 6. Audit trail
-    const { writeAudit } = require('../../middleware/audit');
+    
     writeAudit(req, 'server.delete', 'server', server._id.toString(), {
+      serverName: server.name,
+      limits: server.limits,
       panelServerId: server.panelServerId,
       forced: isForce,
     });
+    
+    await logUserActivity(req, 'server.delete', { serverName: server.name, dbId: server._id.toString() });
 
     // Email notification for server deletion (non-blocking)
     try {
       if (user?.email) {
-        const { sendMailTemplate } = require('../../lib/mail');
+        
+        
+        
+        
+        const egg = await Egg.findById(server.eggId);
+        const location = await Location.findById(server.locationId);
+        const backendUrl = (process.env.API_URL || process.env.BACKEND_URL) 
+          ? (process.env.API_URL || process.env.BACKEND_URL).replace(/\/$/, '')
+          : `${req.protocol}://${req.get('host')}`;
+
+        // Egg Icon HTML
+        let eggHtml = egg?.name || 'Unknown Egg';
+        if (egg && egg.icon) {
+          const iconUrl = egg.icon.startsWith('http') ? egg.icon : `${backendUrl}${egg.icon.startsWith('/') ? '' : '/'}${egg.icon}`;
+          eggHtml = `<img src="${iconUrl}" alt="" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 8px; border-radius: 4px;"> ${egg.name}`;
+        }
+
+        // Location Flag HTML
+        let locationHtml = location?.name || location?.short || 'Unknown Location';
+        if (location && location.flag) {
+          const flagUrl = location.flag.startsWith('http') ? location.flag : `${backendUrl}${location.flag.startsWith('/') ? '' : '/'}${location.flag}`;
+          locationHtml = `<img src="${flagUrl}" alt="" style="width: 20px; height: 15px; border-radius: 2px; vertical-align: middle; margin-right: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.2);"> ${location.name || location.short}`;
+        }
+
         await sendMailTemplate({
           to: user.email,
           templateKey: 'serverDeleted',
-          data: { serverName: server.name }
+          data: { 
+            username: user.username,
+            serverName: server.name,
+            serverId: serverIdentifier || server.panelServerId || server._id.toString().substring(0, 8),
+            cpu: server.limits?.cpuPercent || 0,
+            ram: server.limits?.memoryMb || 0,
+            disk: server.limits?.diskMb || 0,
+            databases: server.limits?.databases || 0,
+            ports: server.limits?.allocations || 0,
+            eggHtml,
+            locationHtml
+          }
         });
       }
-    // eslint-disable-next-line unused-imports/no-unused-vars
+     
     } catch (_) {}
 
     // Invalidate user profile cache and server lists
     await deleteCache(`user:${userId}:profile`);
     await deleteCachePattern(`api:servers:${userId}:*`);
     await deleteCachePattern(`server:usage:${userId}`);
-    await deleteCache('api:admin:servers');
+    await deleteCachePattern('api:admin:servers:*');
     await deleteCache('eggs:counts');
 
     return res.json({ ok: true, message: 'Server deleted successfully.' });

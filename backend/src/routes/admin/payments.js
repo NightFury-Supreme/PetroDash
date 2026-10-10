@@ -11,31 +11,56 @@ const router = express.Router();
 // GET /api/admin/ledger - list payments with filters
 router.get('/ledger', requireAdmin, async (req, res) => {
   try {
-    const { status, provider, userId, page = '1', limit = '10' } = req.query;
+    const { status, provider, userId, search, sort, page = '1', limit = '10' } = req.query;
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
 
     const q = {};
-    if (status && ['pending', 'completed', 'failed', 'refunded'].includes(status)) {
-      q.status = { $eq: status };
+    if (status) {
+      q.status = { $eq: status.toUpperCase() };
     }
-    if (provider && ['paypal', 'stripe', 'coinbase'].includes(provider)) {
-      q.provider = { $eq: provider };
+    if (provider) {
+      q.provider = { $eq: provider.toLowerCase() };
     }
-    if (userId && /^[0-9a-fA-F]{24}$/.test(userId)) {
-      q.userId = { $eq: userId };
+    
+    const searchTerm = search || userId;
+    if (searchTerm) {
+      const searchRegex = new RegExp(searchTerm, 'i');
+      const User = require('../../models/User');
+      const matchedUsers = await User.find({ $or: [{ username: searchRegex }, { email: searchRegex }] }, { _id: 1 }).lean();
+      const matchedUserIds = matchedUsers.map(u => u._id);
+      
+      const orConditions = [
+        { providerOrderId: searchRegex }
+      ];
+      if (/^[0-9a-fA-F]{24}$/.test(searchTerm)) {
+        orConditions.push({ _id: searchTerm });
+        orConditions.push({ userId: searchTerm });
+      }
+      if (matchedUserIds.length > 0) {
+        orConditions.push({ userId: { $in: matchedUserIds } });
+      }
+      q.$or = orConditions;
     }
 
+    let sortObj = { createdAt: -1 };
+    if (sort === 'createdAt') sortObj = { createdAt: 1 };
+    else if (sort === '-createdAt') sortObj = { createdAt: -1 };
+    else if (sort === 'amount') sortObj = { amount: 1 };
+    else if (sort === '-amount') sortObj = { amount: -1 };
+
     const { getCache, setCache } = require('../../lib/redis');
-    const cacheKey = `admin:ledger:${status || ''}:${provider || ''}:${userId || ''}:${pageNum}:${limitNum}`;
+    const cacheKey = `admin:ledger:${status || ''}:${provider || ''}:${searchTerm || ''}:${sort || ''}:${pageNum}:${limitNum}`;
     const cached = await getCache(cacheKey);
     if (cached) return res.json(cached);
     
     const total = await Payment.countDocuments(q);
     const list = await Payment.find(q)
-      .sort({ createdAt: -1 })
+      .sort(sortObj)
       .skip((pageNum - 1) * limitNum)
       .limit(limitNum)
+      .populate('userId', 'username email profilePicture oauthProviders')
+      .populate('planId', 'name')
       .lean();
       
     const result = {
@@ -61,6 +86,8 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     const p = await Payment.findById(String(req.params.id));
     if (!p) return res.status(404).json({ error: 'Payment not found' });
     
+    const originalPayment = p.toObject();
+
     // Update allowed fields
     if (status !== undefined) p.status = status;
     if (amount !== undefined) p.amount = amount;
@@ -71,9 +98,47 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:ledger');
 
+    const changes = {};
+    if (status !== undefined && originalPayment.status !== status) changes.status = { old: originalPayment.status, new: status };
+    if (amount !== undefined && originalPayment.amount !== amount) changes.amount = { old: originalPayment.amount, new: amount };
+    if (currency !== undefined && originalPayment.currency !== currency) changes.currency = { old: originalPayment.currency, new: currency };
+
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.payment.update', 'payment', p._id.toString(), { changes });
+
     res.json({ ok: true, payment: p });
   } catch (e) { 
     res.status(400).json({ error: e.message }); 
+  }
+});
+
+// GET /api/admin/payments/:id/invoice - PDF invoice download for admin
+router.get('/:id/invoice', requireAdmin, async (req, res) => {
+  try {
+    const p = await Payment.findOne({ _id: String(req.params.id), status: 'completed' }).lean() 
+            || await Payment.findOne({ _id: String(req.params.id), status: 'COMPLETED' }).lean(); // Try both cases
+    if (!p) return res.status(404).json({ error: 'Invoice not found or not completed' });
+    const Plan = require('../../models/Plan');
+    const User = require('../../models/User');
+    const plan = await Plan.findById(p.planId).lean();
+    const user = await User.findById(p.userId).lean();
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="invoice-${p._id}.pdf"`);
+
+    const { getSettings } = require('../../lib/settings');
+    const settings = await getSettings();
+    const { generateInvoicePdfBuffer } = require('../../lib/invoicePdf');
+    
+    let frontendHost = process.env.FRONTEND_URL || req.get('host');
+    const protocol = req.protocol || 'https';
+    
+    const pdfBuffer = await generateInvoicePdfBuffer(p, plan, user, settings, frontendHost, protocol);
+    
+    res.send(pdfBuffer);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 
@@ -90,31 +155,54 @@ router.post('/:id/refund', requireAdmin, async (req, res) => {
     await axios.post(`${baseUrl}/v2/payments/captures/${captureId}/refund`, {}, { headers: { Authorization: `Bearer ${token}` } });
     
     // Deduct resources and coins if payment was COMPLETED
+    const changes = { status: { old: p.status, new: 'REFUNDED' } };
+    
     if (p.status === 'COMPLETED') {
       const Plan = require('../../models/Plan');
       const User = require('../../models/User');
       const UserPlan = require('../../models/UserPlan');
 
       const plan = await Plan.findById(p.planId);
-      if (plan) {
+      const user = await User.findById(p.userId);
+      if (plan && user) {
         if (plan.type === 'coins') {
-          await User.findByIdAndUpdate(p.userId, { $inc: { coins: -(Number(plan.coinsAmount) || 0) } });
+          const coinAmount = Number(plan.coinsAmount) || 0;
+          if (coinAmount > 0) {
+            changes.coins = { old: user.coins, new: Math.max(0, user.coins - coinAmount) };
+            await User.findByIdAndUpdate(p.userId, { coins: changes.coins.new });
+          }
         } else {
           const pc = plan.productContent || {};
           const rr = pc.recurrentResources || {};
           const decQuery = {
             coins: -(Number(pc.coins || 0)),
-            'resources.diskMb': -(Number(rr.diskMb || 0)),
-            'resources.memoryMb': -(Number(rr.memoryMb || 0)),
-            'resources.cpuPercent': -(Number(rr.cpuPercent || 0)),
-            'resources.backups': -(Number(pc.backups || 0)),
-            'resources.databases': -(Number(pc.databases || 0)),
-            'resources.allocations': -(Number(pc.additionalAllocations || 0)),
-            'resources.serverSlots': -(Number(pc.serverLimit || 0)),
+            diskMb: -(Number(rr.diskMb || 0)),
+            memoryMb: -(Number(rr.memoryMb || 0)),
+            cpuPercent: -(Number(rr.cpuPercent || 0)),
+            backups: -(Number(pc.backups || 0)),
+            databases: -(Number(pc.databases || 0)),
+            allocations: -(Number(pc.additionalAllocations || 0)),
+            serverSlots: -(Number(pc.serverLimit || 0)),
           };
-          Object.keys(decQuery).forEach(k => { if (decQuery[k] === 0) delete decQuery[k]; });
-          if (Object.keys(decQuery).length > 0) {
-            await User.findByIdAndUpdate(p.userId, { $inc: decQuery });
+          
+          let updatePayload = { $inc: {} };
+          Object.keys(decQuery).forEach(k => { 
+            if (decQuery[k] !== 0) {
+              const uR = user.resources || {};
+              const oldVal = k === 'coins' ? user.coins : (uR[k] || 0);
+              const newVal = Math.max(0, oldVal + decQuery[k]);
+              const dbKey = k === 'coins' ? 'coins' : `resources.${k}`;
+              
+              changes[dbKey] = { old: oldVal, new: newVal };
+              
+              // Rather than strict $inc which could go negative, we $set it to min 0
+              if (!updatePayload.$set) updatePayload.$set = {};
+              updatePayload.$set[dbKey] = newVal;
+            }
+          });
+          
+          if (updatePayload.$set) {
+            await User.findByIdAndUpdate(p.userId, updatePayload);
           }
         }
       }
@@ -133,6 +221,16 @@ router.post('/:id/refund', requireAdmin, async (req, res) => {
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:ledger');
 
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.payment.refund', 'payment', p._id.toString(), { providerCaptureId: p.providerCaptureId, changes });
+
+    const { logUserActivity } = require('../../middleware/userActivity');
+    await logUserActivity(null, 'admin.payment.refund', { 
+      paymentId: p._id.toString(), 
+      planId: p.planId, 
+      changes 
+    }, p.userId.toString());
+
     res.json({ ok: true });
   } catch (e) { res.status(400).json({ error: e.message }); }
 });
@@ -145,11 +243,23 @@ router.post('/:id/void', requireAdmin, async (req, res) => {
     if (p.provider !== 'paypal') return res.status(400).json({ error: 'Only PayPal supported' });
     // Voiding an order depends on status; in practice, treat as refund for captured, else mark voided
     if (p.status === 'COMPLETED') return res.status(400).json({ error: 'Use refund for completed payments' });
+    
+    const changes = { status: { old: p.status, new: 'VOIDED' } };
     p.status = 'VOIDED';
     await p.save();
 
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:ledger');
+
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.payment.void', 'payment', p._id.toString(), { changes });
+
+    const { logUserActivity } = require('../../middleware/userActivity');
+    await logUserActivity(null, 'admin.payment.void', { 
+      paymentId: p._id.toString(), 
+      planId: p.planId, 
+      changes 
+    }, p.userId.toString());
 
     res.json({ ok: true });
   } catch (e) { res.status(400).json({ error: e.message }); }

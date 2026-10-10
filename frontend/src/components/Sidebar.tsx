@@ -1,45 +1,101 @@
 "use client";
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { Link } from "@/i18n/routing";
+import { usePathname, useRouter } from "@/i18n/routing";
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
+import type { LucideIcon } from "lucide-react";
+import {
+  LayoutDashboard,
+  Store,
+  Coins,
+  Gift,
+  Users,
+  Key,
+  Ticket,
+  Settings,
+  Headphones,
+  Shield,
+  Server,
+  Package,
+  MapPin,
+  List,
+  Sliders,
+  PanelLeft,
+  LogOut
+} from "lucide-react";
 
-type NavLink = { href: string; label: string; icon: string };
+type NavLink = { href: string; labelKey: string; icon: LucideIcon };
 
 const baseLinks: NavLink[] = [
-  { href: "/dashboard", label: "Dashboard", icon: "fa-solid fa-gauge-high" },
-  { href: "/panel", label: "Panel", icon: "fa-solid fa-id-card" },
-  { href: "/shop", label: "Shop", icon: "fa-solid fa-store" },
-  { href: "/earn", label: "Earn", icon: "fa-solid fa-coins" },
-  { href: "/gift", label: "Gift", icon: "fa-solid fa-gift" },
-  { href: "/tickets", label: "Tickets", icon: "fa-solid fa-ticket" },
-  { href: "/referals", label: "Referrals", icon: "fa-solid fa-user-plus" },
-  { href: "/profile", label: "Profile", icon: "fa-solid fa-user-cog" },
+  { href: "/dashboard", labelKey: "dashboard", icon: LayoutDashboard },
+  { href: "/shop", labelKey: "store", icon: Store },
+  { href: "/earn", labelKey: "earn", icon: Coins },
+  { href: "/gift", labelKey: "gift", icon: Gift },
+  { href: "/referrals", labelKey: "affiliates", icon: Users },
+];
+
+const supportLinks: NavLink[] = [
+  { href: "/panel", labelKey: "panelCredentials", icon: Key },
+  { href: "/tickets", labelKey: "helpSupport", icon: Headphones },
+  { href: "/profile", labelKey: "settings", icon: Settings },
 ];
 
 const adminOtherLinks: NavLink[] = [
-  { href: "/admin", label: "Admin", icon: "fa-solid fa-gear" },
-  { href: "/admin/users", label: "Users", icon: "fa-solid fa-users" },
-  { href: "/admin/servers", label: "Servers", icon: "fa-solid fa-server" },
-  { href: "/admin/eggs", label: "Eggs", icon: "fa-solid fa-egg" },
-  { href: "/admin/locations", label: "Locations", icon: "fa-solid fa-location-dot" },
-  { href: "/admin/earn", label: "Earn", icon: "fa-solid fa-coins" },
-  { href: "/admin/gift", label: "Gifts", icon: "fa-solid fa-gift" },
-  { href: "/admin/tickets", label: "Tickets", icon: "fa-solid fa-ticket" },
-  { href: "/admin/logs", label: "Logs", icon: "fa-solid fa-list" },
-  { href: "/admin/settings", label: "Settings", icon: "fa-solid fa-sliders-h" },
-  { href: "/admin/email", label: "Email", icon: "fa-solid fa-envelope" },
+  { href: "/admin", labelKey: "admin", icon: Shield },
+  { href: "/admin/users", labelKey: "users", icon: Users },
+  { href: "/admin/servers", labelKey: "servers", icon: Server },
+  { href: "/admin/eggs", labelKey: "eggs", icon: Package },
+  { href: "/admin/locations", labelKey: "locations", icon: MapPin },
+  { href: "/admin/earn", labelKey: "adminEarn", icon: Coins },
+  { href: "/admin/gift", labelKey: "gifts", icon: Gift },
+  { href: "/admin/tickets", labelKey: "tickets", icon: Ticket },
+  { href: "/admin/logs", labelKey: "logs", icon: List },
+  { href: "/admin/settings", labelKey: "adminSettings", icon: Sliders },
 ];
+
+
+function NavButton({
+  item,
+  collapsed,
+  isActive,
+  label,
+}: {
+  item: NavLink;
+  collapsed: boolean;
+  isActive: boolean;
+  label: string;
+}) {
+  const Icon = item.icon;
+  return (
+    <Link href={item.href} className="block">
+      <div
+        title={collapsed ? label : undefined}
+        aria-current={isActive ? "page" : undefined}
+        className={`group flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/30 ${
+          collapsed ? "justify-center" : ""
+        } ${
+          isActive
+            ? "bg-white/10 text-white"
+            : "text-zinc-500 hover:bg-white/5 hover:text-zinc-200"
+        }`}
+      >
+        <Icon size={17} strokeWidth={1.75} className="shrink-0" />
+        {!collapsed && <span className="truncate">{label}</span>}
+      </div>
+    </Link>
+  );
+}
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const tNav = useTranslations('Nav');
   const [collapsed, setCollapsed] = useState(false);
-  const [user, setUser] = useState<{ username?: string; email?: string; role?: string; coins?: number; hasActivePlans?: boolean; profilePicture?: string } | null>(null);
+  const [user, setUser] = useState<{ username?: string; email?: string; role?: string; coins?: number; hasActivePlans?: boolean; profilePicture?: string; firstName?: string; lastName?: string; name?: string } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [brand, setBrand] = useState<{ name: string; icon: string }>({ name: 'PteroDash', icon: '' });
-  const [openSections, setOpenSections] = useState<{ shop: boolean }>({ shop: false });
+  const [brand, setBrand] = useState<{ name: string; icon: string; earnEnabled: boolean }>({ name: 'PetroDash', icon: '', earnEnabled: false });
 
   // Load collapsed state from localStorage
   useEffect(() => {
@@ -57,13 +113,13 @@ export default function Sidebar() {
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
     if (token) {
-      fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+      fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
         .then(async (r) => { 
           let d: any = {}; try { d = await r.json(); } catch {} 
           if (!r.ok) throw new Error(d?.error || 'Failed'); 
           // Check if user has active plans for premium badge
           try {
-            const plansResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/user/plans`, { 
+            const plansResponse = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/user/plans`, { 
               headers: { Authorization: `Bearer ${token}` } 
             });
             if (plansResponse.ok) {
@@ -84,209 +140,213 @@ export default function Sidebar() {
       setLoading(false);
     }
     // Also load brand settings for icon and name
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/branding`)
+    fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/branding`)
       .then((r) => r.json())
-      .then((s) => setBrand({ name: s?.siteName || 'PteroDash', icon: s?.siteIcon || '' }))
-      .catch(() => setBrand({ name: 'PteroDash', icon: '' }));
+      .then((s) => setBrand({ name: s?.siteName || 'PetroDash', icon: s?.siteIcon || '', earnEnabled: !!s?.earnEnabled }))
+      .catch(() => setBrand({ name: 'PetroDash', icon: '', earnEnabled: false }));
   }, []);
 
-  const renderLink = (link: NavLink) => {
-    // Special case for Admin link - highlight when on any admin page
-    const isActive = link.href === '/admin' 
-      ? pathname.startsWith('/admin')
-      : pathname === link.href || pathname.startsWith(link.href + '/');
-    return (
-      <Link href={link.href} key={link.href}>
-        <div className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-          isActive
-            ? 'bg-[#272727] text-white'
-            : 'text-[#AAAAAA] hover:text-white hover:bg-[#272727]'
-        }`}>
-          <i className={`fas ${link.icon} w-5 text-center ${isActive ? 'text-white' : 'text-[#AAAAAA]'}`}></i>
-          {!collapsed && <span className="font-medium">{link.label}</span>}
-        </div>
-      </Link>
-    );
+  const isAdmin = user?.role === 'admin';
+
+  const checkIsActive = (href: string) => {
+    // Special case for Admin root
+    if (href === '/admin' && pathname === '/admin') return true;
+    if (href === '/admin' && pathname !== '/admin') return false;
+    
+    return pathname === href || pathname.startsWith(href + '/');
   };
 
-  const isAdmin = user?.role === 'admin';
-  const shopLinks: NavLink[] = [
-    { href: "/admin/plans", label: "Plans", icon: "fa-solid fa-crown" },
-    { href: "/admin/coupons", label: "Coupons", icon: "fa-solid fa-tag" },
-    { href: "/admin/shop", label: "Shop", icon: "fa-solid fa-cash-register" },
-    { href: "/admin/ledger", label: "Ledger", icon: "fa-solid fa-file-invoice-dollar" },
-  ];
-
   return (
-    <aside className={`${collapsed ? "w-20" : "w-72"} bg-[#181818] border-r border-[#303030] transition-all duration-300 ease-in-out fixed left-0 top-0 h-full z-50`}> 
-      <div className="h-full flex flex-col">
-        {/* Profile / Brand */}
-        <div className="p-6 border-b border-[#303030]">
-          <div className="flex items-center space-x-4">
-            {brand.icon ? (
-              <img src={`${process.env.NEXT_PUBLIC_API_BASE}${brand.icon}`} alt="icon" className="w-8 h-8 rounded" />
-            ) : (
-              <img src="/logo.svg" alt="PteroDash" className="w-8 h-8" />
-            )}
-            {!collapsed && (
-              <div className="flex-1 flex items-center justify-between">
-                <h3 className="font-semibold text-lg text-white">{brand.name}</h3>
-                <button onClick={() => toggleCollapsed(true)} className="p-2.5 hover:bg-[#272727] rounded-lg transition-all duration-200 text-[#AAAAAA] hover:text-white hover:scale-110" aria-label="Collapse">
-                  <ChevronLeft size={20} />
-                </button>
-              </div>
-            )}
-            {collapsed && (
-              <button onClick={() => toggleCollapsed(false)} className="p-2.5 hover:bg-[#272727] rounded-lg transition-all duration-200 text-[#AAAAAA] hover:text-white hover:scale-110" aria-label="Expand">
-                <ChevronRight size={20} />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Create Server Button */}
-        <div className="px-4 mt-4">
-          {collapsed ? (
-            <Link href="/create">
-              <div className="w-full flex items-center justify-center p-3 rounded-lg bg-white hover:bg-gray-100 transition-colors text-black shadow-lg" title="Create a server">
-                <i className="fas fa-plus text-lg"></i>
-              </div>
-            </Link>
-          ) : (
-            <Link href="/create" className="w-full bg-white hover:bg-gray-100 text-black px-4 py-3 rounded-xl transition-all duration-200 text-center font-semibold flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105">
-              <i className="fas fa-plus text-lg"></i>
-              Create a server
-            </Link>
+    <aside
+      className={`fixed left-0 top-0 h-full shrink-0 flex-col bg-[#0F0F0F] transition-all duration-200 ease-out border-r border-white/5 z-50 flex ${
+        collapsed ? "w-20" : "w-64"
+      }`}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between gap-2 px-4 pt-5 pb-7">
+        <div className="flex min-w-0 items-center gap-3">
+          <img 
+            src={brand.icon || "/logo.svg"} 
+            alt={brand.name} 
+            className="w-7 h-7 rounded-md object-contain shrink-0" 
+          />
+          {!collapsed && (
+            <span className="truncate text-sm font-semibold tracking-tight text-white">
+              {brand.name}
+            </span>
           )}
         </div>
+        {!collapsed && (
+          <button
+            type="button"
+            onClick={() => toggleCollapsed(true)}
+            aria-label="Collapse sidebar"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-zinc-500 transition-colors hover:bg-white/5 hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
+          >
+            <PanelLeft size={16} strokeWidth={1.75} />
+          </button>
+        )}
+      </div>
 
-        {/* Scrollable Navigation */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-4 space-y-2">
-            <nav className="space-y-1">
-              {baseLinks.map(renderLink)}
-            </nav>
-            {!collapsed && isAdmin && (
-              <div className="mt-2 space-y-1">
-                <div className="px-3 text-[11px] font-semibold text-[#AAAAAA] uppercase tracking-wider">Admin</div>
-                <nav className="space-y-1">
-                  {adminOtherLinks.map(renderLink)}
-                </nav>
-                {/* Collapsible Shop Section */}
-                <div className="mt-2">
-                  <button
-                    onClick={() => setOpenSections((s) => ({ ...s, shop: !s.shop }))}
-                    className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-left text-[#AAAAAA] hover:text-white hover:bg-[#272727] transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <i className="fas fa-solid fa-store w-5 text-center" />
-                      <span className="font-medium">Shop</span>
-                    </div>
-                    <i className={`fas fa-chevron-down transition-transform ${openSections.shop ? '' : '-rotate-90'}`} />
-                  </button>
-                  {openSections.shop && (
-                    <div className="pl-6 space-y-1">
-                      {shopLinks.map(renderLink)}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+      {collapsed && (
+        <button
+          type="button"
+          onClick={() => toggleCollapsed(false)}
+          aria-label="Expand sidebar"
+          className="mx-auto -mt-4 mb-4 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-zinc-500 transition-colors hover:bg-white/5 hover:text-zinc-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
+        >
+          <PanelLeft size={16} strokeWidth={1.75} />
+        </button>
+      )}
+
+      {/* Scrollable Navigation */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar px-3 flex flex-col gap-6">
+        
+        {/* Main Navigation */}
+        <div>
+          {!collapsed && (
+            <p className="mb-2 px-2.5 text-xs font-medium uppercase tracking-wider text-zinc-600">
+              {tNav('mainNav')}
+            </p>
+          )}
+          <nav className="flex flex-col gap-0.5">
+            {baseLinks
+              .filter(item => item.href !== "/earn" || brand.earnEnabled)
+              .map((item) => (
+              <NavButton
+                key={item.href}
+                item={item}
+                label={tNav(item.labelKey)}
+                collapsed={collapsed}
+                isActive={checkIsActive(item.href)}
+              />
+            ))}
+          </nav>
         </div>
 
-        {/* Actions */}
-        <div className="p-4 border-t border-[#303030]">
-          <div className="flex items-center gap-3">
-            {/* Profile Picture */}
-            {user?.profilePicture ? (
-              <img 
-                src={user.profilePicture} 
-                alt={user.username || 'User'} 
-                className="w-10 h-10 rounded-full object-cover flex-shrink-0 border-2 border-[#404040]"
-                onError={(e) => {
-                  // Fallback to icon if image fails to load
-                  e.currentTarget.style.display = 'none';
-                  const fallback = document.createElement('i');
-                  fallback.className = 'fas fa-user text-[#AAAAAA] flex-shrink-0';
-                  e.currentTarget.parentElement?.appendChild(fallback);
-                }}
+        {/* Admin Navigation */}
+        {!collapsed && isAdmin && (
+          <div>
+            <p className="mb-2 px-2.5 text-xs font-medium uppercase tracking-wider text-zinc-600">
+              {tNav('admin')}
+            </p>
+            <nav className="flex flex-col gap-0.5">
+              {adminOtherLinks.map((item) => (
+                <NavButton
+                  key={item.href}
+                  item={item}
+                  label={tNav(item.labelKey)}
+                  collapsed={collapsed}
+                  isActive={checkIsActive(item.href)}
+                />
+              ))}
+              
+              {/* Store Section */}
+              <NavButton
+                item={{ href: "/admin/store", labelKey: "adminStore", icon: Store }}
+                label={tNav('adminStore')}
+                collapsed={collapsed}
+                isActive={checkIsActive("/admin/store")}
               />
+            </nav>
+          </div>
+        )}
+      </div>
+
+      {/* Support (Fixed at Bottom) */}
+      <div className="px-3 pt-4 border-t border-white/5">
+        {!collapsed && (
+          <p className="mb-2 px-2.5 text-xs font-medium uppercase tracking-wider text-zinc-600">
+            {tNav('support')}
+          </p>
+        )}
+        <nav className="flex flex-col gap-0.5">
+          {supportLinks.map((item) => (
+            <NavButton
+              key={item.href}
+              item={item}
+              label={tNav(item.labelKey)}
+              collapsed={collapsed}
+              isActive={checkIsActive(item.href)}
+            />
+          ))}
+        </nav>
+      </div>
+
+      {/* User profile footer */}
+      <div className="p-3">
+        <div
+          className={`flex w-full items-center gap-2.5 rounded-xl border border-[#222] bg-[#161616] p-2 text-left transition-colors hover:bg-[#1a1a1a] ${
+            collapsed ? "justify-center" : "justify-between"
+          }`}
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            {user?.profilePicture ? (
+              <img src={user.profilePicture} alt={user.username || 'User'} className="h-8 w-8 shrink-0 rounded-lg object-cover" />
             ) : (
-              <i className="fas fa-user text-[#AAAAAA] flex-shrink-0"></i>
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-700 text-xs font-semibold text-white">
+                {user?.username ? user.username.substring(0, 2).toUpperCase() : 'US'}
+              </div>
             )}
-            {!collapsed ? (
-              <div className="flex-1 min-w-0">
+            {!collapsed && (
+              <div className="min-w-0 flex flex-col justify-center">
                 {loading ? (
-                  <div className="space-y-2">
-                    <div className="h-4 bg-[#303030] rounded w-20"></div>
-                    <div className="h-3 bg-[#303030] rounded w-32"></div>
+                  <div className="space-y-1.5">
+                    <div className="h-3 bg-zinc-800 rounded w-24 animate-pulse"></div>
+                    <div className="h-2 bg-zinc-900 rounded w-16 animate-pulse"></div>
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-medium text-white text-sm">{user?.username || 'User'}</h3>
+                    <span className="truncate text-[13px] font-medium text-zinc-100 leading-tight">
+                      {user?.name || (user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'User')}
+                    </span>
+                    <div className="flex items-center gap-1.5 mt-0.5 pr-2">
+                      <div className="flex items-center gap-1 text-[11px] font-medium leading-tight text-zinc-300">
+                        <Coins size={10} strokeWidth={2} />
+                        <span>{tNav('coins', { count: user?.coins ?? 0 })}</span>
+                      </div>
                       {user?.role && (
-                        <span className={`px-2 py-1 text-xs font-bold rounded-full border ${
-                          user.role === 'admin'
-                            ? 'bg-red-600/20 text-red-300 border-red-700/50'
-                            : user?.hasActivePlans
-                            ? 'bg-yellow-600/20 text-yellow-300 border-yellow-700/50'
-                            : 'bg-green-600/20 text-green-300 border-green-700/50'
+                        <div className={`text-[9px] font-bold px-1.5 py-0.5 rounded-[4px] uppercase tracking-wider leading-none shrink-0 ${
+                          user.role === 'admin' 
+                            ? 'bg-orange-950/50 text-orange-500 border border-orange-500/20'
+                            : 'bg-white/5 text-zinc-400 border border-white/10'
                         }`}>
-                          {user.role === 'admin' ? 'ADMIN' : user?.hasActivePlans ? 'PREMIUM' : 'USER'}
-                        </span>
+                          {user.role}
+                        </div>
                       )}
                     </div>
-                    {typeof user?.coins === 'number' && (
-                      <p className="text-xs text-[#AAAAAA] mb-2"><i className="fas fa-coins mr-1"></i>{user.coins.toLocaleString()} coins</p>
-                    )}
-                    <button 
-                      className="w-full bg-[#303030] hover:bg-[#404040] text-white px-3 py-2 rounded-lg transition-all duration-200 hover:scale-105 text-sm font-medium" 
-                      aria-label="Sign out" 
-                      onClick={async () => { 
-                        try {
-                          const token = localStorage.getItem('auth_token');
-                          if (token) {
-                            await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/logout`, {
-                              method: 'POST',
-                              headers: { 'Authorization': `Bearer ${token}` }
-                            });
-                          }
-                        } catch (error) {
-                          console.error('Logout error:', error);
-                        } finally {
-                          localStorage.removeItem('auth_token');
-                          router.push('/login');
-                        }
-                      }}
-                    >
-                      <i className="fas fa-sign-out-alt mr-2"></i>Sign Out
-                    </button>
                   </>
-                )}
-              </div>
-            ) : (
-              // Collapsed view - show role badge only
-              <div className="flex-1 flex justify-center">
-                {user?.role && (
-                  <span className={`px-2 py-1 text-xs font-bold rounded-full border ${
-                    user.role === 'admin' 
-                      ? 'bg-red-600/20 text-red-300 border-red-700/50' 
-                      : user?.hasActivePlans 
-                      ? 'bg-yellow-600/20 text-yellow-300 border-yellow-700/50' 
-                      : 'bg-green-600/20 text-green-300 border-green-700/50'
-                  }`}>
-                    {user.role === 'admin' ? 'A' : user?.hasActivePlans ? 'P' : 'U'}
-                  </span>
                 )}
               </div>
             )}
           </div>
+          {!collapsed && (
+            <button 
+              className="p-1.5 text-zinc-500 hover:text-zinc-200 transition-colors rounded-md hover:bg-white/5 shrink-0"
+              onClick={async (e) => { 
+                e.stopPropagation();
+                try {
+                  const token = localStorage.getItem('auth_token');
+                  if (token) {
+                    await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/logout`, {
+                      method: 'POST',
+                      headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                  }
+                } catch (error) {
+                  console.error('Logout error:', error);
+                } finally {
+                  localStorage.removeItem('auth_token');
+                  router.push('/login');
+                }
+              }}
+              title={tNav('signOut')}
+            >
+              <LogOut size={16} strokeWidth={1.75} />
+            </button>
+          )}
         </div>
       </div>
     </aside>
   );
 }
-
-

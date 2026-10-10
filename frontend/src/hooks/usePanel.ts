@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect, useCallback } from 'react';
 
 interface PanelInfo {
@@ -39,7 +40,7 @@ export function usePanel(): UsePanelReturn {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/panel`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/panel`, {
         headers: { 
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -72,7 +73,7 @@ export function usePanel(): UsePanelReturn {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/panel/reset-password`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/panel/reset-password`, {
         method: 'POST',
         headers: { 
           'Authorization': `Bearer ${token}`,

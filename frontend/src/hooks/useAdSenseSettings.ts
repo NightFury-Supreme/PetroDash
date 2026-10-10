@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect } from 'react';
 
 interface AdSenseSettings {
@@ -34,7 +35,7 @@ export function useAdSenseSettings() {
     const loadSettings = async () => {
       try {
         // Use public settings endpoint (we'll need to create this)
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/settings/adsense`);
+        const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/settings/adsense`);
 
         if (response.ok) {
           let data: any = {}; try { data = await response.json(); } catch {}

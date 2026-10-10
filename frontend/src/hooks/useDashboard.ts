@@ -1,3 +1,4 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect, useCallback } from 'react';
 import { ServerInfo, ResourceLimits, ResourceUsage } from '../components/dashboard/types';
 
@@ -15,15 +16,21 @@ export function useDashboard() {
     servers: 0
   });
   const [resources, setResources] = useState<ResourceLimits | null>(null);
+  const [statusData, setStatusData] = useState<any | null>(null);
 
   // Load resource usage
   const loadUsage = async (token: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/servers/usage`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers/usage`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem('auth_token');
+          window.location.href = '/login';
+          return;
+        }
         let errorData: any = {}; try { errorData = await response.json(); } catch {}
         throw new Error(errorData?.error || 'Failed to load usage data');
       }
@@ -47,11 +54,16 @@ export function useDashboard() {
   // Load user resources
   const loadResources = async (token: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/auth/me`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem('auth_token');
+          window.location.href = '/login';
+          return;
+        }
         let errorData: any = {}; try { errorData = await response.json(); } catch {}
         throw new Error(errorData?.error || 'Failed to load user resources');
       }
@@ -67,11 +79,16 @@ export function useDashboard() {
   // Load servers
   const loadServers = async (token: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/servers`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/servers`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem('auth_token');
+          window.location.href = '/login';
+          return;
+        }
         let errorData: any = {}; try { errorData = await response.json(); } catch {}
         throw new Error(errorData?.error || 'Failed to load servers');
       }
@@ -80,14 +97,16 @@ export function useDashboard() {
       const transformed: ServerInfo[] = (data || []).map((s: any) => ({
         _id: s._id,
         name: s.name,
-        status: s.status === 'active' ? 'active' : s.status === 'creating' ? 'creating' : s.status === 'unreachable' ? 'unreachable' : s.status === 'suspended' ? 'suspended' : 'error',
-        location: s.locationId?.name || 'Unknown',
+        status: s.status === 'active' ? 'active' : s.status === 'creating' ? 'creating' : s.status === 'queued' ? 'queued' : s.status === 'unreachable' ? 'unreachable' : s.status === 'suspended' ? 'suspended' : 'error',
+        queuePosition: s.queuePosition,
+        location: s.location || 'Unknown',
+        locationFlag: s.locationFlag || undefined,
         cpu: Number(s.limits?.cpuPercent || 0),
         memory: Number(s.limits?.memoryMb || 0),
         storage: Number(s.limits?.diskMb || 0),
         url: s.clientUrl || '#',
-        eggName: s.eggId?.name || undefined,
-        eggIcon: s.eggId?.icon || undefined,
+        eggName: s.eggName || undefined,
+        eggIcon: s.eggIcon || undefined,
         backups: Number(s.limits?.backups || 0),
         databases: Number(s.limits?.databases || 0),
         allocations: Number(s.limits?.allocations || 1),
@@ -103,7 +122,6 @@ export function useDashboard() {
     }
   };
 
-  // Load all dashboard data with useCallback to prevent infinite loops
   const loadDashboardData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -114,6 +132,12 @@ export function useDashboard() {
         setError('Authentication required');
         return;
       }
+
+      // Fetch status data independently (doesn't require token, but good to do alongside)
+      fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/status`)
+        .then(res => res.json())
+        .then(data => setStatusData(data))
+        .catch(console.error);
 
       // Load usage and resources
       await Promise.all([
@@ -148,6 +172,7 @@ export function useDashboard() {
     servers,
     usage,
     resources,
+    statusData,
     loadDashboardData,
     removeServer
   };

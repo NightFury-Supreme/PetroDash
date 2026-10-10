@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetchWithRetry } from "@/utils/fetchWithRetry";
 
-export type EarnMethod = "ads" | "linkvertise";
+export type EarnMethod = "linkvertise";
 
 export interface EarnMethodConfig {
   enabled: boolean;
@@ -12,13 +12,10 @@ export interface EarnMethodConfig {
   waitSeconds: number;
   maxClaimsPerDay: number;
   url?: string;
-  ayetPlacementId?: number;
-  ayetAdslotName?: string;
 }
 
 export interface EarnConfig {
   enabled: boolean;
-  ads: EarnMethodConfig;
   linkvertise: EarnMethodConfig;
 }
 
@@ -47,11 +44,6 @@ export interface EarnStartResponse {
     rewardCoins: number;
     availableAt: string;
     expiresAt: string;
-  };
-  ads?: {
-    provider: "ayet";
-    placementId: number;
-    adslotName: string;
   };
   linkvertise?: {
     url: string;
@@ -86,7 +78,7 @@ export function useEarn() {
         return;
       }
 
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/earn`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/earn`, {
         headers: { Authorization: `Bearer ${t}` },
       });
       const d = await r.json().catch(() => ({}));
@@ -134,7 +126,7 @@ export function useEarn() {
       const t = localStorage.getItem("auth_token");
       if (!t) throw new Error("Not authenticated");
 
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/earn/${method}/start`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/earn/${method}/start`, {
         method: "POST",
         headers: { Authorization: `Bearer ${t}` },
       });
@@ -175,7 +167,7 @@ export function useEarn() {
         if (extra?.hash) payload.hash = extra.hash;
       }
 
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/earn/${method}/claim`, {
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/earn/${method}/claim`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

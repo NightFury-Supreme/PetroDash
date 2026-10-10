@@ -76,19 +76,17 @@ async function processCapturedPayment(payment, captureData, sanitizedOrderId) {
     return { success: true, alreadyProcessed: true, order: captureData, user };
   }
 
-  // Write audit log using the userId context
+  // Hold off logging audit until we calculate exact resource diffs
   const paymentMeta = claimedPayment.meta || {};
-  await writeAudit(payment.userId.toString(), 'payment.purchase.completed', 'payment', claimedPayment._id.toString(), {
-    provider: claimedPayment.provider,
-    planId: plan._id.toString(),
-    planName: plan.name,
-    amount: claimedPayment.amount,
-    currency: claimedPayment.currency,
-    billingCycle: paymentMeta.billingCycle,
-    isLifetime: paymentMeta.isLifetime,
-    orderId: sanitizedOrderId,
-    userId: payment.userId.toString()
-  });
+  let changes = {};
+  
+  const mockReq = {
+    ip: paymentMeta.ip || 'unknown',
+    get: (header) => header.toLowerCase() === 'user-agent' ? (paymentMeta.userAgent || 'unknown') : null
+  };
+
+  const amountStr = `${claimedPayment.amount} ${claimedPayment.currency || 'USD'}`;
+
 
   // Apply plan benefits
   const billingCycle = paymentMeta.billingCycle || 'monthly';
@@ -163,6 +161,13 @@ async function processCapturedPayment(payment, captureData, sanitizedOrderId) {
         { new: true }
       );
       if (updatedUser) {
+        changes.coins = { old: user.coins, new: updatedUser.coins };
+        const diffKeys = ['diskMb', 'memoryMb', 'cpuPercent', 'backups', 'databases', 'allocations', 'serverSlots'];
+        diffKeys.forEach(k => {
+           if (user.resources[k] !== updatedUser.resources[k]) {
+              changes[k] = { old: user.resources[k], new: updatedUser.resources[k] };
+           }
+        });
         user.coins = updatedUser.coins;
         user.resources = updatedUser.resources;
       }
@@ -180,6 +185,27 @@ async function processCapturedPayment(payment, captureData, sanitizedOrderId) {
     }
   }
 
+  // Now perform the logging!
+  await writeAudit(payment.userId.toString(), 'payment.purchase.completed', 'payment', claimedPayment._id.toString(), {
+    provider: claimedPayment.provider,
+    planId: plan._id.toString(),
+    planName: plan.name,
+    amount: claimedPayment.amount,
+    currency: claimedPayment.currency,
+    billingCycle: paymentMeta.billingCycle,
+    isLifetime: paymentMeta.isLifetime,
+    orderId: sanitizedOrderId,
+    userId: payment.userId.toString(),
+    changes
+  });
+  
+  const { logUserActivity } = require('../middleware/userActivity');
+  await logUserActivity(mockReq, 'payment.purchase.completed', { 
+    planName: plan.name, 
+    amount: amountStr,
+    changes
+  }, payment.userId.toString());
+
   // Invalidate payment and user plans cache
   const { deleteCachePattern } = require('./redis');
   await deleteCachePattern(`payments:mine:${payment.userId}:*`);
@@ -191,10 +217,61 @@ async function processCapturedPayment(payment, captureData, sanitizedOrderId) {
   try {
     const freshUser = await User.findById(payment.userId).lean();
     if (freshUser?.email) {
-      await sendMailTemplate({ to: freshUser.email, templateKey: 'planPurchased', data: { planName: plan.name } });
+      const { getSettings } = require('./settings');
+      const settings = await getSettings();
+      const { generateInvoicePdfBuffer } = require('./invoicePdf');
+      const frontendHost = process.env.FRONTEND_URL || '';
+      
+      const pdfBuffer = await generateInvoicePdfBuffer(payment, plan, freshUser, settings, frontendHost, 'https');
+      
+      const attachments = [{
+        filename: `invoice-${payment._id}.pdf`,
+        content: pdfBuffer,
+        contentType: 'application/pdf'
+      }];
+
+      // Prepare enriched data for template
+      const currency = payment.currency || 'USD';
+      const formatter = new Intl.NumberFormat(settings?.payments?.paypal?.currencyLocale || 'en-US', { style: 'currency', currency });
+      const amountFormatted = formatter.format(payment.amount || 0);
+      
+      const displayInterval = payment.meta?.billingCycle 
+        ? String(payment.meta.billingCycle).charAt(0).toUpperCase() + String(payment.meta.billingCycle).slice(1) 
+        : (plan?.interval || 'One-time');
+
+      const prefix = settings?.payments?.paypal?.invoicePrefix || 'INV-';
+      const invoiceId = `${prefix}${String(payment._id).slice(-8).toUpperCase()}`;
+
+      let frontendUrl = process.env.FRONTEND_URL || process.env.BACKEND_URL || '';
+      if (frontendUrl && !frontendUrl.startsWith('http')) frontendUrl = `https://${frontendUrl}`;
+
+      await sendMailTemplate({ 
+        to: freshUser.email, 
+        templateKey: 'planPurchased', 
+        attachments,
+        data: { 
+          username: freshUser.username,
+          planName: plan.name,
+          planDescription: plan.description || '',
+          amount: amountFormatted,
+          interval: displayInterval,
+          invoiceId: invoiceId,
+          transactionId: payment.providerCaptureId || payment.providerOrderId || 'N/A',
+          paymentMethod: String(payment.provider || '').charAt(0).toUpperCase() + String(payment.provider || '').slice(1),
+          // Recurrent resources
+          cpu: plan.productContent?.recurrentResources?.cpuPercent || 0,
+          ram: plan.productContent?.recurrentResources?.memoryMb || 0,
+          disk: plan.productContent?.recurrentResources?.diskMb || 0,
+          databases: plan.productContent?.databases || 0,
+          servers: plan.productContent?.serverLimit || 0,
+          backups: plan.productContent?.backups || 0,
+          frontendUrl
+        } 
+      });
     }
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  } catch (_) {}
+  } catch (err) {
+    console.error('Failed to send purchase email:', err.message);
+  }
 
   return { success: true, order: captureData, user };
 }

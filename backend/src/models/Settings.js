@@ -10,17 +10,6 @@ const SettingsSchema = new mongoose.Schema(
       customCodeMinInvites: { type: Number, default: 10 },
     },
     earn: {
-      enabled: { type: Boolean, default: false },
-      ads: {
-        enabled: { type: Boolean, default: false },
-        coins: { type: Number, default: 10 },
-        cooldownSeconds: { type: Number, default: 3600 },
-        waitSeconds: { type: Number, default: 30 },
-        maxClaimsPerDay: { type: Number, default: 24 },
-        ayetPlacementId: { type: Number, default: 0 },
-        ayetAdslotName: { type: String, default: '' },
-        ayetApiKey: { type: String, default: '' },
-      },
       linkvertise: {
         enabled: { type: Boolean, default: false },
         coins: { type: Number, default: 20 },
@@ -52,6 +41,7 @@ const SettingsSchema = new mongoose.Schema(
     },
     localization: {
       currency: { type: String, default: 'USD' },
+      timezone: { type: String, default: 'UTC' },
     },
     payments: {
       paypal: {
@@ -85,7 +75,7 @@ const SettingsSchema = new mongoose.Schema(
       diskMb: { type: Number, default: 5120 },
       serverSlots: { type: Number, default: 1 },
       backups: { type: Number, default: 0 },
-      allocations: { type: Number, default: 0 },
+      allocations: { type: Number, default: 1 },
       databases: { type: Number, default: 0 },
       coins: { type: Number, default: 0 },
     },

@@ -73,21 +73,29 @@ router.patch('/:id', requireAdmin, async (req, res) => {
       { new: true, runValidators: true }
     );
 
-    // Temporarily disable audit logging to fix the immediate issue
-    //   itemId: req.params.id,
-    //   itemKey: existingItem.key,
-    //   changes: parsed.data,
-    //   previousValues: {
-    //     amountPerUnit: existingItem.amountPerUnit,
-    //     pricePerUnit: existingItem.pricePerUnit,
-    //     description: existingItem.description,
-    //     enabled: existingItem.enabled,
-    //     maxPerPurchase: existingItem.maxPerPurchase,
-    //   }
-    // });
-
     const { deleteCachePattern } = require('../../lib/redis');
     await deleteCachePattern('admin:shop');
+
+    const changes = {};
+    const originalItem = existingItem.toObject();
+    const newItem = updatedItem.toObject();
+
+    const checkDiff = (target, sourceObj, origObj, newObj, prefix = '') => {
+      for (const k of Object.keys(sourceObj || {})) {
+        if (typeof sourceObj[k] === 'object' && sourceObj[k] !== null && !Array.isArray(sourceObj[k])) {
+          checkDiff(target, sourceObj[k], (origObj[k] || {}), (newObj[k] || {}), prefix ? `${prefix}.${k}` : k);
+        } else {
+          const keyName = prefix ? `${prefix}.${k}` : k;
+          if (JSON.stringify(origObj[k]) !== JSON.stringify(newObj[k])) {
+            target[keyName] = { old: origObj[k], new: newObj[k] };
+          }
+        }
+      }
+    };
+    checkDiff(changes, parsed.data, originalItem, newItem);
+
+    const { writeAudit } = require('../../middleware/audit');
+    await writeAudit(req, 'admin.shop.update', 'shop_item', existingItem._id.toString(), { changes: Object.keys(changes).length > 0 ? changes : undefined });
 
     return res.json(updatedItem);
   } catch (error) {

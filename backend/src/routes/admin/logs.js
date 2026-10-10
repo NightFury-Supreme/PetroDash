@@ -16,7 +16,10 @@ const logsQuerySchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(200).default(50),
   action: z.string().optional(),
   actorId: z.string().optional(),
-  resourceType: z.string().optional()
+  resourceType: z.string().optional(),
+  requestId: z.string().optional(),
+  severity: z.string().optional(),
+  sortBy: z.enum(['newest', 'oldest']).optional()
 });
 
 // GET /api/admin/logs
@@ -31,7 +34,7 @@ router.get('/', requireAdmin, async (req, res) => {
       });
     }
 
-    const { page, pageSize, action, actorId, resourceType } = parsed.data;
+    const { page, pageSize, action, actorId, resourceType, requestId, severity } = parsed.data;
 
     // Build safe query object
     const query = {};
@@ -54,19 +57,31 @@ router.get('/', requireAdmin, async (req, res) => {
       query.resourceType = { $regex: resourceType.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
     }
 
+    if (requestId && typeof requestId === 'string') {
+      query.requestId = requestId;
+    }
+
+    if (severity && typeof severity === 'string') {
+      query.severity = severity;
+    }
+
     // Calculate pagination
     const limit = pageSize;
     const skip = (page - 1) * limit;
 
     const { getCache, setCache } = require('../../lib/redis');
-    const cacheKey = `admin:logs:${page}:${pageSize}:${action || ''}:${actorId || ''}:${resourceType || ''}`;
+    const sortByParam = parsed.data.sortBy || 'newest';
+    const cacheKey = `admin:logs:${page}:${pageSize}:${action || ''}:${actorId || ''}:${resourceType || ''}:${requestId || ''}:${severity || ''}:${sortByParam}`;
     const cached = await getCache(cacheKey);
     if (cached) return res.json(cached);
+
+    // Determine sort object
+    const sortObj = sortByParam === 'oldest' ? { createdAt: 1 } : { createdAt: -1 };
 
     // Execute queries with proper error handling
     const [list, total] = await Promise.all([
       AuditLog.find(query)
-        .sort({ createdAt: -1 })
+        .sort(sortObj)
         .skip(skip)
         .limit(limit)
         .lean()
@@ -74,13 +89,44 @@ router.get('/', requireAdmin, async (req, res) => {
       AuditLog.countDocuments(query).exec()
     ]);
 
+    // --- ENRICH TARGET NAMES ---
+    const User = require('../../models/User');
+    const Server = require('../../models/Server');
+
+    const userIds = [...new Set(list.filter(l => l.resourceType === 'user' && l.resourceId).map(l => l.resourceId))];
+    const serverIds = [...new Set(list.filter(l => l.resourceType === 'server' && l.resourceId).map(l => l.resourceId))];
+
+    const [users, servers] = await Promise.all([
+      userIds.length ? User.find({ _id: { $in: userIds } }, 'username role').lean() : [],
+      serverIds.length ? Server.find({ _id: { $in: serverIds } }, 'name').lean() : []
+    ]);
+
+    const userMap = Object.fromEntries(users.map(u => [u._id.toString(), { name: u.username, role: u.role }]));
+    const serverMap = Object.fromEntries(servers.map(s => [s._id.toString(), s.name]));
+
+    const enrichedList = list.map(log => {
+      const copy = { ...log };
+      if (!copy.meta) copy.meta = {};
+      if (copy.resourceType === 'user' && copy.resourceId && userMap[copy.resourceId]) {
+        copy.meta.targetName = userMap[copy.resourceId].name;
+        if (userMap[copy.resourceId].role) {
+          copy.meta.targetRole = userMap[copy.resourceId].role;
+        }
+      }
+      if (copy.resourceType === 'server' && copy.resourceId && serverMap[copy.resourceId]) {
+        copy.meta.targetName = serverMap[copy.resourceId];
+      }
+      return copy;
+    });
+    // ---------------------------
+
     // Calculate pagination info
     const totalPages = Math.ceil(total / limit);
     const hasNext = page < totalPages;
     const hasPrev = page > 1;
 
     const result = {
-      list: list || [],
+      list: enrichedList,
       total,
       page,
       pageSize: limit,

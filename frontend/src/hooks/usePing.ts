@@ -1,6 +1,7 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect } from 'react';
 
-import { Location } from '../components/create/types';
+import { Location } from './useServerCreate';
 
 export function usePing(locations: Location[]) {
   const [locationsWithPing, setLocationsWithPing] = useState<Location[]>(locations);
@@ -11,7 +12,7 @@ export function usePing(locations: Location[]) {
         const token = localStorage.getItem('auth_token');
         if (!token) return;
         
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/locations`, {
+        const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/locations`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         

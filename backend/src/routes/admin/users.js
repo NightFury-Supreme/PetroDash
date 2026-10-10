@@ -5,16 +5,17 @@ const User = require('../../models/User');
 const Server = require('../../models/Server');
 const UserPlan = require('../../models/UserPlan');
 const Plan = require('../../models/Plan');
-const { deleteServer: deletePanelServer, updateServerBuild, getServer: getPanelServer, updateServerDetails, deletePanelUser } = require('../../services/pterodactyl');
+const { deleteServer: deletePanelServer, updateServerBuild, getServer: getPanelServer, updateServerDetails, deletePanelUser, checkUserExists, updatePanelUser } = require('../../services/pterodactyl');
+const PendingUpdate = require('../../models/PendingUpdate');
 
 const router = express.Router();
 
 // GET /api/admin/users - list users
 router.get('/', requireAdmin, async (req, res) => {
   try {
-    const { search, page = '1', limit = '10' } = req.query;
+    const { search, page = '1', limit = '10', pageSize } = req.query;
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
-    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
+    const limitNum = Math.min(100, Math.max(1, parseInt(pageSize || limit, 10) || 10));
     
     const { getCache, setCache } = require('../../lib/redis');
     const cacheKey = `admin:users:${search || ''}:${pageNum}:${limitNum}`;
@@ -51,11 +52,13 @@ router.get('/', requireAdmin, async (req, res) => {
     const list = users.map((u) => ({ ...u, serverCount: idToCount[String(u._id)] || 0 }));
     
     const result = {
-      users: list,
-      total,
-      page: pageNum,
-      limit: limitNum,
-      totalPages: Math.ceil(total / limitNum)
+      data: list,
+      meta: {
+        total,
+        currentPage: pageNum,
+        pageSize: limitNum,
+        totalPages: Math.ceil(total / limitNum)
+      }
     };
 
     await setCache(cacheKey, result, 30);
@@ -77,10 +80,26 @@ router.get('/:id', requireAdmin, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const servers = await Server.find({ owner: user._id })
+    const serversRaw = await Server.find({ owner: user._id })
       .populate('eggId', 'name icon')
-      .populate('locationId', 'name')
+      .populate('locationId', 'name flag')
       .lean();
+
+    let base = process.env.PTERO_BASE_URL || process.env.PTERODACTYL_URL || '';
+    if (base.endsWith('/')) base = base.slice(0, -1);
+
+    const servers = await Promise.all(serversRaw.map(async (s) => {
+      let clientUrl = base;
+      if (s.panelServerId) {
+        try {
+          const panel = await getPanelServer(s.panelServerId);
+          const identifier = panel?.attributes?.identifier || panel?.attributes?.uuid || panel?.identifier || panel?.uuid || null;
+          if (identifier) clientUrl = `${base}/server/${identifier}`;
+           
+  } catch (_) {}
+      }
+      return { ...s, clientUrl };
+    }));
 
     const usage = servers.reduce((acc, s) => {
       const l = s.limits || {};
@@ -99,9 +118,16 @@ router.get('/:id', requireAdmin, async (req, res) => {
       .lean();
 
     // Referral data
+    const referralPage = parseInt(req.query.referralPage) || 1;
+    const referralPageSize = parseInt(req.query.referralPageSize) || 5;
+
+    const totalReferred = await User.countDocuments({ referredBy: user._id });
     const referredUsers = await User.find({ referredBy: user._id }, { passwordHash: 0 })
       .select('username email createdAt')
+      .skip((referralPage - 1) * referralPageSize)
+      .limit(referralPageSize)
       .lean();
+      
     const referralStats = user.referralStats || { referredCount: 0, coinsEarned: 0 };
 
     // Determine login method
@@ -121,7 +147,13 @@ router.get('/:id', requireAdmin, async (req, res) => {
         code: user.referralCode || null,
         referredCount: Number(referralStats.referredCount || 0),
         coinsEarned: Number(referralStats.coinsEarned || 0),
-        referredUsers
+        referredUsers,
+        meta: {
+          total: totalReferred,
+          currentPage: referralPage,
+          pageSize: referralPageSize,
+          totalPages: Math.ceil(totalReferred / referralPageSize)
+        }
       }
     });
   } catch (e) {
@@ -174,14 +206,42 @@ router.patch('/:id', requireAdmin, async (req, res) => {
   if (!parsed.success) return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
   const user = await User.findById(String(req.params.id));
   if (!user) return res.status(404).json({ error: 'User not found' });
+  
+  // Capture original state for detailed audit logging
+  const originalUser = user.toObject();
 
   const { role, resources, coins, email, username, firstName, lastName, referralCode, ban, profilePicture } = parsed.data;
   if (role) user.role = role;
   if (typeof coins === 'number') user.coins = coins;
   // Direct resource editing: update user.resources directly
   if (resources) user.resources = { ...(user.resources || {}), ...resources };
-  if (email) user.email = email;
-  if (username) user.username = username;
+  const oldEmail = user.email;
+  const oldUsername = user.username;
+  
+  const emailChanged = email && email !== oldEmail;
+  const usernameChanged = username && username !== oldUsername;
+
+  if (emailChanged) {
+    const existing = await User.findOne({ email }).lean();
+    if (existing) return res.status(409).json({ error: 'Email already in use by another user.' });
+  }
+  
+  if (usernameChanged) {
+    const existing = await User.findOne({ username }).lean();
+    if (existing) return res.status(409).json({ error: 'Username already in use by another user.' });
+  }
+
+  // If email or username was changed, check Pterodactyl uniqueness
+  if (emailChanged || usernameChanged) {
+    const checkEmail = email || oldEmail;
+    const checkUsername = username || oldUsername;
+    const pterodactylCheck = await checkUserExists(checkEmail, checkUsername, user.pterodactylUserId);
+    if (pterodactylCheck.emailExists) return res.status(409).json({ error: 'Email already exists in Pterodactyl panel.' });
+    if (pterodactylCheck.usernameExists) return res.status(409).json({ error: 'Username already exists in Pterodactyl panel.' });
+  }
+
+  if (emailChanged) user.email = email;
+  if (usernameChanged) user.username = username;
   if (firstName) user.firstName = firstName;
   if (lastName) user.lastName = lastName;
   if (profilePicture !== undefined) user.profilePicture = profilePicture;
@@ -202,6 +262,25 @@ router.patch('/:id', requireAdmin, async (req, res) => {
     user.ban.by = req.user?.sub || req.user?.userId || user.ban.by || null;
   }
   await user.save();
+
+  // Sync profile details to Pterodactyl if applicable
+  if (user.pterodactylUserId) {
+    const payload = {
+      email: user.email,
+      username: user.username,
+      first_name: user.firstName,
+      last_name: user.lastName
+    };
+    try {
+      await updatePanelUser(user.pterodactylUserId, payload);
+    } catch {
+      try {
+        await PendingUpdate.create({ pterodactylUserId: user.pterodactylUserId, payload: JSON.stringify(payload) });
+      } catch (queueErr) {
+        console.error('Failed to queue admin Pterodactyl update:', queueErr.message);
+      }
+    }
+  }
   // Notify user on ban/unban (non-blocking)
   try {
     const { sendMailTemplate } = require('../../lib/mail');
@@ -210,13 +289,51 @@ router.patch('/:id', requireAdmin, async (req, res) => {
       await sendMailTemplate({
         to: user.email,
         templateKey,
-        data: { reason: user.ban?.reason || '', until: user.ban?.until ? new Date(user.ban.until).toISOString() : 'lifetime' }
+        data: { 
+          username: user.username,
+          reason: user.ban?.reason || '', 
+          until: user.ban?.until ? new Date(user.ban.until).toISOString() : 'lifetime' 
+        }
       });
     }
-  // eslint-disable-next-line unused-imports/no-unused-vars
+   
   } catch (_) {}
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, 'admin.user.update', 'user', user._id.toString(), { role, resources, coins, email, username, firstName, lastName, ban });
+  
+  // Calculate detailed changes for the audit log
+  const changes = {};
+  if (role && role !== originalUser.role) changes.role = { old: originalUser.role, new: role };
+  if (typeof coins === 'number' && coins !== originalUser.coins) changes.coins = { old: originalUser.coins, new: coins };
+  if (emailChanged) changes.email = { old: originalUser.email, new: email };
+  if (usernameChanged) changes.username = { old: originalUser.username, new: username };
+  if (firstName && firstName !== originalUser.firstName) changes.firstName = { old: originalUser.firstName, new: firstName };
+  if (lastName && lastName !== originalUser.lastName) changes.lastName = { old: originalUser.lastName, new: lastName };
+  if (profilePicture !== undefined && profilePicture !== originalUser.profilePicture) changes.profilePicture = { old: originalUser.profilePicture, new: profilePicture };
+  if (typeof referralCode === 'string' && user.referralCode !== originalUser.referralCode) changes.referralCode = { old: originalUser.referralCode, new: user.referralCode };
+  
+  if (resources) {
+    for (const [k, v] of Object.entries(resources)) {
+      const oldVal = (originalUser.resources || {})[k] || 0;
+      if (v !== oldVal) changes[k] = { old: oldVal, new: v };
+    }
+  }
+  
+  if (ban) {
+    if (ban.isBanned !== undefined && ban.isBanned !== (originalUser.ban?.isBanned || false)) changes['ban.isBanned'] = { old: originalUser.ban?.isBanned || false, new: ban.isBanned };
+    if (ban.reason !== undefined && ban.reason !== (originalUser.ban?.reason || '')) changes['ban.reason'] = { old: originalUser.ban?.reason || '', new: ban.reason };
+    if (ban.until !== undefined) {
+      const oldTime = originalUser.ban?.until ? new Date(originalUser.ban.until).getTime() : null;
+      const newTime = user.ban?.until ? new Date(user.ban.until).getTime() : null;
+      if (oldTime !== newTime) changes['ban.until'] = { old: originalUser.ban?.until || null, new: user.ban?.until };
+    }
+  }
+
+  await writeAudit(req, 'admin.user.update', 'user', user._id.toString(), { changes });
+
+  const { logUserActivity } = require('../../middleware/userActivity');
+  if (Object.keys(changes).length > 0) {
+    await logUserActivity(null, 'admin.user.update', { changes, updatedByAdmin: true }, user._id.toString());
+  }
 
   const { deleteCachePattern } = require('../../lib/redis');
   await deleteCachePattern('admin:users');
@@ -257,10 +374,10 @@ router.post('/:id/ban', requireAdmin, async (req, res) => {
       const { suspendServer } = require('../../services/pterodactyl');
       for (const s of servers) {
         if (!s.panelServerId) continue;
-        // eslint-disable-next-line unused-imports/no-unused-vars
+         
         try { await suspendServer(s.panelServerId); } catch (_) {}
       }
-    // eslint-disable-next-line unused-imports/no-unused-vars
+     
     } catch (_) {}
   } else {
     // unban
@@ -273,15 +390,18 @@ router.post('/:id/ban', requireAdmin, async (req, res) => {
       const { unsuspendServer } = require('../../services/pterodactyl');
       for (const s of servers) {
         if (!s.panelServerId) continue;
-        // eslint-disable-next-line unused-imports/no-unused-vars
+         
         try { await unsuspendServer(s.panelServerId); } catch (_) {}
       }
-    // eslint-disable-next-line unused-imports/no-unused-vars
+     
     } catch (_) {}
   }
   await user.save();
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, isBanned ? 'admin.user.ban' : 'admin.user.unban', 'user', user._id.toString(), { reason: user.ban.reason, until: user.ban.until });
+  await writeAudit(req, isBanned ? 'admin.user.ban' : 'admin.user.unban', 'user', user._id.toString(), { reason: user.ban.reason, until: user.ban.until });
+  
+  const { logUserActivity } = require('../../middleware/userActivity');
+  await logUserActivity(null, isBanned ? 'admin.user.ban' : 'admin.user.unban', { reason: user.ban.reason, until: user.ban.until }, user._id.toString());
 
   const { deleteCachePattern } = require('../../lib/redis');
   await deleteCachePattern('admin:users');
@@ -330,7 +450,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
     await User.deleteOne({ _id: user._id });
     
     const { writeAudit } = require('../../middleware/audit');
-    writeAudit(req, 'admin.user.delete', 'user', user._id.toString(), { 
+    await writeAudit(req, 'admin.user.delete', 'user', user._id.toString(), { 
       serversDeleted: deletedServers, 
       serverErrors: serverErrors.length,
       pterodactylError: !!pterodactylError 
@@ -365,7 +485,7 @@ router.delete('/:id/servers/:serverId', requireAdmin, async (req, res) => {
   }
   await Server.deleteOne({ _id: server._id });
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, 'admin.user.server.delete', 'server', server._id.toString(), { owner: req.params.id });
+  await writeAudit(req, 'admin.user.server.delete', 'server', server._id.toString(), { owner: req.params.id });
 
   const { deleteCachePattern } = require('../../lib/redis');
   await deleteCachePattern('admin:users');
@@ -400,7 +520,7 @@ router.get('/:id/servers/:serverId', requireAdmin, async (req, res) => {
       const hasChange = ['diskMb','memoryMb','cpuPercent','backups','databases','allocations'].some(k => Number(server.limits?.[k] || 0) !== Number(updatedLimits[k] || 0));
       if (hasChange) await Server.updateOne({ _id: server._id }, { $set: { limits: updatedLimits } });
       return res.json({ ...server, limits: updatedLimits, clientUrl });
-    // eslint-disable-next-line unused-imports/no-unused-vars
+     
     } catch (_) {
       return res.json({ ...server, clientUrl });
     }
@@ -497,7 +617,7 @@ router.patch('/:id/servers/:serverId', requireAdmin, async (req, res) => {
 
   await server.save();
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, 'admin.user.server.update', 'server', server._id.toString(), { owner: req.params.id, changed: desired });
+  await writeAudit(req, 'admin.user.server.update', 'server', server._id.toString(), { owner: req.params.id, changed: desired });
   return res.json({ server });
 });
 
@@ -579,8 +699,11 @@ router.post('/:id/plans', requireAdmin, async (req, res) => {
   }
 
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, 'admin.user.plan.add', 'user_plan', sub._id.toString(), { plan: plan.name, months });
+  await writeAudit(req, 'admin.user.plan.add', 'user_plan', sub._id.toString(), { plan: plan.name, months });
   
+  const { logUserActivity } = require('../../middleware/userActivity');
+  await logUserActivity(null, 'admin.user.plan.add', { plan: plan.name, months, updatedByAdmin: true }, user._id.toString());
+
   const { deleteCachePattern } = require('../../lib/redis');
   await deleteCachePattern('admin:users');
   await deleteCachePattern(`user:${user._id}:plans`);
@@ -624,7 +747,10 @@ router.delete('/:id/plans/:planId', requireAdmin, async (req, res) => {
   }
   
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, 'admin.user.plan.cancel', 'user_plan', req.params.planId, { userId: req.params.id, planId: req.params.planId, instancesCancelled: subs.length });
+  await writeAudit(req, 'admin.user.plan.cancel', 'user_plan', req.params.planId, { userId: req.params.id, planId: req.params.planId, instancesCancelled: subs.length });
+
+  const { logUserActivity } = require('../../middleware/userActivity');
+  await logUserActivity(null, 'admin.user.plan.cancel', { planId: req.params.planId, instancesCancelled: subs.length, updatedByAdmin: true }, req.params.id);
 
   const { deleteCachePattern } = require('../../lib/redis');
   await deleteCachePattern('admin:users');
@@ -664,7 +790,10 @@ router.delete('/:id/plans/instance/:instanceId', requireAdmin, async (req, res) 
   }
   
   const { writeAudit } = require('../../middleware/audit');
-  writeAudit(req, 'admin.user.plan.instance.cancel', 'user_plan', sub._id.toString(), { userId: req.params.id, planId: sub.planId });
+  await writeAudit(req, 'admin.user.plan.instance.cancel', 'user_plan', sub._id.toString(), { userId: req.params.id, planId: sub.planId });
+
+  const { logUserActivity } = require('../../middleware/userActivity');
+  await logUserActivity(null, 'admin.user.plan.instance.cancel', { planId: sub.planId, instanceId: sub._id.toString(), updatedByAdmin: true }, req.params.id);
 
   const { deleteCachePattern } = require('../../lib/redis');
   await deleteCachePattern('admin:users');
@@ -675,3 +804,4 @@ router.delete('/:id/plans/instance/:instanceId', requireAdmin, async (req, res) 
 
 
 module.exports = router;
+

@@ -8,7 +8,7 @@ const router = express.Router();
 // GET /api/admin/gifts
 router.get('/', requireAdmin, async (req, res) => {
   try {
-    const { search = '', tab = 'all', page = '1', limit = '10' } = req.query;
+    const { search = '', tab = 'all', page = '1', limit = '10', sort = 'newest' } = req.query;
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
 
@@ -28,20 +28,19 @@ router.get('/', requireAdmin, async (req, res) => {
         { validUntil: { $lte: new Date() } }
       ];
     }
-    // We cannot easily filter by (redeemedCount < maxRedemptions) in Mongoose when redeemedCount is dynamic/virtual,
-    // but assuming maxRedemptions is checked on usage, active/inactive base on dates/enabled is fine.
-    
-    // Fallback: If maxRedemptions exist and redemptions array size >= maxRedemptions, it's inactive
-    // Mongoose doesn't easily let us compare array size to a document field in a simple query without aggregate,
-    // so we'll do the simpler tab logic (enabled + dates).
+
+    let sortObj = { createdAt: -1 };
+    if (sort === 'oldest') {
+      sortObj = { createdAt: 1 };
+    }
 
     const total = await Gift.countDocuments(filter);
     const gifts = await Gift.find(filter)
-      .sort({ createdAt: -1 })
+      .select('-redemptions') // ISO 25010 / Security: Prevent leaking old deprecated embedded redemptions array
+      .sort(sortObj)
       .skip((pageNum - 1) * limitNum)
       .limit(limitNum)
-      .populate('createdBy', 'username email')
-      .populate('redemptions.user', 'username email')
+      .populate('createdBy', 'username email profilePicture')
       .lean();
 
     res.json({
@@ -61,8 +60,8 @@ router.get('/', requireAdmin, async (req, res) => {
 router.get('/:id', requireAdmin, async (req, res) => {
   try {
     const gift = await Gift.findById(String(req.params.id))
-      .populate('createdBy', 'username email')
-      .populate('redemptions.user', 'username email')
+      .select('-redemptions')
+      .populate('createdBy', 'username email profilePicture')
       .lean();
     if (!gift) return res.status(404).json({ error: 'Gift not found' });
     res.json(gift);
@@ -72,7 +71,64 @@ router.get('/:id', requireAdmin, async (req, res) => {
   }
 });
 
-// POST /api/admin/gifts
+// GET /api/admin/gifts/:id/redemptions
+router.get('/:id/redemptions', requireAdmin, async (req, res) => {
+  try {
+    const { page = '1', limit = '10' } = req.query;
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
+
+    // Fetch the raw document without exclusion to check for legacy redemptions array
+    const giftMeta = await Gift.findById(String(req.params.id)).lean();
+    if (!giftMeta) return res.status(404).json({ error: 'Gift not found' });
+
+    const GiftRedemption = require('../../models/GiftRedemption');
+
+    // [ISO 25010 Maintainability] On-the-fly migration of legacy embedded redemptions
+    if (giftMeta.redemptions && Array.isArray(giftMeta.redemptions) && giftMeta.redemptions.length > 0) {
+      try {
+        const ops = giftMeta.redemptions.map(r => ({
+          updateOne: {
+            filter: { gift: giftMeta._id, user: r.user },
+            update: { $setOnInsert: { gift: giftMeta._id, user: r.user, redeemedAt: r.redeemedAt || new Date() } },
+            upsert: true
+          }
+        }));
+        if (ops.length > 0) {
+          await GiftRedemption.bulkWrite(ops, { ordered: false });
+        }
+        // Securely strip legacy data to prevent running migration again and free up BSON space
+        await Gift.updateOne({ _id: giftMeta._id }, { $unset: { redemptions: "" } });
+      } catch (err) {
+        console.error('Failed to migrate legacy redemptions:', err);
+      }
+    }
+    
+    const totalRedemptions = await GiftRedemption.countDocuments({ gift: req.params.id });
+    
+    const giftRedemptions = await GiftRedemption.find({ gift: req.params.id })
+      .sort({ redeemedAt: -1 })
+      .skip((pageNum - 1) * limitNum)
+      .limit(limitNum)
+      .populate('user', 'username email profilePicture')
+      .lean();
+
+    res.json({
+      code: giftMeta.code,
+      redemptions: giftRedemptions.map(r => ({ user: r.user, redeemedAt: r.redeemedAt })),
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total: totalRedemptions,
+        totalPages: Math.ceil(totalRedemptions / limitNum) || 1
+      }
+    });
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch gift redemptions' });
+  }
+});
+
 router.post('/', requireAdmin, async (req, res) => {
   try {
     const {
@@ -115,7 +171,7 @@ router.post('/', requireAdmin, async (req, res) => {
     });
 
     await gift.save();
-    writeAudit(req, 'admin.gifts.create', 'gift', gift._id.toString(), { code: gift.code });
+    await writeAudit(req, 'admin.gift.create', 'gift', gift._id.toString(), { created: req.body });
     res.status(201).json(gift);
   } catch (error) {
     console.error('Gift creation error:', error);
@@ -123,38 +179,67 @@ router.post('/', requireAdmin, async (req, res) => {
   }
 });
 
-// PATCH /api/admin/gifts/:id
-router.patch('/:id', requireAdmin, async (req, res) => {
+// PUT /api/admin/gifts/:id
+router.put('/:id', requireAdmin, async (req, res) => {
   try {
     const gift = await Gift.findById(String(req.params.id));
     if (!gift) return res.status(404).json({ error: 'Gift not found' });
-    // Admins have full control over user-generated codes
+    
+    const originalGift = gift.toObject();
 
-    const { description, rewards, maxRedemptions, validFrom, validUntil, enabled } = req.body;
-    // Note: 'code' string modification is no longer allowed.
+    const { code, description, rewards, maxRedemptions, validFrom, validUntil, enabled } = req.body;
+    if (code !== undefined) gift.code = code.toUpperCase();
     if (description !== undefined) gift.description = description;
-    if (rewards) {
-      gift.rewards = {
-        coins: Math.min(1_000_000, Math.max(0, parseInt(rewards.coins || 0))),
-        resources: {
-          diskMb: Math.min(1_000_000_000, Math.max(0, parseInt(rewards.resources?.diskMb || 0))),
-          memoryMb: Math.min(1_000_000_000, Math.max(0, parseInt(rewards.resources?.memoryMb || 0))),
-          cpuPercent: Math.min(1000, Math.max(0, parseInt(rewards.resources?.cpuPercent || 0))),
-          backups: Math.min(10_000, Math.max(0, parseInt(rewards.resources?.backups || 0))),
-          databases: Math.min(10_000, Math.max(0, parseInt(rewards.resources?.databases || 0))),
-          allocations: Math.min(10_000, Math.max(0, parseInt(rewards.resources?.allocations || 0))),
-          serverSlots: Math.min(10_000, Math.max(0, parseInt(rewards.resources?.serverSlots || 0))),
-        },
-        planIds: Array.isArray(rewards.planIds) ? rewards.planIds : [],
-      };
-    }
-    if (maxRedemptions !== undefined) gift.maxRedemptions = Math.max(0, Math.min(1_000_000, parseInt(maxRedemptions) || 0));
-    if (validFrom !== undefined) gift.validFrom = validFrom ? new Date(validFrom) : undefined;
-    if (validUntil !== undefined) gift.validUntil = validUntil ? new Date(validUntil) : undefined;
+    if (maxRedemptions !== undefined) gift.maxRedemptions = Math.max(0, parseInt(maxRedemptions));
+    if (validFrom !== undefined) gift.validFrom = validFrom ? new Date(validFrom) : null;
+    if (validUntil !== undefined) gift.validUntil = validUntil ? new Date(validUntil) : null;
     if (enabled !== undefined) gift.enabled = !!enabled;
+    
+    if (rewards !== undefined) {
+      if (!gift.rewards) gift.rewards = {};
+      if (rewards.coins !== undefined) gift.rewards.coins = Math.max(0, parseInt(rewards.coins));
+      if (rewards.resources) {
+        if (!gift.rewards.resources) gift.rewards.resources = {};
+        for (const [rk, rv] of Object.entries(rewards.resources)) {
+          gift.rewards.resources[rk] = Math.max(0, parseInt(rv || 0));
+        }
+      }
+      if (rewards.planIds) gift.rewards.planIds = rewards.planIds;
+    }
 
     await gift.save();
-    writeAudit(req, 'admin.gifts.update', 'gift', gift._id.toString(), { code: gift.code });
+
+    const newGift = gift.toObject();
+    const changes = {};
+
+    const checkDiff = (target, sourceObj, origObj, newObj, prefix = '') => {
+      for (const k of Object.keys(sourceObj || {})) {
+        if (typeof sourceObj[k] === 'object' && sourceObj[k] !== null && !Array.isArray(sourceObj[k])) {
+          checkDiff(target, sourceObj[k], (origObj[k] || {}), (newObj[k] || {}), prefix ? `${prefix}.${k}` : k);
+        } else {
+          const keyName = prefix ? `${prefix}.${k}` : k;
+          if (JSON.stringify(origObj[k]) !== JSON.stringify(newObj[k])) {
+            target[keyName] = { old: origObj[k], new: newObj[k] };
+          }
+        }
+      }
+    };
+    
+    // We compare what was passed in req.body against the updated representation to build flat diffs
+    checkDiff(changes, req.body, originalGift, newGift);
+
+    await writeAudit(req, 'admin.gift.update', 'gift', gift._id.toString(), { changes: Object.keys(changes).length > 0 ? changes : undefined });
+    
+    if (gift.source === 'user' && gift.createdBy) {
+      const { logUserActivity } = require('../../middleware/userActivity');
+      await logUserActivity(null, 'admin.gift.update', {
+        giftId: gift._id.toString(),
+        code: gift.code,
+        updatedByAdmin: true,
+        changes: Object.keys(changes).length > 0 ? changes : undefined
+      }, gift.createdBy.toString());
+    }
+    
     res.json(gift);
   } catch (error) {
     console.error('Gift update error:', error);
@@ -168,7 +253,7 @@ router.delete('/:id', requireAdmin, async (req, res) => {
     const gift = await Gift.findById(String(req.params.id));
     if (!gift) return res.status(404).json({ error: 'Gift not found' });
     await Gift.findByIdAndDelete(String(req.params.id));
-    writeAudit(req, 'admin.gifts.delete', 'gift', req.params.id, { code: gift.code });
+    await writeAudit(req, 'admin.gift.delete', 'gift', req.params.id, { code: gift.code });
     res.json({ message: 'Gift deleted' });
   } catch (error) {
     console.error('Gift delete error:', error);

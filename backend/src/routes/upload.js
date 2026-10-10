@@ -33,7 +33,7 @@ router.post('/icon', requireAdmin, uploadLimiter, (req, res, next) => {
 
       if (!validateMagicBytes(safePath)) {
         // Delete the already-saved file immediately
-        // eslint-disable-next-line unused-imports/no-unused-vars
+         
         try { fs.unlinkSync(safePath); } catch (_) {}
         return res.status(400).json({ error: 'File content does not match a valid image.' });
       }

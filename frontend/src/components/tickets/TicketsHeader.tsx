@@ -1,26 +1,38 @@
 "use client";
 
 import React from "react";
+import { Plus } from "lucide-react";
 
-export default function TicketsHeader({ title, subtitle, onNew }: { title: string; subtitle: string; onNew: () => void; }) {
+export default function TicketsHeader({
+  title = "Support Tickets",
+  description = "Manage all user tickets and requests.",
+  loading: _loading,
+  onRefresh: _onRefresh,
+  onNew
+}: {
+  title?: string;
+  description?: string;
+  loading?: boolean;
+  onRefresh?: () => void;
+  onNew?: () => void;
+}) {
   return (
-    <div className="mb-6 flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-[#202020] rounded-xl flex items-center justify-center">
-          <i className="fa-solid fa-ticket text-white"></i>
-        </div>
-        <div>
-          <h1 className="text-3xl font-extrabold text-white leading-tight">{title}</h1>
-          <p className="text-[#CCCCCC] text-base">{subtitle}</p>
-        </div>
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h1 className="text-2xl font-bold text-[#FF5722] tracking-tight">{title}</h1>
+        <p className="mt-1 text-sm text-[#888888]">{description}</p>
       </div>
-      <div className="flex items-center gap-3">
-        <button onClick={onNew} className="px-4 py-2 bg-white hover:bg-gray-100 text-black rounded-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
-          <i className="fas fa-plus mr-2"></i> New Ticket
-        </button>
-      </div>
+      {onNew && (
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onNew}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-colors bg-[#FF5722] text-white hover:bg-[#ff6939]"
+          >
+            <Plus size={12} />
+            <span>Create Ticket</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
-
-

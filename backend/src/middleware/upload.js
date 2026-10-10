@@ -42,7 +42,7 @@ function validateMagicBytes(filePath) {
     return MAGIC_BYTES.some(({ bytes, offset }) =>
       bytes.every((b, i) => buf[offset + i] === b)
     );
-  // eslint-disable-next-line unused-imports/no-unused-vars
+   
   } catch (_) {
     return false;
   }

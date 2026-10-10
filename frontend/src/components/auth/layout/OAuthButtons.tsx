@@ -1,0 +1,128 @@
+'use client';
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
+
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from '@/i18n/routing';
+
+interface OAuthProvider {
+  name: string;
+  enabled: boolean;
+  clientId: string;
+  icon: string;
+  color: string;
+  bgColor: string;
+  hoverColor: string;
+}
+
+interface OAuthButtonsProps {
+  onError?: (error: string) => void;
+}
+
+// Inner component that uses useSearchParams — must be wrapped in Suspense by the caller
+function OAuthButtonsInner({ onError }: OAuthButtonsProps) {
+  const [providers, setProviders] = useState<OAuthProvider[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // All hooks unconditionally at top
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const fetchOAuthStatus = async () => {
+      try {
+        const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/auth/`);
+        let data: any = {}; try { data = await response.json(); } catch {}
+
+        const availableProviders: OAuthProvider[] = [];
+
+        if (data.discord?.enabled) {
+          availableProviders.push({
+            name: 'Discord',
+            enabled: true,
+            clientId: data.discord.clientId || '',
+            icon: 'fab fa-discord',
+            color: '#5865F2',
+            bgColor: '#5865F2',
+            hoverColor: '#4752C4'
+          });
+        }
+
+        if (data.google?.enabled) {
+          availableProviders.push({
+            name: 'Google',
+            enabled: true,
+            clientId: data.google.clientId || '',
+            icon: 'fab fa-google',
+            color: '#4285F4',
+            bgColor: '#4285F4',
+            hoverColor: '#3367D6'
+          });
+        }
+
+        setProviders(availableProviders);
+      } catch (error) {
+        console.error('Failed to fetch OAuth status:', error);
+        onError?.('Failed to load login options');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOAuthStatus();
+  }, [onError]);
+
+  const handleOAuthLogin = (provider: string) => {
+    const url = new URL(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/oauth/${provider.toLowerCase()}`);
+    const ref = searchParams?.get('ref');
+    if (ref) {
+      url.searchParams.set('ref', ref);
+    }
+    window.location.href = url.toString();
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        <div className="h-12 bg-[#202020] rounded-lg animate-pulse" />
+        <div className="h-12 bg-[#202020] rounded-lg animate-pulse" />
+      </div>
+    );
+  }
+
+  if (providers.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="space-y-3">
+      {providers.map((provider) => (
+        <button
+          key={provider.name}
+          onClick={() => handleOAuthLogin(provider.name)}
+          className="w-full h-[42px] bg-[#121212] border border-[#282828] rounded-[7px] flex items-center justify-center gap-3 text-[#d5d5d5] text-[13px] font-medium hover:bg-[#1A1A1A] hover:border-[#383838] hover:text-white transition-all duration-200 group"
+          style={{
+            '--provider-color': provider.color,
+            '--provider-bg': provider.bgColor,
+            '--provider-hover': provider.hoverColor
+          } as React.CSSProperties}
+        >
+          <i className={`${provider.icon} text-[15px] group-hover:scale-110 transition-transform`} style={{ color: 'var(--provider-color)' }} />
+          <span>Continue with {provider.name}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// Exported wrapper — always renders OAuthButtonsInner inside Suspense
+export function OAuthButtons({ onError }: OAuthButtonsProps) {
+  return (
+    <Suspense fallback={
+      <div className="space-y-3">
+        <div className="h-12 bg-[#202020] rounded-lg animate-pulse" />
+        <div className="h-12 bg-[#202020] rounded-lg animate-pulse" />
+      </div>
+    }>
+      <OAuthButtonsInner onError={onError} />
+    </Suspense>
+  );
+}

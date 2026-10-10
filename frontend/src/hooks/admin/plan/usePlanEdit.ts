@@ -1,6 +1,7 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useCallback } from 'react';
 
-interface PlanFormData {
+export interface PlanFormData {
   _id: string;
   name: string;
   description?: string;
@@ -13,6 +14,7 @@ interface PlanFormData {
   stock: number;
   limitPerCustomer: number;
   category: string;
+  totalPurchases: number;
   redirectionLink?: string;
   billingOptions: {
     renewable: boolean;
@@ -76,7 +78,7 @@ export function usePlanEdit(): UsePlanEditReturn {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans/${planId}`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans/${planId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -85,6 +87,9 @@ export function usePlanEdit(): UsePlanEditReturn {
       }
 
       let data: any = {}; try { data = await response.json(); } catch {}
+      if (data && data.category && typeof data.category === 'object' && data.category._id) {
+        data.category = data.category._id;
+      }
       setPlan(data);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load plan');
@@ -153,9 +158,6 @@ export function usePlanEdit(): UsePlanEditReturn {
       errors.category = 'Category is required';
     }
 
-    if (!plan.availableAt) {
-      errors.availableAt = 'Available at date is required';
-    }
 
     // availableUntil is optional; when Forever is checked it will be null
 
@@ -243,7 +245,7 @@ export function usePlanEdit(): UsePlanEditReturn {
                sortOrder: plan.sortOrder,
              };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans/${plan._id}`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans/${plan._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
