@@ -21,7 +21,7 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       
     - name: Verify project structure
       run: |
@@ -33,7 +33,7 @@ jobs:
         ls -la frontend/
       
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v7
       with:
         node-version: '20'
         
@@ -206,7 +206,7 @@ jobs:
         tar -czf full-${{ steps.version.outputs.version }}.tar.gz -C full-package .
         
     - name: Create Release and Upload Packages
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
