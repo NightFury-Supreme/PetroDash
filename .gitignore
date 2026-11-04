@@ -1,132 +1,112 @@
-# Dependencies
+# ==============================================================================
+# Dependencies & Package Managers
+# ==============================================================================
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+.pnp/
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
-# Environment variables — NEVER commit real .env files
+# ==============================================================================
+# Environment & Secrets (NEVER commit secrets or credentials)
+# ==============================================================================
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env.production
-# docker-compose.env is the template; .env is the real secrets file
-# Add docker-compose.env to this list if you copy it to .env:
-# (already tracked as example template — do NOT add real secrets to it)
+.env.*
+.env*.local
+!.env.example
+!.env.*.example
 
-# Build outputs
+# ==============================================================================
+# Build & Compilation Outputs
+# ==============================================================================
 dist/
 build/
 .next/
 out/
+*.tsbuildinfo
+next-env.d.ts
+.vercel/
 
-# Logs
+# ==============================================================================
+# Logs & Process Monitoring
+# ==============================================================================
 logs/
+backend/logs/
 *.log
-
-# Runtime data
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 pids/
 *.pid
 *.seed
 *.pid.lock
+.pm2/
 
-# Coverage directory used by tools like istanbul
+# ==============================================================================
+# User Uploads, Assets & Backups
+# ==============================================================================
+backend/uploads/
+backend/cdn/
+backend/backups/
+*.bak
+*.backup
+
+# ==============================================================================
+# Testing & Code Quality
+# ==============================================================================
 coverage/
-*.lcov
-
-# nyc test coverage
-.nyc_output
-
-# Dependency directories
-jspm_packages/
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
+.nyc_output/
+test-results/
 .eslintcache
 
-# Microbundle cache
-.rpt2_cache/
-.rts2_cache_cjs/
-.rts2_cache_es/
-.rts2_cache_umd/
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-.parcel-cache
-
-# Next.js build output
-.next
-
-# Nuxt.js build / generate output
-.nuxt
-
-# Gatsby files
-.cache/
-
-# Storybook build outputs
-.out
-.storybook-out
-
-# Temporary folders
+# ==============================================================================
+# Temporary Files & Local Cache
+# ==============================================================================
 tmp/
 temp/
+.cache/
+.local/
 
-# Editor directories and files
+# ==============================================================================
+# Security & Certificates
+# ==============================================================================
+*.pem
+*.key
+*.crt
+*.cert
+
+# ==============================================================================
+# IDEs & Developer Tools
+# ==============================================================================
 .vscode/
+.vscode
 .idea/
 *.swp
 *.swo
 *~
 
-# OS generated files
+# ==============================================================================
+# Local Development Scripts
+# ==============================================================================
+start-dev.bat
+start-dev.ps1
+
+# ==============================================================================
+# OS Generated Files
+# ==============================================================================
 .DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
-ehthumbs.db
 Thumbs.db
+ehthumbs.db
 
-# Database
-*.db
-*.sqlite
-
-# SSL certificates
-*.pem
-*.key
-*.crt
-
-# Backup files
-*.bak
-*.backup
-
-# Test files
-test-results/
-coverage/
-
+# ==============================================================================
 # Docker
-.dockerignore
+# ==============================================================================
 docker-compose.override.yml
-# If you copy docker-compose.env to .env, that .env is already excluded above.
-# The tracked docker-compose.env is the placeholder template only.
-
-# PM2
-.pm2/
-
-# Local development
-.local/
-
-# Uploaded files
-backend/uploads/

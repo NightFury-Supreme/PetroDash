@@ -1,0 +1,45 @@
+'use client';
+
+import React from 'react';
+import { useTranslations } from 'next-intl';
+import { ErrorHeader } from '@/components/error';
+import Footer from '@/components/Footer';
+
+export function BannedSkeleton() {
+  const t = useTranslations('Banned');
+
+  return (
+    <div
+      role="status"
+      aria-label={t('title')}
+      aria-live="polite"
+      className="flex flex-col w-full font-sans min-h-screen bg-[#0F0F0F] text-white justify-between"
+    >
+      <ErrorHeader />
+      <div className="flex-1 flex flex-col items-center justify-center py-12 px-4">
+        <section className="text-center w-full max-w-[620px] flex flex-col items-center">
+          <div
+            className="mx-auto mb-[24px] w-[64px] h-[64px] sm:w-[80px] sm:h-[80px] rounded-full bg-[#202020] border border-white/[0.06] animate-pulse"
+            aria-hidden="true"
+          />
+
+          <div className="mb-3.5 h-8 sm:h-10 w-64 bg-[#2a2a2a] rounded animate-pulse" />
+
+          <div className="w-full max-w-[500px] flex flex-col items-center space-y-2.5 mt-2">
+            <div className="h-4 w-36 bg-[#222] rounded animate-pulse" />
+            <div className="h-4 w-full max-w-[420px] bg-[#222] rounded animate-pulse" />
+            <div className="h-3.5 w-full max-w-[320px] bg-[#222] rounded animate-pulse" />
+            <div className="h-3 w-56 bg-[#222] rounded animate-pulse" />
+          </div>
+
+          <div className="mt-[29px] flex justify-center">
+            <div className="h-[37px] w-28 bg-[#202020] border border-white/[0.06] rounded-md animate-pulse" />
+          </div>
+        </section>
+      </div>
+      <Footer className="mt-auto" />
+    </div>
+  );
+}
+
+export default BannedSkeleton;

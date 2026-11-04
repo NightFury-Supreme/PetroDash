@@ -1,0 +1,97 @@
+'use client';
+
+import React, { type ReactNode } from 'react';
+import { Settings } from 'lucide-react';
+import { RowActionButton } from '@/components/ui/RowActionButton';
+import { StatusIndicator } from '@/components/ui/StatusIndicator';
+import { useTranslations } from 'next-intl';
+
+export interface EarnMethodRowProps {
+  methodName: string;
+  methodSubtitle: string;
+  description: string;
+  rewardStr: string;
+  limitStr: string;
+  enabled: boolean;
+  cols: string;
+  onEdit: () => void;
+  icon?: ReactNode;
+}
+
+export function EarnMethodRow({
+  methodName,
+  methodSubtitle,
+  description,
+  rewardStr,
+  limitStr,
+  enabled,
+  cols,
+  onEdit,
+  icon,
+}: EarnMethodRowProps) {
+  const t = useTranslations('admin.earn');
+  const tCommon = useTranslations('Common');
+
+  return (
+    <div
+      className={`group grid grid-cols-1 gap-4 px-5 py-5 transition hover:bg-white/[0.015] ${cols} lg:items-center`}
+    >
+      <div className="min-w-0 flex items-center gap-3">
+        {icon && (
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center">
+            {icon}
+          </div>
+        )}
+        <div className="min-w-0">
+          <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
+            {t('table.method')}
+          </p>
+          <span className="block truncate font-mono text-sm text-[#DDDDDD]">{methodName}</span>
+          <span className="block truncate font-mono text-[10px] text-[#666] mt-0.5">
+            {methodSubtitle}
+          </span>
+        </div>
+      </div>
+
+      <div className="min-w-0 hidden lg:block">
+        <span className="truncate text-sm text-[#AAAAAA]">{description}</span>
+      </div>
+
+      <div className="min-w-0">
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
+          {t('table.reward')}
+        </p>
+        <span className="text-sm text-[#AAAAAA]">{rewardStr}</span>
+      </div>
+
+      <div className="min-w-0">
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
+          {t('table.dailyLimit')}
+        </p>
+        <span className="text-sm text-[#AAAAAA]">{limitStr}</span>
+      </div>
+
+      <div className="min-w-0">
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
+          {t('table.status')}
+        </p>
+        <StatusIndicator
+          status={enabled ? 'active' : 'inactive'}
+          label={enabled ? tCommon('enabled') : tCommon('disabled')}
+        />
+      </div>
+
+      <div className="min-w-0 lg:text-right mt-2 lg:mt-0">
+        <div className="flex lg:justify-end gap-2">
+          <RowActionButton
+            variant="default"
+            onClick={onEdit}
+            title={tCommon('configureMethod')}
+          >
+            <Settings size={15} />
+          </RowActionButton>
+        </div>
+      </div>
+    </div>
+  );
+}

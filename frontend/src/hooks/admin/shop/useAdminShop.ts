@@ -4,43 +4,64 @@ import { useState, useEffect, useCallback } from 'react';
 import { fetchWithRetry } from '@/utils/fetchWithRetry';
 
 export interface ShopItem {
-  _id: string;
+  id: string;
   key: string;
   name: string;
   unit?: string;
   amountPerUnit: number;
   pricePerUnit: number;
-  description?: string;
   enabled: boolean;
   maxPerPurchase: number;
   createdAt: string;
   updatedAt: string;
 }
 
+let memoryCache: ShopItem[] | null = null;
+let inFlightPromise: Promise<ShopItem[]> | null = null;
+
 export function useAdminShop() {
-  const [items, setItems] = useState<ShopItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<ShopItem[]>(() => memoryCache || []);
+  const [loading, setLoading] = useState(() => !memoryCache);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const loadItems = useCallback(async () => {
-    try {
+  const loadItems = useCallback(async (force = false) => {
+    if (!force && memoryCache && !inFlightPromise) {
+      setItems(memoryCache);
+      setLoading(false);
+    } else if (!memoryCache) {
       setLoading(true);
-      setError(null);
-      
-      const token = localStorage.getItem('auth_token');
-      if (!token) throw new Error('No auth token');
+    }
+    setError(null);
 
-      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/shop`, {
-        headers: { Authorization: `Bearer ${token}` }
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    if (!inFlightPromise) {
+      inFlightPromise = (async (): Promise<ShopItem[]> => {
+        const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/shop`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await response.json().catch(() => null);
+        if (!response.ok) throw new Error(data?.error || 'Failed to load shop items');
+        const itemsList: ShopItem[] = Array.isArray(data) ? data : [];
+        memoryCache = itemsList;
+        return itemsList;
+      })().finally(() => {
+        inFlightPromise = null;
       });
-      
-      let data: any = {}; try { data = await response.json(); } catch {}
-      if (!response.ok) throw new Error(data?.error || 'Failed to load shop items');
-      
-      setItems(data || []);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to load shop items');
+    }
+
+    try {
+      const data = await inFlightPromise;
+      if (data) {
+        setItems(data);
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load shop items');
     } finally {
       setLoading(false);
     }
@@ -51,10 +72,10 @@ export function useAdminShop() {
       setSaving(true);
       setError(null);
       
-      const token = localStorage.getItem('auth_token');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       if (!token) throw new Error('No auth token');
 
-      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/shop/${itemId}`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/shop/${itemId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -63,17 +84,20 @@ export function useAdminShop() {
         body: JSON.stringify(updates)
       });
       
-      let data: any = {}; try { data = await response.json(); } catch {}
+      const data = await response.json().catch(() => null);
       if (!response.ok) throw new Error(data?.error || 'Failed to update item');
       
-      // Update local state
-      setItems(prev => prev.map(item => 
-        item._id === itemId ? { ...item, ...updates } : item
-      ));
+      setItems(prev => {
+        const updatedList = prev.map(item => 
+          item.id === itemId ? { ...item, ...updates } : item
+        );
+        memoryCache = updatedList;
+        return updatedList;
+      });
       
       return data;
-    } catch (err: any) {
-      setError(err?.message || 'Failed to update item');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to update item');
       throw err;
     } finally {
       setSaving(false);

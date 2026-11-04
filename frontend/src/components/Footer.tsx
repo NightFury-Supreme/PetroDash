@@ -1,69 +1,89 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
+import packageInfo from '../../package.json';
+import { useTranslations } from 'next-intl';
+import { useAppConfig } from '@/hooks/useAppConfig';
+import { useSystemStatus } from '@/hooks/dashboard';
 
-interface BrandingInfo {
-  siteName: string;
-  siteIcon: string;
+export interface FooterProps {
+  className?: string;
 }
 
-export default function Footer() {
-  const [branding, setBranding] = useState<BrandingInfo>({ siteName: 'PteroDash', siteIcon: '' });
+export function Footer({ className }: FooterProps = {}) {
+  const { config } = useAppConfig();
+  const { data: statusData, loading: statusLoading, error: statusError } = useSystemStatus(60000);
   const currentYear = new Date().getFullYear();
+  const t = useTranslations('Footer');
+  const tStatus = useTranslations('Dashboard');
 
-  useEffect(() => {
-    const fetchBranding = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/branding`, { cache: 'no-store' });
-        let data: any = {}; try { data = await res.json(); } catch {}
-        if (data?.siteName) {
-          setBranding(data);
-        }
-      // eslint-disable-next-line unused-imports/no-unused-vars
-      } catch (error) {
-        // Use default branding if fetch fails
-              }
-    };
+  const sysStatus = useMemo<'loading' | 'online' | 'partial' | 'offline'>(() => {
+    if (statusLoading) return 'loading';
+    if (statusError || !statusData) return 'offline';
 
-    fetchBranding();
-  }, []);
+    const allStatuses = [statusData.panel?.status, ...(statusData.nodes || []).map((n) => n.status)];
+    if (allStatuses.some((s) => s === 'Major Outage')) {
+      return 'offline';
+    } else if (allStatuses.some((s) => s === 'Partial Outage' || s === 'Degraded')) {
+      return 'partial';
+    } else if (allStatuses.some((s) => s && s !== 'Operational')) {
+      return 'partial';
+    }
+    return 'online';
+  }, [statusLoading, statusError, statusData]);
 
   return (
-    <footer className="bg-[#0F0F0F] py-6 px-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center space-y-2">
-          {/* Copyright */}
-          <p className="text-[#bbb] text-sm">
-            © {branding.siteName} {currentYear} all rights reserved.
-          </p>
-          
-          {/* Powered by */}
-          <p className="text-[#bbb] text-sm">
-            Powered by{' '}
+    <footer className={`w-full py-6 px-4 sm:px-6 ${className ?? 'mt-12'}`}>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-[13px] text-[#555]">
+        {/* Left - Copyright */}
+        <div className="flex items-center gap-2">
+          <span>© {currentYear} {config.branding.siteName}</span>
+        </div>
+
+        {/* Right - Links / Credits */}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1.5 cursor-default">
+            {sysStatus === 'loading' && (
+              <>
+                <span className="w-2 h-2 rounded-full bg-[#333] animate-pulse"></span>
+                <div className="h-3 w-28 bg-[#222] rounded animate-pulse"></div>
+              </>
+            )}
+            {sysStatus === 'online' && (
+              <>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="hover:text-white transition-colors">{tStatus('allNormal')}</span>
+              </>
+            )}
+            {sysStatus === 'partial' && (
+              <>
+                <span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
+                <span className="hover:text-white transition-colors">{tStatus('someIssues')}</span>
+              </>
+            )}
+            {sysStatus === 'offline' && (
+              <>
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                <span className="hover:text-white transition-colors">{tStatus('majorOutage')}</span>
+              </>
+            )}
+          </div>
+          <span className="text-[#333]">•</span>
+          <span>
+            {t('poweredBy')}{' '}
             <a 
               href="https://github.com/NightFury-Supreme/PetroDash" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-white hover:text-blue-400 transition-colors duration-200"
+              className="hover:text-white transition-colors font-medium text-[#777]"
             >
-              PteroDash
+              PteroDash v{packageInfo.version}
             </a>
-          </p>
-          
-          {/* Made with love */}
-          <p className="text-[#bbb] text-sm">
-            Made with 💖 & by{' '}
-            <a 
-              href="https://github.com/NightFury-Supreme/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-white hover:text-blue-400 transition-colors duration-200"
-            >
-              Night Fury
-            </a>
-          </p>
+          </span>
         </div>
       </div>
     </footer>
   );
 }
+
+export default Footer;

@@ -1,8 +1,9 @@
 export interface ServerInfo {
-  _id: string;
+  id: string;
   name: string;
   status: string;
   location: string;
+  locationFlag?: string;
   cpu: number;
   memory: number;
   storage: number;
@@ -15,6 +16,7 @@ export interface ServerInfo {
   unreachable?: boolean;
   error?: string;
   suspended?: boolean;
+  queuePosition?: number | null;
 }
 
 export interface ResourceLimits {

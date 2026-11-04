@@ -27,6 +27,8 @@ function securityHeaders() {
   });
 }
 
+const AppError = require('../utils/AppError');
+
 function csrfProtection(req, res, next) {
   if (req.path.startsWith('/api/')) {
     return next();
@@ -37,7 +39,7 @@ function csrfProtection(req, res, next) {
   const token = req.headers['x-csrf-token'] || req.body._csrf;
   const sessionToken = req.session?.csrfToken;
   if (!token || !sessionToken || token !== sessionToken) {
-    return res.status(403).json({ error: 'Invalid CSRF token' });
+    return next(AppError.forbidden('Invalid CSRF token', 'ERR_INVALID_CSRF'));
   }
   next();
 }
@@ -76,7 +78,7 @@ function sanitizeInput(req, res, next) {
         if (typeof v === 'string') return sanitizeString(v);
         return v;
       }));
-    } catch {
+    } catch (_err) {
       return obj;
     }
   };
@@ -98,7 +100,7 @@ function securityLogging(req, res, next) {
     const safePath = (req.path || '').replace(/[\r\n]/g, '');
     const safeIp = (req.ip || '').replace(/[\r\n]/g, '');
     const safeMethod = (req.method || '').replace(/[\r\n]/g, '');
-    console.log(`[${level}] ${safeMethod} ${safePath} ${res.statusCode} ${duration}ms - ${safeIp}`);
+    process.stdout.write(`[${level}] ${safeMethod} ${safePath} ${res.statusCode} ${duration}ms - ${safeIp}\n`);
   });
   next();
 }

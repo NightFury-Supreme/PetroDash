@@ -1,57 +1,19 @@
-import { useState, useEffect, useCallback } from 'react';
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import type { Plan } from '@/components/admin/plan/AdminPlanRow';
 
-interface Plan {
-  _id: string;
-  name: string;
-  description?: string;
-  strikeThroughPrice: number;
-  pricePerMonth: number;
-  pricePerYear: number;
-  visibility: 'public' | 'unlisted';
-  availableAt?: string;
-  availableUntil?: string;
-  stock: number;
-  limitPerCustomer: number;
-  category: string;
-  redirectionLink?: string;
-  billingOptions: {
-    renewable: boolean;
-    nonRenewable: boolean;
-    lifetime: boolean;
-  };
-  availableBillingCycles: string[];
-  productContent: {
-    recurrentResources: {
-      cpuPercent: number;
-      memoryMb: number;
-      diskMb: number;
-      swapMb: number;
-      blockIoProportion: number;
-      cpuPinning: string;
-    };
-    additionalAllocations: number;
-    databases: number;
-    backups: number;
-    coins: number;
-    serverLimit: number;
-  };
-  staffNotes: string;
-  totalPurchases: number;
-  currentUsers: number;
-  popular: boolean;
-  enabled: boolean;
-  sortOrder: number;
-}
+export type { Plan };
 
 interface UsePlansListReturn {
-  // State
   plans: Plan[];
   loading: boolean;
   error: string | null;
   deleting: string | null;
-  
-  // Actions
-  loadPlans: () => Promise<void>;
+  page: number;
+  setPage: (page: number) => void;
+  totalPages: number;
+  totalItems: number;
+  loadPlans: (pageIndex?: number) => Promise<void>;
   deletePlan: (planId: string, planName: string) => Promise<{ success: boolean; message: string }>;
   toggleEnabled: (plan: Plan) => Promise<{ success: boolean; message: string }>;
   makeUnlisted: (plan: Plan) => Promise<{ success: boolean; message: string }>;
@@ -65,35 +27,47 @@ export function usePlansList(): UsePlansListReturn {
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
 
-  // Load plans
-  const loadPlans = useCallback(async () => {
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+
+  const loadedPageRef = useRef<number | null>(null);
+  const inFlightRef = useRef<number | null>(null);
+
+  const loadPlans = useCallback(async (pageIndex = page) => {
+    if (inFlightRef.current === pageIndex) return;
+    inFlightRef.current = pageIndex;
     try {
       setLoading(true);
       setError(null);
-      
+
       const token = localStorage.getItem('auth_token');
       if (!token) {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans?page=${pageIndex}&limit=10`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to load plans');
       }
-      
-      let data: any = {}; try { data = await response.json(); } catch {}
-      setPlans(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load plans');
+
+      const data = await response.json().catch(() => ({}));
+      const planList = Array.isArray(data?.plans) ? data.plans : Array.isArray(data) ? data : [];
+      setPlans(planList);
+      setTotalPages(data?.totalPages || 1);
+      setTotalItems(data?.total || planList.length);
+      loadedPageRef.current = pageIndex;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load plans');
     } finally {
+      inFlightRef.current = null;
       setLoading(false);
     }
-  }, []);
+  }, [page]);
 
-  // Delete plan
   const deletePlan = useCallback(async (planId: string, planName: string) => {
     setDeleting(planId);
     try {
@@ -102,29 +76,25 @@ export function usePlansList(): UsePlansListReturn {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans/${planId}`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans/${planId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
 
       if (!response.ok) {
-        let errorData: any = {}; try { errorData = await response.json(); } catch {}
-        if (errorData.reason === 'Plan is currently being used by users') {
-          throw new Error(`Cannot delete plan: ${errorData.activeUsers} user(s) are currently using it. Please make the plan unlisted instead.`);
-        }
-        throw new Error(errorData.error || 'Failed to delete plan');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData?.error || errorData?.message || 'Failed to delete plan');
       }
 
-      setPlans(plans.filter(p => p._id !== planId));
+      setPlans(prev => prev.filter(p => p.id !== planId));
       return { success: true, message: `Plan "${planName}" has been deleted successfully.` };
-    } catch (err: any) {
-      throw new Error(err.message || 'Failed to delete plan');
+    } catch (err: unknown) {
+      throw new Error(err instanceof Error ? err.message : 'Failed to delete plan');
     } finally {
       setDeleting(null);
     }
-  }, [plans]);
+  }, []);
 
-  // Toggle plan enabled status
   const toggleEnabled = useCallback(async (plan: Plan) => {
     try {
       const token = localStorage.getItem('auth_token');
@@ -132,7 +102,7 @@ export function usePlansList(): UsePlansListReturn {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans/${plan._id}`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans/${plan.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -145,20 +115,19 @@ export function usePlansList(): UsePlansListReturn {
         throw new Error('Failed to update plan');
       }
 
-      setPlans(plans.map(p => 
-        p._id === plan._id ? { ...p, enabled: !p.enabled } : p
+      setPlans(prev => prev.map(p =>
+        p.id === plan.id ? { ...p, enabled: !p.enabled } : p
       ));
 
-      return { 
-        success: true, 
-        message: `Plan "${plan.name}" has been ${!plan.enabled ? 'enabled' : 'disabled'}.` 
+      return {
+        success: true,
+        message: `Plan "${plan.name}" has been ${!plan.enabled ? 'enabled' : 'disabled'}.`
       };
-    } catch (err: any) {
-      throw new Error(err.message || 'Failed to update plan');
+    } catch (err: unknown) {
+      throw new Error(err instanceof Error ? err.message : 'Failed to update plan');
     }
-  }, [plans]);
+  }, []);
 
-  // Make plan unlisted
   const makeUnlisted = useCallback(async (plan: Plan) => {
     try {
       const token = localStorage.getItem('auth_token');
@@ -166,7 +135,7 @@ export function usePlansList(): UsePlansListReturn {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans/${plan._id}`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans/${plan.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -174,25 +143,24 @@ export function usePlansList(): UsePlansListReturn {
         },
         body: JSON.stringify({ visibility: 'unlisted' })
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to update plan visibility');
       }
 
-      setPlans(plans.map(p => 
-        p._id === plan._id ? { ...p, visibility: 'unlisted' } : p
+      setPlans(prev => prev.map(p =>
+        p.id === plan.id ? { ...p, visibility: 'unlisted' } : p
       ));
 
-      return { 
-        success: true, 
-        message: `Plan "${plan.name}" is now unlisted and hidden from public view.` 
+      return {
+        success: true,
+        message: `Plan "${plan.name}" is now unlisted and hidden from public view.`
       };
-    } catch (err: any) {
-      throw new Error(err.message || 'Failed to update plan visibility');
+    } catch (err: unknown) {
+      throw new Error(err instanceof Error ? err.message : 'Failed to update plan visibility');
     }
-  }, [plans]);
+  }, []);
 
-  // Make plan public
   const makePublic = useCallback(async (plan: Plan) => {
     try {
       const token = localStorage.getItem('auth_token');
@@ -200,7 +168,7 @@ export function usePlansList(): UsePlansListReturn {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans/${plan._id}`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans/${plan.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -208,42 +176,42 @@ export function usePlansList(): UsePlansListReturn {
         },
         body: JSON.stringify({ visibility: 'public' })
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to update plan visibility');
       }
 
-      setPlans(plans.map(p => 
-        p._id === plan._id ? { ...p, visibility: 'public' } : p
+      setPlans(prev => prev.map(p =>
+        p.id === plan.id ? { ...p, visibility: 'public' } : p
       ));
 
-      return { 
-        success: true, 
-        message: `Plan "${plan.name}" is now public and visible to users.` 
+      return {
+        success: true,
+        message: `Plan "${plan.name}" is now public and visible to users.`
       };
-    } catch (err: any) {
-      throw new Error(err.message || 'Failed to update plan visibility');
+    } catch (err: unknown) {
+      throw new Error(err instanceof Error ? err.message : 'Failed to update plan visibility');
     }
-  }, [plans]);
+  }, []);
 
-  // Clear error
   const clearError = useCallback(() => {
     setError(null);
   }, []);
 
-  // Load plans on mount
   useEffect(() => {
-    loadPlans();
-  }, [loadPlans]);
+    if (loadedPageRef.current === page) return;
+    loadPlans(page);
+  }, [page, loadPlans]);
 
   return {
-    // State
     plans,
     loading,
     error,
     deleting,
-    
-    // Actions
+    page,
+    setPage,
+    totalPages,
+    totalItems,
     loadPlans,
     deletePlan,
     toggleEnabled,

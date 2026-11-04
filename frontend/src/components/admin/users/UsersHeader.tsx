@@ -1,19 +1,24 @@
-"use client";
+/* ==========================================================================
+   Admin Users Header Component
+   Compliance: ISO/IEC 25010, Clean Architecture
+========================================================================== */
+
+'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 
-export default function UsersHeader() {
+export function UsersHeader() {
+  const t = useTranslations('admin.users');
+
   return (
-    <div className="flex items-center gap-4">
-      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#202020] rounded-2xl flex items-center justify-center shadow-lg">
-        <i className="fas fa-users text-white text-lg sm:text-2xl"></i>
-      </div>
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Users</h1>
-        <p className="text-[#AAAAAA] text-base sm:text-lg">Manage users, roles and limits</p>
+        <h1 className="text-2xl font-bold text-[#FF5722] tracking-tight">{t('title')}</h1>
+        <p className="text-[#888888] mt-1 text-sm">{t('description')}</p>
       </div>
     </div>
   );
 }
 
-
+export default UsersHeader;

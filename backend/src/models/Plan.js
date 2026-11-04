@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
+const { generatePublicId } = require('../utils/publicId');
 
 const planSchema = new mongoose.Schema({
+  publicId: { type: String, unique: true, index: true, sparse: true, default: () => generatePublicId('plan') },
   name: {
     type: String,
     required: true,
@@ -8,70 +10,55 @@ const planSchema = new mongoose.Schema({
   },
   description: {
     type: String,
+    required: true,
     trim: true
   },
-  // Pricing
-  strikeThroughPrice: { type: Number, default: 0 }, // Original price for display
-  pricePerMonth: { type: Number, required: true, min: 0 }, // Actual price per month
-  pricePerYear: { type: Number, default: 0, min: 0 }, // Price for yearly billing
+  strikeThroughPrice: { type: Number, default: 0 },
+  pricePerMonth: { type: Number, required: true, min: 0 },
+  pricePerYear: { type: Number, default: 0, min: 0 },
   
-  // Visibility and availability
   visibility: { 
     type: String, 
     enum: ['public', 'unlisted'], 
     default: 'public' 
   },
-  availableAt: { type: Date, default: Date.now }, // When plan becomes available
-  availableUntil: { type: Date }, // When plan becomes unavailable (null = forever)
+  availableAt: { type: Date, default: Date.now },
+  availableUntil: { type: Date },
   
-  // Stock and limits
-  stock: { type: Number, default: 0 }, // 0 = unlimited, -1 = unavailable
-  limitPerCustomer: { type: Number, default: 0 }, // 0 = unlimited
+  stock: { type: Number, default: 0 },
+  limitPerCustomer: { type: Number, default: 0 },
   
-  // Category and redirection
-  category: { type: String, default: 'Others' },
-  redirectionLink: { type: String }, // External checkout link
+  category: { type: mongoose.Schema.Types.ObjectId, ref: 'PlanCategory', required: true },
+  redirectionLink: { type: String },
   
-  // Billing configuration
   billingOptions: {
-    renewable: { type: Boolean, default: true }, // Auto-renewal
-    nonRenewable: { type: Boolean, default: false }, // One-time access
-    lifetime: { type: Boolean, default: false } // Indefinite access
+    renewable: { type: Boolean, default: true },
+    nonRenewable: { type: Boolean, default: false },
+    lifetime: { type: Boolean, default: false }
   },
   availableBillingCycles: [{
     type: String,
     enum: ['monthly', 'quarterly', 'semi-annual', 'annual']
   }],
   
-  // Plan content (resources given to user)
   productContent: {
-    // Recurrent resources (added monthly for renewable plans)
     recurrentResources: {
-      // Pterodactyl CPU is % of all cores combined, e.g. 10000 = 100 cores at 100% each
       cpuPercent: { type: Number, default: 0, min: 0 },
       memoryMb: { type: Number, default: 0, min: 0 },
-      diskMb: { type: Number, default: 0, min: 0 },
-      swapMb: { type: Number, default: -1 }, // -1 for unlimited
-      blockIoProportion: { type: Number, default: 0 },
-      cpuPinning: { type: String, default: '' }
+      diskMb: { type: Number, default: 0, min: 0 }
     },
-    // Additional allocations
     additionalAllocations: { type: Number, default: 0 },
     databases: { type: Number, default: 0 },
     backups: { type: Number, default: 0 },
-    // Dashboard specific
     coins: { type: Number, default: 0 },
     serverLimit: { type: Number, default: 0 }
   },
   
-  // Staff notes
-  staffNotes: { type: String, default: '' },
+  staffNotes: { type: String, default: '', select: false },
   
-  // Statistics
   totalPurchases: { type: Number, default: 0 },
   currentUsers: { type: Number, default: 0 },
   
-  // Legacy fields for compatibility
   popular: { type: Boolean, default: false },
   enabled: { type: Boolean, default: true },
   sortOrder: { type: Number, default: 0 }
@@ -79,5 +66,14 @@ const planSchema = new mongoose.Schema({
   timestamps: true
 });
 
-module.exports = mongoose.model('Plan', planSchema);
+planSchema.index({ visibility: 1, enabled: 1, popular: -1, sortOrder: 1, createdAt: -1 });
+planSchema.index({ category: 1 });
 
+planSchema.pre('validate', function (next) {
+  if (!this.publicId) {
+    this.publicId = generatePublicId('plan');
+  }
+  next();
+});
+
+module.exports = mongoose.model('Plan', planSchema);

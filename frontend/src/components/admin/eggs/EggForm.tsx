@@ -1,230 +1,92 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { EggFormBasicSection } from './EggFormBasicSection';
+import { EggFormPanelSection } from './EggFormPanelSection';
+import { EggFormPermissionsSection } from './EggFormPermissionsSection';
+import type { EggCategory, EggFormState, EnvVar, PlanOption } from './types';
 
-type EnvVar = { key: string; value: string };
+interface EggFormProps {
+  form: EggFormState;
+  setForm: React.Dispatch<React.SetStateAction<EggFormState>>;
+  env: EnvVar[];
+  setEnv: React.Dispatch<React.SetStateAction<EnvVar[]>>;
+  onSubmit: (e: React.FormEvent, updatedForm?: EggFormState) => Promise<void>;
+  submitting?: boolean;
+  submitLabel?: string;
+  hideFooter?: boolean;
+  initialCategories?: EggCategory[];
+  plans?: PlanOption[];
+  loadingPlans?: boolean;
+}
 
-export default function EggForm({ form, setForm, env, setEnv, onSubmit, submitting, onDelete, submitLabel = 'Save' }: any) {
-  const addEnv = () => setEnv((e: EnvVar[]) => [...e, { key: '', value: '' }]);
-  const removeEnv = (idx: number) => setEnv((e: EnvVar[]) => e.filter((_: any, i: number) => i !== idx));
+export default function EggForm({
+  form,
+  setForm,
+  env,
+  setEnv,
+  onSubmit,
+  submitting = false,
+  submitLabel = 'Save',
+  hideFooter = false,
+  initialCategories,
+  plans = [],
+  loadingPlans = false,
+}: EggFormProps) {
+  const t = useTranslations('admin.eggs');
+  const [pendingIconFile, setPendingIconFile] = useState<File | null>(null);
+  const [iconPreview, setIconPreview] = useState<string | null>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    onSubmit(e, form);
+  };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
-      <div className="rounded-2xl p-6 space-y-6" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <label className="space-y-2">
-            <span className="text-sm">Name</span>
-            <input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Egg name" />
-          </label>
-          <label className="space-y-2">
-            <span className="text-sm">Category</span>
-            <input className="input" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Egg category" />
-          </label>
-        </div>
-        <label className="space-y-2 block">
-          <span className="text-sm">Egg icon</span>
-          <div className="flex items-center gap-3">
-            {form.icon && (
-              <div className="relative w-12 h-12 bg-[#202020] border border-[#303030] rounded-lg overflow-hidden flex-shrink-0">
-                <img 
-                  src={`${process.env.NEXT_PUBLIC_API_BASE}${form.icon}`} 
-                  alt="Egg icon" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-            <label className="flex-1">
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  
-                  const token = localStorage.getItem('auth_token');
-                  const oldIcon = form.icon; // Store old icon path
-                  
-                  const fd = new FormData();
-                  fd.append('icon', file);
-                  
-                  try {
-                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/upload/icon`, {
-                      method: 'POST',
-                      headers: { Authorization: `Bearer ${token}` },
-                      body: fd
-                    });
-                    
-                    if (!res.ok) {
-  let _err = 'Upload failed';
-  try {
-    const _d = await res.json();
-    if (_d && _d.error) _err = _d.error;
-  } catch {}
-  throw new Error(_err);
-}
-                    
-                    let data: any = {}; try { data = await res.json(); } catch {}
-                    setForm({ ...form, icon: data.filePath });
-                    
-                    // Delete old icon file if it exists
-                    if (oldIcon) {
-                      fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/upload/icon`, {
-                        method: 'DELETE',
-                        headers: { 
-                          'Content-Type': 'application/json',
-                          Authorization: `Bearer ${token}` 
-                        },
-                        body: JSON.stringify({ filePath: oldIcon })
-                      }).catch(err => console.error('Failed to delete old icon:', err));
-                    }
-                  } catch (err) {
-                    console.error('Upload error:', err);
-                    alert('Failed to upload icon. Please try again.');
-                  }
-                }}
-              />
-              <div className="input cursor-pointer flex items-center justify-between">
-                <span className="text-[#AAAAAA]">{form.icon ? 'Change icon' : 'Upload icon'}</span>
-                <i className="fas fa-upload text-[#AAAAAA]"></i>
-              </div>
-            </label>
-            {form.icon && (
-              <button
-                type="button"
-                onClick={async () => {
-                  const token = localStorage.getItem('auth_token');
-                  const iconToDelete = form.icon;
-                  
-                  // Remove from form first
-                  setForm({ ...form, icon: '' });
-                  
-                  // Delete file from server
-                  if (iconToDelete) {
-                    try {
-                      await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/upload/icon`, {
-                        method: 'DELETE',
-                        headers: { 
-                          'Content-Type': 'application/json',
-                          Authorization: `Bearer ${token}` 
-                        },
-                        body: JSON.stringify({ filePath: iconToDelete })
-                      });
-                    } catch (err) {
-                      console.error('Failed to delete icon:', err);
-                    }
-                  }
-                }}
-                className="px-3 py-2 rounded-md bg-red-500/10 border border-red-500/30 text-red-400"
-              >
-                <i className="fas fa-trash"></i>
-              </button>
-            )}
-          </div>
-          <div className="text-xs text-[#AAAAAA]">Upload an image (max 5MB, PNG/JPG/GIF/WEBP/SVG)</div>
-        </label>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <label className="space-y-2">
-            <span className="text-sm">Pterodactyl Egg ID</span>
-            <input className="input" value={form.pterodactylEggId} onChange={(e) => setForm({ ...form, pterodactylEggId: e.target.value })} placeholder="0" />
-          </label>
-          <label className="space-y-2">
-            <span className="text-sm">Pterodactyl Nest ID</span>
-            <input className="input" value={form.pterodactylNestId} onChange={(e) => setForm({ ...form, pterodactylNestId: e.target.value })} placeholder="1" />
-          </label>
-        </div>
-        <label className="flex items-center gap-2">
-          <input type="checkbox" checked={!!form.recommended} onChange={(e) => setForm({ ...form, recommended: e.target.checked })} />
-          <span className="text-sm">Mark as recommended</span>
-        </label>
-        <label className="space-y-2 block">
-          <span className="text-sm">Description</span>
-          <textarea className="input min-h-[90px]" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Describe the egg" />
-        </label>
-        <AllowedPlansSelect value={form.allowedPlans || []} onChange={(vals: string[]) => setForm({ ...form, allowedPlans: vals })} />
-      </div>
+    <form id="egg-form" onSubmit={handleSubmit} className="space-y-8">
+      <EggFormBasicSection
+        form={form}
+        setForm={setForm}
+        pendingIconFile={pendingIconFile}
+        setPendingIconFile={setPendingIconFile}
+        iconPreview={iconPreview}
+        setIconPreview={setIconPreview}
+        uploadingIcon={false}
+        preloadedCategories={initialCategories}
+      />
 
-      <div className="rounded-2xl p-6 space-y-4" style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Environment Variables</h3>
-          <button type="button" onClick={addEnv} className="px-3 py-1.5 rounded-md bg-white text-black border border-[var(--border)]">Add</button>
-        </div>
-        <div className="space-y-3">
-          {env.map((v: EnvVar, idx: number) => (
-            <div key={idx} className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <input className="input" value={v.key} onChange={(e) => setEnv(env.map((x: EnvVar, i: number) => i === idx ? { ...x, key: e.target.value } : x))} placeholder="KEY" />
-              <div className="md:col-span-2 flex gap-2">
-                <input className="input flex-1" value={v.value} onChange={(e) => setEnv(env.map((x: EnvVar, i: number) => i === idx ? { ...x, value: e.target.value } : x))} placeholder="VALUE" />
-                <button type="button" onClick={() => removeEnv(idx)} className="px-3 py-2 rounded-md bg-[#ef4444] text-white">Remove</button>
-              </div>
-            </div>
-          ))}
-          {env.length === 0 && (
-            <div className="text-sm text-[#AAAAAA]">No environment variables configured.</div>
-          )}
-        </div>
-      </div>
+      <EggFormPanelSection
+        form={form}
+        setForm={setForm}
+        env={env}
+        setEnv={setEnv}
+      />
 
-      <div className="flex items-center justify-end gap-4">
-        {onDelete && (
-          <button type="button" onClick={onDelete} className="px-4 py-2 rounded-md bg-[#ef4444] text-white">Delete</button>
-        )}
-        <button type="submit" disabled={submitting} className="px-4 py-2 rounded-md bg-white text-black border border-[var(--border)]">{submitting ? (submitLabel === 'Create' ? 'Creating…' : 'Saving…') : submitLabel}</button>
-      </div>
+      <EggFormPermissionsSection
+        form={form}
+        setForm={setForm}
+        plans={plans}
+        loadingPlans={loadingPlans}
+      />
+
+      {!hideFooter && (
+        <div className="flex justify-end gap-3 pt-6 border-t border-white/[0.06]">
+          <button
+            type="submit"
+            disabled={submitting}
+            className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-[#FF5722] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#ff6939] disabled:opacity-50"
+          >
+            {submitting ? (
+              <>
+                <Loader2 size={16} className="animate-spin" /> {t('saving')}
+              </>
+            ) : (
+              submitLabel
+            )}
+          </button>
+        </div>
+      )}
     </form>
   );
 }
-
-function AllowedPlansSelect({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
-  const [plans, setPlans] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<any>(null);
-
-  useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/plans`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
-      .then((r) => r.json())
-      .then((d) => setPlans(Array.isArray(d) ? d : []))
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, []);
-
-  return (
-    <div className="space-y-2">
-      <span className="text-sm">Allowed Plans</span>
-      <div className="text-xs text-[#AAAAAA]">Leave empty to allow all plans.</div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-        {loading ? (
-          <div className="text-sm text-[#AAAAAA]">Loading plans…</div>
-        ) : error ? (
-          <div className="text-sm text-red-400">{String(error)}</div>
-        ) : (
-          plans.map((p: any) => {
-            const id = String(p._id || p.id);
-            const name = p.name || id;
-            const selected = (value || []).includes(id) || (value || []).includes(name);
-            return (
-              <label key={id} className={`flex items-center gap-2 p-2 rounded border ${selected ? 'border-white bg-white/10' : 'border-[#303030]'}`}>
-                <input
-                  type="checkbox"
-                  checked={selected}
-                  onChange={(e) => {
-                    const canonical = id; // store by id
-                    if (e.target.checked) {
-                      onChange([...(value || []).filter(Boolean), canonical]);
-                    } else {
-                      onChange((value || []).filter((v) => v !== canonical && v !== name));
-                    }
-                  }}
-                />
-                <span className="text-sm text-white">{name}</span>
-              </label>
-            );
-          })
-        )}
-      </div>
-    </div>
-  );
-}
-
-

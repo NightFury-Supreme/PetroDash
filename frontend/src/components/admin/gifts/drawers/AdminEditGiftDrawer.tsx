@@ -1,0 +1,268 @@
+import React, { useState } from "react";
+import { Drawer } from "@/components/ui/Drawer";
+import { SelectDropdown } from "@/components/ui/SelectDropdown";
+import { AdminEditGiftSkeleton } from "@/components/skeletons/admin/gifts";
+import { AdminDeleteGiftDrawer } from "./AdminDeleteGiftDrawer";
+import { Loader2, Edit2, Tag, FileText, Infinity, Coins, Cpu, MemoryStick, HardDrive, Server } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useEditAdminGift } from "@/hooks/admin/gift";
+
+interface AdminEditGiftDrawerProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+  giftId: string | null;
+}
+
+export function AdminEditGiftDrawer({
+  isOpen,
+  onClose,
+  onSuccess,
+  giftId,
+}: AdminEditGiftDrawerProps) {
+  const t = useTranslations('Admin.gifts');
+  const tCommon = useTranslations('Common');
+
+  const [showDelete, setShowDelete] = useState(false);
+  const { form, setForm, loading, saving, error, updateGift } = useEditAdminGift(
+    giftId,
+    isOpen,
+    () => {
+      onSuccess();
+      onClose();
+    }
+  );
+
+  const handleSubmit = async () => {
+    if (!form.code.trim()) return;
+    await updateGift();
+  };
+
+  const isFormValid = form.code.trim().length > 0;
+
+  return (
+    <>
+      <Drawer
+        isOpen={isOpen && !showDelete}
+        onClose={onClose}
+        title={t('editGift')}
+        subtitle={t('editGiftSubtitle')}
+        icon={<Edit2 size={20} />}
+        footer={
+          <div className="flex items-center justify-between w-full">
+            <button
+              onClick={() => setShowDelete(true)}
+              disabled={saving || loading}
+              className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/20 hover:border-red-500/30"
+            >
+              {t('deleteGift')}
+            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleSubmit}
+                disabled={saving || loading || !isFormValid}
+                className={`flex items-center justify-center gap-2 rounded-lg px-5 py-2 text-sm font-medium transition-all ${saving || loading || !isFormValid
+                  ? "bg-[#161616] text-[#888] border border-[#222] cursor-not-allowed"
+                  : "bg-[#FF5722] border border-[#FF5722] text-white hover:bg-[#F4511E]"
+                  }`}
+              >
+                {saving ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" /> {t('saving')}
+                  </>
+                ) : (
+                  t('saveChanges')
+                )}
+              </button>
+            </div>
+          </div>
+        }
+      >
+        {loading ? (
+          <AdminEditGiftSkeleton />
+        ) : (
+          <div className="space-y-6">
+            {error && (
+              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                {error}
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">
+                  <Tag size={12} /> {t('codeLabel')} *
+                </label>
+                <input
+                  value={form.code}
+                  onChange={(e) => setForm({ ...form, code: e.target.value })}
+                  disabled={saving}
+                  placeholder={t('codePlaceholder')}
+                  className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50 uppercase"
+                />
+              </div>
+
+              <div className="col-span-2">
+                <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">
+                  <FileText size={12} /> {t('descriptionLabel')}
+                </label>
+                <input
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  disabled={saving}
+                  placeholder={t('descriptionPlaceholder')}
+                  className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50"
+                />
+              </div>
+
+              <div>
+                <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">
+                  <Infinity size={12} /> {t('maxUsesLabel')}
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={form.maxRedemptions}
+                  onChange={(e) => setForm({ ...form, maxRedemptions: Number(e.target.value) })}
+                  disabled={saving}
+                  className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">
+                  {t('enabledLabel')}
+                </label>
+                <SelectDropdown
+                  value={form.enabled ? "true" : "false"}
+                  onChange={(val) => setForm({ ...form, enabled: val === "true" })}
+                  disabled={saving}
+                  options={[
+                    { label: tCommon('yes'), value: "true" },
+                    { label: tCommon('no'), value: "false" },
+                  ]}
+                  className="w-full"
+                  buttonClassName="h-[42px] px-4 text-sm bg-[#1A1A1A] border-[#2A2A2A] text-white hover:border-[#FF5722]/50"
+                  menuClassName="bg-[#151515] border-[#2A2A2A]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">
+                  {t('validFromLabel')}
+                </label>
+                <input
+                  type="datetime-local"
+                  value={form.validFrom}
+                  onChange={(e) => setForm({ ...form, validFrom: e.target.value })}
+                  disabled={saving}
+                  className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-[#888] focus:text-white focus:outline-none focus:border-[#FF5722]/50"
+                />
+                <p className="text-[10px] text-[#555] mt-1">{t('validFromHelper')}</p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">
+                  {t('validUntilLabel')}
+                </label>
+                <input
+                  type="datetime-local"
+                  value={form.validUntil}
+                  onChange={(e) => setForm({ ...form, validUntil: e.target.value })}
+                  disabled={saving}
+                  className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-[#888] focus:text-white focus:outline-none focus:border-[#FF5722]/50"
+                />
+                <p className="text-[10px] text-[#555] mt-1">{t('validUntilHelper')}</p>
+              </div>
+            </div>
+
+            <hr className="border-white/[0.06]" />
+
+            <div>
+              <h3 className="text-sm font-semibold text-white mb-4">{t('rewardsLabel')}</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">
+                    <Coins size={12} className="text-[#666]" /> {t('coinsLabel')}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={form.coins}
+                    onChange={(e) => setForm({ ...form, coins: Number(e.target.value) })}
+                    disabled={saving}
+                    className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50"
+                  />
+                </div>
+                <div>
+                  <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">
+                    <Cpu size={12} className="text-[#666]" /> {t('cpuLabel')}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={form.cpuPercent}
+                    onChange={(e) => setForm({ ...form, cpuPercent: Number(e.target.value) })}
+                    disabled={saving}
+                    className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50"
+                  />
+                </div>
+                <div>
+                  <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">
+                    <MemoryStick size={12} className="text-[#666]" /> {t('ramLabel')}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={form.memoryMb}
+                    onChange={(e) => setForm({ ...form, memoryMb: Number(e.target.value) })}
+                    disabled={saving}
+                    className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50"
+                  />
+                </div>
+                <div>
+                  <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">
+                    <HardDrive size={12} className="text-[#666]" /> {t('diskLabel')}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={form.diskMb}
+                    onChange={(e) => setForm({ ...form, diskMb: Number(e.target.value) })}
+                    disabled={saving}
+                    className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50"
+                  />
+                </div>
+                <div>
+                  <label className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">
+                    <Server size={12} className="text-[#666]" /> {t('slotsLabel')}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={form.serverSlots}
+                    onChange={(e) => setForm({ ...form, serverSlots: Number(e.target.value) })}
+                    disabled={saving}
+                    className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </Drawer>
+
+      <AdminDeleteGiftDrawer
+        isOpen={showDelete}
+        onClose={() => setShowDelete(false)}
+        onSuccess={() => {
+          setShowDelete(false);
+          onSuccess();
+          onClose();
+        }}
+        giftId={giftId}
+        giftCode={form.code}
+      />
+    </>
+  );
+}

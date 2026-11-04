@@ -1,24 +1,34 @@
 "use client";
 
-import Link from 'next/link';
+import React from "react";
+import { Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 
-export default function CouponsHeader({ total }: { total: number }) {
+interface CouponsHeaderProps {
+  onCreateNew: () => void;
+}
+
+export function CouponsHeader({ onCreateNew }: CouponsHeaderProps) {
+  const t = useTranslations("Admin.coupons");
+
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <div className="w-16 h-16 bg-[#202020] rounded-2xl flex items-center justify-center shadow-lg">
-          <i className="fas fa-tag text-white text-2xl"></i>
-        </div>
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Coupons</h1>
-          <p className="text-[#AAAAAA] text-base sm:text-lg">Manage discounts • {total}</p>
-        </div>
+    <div className="mt-8 mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div className="flex flex-col gap-1.5">
+        <h2 className="text-lg font-semibold text-white leading-6">{t("title")}</h2>
+        <p className="mt-0.5 text-xs text-[#666] leading-[14px]">{t("description")}</p>
       </div>
-      <Link href="/admin/coupons/new" className="px-4 py-2 rounded-md bg-white text-black border border-[var(--border)]">
-        New Coupon
-      </Link>
+      <div className="flex items-center shrink-0">
+        <button
+          onClick={onCreateNew}
+          type="button"
+          className="flex h-[30px] items-center justify-center gap-2 px-3.5 rounded-md text-xs font-medium transition-colors bg-[#FF5722] text-white hover:bg-[#ff6939] shadow-sm shadow-[#FF5722]/20"
+        >
+          <Plus size={14} />
+          {t("createCoupon")}
+        </button>
+      </div>
     </div>
   );
 }
 
-
+export default CouponsHeader;

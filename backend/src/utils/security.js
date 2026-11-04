@@ -124,33 +124,6 @@ function hasServerLimitsChanged(current, updated) {
   return limitKeys.some(key => Number(current?.[key] || 0) !== Number(updated?.[key] || 0));
 }
 
-/**
- * Handle Zod validation errors consistently
- * @param {Object} res - Express response object
- * @param {Object} parsed - Zod parsed result
- * @returns {boolean} - True if validation failed (response sent)
- */
-function handleValidationError(res, parsed) {
-  if (!parsed.success) {
-    res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
-    return true;
-  }
-  return false;
-}
-
-
-/**
- * Send a standardized 500 error response
- * @param {Object} res - Express response object
- * @param {string} message - Error message
- * @param {string} [details] - Optional error details
- */
-function sendServerError(res, message, details = null) {
-  const response = { error: message };
-  if (details) response.details = details;
-  res.status(500).json(response);
-}
-
 module.exports = {
   generateSecureCode,
   generateSecureToken,
@@ -158,7 +131,5 @@ module.exports = {
   hashString,
   generateSalt,
   validatePasswordStrength,
-  hasServerLimitsChanged,
-  handleValidationError,
-  sendServerError
+  hasServerLimitsChanged
 };

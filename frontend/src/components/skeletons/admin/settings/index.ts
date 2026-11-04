@@ -1,2 +1,1 @@
-export { AdminSettingsSkeleton } from './AdminSettingsSkeleton';
-
+export { AdminSettingsSkeleton, AdminSettingsTabSkeleton } from './AdminSettingsSkeleton';

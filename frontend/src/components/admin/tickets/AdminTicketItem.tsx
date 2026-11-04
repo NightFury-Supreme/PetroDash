@@ -1,53 +1,146 @@
 "use client";
 
 import React, { useState } from "react";
+import { UserAvatar } from '@/components/ui/UserAvatar';
+import { Link } from '@/i18n/routing';
+import { TicketStatusBadge } from "@/components/tickets/TicketStatusBadge";
+import { TicketPriorityBadge } from "@/components/tickets/TicketPriorityBadge";
+import { formatRelative, shortId } from "@/components/tickets/utils";
+import { useTranslations, useFormatter } from 'next-intl';
+import { useRouter } from '@/i18n/routing';
+import type { AdminTicketItemData } from "@/hooks/admin/tickets/types";
+import type { TicketStatus } from "@/components/tickets/types";
+import { AdminTicketRowActions } from './AdminTicketRowActions';
 
-type Ticket = { _id: string; title: string; status: string; priority: string; category?: string; updatedAt: string; deletedByUser?: boolean; user?: { username?: string; email?: string } };
-
-export default function AdminTicketItem({ t, onAction }:{ t: Ticket; onAction: (action: 'close'|'resolve'|'delete'|'restore'|'reopen', id: string)=>Promise<void> }){
+export function AdminTicketItem({ t: ticket, onAction }: { t: AdminTicketItemData; onAction: (action: 'close'|'resolve'|'delete'|'restore'|'reopen', id: string) => Promise<void> }) {
+  const router = useRouter();
   const [opening, setOpening] = useState(false);
-  const [menu, setMenu] = useState(false);
+  const [actionBusy, setActionBusy] = useState<string | null>(null);
+  const tr = useTranslations('AdminTickets');
+  const tCommon = useTranslations('Common');
+  const format = useFormatter();
+
+  const avatarUrl =
+    ticket.user?.profilePicture ||
+    ticket.user?.oauthProviders?.discord?.avatar ||
+    ticket.user?.oauthProviders?.google?.picture;
+
+  const relativeTime = (() => {
+    try {
+      return format.relativeTime(new Date(ticket.updatedAt), { now: new Date() });
+    } catch {
+      return formatRelative(ticket.updatedAt);
+    }
+  })();
+
+  const handleAction = async (action: 'close'|'resolve'|'delete'|'restore'|'reopen', id: string) => {
+    if (actionBusy) return;
+    setActionBusy(action);
+    try {
+      await onAction(action, id);
+    } finally {
+      setActionBusy(null);
+    }
+  };
+
+  const cols = 'lg:grid-cols-[1fr_1.5fr_1fr_1fr_100px_80px_120px]';
+
   return (
-    <div onClick={()=>{ setOpening(true); window.location.href=`/admin/tickets/${t._id}`; }} className={`cursor-pointer border border-[var(--border)] bg-[var(--surface)] rounded-xl p-4 flex items-center justify-between relative shadow-sm ${opening?'opacity-70':''} ${menu ? 'z-50' : 'z-10'}`}>
-      <div>
-        <div className="text-white font-medium flex items-center gap-2">
-          {t.title}
-          {t.deletedByUser ? (
-            <span className="text-[10px] px-2 py-0.5 rounded-full border bg-red-600/20 text-red-300 border-red-700/50">DELETED</span>
-          ) : (
-            <span className={`text-[10px] px-2 py-0.5 rounded-full border ${t.status==='open'?'bg-green-600/20 text-green-300 border-green-700/50':t.status==='pending'?'bg-yellow-600/20 text-yellow-300 border-yellow-700/50':t.status==='resolved'?'bg-blue-600/20 text-blue-300 border-blue-700/50':'bg-[#303030] text-[#AAAAAA] border-[#404040]'}`}>{t.status.toUpperCase()}</span>
-          )}
-          <span className={`text-[10px] px-2 py-0.5 rounded-full border ${t.priority==='high'?'bg-red-600/20 text-red-300 border-red-700/50':t.priority==='medium'?'bg-yellow-600/20 text-yellow-300 border-yellow-700/50':'bg-[#303030] text-[#AAAAAA] border-[#404040]'}`}>{t.priority}</span>
-          {t.category && <span className="text-[10px] px-2 py-0.5 rounded-full border bg-[#181818] text-white border-[var(--border)]"><i className="fas fa-folder mr-1"/> {t.category}</span>}
-        </div>
-        <div className="text-xs text-[#AAAAAA]">{t.user?.username || t.user?.email || 'User'} • Updated {new Date(t.updatedAt).toLocaleString()}</div>
-      </div>
-      <div className="ml-3 flex items-center gap-2" onClick={(e)=>e.stopPropagation()}>
-        <button onClick={()=>setMenu(!menu)} className="w-9 h-9 rounded-lg border border-[var(--border)] text-white hover:bg-[var(--hover)] flex items-center justify-center transition-colors">
-          <i className="fas fa-ellipsis-h"/>
+    <div
+      className={`group grid grid-cols-1 gap-4 px-5 py-3 transition hover:bg-white/[0.015] ${cols} lg:items-center ${opening ? 'opacity-70' : ''}`}
+    >
+      <div className="min-w-0">
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
+          {tCommon('ticket')}
+        </p>
+        <button
+          type="button"
+          onClick={() => { setOpening(true); router.push(`/admin/tickets/${ticket.id}`); }}
+          className="text-left w-full group/title"
+        >
+          <span className="block truncate font-mono text-xs text-[#DDDDDD] group-hover/title:text-white transition-colors">
+            {ticket.title}
+          </span>
+          <span className="block truncate font-mono text-[10px] text-[#666] mt-0.5">
+            {shortId(ticket.id)}
+          </span>
         </button>
-        {menu && (
-          <div className="absolute right-3 top-12 z-20 w-44 rounded-xl border border-[var(--border)] bg-[var(--surface)] shadow-xl overflow-hidden" onClick={(e)=>e.stopPropagation()}>
-            {!t.deletedByUser ? (
-              <>
-                {(t.status === 'closed' || t.status === 'resolved') ? (
-                  <button onClick={async()=>{ await onAction('reopen', t._id); setMenu(false); }} className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#202020]">Reopen Ticket</button>
-                ) : (
-                  <>
-                    <button onClick={async()=>{ await onAction('close', t._id); setMenu(false); }} className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#202020]">Close Ticket</button>
-                    <button onClick={async()=>{ await onAction('resolve', t._id); setMenu(false); }} className="w-full text-left px-3 py-2 text-sm text-white hover:bg-[#202020]">Resolve</button>
-                  </>
-                )}
-                <button onClick={async()=>{ await onAction('delete', t._id); setMenu(false); }} className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-[#202020]">Soft Delete</button>
-              </>
-            ) : (
-              <button onClick={async()=>{ await onAction('restore', t._id); setMenu(false); }} className="w-full text-left px-3 py-2 text-sm text-green-400 hover:bg-[#202020]">Restore</button>
-            )}
-          </div>
+      </div>
+
+      <div className="min-w-0">
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
+          {tCommon('user')}
+        </p>
+        {ticket.user?.id ? (
+          <Link
+            href={`/admin/users/${ticket.user.id}`}
+            className="flex items-center gap-2 group/link w-fit"
+          >
+            <UserAvatar
+              src={avatarUrl}
+              username={ticket.user.username}
+              email={ticket.user.email}
+              size="sm"
+              rounded="full"
+            />
+            <div className="min-w-0">
+              <p className="text-xs text-[#D4D4D4] group-hover/link:text-[#FF5722] transition-colors truncate">
+                {ticket.user.username}
+              </p>
+              <p className="text-[10px] text-[#555] truncate">
+                {ticket.user.email}
+              </p>
+            </div>
+          </Link>
+        ) : (
+          <span className="text-xs text-[#666]">-</span>
         )}
       </div>
+
+      <div className="min-w-0">
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
+          {tCommon('category')}
+        </p>
+        <div className="flex items-center gap-2 text-[#AAAAAA] text-xs">
+          <span className="truncate capitalize">{ticket.category || tr('general')}</span>
+        </div>
+      </div>
+
+      <div className="min-w-0">
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
+          {tCommon('updated')}
+        </p>
+        <div className="flex items-center gap-2 text-[#AAAAAA] text-xs">
+          <span className="truncate">{relativeTime}</span>
+        </div>
+      </div>
+
+      <div className="min-w-0">
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
+          {tCommon('status')}
+        </p>
+        <div>
+          <TicketStatusBadge status={ticket.status as TicketStatus} />
+        </div>
+      </div>
+
+      <div className="min-w-0">
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">
+          {tCommon('priority')}
+        </p>
+        <div>
+          <TicketPriorityBadge priority={ticket.priority} />
+        </div>
+      </div>
+
+      <AdminTicketRowActions
+        ticket={ticket}
+        onAction={handleAction}
+        actionBusy={actionBusy}
+      />
     </div>
   );
 }
 
+export default AdminTicketItem;
 

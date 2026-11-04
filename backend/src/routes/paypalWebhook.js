@@ -2,17 +2,18 @@ const express = require('express');
 const { getSettings } = require('../lib/settings');
 const { verifyWebhookSignature, getAccessToken } = require('../lib/paypal');
 const Payment = require('../models/Payment');
+const WebhookEvent = require('../models/WebhookEvent');
+const Subscription = require('../models/Subscription');
+const { writeAudit } = require('../middleware/audit');
+const AppError = require('../utils/AppError');
 
 const router = express.Router();
-const WebhookEvent = require('../models/WebhookEvent');
 
-// Verify PayPal webhook using transmission headers + webhookId via verify-webhook-signature
-
-router.post('/', express.json({ type: '*/*' }), async (req, res) => {
+router.post('/', express.json({ type: '*/*' }), async (req, res, next) => {
   try {
     const s = await getSettings();
     const webhookId = s?.payments?.paypal?.webhookId;
-    if (!webhookId) return res.status(400).json({ error: 'Webhook not configured' });
+    if (!webhookId) throw AppError.badRequest('Webhook not configured', 'ERR_WEBHOOK_NOT_CONFIGURED');
 
     const ok = await verifyWebhookSignature({
       'paypal-transmission-id': req.header('paypal-transmission-id'),
@@ -22,25 +23,22 @@ router.post('/', express.json({ type: '*/*' }), async (req, res) => {
       'paypal-transmission-sig': req.header('paypal-transmission-sig'),
     }, req.body);
     if (!ok) {
-      return res.status(400).json({ error: 'Invalid webhook signature' });
+      throw AppError.badRequest('Invalid webhook signature', 'ERR_INVALID_SIGNATURE');
     }
 
     const event = req.body || {};
     const eventId = String(event.id || '');
-    if (!eventId) return res.status(400).json({ error: 'Missing event id' });
-    // Idempotency check: ignore duplicates
+    if (!eventId) throw AppError.badRequest('Missing event id', 'ERR_MISSING_EVENT_ID');
+
     const exists = await WebhookEvent.findOne({ provider: 'paypal', eventId }).lean();
     if (exists) return res.json({ ok: true, duplicate: true });
     const eventType = String(event.event_type || '').toUpperCase();
     const resource = event.resource || {};
 
-    // Handle subscription lifecycle
-    const Subscription = require('../models/Subscription');
     if (eventType.startsWith('BILLING.SUBSCRIPTION.')) {
       const paypalSubId = resource?.id || resource?.subscription_id;
       if (!paypalSubId) return res.json({ ok: true });
       
-      // Validate paypalSubId to prevent NoSQL injection
       if (typeof paypalSubId !== 'string' || paypalSubId.length < 10 || paypalSubId.length > 100) {
         return res.json({ ok: true });
       }
@@ -48,7 +46,6 @@ router.post('/', express.json({ type: '*/*' }), async (req, res) => {
       const sub = await Subscription.findOne({ paypalSubscriptionId: { $eq: paypalSubId } });
       if (!sub && eventType !== 'BILLING.SUBSCRIPTION.CREATED') return res.json({ ok: true });
       if (!sub && eventType === 'BILLING.SUBSCRIPTION.CREATED') {
-        // Create skeletal subscription; details will be filled by confirm or next event
         await Subscription.create({ paypalSubscriptionId: paypalSubId, userId: null, planId: null, status: 'incomplete', currentPeriodStart: new Date(), currentPeriodEnd: new Date() });
         return res.json({ ok: true });
       }
@@ -58,40 +55,33 @@ router.post('/', express.json({ type: '*/*' }), async (req, res) => {
         sub.currentPeriodEnd = new Date(resource?.billing_info?.next_billing_time || Date.now());
         sub.cancelAtPeriodEnd = false;
       } else if (eventType === 'BILLING.SUBSCRIPTION.CANCELLED') {
-        sub.status = 'canceled';
+        sub.status = 'cancelled';
+        sub.cancelAtPeriodEnd = false;
       } else if (eventType === 'BILLING.SUBSCRIPTION.SUSPENDED') {
         sub.status = 'paused';
-      } else if (eventType === 'BILLING.SUBSCRIPTION.RE-ACTIVATED') {
-        sub.status = 'active';
-      } else if (eventType === 'BILLING.SUBSCRIPTION.UPDATED' || eventType === 'BILLING.SUBSCRIPTION.RENEWED') {
-        // Period advanced
-        if (resource?.billing_info?.next_billing_time) {
-          sub.currentPeriodEnd = new Date(resource.billing_info.next_billing_time);
-        }
+      } else if (eventType === 'BILLING.SUBSCRIPTION.EXPIRED') {
+        sub.status = 'cancelled';
       }
       await sub.save();
+      await WebhookEvent.create({ provider: 'paypal', eventId });
       return res.json({ ok: true });
     }
 
-    if (eventType === 'CHECKOUT.ORDER.APPROVED') {
-      const orderId = String(resource?.id || '').trim();
-      if (/^[A-Z0-9]{17,20}$/.test(orderId)) {
-        const payment = await Payment.findOne({ provider: 'paypal', providerOrderId: orderId, status: 'CREATED' });
-        if (payment) {
-          const { token, baseUrl } = await getAccessToken();
+    if (eventType === 'CHECKOUT.ORDER.COMPLETED' || eventType === 'PAYMENT.CAPTURE.COMPLETED') {
+      const orderId = resource?.id || resource?.supplementary_data?.related_ids?.order_id;
+      if (orderId) {
+        const payment = await Payment.findOne({ provider: 'paypal', providerOrderId: orderId });
+        if (payment && payment.status === 'CREATED') {
+          const { baseUrl, token } = await getAccessToken();
           const axios = require('axios');
-          let captureData;
+          let captureData = null;
           try {
-            const r = await axios.post(
-              `${baseUrl}/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`,
-              {},
-              { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
-            );
+            const r = await axios.get(`${baseUrl}/v2/checkout/orders/${encodeURIComponent(orderId)}`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
             captureData = r.data;
-          // eslint-disable-next-line unused-imports/no-unused-vars
-          } catch (err) {
-            // Already captured by frontend or other error
-            captureData = null;
+          } catch (fetchErr) {
+            await writeAudit(null, 'payment.paypal.webhook_fetch_failed', 'payment', payment.publicId || orderId, { orderId, error: fetchErr.message }).catch(() => {});
           }
           if (captureData && captureData.status === 'COMPLETED') {
             const { processCapturedPayment } = require('../lib/paymentProcessor');
@@ -101,15 +91,11 @@ router.post('/', express.json({ type: '*/*' }), async (req, res) => {
       }
     }
 
-    // For legacy order events, just ack
     await WebhookEvent.create({ provider: 'paypal', eventId });
     return res.json({ ok: true });
   } catch (e) {
-    return res.status(400).json({ error: e.message });
+    next(e instanceof AppError ? e : AppError.badRequest('Webhook processing failed', 'ERR_WEBHOOK_PROCESSING_FAILED'));
   }
 });
 
 module.exports = router;
-
-
-

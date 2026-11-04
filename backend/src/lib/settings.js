@@ -1,26 +1,20 @@
 const Settings = require('../models/Settings');
-const { getCache, setCache, deleteCache } = require('./redis');
+const { getOrSetCache, deleteCache } = require('./redis');
 
-/**
- * Get global settings with caching.
- * @returns {Promise<Object>}
- */
 async function getSettings() {
-    let settings = await getCache('global:settings');
-    if (!settings) {
-        settings = await Settings.findOne({}).lean();
-        if (settings) {
-            await setCache('global:settings', settings, 300); // cache for 5 minutes
-        }
-    }
-    return settings || {};
+  const settings = await getOrSetCache(
+    'global:settings',
+    async () => {
+      const doc = await Settings.findOne({}).lean();
+      return doc || {};
+    },
+    300
+  );
+  return settings || {};
 }
 
-/**
- * Clear the global settings cache.
- */
 async function clearSettingsCache() {
-    await deleteCache('global:settings');
+  await deleteCache('global:settings');
 }
 
 module.exports = { getSettings, clearSettingsCache };

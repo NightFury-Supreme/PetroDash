@@ -1,0 +1,112 @@
+const fs = require('fs');
+const path = require('path');
+const axios = require('axios');
+const sharp = require('sharp');
+
+const colors = {
+  bg: '#101010',
+  border: '#2A2A2A',
+  textPrimary: '#FFFFFF',
+  textSecondary: '#CCCCCC',
+  textMuted: '#999999',
+  orange: '#F97316',
+  orangeDarkText: '#FB923C',
+  orangeBoxBg: '#1A110D',
+  orangeBoxBorder: '#331D12',
+  emerald: '#10B981',
+  emeraldText: '#34D399',
+  emeraldBoxBg: '#092116',
+  emeraldBoxBorder: '#0F3826',
+  tableHeaderBg: '#161616',
+  darkGrayLabel: '#888888',
+  mediumGray: '#BBBBBB',
+};
+
+function resolveInvoiceDomain(settings, frontendHost) {
+  const brand = settings?.payments?.paypal?.businessName || settings?.siteName || '';
+  
+  const envUrl = process.env.FRONTEND_URL || process.env.APP_URL || process.env.BACKEND_URL;
+  let envHost = '';
+  if (envUrl) {
+    try {
+      envHost = new URL(envUrl).host;
+    } catch (_envUrlErr) {
+      envHost = envUrl.replace(/^https?:\/\//, '').split('/')[0];
+    }
+  }
+
+  let host = frontendHost;
+  if (host && host.startsWith('http')) {
+    try {
+      host = new URL(host).host;
+    } catch (_urlErr) {
+      host = host.replace(/^https?:\/\//, '').split('/')[0];
+    }
+  }
+  
+  const siteUrl = envHost || host || '';
+  const address = settings?.payments?.paypal?.businessAddress || siteUrl || '';
+  const supportEmail = settings?.contactEmail || settings?.supportEmail || '';
+
+  return { brand, siteUrl, address, supportEmail, host };
+}
+
+async function renderInvoiceLogo(doc, settings, host, protocol, margin, y, pdfColors) {
+  let hasLogo = false;
+  let targetIcon = settings?.siteIcon;
+  if (!targetIcon && host) {
+    const baseFrontendUrl = process.env.FRONTEND_URL || `${protocol}://${host}`;
+    targetIcon = baseFrontendUrl.endsWith('/') ? `${baseFrontendUrl}logo.svg` : `${baseFrontendUrl}/logo.svg`;
+  }
+
+  if (targetIcon) {
+    try {
+      let logoBuffer;
+      if (targetIcon.startsWith('/cdn/')) {
+        const relativeTarget = targetIcon.replace(/^\/cdn\//, 'cdn/');
+        const localPath = path.join(__dirname, '../../', relativeTarget);
+        if (fs.existsSync(localPath)) {
+          logoBuffer = fs.readFileSync(localPath);
+        } else {
+          throw new Error('Local file not found');
+        }
+      } else {
+        let iconUrl = targetIcon;
+        if (iconUrl.startsWith('/')) {
+          const baseUrl = (process.env.API_URL || process.env.BACKEND_URL || (host ? `${protocol}://${host}` : '')).replace(/\/$/, '');
+          if (!baseUrl) {
+            throw new Error('Base URL cannot be determined for relative icon');
+          }
+          iconUrl = `${baseUrl}${iconUrl}`;
+        }
+        const logoResponse = await axios.get(iconUrl, { responseType: 'arraybuffer' });
+        logoBuffer = Buffer.from(logoResponse.data);
+      }
+      
+      logoBuffer = await sharp(logoBuffer).png().toBuffer();
+      doc.image(logoBuffer, margin, y, { width: 40, height: 40 });
+      hasLogo = true;
+    } catch (_iconLoadError) {
+    }
+  }
+  
+  if (!hasLogo) {
+    doc.roundedRect(margin, y, 40, 40, 8).fillAndStroke(pdfColors.orangeBoxBg, pdfColors.orangeBoxBorder);
+    doc.save();
+    doc.translate(margin + 10, y + 10);
+    doc.scale(0.8);
+    doc.lineWidth(2).strokeColor(pdfColors.orange);
+    doc.path('M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z').stroke();
+    doc.path('M14 2v6h6').stroke();
+    doc.path('M16 13H8').stroke();
+    doc.path('M16 17H8').stroke();
+    doc.path('M10 9H8').stroke();
+    doc.restore();
+  }
+}
+
+module.exports = {
+  colors,
+  resolveInvoiceDomain,
+  renderInvoiceLogo,
+};
