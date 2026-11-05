@@ -1,0 +1,62 @@
+'use client';
+
+import React from 'react';
+import { useTranslations } from 'next-intl';
+import { ErrorState } from './ErrorState';
+import { ErrorHeader } from './ErrorHeader';
+import { DashboardButton, GoBackButton } from './ErrorButtons';
+import { usePathname } from '@/i18n/routing';
+
+const SHELL_PAGES = [
+  '/dashboard',
+  '/panel',
+  '/shop',
+  '/gift',
+  '/create',
+  '/admin',
+  '/server',
+  '/referrals',
+  '/tickets',
+  '/profile',
+  '/earn'
+];
+
+export function NotFoundView() {
+  const t = useTranslations('ErrorState');
+  const pathname = usePathname();
+  const usesShell = pathname ? SHELL_PAGES.some(page => pathname.startsWith(page)) : false;
+
+  return (
+    <ErrorState
+      fullScreen={!usesShell}
+      header={usesShell ? <React.Fragment /> : <ErrorHeader />}
+      showFooter={!usesShell}
+      icon={
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]"
+          aria-hidden="true"
+        >
+          <path d="M6 10H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2" />
+          <path d="M6 14H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-2" />
+          <path d="M6 6h.01" />
+          <path d="M6 18h.01" />
+          <path d="m13 6-4 6h6l-4 6" />
+        </svg>
+      }
+      title={t('pageNotFound')}
+      description={<p>{t('pageNotFoundDesc')}</p>}
+      buttons={
+        <>
+          <DashboardButton />
+          <GoBackButton />
+        </>
+      }
+    />
+  );
+}

@@ -1,0 +1,182 @@
+"use client";
+import React, { useState, useEffect } from 'react';
+import { Loader2, Save, Ban, Check } from 'lucide-react';
+import { useToast } from '@/components/ui/ToastProvider';
+import { useTranslations } from 'next-intl';
+import { ShopItem } from '@/hooks/admin/shop/useAdminShop';
+import { Drawer } from '@/components/ui/Drawer';
+import { getLocalizedItemName } from '@/components/shop/shopUtils';
+
+interface EditShopItemDrawerProps {
+  item: ShopItem | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (itemId: string, updates: Partial<ShopItem>) => Promise<void>;
+  saving: boolean;
+}
+
+export function EditShopItemDrawer({
+  item,
+  isOpen,
+  onClose,
+  onSave,
+  saving,
+}: EditShopItemDrawerProps) {
+  const [formData, setFormData] = useState<Partial<ShopItem>>({});
+  const { showSuccess, showError } = useToast();
+  const t = useTranslations('AdminShop');
+  const tShop = useTranslations('Shop');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
+
+  useEffect(() => {
+    if (item) {
+      setFormData({
+        amountPerUnit: item.amountPerUnit,
+        pricePerUnit: item.pricePerUnit,
+
+        enabled: item.enabled,
+        maxPerPurchase: item.maxPerPurchase,
+      });
+    }
+  }, [item]);
+
+  const handleInputChange = <K extends keyof ShopItem>(field: K, value: ShopItem[K]) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+
+
+  if (!isOpen || !item) return null;
+
+  const itemName = getLocalizedItemName(item.key, item.name, tShop);
+
+  return (
+    <Drawer
+      isOpen={isOpen}
+      onClose={onClose}
+      title={t('editItem', { name: itemName })}
+      subtitle={t('editItemDescription', { name: itemName })}
+      footer={
+        formData.enabled ? (
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={saving}
+                onClick={async () => {
+                  try {
+                    await onSave(item.id, { enabled: false });
+                    setFormData(prev => ({ ...prev, enabled: false }));
+                    showSuccess(t('itemDisabled', { name: itemName }));
+                    onClose();
+                  } catch (e: unknown) {
+                    const msg = e instanceof Error ? e.message : 'ERR_INTERNAL_SERVER';
+                    showError(tErrorBackend.has(msg) ? tErrorBackend(msg) : msg);
+                  }
+                }}
+                className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ban className="w-4 h-4" />}
+                <span>{tCommon('disable')}</span>
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={saving}
+                onClick={async () => {
+                  try {
+                    await onSave(item.id, formData);
+                    showSuccess(t('itemSaved', { name: itemName }));
+                    onClose();
+                  } catch (e: unknown) {
+                    const msg = e instanceof Error ? e.message : 'ERR_INTERNAL_SERVER';
+                    showError(tErrorBackend.has(msg) ? tErrorBackend(msg) : msg);
+                  }
+                }}
+                className="flex items-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white hover:bg-[#F4511E] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                <span>{tCommon('saveChanges')}</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-end w-full gap-2">
+            <button
+              type="button"
+              disabled={saving}
+              onClick={async () => {
+                try {
+                  await onSave(item.id, { enabled: true });
+                  setFormData(prev => ({ ...prev, enabled: true }));
+                  showSuccess(t('itemEnabled', { name: itemName }));
+                  onClose();
+                } catch (e: unknown) {
+                  const msg = e instanceof Error ? e.message : 'ERR_INTERNAL_SERVER';
+                  showError(tErrorBackend.has(msg) ? tErrorBackend(msg) : msg);
+                }
+              }}
+              className="flex items-center gap-2 rounded-lg bg-[#FF5722] border border-[#FF5722] px-4 py-2 text-sm font-medium text-white hover:bg-[#F4511E] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+              <span>{t('enableItem')}</span>
+            </button>
+          </div>
+        )
+      }
+    >
+      <div className="space-y-6">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">{t('amountPerUnit')}</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={formData.amountPerUnit ?? ''}
+              onChange={(e) => handleInputChange('amountPerUnit', Number(e.target.value))}
+              className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50 transition-colors disabled:opacity-50"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">{t('pricePerUnit')}</label>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value={formData.pricePerUnit ?? ''}
+              onChange={(e) => handleInputChange('pricePerUnit', Number(e.target.value))}
+              className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50 transition-colors disabled:opacity-50"
+              required
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-[#888] mb-2">{t('maxPerPurchase')}</label>
+          <input
+            type="number"
+            min="0"
+            step="1"
+            value={formData.maxPerPurchase ?? ''}
+            onChange={(e) => handleInputChange('maxPerPurchase', Number(e.target.value))}
+            className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#FF5722]/50 transition-colors disabled:opacity-50"
+            required
+          />
+          <p className="text-[11px] text-[#555] mt-2">{t('maxPerPurchaseDescription')}</p>
+        </div>
+
+
+      </div>
+    </Drawer>
+  );
+}
+
+

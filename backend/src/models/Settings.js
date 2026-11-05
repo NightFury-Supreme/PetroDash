@@ -3,24 +3,13 @@ const mongoose = require('mongoose');
 const SettingsSchema = new mongoose.Schema(
   {
     siteName: { type: String, default: 'PteroDash' },
-    siteIcon: { type: String, default: '' }, // Changed from siteIconUrl to siteIcon - stores file path
+    siteIcon: { type: String, default: '' },
     referrals: {
       referrerCoins: { type: Number, default: 50 },
       referredCoins: { type: Number, default: 25 },
       customCodeMinInvites: { type: Number, default: 10 },
     },
     earn: {
-      enabled: { type: Boolean, default: false },
-      ads: {
-        enabled: { type: Boolean, default: false },
-        coins: { type: Number, default: 10 },
-        cooldownSeconds: { type: Number, default: 3600 },
-        waitSeconds: { type: Number, default: 30 },
-        maxClaimsPerDay: { type: Number, default: 24 },
-        ayetPlacementId: { type: Number, default: 0 },
-        ayetAdslotName: { type: String, default: '' },
-        ayetApiKey: { type: String, default: '' },
-      },
       linkvertise: {
         enabled: { type: Boolean, default: false },
         coins: { type: Number, default: 20 },
@@ -52,11 +41,11 @@ const SettingsSchema = new mongoose.Schema(
     },
     localization: {
       currency: { type: String, default: 'USD' },
+      timezone: { type: String, default: 'UTC' },
     },
     payments: {
       paypal: {
         enabled: { type: Boolean, default: false },
-        mode: { type: String, enum: ['sandbox', 'live'], default: 'sandbox' },
         clientId: { type: String, default: '' },
         clientSecret: { type: String, default: '' },
         returnUrl: { type: String, default: '' },
@@ -85,7 +74,7 @@ const SettingsSchema = new mongoose.Schema(
       diskMb: { type: Number, default: 5120 },
       serverSlots: { type: Number, default: 1 },
       backups: { type: Number, default: 0 },
-      allocations: { type: Number, default: 0 },
+      allocations: { type: Number, default: 1 },
       databases: { type: Number, default: 0 },
       coins: { type: Number, default: 0 },
     },
@@ -108,7 +97,6 @@ const SettingsSchema = new mongoose.Schema(
         matchedContent: { type: Boolean, default: false },
       },
     },
-    // Ticket system configuration
     ticketCategories: {
       type: [String],
       default: ['general', 'billing', 'technical', 'abuse', 'account', 'server', 'payment', 'other'],
@@ -118,5 +106,3 @@ const SettingsSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model('Settings', SettingsSchema);
-
-

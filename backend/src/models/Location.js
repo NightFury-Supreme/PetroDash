@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { generatePublicId } = require('../utils/publicId');
 
 const PlatformSettingsSchema = new mongoose.Schema(
     {
@@ -12,14 +13,25 @@ const PlatformSettingsSchema = new mongoose.Schema(
 
 const LocationSchema = new mongoose.Schema(
     {
+        publicId: { type: String, unique: true, index: true, sparse: true, default: () => generatePublicId('location') },
         name: { type: String, required: true },
-        flag: { type: String, default: '' }, // Changed from flagUrl to flag - stores file path
-        latencyUrl: { type: String, default: '' }, // Keep latencyUrl as it's for ping testing, not a file
+        flag: { type: String, default: '' },
+        latencyUrl: { type: String, default: '' },
         serverLimit: { type: Number, default: 0 },
         platform: { type: PlatformSettingsSchema, default: () => ({}) },
+        allowedPlans: { type: [String], default: [] },
     },
     { timestamps: true }
 );
+
+LocationSchema.index({ createdAt: -1 });
+
+LocationSchema.pre('validate', function (next) {
+    if (!this.publicId) {
+        this.publicId = generatePublicId('location');
+    }
+    next();
+});
 
 module.exports = mongoose.model('Location', LocationSchema);
 

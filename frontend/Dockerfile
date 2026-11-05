@@ -1,18 +1,17 @@
 # Multi-stage build for Next.js
 FROM node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293 AS base
+RUN apk add --no-cache libc6-compat
 
 # Install dependencies only when needed
 FROM base AS deps
 WORKDIR /app
-
-# Copy package files
 COPY package*.json ./
+RUN npm ci
 
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Set environment variables for build
@@ -34,8 +33,12 @@ RUN adduser --system --uid 1001 nextjs
 
 # Copy built application
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/public ./app/public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./app/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/messages ./messages
+COPY --from=builder --chown=nextjs:nodejs /app/messages ./app/messages
 
 USER nextjs
 
@@ -46,6 +49,6 @@ ENV HOSTNAME=0.0.0.0
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/ || exit 1
 
-CMD ["node", "server.js"]
+CMD ["sh", "-c", "if [ -f server.js ]; then node server.js; elif [ -f app/server.js ]; then node app/server.js; fi"]

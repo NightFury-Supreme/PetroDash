@@ -5,7 +5,7 @@ async function getAccessToken() {
   const s = await getSettings();
   const paypal = s?.payments?.paypal || {};
   if (!paypal.clientId || !paypal.clientSecret) throw new Error('PayPal not configured');
-  const baseUrl = paypal.mode === 'live' ? 'https://api.paypal.com' : 'https://api.sandbox.paypal.com';
+  const baseUrl = 'https://api-m.paypal.com';
   const res = await axios.post(
     `${baseUrl}/v1/oauth2/token`,
     new URLSearchParams({ grant_type: 'client_credentials' }).toString(),
@@ -41,6 +41,3 @@ async function verifyWebhookSignature(headers, eventBody) {
 }
 
 module.exports = { getAccessToken, verifyWebhookSignature };
-
-
-

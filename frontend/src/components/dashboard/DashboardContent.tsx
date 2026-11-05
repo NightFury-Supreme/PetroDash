@@ -1,143 +1,149 @@
-"use client";
-
 import { useState, useCallback } from 'react';
-import { useModal } from '../Modal';
-import { useDashboard } from '../../hooks/useDashboard';
-import { ResourceCard } from './ResourceCard';
-import { AdditionalResourceCard } from './AdditionalResourceCard';
+import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
+import { useDashboard } from '@/hooks/dashboard';
+import { useServerDelete } from '@/hooks/server';
+import { MetricCard } from './MetricCard';
+import { DashboardStatus } from './DashboardStatus';
+import { ResourceUsagePanel } from './ResourceUsagePanel';
 import { ServersSection } from './ServersSection';
+import { Plus, RefreshCw, Server, Cpu, HardDrive, Database } from 'lucide-react';
+
+const CreateServerDrawer = dynamic(
+  () => import('../server/CreateServerDrawer').then((mod) => mod.CreateServerDrawer),
+  { ssr: false }
+);
+
+const EditServerDrawer = dynamic(
+  () => import('../server/EditServerDrawer').then((mod) => mod.EditServerDrawer),
+  { ssr: false }
+);
 
 export function DashboardContent() {
-  const { servers, usage, resources, removeServer } = useDashboard();
-  const [deleting, setDeleting] = useState<string | null>(null);
-  const modal = useModal();
+  const t = useTranslations('Dashboard');
+  const tCommon = useTranslations('Common');
+  const { servers, usage, resources, username: rawUsername, removeServer, loadDashboardData } = useDashboard();
+  const { deleteServer, deletingId } = useServerDelete(removeServer);
+  const [showCreateDrawer, setShowCreateDrawer] = useState(false);
+  const [editingServerId, setEditingServerId] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Handle server deletion with useCallback to prevent re-renders
-  const handleDelete = useCallback(async (serverId: string, serverName: string) => {
-    const confirmed = await modal.confirm({
-      title: 'Delete Server',
-      body: `Are you sure you want to delete "${serverName}"? This action cannot be undone and will remove the server from both the panel and database.`,
-      confirmText: 'Delete'
-    });
+  const username = rawUsername || tCommon('user');
 
-    if (!confirmed) return;
-
-    setDeleting(serverId);
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
     try {
-      const token = localStorage.getItem('auth_token');
-      if (!token) throw new Error('Authentication required');
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/servers/${serverId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (!response.ok) {
-        let errorData: any = {}; try { errorData = await response.json(); } catch {}
-        throw new Error(errorData?.error || 'Failed to delete server');
-      }
-
-      // Remove from local state
-      removeServer(serverId);
-
-      await modal.success({
-        title: 'Server Deleted',
-        body: `Server "${serverName}" has been deleted successfully.`
-      });
-    } catch (err: any) {
-      await modal.error({
-        title: 'Error',
-        body: err.message || 'Failed to delete server'
-      });
+      await loadDashboardData();
     } finally {
-      setDeleting(null);
+      setTimeout(() => setRefreshing(false), 600);
     }
-  }, [modal, removeServer]);
+  }, [loadDashboardData]);
+
+  const handleDelete = useCallback(async (serverId: string, serverName: string) => {
+    const success = await deleteServer(serverId, serverName);
+    if (!success) {
+      throw new Error('ERR_SERVER_DELETE_FAILED');
+    }
+  }, [deleteServer]);
 
   return (
-    <div className="space-y-6 sm:space-y-8">
-      {/* Header */}
-      <header className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#202020] rounded-2xl flex items-center justify-center shadow-lg">
-          <i className="fas fa-tachometer-alt text-white text-lg sm:text-2xl"></i>
-        </div>
+    <div className="flex flex-col h-full">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
-            Dashboard
-          </h1>
-          <p className="text-[#AAAAAA] text-base sm:text-lg">Welcome to your server management console</p>
+          <h1 className="text-2xl font-bold text-white tracking-tight">{t('welcomeBack')} <span className="text-[#FF5722]">{username}</span></h1>
+          <p className="text-[#888888] mt-1 text-sm">{t('subtitle')}</p>
         </div>
-      </header>
 
-      {/* Resource Usage Grid - Mobile Optimized */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <ResourceCard
-          title="Servers"
-          used={usage.servers}
-          limit={resources?.serverSlots || 0}
-          unit="servers"
-          icon="fa-server"
-          color="bg-[#303030]"
-        />
-        
-        <ResourceCard
-          title="Memory"
-          used={usage.memoryMb}
-          limit={resources?.memoryMb || 0}
-          unit="MB"
-          icon="fa-memory"
-          color="bg-[#303030]"
-        />
-        
-        <ResourceCard
-          title="CPU"
-          used={usage.cpuPercent}
-          limit={resources?.cpuPercent || 0}
-          unit="%"
-          icon="fa-microchip"
-          color="bg-[#303030]"
-        />
-        
-        <ResourceCard
-          title="Disk"
-          used={usage.diskMb}
-          limit={resources?.diskMb || 0}
-          unit="MB"
-          icon="fa-hdd"
-          color="bg-[#303030]"
-        />
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowCreateDrawer(true)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium transition-colors bg-[#FF5722] text-white hover:bg-[#ff6939]"
+          >
+            <Plus size={12} />
+            {t('createServer')}
+          </button>
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            title={tCommon('refresh')}
+            className="flex items-center justify-center w-[30px] h-[30px] rounded-md border border-white/[0.06] bg-white/[0.02] text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors disabled:opacity-50"
+          >
+            <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
+          </button>
+        </div>
       </div>
 
-      {/* Additional Resources - Mobile Optimized */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-        <AdditionalResourceCard
-          title="Databases"
-          used={usage.databases}
-          limit={resources?.databases || 0}
-          icon="fa-database"
+      <section className="grid grid-cols-1 border-y border-white/[0.06] divide-y divide-white/[0.06] sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4">
+        <MetricCard
+          title={t('servers')}
+          value={usage?.servers || 0}
+          subtitle={t('servers')}
+          bottomLabel={t('limit')}
+          bottomValue={resources?.serverSlots?.toString() || '0'}
+          icon={<Server size={14} />}
         />
-        
-        <AdditionalResourceCard
-          title="Ports"
-          used={usage.allocations}
-          limit={resources?.allocations || 0}
-          icon="fa-plug"
+        <MetricCard
+          title={t('cpu')}
+          value={`${usage?.cpuPercent || 0}`}
+          subtitle={t('percent')}
+          bottomLabel={t('limit')}
+          bottomValue={`${resources?.cpuPercent || 0}${t('percent')}`}
+          icon={<Cpu size={14} />}
         />
-        
-        <AdditionalResourceCard
-          title="Backups"
-          used={usage.backups}
-          limit={resources?.backups || 0}
-          icon="fa-archive"
+        <MetricCard
+          title={t('memory')}
+          value={usage?.memoryMb || 0}
+          subtitle={t('mb')}
+          bottomLabel={t('limit')}
+          bottomValue={`${resources?.memoryMb?.toLocaleString() || 0} ${t('mb')}`}
+          icon={<Database size={14} />}
         />
-      </div>
+        <MetricCard
+          title={t('disk')}
+          value={usage?.diskMb || 0}
+          subtitle={t('mb')}
+          bottomLabel={t('limit')}
+          bottomValue={`${resources?.diskMb?.toLocaleString() || 0} ${t('mb')}`}
+          icon={<HardDrive size={14} />}
+        />
+      </section>
 
-      {/* Servers Section */}
+      <section className="grid grid-cols-1 lg:grid-cols-3 border-b border-white/[0.06] divide-y divide-white/[0.06] lg:divide-y-0">
+        <div className="lg:col-span-2 lg:border-r lg:border-white/[0.06]">
+          <DashboardStatus />
+        </div>
+        <div className="lg:col-span-1">
+          <ResourceUsagePanel usage={usage} resources={resources} />
+        </div>
+      </section>
+
       <ServersSection
         servers={servers}
         onDelete={handleDelete}
-        deleting={deleting}
+        onEdit={(id) => setEditingServerId(id)}
+        deleting={deletingId}
       />
+
+      {showCreateDrawer && (
+        <CreateServerDrawer
+          onClose={() => setShowCreateDrawer(false)}
+          onUpdate={() => {
+            setShowCreateDrawer(false);
+            loadDashboardData();
+          }}
+        />
+      )}
+
+      {editingServerId && (
+        <EditServerDrawer
+          serverId={editingServerId}
+          onClose={() => setEditingServerId(null)}
+          onUpdate={() => {
+            setEditingServerId(null);
+            loadDashboardData();
+          }}
+        />
+      )}
     </div>
   );
 }

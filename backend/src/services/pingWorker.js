@@ -1,16 +1,9 @@
-const { setCache } = require('../lib/redis');
+const { setCache, deleteCache, publishEvent } = require('../lib/redis');
 
-const PING_INTERVAL_MS = 30 * 1000; // 30 seconds
-const PING_TTL_SECONDS = 120;       // 2 minutes (expires if worker crashes)
+const PING_INTERVAL_MS = 30 * 1000;
+const PING_TTL_SECONDS = 120;
 const PING_TIMEOUT_MS = 3000;
 
-/**
- * Ping a latencyUrl and return ms, or -1 on failure.
- * Handles localhost → http://, others → https://
- * Retries https:// with http:// on failure.
- * @param {string} latencyUrl
- * @returns {Promise<number>}
- */
 async function pingUrl(latencyUrl) {
     if (!latencyUrl || latencyUrl.trim() === '') return null;
 
@@ -21,76 +14,111 @@ async function pingUrl(latencyUrl) {
         url = isLocal ? `http://${url}` : `https://${url}`;
     }
 
-    const doFetch = async (targetUrl) => {
+    try {
+        const parsed = new URL(url);
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return -1;
+        const host = parsed.hostname.toLowerCase();
+        if (host === '169.254.169.254' || host.startsWith('169.254.')) return -1;
+    } catch {
+        return -1;
+    }
+
+    const doFetch = async (targetUrl, method = 'HEAD') => {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), PING_TIMEOUT_MS);
         const start = Date.now();
-        await fetch(targetUrl, { method: 'HEAD', signal: controller.signal });
+        await fetch(targetUrl, { method, signal: controller.signal });
         clearTimeout(timeoutId);
         return Date.now() - start;
     };
 
     try {
         return await doFetch(url);
-    } catch {
-        // If https:// fails, retry with http://
-        if (url.startsWith('https://')) {
-            try {
-                return await doFetch(url.replace('https://', 'http://'));
-            } catch {
-                return -1;
+    } catch (_headErr) {
+        try {
+            return await doFetch(url, 'GET');
+        } catch (_getErr) {
+            if (url.startsWith('https://')) {
+                try {
+                    return await doFetch(url.replace('https://', 'http://'), 'GET');
+                } catch (_httpsErr) {
+                    return -1;
+                }
+            } else if (!url.startsWith('http://')) {
+                try {
+                    return await doFetch(`http://${url.replace(/^https?:\/\//, '')}`, 'GET');
+                } catch (_httpErr) {
+                    return -1;
+                }
             }
+            return -1;
         }
-        return -1;
     }
 }
 
 let workerInterval = null;
 
-/**
- * Run a single ping sweep across all locations.
- */
+async function recordUptime(nodeId, isUp) {
+    try {
+        const UptimeLog = require('../models/UptimeLog');
+        const date = new Date().toISOString().split('T')[0];
+        
+        await UptimeLog.updateOne(
+            { nodeId, date },
+            { 
+                $inc: { 
+                    totalChecks: 1,
+                    upChecks: isUp ? 1 : 0,
+                    downChecks: isUp ? 0 : 1
+                }
+            },
+            { upsert: true }
+        );
+    } catch (_recordErr) {}
+}
+
 async function runPingSweep() {
     try {
-        // Lazy-load to avoid circular deps at startup
+        let panelUp = false;
+        if (process.env.PTERO_BASE_URL) {
+            const panelPing = await pingUrl(process.env.PTERO_BASE_URL);
+            panelUp = panelPing !== -1 && panelPing !== null;
+            await setCache('ping:panel', { ping: panelPing, updatedAt: new Date().toISOString() }, PING_TTL_SECONDS);
+        }
+        await recordUptime('panel', panelUp);
+
         const Location = require('../models/Location');
-        const locations = await Location.find({}, { _id: 1, name: 1, latencyUrl: 1 }).lean();
+        const locations = await Location.find({}, { _id: 1, publicId: 1, name: 1, latencyUrl: 1 }).lean();
 
         await Promise.all(
             locations.map(async (location) => {
                 const ping = await pingUrl(location.latencyUrl);
-                const cacheKey = `ping:${location._id}`;
-                await setCache(cacheKey, { ping, updatedAt: new Date().toISOString() }, PING_TTL_SECONDS);
-                console.log(`[PingWorker] "${location.name}" → ${ping === -1 ? 'DOWN' : ping === null ? 'N/A' : `${ping}ms`}`);
+                const isUp = ping !== -1 && ping !== null;
+                const locPubId = location.publicId;
+                if (locPubId) {
+                    await setCache(`ping:${locPubId}`, { ping, updatedAt: new Date().toISOString() }, PING_TTL_SECONDS);
+                    await recordUptime(locPubId, isUp);
+                }
             })
         );
-    } catch (err) {
-        console.error('[PingWorker] Sweep error:', err.message);
-    }
+
+        await deleteCache('api:status');
+        const statusService = require('../modules/status/status.service');
+        const freshStatus = await statusService.getSystemStatus();
+        await publishEvent('system:status', { type: 'STATUS_UPDATED', data: freshStatus });
+    } catch (_sweepErr) {}
 }
 
-/**
- * Start the background ping worker.
- * Should be called once after DB connection is established.
- */
 function startPingWorker() {
-    if (workerInterval) return; // already running
-
-    console.log('[PingWorker] Starting — pinging all locations every 30 seconds.');
-
-    // Run immediately on startup, then every interval
+    if (workerInterval) return;
     runPingSweep();
     workerInterval = setInterval(runPingSweep, PING_INTERVAL_MS);
 }
 
-/**
- * Stop the background ping worker (useful for graceful shutdown / tests).
- */
 function stopPingWorker() {
     if (workerInterval) {
         clearInterval(workerInterval);
         workerInterval = null;
-        console.log('[PingWorker] Stopped.');
     }
 }
 

@@ -1,239 +1,247 @@
-import { useState } from 'react';
+"use client";
 
-interface PanelInfo {
-  email: string;
-  username: string;
-  panelUrl: string;
-  loginUrl: string;
-}
+import React, { useState } from "react";
+import dynamic from "next/dynamic";
+import { useTranslations } from "next-intl";
+import { Copy, ExternalLink, KeyRound, Link2, Mail, RefreshCw, ServerOff } from "lucide-react";
+import { ErrorState, DashboardButton } from "@/components/ui/ErrorState";
+import { useToast } from "@/components/ui/ToastProvider";
+import { CredentialRow } from "./CredentialRow";
+import { PanelSkeleton } from "@/components/skeletons";
+import { usePanel } from "@/hooks/panel";
 
-interface PanelContentProps {
-  info: PanelInfo;
-  error: string | null;
-  resetting: boolean;
-  newPassword: string | null;
-  onResetPassword: () => Promise<void>;
-  onClearError: () => void;
-  onClearNewPassword: () => void;
-}
+const ResetPasswordDrawer = dynamic(
+  () => import("./ResetPasswordDrawer").then((mod) => mod.ResetPasswordDrawer),
+  { ssr: false }
+);
 
-export function PanelContent({
-  info,
-  error,
-  resetting,
-  newPassword,
-  onResetPassword,
-  onClearError,
-  onClearNewPassword,
-}: PanelContentProps) {
-  const [showPassword, setShowPassword] = useState(false);
+export function PanelContent() {
+  const t = useTranslations("Panel");
+  const tCommon = useTranslations("Common");
+  const tBackendErrors = useTranslations("BackendErrors");
+  const { showSuccess, showError } = useToast();
+  const [isResetDrawerOpen, setIsResetDrawerOpen] = useState(false);
 
-  const handleResetPassword = async () => {
-    if (confirm('Are you sure you want to reset your panel password? This will invalidate your current password.')) {
-      await onResetPassword();
+  const {
+    panelData,
+    password,
+    loading,
+    error,
+    resetting,
+    resetPassword: hookResetPassword,
+  } = usePanel();
+
+  const copyText = async (text: string, type: "email" | "password") => {
+    try {
+      await navigator.clipboard.writeText(text);
+      if (type === "email") {
+        showSuccess(t("emailCopied"));
+      } else {
+        showSuccess(t("passwordCopied"));
+      }
+    } catch {
+      showError(t("failedToCopy"));
     }
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="space-y-4">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
-          Control Panel Access
-        </h1>
-        <p className="text-[#AAAAAA] text-base sm:text-lg">
-          Manage your game servers and services through the Pterodactyl control panel
-        </p>
-      </div>
+  const launchPanel = () => {
+    if (panelData?.panelUrl) {
+      window.open(panelData.panelUrl, "_blank", "noopener,noreferrer");
+    }
+  };
 
-      {/* Main Panel Card */}
-      <div className="bg-[#181818] border border-[#303030] rounded-xl overflow-hidden shadow-lg">
-        {/* Card Header */}
-        <div className="p-6 border-b border-[#303030]">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#202020] rounded-xl flex items-center justify-center">
-              <i className="fas fa-server text-white text-lg"></i>
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold text-white">Game Server Management</h2>
-              <p className="text-[#AAAAAA] text-sm">Access your hosted services and manage server configurations</p>
-            </div>
-          </div>
-        </div>
+  const handleConfirmReset = async () => {
+    try {
+      await hookResetPassword();
+      setIsResetDrawerOpen(false);
+      showSuccess(t("passwordResetSuccess"));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      const errMsg = tBackendErrors.has(message)
+        ? tBackendErrors(message)
+        : (tBackendErrors.has("ERR_INTERNAL_SERVER") ? tBackendErrors("ERR_INTERNAL_SERVER") : (message || tCommon("error")));
+      showError(errMsg);
+    }
+  };
 
-        {/* Card Content */}
-        <div className="p-6 space-y-6">
-          {/* Error Display */}
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <i className="fas fa-exclamation-triangle text-red-400"></i>
-                <div>
-                  <div className="font-semibold text-red-400">Error</div>
-                  <p className="text-red-300 text-sm mt-1">{error}</p>
-                </div>
-                <button
-                  onClick={onClearError}
-                  className="ml-auto text-red-400 hover:text-red-300 transition-colors"
-                >
-                  <i className="fas fa-times"></i>
-                </button>
-              </div>
-            </div>
-          )}
+  if (loading) return <PanelSkeleton />;
 
-          {/* Success Message for New Password */}
-          {newPassword && (
-            <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
-              <div className="flex items-center gap-3">
-                <i className="fas fa-check-circle text-green-400"></i>
-                <div>
-                  <div className="font-semibold text-green-400">Password Reset Successful</div>
-                  <p className="text-green-300 text-sm mt-1">
-                    Your new password has been generated. Please save it securely.
-                  </p>
-                </div>
-                <button
-                  onClick={onClearNewPassword}
-                  className="ml-auto text-green-400 hover:text-green-300 transition-colors"
-                >
-                  <i className="fas fa-times"></i>
-                </button>
-              </div>
-            </div>
-          )}
+  if (error) {
+    const isPanelDown =
+      error === "ERR_PANEL_UNREACHABLE" ||
+      error === "ERR_PANEL_UNAVAILABLE" ||
+      error.toLowerCase().includes("unreachable") ||
+      error.toLowerCase().includes("panel is down") ||
+      error.toLowerCase().includes("offline");
 
-          {/* Panel Information */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-white">Panel Credentials</h3>
-              <p className="text-[#AAAAAA] text-sm">
-                Use these credentials to access your Pterodactyl control panel
-              </p>
-            </div>
+    const isPending =
+      !isPanelDown &&
+      (error === "ERR_PROVISIONING_PENDING" ||
+        error === "ERR_ACCOUNT_NOT_PROVISIONED" ||
+        error.toLowerCase() === "pending");
 
-            {/* Credentials Display */}
-            <div className="space-y-4">
-              {/* Email */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-[#AAAAAA]">Email Address</label>
-                <div className="flex items-center gap-3 p-3 bg-[#202020] border border-[#404040] rounded-lg">
-                  <i className="fas fa-envelope text-[#AAAAAA]"></i>
-                  <span className="text-white font-medium">{info.email}</span>
-                  <button
-                    onClick={() => navigator.clipboard.writeText(info.email)}
-                    className="ml-auto text-[#AAAAAA] hover:text-white transition-colors"
-                    title="Copy email"
-                  >
-                    <i className="fas fa-copy"></i>
-                  </button>
-                </div>
-              </div>
+    const displayError = (() => {
+      if (
+        error.toLowerCase() === "failed to fetch" ||
+        error.toLowerCase().includes("network error") ||
+        error === "ERR_NETWORK"
+      ) {
+        return "ERR_NETWORK";
+      }
+      return error;
+    })();
 
-              {/* Password */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-[#AAAAAA]">Password</label>
-                <div className="flex items-center gap-3 p-3 bg-[#202020] border border-[#404040] rounded-lg">
-                  <i className="fas fa-lock text-[#AAAAAA]"></i>
-                  <span className="text-white font-medium">
-                    {newPassword ? (
-                      showPassword ? newPassword : '••••••••••••••••'
-                    ) : (
-                      'Click "Reset Password" to generate a new password'
-                    )}
-                  </span>
-                  {newPassword && (
-                    <button
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="text-[#AAAAAA] hover:text-white transition-colors"
-                      title={showPassword ? 'Hide password' : 'Show password'}
-                    >
-                      <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
-                    </button>
-                  )}
-                  {newPassword && (
-                    <button
-                      onClick={() => navigator.clipboard.writeText(newPassword)}
-                      className="text-[#AAAAAA] hover:text-white transition-colors"
-                      title="Copy password"
-                    >
-                      <i className="fas fa-copy"></i>
-                    </button>
-                  )}
-                </div>
-              </div>
+    const translatedTitle = (() => {
+      if (isPanelDown) {
+        if (tBackendErrors.has("ERR_PANEL_UNAVAILABLE")) {
+          return tBackendErrors("ERR_PANEL_UNAVAILABLE");
+        }
+        return tBackendErrors.has("ERR_PANEL_UNREACHABLE")
+          ? tBackendErrors("ERR_PANEL_UNREACHABLE")
+          : t("panelDownTitle");
+      }
+      if (tBackendErrors.has(displayError)) {
+        return tBackendErrors(displayError);
+      }
+      return displayError;
+    })();
 
-              {/* Panel URL */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-[#AAAAAA]">Panel URL</label>
-                <div className="flex items-center gap-3 p-3 bg-[#202020] border border-[#404040] rounded-lg">
-                  <i className="fas fa-link text-[#AAAAAA]"></i>
-                  <span className="text-white font-medium">{info.panelUrl}</span>
-                  <button
-                    onClick={() => navigator.clipboard.writeText(info.panelUrl)}
-                    className="ml-auto text-[#AAAAAA] hover:text-white transition-colors"
-                    title="Copy URL"
-                  >
-                    <i className="fas fa-copy"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-4">
+    return (
+      <ErrorState
+        icon={
+          isPanelDown ? (
+            <ServerOff strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />
+          ) : isPending ? (
+            <RefreshCw strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />
+          ) : (
+            <KeyRound strokeWidth={1.5} className="w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]" />
+          )
+        }
+        kicker={
+          isPanelDown ? t("panelDown") : isPending ? t("provisioning") : t("failedToFetch")
+        }
+        title={translatedTitle}
+        description={
+          <p>
+            {isPanelDown
+              ? t("panelDownDesc")
+              : isPending
+              ? t("provisioningDesc")
+              : t("fetchErrorDesc")}
+          </p>
+        }
+        buttons={
+          <>
             <button
-              onClick={handleResetPassword}
-              disabled={resetting}
-              className="flex-1 sm:flex-none bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+              onClick={() => window.location.reload()}
+              className="flex items-center gap-2 bg-[#FF5722] text-white hover:bg-[#ff6939] px-4 py-2 rounded-md text-[13px] font-medium transition-colors"
             >
-              {resetting ? (
-                <>
-                  <i className="fas fa-spinner fa-spin"></i>
-                  Resetting...
-                </>
-              ) : (
-                <>
-                  <i className="fas fa-key"></i>
-                  Reset Password
-                </>
-              )}
+              <RefreshCw className="w-[14px] h-[14px]" />
+              {tCommon("refresh")}
             </button>
-            
-            <a
-              href={info.loginUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 sm:flex-none bg-white hover:bg-gray-100 text-black px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
-            >
-              <i className="fas fa-external-link-alt"></i>
-              Open Control Panel
-            </a>
+            <DashboardButton variant="secondary" />
+          </>
+        }
+      />
+    );
+  }
+
+  const displayPassword = password || "••••••••••••••••";
+  const displayPanelUrl = panelData?.panelUrl || t("notConfigured");
+
+  return (
+    <div className="flex flex-col h-full space-y-6">
+      <section>
+        <div className="mb-5 flex items-end justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-orange-500">{t("controlPanel")}</h1>
+            <p className="mt-2 text-sm text-white/35">{t("controlPanelDesc")}</p>
           </div>
         </div>
-      </div>
 
-      {/* Additional Information */}
-      <div className="bg-[#181818] border border-[#303030] rounded-xl p-6">
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white">Important Information</h3>
-                     <div className="space-y-3 text-sm text-[#AAAAAA]">
-             <div className="flex items-start gap-3">
-               <i className="fas fa-info-circle text-white mt-0.5"></i>
-               <p>Your panel credentials are separate from your main account login</p>
-             </div>
-             <div className="flex items-start gap-3">
-               <i className="fas fa-shield-alt text-white mt-0.5"></i>
-               <p>Keep your panel password secure and don't share it with others</p>
-             </div>
-             <div className="flex items-start gap-3">
-               <i className="fas fa-sync-alt text-white mt-0.5"></i>
-               <p>You can reset your panel password at any time using the button above</p>
-             </div>
-           </div>
+        <div className="hidden gap-4 grid-cols-[minmax(250px,1fr)_1fr_120px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 md:grid">
+          <span>{t("colCredential")}</span>
+          <span>{t("colValue")}</span>
+          <span className="text-right">{tCommon("action")}</span>
         </div>
-      </div>
+
+        <div className="divide-y divide-white/[0.06]">
+          <CredentialRow
+            icon={<Mail className="h-4 w-4" />}
+            label={tCommon("email")}
+            description={t("emailAddressDesc")}
+            value={panelData?.email || t("noEmailLinked")}
+            action={
+              <button
+                type="button"
+                onClick={() => copyText(panelData?.email || "", "email")}
+                className="inline-flex h-8 items-center gap-2 rounded-md border border-[#222] bg-[#1a1a1a] px-3 text-[11px] font-medium text-[#888888] transition hover:border-[#333] hover:text-[#E0E0E0]"
+              >
+                <Copy className="h-3.5 w-3.5" />
+                {tCommon("copy")}
+              </button>
+            }
+          />
+
+          <CredentialRow
+            icon={<KeyRound className="h-4 w-4" />}
+            label={tCommon("password")}
+            description={t("passwordDesc")}
+            value={displayPassword}
+            action={
+              <div className="flex items-center gap-2">
+                {password && (
+                  <button
+                    type="button"
+                    onClick={() => copyText(password, "password")}
+                    className="inline-flex h-8 items-center gap-2 rounded-md border border-[#222] bg-[#1a1a1a] px-3 text-[11px] font-medium text-[#888888] transition hover:border-[#333] hover:text-[#E0E0E0]"
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                    {tCommon("copy")}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setIsResetDrawerOpen(true)}
+                  disabled={resetting}
+                  className="inline-flex h-8 items-center gap-2 rounded-md border border-[#222] bg-[#1a1a1a] px-3 text-[11px] font-medium text-[#888888] transition hover:border-[#FF5722]/30 hover:text-[#FF5722] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 ${resetting ? "animate-spin" : ""}`} />
+                  {resetting ? t("resetting") : t("reset")}
+                </button>
+              </div>
+            }
+          />
+
+          <CredentialRow
+            icon={<Link2 className="h-4 w-4" />}
+            label={t("panelUrl")}
+            description={t("panelUrlDesc")}
+            value={displayPanelUrl}
+            mono
+            action={
+              <button
+                type="button"
+                onClick={launchPanel}
+                disabled={!panelData?.panelUrl}
+                className="inline-flex h-8 items-center gap-2 rounded-md border border-[#FF5722]/20 bg-[#FF5722]/10 px-3 text-[11px] font-medium text-[#FF5722] transition hover:border-[#FF5722]/40 hover:bg-[#FF5722]/20 disabled:opacity-50"
+              >
+                {t("launch")}
+                <ExternalLink className="h-3.5 w-3.5" />
+              </button>
+            }
+          />
+        </div>
+      </section>
+
+      <ResetPasswordDrawer
+        isOpen={isResetDrawerOpen}
+        onClose={() => setIsResetDrawerOpen(false)}
+        onConfirm={handleConfirmReset}
+        isLoading={resetting}
+        username={panelData?.username}
+        email={panelData?.email}
+      />
     </div>
   );
 }

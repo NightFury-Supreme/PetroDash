@@ -8,10 +8,11 @@ function maskSensitive(obj) {
     return JSON.parse(JSON.stringify(obj, (k, v) => {
       if (k === '__proto__' || k === 'constructor' || k === 'prototype') return undefined;
       if (['password', 'passwordHash', 'token', 'apiKey'].includes(k)) return '***';
+      if (typeof v === 'string' && v.length > 5000) return v.substring(0, 5000) + '... [TRUNCATED]';
       return v;
     }));
-  } catch {
-    return obj;
+  } catch (_err) {
+    return {};
   }
 }
 
@@ -25,19 +26,32 @@ function auditAuto() {
     let chunks = [];
     const origJson = res.json.bind(res);
     res.json = function (data) {
-      // eslint-disable-next-line unused-imports/no-unused-vars
-      try { chunks.push(JSON.stringify(data)); } catch (_) {}
+      try { chunks.push(JSON.stringify(data)); } catch (_jsonErr) {}
       return origJson(data);
     };
 
     res.on('finish', async () => {
       try {
+        await new Promise(resolve => setTimeout(resolve, 10));
+        
+        if (req._auditLogged) return;
+        
         const status = res.statusCode;
-        // Log only if request reached the server and was not a 5xx
-        const resourceType = (path.split('?')[0] || '').replace(/^\/api\/?/, '').split('/').slice(0, 2).join('.') || 'api';
+        const cleanPath = (path.split('?')[0] || '').replace(/^\/api\/?/, '');
+        const pathSegments = cleanPath.split('/').filter(Boolean);
+        
+        const actionSegments = pathSegments.filter(seg => !/^[a-z]{3,4}_[0-9a-f]{20}$/i.test(seg));
+        const smartAction = actionSegments.join('.') || `api.${method.toLowerCase()}`;
+        
+        const resourceType = actionSegments[0] || 'system';
         const resourceId = req.params?.id || req.params?.serverId || req.params?.userId || undefined;
+        
         const responsePreview = (chunks.join('').slice(0, 500) || '').toString();
-        await writeAudit(req, `api.${method.toLowerCase()}`, resourceType, resourceId, {
+        let severity = 'INFO';
+        if (status >= 400 && status < 500) severity = 'WARNING';
+        if (status >= 500) severity = 'ERROR';
+        
+        await writeAudit(req, smartAction, resourceType, resourceId, {
           path,
           status,
           durationMs: Date.now() - started,
@@ -45,10 +59,11 @@ function auditAuto() {
           body: bodySnapshot,
           method,
           responsePreview,
-          category: 'auto',
+          severity,
+          requestId: req.requestId
         });
-      // eslint-disable-next-line unused-imports/no-unused-vars
-      } catch (_) {}
+       
+      } catch (_auditErr) {}
     });
     next();
   };

@@ -1,0 +1,169 @@
+const serversAdminService = require('./servers.admin.service');
+const AppError = require('../../../utils/AppError');
+const { writeAudit } = require('../../../middleware/audit');
+const {
+  serverIdParamSchema,
+  serverListQuerySchema,
+  serverQueueQuerySchema,
+  clearQueueQuerySchema,
+  updateServerSchema,
+  deleteServerQuerySchema,
+  suspendServerSchema,
+} = require('./servers.admin.schema');
+
+const listServers = async (req, res, next) => {
+  try {
+    const parsedQuery = serverListQuerySchema.safeParse(req.query);
+    if (!parsedQuery.success) {
+      throw new AppError('Invalid query parameters', 400, 'ERR_INVALID_QUERY_PARAMS');
+    }
+    const result = await serversAdminService.listServers(parsedQuery.data);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const listQueuedServers = async (req, res, next) => {
+  try {
+    const parsedQuery = serverQueueQuerySchema.safeParse(req.query);
+    if (!parsedQuery.success) {
+      throw new AppError('Invalid query parameters', 400, 'ERR_INVALID_QUERY_PARAMS');
+    }
+    const result = await serversAdminService.listQueuedServers(parsedQuery.data);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const clearQueue = async (req, res, next) => {
+  try {
+    const parsedQuery = clearQueueQuerySchema.safeParse(req.query);
+    if (!parsedQuery.success) {
+      throw new AppError('Invalid query parameters', 400, 'ERR_INVALID_QUERY_PARAMS');
+    }
+    const result = await serversAdminService.clearQueue(parsedQuery.data, req);
+    await writeAudit(req, 'admin.server.queue.clear', 'server', null, { deletedCount: result.deletedCount });
+    res.json({ success: result.success, count: result.count, message: result.message });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getServerDetails = async (req, res, next) => {
+  try {
+    const parsedParams = serverIdParamSchema.safeParse(req.params);
+    if (!parsedParams.success) {
+      throw new AppError('Invalid server ID format', 400, 'ERR_INVALID_ID');
+    }
+    const result = await serversAdminService.getServerDetails(parsedParams.data.id);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateServer = async (req, res, next) => {
+  try {
+    const parsedParams = serverIdParamSchema.safeParse(req.params);
+    if (!parsedParams.success) {
+      throw new AppError('Invalid server ID format', 400, 'ERR_INVALID_ID');
+    }
+
+    const parsedBody = updateServerSchema.safeParse(req.body);
+    if (!parsedBody.success) {
+      throw new AppError('Validation failed', 400, 'ERR_VALIDATION_FAILED');
+    }
+
+    const { limits, name } = parsedBody.data;
+    if (!limits) {
+      throw new AppError('Limits are required', 400, 'ERR_LIMITS_REQUIRED');
+    }
+
+    const { server, changes } = await serversAdminService.updateServer(parsedParams.data.id, { limits, name }, req);
+    const publicServerId = server.publicId;
+
+    await writeAudit(req, 'admin.server.update', 'server', publicServerId, {
+      serverId: publicServerId,
+      serverName: server.name,
+      ownerId: server.owner?.publicId || (typeof server.owner === 'string' ? server.owner : null),
+      changes: Object.keys(changes).length > 0 ? changes : undefined,
+    });
+
+    res.json(server);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteServer = async (req, res, next) => {
+  try {
+    const parsedParams = serverIdParamSchema.safeParse(req.params);
+    if (!parsedParams.success) {
+      throw new AppError('Invalid server ID format', 400, 'ERR_INVALID_ID');
+    }
+
+    const parsedQuery = deleteServerQuerySchema.safeParse(req.query);
+    const isForce = parsedQuery.success ? (parsedQuery.data.force ?? true) : true;
+
+    const server = await serversAdminService.deleteServer(parsedParams.data.id, isForce, req);
+    const publicServerId = server.publicId;
+
+    await writeAudit(req, 'admin.server.delete', 'server', publicServerId, {
+      serverId: publicServerId,
+      serverName: server.name,
+      ownerId: server.owner?.publicId || (typeof server.owner === 'string' ? server.owner : null),
+      panelServerId: server.panelServerId,
+      forced: isForce,
+    });
+
+    res.json({ message: 'Server deleted successfully.' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const suspendServer = async (req, res, next) => {
+  try {
+    const parsedParams = serverIdParamSchema.safeParse(req.params);
+    if (!parsedParams.success) {
+      throw new AppError('Invalid server ID format', 400, 'ERR_INVALID_ID');
+    }
+
+    const parsedBody = suspendServerSchema.safeParse(req.body);
+    if (!parsedBody.success) {
+      throw new AppError('Validation failed', 400, 'ERR_VALIDATION_FAILED');
+    }
+
+    const result = await serversAdminService.suspendServer(parsedParams.data.id, parsedBody.data, req);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const unsuspendServer = async (req, res, next) => {
+  try {
+    const parsedParams = serverIdParamSchema.safeParse(req.params);
+    if (!parsedParams.success) {
+      throw new AppError('Invalid server ID format', 400, 'ERR_INVALID_ID');
+    }
+
+    const result = await serversAdminService.unsuspendServer(parsedParams.data.id, req);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  listServers,
+  listQueuedServers,
+  clearQueue,
+  getServerDetails,
+  updateServer,
+  deleteServer,
+  suspendServer,
+  unsuspendServer,
+};
