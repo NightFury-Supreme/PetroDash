@@ -399,6 +399,42 @@ install_pterodash() {
     echo -e "${BOLD}${CYAN}>>> Step 1/6: Prerequisites & Environment Setup${NC}\n"
     install_docker_if_missing
 
+    CONFLICT_CHOICE=1
+    EXISTING_CONTAINERS=$(docker ps -a --filter "name=pterodash-" --format "{{.Names}}" 2>/dev/null || true)
+    if [ -n "$EXISTING_CONTAINERS" ]; then
+        echo -e "\n${YELLOW}${BOLD}[!] Existing PteroDash installation detected:${NC}"
+        echo -e "${CYAN}${EXISTING_CONTAINERS}${NC}\n"
+        echo -e "How would you like to proceed?"
+        echo -e "  [1] Keep existing database data & upgrade containers (Recommended - Zero data loss)"
+        echo -e "  [2] Wipe database and perform a fresh install (WARNING: Deletes all data)"
+        echo -e "  [3] Cancel setup"
+        read -rp "Select option [1-3] (Default 1): " CONFLICT_CHOICE
+        CONFLICT_CHOICE=${CONFLICT_CHOICE:-1}
+
+        case "$CONFLICT_CHOICE" in
+            2)
+                read -rp "Type 'wipe' to confirm deleting all existing database data: " CONFIRM_WIPE
+                if [ "$CONFIRM_WIPE" != "wipe" ]; then
+                    echo -e "${GREEN}[INFO] Wipe canceled. Preserving existing database data.${NC}"
+                    CONFLICT_CHOICE=1
+                else
+                    echo -e "${YELLOW}[INFO] Stopping containers and removing existing database volumes...${NC}"
+                    $COMPOSE_CMD down -v --remove-orphans 2>/dev/null || true
+                    docker rm -f pterodash-mongodb pterodash-redis pterodash-backend pterodash-frontend pterodash-nginx 2>/dev/null || true
+                    docker volume rm pterodash_mongodb_data pterodash_redis_data 2>/dev/null || true
+                fi
+                ;;
+            3)
+                echo -e "${GREEN}[INFO] Installation canceled.${NC}"
+                return 0
+                ;;
+            *)
+                echo -e "${GREEN}[INFO] Preserving existing database. Containers will be updated cleanly.${NC}"
+                CONFLICT_CHOICE=1
+                ;;
+        esac
+    fi
+
     echo -e "\n${BOLD}${CYAN}>>> Step 2/6: Domain & Pterodactyl Configuration${NC}\n"
     read -rp "Enter your Dashboard Domain (e.g., dashboard.yourdomain.com): " DOMAIN
     DOMAIN=$(echo "$DOMAIN" | tr -d ' ' | sed -e 's|^https\?://||' -e 's|/$||')
@@ -457,8 +493,28 @@ install_pterodash() {
     esac
 
     echo -e "\n${BOLD}${CYAN}>>> Step 5/6: Writing Environment & Launching Containers${NC}\n"
-    MONGO_PASS=$(openssl rand -base64 18 | tr -dc 'a-zA-Z0-9' | head -c 18)
-    JWT_SECRET=$(openssl rand -hex 32)
+    MONGO_PASS=""
+    JWT_SECRET=""
+
+    if [ -f ".env" ] && [ "$CONFLICT_CHOICE" = "1" ]; then
+        EXISTING_MONGO_PASS=$(grep -E '^MONGO_INITDB_ROOT_PASSWORD=' .env | cut -d'=' -f2- | tr -d '\r\n')
+        EXISTING_JWT_SECRET=$(grep -E '^JWT_SECRET=' .env | cut -d'=' -f2- | tr -d '\r\n')
+        if [ -n "$EXISTING_MONGO_PASS" ]; then
+            MONGO_PASS="$EXISTING_MONGO_PASS"
+            echo -e "${GREEN}[OK] Preserved existing MongoDB database password.${NC}"
+        fi
+        if [ -n "$EXISTING_JWT_SECRET" ]; then
+            JWT_SECRET="$EXISTING_JWT_SECRET"
+            echo -e "${GREEN}[OK] Preserved existing JWT secret.${NC}"
+        fi
+    fi
+
+    if [ -z "$MONGO_PASS" ]; then
+        MONGO_PASS=$(openssl rand -base64 18 | tr -dc 'a-zA-Z0-9' | head -c 18)
+    fi
+    if [ -z "$JWT_SECRET" ]; then
+        JWT_SECRET=$(openssl rand -hex 32)
+    fi
 
     cat > .env << ENVEOF
 MONGO_INITDB_ROOT_USERNAME=admin
@@ -476,7 +532,8 @@ REDIS_URL=redis://redis:6379
 ENVEOF
 
     echo -e "${GREEN}[OK] .env configuration generated.${NC}"
-    echo -e "${YELLOW}[INFO] Pulling pre-built PteroDash Docker images from GitHub Container Registry...${NC}"
+    $COMPOSE_CMD down --remove-orphans 2>/dev/null || true
+    docker rm -f pterodash-mongodb pterodash-redis pterodash-backend pterodash-frontend pterodash-nginx 2>/dev/null || true
     $COMPOSE_CMD pull
     $COMPOSE_CMD up -d --force-recreate
 
@@ -533,7 +590,8 @@ update_pterodash() {
         git pull origin main || echo -e "${YELLOW}[WARN] Git pull skipped or encountered conflicts.${NC}"
     fi
 
-    echo -e "${YELLOW}[INFO] Pulling latest pre-built PteroDash Docker images from GitHub Container Registry...${NC}"
+    $COMPOSE_CMD down --remove-orphans 2>/dev/null || true
+    docker rm -f pterodash-mongodb pterodash-redis pterodash-backend pterodash-frontend pterodash-nginx 2>/dev/null || true
     $COMPOSE_CMD pull
     $COMPOSE_CMD up -d --force-recreate
 
