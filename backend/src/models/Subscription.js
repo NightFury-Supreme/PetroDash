@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
+const { generatePublicId } = require('../utils/publicId');
 
 const subscriptionSchema = new mongoose.Schema({
+  publicId: { type: String, unique: true, index: true, sparse: true, default: () => generatePublicId('subscription') },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true, required: true },
   planId: { type: mongoose.Schema.Types.ObjectId, ref: 'Plan', required: true },
   paypalSubscriptionId: { type: String, required: true, unique: true },
@@ -16,6 +18,11 @@ const subscriptionSchema = new mongoose.Schema({
 
 subscriptionSchema.index({ userId: 1, status: 1 });
 
+subscriptionSchema.pre('validate', function (next) {
+  if (!this.publicId) {
+    this.publicId = generatePublicId('subscription');
+  }
+  next();
+});
+
 module.exports = mongoose.model('Subscription', subscriptionSchema);
-
-

@@ -1,0 +1,128 @@
+'use client';
+
+import React from 'react';
+import { useTranslations, useFormatter } from 'next-intl';
+import { Clipboard } from 'lucide-react';
+import { StatusIndicator } from '@/components/ui/StatusIndicator';
+import { Priority, TicketStatus } from '../types';
+import { formatRelative } from '../utils';
+
+interface TicketDetailPanelProps {
+  ticketId:    string;
+  status:      TicketStatus;
+  category:    string;
+  priority:    Priority;
+  createdDate: string;
+  updatedAt:   string;
+  replyAllowed: boolean;
+  statusBusy:  boolean;
+  statusDone?: 'resolved' | 'reopen' | null;
+  copied:      boolean;
+  adminsInvolved: string;
+  onResolve:   () => void;
+  onReopen:    () => void;
+  onCopyId:    () => void;
+}
+
+export function TicketDetailPanel({
+  ticketId, status, category, priority, createdDate, updatedAt,
+  replyAllowed, statusBusy, statusDone, copied, adminsInvolved,
+  onResolve, onReopen, onCopyId,
+}: TicketDetailPanelProps) {
+  const t = useTranslations('Tickets');
+  const format = useFormatter();
+
+  const relativeUpdated = (() => {
+    try {
+      return format.relativeTime(new Date(updatedAt), { now: new Date() });
+    } catch {
+      return formatRelative(updatedAt);
+    }
+  })();
+
+  return (
+    <aside className="flex w-full flex-col bg-[#0F0F0F] p-2 sm:p-4">
+      <div>
+        <h3 className="mb-5 text-sm font-semibold text-white/90">{t('overview')}</h3>
+        <div className="flex flex-col gap-5">
+          
+          <div className="border-b border-white/[0.06] pb-4">
+            <span className="text-sm font-medium text-white/50 mb-2 block">
+              {t('priority')}
+            </span>
+            <div className="text-sm font-medium text-white/70 capitalize">
+              {t(`priorities.${priority.toLowerCase()}`)}
+            </div>
+          </div>
+
+          <div className="border-b border-white/[0.06] pb-4">
+            <span className="text-sm font-medium text-white/50 mb-2 block">
+              {t('status')}
+            </span>
+            <div className="flex items-center gap-2">
+              <StatusIndicator status={status} label={t.has(status) ? t(status) : status} size="md" />
+            </div>
+          </div>
+
+          <div className="border-b border-white/[0.06] pb-4 flex flex-col gap-3">
+            <div className="flex justify-between text-sm">
+              <span className="text-white/40">{t('category')}</span>
+              <span className="text-white/70 capitalize">{category}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-white/40">{t('ticketId')}</span>
+              <button
+                onClick={onCopyId}
+                className="flex items-center gap-1.5 font-mono text-white/70 transition-colors hover:text-white"
+              >
+                #{ticketId}
+                <Clipboard size={12} className={copied ? 'text-emerald-400' : 'text-white/30'} />
+              </button>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-white/40">{t('admins')}</span>
+              <span className="text-white/70">{adminsInvolved}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-white/40">{t('created')}</span>
+              <span className="text-white/70">{createdDate}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-white/40">{t('updated')}</span>
+              <span className="text-white/70">{relativeUpdated}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            {replyAllowed ? (
+              <button
+                disabled={statusBusy}
+                onClick={onResolve}
+                className="w-full rounded-lg border border-[#FF5722]/25 bg-[#FF5722]/[0.06] px-3 py-2 text-xs font-semibold text-[#FF5722] transition-colors hover:bg-[#FF5722]/[0.12] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {statusBusy && statusDone === null ? (
+                  <><span className="h-3 w-3 rounded-full border-2 border-[#FF5722] border-t-transparent animate-spin" /> {t('resolving')}</>
+                ) : statusDone === 'resolved' ? (
+                  <><span className="text-emerald-400">✓</span> {t('resolvedSuccess')}</>
+                ) : t('resolveTicket')}
+              </button>
+            ) : status === 'resolved' ? (
+              <button
+                disabled={statusBusy}
+                onClick={onReopen}
+                className="w-full rounded-lg border border-emerald-500/25 bg-emerald-500/[0.06] px-3 py-2 text-xs font-semibold text-emerald-400 transition-colors hover:bg-emerald-500/[0.12] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {statusBusy && statusDone === null ? (
+                  <><span className="h-3 w-3 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin" /> {t('reopening')}</>
+                ) : statusDone === 'reopen' ? (
+                  <><span className="text-emerald-400">✓</span> {t('reopenedSuccess')}</>
+                ) : t('reopenTicket')}
+              </button>
+            ) : null}
+          </div>
+
+        </div>
+      </div>
+    </aside>
+  );
+}

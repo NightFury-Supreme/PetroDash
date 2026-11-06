@@ -2,20 +2,24 @@
 
 ## Supported Versions
 
-Currently, only the `main` branch and the latest stable release of PteroDash are supported with security updates.
+Currently, only the `main` branch and the latest stable release of PetroDash are supported with security updates.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| Latest  | :white_check_mark: |
-| < Latest| :x:                |
+| 2.0.x   | :white_check_mark: |
+| < 2.0.0 | :x:                |
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability within PteroDash, please do not disclose it publicly.
+If you discover a security vulnerability within PetroDash, please do not disclose it publicly until it has been addressed.
 
-Instead, please send an e-mail to the project maintainers or open a private security advisory on GitHub:
-1. Go to the [Security tab](https://github.com/NightFury-Supreme/PetroDash/security/advisories) on the repository.
-2. Click **Report a vulnerability**.
-3. Fill in the details of the issue.
+Please report vulnerabilities privately via GitHub Security Advisories or by email:
 
-We will review the report and work with you to resolve the issue as quickly as possible.
+1. **GitHub Advisory (Recommended)**: Open a private advisory report at [https://github.com/NightFury-Supreme/PetroDash/security/advisories/new](https://github.com/NightFury-Supreme/PetroDash/security/advisories/new).
+2. **Email**: Contact the security team directly at [support@petrodash.tech](mailto:support@petrodash.tech).
+
+### Response Timeline
+
+- **Initial Response**: We will acknowledge receipt of your vulnerability report within 48 hours.
+- **Status Updates**: We will provide regular updates regarding our investigation and remediation timeline.
+- **Fix & Disclosure**: Once a fix is verified, a patch release will be published and a security advisory will be issued.

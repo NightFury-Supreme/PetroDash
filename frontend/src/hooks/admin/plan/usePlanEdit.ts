@@ -1,7 +1,8 @@
-import { useState, useCallback } from 'react';
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
+import { useState, useCallback, useRef } from 'react';
 
-interface PlanFormData {
-  _id: string;
+export interface PlanFormData {
+  id: string;
   name: string;
   description?: string;
   strikeThroughPrice: number;
@@ -13,6 +14,8 @@ interface PlanFormData {
   stock: number;
   limitPerCustomer: number;
   category: string;
+  totalPurchases: number;
+  currentUsers?: number;
   redirectionLink?: string;
   billingOptions: {
     renewable: boolean;
@@ -25,9 +28,6 @@ interface PlanFormData {
       cpuPercent: number;
       memoryMb: number;
       diskMb: number;
-      swapMb: number;
-      blockIoProportion: number;
-      cpuPinning: string;
     };
     additionalAllocations: number;
     databases: number;
@@ -42,21 +42,16 @@ interface PlanFormData {
 }
 
 interface UsePlanEditReturn {
-  // State
   loading: boolean;
   saving: boolean;
   error: string | null;
   plan: PlanFormData | null;
   validationErrors: Record<string, string>;
-  
-  // Actions
   loadPlan: (planId: string) => Promise<void>;
-  handleInputChange: (field: string, value: string | number | boolean | string[]) => void;
+  handleInputChange: (field: string, value: string | number | boolean | string[] | null) => void;
   handleSubmit: () => Promise<void>;
   clearError: () => void;
 }
-
-
 
 export function usePlanEdit(): UsePlanEditReturn {
   const [loading, setLoading] = useState(true);
@@ -65,18 +60,28 @@ export function usePlanEdit(): UsePlanEditReturn {
   const [plan, setPlan] = useState<PlanFormData | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  // Load plan data
+  const loadedPlanIdRef = useRef<string | null>(null);
+  const inFlightRef = useRef<string | null>(null);
+
   const loadPlan = useCallback(async (planId: string) => {
+    const trimmedId = planId ? planId.trim() : '';
+    if (!trimmedId) {
+      setLoading(false);
+      return;
+    }
+    if (inFlightRef.current === trimmedId) return;
+    inFlightRef.current = trimmedId;
+
     try {
       setLoading(true);
       setError(null);
       
-      const token = localStorage.getItem('auth_token');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       if (!token) {
         throw new Error('Authentication required');
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans/${planId}`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans/${trimmedId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -84,61 +89,61 @@ export function usePlanEdit(): UsePlanEditReturn {
         throw new Error('Failed to load plan');
       }
 
-      let data: any = {}; try { data = await response.json(); } catch {}
-      setPlan(data);
+      const data = await response.json().catch(() => ({}));
+      if (data && data.category && typeof data.category === 'object' && data.category.id) {
+        data.category = data.category.id;
+      }
+      setPlan(data as PlanFormData);
+      loadedPlanIdRef.current = trimmedId;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load plan');
     } finally {
+      inFlightRef.current = null;
       setLoading(false);
     }
   }, []);
 
-           // Handle input changes
-         const handleInputChange = useCallback((field: string, value: string | number | boolean | string[]) => {
-           if (!plan) return;
+  const handleInputChange = useCallback((field: string, value: string | number | boolean | string[] | null) => {
+    setPlan(prev => {
+      if (!prev) return null;
 
-           setPlan(prev => {
-             if (!prev) return null;
+      if (field.includes('.')) {
+        const parts = field.split('.');
+        if (parts.length === 2) {
+          const [parent, child] = parts;
+          const parentObj = (prev as unknown as Record<string, Record<string, unknown>>)[parent] || {};
+          return {
+            ...prev,
+            [parent]: {
+              ...parentObj,
+              [child]: value
+            }
+          };
+        } else if (parts.length === 3) {
+          const [parent, child, grandchild] = parts;
+          const parentObj = (prev as unknown as Record<string, Record<string, Record<string, unknown>>>)[parent] || {};
+          const childObj = parentObj[child] || {};
+          return {
+            ...prev,
+            [parent]: {
+              ...parentObj,
+              [child]: {
+                ...childObj,
+                [grandchild]: value
+              }
+            }
+          };
+        }
+      }
+      return { ...prev, [field]: value };
+    });
+  }, []);
 
-             if (field.includes('.')) {
-               const parts = field.split('.');
-               if (parts.length === 2) {
-                 // Handle one level deep: parent.child
-                 const [parent, child] = parts;
-                 return {
-                   ...prev,
-                   [parent]: {
-                     ...(prev as any)[parent],
-                     [child]: value
-                   }
-                 };
-               } else if (parts.length === 3) {
-                 // Handle two levels deep: parent.child.grandchild
-                 const [parent, child, grandchild] = parts;
-                 return {
-                   ...prev,
-                   [parent]: {
-                     ...(prev as any)[parent],
-                     [child]: {
-                       ...(prev as any)[parent]?.[child],
-                       [grandchild]: value
-                     }
-                   }
-                 };
-               }
-             }
-             return { ...prev, [field]: value };
-           });
-         }, [plan]);
-
-  // Handle form submission
   const handleSubmit = useCallback(async () => {
     if (!plan) throw new Error('No plan loaded');
 
-    // Clear previous validation errors
     setValidationErrors({});
 
-    // Validation
     const errors: Record<string, string> = {};
 
     if (!plan.name.trim()) {
@@ -152,12 +157,6 @@ export function usePlanEdit(): UsePlanEditReturn {
     if (!plan.category.trim()) {
       errors.category = 'Category is required';
     }
-
-    if (!plan.availableAt) {
-      errors.availableAt = 'Available at date is required';
-    }
-
-    // availableUntil is optional; when Forever is checked it will be null
 
     if (plan.pricePerMonth < 0) {
       errors.pricePerMonth = 'Monthly price must be 0 or greater';
@@ -191,7 +190,6 @@ export function usePlanEdit(): UsePlanEditReturn {
       errors.availableBillingCycles = 'Please select at least one billing cycle';
     }
 
-    // If there are validation errors, set them and return
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
       throw new Error('Please fix validation errors before saving');
@@ -201,49 +199,45 @@ export function usePlanEdit(): UsePlanEditReturn {
       setSaving(true);
       setError(null);
 
-      const token = localStorage.getItem('auth_token');
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       if (!token) throw new Error('Authentication required');
 
-                   // Transform form data to match backend expectations
-             const submitData = {
-               name: plan.name,
-               description: plan.description,
-               strikeThroughPrice: plan.strikeThroughPrice,
-               pricePerMonth: plan.pricePerMonth,
-               pricePerYear: plan.pricePerYear,
-               visibility: plan.visibility,
-               availableAt: plan.availableAt ? new Date(plan.availableAt).toISOString() : undefined,
-               availableUntil: plan.availableUntil ? new Date(plan.availableUntil).toISOString() : undefined,
-               stock: plan.stock,
-               limitPerCustomer: plan.limitPerCustomer,
-               category: plan.category,
-               redirectionLink: plan.redirectionLink,
-               billingOptions: {
-                 ...plan.billingOptions,
-                 lifetime: true
-               },
-               availableBillingCycles: [],
-               productContent: {
-                 recurrentResources: {
-                   cpuPercent: plan.productContent.recurrentResources.cpuPercent,
-                   memoryMb: plan.productContent.recurrentResources.memoryMb,
-                   diskMb: plan.productContent.recurrentResources.diskMb,
-                   swapMb: plan.productContent.recurrentResources.swapMb,
-                   blockIoProportion: plan.productContent.recurrentResources.blockIoProportion,
-                   cpuPinning: plan.productContent.recurrentResources.cpuPinning,
-                 },
-                 additionalAllocations: plan.productContent.additionalAllocations,
-                 databases: plan.productContent.databases,
-                 backups: plan.productContent.backups,
-                 coins: plan.productContent.coins,
-                 serverLimit: plan.productContent.serverLimit,
-               },
-               staffNotes: plan.staffNotes,
-               popular: plan.popular,
-               sortOrder: plan.sortOrder,
-             };
+      const submitData = {
+        name: plan.name,
+        description: plan.description,
+        strikeThroughPrice: plan.strikeThroughPrice,
+        pricePerMonth: plan.pricePerMonth,
+        pricePerYear: plan.pricePerYear,
+        visibility: plan.visibility,
+        availableAt: plan.availableAt ? new Date(plan.availableAt).toISOString() : undefined,
+        availableUntil: plan.availableUntil ? new Date(plan.availableUntil).toISOString() : undefined,
+        stock: plan.stock,
+        limitPerCustomer: plan.limitPerCustomer,
+        category: plan.category,
+        redirectionLink: plan.redirectionLink,
+        billingOptions: {
+          ...plan.billingOptions,
+          lifetime: true
+        },
+        availableBillingCycles: [],
+        productContent: {
+          recurrentResources: {
+            cpuPercent: plan.productContent.recurrentResources.cpuPercent,
+            memoryMb: plan.productContent.recurrentResources.memoryMb,
+            diskMb: plan.productContent.recurrentResources.diskMb,
+          },
+          additionalAllocations: plan.productContent.additionalAllocations,
+          databases: plan.productContent.databases,
+          backups: plan.productContent.backups,
+          coins: plan.productContent.coins,
+          serverLimit: plan.productContent.serverLimit,
+        },
+        staffNotes: plan.staffNotes,
+        popular: plan.popular,
+        sortOrder: plan.sortOrder,
+      };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans/${plan._id}`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans/${plan.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -253,7 +247,7 @@ export function usePlanEdit(): UsePlanEditReturn {
       });
 
       if (!response.ok) {
-        let errorData: any = {}; try { errorData = await response.json(); } catch {}
+        const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || 'Failed to update plan');
       }
 
@@ -266,20 +260,16 @@ export function usePlanEdit(): UsePlanEditReturn {
     }
   }, [plan]);
 
-  // Clear error
   const clearError = useCallback(() => {
     setError(null);
   }, []);
 
   return {
-    // State
     loading,
     saving,
     error,
     plan,
     validationErrors,
-    
-    // Actions
     loadPlan,
     handleInputChange,
     handleSubmit,

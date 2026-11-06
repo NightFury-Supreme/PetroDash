@@ -1,63 +1,57 @@
+const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const DefaultResources = require('../models/DefaultResources');
 const { getSettings } = require('../lib/settings');
-const { createPanelUser, checkUserExists } = require('./pterodactyl');
-const bcrypt = require('bcryptjs');
+const { acquireLock, releaseLock, deleteCache } = require('../lib/redis');
+const { invalidateUserCaches, invalidateReferralCaches } = require('../utils/userCacheInvalidation');
+const { writeAudit } = require('../middleware/audit');
+const { logUserActivity } = require('../middleware/userActivity');
+const { createPanelUser, checkUserExists, findPanelUser, getPanelUser } = require('./pterodactyl');
+const AppError = require('../utils/AppError');
 
-/**
- * Unified user creation service for both normal registration and OAuth
- */
+async function syncPanelUserId(user, panelId) {
+  user.pterodactylUserId = panelId;
+  if (typeof user.save === 'function') await user.save();
+  else await User.findByIdAndUpdate(user._id, { pterodactylUserId: panelId });
+  const uid = user.publicId;
+  await deleteCache(`user:${uid}:profile`);
+  await deleteCache(`user:${uid}:panel`);
+}
+
 class UserCreationService {
-  /**
-   * Create a new user with all necessary setup
-   * @param {Object} userData - User data
-   * @param {string} userData.email - User email
-   * @param {string} userData.username - Username
-   * @param {string} userData.firstName - First name
-   * @param {string} userData.lastName - Last name
-   * @param {string} [userData.password] - Password (optional for OAuth)
-   * @param {string} [userData.ref] - Referral code
-   * @param {Object} [userData.oauthProviders] - OAuth provider data
-   * @returns {Promise<Object>} Created user and JWT token
-   */
   static async createUser(userData) {
     const { email, username, firstName, lastName, password, ref, oauthProviders } = userData;
 
-    // Check for existing users in database
     const existing = await User.findOne({ $or: [{ email }, { username }] }).lean();
     if (existing) {
-      throw new Error('Email or username already in use');
+      throw AppError.conflict('Email or username already in use', 'ERR_USER_EXISTS');
     }
 
-    // Check Pterodactyl panel for existing users
-    const pterodactylCheck = await checkUserExists(email, username);
-    if (pterodactylCheck.emailExists) {
-      throw new Error('Email already exists in Pterodactyl panel');
-    }
-    if (pterodactylCheck.usernameExists) {
-      throw new Error('Username already exists in Pterodactyl panel');
+    const existingPanelUser = await findPanelUser(email).catch(() => null);
+    if (!existingPanelUser) {
+      const pteroCheck = await checkUserExists(null, username).catch(() => ({ usernameExists: false }));
+      if (pteroCheck?.usernameExists) {
+        throw AppError.conflict('Username already exists in Pterodactyl panel', 'ERR_USERNAME_IN_USE');
+      }
     }
 
-    // Get default resources
     const defaults = await DefaultResources.findOne({}).lean();
-
-    // Hash password if provided (for normal registration)
     const passwordHash = password ? await bcrypt.hash(password, 12) : undefined;
 
-    // Generate a unique referral code for the new user
-    // Format: first 6 chars of username (uppercased) + 4 random alphanumeric chars
-    // Retry up to 5 times to guarantee uniqueness
-    const crypto = require('crypto');
     let referralCode = null;
     for (let attempt = 0; attempt < 5; attempt++) {
       const base = username.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
-      const suffix = crypto.randomBytes(3).toString('hex').toUpperCase(); // 6 hex chars
-      const candidate = `${base}${suffix}`.slice(0, 12); // max 12 chars total
+      const suffix = crypto.randomBytes(3).toString('hex').toUpperCase();
+      const candidate = `${base}${suffix}`.slice(0, 12);
       const taken = await User.exists({ referralCode: candidate });
-      if (!taken) { referralCode = candidate; break; }
+      if (!taken) {
+        referralCode = candidate;
+        break;
+      }
     }
 
-    // Create user in database
     const user = await User.create({
       email,
       username,
@@ -65,170 +59,225 @@ class UserCreationService {
       lastName,
       passwordHash,
       oauthProviders: oauthProviders || {},
-      referralCode, // always set at creation
+      referralCode,
       coins: Number(defaults?.coins || 0),
       resources: {
-        diskMb: Number(defaults?.diskMb ?? 5120),
-        memoryMb: Number(defaults?.memoryMb ?? 2048),
-        cpuPercent: Number(defaults?.cpuPercent ?? 80),
-        backups: Number(defaults?.backups ?? 0),
-        databases: Number(defaults?.databases ?? 0),
-        allocations: Number(defaults?.allocations ?? 0),
+        diskMb: Number(defaults?.diskMb ?? 5120), memoryMb: Number(defaults?.memoryMb ?? 2048),
+        cpuPercent: Number(defaults?.cpuPercent ?? 80), backups: Number(defaults?.backups ?? 0),
+        databases: Number(defaults?.databases ?? 0), allocations: Number(defaults?.allocations ?? 0),
         serverSlots: Number(defaults?.serverSlots ?? 1),
       },
     });
 
-    // Set referral relationship (coins will be granted after email verification)
-    await this.setReferrer(user, ref);
-
-    // Create Pterodactyl user
-    await this.createPterodactylUser(user, password);
-
-    return user;
+    try {
+      await this.setReferrer(user, ref);
+      try {
+        await this.createPterodactylUser(user, password);
+      } catch (pteroErr) {
+        await writeAudit(user.publicId, 'pterodactyl.user.sync_deferred', 'user', user.publicId, { error: pteroErr.message, stage: 'register' }).catch(() => {});
+      }
+      return user;
+    } catch (err) {
+      await User.deleteOne({ _id: user._id }).catch(() => {});
+      throw err;
+    }
   }
 
-  /**
-   * Link OAuth provider to existing user
-   * @param {Object} user - Existing user
-   * @param {Object} oauthData - OAuth provider data
-   * @param {string} oauthData.provider - Provider name (discord/google)
-   * @param {Object} oauthData.data - Provider-specific data
-   */
   static async linkOAuthProvider(user, oauthData) {
     const { provider, data } = oauthData;
-    
-    // Update OAuth providers
     user.oauthProviders = user.oauthProviders || {};
     user.oauthProviders[provider] = data;
     await user.save();
 
-    // Create Pterodactyl user if they don't have one
     if (!user.pterodactylUserId) {
-      await this.createPterodactylUser(user);
+      try {
+        await this.createPterodactylUser(user);
+      } catch (pteroErr) {
+        await writeAudit(user.publicId, 'pterodactyl.user.sync_deferred', 'user', user.publicId, { error: pteroErr.message, stage: 'oauth' }).catch(() => {});
+      }
     }
   }
 
-  /**
-   * Set the referrer for a new user without granting rewards
-   * @param {Object} user - User object
-   * @param {string} ref - Referral code
-   */
   static async setReferrer(user, ref) {
     if (!ref || typeof ref !== 'string') return;
 
     try {
-      const referrer = await User.findOne({ referralCode: ref.trim().toUpperCase() }).select('_id').lean();
-      if (!referrer || String(referrer._id) === String(user._id)) return;
+      const cleanRef = ref.trim().toUpperCase().replace(/[^A-Z0-9-_]/g, '').slice(0, 32);
+      if (!cleanRef) return;
 
-      // Only set referral relationship, do NOT award coins yet
-      await User.updateOne(
-        { _id: user._id },
-        { $set: { referredBy: referrer._id } }
-      );
+      const referrer = await User.findOne({ referralCode: cleanRef }).select('_id publicId').lean();
+      if (!referrer || referrer.publicId === user.publicId) return;
+
+      await User.updateOne({ _id: user._id }, { $set: { referredBy: referrer._id } });
       user.referredBy = referrer._id;
-    } catch (error) {
-      console.error('Failed to set referrer:', error);
+      await invalidateReferralCaches(referrer.publicId);
+    } catch (err) {
+      if (err.name === 'MongoNetworkError' || err.name === 'MongooseServerSelectionError') {
+        throw err;
+      }
     }
   }
 
-  /**
-   * Grant referral rewards once the user's email is verified
-   * @param {Object} user - User object
-   */
   static async grantReferralRewards(user) {
     if (!user || !user.referredBy || user.referralRewardReceived) return;
 
+    const lockKey = `lock:referral:${user.publicId}`;
+    const lockToken = await acquireLock(lockKey, 5000);
+    if (!lockToken) return;
+
     try {
-      const referrer = await User.findById(user.referredBy);
+      const referrer = await User.findById(user.referredBy).lean();
       if (!referrer) return;
 
-      // Load settings for coin rewards
       const settings = await getSettings();
       const referrerCoins = Number(settings?.referrals?.referrerCoins ?? Number(process.env.REFERRAL_REWARD_COINS || 50));
       const referredCoins = Number(settings?.referrals?.referredCoins ?? Number(process.env.REFERRAL_REFERRED_COINS || 25));
 
-      // Award coins to the referred user and mark as rewarded atomically
-      const result = await User.updateOne(
-        { _id: user._id, referralRewardReceived: { $ne: true } },
-        { 
-          $set: { referralRewardReceived: true },
-          $inc: { coins: referredCoins }
-        }
-      );
-      
-      // VULNERABILITY FIX: If modifiedCount is 0, another concurrent request already claimed this reward.
-      // We MUST abort here to prevent the referrer from getting duplicated coins.
-      if (result.modifiedCount === 0) return;
-      user.referralRewardReceived = true;
-      user.coins = Number(user.coins || 0) + referredCoins;
+      let session = null;
+      try {
+        session = await mongoose.startSession();
+        await session.withTransaction(async () => {
+          const updatedUser = await User.findOneAndUpdate(
+            { _id: user._id, referralRewardReceived: { $ne: true } },
+            {
+              $set: { referralRewardReceived: true },
+              $inc: { coins: referredCoins },
+            },
+            { new: true, session }
+          );
 
-      // Update referrer stats and coins atomically
-      await User.updateOne(
-        { _id: referrer._id },
-        {
-          $inc: {
-            'referralStats.referredCount': 1,
-            'referralStats.coinsEarned': referrerCoins,
-            coins: referrerCoins
-          }
-        }
-      );
-    } catch (error) {
-      console.error('Failed to grant referral rewards:', error);
+          if (!updatedUser) return;
+
+          await User.updateOne(
+            { _id: referrer._id },
+            {
+              $inc: {
+                'referralStats.referredCount': 1,
+                'referralStats.coinsEarned': referrerCoins,
+                coins: referrerCoins,
+              },
+            },
+            { session }
+          );
+
+          user.referralRewardReceived = true;
+          user.coins = updatedUser.coins;
+        });
+      } finally {
+        if (session) await session.endSession();
+      }
+
+      if (!user.referralRewardReceived) return;
+
+      const refId = referrer.publicId;
+      const uId = user.publicId;
+
+      await Promise.allSettled([
+        invalidateReferralCaches(refId),
+        invalidateUserCaches(refId),
+        invalidateUserCaches(uId),
+      ]);
+
+      const referredChanges = { coins: { old: user.coins - referredCoins, new: user.coins } };
+      await writeAudit(uId, 'referral.reward.referred', 'referral', refId, { referrerId: refId, coinsAdded: referredCoins, changes: referredChanges });
+      await logUserActivity(null, 'referral.reward.referred', { referrerId: refId, coinsAdded: referredCoins, changes: referredChanges }, uId);
+
+      const referrerChanges = { coins: { old: referrer.coins || 0, new: (referrer.coins || 0) + referrerCoins } };
+      await writeAudit(refId, 'referral.reward.referrer', 'referral', uId, {
+        referredUserId: uId,
+        referredUsername: user.username,
+        coinsAdded: referrerCoins,
+        changes: referrerChanges,
+      });
+      await logUserActivity(null, 'referral.reward.referrer', { referredUserId: uId, referredUsername: user.username, coinsAdded: referrerCoins, changes: referrerChanges }, refId);
+    } catch (err) {
+      if (err.name === 'MongoNetworkError' || err.name === 'MongooseServerSelectionError') {
+        throw err;
+      }
+    } finally {
+      await releaseLock(lockKey, lockToken);
     }
   }
 
-  /**
-   * Create Pterodactyl user
-   * @param {Object} user - User object
-   * @param {string} [password] - Password (optional, will generate temp password if not provided)
-   */
   static async createPterodactylUser(user, password) {
+    if (!user) return null;
+
+    if (user.pterodactylUserId) {
+      try {
+        const existing = await getPanelUser(user.pterodactylUserId);
+        if (existing?.id) return existing;
+      } catch (err) {
+        const status = err?.response?.status;
+        if (status !== 404) {
+          if (
+            (err?.isAxiosError && (!err.response || (status >= 500 && status < 600))) ||
+            ['ECONNREFUSED', 'ENOTFOUND', 'ETIMEDOUT', 'ECONNABORTED'].includes(err?.code)
+          ) {
+            throw AppError.serviceUnavailable('Pterodactyl panel is currently unreachable', 'ERR_PANEL_UNREACHABLE');
+          }
+        }
+      }
+    }
+
     try {
-      // Generate temporary password if not provided (for OAuth users)
-      const crypto = require('crypto');
+      const existing = await findPanelUser(user.email, user.username);
+      if (existing?.id) {
+        await syncPanelUserId(user, existing.id);
+        return existing;
+      }
+    } catch (err) {
+      const status = err?.response?.status;
+      if (
+        (err?.isAxiosError && (!err.response || (status >= 500 && status < 600))) ||
+        ['ECONNREFUSED', 'ENOTFOUND', 'ETIMEDOUT', 'ECONNABORTED'].includes(err?.code)
+      ) {
+        throw AppError.serviceUnavailable('Pterodactyl panel is currently unreachable', 'ERR_PANEL_UNREACHABLE');
+      }
+    }
+
+    try {
       const panelPassword = password || crypto.randomBytes(8).toString('hex') + 'A1!';
-      
+      const firstName = (user.firstName && String(user.firstName).trim()) || user.username || 'User';
+      const lastName = (user.lastName && String(user.lastName).trim()) || 'Member';
+
       const panelUser = await createPanelUser({
         email: user.email,
         username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        password: panelPassword
+        firstName,
+        lastName,
+        password: panelPassword,
       });
-      
+
       if (panelUser?.id) {
-        user.pterodactylUserId = panelUser.id;
-        await user.save();
+        await syncPanelUserId(user, panelUser.id);
+        return panelUser;
       }
     } catch (error) {
-      console.error('Failed to create Pterodactyl user:', error);
-      // Don't throw error - user creation should succeed even if Pterodactyl fails
+      if (error?.response?.status === 422) {
+        const recovered = await findPanelUser(user.email, user.username);
+        if (recovered?.id) {
+          await syncPanelUserId(user, recovered.id);
+          return recovered;
+        }
+      }
+
+      const status = error?.response?.status;
+      if (
+        (error?.isAxiosError && (!error.response || (status >= 500 && status < 600))) ||
+        ['ECONNREFUSED', 'ENOTFOUND', 'ETIMEDOUT', 'ECONNABORTED'].includes(error?.code)
+      ) {
+        throw AppError.serviceUnavailable('Pterodactyl panel is currently unreachable', 'ERR_PANEL_UNREACHABLE');
+      }
+      throw error;
     }
+
+    return null;
   }
 
-  /**
-   * Generate JWT token for user
-   * @param {Object} user - User object
-   * @returns {string} JWT token
-   */
-  static generateJwt(user) {
-    const jwt = require('jsonwebtoken');
-    return jwt.sign(
-      { sub: user._id.toString(), email: user.email, username: user.username, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-  }
-
-  /**
-   * Format user response
-   * @param {Object} user - User object
-   * @returns {Object} Formatted user data
-   */
   static formatUserResponse(user) {
+    const publicId = user.publicId;
     return {
-      id: user._id,
+      id: publicId,
       email: user.email,
       username: user.username,
       firstName: user.firstName,
@@ -236,7 +285,8 @@ class UserCreationService {
       role: user.role,
       coins: Number(user.coins || 0),
       pterodactylUserId: user.pterodactylUserId || null,
-      resources: user.resources
+      resources: user.resources,
+      emailVerified: Boolean(user.emailVerified),
     };
   }
 }

@@ -1,0 +1,49 @@
+import React from "react";
+import { Users, UserRound, TrendingUp, CheckCircle2 } from "lucide-react";
+import { ResponsiveContainer, AreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip, Line } from "recharts";
+import { useTranslations } from "next-intl";
+import { COLORS, Metric, PanelHeader, Legend, ChartTooltip } from "./AdminDashboardComponents";
+import type { AdminStatsResponse } from "@/hooks/admin/dashboard";
+
+export interface UsersTabProps {
+  stats: AdminStatsResponse;
+  currency?: string;
+  range: string;
+}
+
+export function UsersTab({ stats, currency, range }: UsersTabProps) {
+  const t = useTranslations('admin.dashboard');
+
+  return (
+    <div className="space-y-6">
+      <section className="grid grid-cols-1 border-y border-white/[0.06] divide-y divide-white/[0.06] sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4">
+        <Metric icon={<Users size={15} />} label={t('metrics.totalUsers')} value={stats.metrics?.totalUsers?.toLocaleString() || "0"} detail={range ? t('metrics.lastRange', { range }) : t('metrics.registeredAccounts')} trend={stats.metrics?.usersTrend} />
+        <Metric icon={<UserRound size={15} />} label={t('metrics.deletedAccounts')} value={stats.metrics?.deletedAccounts?.toLocaleString() || "0"} detail={t('metrics.lastRange', { range })} trend={stats.metrics?.deletedAccountsTrend} negative={true} />
+        <Metric icon={<TrendingUp size={15} />} label={t('metrics.referrals')} value={stats.metrics?.referrals?.toLocaleString() || "0"} detail={range ? t('metrics.lastRange', { range }) : t('metrics.allTimeReferrals')} trend={stats.metrics?.referralsTrend} />
+        <Metric icon={<CheckCircle2 size={15} />} label={t('metrics.activePlans')} value={stats.metrics?.activePlans?.toLocaleString() || "0"} detail={range ? t('metrics.lastRange', { range }) : t('metrics.currentlyActive')} trend={stats.metrics?.activePlansTrend} />
+      </section>
+      
+      <section className="flex flex-col p-6 border-b border-white/[0.06]">
+        <PanelHeader kicker={t('usersSection.kicker')} title={t('usersSection.title')} description={t('usersSection.description')} />
+        <div className="flex flex-wrap gap-4 mt-4">
+          <Legend label={t('legends.registrations')} color={COLORS.primary} />
+          <Legend label={t('legends.deleted')} color={COLORS.red} />
+          <Legend label={t('legends.referrals')} color={COLORS.blue} />
+        </div>
+        <div className="h-[330px] mt-4 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={stats.usersData || []} accessibilityLayer={false}>
+              <CartesianGrid stroke="#1b1b1b" vertical={false} />
+              <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: "#555", fontSize: 10 }} />
+              <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fill: "#555", fontSize: 10 }} />
+              <Tooltip content={<ChartTooltip currency={currency} />} />
+              <Area type="monotone" dataKey="registered" name={t('legends.registrations')} stroke={COLORS.primary} fill={COLORS.primary} fillOpacity=".08" strokeWidth={2} />
+              <Line type="monotone" dataKey="deleted" name={t('legends.deleted')} stroke={COLORS.red} strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="referrals" name={t('legends.referrals')} stroke={COLORS.blue} strokeWidth={2} dot={false} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </section>
+    </div>
+  );
+}

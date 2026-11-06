@@ -2,38 +2,30 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const AppError = require('../utils/AppError');
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, '../../uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+const cdnDir = path.join(__dirname, '../../cdn');
+if (!fs.existsSync(cdnDir)) {
+  fs.mkdirSync(cdnDir, { recursive: true });
 }
 
-// Magic byte signatures for allowed image types
-// These are read from the actual file content — cannot be spoofed by renaming
 const MAGIC_BYTES = [
-  { mime: 'image/jpeg', bytes: [0xFF, 0xD8, 0xFF],            offset: 0 },
-  { mime: 'image/png',  bytes: [0x89, 0x50, 0x4E, 0x47],     offset: 0 },
-  { mime: 'image/gif',  bytes: [0x47, 0x49, 0x46, 0x38],     offset: 0 },
-  { mime: 'image/webp', bytes: [0x52, 0x49, 0x46, 0x46],     offset: 0 }, // "RIFF"
+  { mime: 'image/jpeg', bytes: [0xFF, 0xD8, 0xFF], offset: 0 },
+  { mime: 'image/png', bytes: [0x89, 0x50, 0x4E, 0x47], offset: 0 },
+  { mime: 'image/gif', bytes: [0x47, 0x49, 0x46, 0x38], offset: 0 },
+  { mime: 'image/webp', bytes: [0x52, 0x49, 0x46, 0x46], offset: 0 },
 ];
 
-/**
- * Verify that a saved file's actual bytes match a known image signature.
- * Call this AFTER multer has written the file to disk.
- * Returns true if valid, false otherwise.
- */
 function validateMagicBytes(filePath) {
   try {
-    const path = require('path');
     const filename = path.basename(filePath);
-    const uploadsDir = path.resolve(__dirname, '../../uploads');
-    const safePath = path.resolve(uploadsDir, filename);
-    
-    if (!safePath.startsWith(uploadsDir)) {
+    const resolvedCdnDir = path.resolve(__dirname, '../../cdn');
+    const safePath = path.resolve(resolvedCdnDir, filename);
+
+    if (!safePath.startsWith(resolvedCdnDir)) {
       return false;
     }
-    // Read only the first 12 bytes — enough for all signatures above
+
     const fd = fs.openSync(safePath, 'r');
     const buf = Buffer.alloc(12);
     fs.readSync(fd, buf, 0, 12, 0);
@@ -42,35 +34,24 @@ function validateMagicBytes(filePath) {
     return MAGIC_BYTES.some(({ bytes, offset }) =>
       bytes.every((b, i) => buf[offset + i] === b)
     );
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  } catch (_) {
+  } catch (_magicReadErr) {
     return false;
   }
 }
 
-// Configure storage
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
+  destination: (_req, _file, cb) => {
+    cb(null, cdnDir);
   },
-  filename: (req, file, cb) => {
-    // Only extract the extension from the original name — discard the rest.
-    // This prevents leaking user filenames (e.g. "Whatsapp_image.jpg") in URLs.
+  filename: (_req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-
-    // Generate a fully random filename: 24 hex chars + extension
-    // e.g. "a3f9c2d1e8b047f6c5a2901d.jpg"
-    const randomName = crypto.randomBytes(12).toString('hex') + ext;
+    const randomName = 'asset_' + crypto.randomBytes(12).toString('hex') + ext;
     cb(null, randomName);
-  }
+  },
 });
 
-// File filter — first line of defence: validate declared MIME type + extension
-const fileFilter = (req, file, cb) => {
-  // Removed SVG support due to XSS risks — SVG files can contain JavaScript
+const fileFilter = (_req, file, cb) => {
   const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-
-  // Also validate file extension to prevent MIME type spoofing
   const ext = path.extname(file.originalname).toLowerCase();
   const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
 
@@ -81,64 +62,50 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Configure multer
 const upload = multer({
-  storage: storage,
-  fileFilter: fileFilter,
+  storage,
+  fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB max file size
-  }
+    fileSize: 5 * 1024 * 1024,
+  },
 });
 
-// Middleware to handle upload errors
-const handleUploadError = (err, req, res, next) => {
+const handleUploadError = (err, _req, _res, next) => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ error: 'File size too large. Maximum size is 5MB.' });
+      return next(new AppError('File size too large. Maximum size is 5MB.', 400, 'ERR_FILE_TOO_LARGE'));
     }
-    return res.status(400).json({ error: err.message });
+    return next(new AppError('File upload failed', 400, 'ERR_LOCATION_FLAG_UPLOAD_FAILED'));
   } else if (err) {
-    return res.status(400).json({ error: err.message });
+    return next(new AppError('File upload failed', 400, 'ERR_LOCATION_FLAG_UPLOAD_FAILED'));
   }
   next();
 };
 
-// Helper function to delete old file with path traversal protection
 const deleteFile = (filePath) => {
   if (!filePath) return false;
 
   try {
-    // Remove leading slash and extract just the filename
     const filename = path.basename(filePath);
-
-    // Validate filename — only allow hex chars, dots, and hyphens (matches our generated names)
-    const safeFilenameRegex = /^[a-f0-9]+\.(jpg|jpeg|png|gif|webp)$/i;
+    const safeFilenameRegex = /^(asset_)?[a-f0-9_\-.]+\.(jpg|jpeg|png|gif|webp|svg|avif)$/i;
     if (!safeFilenameRegex.test(filename)) {
       return false;
     }
 
-    // Construct the full path
-    const fullPath = path.join(__dirname, '../../uploads', filename);
+    const resolvedCdnDir = path.resolve(__dirname, '../../cdn');
+    const safePath = path.resolve(resolvedCdnDir, filename);
 
-    // Ensure the resolved path is still within uploads directory (prevent path traversal)
-    const resolvedUploadsDir = path.resolve(__dirname, '../../uploads');
-    const resolvedPath = path.resolve(fullPath);
-
-    if (!resolvedPath.startsWith(resolvedUploadsDir + path.sep) &&
-        resolvedPath !== resolvedUploadsDir) {
+    if (!safePath.startsWith(resolvedCdnDir + path.sep) && safePath !== resolvedCdnDir) {
       return false;
     }
 
-    // Check if file exists
-    if (!fs.existsSync(resolvedPath)) {
+    if (!fs.existsSync(safePath)) {
       return false;
     }
 
-    // Delete the file
-    fs.unlinkSync(resolvedPath);
+    fs.unlinkSync(safePath);
     return true;
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 };

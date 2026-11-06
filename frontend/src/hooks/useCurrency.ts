@@ -1,17 +1,21 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { getCachedBrandingSync, fetchBrandingData, subscribeBranding } from '@/utils/configCache';
 
 export function useCurrency() {
-  const [currency, setCurrency] = useState('USD');
+  const [currency, setCurrency] = useState(() => getCachedBrandingSync().currency || 'USD');
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/branding`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.currency) setCurrency(data.currency);
-      })
-      .catch(() => {});
+    const unsubscribe = subscribeBranding((b) => {
+      if (b.currency) setCurrency(b.currency);
+    });
+
+    fetchBrandingData().then((b) => {
+      if (b.currency) setCurrency(b.currency);
+    });
+
+    return unsubscribe;
   }, []);
 
   const formatPrice = (amount: number | string) => {

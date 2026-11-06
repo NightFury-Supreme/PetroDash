@@ -1,0 +1,238 @@
+"use client";
+
+import React, { useEffect } from "react";
+import { Ticket, ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { GiftCodeRow } from "./GiftCodeRow";
+import { GiftCodesTableSkeleton } from "@/components/skeletons/gift";
+import { useGiftCodes } from "./hooks/useGiftCodes";
+import { useToast } from "@/components/ui/ToastProvider";
+import type { TabStatus, GiftCode } from "./types";
+
+interface GiftCodesSectionProps {
+  onRefreshRef?: (fn: (options?: { force?: boolean }) => void) => void;
+  onInitialLoad?: () => void;
+}
+
+function rewardLabel(g: GiftCode, t: (key: string, values?: Record<string, string | number>) => string): string {
+  const parts: string[] = [];
+  const coins = g.rewards?.coins;
+  if (typeof coins === "number" && coins > 0) parts.push(`${coins} ${t("coinsUnit")}`);
+  const r = g.rewards?.resources;
+  if (r) {
+    if (typeof r.diskMb === "number" && r.diskMb > 0) parts.push(t("resDisk", { amount: r.diskMb }));
+    if (typeof r.memoryMb === "number" && r.memoryMb > 0) parts.push(t("resMemory", { amount: r.memoryMb }));
+    if (typeof r.cpuPercent === "number" && r.cpuPercent > 0) parts.push(t("resCpu", { amount: r.cpuPercent }));
+    if (typeof r.allocations === "number" && r.allocations > 0) parts.push(t("resPorts", { amount: r.allocations }));
+    if (typeof r.backups === "number" && r.backups > 0) parts.push(t("resBackups", { amount: r.backups }));
+    if (typeof r.databases === "number" && r.databases > 0) parts.push(t("resDatabases", { amount: r.databases }));
+    if (typeof r.serverSlots === "number" && r.serverSlots > 0) parts.push(t("resSlots", { amount: r.serverSlots }));
+  }
+  return parts.length ? parts.join(" · ") : t("noRewards");
+}
+
+export function GiftCodesSection({ onRefreshRef, onInitialLoad }: GiftCodesSectionProps) {
+  const t = useTranslations("Gift");
+  const tCommon = useTranslations('Common');
+  const { showSuccess, showError } = useToast();
+  const {
+    codes,
+    loading,
+    page,
+    totalCodes,
+    totalPages,
+    activeCount,
+    inactiveCount,
+    activeTab,
+    pageSize,
+    setActiveTab,
+    setPage,
+    refetch,
+    initialFetchDone
+  } = useGiftCodes();
+
+  useEffect(() => {
+    if (onRefreshRef) onRefreshRef(refetch);
+  }, [refetch, onRefreshRef]);
+
+  useEffect(() => {
+    if (initialFetchDone && onInitialLoad) {
+      onInitialLoad();
+    }
+  }, [initialFetchDone, onInitialLoad]);
+
+  const copyCode = async (code: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      showSuccess(t("codeCopied"));
+    } catch {
+      showError(t("copyFailed"));
+    }
+  };
+
+  const tabs: TabStatus[] = ["Active", "Inactive"];
+
+  return (
+    <section aria-label={t("management")}>
+      <div className="flex flex-col lg:flex-row gap-8 items-start pt-6">
+        {/* LEFT NAV */}
+        <aside className="w-full lg:w-48 shrink-0">
+          <div className="sticky top-6">
+            <div className="mb-4">
+              <h3 className="text-[11px] font-medium uppercase tracking-widest text-[#555]">{t("statusFilter")}</h3>
+            </div>
+            <nav className="space-y-1" aria-label={t("statusFilter")}>
+              {tabs.map((tab) => {
+                const count = tab === "Active" ? activeCount : inactiveCount;
+                const selected = activeTab === tab;
+                const tabLabel = tab === "Active" ? tCommon('active') : t("statusInactive");
+                return (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setActiveTab(tab)}
+                    aria-pressed={selected}
+                    className={`group flex items-center justify-between w-full rounded-lg px-2.5 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/30 ${
+                      selected
+                        ? "bg-white/10 text-white"
+                        : "text-zinc-500 hover:bg-white/5 hover:text-zinc-200"
+                    }`}
+                  >
+                    <span className="truncate">{tabLabel}</span>
+                    <span className={`text-xs ${selected ? "text-zinc-400" : "text-zinc-600"}`}>{count}</span>
+                  </button>
+                );
+              })}
+            </nav>
+            <div className="mt-8 pt-4">
+              <p className="text-xs leading-relaxed text-[#555]">
+                {t("codesAutoMove")}
+              </p>
+            </div>
+          </div>
+        </aside>
+
+        {/* RIGHT */}
+        <div className="flex-1 min-w-0 w-full dashboard-content-wrapper mb-6">
+          <div className="mb-4">
+            <div className="text-[10px] font-medium uppercase tracking-widest text-[#555] mb-1" aria-hidden="true">{t("management")}</div>
+            <h2 className="text-base font-semibold tracking-tight text-[#eee]">{t("yourGiftCodes")}</h2>
+            <p className="text-xs text-[#888] mt-1">{t("yourGiftCodesSubtitle")}</p>
+          </div>
+
+          <div className="mt-4" aria-live="polite" aria-busy={loading}>
+            {loading ? (
+              <GiftCodesTableSkeleton />
+            ) : codes.length > 0 ? (
+              <>
+                <div role="row" className="hidden gap-4 grid-cols-[1.8fr_1fr_1fr_70px_90px_80px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/20 lg:grid">
+                  <span role="columnheader">{t("tableCode")}</span>
+                  <span role="columnheader">{t("tableReward")}</span>
+                  <span role="columnheader">{t("tableExpires")}</span>
+                  <span role="columnheader">{t("tableUses")}</span>
+                  <span role="columnheader">{tCommon('status')}</span>
+                  <span role="columnheader" className="text-right">{tCommon('action')}</span>
+                </div>
+                <div role="rowgroup" className="divide-y divide-white/[0.06]">
+                  {codes.map((g) => (
+                    <GiftCodeRow
+                      key={g.id}
+                      code={g.code}
+                      description={g.description}
+                      reward={rewardLabel(g, t)}
+                      expires={g.validUntil ? new Date(g.validUntil).toLocaleDateString() : "—"}
+                      uses={`${g.redeemedCount || 0}${g.maxRedemptions ? ` / ${g.maxRedemptions}` : ""}`}
+                      status={activeTab}
+                      statusLabel={activeTab === "Active" ? tCommon('active') : t("statusInactive")}
+                      copyLabel={tCommon('copy')}
+                      copyCodeLabel={t("copyCode")}
+                      mobileRewardLabel={t("mobileRewardLabel")}
+                      mobileExpiresLabel={t("mobileExpiresLabel")}
+                      mobileUsesLabel={t("mobileUsesLabel")}
+                      onCopy={() => copyCode(g.code)}
+                    />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="flex min-h-[260px] items-center justify-center">
+                <div className="text-center">
+                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.02]" aria-hidden="true">
+                    <Ticket className="h-4 w-4 text-[#555]" />
+                  </div>
+                  <p className="mt-3 text-sm font-medium text-[#888888]">
+                    {t("noCodes", { status: activeTab.toLowerCase() })}
+                  </p>
+                  <p className="mt-1 text-xs text-[#555]">
+                    {t("codesWillAppear")}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-5 flex items-center justify-between border-t border-white/[0.06] pt-5">
+              <p className="text-[10px] text-white/30">
+                {codes.length > 0 ? (page - 1) * pageSize + 1 : 0}
+                {"–"}
+                {Math.min(page * pageSize, totalCodes)} {t("showingOf")} {totalCodes} {t("codes")}
+              </p>
+
+              <nav className="flex items-center gap-1" aria-label={tCommon('pagination')}>
+                <button
+                  type="button"
+                  disabled={page === 1 || loading}
+                  onClick={() => setPage((current) => Math.max(1, current - 1))}
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.07] text-white/30 transition hover:bg-white/[0.04] hover:text-white disabled:cursor-not-allowed disabled:opacity-30 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
+                  aria-label={tCommon('previousPage')}
+                >
+                  <ChevronLeft size={14} aria-hidden="true" />
+                </button>
+
+                {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => {
+                  if (
+                    pageNumber === 1 ||
+                    pageNumber === totalPages ||
+                    (pageNumber >= page - 1 && pageNumber <= page + 1)
+                  ) {
+                    return (
+                      <button
+                        key={pageNumber}
+                        type="button"
+                        onClick={() => setPage(pageNumber)}
+                        disabled={loading}
+                        aria-current={page === pageNumber ? "page" : undefined}
+                        className={`flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-xs transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/30 ${
+                          page === pageNumber
+                            ? "bg-orange-500 text-black font-medium"
+                            : "text-white/30 hover:bg-white/[0.04] hover:text-white disabled:opacity-50"
+                        }`}
+                      >
+                        {pageNumber}
+                      </button>
+                    );
+                  } else if (pageNumber === page - 2 || pageNumber === page + 2) {
+                    return <span key={pageNumber} className="text-white/20 text-xs px-1" aria-hidden="true">...</span>;
+                  }
+                  return null;
+                })}
+
+                <button
+                  type="button"
+                  disabled={page === totalPages || loading}
+                  onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.07] text-white/30 transition hover:bg-white/[0.04] hover:text-white disabled:cursor-not-allowed disabled:opacity-30 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/30"
+                  aria-label={tCommon('nextPage')}
+                >
+                  <ChevronRight size={14} aria-hidden="true" />
+                </button>
+              </nav>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}

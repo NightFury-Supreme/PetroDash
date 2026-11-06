@@ -1,58 +1,75 @@
-"use client";
+'use client';
 
-import Link from 'next/link';
+import React from 'react';
+import { useTranslations } from 'next-intl';
+import { AdminUserTableRow } from './AdminUserTableRow';
+import { AdminUsersTableSkeleton } from '@/components/skeletons/admin/user';
+import type { AdminUserListItem } from '@/hooks/admin/users/types';
 
-export default function UsersTable({ users }: { users: any[] }) {
+interface UsersTableProps {
+  users: AdminUserListItem[];
+  onDelete: (id: string, username: string, email?: string) => void;
+  onToggleBan?: (user: AdminUserListItem) => void;
+  onOpenBan?: (user: AdminUserListItem) => void;
+  onOpenUnban?: (user: AdminUserListItem) => void;
+  banningUserId: string | null;
+  deletingUserId: string | null;
+  loading?: boolean;
+}
+
+export function UsersTable({
+  users,
+  onDelete,
+  onToggleBan,
+  onOpenBan,
+  onOpenUnban,
+  banningUserId,
+  deletingUserId,
+  loading = false,
+}: UsersTableProps) {
+  const t = useTranslations('admin.users');
+
   return (
-    <div className="rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--surface)] shadow-sm">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-left bg-black/20 text-[#AAAAAA]">
-            <th className="p-4 font-medium">Email</th>
-            <th className="p-4 font-medium">Username</th>
-            <th className="p-4 font-medium">Role</th>
-            <th className="p-4 font-medium">Status</th>
-            <th className="p-4 font-medium">Servers</th>
-            <th className="p-4"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((u) => (
-            <tr key={u._id} className="border-t border-[var(--border)] hover:bg-[var(--hover)] transition-colors">
-              <td className="p-4">{u.email}</td>
-              <td className="p-4 font-medium text-white">{u.username}</td>
-              <td className="p-4">
-                <span className={`px-2 py-1 text-xs font-bold rounded-full border ${
-                  u.role === 'admin' 
-                    ? 'bg-red-600/20 text-red-300 border-red-700/50' 
-                    : 'bg-green-600/20 text-green-300 border-green-700/50'
-                }`}>
-                  {u.role === 'admin' ? 'admin' : 'user'}
-                </span>
-              </td>
-              <td className="p-4">
-                {u.ban?.isBanned ? (
-                  <span className="text-xs font-medium text-red-400 flex items-center gap-1">
-                    <i className="fas fa-ban text-xs"></i>
-                    Banned
-                  </span>
-                ) : (
-                  <span className="text-xs font-medium text-green-400 flex items-center gap-1">
-                    <i className="fas fa-check-circle text-xs"></i>
-                    Active
-                  </span>
-                )}
-              </td>
-              <td className="p-4 font-medium">{u.serverCount}</td>
-              <td className="p-4 text-right">
-                <Link href={`/admin/users/${u._id}`} className="px-4 py-2 rounded-lg text-xs font-medium bg-white text-black hover:bg-gray-200 transition-colors">Manage</Link>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div>
+      <div className="w-full">
+        {/* TABLE HEADER (Desktop) */}
+        <div className="hidden gap-4 lg:grid lg:grid-cols-[1.8fr_1.2fr_90px_90px_100px_120px] border-b border-white/[0.06] px-5 pb-3 text-[9px] uppercase tracking-[0.13em] text-white/30">
+          <span>{t('user')}</span>
+          <span>{t('userId')}</span>
+          <span>{t('status')}</span>
+          <span>{t('servers')}</span>
+          <span>{t('coins')}</span>
+          <span className="text-right">{t('actions')}</span>
+        </div>
+
+        {/* TABLE LIST */}
+        {loading && users.length === 0 ? (
+          <AdminUsersTableSkeleton showHeader={false} rows={8} />
+        ) : (
+          <div className={`divide-y divide-[#222] ${loading && users.length > 0 ? 'opacity-60 transition-opacity pointer-events-none' : ''}`}>
+            {users.length === 0 ? (
+              <div className="text-center py-16 text-xs text-[#555]">
+                {t('noUsersFound')}
+              </div>
+            ) : (
+            users.map((user) => (
+              <AdminUserTableRow
+                key={user.id}
+                user={user}
+                onDelete={onDelete}
+                onToggleBan={onToggleBan}
+                onOpenBan={onOpenBan}
+                onOpenUnban={onOpenUnban}
+                banningUserId={banningUserId}
+                deletingUserId={deletingUserId}
+              />
+            ))
+          )}
+        </div>
+        )}
+      </div>
     </div>
   );
 }
 
-
+export default UsersTable;

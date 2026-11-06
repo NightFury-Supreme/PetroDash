@@ -1,113 +1,18 @@
+import { fetchWithRetry } from "@/utils/fetchWithRetry";
 import { useState, useEffect, useCallback } from 'react';
+import { PlanFormData, UsePlanFormReturn, initialFormData } from './types';
 
-interface PlanFormData {
-  name: string;
-  description: string;
-  strikeThroughPrice: number;
-  pricePerMonth: number;
-  pricePerYear: number;
-  visibility: 'public' | 'unlisted';
-  availableAt: string;
-  availableUntil: string;
-  stock: number;
-  limitPerCustomer: number;
-  category: string;
-  redirectionLink: string;
-  billingOptions: {
-    renewable: boolean;
-    nonRenewable: boolean;
-    lifetime: boolean;
-  };
-  availableBillingCycles: string[];
-  productContent: {
-    recurrentResources: {
-      cpuPercent: number;
-      memoryMb: number;
-      diskMb: number;
-      swapMb: number;
-      blockIoProportion: number;
-      cpuPinning: string;
-    };
-    additionalAllocations: number;
-    databases: number;
-    backups: number;
-    coins: number;
-    serverLimit: number;
-  };
-  staffNotes: string;
-  popular: boolean;
-  sortOrder: number;
-}
-
-interface UsePlanFormReturn {
-  // State
-  loading: boolean;
-  saving: boolean;
-  error: string | null;
-  formData: PlanFormData;
-  eggs: Array<{ _id: string; name: string; description: string }>;
-  locations: Array<{ _id: string; name: string; description: string }>;
-  
-  // Actions
-  setFormData: (data: Partial<PlanFormData>) => void;
-  handleInputChange: (field: string, value: string | number | boolean | string[]) => void;
-  handleSubmit: () => Promise<void>;
-  clearError: () => void;
-  resetForm: () => void;
-  
-  // Computed
-  isFormValid: boolean;
-  validationErrors: Record<string, string>;
-}
-
-const initialFormData: PlanFormData = {
-  name: '',
-  description: '',
-  strikeThroughPrice: 0,
-  pricePerMonth: 0,
-  pricePerYear: 0,
-  visibility: 'public',
-  availableAt: '',
-  availableUntil: '',
-  stock: 0,
-  limitPerCustomer: 1,
-  category: '',
-  redirectionLink: '',
-  billingOptions: {
-    renewable: true,
-    nonRenewable: false,
-    lifetime: false,
-  },
-  availableBillingCycles: ['monthly'],
-  productContent: {
-    recurrentResources: {
-      cpuPercent: 100,
-      memoryMb: 1024,
-      diskMb: 10240,
-      swapMb: 0,
-      blockIoProportion: 100,
-      cpuPinning: '',
-    },
-    additionalAllocations: 0,
-    databases: 1,
-    backups: 1,
-    coins: 0,
-    serverLimit: 1,
-  },
-  staffNotes: '',
-  popular: false,
-  sortOrder: 0,
-};
+export * from './types';
 
 export function usePlanForm(): UsePlanFormReturn {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormDataState] = useState<PlanFormData>(initialFormData);
-  const [eggs, setEggs] = useState<Array<{ _id: string; name: string; description: string }>>([]);
-  const [locations, setLocations] = useState<Array<{ _id: string; name: string; description: string }>>([]);
+  const [eggs, setEggs] = useState<Array<{ id: string; name: string; description: string }>>([]);
+  const [locations, setLocations] = useState<Array<{ id: string; name: string; description: string }>>([]);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  // Load initial data
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
@@ -119,21 +24,21 @@ export function usePlanForm(): UsePlanFormReturn {
       }
 
       const [eggsRes, locationsRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/eggs`, { 
+        fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/eggs`, { 
           headers: { Authorization: `Bearer ${token}` } 
         }),
-        fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/locations`, { 
+        fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/locations`, { 
           headers: { Authorization: `Bearer ${token}` } 
         })
       ]);
 
       if (eggsRes.ok) {
-        let eggsData: any = {}; try { eggsData = await eggsRes.json(); } catch {}
+        let eggsData: Array<{ id: string; name: string; description: string }> = []; try { eggsData = await eggsRes.json(); } catch {}
         setEggs(eggsData);
       }
 
       if (locationsRes.ok) {
-        let locationsData: any = {}; try { locationsData = await locationsRes.json(); } catch {}
+        let locationsData: Array<{ id: string; name: string; description: string }> = []; try { locationsData = await locationsRes.json(); } catch {}
         setLocations(locationsData);
       }
     } catch (err: unknown) {
@@ -143,30 +48,28 @@ export function usePlanForm(): UsePlanFormReturn {
     }
   }, []);
 
-  // Handle input changes
-  const handleInputChange = useCallback((field: string, value: string | number | boolean | string[]) => {
+  const handleInputChange = useCallback((field: string, value: string | number | boolean | string[] | null) => {
     setFormDataState(prev => {
       if (field.includes('.')) {
         const parts = field.split('.');
+        const record = prev as unknown as Record<string, Record<string, Record<string, unknown>>>;
         if (parts.length === 2) {
-          // Handle one level deep: parent.child
           const [parent, child] = parts;
           return {
             ...prev,
             [parent]: {
-              ...(prev as any)[parent],
+              ...record[parent],
               [child]: value
             }
           };
         } else if (parts.length === 3) {
-          // Handle two levels deep: parent.child.grandchild
           const [parent, child, grandchild] = parts;
           return {
             ...prev,
             [parent]: {
-              ...(prev as any)[parent],
+              ...record[parent],
               [child]: {
-                ...(prev as any)[parent]?.[child],
+                ...record[parent]?.[child],
                 [grandchild]: value
               }
             }
@@ -177,85 +80,76 @@ export function usePlanForm(): UsePlanFormReturn {
     });
   }, []);
 
-  // Set form data
   const setFormData = useCallback((data: Partial<PlanFormData>) => {
     setFormDataState(prev => ({ ...prev, ...data }));
   }, []);
 
-  // Clear error
   const clearError = useCallback(() => {
     setError(null);
   }, []);
 
-  // Reset form
   const resetForm = useCallback(() => {
     setFormDataState(initialFormData);
     setError(null);
+    setValidationErrors({});
   }, []);
-
-  // Validation
-  const validationErrors: Record<string, string> = {};
-  
-  if (!formData.name.trim()) {
-    validationErrors.name = 'Plan name is required';
-  }
-  
-  if (!formData.description.trim()) {
-    validationErrors.description = 'Description is required';
-  }
-  
-  if (!formData.category.trim()) {
-    validationErrors.category = 'Category is required';
-  }
-  
-  if (!formData.availableAt) {
-    validationErrors.availableAt = 'Available at date is required';
-  }
-  
-  // availableUntil is optional; when Forever is checked it will be null
-  
-  if (formData.pricePerMonth < 0) {
-    validationErrors.pricePerMonth = 'Monthly price must be 0 or greater';
-  }
-  
-
-  
-  if (formData.productContent.recurrentResources.cpuPercent < 0) {
-    validationErrors.cpuPercent = 'CPU percentage must be 0 or greater';
-  }
-  
-  if (formData.productContent.recurrentResources.memoryMb < 0) {
-    validationErrors.memoryMb = 'Memory must be 0 or greater';
-  }
-  
-  if (formData.productContent.recurrentResources.diskMb < 0) {
-    validationErrors.diskMb = 'Disk must be 0 or greater';
-  }
-  
-  if (formData.productContent.backups < 0) {
-    validationErrors.backups = 'Backups must be 0 or greater';
-  }
-  
-  if (formData.productContent.databases < 0) {
-    validationErrors.databases = 'Databases must be 0 or greater';
-  }
-  
-  if (formData.productContent.serverLimit < 1) {
-    validationErrors.serverLimit = 'Server limit must be 1 or greater';
-  }
-  
-  if (!formData.billingOptions.lifetime && formData.availableBillingCycles.length === 0) {
-    validationErrors.billingCycles = 'Please select at least one billing cycle';
-  }
 
   const isFormValid = Object.keys(validationErrors).length === 0;
 
-  // Handle form submission
   const handleSubmit = useCallback(async () => {
-    if (!isFormValid) {
-      setError('Please fix validation errors before submitting');
-      return;
+    const errors: Record<string, string> = {};
+  
+    if (!formData.name.trim()) {
+      errors.name = 'Plan name is required';
     }
+    
+    if (!formData.description.trim()) {
+      errors.description = 'Description is required';
+    }
+    
+    if (!formData.category.trim()) {
+      errors.category = 'Category is required';
+    }
+    
+    if (formData.pricePerMonth < 0) {
+      errors.pricePerMonth = 'Monthly price must be 0 or greater';
+    }
+    
+    if (formData.productContent.recurrentResources.cpuPercent < 0) {
+      errors.cpuPercent = 'CPU percentage must be 0 or greater';
+    }
+    
+    if (formData.productContent.recurrentResources.memoryMb < 0) {
+      errors.memoryMb = 'Memory must be 0 or greater';
+    }
+    
+    if (formData.productContent.recurrentResources.diskMb < 0) {
+      errors.diskMb = 'Disk must be 0 or greater';
+    }
+    
+    if (formData.productContent.backups < 0) {
+      errors.backups = 'Backups must be 0 or greater';
+    }
+    
+    if (formData.productContent.databases < 0) {
+      errors.databases = 'Databases must be 0 or greater';
+    }
+    
+    if (formData.productContent.serverLimit < 1) {
+      errors.serverLimit = 'Server limit must be 1 or greater';
+    }
+    
+    if (!formData.billingOptions.lifetime && formData.availableBillingCycles.length === 0) {
+      errors.billingCycles = 'Please select at least one billing cycle';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      setError('Please fix validation errors before submitting');
+      throw new Error('Please fix validation errors before submitting');
+    }
+
+    setValidationErrors({});
 
     try {
       setSaving(true);
@@ -266,7 +160,6 @@ export function usePlanForm(): UsePlanFormReturn {
         throw new Error('Authentication required');
       }
 
-      // Transform form data to match backend expectations
       const submitData = {
         name: formData.name,
         description: formData.description,
@@ -290,9 +183,6 @@ export function usePlanForm(): UsePlanFormReturn {
             cpuPercent: formData.productContent.recurrentResources.cpuPercent,
             memoryMb: formData.productContent.recurrentResources.memoryMb,
             diskMb: formData.productContent.recurrentResources.diskMb,
-            swapMb: formData.productContent.recurrentResources.swapMb,
-            blockIoProportion: formData.productContent.recurrentResources.blockIoProportion,
-            cpuPinning: formData.productContent.recurrentResources.cpuPinning,
           },
           additionalAllocations: formData.productContent.additionalAllocations,
           databases: formData.productContent.databases,
@@ -305,7 +195,7 @@ export function usePlanForm(): UsePlanFormReturn {
         sortOrder: formData.sortOrder,
       };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans`, {
+      const response = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/plans`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -315,11 +205,10 @@ export function usePlanForm(): UsePlanFormReturn {
       });
 
       if (!response.ok) {
-        let errorData: any = {}; try { errorData = await response.json(); } catch {}
+        let errorData: { error?: string } = {}; try { errorData = await response.json(); } catch {}
         throw new Error(errorData.error || 'Failed to create plan');
       }
 
-      // Success - form will be reset by parent component
       return await response.json();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to create plan');
@@ -327,30 +216,24 @@ export function usePlanForm(): UsePlanFormReturn {
     } finally {
       setSaving(false);
     }
-  }, [formData, isFormValid]);
+  }, [formData]);
 
-  // Load data on mount
   useEffect(() => {
     loadData();
   }, [loadData]);
 
   return {
-    // State
     loading,
     saving,
     error,
     formData,
     eggs,
     locations,
-    
-    // Actions
     setFormData,
     handleInputChange,
     handleSubmit,
     clearError,
     resetForm,
-    
-    // Computed
     isFormValid,
     validationErrors,
   };

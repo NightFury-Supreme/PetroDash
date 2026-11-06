@@ -1,16 +1,13 @@
 "use client";
 import React from "react";
-import { ModalProvider } from "@/components/Modal";
+import { ToastProvider } from "@/components/ui/ToastProvider";
+import { TopProgressBar } from "@/components/ui";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ModalProvider>
+    <ToastProvider>
+      <TopProgressBar />
       {children}
-    </ModalProvider>
+    </ToastProvider>
   );
 }
-
-
-
-
-

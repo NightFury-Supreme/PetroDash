@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useState } from "react";
-import { fetchWithRetry } from "@/utils/fetchWithRetry";
+import { useCallback, useEffect, useState, useRef } from 'react';
+import { fetchWithRetry } from '@/utils/fetchWithRetry';
 
-export type EarnMethod = "ads" | "linkvertise";
+export type EarnMethod = 'linkvertise';
 
 export interface EarnMethodSettings {
   enabled: boolean;
@@ -13,78 +13,125 @@ export interface EarnMethodSettings {
   maxClaimsPerDay: number;
   url?: string;
   antiBypassToken?: string;
-  ayetPlacementId?: number;
-  ayetAdslotName?: string;
-  ayetApiKey?: string;
 }
 
 export interface AdminEarnSettings {
-  enabled: boolean;
-  ads: EarnMethodSettings;
   linkvertise: EarnMethodSettings;
 }
 
+let memoryCache: AdminEarnSettings | null = null;
+let inFlightPromise: Promise<AdminEarnSettings> | null = null;
+
 export function useAdminEarn() {
-  const [settings, setSettings] = useState<AdminEarnSettings | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [settings, setSettings] = useState<AdminEarnSettings | null>(memoryCache);
+  const [loading, setLoading] = useState(!memoryCache);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  const isMountedRef = useRef(true);
 
-      const token = localStorage.getItem("auth_token");
-      if (!token) throw new Error("No auth token");
+  const fetchSettings = useCallback(async (): Promise<AdminEarnSettings> => {
+    if (inFlightPromise) return inFlightPromise;
 
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/earn`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    if (!token) throw new Error('ERR_UNAUTHORIZED');
 
-      const d = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(d?.error || "Failed to load earn settings");
+    inFlightPromise = (async () => {
+      try {
+        const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/earn`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-      setSettings(d as AdminEarnSettings);
-    } catch (e: any) {
-      setError(String(e?.message || "Failed to load earn settings"));
-    } finally {
-      setLoading(false);
-    }
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          const errCode =
+            d?.error?.code || d?.errorCode || d?.code || d?.error?.message || d?.error || 'ERR_EARN_FETCH_FAILED';
+          throw new Error(errCode);
+        }
+
+        memoryCache = d as AdminEarnSettings;
+        return memoryCache;
+      } finally {
+        inFlightPromise = null;
+      }
+    })();
+
+    return inFlightPromise;
   }, []);
+
+  const load = useCallback(async (force = false) => {
+    if (!force && memoryCache) {
+      setSettings(memoryCache);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
+
+    try {
+      setError(null);
+      const data = await fetchSettings();
+      if (isMountedRef.current) {
+        setSettings(data);
+      }
+    } catch (e: unknown) {
+      if (isMountedRef.current) {
+        setError(e instanceof Error ? e.message : 'ERR_EARN_FETCH_FAILED');
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
+    }
+  }, [fetchSettings]);
 
   const save = useCallback(async (next: Partial<AdminEarnSettings>) => {
     try {
       setSaving(true);
       setError(null);
 
-      const token = localStorage.getItem("auth_token");
-      if (!token) throw new Error("No auth token");
+      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      if (!token) throw new Error('ERR_UNAUTHORIZED');
 
-      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/earn`, {
-        method: "PATCH",
+      const r = await fetchWithRetry(`${process.env.NEXT_PUBLIC_API_BASE || ''}/api/admin/earn`, {
+        method: 'PATCH',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(next),
       });
 
       const d = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(d?.error || "Failed to save earn settings");
+      if (!r.ok) {
+        const errCode =
+          d?.error?.code || d?.errorCode || d?.code || d?.error?.message || d?.error || 'ERR_EARN_SAVE_FAILED';
+        throw new Error(errCode);
+      }
 
-      setSettings(d as AdminEarnSettings);
-      return d as AdminEarnSettings;
-    } catch (e: any) {
-      setError(String(e?.message || "Failed to save earn settings"));
+      memoryCache = d as AdminEarnSettings;
+      if (isMountedRef.current) {
+        setSettings(memoryCache);
+      }
+      return memoryCache;
+    } catch (e: unknown) {
+      const errCode = e instanceof Error ? e.message : 'ERR_EARN_SAVE_FAILED';
+      if (isMountedRef.current) {
+        setError(errCode);
+      }
       throw e;
     } finally {
-      setSaving(false);
+      if (isMountedRef.current) {
+        setSaving(false);
+      }
     }
   }, []);
 
   useEffect(() => {
+    isMountedRef.current = true;
     load();
+    return () => {
+      isMountedRef.current = false;
+    };
   }, [load]);
 
   return {
@@ -92,7 +139,6 @@ export function useAdminEarn() {
     loading,
     saving,
     error,
-    setError,
     load,
     save,
   };

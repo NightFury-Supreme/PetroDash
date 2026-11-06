@@ -1,77 +1,79 @@
+import React from 'react';
 import { AdminLedgerFilters } from './AdminLedgerFilters';
 import { AdminLedgerError } from './AdminLedgerError';
 import { AdminLedgerTable } from './AdminLedgerTable';
 import { AdminLedgerFiltersSkeleton, AdminLedgerTableSkeleton } from '@/components/skeletons/admin/ledger';
-
-// eslint-disable-next-line unused-imports/no-unused-vars
-interface Payment {
-  _id: string;
-  provider?: string;
-  providerOrderId?: string;
-  userId: string;
-  planId: string;
-  amount: number;
-  currency?: string;
-  status: string;
-  createdAt: string;
-}
+import { useTranslations } from 'next-intl';
+import type { LedgerItem } from '@/hooks/admin/ledger/useAdminLedger';
 
 interface AdminLedgerContentProps {
-  items: any[];
+  items: LedgerItem[];
   status: string;
   provider: string;
-  userId: string;
+  searchQuery: string;
+  setSearchQuery: (value: string) => void;
+  sort: string;
   error: string | null;
   loading: boolean;
   refunding: string | null;
   voiding: string | null;
   onStatusChange: (value: string) => void;
   onProviderChange: (value: string) => void;
-  onUserIdChange: (value: string) => void;
+  onSortChange: (value: string) => void;
   onFilter: () => void;
-  onRefund: (id: string) => void;
-  onVoid: (id: string) => void;
+  onRefund: (paymentId: string) => void;
+  onVoid: (paymentId: string) => void;
 }
 
 export function AdminLedgerContent({
   items,
   status,
   provider,
-  userId,
+  searchQuery,
+  setSearchQuery,
+  sort,
   error,
   loading,
   refunding,
   voiding,
   onStatusChange,
   onProviderChange,
-  onUserIdChange,
+  onSortChange,
   onFilter,
   onRefund,
-  onVoid
+  onVoid,
 }: AdminLedgerContentProps) {
+  const t = useTranslations('Admin.ledger');
+
   return (
     <>
-      {/* Filters */}
-      {loading ? (
+      <div className="mt-8 mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold text-white">{t('title')}</h2>
+          <p className="mt-0.5 text-xs text-[#666]">{t('subtitle')}</p>
+        </div>
+      </div>
+
+      {loading && items.length === 0 ? (
         <AdminLedgerFiltersSkeleton />
       ) : (
         <AdminLedgerFilters
           status={status}
           provider={provider}
-          userId={userId}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          sort={sort}
           onStatusChange={onStatusChange}
           onProviderChange={onProviderChange}
-          onUserIdChange={onUserIdChange}
+          onSortChange={onSortChange}
           onFilter={onFilter}
           loading={loading}
         />
       )}
 
-      {/* Error Display */}
       <AdminLedgerError error={error} />
 
-      {/* Table */}
-      {loading ? (
+      {loading && items.length === 0 ? (
         <AdminLedgerTableSkeleton />
       ) : (
         <AdminLedgerTable
@@ -85,3 +87,5 @@ export function AdminLedgerContent({
     </>
   );
 }
+
+export default AdminLedgerContent;

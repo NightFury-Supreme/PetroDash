@@ -1,65 +1,146 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import CouponsHeader from '@/components/admin/coupons/CouponsHeader';
-import CouponsList from '@/components/admin/coupons/CouponsList';
-import { AdminCouponsSkeleton } from '@/components/skeletons/admin/coupons/AdminCouponsSkeleton';
+import React, { useState } from "react";
+import { useTranslations } from "next-intl";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { AdminStoreCouponsSkeleton } from "@/components/skeletons/admin/store";
+import { useCouponsList } from "@/hooks/admin/coupons";
+import { CouponsHeader } from "./CouponsHeader";
+import { CouponsList } from "./CouponsList";
+import { AdminCouponFilters } from "./AdminCouponFilters";
+import { AdminCreateCouponDrawer } from "./drawers/AdminCreateCouponDrawer";
+import { AdminEditCouponDrawer } from "./drawers/AdminEditCouponDrawer";
+import { AdminDeleteCouponDrawer } from "./drawers/AdminDeleteCouponDrawer";
+import type { AdminCouponItem } from "./types";
 
-export default function CouponsPageContent() {
-  const router = useRouter();
-  const [coupons, setCoupons] = useState<any[]>([]);
-  const [plans, setPlans] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [deleting, setDeleting] = useState<string | null>(null);
-  const [currency, setCurrency] = useState('USD');
+export function CouponsPageContent() {
+  const tErrorBackend = useTranslations('BackendErrors');
+  const tCommon = useTranslations('Common');
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [selectedForEdit, setSelectedForEdit] = useState<AdminCouponItem | null>(null);
+  const [selectedForDelete, setSelectedForDelete] = useState<AdminCouponItem | null>(null);
 
-  useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    if (!token) { router.replace('/login'); return; }
-    Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/coupons`, { headers: { Authorization: `Bearer ${token}` } }),
-      fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/plans`, { headers: { Authorization: `Bearer ${token}` } }),
-      fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/branding`)
-    ])
-      .then(async ([cR, pR, bR]) => {
-        if (cR.ok) setCoupons(await cR.json());
-        if (pR.ok) setPlans(await pR.json());
-        if (bR.ok) {
-          let bData: any = {}; try { bData = await bR.json(); } catch {}
-          if (bData?.currency) setCurrency(bData.currency);
-        }
-      })
-      .finally(() => setLoading(false));
-  }, [router]);
+  const {
+    coupons,
+    plans,
+    currency,
+    page,
+    pagination,
+    loading,
+    error,
+    searchQuery,
+    setSearchQuery,
+    statusFilter,
+    setStatusFilter,
+    typeFilter,
+    setTypeFilter,
+    sort,
+    setSort,
+    handlePageChange,
+    refetch,
+    refresh,
+  } = useCouponsList();
 
-  const toggleEnabled = async (id: string, enabled: boolean) => {
-    const token = localStorage.getItem('auth_token');
-    await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/coupons/${id}`, {
-      method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ enabled })
-    });
-    setCoupons((prev) => prev.map((c) => (c._id === id ? { ...c, enabled } : c)));
-  };
+  if (loading && coupons.length === 0 && !searchQuery && statusFilter === 'all' && typeFilter === 'all') {
+    return <AdminStoreCouponsSkeleton />;
+  }
 
-  const deleteCoupon = async (id: string) => {
-    const token = localStorage.getItem('auth_token');
-    setDeleting(id);
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/api/admin/coupons/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) setCoupons((prev) => prev.filter((c) => c._id !== id));
-    } finally {
-      setDeleting(null);
-    }
-  };
-
-  if (loading) return <AdminCouponsSkeleton />;
+  const startItem = pagination.total === 0 ? 0 : (page - 1) * 10 + 1;
+  const endItem = Math.min(page * 10, pagination.total);
 
   return (
-    <div className="p-6 space-y-6">
-      <CouponsHeader total={coupons.length} />
-      <CouponsList coupons={coupons} plans={plans} onToggle={toggleEnabled} onDelete={deleteCoupon} deletingId={deleting} currency={currency} />
+    <div className="space-y-6">
+      {error && (
+        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+          {tErrorBackend.has(error) ? tErrorBackend(error) : error}
+        </div>
+      )}
+
+      <CouponsHeader onCreateNew={() => setIsCreateOpen(true)} />
+
+      <AdminCouponFilters
+        status={statusFilter}
+        type={typeFilter}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        sort={sort}
+        onStatusChange={setStatusFilter}
+        onTypeChange={setTypeFilter}
+        onSortChange={setSort}
+        onFilter={refresh}
+        loading={loading}
+      />
+
+      <CouponsList
+        coupons={coupons}
+        currency={currency}
+        onManage={(coupon) => setSelectedForEdit(coupon)}
+        onDeleteClick={(coupon) => setSelectedForDelete(coupon)}
+      />
+
+      {pagination.totalPages > 1 && (
+        <div className="mt-5 flex items-center justify-between border-t border-white/[0.06] pt-5">
+          <p className="text-[11px] text-white/20">
+            {tCommon('showing')} {startItem} - {endItem} {tCommon('of')} {pagination.total}
+          </p>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              disabled={page <= 1 || loading}
+              onClick={() => handlePageChange(Math.max(1, page - 1))}
+              className="flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.07] text-white/30 transition hover:bg-white/[0.04] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label={tCommon('previousPage')}
+            >
+              <ChevronLeft size={14} />
+            </button>
+            <div className="flex items-center px-2">
+              <span className="text-xs font-medium text-white/40">
+                {page} <span className="text-white/20 mx-1">/</span> {pagination.totalPages}
+              </span>
+            </div>
+            <button
+              type="button"
+              disabled={page >= pagination.totalPages || loading}
+              onClick={() => handlePageChange(Math.min(pagination.totalPages, page + 1))}
+              className="flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.07] text-white/30 transition hover:bg-white/[0.04] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+              aria-label={tCommon('nextPage')}
+            >
+              <ChevronRight size={14} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      <AdminCreateCouponDrawer
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        onSuccess={() => refetch()}
+        plans={plans}
+        currency={currency}
+      />
+
+      <AdminEditCouponDrawer
+        coupon={selectedForEdit}
+        isOpen={Boolean(selectedForEdit)}
+        onClose={() => setSelectedForEdit(null)}
+        onSuccess={() => refetch()}
+        onDeleteClick={(coupon) => {
+          setSelectedForEdit(null);
+          setSelectedForDelete(coupon);
+        }}
+        plans={plans}
+        currency={currency}
+      />
+
+      <AdminDeleteCouponDrawer
+        isOpen={Boolean(selectedForDelete)}
+        onClose={() => setSelectedForDelete(null)}
+        onSuccess={() => refetch()}
+        couponId={selectedForDelete?.id || null}
+        couponCode={selectedForDelete?.code || null}
+      />
     </div>
   );
 }
 
-
+export default CouponsPageContent;

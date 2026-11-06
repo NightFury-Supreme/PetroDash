@@ -1,0 +1,134 @@
+import React, { useState, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
+import { AlertTriangle } from 'lucide-react';
+import { useToast } from "@/components/ui/ToastProvider";
+import { Drawer } from '@/components/ui/Drawer';
+import { ValidationMsg } from '../ui/ValidationMsg';
+
+export function Disable2FADrawer({
+  isOpen,
+  onClose,
+  disable2FA,
+  loginMethod,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  disable2FA: (password: string, code: string) => Promise<void>;
+  loginMethod?: string;
+}) {
+  const t = useTranslations('Profile');
+  const tCommon = useTranslations('Common');
+  const tErrorBackend = useTranslations('BackendErrors');
+  const isPasswordRequired = loginMethod === 'email';
+  const [tfaPassword, setTfaPassword] = useState('');
+  const [tfaVerifyCode, setTfaVerifyCode] = useState('');
+  const [useBackupCode, setUseBackupCode] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [touchedPw, setTouchedPw] = useState(false);
+  const [touchedCode, setTouchedCode] = useState(false);
+  const { showError, showSuccess } = useToast();
+
+  const pwValidation = useMemo(() => {
+    if (!isPasswordRequired) return { valid: true, message: '' };
+    if (!tfaPassword) return { valid: false, message: t('passwordRequired') };
+    if (tfaPassword.length < 6) return { valid: false, message: t('passwordMin6') };
+    return { valid: true, message: t('passwordConfirmed') };
+  }, [tfaPassword, isPasswordRequired, t]);
+
+  const codeValidation = useMemo(() => {
+    if (!tfaVerifyCode) return { valid: false, message: useBackupCode ? t('backupCodeRequired') : t('tfaCodeRequired') };
+    if (useBackupCode && tfaVerifyCode.length !== 8) return { valid: false, message: t('enterBackup8') };
+    if (!useBackupCode && tfaVerifyCode.length !== 6) return { valid: false, message: t('enter6Authenticator') };
+    return { valid: true, message: useBackupCode ? t('backup8Entered') : t('code6DigitsEntered') };
+  }, [tfaVerifyCode, useBackupCode, t]);
+
+  const handleClose = () => {
+    onClose();
+    setTfaPassword('');
+    setTfaVerifyCode('');
+    setTouchedPw(false);
+    setTouchedCode(false);
+  };
+
+  const handleDisable = async () => {
+    if (isPasswordRequired) setTouchedPw(true);
+    setTouchedCode(true);
+    if (isPasswordRequired && !pwValidation.valid) {
+      showError(pwValidation.message);
+      return;
+    }
+    if (!codeValidation.valid) {
+      showError(codeValidation.message);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await disable2FA(tfaPassword, tfaVerifyCode);
+      showSuccess(t('tfaDisabledSuccess'));
+      handleClose();
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : '';
+      showError(tErrorBackend.has(msg) ? tErrorBackend(msg) : (msg || tCommon('error')));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Drawer isOpen={isOpen} onClose={handleClose} title={t('disable2faTitle')} subtitle={t('disable2faSubtitle')} icon={<AlertTriangle className="text-red-500" size={20} />}>
+      <div className="grid gap-6 mt-2">
+        <div className="border-l-2 border-red-500 pl-4 py-1.5">
+          <div className="flex items-center gap-2 text-red-500 mb-3">
+            <AlertTriangle size={16} />
+            <span className="text-sm font-semibold uppercase tracking-wider text-red-400">{tCommon('warning')}</span>
+          </div>
+          <ul className="space-y-2.5">
+            <li className="flex items-start gap-2.5 text-sm leading-relaxed text-zinc-400">
+              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" />
+              <span>{t('disable2faWarning')}</span>
+            </li>
+          </ul>
+        </div>
+        {isPasswordRequired && (
+          <div>
+            <label className="block text-[11px] uppercase tracking-wider text-[#888] mb-2 font-medium">{t('password')}</label>
+            <input
+              type="password"
+              value={tfaPassword}
+              onChange={(e) => { setTfaPassword(e.target.value); setTouchedPw(true); }}
+              onBlur={() => setTouchedPw(true)}
+              disabled={isLoading}
+              className={`w-full h-11 rounded-lg border bg-[#161616] px-4 text-[13px] text-white outline-none focus:border-red-500/50 transition-colors disabled:opacity-50 ${touchedPw && !pwValidation.valid ? 'border-red-400/30' : 'border-[#222]'}`}
+              placeholder={t('placeholderPassword')}
+            />
+            <ValidationMsg touched={touchedPw} valid={pwValidation.valid} message={pwValidation.message} hideSuccess={true} />
+          </div>
+        )}
+        <div>
+          <div className="flex justify-between items-end mb-2">
+            <label className="block text-[11px] uppercase tracking-wider text-[#888] font-medium">{useBackupCode ? t('backupCode') : t('tfaCode')}</label>
+            <button type="button" onClick={() => { setUseBackupCode(!useBackupCode); setTfaVerifyCode(''); setTouchedCode(false); }} className="text-[12px] font-medium text-red-400 hover:text-red-300 transition-colors">
+              {useBackupCode ? t('use2faCode') : t('useBackupCode')}
+            </button>
+          </div>
+          <input
+            type="text"
+            maxLength={useBackupCode ? 8 : 6}
+            value={tfaVerifyCode}
+            onChange={(e) => { setTfaVerifyCode(e.target.value.replace(useBackupCode ? /[^0-9a-fA-F]/g : /\D/g, '')); setTouchedCode(true); }}
+            onBlur={() => setTouchedCode(true)}
+            disabled={isLoading}
+            className={`w-full h-11 rounded-lg border bg-[#161616] px-4 text-[14px] text-white outline-none focus:border-red-500/50 transition-colors tracking-[0.2em] font-mono text-center disabled:opacity-50 ${touchedCode && !codeValidation.valid ? 'border-red-400/30' : 'border-[#222]'}`}
+            placeholder={useBackupCode ? t('placeholderBackup') : t('placeholder123456')}
+          />
+          <ValidationMsg touched={touchedCode} valid={codeValidation.valid} message={codeValidation.message} hideSuccess={true} />
+        </div>
+        <div className="mt-4 flex justify-end gap-3">
+          <button type="button" onClick={handleDisable} disabled={isLoading} className={`flex h-11 items-center justify-center gap-2 rounded-lg px-6 text-[13px] font-medium transition-colors disabled:cursor-not-allowed ${(isLoading || !codeValidation.valid || (isPasswordRequired && !pwValidation.valid)) ? 'bg-[#333] text-[#888]' : 'bg-red-500 hover:bg-red-600 text-white'}`}>
+            {isLoading ? <span className="h-4 w-4 rounded-full border-2 border-current border-t-transparent animate-spin" /> : t('confirmDisable')}
+          </button>
+        </div>
+      </div>
+    </Drawer>
+  );
+}

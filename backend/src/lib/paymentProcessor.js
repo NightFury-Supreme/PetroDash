@@ -5,16 +5,12 @@ const Coupon = require('../models/Coupon');
 const Payment = require('../models/Payment');
 const { writeAudit } = require('../middleware/audit');
 const { sendMailTemplate } = require('./mail');
+const { deleteCachePattern } = require('./redis');
 
-/**
- * Validates, claims, and processes a captured PayPal payment.
- * Applies resources, coins, handles auditing, and updates the payment.
- */
 async function processCapturedPayment(payment, captureData, sanitizedOrderId) {
   const isFree = payment.provider === 'system' && payment.amount === 0;
 
   if (!isFree) {
-    // Verify amounts match what we recorded (prevent price manipulation)
     const refUnit = captureData?.purchase_units?.[0];
     const capture = refUnit?.payments?.captures?.[0];
     const capturedAmount = Number(capture?.amount?.value ?? refUnit?.amount?.value ?? 0);
@@ -27,10 +23,6 @@ async function processCapturedPayment(payment, captureData, sanitizedOrderId) {
       capturedPlanId !== String(payment.planId)
     ) {
       await Payment.findByIdAndUpdate(payment._id, { status: 'FAILED' });
-      console.error('[PayPal] Amount/currency/plan mismatch on capture', {
-        expected: { amount: payment.amount, currency: payment.currency, planId: payment.planId },
-        received: { amount: capturedAmount, currency: capturedCurrency, planId: capturedPlanId }
-      });
       return { success: false, error: 'Payment mismatch — order rejected for security' };
     }
   }
@@ -41,9 +33,21 @@ async function processCapturedPayment(payment, captureData, sanitizedOrderId) {
     return { success: false, error: 'Plan not found' };
   }
 
-  // Re-check TOCTOU Stock and Limits at capture time
+  const nowCapture = new Date();
+  const activeCondition = {
+    status: 'active',
+    $or: [
+      { isLifetime: true },
+      { expiresAt: null },
+      { expiresAt: { $gt: nowCapture } }
+    ]
+  };
+
   if (plan.stock > 0) {
-    const purchasedCount = await UserPlan.countDocuments({ planId: { $eq: plan._id }, status: { $eq: 'active' } });
+    const purchasedCount = await UserPlan.countDocuments({
+      planId: { $eq: plan._id },
+      ...activeCondition
+    });
     if (purchasedCount >= plan.stock) {
       await Payment.findByIdAndUpdate(payment._id, { status: 'REFUND_REQUIRED' });
       return { success: false, error: isFree ? 'Plan is out of stock' : 'Plan is out of stock (payment captured, refund required)' };
@@ -51,14 +55,17 @@ async function processCapturedPayment(payment, captureData, sanitizedOrderId) {
   }
 
   if (plan.limitPerCustomer > 0) {
-    const userPurchases = await UserPlan.countDocuments({ userId: { $eq: payment.userId }, planId: { $eq: plan._id }, status: { $eq: 'active' } });
+    const userPurchases = await UserPlan.countDocuments({
+      userId: { $eq: payment.userId },
+      planId: { $eq: plan._id },
+      ...activeCondition
+    });
     if (userPurchases >= plan.limitPerCustomer) {
       await Payment.findByIdAndUpdate(payment._id, { status: 'REFUND_REQUIRED' });
       return { success: false, error: isFree ? 'You have reached the purchase limit for this plan' : 'You have reached the purchase limit for this plan (payment captured, refund required)' };
     }
   }
 
-  // Atomically claim the payment — prevents double processing on concurrent requests
   const captureId = isFree ? payment.providerOrderId : captureData?.purchase_units?.[0]?.payments?.captures?.[0]?.id;
   const claimedPayment = await Payment.findOneAndUpdate(
     { _id: payment._id, status: { $ne: 'COMPLETED' } },
@@ -72,25 +79,23 @@ async function processCapturedPayment(payment, captureData, sanitizedOrderId) {
   }
 
   if (!claimedPayment) {
-    // Already processed by a prior/concurrent request — return current state idempotently
     return { success: true, alreadyProcessed: true, order: captureData, user };
   }
 
-  // Write audit log using the userId context
   const paymentMeta = claimedPayment.meta || {};
-  await writeAudit(payment.userId.toString(), 'payment.purchase.completed', 'payment', claimedPayment._id.toString(), {
-    provider: claimedPayment.provider,
-    planId: plan._id.toString(),
-    planName: plan.name,
-    amount: claimedPayment.amount,
-    currency: claimedPayment.currency,
-    billingCycle: paymentMeta.billingCycle,
-    isLifetime: paymentMeta.isLifetime,
-    orderId: sanitizedOrderId,
-    userId: payment.userId.toString()
-  });
+  let changes = {};
+  
+  const activityReq = {
+    ip: paymentMeta.ip || 'unknown',
+    headers: {
+      'user-agent': paymentMeta.userAgent || 'unknown',
+      'x-forwarded-for': paymentMeta.ip || undefined
+    },
+    get: (header) => header.toLowerCase() === 'user-agent' ? (paymentMeta.userAgent || 'unknown') : null
+  };
 
-  // Apply plan benefits
+  const amountStr = `${claimedPayment.amount} ${claimedPayment.currency || 'USD'}`;
+
   const billingCycle = paymentMeta.billingCycle || 'monthly';
   const isLifetime = Boolean(paymentMeta.isLifetime);
 
@@ -106,16 +111,12 @@ async function processCapturedPayment(payment, captureData, sanitizedOrderId) {
     return d;
   })();
 
-  // Flatten resources for UserPlan snapshot
   const pc = plan.productContent || {};
   const rr = pc.recurrentResources || {};
   const flatResources = {
     cpuPercent: rr.cpuPercent || 0,
     memoryMb: rr.memoryMb || 0,
     diskMb: rr.diskMb || 0,
-    swapMb: rr.swapMb !== undefined ? rr.swapMb : -1,
-    blockIoProportion: rr.blockIoProportion || 0,
-    cpuPinning: rr.cpuPinning || '',
     additionalAllocations: pc.additionalAllocations || 0,
     databases: pc.databases || 0,
     backups: pc.backups || 0,
@@ -136,65 +137,118 @@ async function processCapturedPayment(payment, captureData, sanitizedOrderId) {
   });
 
   if (sub && !sub.benefitsApplied) {
-    const pc = plan.productContent || {};
-    const rr = pc.recurrentResources || {};
+    const coinBonus = Number(pc.coins || 0);
 
-    // Atomically increment coins and resources to prevent TOCTOU lost updates
-    const incQuery = {
-      coins: Number(pc.coins || 0),
-      'resources.diskMb': Number(rr.diskMb || 0),
-      'resources.memoryMb': Number(rr.memoryMb || 0),
-      'resources.cpuPercent': Number(rr.cpuPercent || 0),
-      'resources.backups': Number(pc.backups || 0),
-      'resources.databases': Number(pc.databases || 0),
-      'resources.allocations': Number(pc.additionalAllocations || 0),
-      'resources.serverSlots': Number(pc.serverLimit || 0),
-    };
-
-    // Clean up zero-increments
-    Object.keys(incQuery).forEach(k => {
-      if (incQuery[k] === 0) delete incQuery[k];
-    });
-
-    if (Object.keys(incQuery).length > 0) {
+    if (coinBonus > 0) {
       const updatedUser = await User.findByIdAndUpdate(
         user._id, 
-        { $inc: incQuery }, 
+        { $inc: { coins: coinBonus } }, 
         { new: true }
       );
       if (updatedUser) {
+        changes.coins = { old: user.coins, new: updatedUser.coins };
         user.coins = updatedUser.coins;
-        user.resources = updatedUser.resources;
       }
     }
 
     sub.benefitsApplied = true;
     await sub.save();
 
-    // Increment coupon redemption count
     if (paymentMeta.couponCode) {
       await Coupon.findOneAndUpdate(
         { code: paymentMeta.couponCode.toUpperCase() },
         { $inc: { redeemedCount: 1 } }
       );
+      await deleteCachePattern('admin:coupons:list:*');
     }
   }
 
-  // Invalidate payment and user plans cache
-  const { deleteCachePattern } = require('./redis');
-  await deleteCachePattern(`payments:mine:${payment.userId}:*`);
-  await deleteCachePattern(`user:${payment.userId}:plans`);
-  await deleteCachePattern(`user:${payment.userId}:profile`); // Profile resources updated
-  await deleteCachePattern('admin:ledger');
+  const userPubId = user.publicId;
+  const paymentPubId = claimedPayment.publicId;
+  const planPubId = plan.publicId;
 
-  // Send confirmation email (non-blocking, never fail the response)
+  await writeAudit(userPubId, 'payment.purchase.completed', 'payment', paymentPubId, {
+    provider: claimedPayment.provider,
+    planId: planPubId,
+    planName: plan.name,
+    amount: claimedPayment.amount,
+    currency: claimedPayment.currency,
+    billingCycle: paymentMeta.billingCycle,
+    isLifetime: paymentMeta.isLifetime,
+    orderId: sanitizedOrderId,
+    userId: userPubId,
+    changes
+  });
+  
+  const { logUserActivity } = require('../middleware/userActivity');
+  await logUserActivity(activityReq, 'payment.purchase.completed', { 
+    planName: plan.name, 
+    amount: amountStr,
+    changes
+  }, userPubId);
+
+  const { deleteCache } = require('./redis');
+  const { invalidateUserCaches, invalidateUserPaymentsCaches } = require('../utils/userCacheInvalidation');
+  await Promise.allSettled([
+    invalidateUserPaymentsCaches(userPubId),
+    invalidateUserCaches(userPubId),
+    deleteCache('admin:ledger'),
+  ]);
+
   try {
     const freshUser = await User.findById(payment.userId).lean();
     if (freshUser?.email) {
-      await sendMailTemplate({ to: freshUser.email, templateKey: 'planPurchased', data: { planName: plan.name } });
+      const { getSettings } = require('./settings');
+      const settings = await getSettings();
+      const { generateInvoicePdfBuffer } = require('./invoicePdf');
+      const frontendHost = process.env.FRONTEND_URL || '';
+      
+      const pdfBuffer = await generateInvoicePdfBuffer(payment, plan, freshUser, settings, frontendHost, 'https');
+      
+      const attachments = [{
+        filename: `invoice-${paymentPubId}.pdf`,
+        content: pdfBuffer,
+        contentType: 'application/pdf'
+      }];
+
+      const currency = payment.currency || 'USD';
+      const formatter = new Intl.NumberFormat(settings?.payments?.paypal?.currencyLocale || 'en-US', { style: 'currency', currency });
+      const amountFormatted = formatter.format(payment.amount || 0);
+      
+      const displayInterval = payment.meta?.billingCycle 
+        ? String(payment.meta.billingCycle).charAt(0).toUpperCase() + String(payment.meta.billingCycle).slice(1) 
+        : (plan?.interval || 'One-time');
+
+      const prefix = settings?.payments?.paypal?.invoicePrefix || 'INV-';
+      const invoiceId = `${prefix}${String(paymentPubId).slice(-8).toUpperCase()}`;
+
+      let frontendUrl = process.env.FRONTEND_URL || process.env.BACKEND_URL || '';
+      if (frontendUrl && !frontendUrl.startsWith('http')) frontendUrl = `https://${frontendUrl}`;
+
+      await sendMailTemplate({ 
+        to: freshUser.email, 
+        templateKey: 'planPurchased', 
+        attachments,
+        data: { 
+          username: freshUser.username,
+          planName: plan.name,
+          planDescription: plan.description || '',
+          amount: amountFormatted,
+          interval: displayInterval,
+          invoiceId: invoiceId,
+          transactionId: payment.providerCaptureId || payment.providerOrderId || 'N/A',
+          paymentMethod: String(payment.provider || '').charAt(0).toUpperCase() + String(payment.provider || '').slice(1),
+          cpu: plan.productContent?.recurrentResources?.cpuPercent || 0,
+          ram: plan.productContent?.recurrentResources?.memoryMb || 0,
+          disk: plan.productContent?.recurrentResources?.diskMb || 0,
+          databases: plan.productContent?.databases || 0,
+          servers: plan.productContent?.serverLimit || 0,
+          backups: plan.productContent?.backups || 0,
+          frontendUrl
+        } 
+      });
     }
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  } catch (_) {}
+  } catch (_mailErr) {}
 
   return { success: true, order: captureData, user };
 }

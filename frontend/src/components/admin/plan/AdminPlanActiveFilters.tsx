@@ -1,0 +1,71 @@
+import React from 'react';
+import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+
+interface AdminPlanActiveFiltersProps {
+  activeFilterCount: number;
+  categoryFilter: string;
+  statusFilter: string;
+  removeFilter: (type: 'category' | 'status') => void;
+  clearFilters: () => void;
+}
+
+export function AdminPlanActiveFilters({
+  activeFilterCount,
+  categoryFilter,
+  statusFilter,
+  removeFilter,
+  clearFilters,
+}: AdminPlanActiveFiltersProps) {
+  const t = useTranslations('Admin.plan');
+  const tCommon = useTranslations('Common');
+
+  if (activeFilterCount === 0) return null;
+
+  const getStatusLabel = (val: string) => {
+    if (val === 'public') return t('public');
+    if (val === 'unlisted') return t('unlisted');
+    if (val === 'disabled') return tCommon('disabled');
+    return val;
+  };
+
+  return (
+    <div className="min-h-[38px] flex items-center gap-[6px] flex-wrap pt-2.5">
+      <span className="mr-[3px] text-[#444] text-[8px]">{t('activeFilters')}</span>
+
+      {categoryFilter !== 'all' && (
+        <div className="h-[25px] inline-flex items-center gap-[6px] pl-[9px] pr-[7px] border border-[#292929] rounded-[5px] bg-[#141414] text-[#8a8a8a] text-[8px]">
+          {t('category')}: {categoryFilter}
+          <button
+            type="button"
+            onClick={() => removeFilter('category')}
+            className="w-[16px] h-[16px] flex items-center justify-center rounded-[4px] text-[#555] hover:bg-[#252525] hover:text-[#ddd] transition-colors"
+          >
+            <X size={11} />
+          </button>
+        </div>
+      )}
+
+      {statusFilter !== 'all' && (
+        <div className="h-[25px] inline-flex items-center gap-[6px] pl-[9px] pr-[7px] border border-[#292929] rounded-[5px] bg-[#141414] text-[#8a8a8a] text-[8px]">
+          {t('visibility')}: {getStatusLabel(statusFilter)}
+          <button
+            type="button"
+            onClick={() => removeFilter('status')}
+            className="w-[16px] h-[16px] flex items-center justify-center rounded-[4px] text-[#555] hover:bg-[#252525] hover:text-[#ddd] transition-colors"
+          >
+            <X size={11} />
+          </button>
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={clearFilters}
+        className="text-[10px] text-[#ff5722] hover:text-[#ff6939] hover:underline ml-2"
+      >
+        {tCommon('clearAll')}
+      </button>
+    </div>
+  );
+}

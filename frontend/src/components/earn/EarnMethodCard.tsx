@@ -1,7 +1,9 @@
 "use client";
 
-import { EarnMethod, EarnMethodStatus, EarnMethodConfig } from "@/hooks/useEarn";
 import type { ReactNode } from "react";
+import { useTranslations } from "next-intl";
+import { Infinity } from "lucide-react";
+import type { EarnMethod, EarnMethodStatus, EarnMethodConfig } from "@/hooks/earn";
 
 function formatSeconds(s: number) {
   if (!Number.isFinite(s) || s <= 0) return "0s";
@@ -15,6 +17,18 @@ function formatSeconds(s: number) {
   return parts.join(" ");
 }
 
+interface EarnMethodCardProps {
+  method: EarnMethod;
+  title: string;
+  icon: ReactNode;
+  config: EarnMethodConfig;
+  status: EarnMethodStatus;
+  onStart: () => void;
+  starting: boolean;
+  extraAction?: ReactNode;
+  cols: string;
+}
+
 export function EarnMethodCard({
   method,
   title,
@@ -22,22 +36,11 @@ export function EarnMethodCard({
   config,
   status,
   onStart,
-  onClaim,
   starting,
-  claiming,
   extraAction,
-}: {
-  method: EarnMethod;
-  title: string;
-  icon: string;
-  config: EarnMethodConfig;
-  status: EarnMethodStatus;
-  onStart: () => void;
-  onClaim: () => void;
-  starting: boolean;
-  claiming: boolean;
-  extraAction?: ReactNode;
-}) {
+  cols,
+}: EarnMethodCardProps) {
+  const t = useTranslations("Earn");
   const disabled = !config.enabled;
 
   const rewardCoins = Number(status.rewardCoins || config.coins);
@@ -45,27 +48,18 @@ export function EarnMethodCard({
   const maxClaims = Number(status.maxClaimsPerDay || config.maxClaimsPerDay);
   const retryAfter = Number(status.retryAfterSeconds || 0);
 
-  const showStart =
-    status.state === "ready" ||
-    status.state === "expired" ||
-    ((method === "linkvertise" || method === "ads") && (status.state === "waiting" || status.state === "claimable"));
-  const showClaim = false;
+  const showActionBtn = true;
 
-  const subtitleForState = () => {
-    if (disabled) return "Disabled";
-    if (status.state === "waiting") {
-      if (method === "ads" && Number(status.retryAfterSeconds || 0) <= 0) return "Complete a rewarded video to unlock";
-      return `Waiting: ${formatSeconds(status.retryAfterSeconds || 0)}`;
+  const descriptionForMethod = () => {
+    switch (method) {
+      case "linkvertise":
+        return t("linkvertiseDesc");
+      default:
+        return t("defaultDesc");
     }
-    if (status.state === "claimable") return "Ready";
-    if (status.state === "verifying") return "Verifying...";
-    if (status.state === "cooldown") return `Cooldown: ${formatSeconds(status.retryAfterSeconds || 0)}`;
-    if (status.state === "expired") return "Expired";
-    if (status.state === "limit_reached") return "Daily limit reached";
-    return "";
   };
 
-  const subtitle = subtitleForState();
+  const subtitle = descriptionForMethod();
 
   const actionDisabled =
     disabled ||
@@ -75,77 +69,75 @@ export function EarnMethodCard({
     status.state === "verifying";
 
   const actionLabel = () => {
-    if (starting) return "Starting...";
-    if (status.state === "cooldown") return `Cooldown (${formatSeconds(retryAfter)})`;
-    if (status.state === "limit_reached") return "Limit reached";
-    if (status.state === "verifying") return "Verifying...";
-    if (method === "linkvertise" && (status.state === "waiting" || status.state === "claimable")) return "Continue";
-    if (method === "ads" && status.state === "waiting") return "Continue";
-    if (method === "ads" && status.state === "claimable") return "Claim";
-    return "Start";
+    if (starting) return t("starting");
+    if (status.state === "cooldown") return t("cooldownTime", { time: formatSeconds(retryAfter) });
+    if (status.state === "limit_reached") return t("limitReached");
+    if (status.state === "verifying") return t("verifying");
+    if (status.state === "waiting" || status.state === "in_progress" || status.state === "claimable") return t("continue");
+    return t("start");
   };
 
   return (
-    <div className="bg-[#181818] border border-[#2a2a2a] rounded-2xl overflow-hidden">
-      <div className="p-6 space-y-5">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-[#202020] rounded-xl flex items-center justify-center shadow">
-              <i className={`fas ${icon} text-white`} />
-            </div>
-            <div>
-              <div className="text-lg font-bold text-white">{title}</div>
-              <div className="text-sm text-[#AAAAAA]">{subtitle}</div>
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-xs text-[#AAAAAA]">Reward</div>
-            <div className="text-white font-extrabold text-lg">{rewardCoins} coins</div>
-            <div className="text-xs text-[#AAAAAA] mt-1">{todayClaims}/{maxClaims} today</div>
-          </div>
+    <div className={`group grid grid-cols-1 gap-4 px-5 py-5 transition hover:bg-white/[0.015] ${cols} lg:items-center`}>
+      {/* Method Name & Icon */}
+      <div className="min-w-0 flex items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center">
+          {icon}
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="rounded-xl border border-[#303030] bg-[#0F0F0F] p-3">
-            <div className="text-xs text-[#AAAAAA]">Reward</div>
-            <div className="text-white font-extrabold">{rewardCoins} coins</div>
-          </div>
-          <div className="rounded-xl border border-[#303030] bg-[#0F0F0F] p-3">
-            <div className="text-xs text-[#AAAAAA]">Daily limit</div>
-            <div className="text-white font-extrabold">{todayClaims}/{maxClaims}</div>
-          </div>
-          <div className="rounded-xl border border-[#303030] bg-[#0F0F0F] p-3">
-            <div className="text-xs text-[#AAAAAA]">Cooldown</div>
-            <div className="text-white font-extrabold">
-              {status.state === "cooldown" ? formatSeconds(retryAfter) : formatSeconds(Number(config.cooldownSeconds || 0))}
-            </div>
-          </div>
+        <div className="min-w-0">
+          <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">{t("method")}</p>
+          <span className="block truncate text-sm text-[#DDDDDD] font-medium tracking-tight">
+            {title}
+          </span>
+          <span className="block truncate text-[10px] text-[#888] mt-0.5">
+            {subtitle || t("ready")}
+          </span>
         </div>
+      </div>
 
-        <div className="flex flex-wrap gap-2 justify-end">
-          {extraAction}
-          {showStart && (
-            <button
-              onClick={onStart}
-              disabled={actionDisabled}
-              className="px-4 py-2 rounded-lg bg-white text-black hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {actionLabel()}
-            </button>
-          )}
-          {showClaim && (
-            <button
-              onClick={onClaim}
-              disabled={claiming}
-              className="px-4 py-2 rounded-lg bg-white text-black hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {claiming ? "Claiming..." : "Claim"}
-            </button>
-          )}
-        </div>
+      {/* Reward */}
+      <div className="min-w-0">
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">{t("reward")}</p>
+        <span className="text-sm text-[#AAAAAA]">
+          {rewardCoins ? `${rewardCoins} ${t("coinsUnit")}` : t("variable")}
+        </span>
+      </div>
 
-        {!config.enabled && (
-          <div className="text-xs text-[#888888]">Ask an admin to enable this earning method.</div>
+      {/* Limit */}
+      <div className="min-w-0">
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">{t("dailyLimit")}</p>
+        <span className="text-sm text-[#AAAAAA] flex items-center gap-1">
+          {todayClaims} / {maxClaims || <Infinity size={14} className="inline-block opacity-70" />}
+        </span>
+      </div>
+
+      {/* Cooldown */}
+      <div className="min-w-0">
+        <p className="mb-1 text-[9px] uppercase tracking-wider text-[#555] lg:hidden">{t("cooldown")}</p>
+        <span className="text-sm text-[#AAAAAA]">
+          {status.state === "cooldown"
+            ? formatSeconds(retryAfter)
+            : formatSeconds(Number(config.cooldownSeconds || 0))}
+        </span>
+      </div>
+
+      {/* Action */}
+      <div className="min-w-0 lg:text-right mt-2 lg:mt-0">
+        {!config.enabled ? (
+          <span className="text-xs text-[#555]">{t("disabled")}</span>
+        ) : (
+          <div className="flex flex-wrap lg:justify-end gap-2">
+            {extraAction}
+            {showActionBtn && (
+              <button
+                onClick={onStart}
+                disabled={actionDisabled}
+                className="flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-medium transition-colors bg-[#FF5722] text-white hover:bg-[#ff6939] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {actionLabel()}
+              </button>
+            )}
+          </div>
         )}
       </div>
     </div>
